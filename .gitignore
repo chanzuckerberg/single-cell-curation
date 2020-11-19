@@ -1,0 +1,11 @@
+# misc
+.DS_Store
+.vscode
+*.idea*
+__pycache__
+*.DS_Store*
+
+# sc matrices
+*.h5ad
+*.mtx
+*.loom
