@@ -34,7 +34,11 @@ main <- function(cmdArgs=commandArgs(T)) {
                                              )
                        )
     
-    write_yaml(yaml_final, out_file)
+    yaml_final <- as.yaml(yaml_final)
+    # Eliminate single quotes in numbers
+    yaml_final <- gsub("\\'(\\d+)\\'", "\\1", yaml_final)
+    
+    writeLines(yaml_final, out_file)
     
 }
 
@@ -44,13 +48,18 @@ make_yaml_list <- function() {
     
     list(
          obs = list(assay_ontology_term_id = "EFO:0010550",
-                    disease_ontology_term_id = "PATO:0000461",
                     ethnicity_ontology_term_id = "unknown",
                     sex = list(
                                Sex = list(
                                           M = 'male', 
                                           F = 'female')
-                              ) 
+                              ),
+                    disease_ontology_term_id = list(
+                                                    health_status = list(
+                                                                         healthy = 'PATO:0000461',
+                                                                         trisomy_18 = 'MONDO:0018071'
+                                                                         )
+                                                   )
                     ),
          
          uns = list(version = list(corpora_schema_version="1.1.0", corpora_encoding_version="0.1.0"),

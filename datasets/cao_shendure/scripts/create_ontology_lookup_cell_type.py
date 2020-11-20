@@ -3,6 +3,7 @@
 import ontology
 import re
 import scanpy as sc 
+import sys
 
 # Read shendure big data
 dataset = sc.read('./Survey_of_human_embryonic_development-processed.h5ad', 'r')

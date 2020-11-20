@@ -1,11 +1,14 @@
 obs:
   assay_ontology_term_id: EFO:0010550
-  disease_ontology_term_id: PATO:0000461
   ethnicity_ontology_term_id: unknown
   sex:
     Sex:
       M: male
       F: female
+  disease_ontology_term_id:
+    health_status:
+      healthy: PATO:0000461
+      trisomy_18: MONDO:0018071
   tissue_ontology_term_id:
     Organ:
       Eye: UBERON:0000970
@@ -684,24 +687,24 @@ obs:
       Thymus-Vascular endothelial cells-1: CL:0002139
   development_stage_ontology_term_id:
     Development_day:
-      72: HsapDv:0000048
-      74: HsapDv:0000048
+      72: HsapDv:0000047
+      74: HsapDv:0000047
       85: HsapDv:0000049
       89: HsapDv:0000049
       90: HsapDv:0000049
       94: HsapDv:0000050
       96: HsapDv:0000050
-      100: HsapDv:0000052
-      110: HsapDv:0000053
-      112: HsapDv:0000054
-      113: HsapDv:0000054
-      115: HsapDv:0000054
-      117: HsapDv:0000054
-      119: HsapDv:0000055
-      120: HsapDv:0000055
-      122: HsapDv:0000055
-      125: HsapDv:0000055
-      129: HsapDv:0000056
+      100: HsapDv:0000051
+      110: HsapDv:0000052
+      112: HsapDv:0000053
+      113: HsapDv:0000053
+      115: HsapDv:0000053
+      117: HsapDv:0000053
+      119: HsapDv:0000054
+      120: HsapDv:0000054
+      122: HsapDv:0000054
+      125: HsapDv:0000054
+      129: HsapDv:0000055
 uns:
   version:
     corpora_schema_version: 1.1.0
@@ -712,3 +715,4 @@ uns:
     X: log1p
   publication_doi: http://dx.doi.org/10.1126/science.aba7721
   title: Survey of human embryonic development
+

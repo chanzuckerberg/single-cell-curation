@@ -8,7 +8,7 @@ Project title: Survey of human embryonic development
 
 DOI: [http://dx.doi.org/10.1126/science.aba7721](http://dx.doi.org/10.1126/science.aba7721)
 
-Download original (mod by Marcus):
+Download original (mod by Marcus). S3 buckets are under the `single-cell-dev` role at CZI's AWS account:
 
 - Full data 
 
@@ -63,17 +63,25 @@ scripts/ontology_lookup_tissue_curated.tsv
 scripts/ontology_lookup_dev_stage_curated.tsv
 ```
 
+- Append disease status (there's one sample with trisomy 18):
+
+```bash
+python3 scripts/append_dissease_state.py subsampled.h5ad subsampled_w_disease.h5ad
+python3 scripts/append_dissease_state.py Survey_of_human_embryonic_development-processed.h5ad Survey_of_human_embryonic_development-processed_w_disease.h5ad
+```
+
+
 - Create config yaml for remixing with 
 
 ```bash
-Rscript scripts/create_yaml.R scripts/ontology_lookup_cell_type.tsv scripts/ontology_lookup_tissue.tsv scripts/ontology_lookup_dev_stage_curated.tsv schema-shendure.yml
+Rscript scripts/create_yaml.R scripts/ontology_lookup_cell_type_curated.tsv scripts/ontology_lookup_tissue_curated.tsv scripts/ontology_lookup_dev_stage_curated.tsv schema-shendure.yml
 ```
 
 - Remix and verify datasets
 
 ```bash
-cellxgene schema apply --source-h5ad subsampled.h5ad --remix-config scripts/schema-shendure.yml --output-filename subsampled_remixed.h5ad
-cellxgene schema apply --source-h5ad Survey_of_human_embryonic_development-processed.h5ad --remix-config schema-shendure.yml --output-filename Survey_of_human_embryonic_development-processed_remixed.h5ad
+cellxgene schema apply --source-h5ad subsampled_w_disease.h5ad --remix-config schema-shendure.yml --output-filename subsampled_remixed.h5ad
+cellxgene schema apply --source-h5ad Survey_of_human_embryonic_development-processed_w_disease.h5ad --remix-config schema-shendure.yml --output-filename Survey_of_human_embryonic_development-processed_remixed.h5ad
 
 cellxgene schema validate subsampled_remixed.h5ad
 cellxgene schema validate Survey_of_human_embryonic_development-processed_remixed.h5ad
@@ -188,6 +196,17 @@ python3 scripts/create_ontology_lookup_dev_stage.py > ontology_lookup_dev_stage_
 
 I added these mappings to the same [google sheet](https://docs.google.com/spreadsheets/d/14NfyiUWGOzgcRg7nUDiLNO9rMHUef6-gM1f7rlR5ymE/edit?usp=sharing) mentioned in the previous sections.
 
+#### Disease state
+
+There's one sample of cerebrum that comes from a donor with trisomy 18, this information needs to be added to the datasets. I made a custom python script to do so:
+
+```bash
+python3 scripts/append_dissease_state.py subsampled.h5ad subsampled_w_disease.h5ad
+python3 scripts/append_dissease_state.py Survey_of_human_embryonic_development-processed.h5ad Survey_of_human_embryonic_development-processed_w_disease.h5ad
+```
+
+This will create two files with the `_w_disease` suffixes that are then use for remixing.
+
 #### Remixing datasets
 
 These are the steps to remix the data
@@ -217,13 +236,13 @@ Uns:
 - title: "Survey of human embryonic development"
 
 
-**2. Remix dataset**
+**2. Remix datasets**
 
 Next I applied the mapping and injected the metadata in the datasets
 
 ```bash
-cellxgene schema apply --source-h5ad subsampled.h5ad --remix-config scripts/schema-shendure.yml --output-filename subsampled_remixed.h5ad
-cellxgene schema apply --source-h5ad Survey_of_human_embryonic_development-processed.h5ad --remix-config schema-shendure.yml --output-filename Survey_of_human_embryonic_development-processed_remixed.h5ad
+cellxgene schema apply --source-h5ad subsampled_w_disease.h5ad --remix-config schema-shendure.yml --output-filename subsampled_remixed.h5ad
+cellxgene schema apply --source-h5ad Survey_of_human_embryonic_development-processed_w_disease.h5ad --remix-config schema-shendure.yml --output-filename Survey_of_human_embryonic_development-processed_remixed.h5ad
 ```
 
 **3. Validate remixing**
@@ -239,7 +258,7 @@ cellxgene schema validate Survey_of_human_embryonic_development-processed_remixe
 
 ### Curation notes and exceptions
 
-- organated postconceptual age) were obtained by the Uni- versity of Washington Birth Defects Research Laboratory (BDRL) under a protocol approved by the University of Washington Institutional ReviewBoard"
+- Samples were obtained by the University of Washington Birth Defects Research Laboratory (BDRL) under a protocol approved by the University of Washington Institutional Review Board
 - Cell types were generally mapped to the most general ontology term when possible. For instance, a stromal cell from the lung was mapped to the ontology "stromal cell" and not to "stromal cell of lung"
 - Cell types that didn't exist in the ontology look-up service were not mapped to an ontology term, and were assigned the same label as the original. For instance, "CSH1_CSH2 positive" cells.
 organ

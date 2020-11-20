@@ -382,15 +382,15 @@ Cerebrum-Inhibitory neurons-6	Inhibitory neurons	CL:0008029	Inhibitory neurons	T
 Cerebrum-Inhibitory neurons-7	Inhibitory neurons	CL:0008029	Inhibitory neurons	True
 Cerebrum-Inhibitory neurons-8	Inhibitory neurons	CL:0008029	Inhibitory neurons	True
 Cerebrum-Inhibitory neurons-9	Inhibitory neurons	CL:0008029	Inhibitory neurons	True
-Cerebrum-Limbic system neurons-1	Limbic system neurons	CL:2000029	central nervous system neuron	True
-Cerebrum-Limbic system neurons-2	Limbic system neurons	CL:2000029	central nervous system neuron	True
-Cerebrum-Limbic system neurons-3	Limbic system neurons	CL:2000029	central nervous system neuron	True
-Cerebrum-Limbic system neurons-4	Limbic system neurons	CL:2000029	central nervous system neuron	True
-Cerebrum-Limbic system neurons-5	Limbic system neurons	CL:2000029	central nervous system neuron	True
-Cerebrum-Limbic system neurons-6	Limbic system neurons	CL:2000029	central nervous system neuron	True
-Cerebrum-Limbic system neurons-7	Limbic system neurons	CL:2000029	central nervous system neuron	True
-Cerebrum-Limbic system neurons-8	Limbic system neurons	CL:2000029	central nervous system neuron	True
-Cerebrum-Limbic system neurons-9	Limbic system neurons	CL:2000029	central nervous system neuron	True
+Cerebrum-Limbic system neurons-1	Limbic system neurons	CL:0000540	neuron	True
+Cerebrum-Limbic system neurons-2	Limbic system neurons	CL:0000540	neuron	True
+Cerebrum-Limbic system neurons-3	Limbic system neurons	CL:0000540	neuron	True
+Cerebrum-Limbic system neurons-4	Limbic system neurons	CL:0000540	neuron	True
+Cerebrum-Limbic system neurons-5	Limbic system neurons	CL:0000540	neuron	True
+Cerebrum-Limbic system neurons-6	Limbic system neurons	CL:0000540	neuron	True
+Cerebrum-Limbic system neurons-7	Limbic system neurons	CL:0000540	neuron	True
+Cerebrum-Limbic system neurons-8	Limbic system neurons	CL:0000540	neuron	True
+Cerebrum-Limbic system neurons-9	Limbic system neurons	CL:0000540	neuron	True
 Cerebrum-Megakaryocytes-1	Megakaryocytes	CL:0000556	Megakaryocytes	True
 Cerebrum-Microglia-1	Microglia	CL:0002628	immature microglial cell	False
 Cerebrum-Microglia-1	Microglia	CL:0002629	mature microglial cell	False
@@ -1273,34 +1273,34 @@ Kidney-Mesangial cells-8	Mesangial	CL:1000742	glomerular mesangial cell	False
 Kidney-Mesangial cells-8	Mesangial	CL:0000650	mesangial cell	True
 Kidney-Mesangial cells-8	Mesangial	CL:0000777	mesangial phagocyte	False
 Kidney-Metanephric cells-1	Metanephric	CL:0002525	metanephric glomerular visceral epithelial cell	False
-Kidney-Metanephric cells-1	Metanephric	CL:0000324	metanephric mesenchyme stem cell	True
+Kidney-Metanephric cells-1	Metanephric	Metanephric	Metanephric	True
 Kidney-Metanephric cells-1	Metanephric	CL:1000123	metanephric nephron tubule epithelial cell	False
 Kidney-Metanephric cells-10	Metanephric	CL:0002525	metanephric glomerular visceral epithelial cell	False
-Kidney-Metanephric cells-10	Metanephric	CL:0000324	metanephric mesenchyme stem cell	True
+Kidney-Metanephric cells-10	Metanephric	Metanephric	Metanephric	True
 Kidney-Metanephric cells-10	Metanephric	CL:1000123	metanephric nephron tubule epithelial cell	False
 Kidney-Metanephric cells-2	Metanephric	CL:0002525	metanephric glomerular visceral epithelial cell	False
-Kidney-Metanephric cells-2	Metanephric	CL:0000324	metanephric mesenchyme stem cell	True
+Kidney-Metanephric cells-2	Metanephric	Metanephric	Metanephric	True
 Kidney-Metanephric cells-2	Metanephric	CL:1000123	metanephric nephron tubule epithelial cell	False
 Kidney-Metanephric cells-3	Metanephric	CL:0002525	metanephric glomerular visceral epithelial cell	False
-Kidney-Metanephric cells-3	Metanephric	CL:0000324	metanephric mesenchyme stem cell	True
+Kidney-Metanephric cells-3	Metanephric	Metanephric	Metanephric	True
 Kidney-Metanephric cells-3	Metanephric	CL:1000123	metanephric nephron tubule epithelial cell	False
 Kidney-Metanephric cells-4	Metanephric	CL:0002525	metanephric glomerular visceral epithelial cell	False
-Kidney-Metanephric cells-4	Metanephric	CL:0000324	metanephric mesenchyme stem cell	True
+Kidney-Metanephric cells-4	Metanephric	Metanephric	Metanephric	True
 Kidney-Metanephric cells-4	Metanephric	CL:1000123	metanephric nephron tubule epithelial cell	False
 Kidney-Metanephric cells-5	Metanephric	CL:0002525	metanephric glomerular visceral epithelial cell	False
-Kidney-Metanephric cells-5	Metanephric	CL:0000324	metanephric mesenchyme stem cell	True
+Kidney-Metanephric cells-5	Metanephric	Metanephric	Metanephric	True
 Kidney-Metanephric cells-5	Metanephric	CL:1000123	metanephric nephron tubule epithelial cell	False
 Kidney-Metanephric cells-6	Metanephric	CL:0002525	metanephric glomerular visceral epithelial cell	False
-Kidney-Metanephric cells-6	Metanephric	CL:0000324	metanephric mesenchyme stem cell	True
+Kidney-Metanephric cells-6	Metanephric	Metanephric	Metanephric	True
 Kidney-Metanephric cells-6	Metanephric	CL:1000123	metanephric nephron tubule epithelial cell	False
 Kidney-Metanephric cells-7	Metanephric	CL:0002525	metanephric glomerular visceral epithelial cell	False
-Kidney-Metanephric cells-7	Metanephric	CL:0000324	metanephric mesenchyme stem cell	True
+Kidney-Metanephric cells-7	Metanephric	Metanephric	Metanephric	True
 Kidney-Metanephric cells-7	Metanephric	CL:1000123	metanephric nephron tubule epithelial cell	False
 Kidney-Metanephric cells-8	Metanephric	CL:0002525	metanephric glomerular visceral epithelial cell	False
-Kidney-Metanephric cells-8	Metanephric	CL:0000324	metanephric mesenchyme stem cell	True
+Kidney-Metanephric cells-8	Metanephric	Metanephric	Metanephric	True
 Kidney-Metanephric cells-8	Metanephric	CL:1000123	metanephric nephron tubule epithelial cell	False
 Kidney-Metanephric cells-9	Metanephric	CL:0002525	metanephric glomerular visceral epithelial cell	False
-Kidney-Metanephric cells-9	Metanephric	CL:0000324	metanephric mesenchyme stem cell	True
+Kidney-Metanephric cells-9	Metanephric	Metanephric	Metanephric	True
 Kidney-Metanephric cells-9	Metanephric	CL:1000123	metanephric nephron tubule epithelial cell	False
 Kidney-Myeloid cells-1	Myeloid	CL:0002394	CD141-positive myeloid dendritic cell	False
 Kidney-Myeloid cells-1	Myeloid	CL:0002399	CD1c-positive myeloid dendritic cell	False
@@ -1548,7 +1548,7 @@ Liver-Vascular endothelial cells-3	Vascular endothelial	CL:0002139	endothelial c
 Liver-Vascular endothelial cells-4	Vascular endothelial	CL:0000071	blood vessel endothelial cell	False
 Liver-Vascular endothelial cells-4	Vascular endothelial	CL:0002139	endothelial cell of vascular tree	True
 Lung-Bronchiolar and alveolar epithelial cells-1	Bronchiolar and alveolar epithelial	CL:0000583	alveolar macrophage	False
-Lung-Bronchiolar and alveolar epithelial cells-1	Bronchiolar and alveolar epithelial	CL:0000066	epithelial cell	True
+Lung-Bronchiolar and alveolar epithelial cells-1	Bronchiolar and alveolar epithelial	Bronchiolar and alveolar epithelial	Bronchiolar and alveolar epithelial	True
 Lung-Bronchiolar and alveolar epithelial cells-1	Bronchiolar and alveolar epithelial	CL:0000593	androgen secreting cell	False
 Lung-Bronchiolar and alveolar epithelial cells-1	Bronchiolar and alveolar epithelial	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
 Lung-Bronchiolar and alveolar epithelial cells-1	Bronchiolar and alveolar epithelial	CL:0001008	Kit and Sca1-positive hematopoietic stem cell	False
@@ -1557,7 +1557,7 @@ Lung-Bronchiolar and alveolar epithelial cells-1	Bronchiolar and alveolar epithe
 Lung-Bronchiolar and alveolar epithelial cells-1	Bronchiolar and alveolar epithelial	CL:0000130	neuron associated cell (sensu Nematoda and Protostomia)	False
 Lung-Bronchiolar and alveolar epithelial cells-1	Bronchiolar and alveolar epithelial	CL:0000519	phagocyte (sensu Nematoda and Protostomia)	False
 Lung-Bronchiolar and alveolar epithelial cells-1	Bronchiolar and alveolar epithelial	CL:0000385	prohemocyte (sensu Nematoda and Protostomia)	False
-Lung-Bronchiolar and alveolar epithelial cells-2	Bronchiolar and alveolar epithelial	CL:0000066	epithelial cell	True
+Lung-Bronchiolar and alveolar epithelial cells-2	Bronchiolar and alveolar epithelial	Bronchiolar and alveolar epithelial	Bronchiolar and alveolar epithelial	True
 Lung-Bronchiolar and alveolar epithelial cells-2	Bronchiolar and alveolar epithelial	CL:0000511	androgen binding protein secreting cell	False
 Lung-Bronchiolar and alveolar epithelial cells-2	Bronchiolar and alveolar epithelial	CL:0000593	androgen secreting cell	False
 Lung-Bronchiolar and alveolar epithelial cells-2	Bronchiolar and alveolar epithelial	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
@@ -1567,7 +1567,7 @@ Lung-Bronchiolar and alveolar epithelial cells-2	Bronchiolar and alveolar epithe
 Lung-Bronchiolar and alveolar epithelial cells-2	Bronchiolar and alveolar epithelial	CL:0000130	neuron associated cell (sensu Nematoda and Protostomia)	False
 Lung-Bronchiolar and alveolar epithelial cells-2	Bronchiolar and alveolar epithelial	CL:0000519	phagocyte (sensu Nematoda and Protostomia)	False
 Lung-Bronchiolar and alveolar epithelial cells-2	Bronchiolar and alveolar epithelial	CL:0000385	prohemocyte (sensu Nematoda and Protostomia)	False
-Lung-Bronchiolar and alveolar epithelial cells-3	Bronchiolar and alveolar epithelial	CL:0000066	epithelial cell	True
+Lung-Bronchiolar and alveolar epithelial cells-3	Bronchiolar and alveolar epithelial	Bronchiolar and alveolar epithelial	Bronchiolar and alveolar epithelial	True
 Lung-Bronchiolar and alveolar epithelial cells-3	Bronchiolar and alveolar epithelial	CL:0000511	androgen binding protein secreting cell	False
 Lung-Bronchiolar and alveolar epithelial cells-3	Bronchiolar and alveolar epithelial	CL:0000593	androgen secreting cell	False
 Lung-Bronchiolar and alveolar epithelial cells-3	Bronchiolar and alveolar epithelial	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
@@ -1577,7 +1577,7 @@ Lung-Bronchiolar and alveolar epithelial cells-3	Bronchiolar and alveolar epithe
 Lung-Bronchiolar and alveolar epithelial cells-3	Bronchiolar and alveolar epithelial	CL:0000130	neuron associated cell (sensu Nematoda and Protostomia)	False
 Lung-Bronchiolar and alveolar epithelial cells-3	Bronchiolar and alveolar epithelial	CL:0000519	phagocyte (sensu Nematoda and Protostomia)	False
 Lung-Bronchiolar and alveolar epithelial cells-3	Bronchiolar and alveolar epithelial	CL:0000385	prohemocyte (sensu Nematoda and Protostomia)	False
-Lung-Bronchiolar and alveolar epithelial cells-4	Bronchiolar and alveolar epithelial	CL:0000066	epithelial cell	True
+Lung-Bronchiolar and alveolar epithelial cells-4	Bronchiolar and alveolar epithelial	Bronchiolar and alveolar epithelial	Bronchiolar and alveolar epithelial	True
 Lung-Bronchiolar and alveolar epithelial cells-4	Bronchiolar and alveolar epithelial	CL:0000511	androgen binding protein secreting cell	False
 Lung-Bronchiolar and alveolar epithelial cells-4	Bronchiolar and alveolar epithelial	CL:0000593	androgen secreting cell	False
 Lung-Bronchiolar and alveolar epithelial cells-4	Bronchiolar and alveolar epithelial	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
@@ -1587,7 +1587,7 @@ Lung-Bronchiolar and alveolar epithelial cells-4	Bronchiolar and alveolar epithe
 Lung-Bronchiolar and alveolar epithelial cells-4	Bronchiolar and alveolar epithelial	CL:0000130	neuron associated cell (sensu Nematoda and Protostomia)	False
 Lung-Bronchiolar and alveolar epithelial cells-4	Bronchiolar and alveolar epithelial	CL:0000519	phagocyte (sensu Nematoda and Protostomia)	False
 Lung-Bronchiolar and alveolar epithelial cells-4	Bronchiolar and alveolar epithelial	CL:0000385	prohemocyte (sensu Nematoda and Protostomia)	False
-Lung-Bronchiolar and alveolar epithelial cells-5	Bronchiolar and alveolar epithelial	CL:0000066	epithelial cell	True
+Lung-Bronchiolar and alveolar epithelial cells-5	Bronchiolar and alveolar epithelial	Bronchiolar and alveolar epithelial	Bronchiolar and alveolar epithelial	True
 Lung-Bronchiolar and alveolar epithelial cells-5	Bronchiolar and alveolar epithelial	CL:0000511	androgen binding protein secreting cell	False
 Lung-Bronchiolar and alveolar epithelial cells-5	Bronchiolar and alveolar epithelial	CL:0000593	androgen secreting cell	False
 Lung-Bronchiolar and alveolar epithelial cells-5	Bronchiolar and alveolar epithelial	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
@@ -1597,7 +1597,7 @@ Lung-Bronchiolar and alveolar epithelial cells-5	Bronchiolar and alveolar epithe
 Lung-Bronchiolar and alveolar epithelial cells-5	Bronchiolar and alveolar epithelial	CL:0000130	neuron associated cell (sensu Nematoda and Protostomia)	False
 Lung-Bronchiolar and alveolar epithelial cells-5	Bronchiolar and alveolar epithelial	CL:0000519	phagocyte (sensu Nematoda and Protostomia)	False
 Lung-Bronchiolar and alveolar epithelial cells-5	Bronchiolar and alveolar epithelial	CL:0000385	prohemocyte (sensu Nematoda and Protostomia)	False
-Lung-Bronchiolar and alveolar epithelial cells-6	Bronchiolar and alveolar epithelial	CL:0000066	epithelial cell	True
+Lung-Bronchiolar and alveolar epithelial cells-6	Bronchiolar and alveolar epithelial	Bronchiolar and alveolar epithelial	Bronchiolar and alveolar epithelial	True
 Lung-Bronchiolar and alveolar epithelial cells-6	Bronchiolar and alveolar epithelial	CL:0000511	androgen binding protein secreting cell	False
 Lung-Bronchiolar and alveolar epithelial cells-6	Bronchiolar and alveolar epithelial	CL:0000593	androgen secreting cell	False
 Lung-Bronchiolar and alveolar epithelial cells-6	Bronchiolar and alveolar epithelial	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
@@ -1607,7 +1607,7 @@ Lung-Bronchiolar and alveolar epithelial cells-6	Bronchiolar and alveolar epithe
 Lung-Bronchiolar and alveolar epithelial cells-6	Bronchiolar and alveolar epithelial	CL:0000130	neuron associated cell (sensu Nematoda and Protostomia)	False
 Lung-Bronchiolar and alveolar epithelial cells-6	Bronchiolar and alveolar epithelial	CL:0000519	phagocyte (sensu Nematoda and Protostomia)	False
 Lung-Bronchiolar and alveolar epithelial cells-6	Bronchiolar and alveolar epithelial	CL:0000385	prohemocyte (sensu Nematoda and Protostomia)	False
-Lung-Bronchiolar and alveolar epithelial cells-7	Bronchiolar and alveolar epithelial	CL:0000066	epithelial cell	True
+Lung-Bronchiolar and alveolar epithelial cells-7	Bronchiolar and alveolar epithelial	Bronchiolar and alveolar epithelial	Bronchiolar and alveolar epithelial	True
 Lung-Bronchiolar and alveolar epithelial cells-7	Bronchiolar and alveolar epithelial	CL:0000511	androgen binding protein secreting cell	False
 Lung-Bronchiolar and alveolar epithelial cells-7	Bronchiolar and alveolar epithelial	CL:0000593	androgen secreting cell	False
 Lung-Bronchiolar and alveolar epithelial cells-7	Bronchiolar and alveolar epithelial	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
@@ -1617,7 +1617,7 @@ Lung-Bronchiolar and alveolar epithelial cells-7	Bronchiolar and alveolar epithe
 Lung-Bronchiolar and alveolar epithelial cells-7	Bronchiolar and alveolar epithelial	CL:0000130	neuron associated cell (sensu Nematoda and Protostomia)	False
 Lung-Bronchiolar and alveolar epithelial cells-7	Bronchiolar and alveolar epithelial	CL:0000519	phagocyte (sensu Nematoda and Protostomia)	False
 Lung-Bronchiolar and alveolar epithelial cells-7	Bronchiolar and alveolar epithelial	CL:0000385	prohemocyte (sensu Nematoda and Protostomia)	False
-Lung-Bronchiolar and alveolar epithelial cells-8	Bronchiolar and alveolar epithelial	CL:0000066	epithelial cell	True
+Lung-Bronchiolar and alveolar epithelial cells-8	Bronchiolar and alveolar epithelial	Bronchiolar and alveolar epithelial	Bronchiolar and alveolar epithelial	True
 Lung-Bronchiolar and alveolar epithelial cells-8	Bronchiolar and alveolar epithelial	CL:0000511	androgen binding protein secreting cell	False
 Lung-Bronchiolar and alveolar epithelial cells-8	Bronchiolar and alveolar epithelial	CL:0000593	androgen secreting cell	False
 Lung-Bronchiolar and alveolar epithelial cells-8	Bronchiolar and alveolar epithelial	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
@@ -1627,7 +1627,7 @@ Lung-Bronchiolar and alveolar epithelial cells-8	Bronchiolar and alveolar epithe
 Lung-Bronchiolar and alveolar epithelial cells-8	Bronchiolar and alveolar epithelial	CL:0000130	neuron associated cell (sensu Nematoda and Protostomia)	False
 Lung-Bronchiolar and alveolar epithelial cells-8	Bronchiolar and alveolar epithelial	CL:0000519	phagocyte (sensu Nematoda and Protostomia)	False
 Lung-Bronchiolar and alveolar epithelial cells-8	Bronchiolar and alveolar epithelial	CL:0000385	prohemocyte (sensu Nematoda and Protostomia)	False
-Lung-Bronchiolar and alveolar epithelial cells-9	Bronchiolar and alveolar epithelial	CL:0000066	epithelial cell	True
+Lung-Bronchiolar and alveolar epithelial cells-9	Bronchiolar and alveolar epithelial	Bronchiolar and alveolar epithelial	Bronchiolar and alveolar epithelial	True
 Lung-Bronchiolar and alveolar epithelial cells-9	Bronchiolar and alveolar epithelial	CL:0000511	androgen binding protein secreting cell	False
 Lung-Bronchiolar and alveolar epithelial cells-9	Bronchiolar and alveolar epithelial	CL:0000593	androgen secreting cell	False
 Lung-Bronchiolar and alveolar epithelial cells-9	Bronchiolar and alveolar epithelial	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
@@ -2523,7 +2523,7 @@ Placenta-Stromal cells-6	Stromal	CL:0002133	stromal cell of ovarian cortex	False
 Placenta-Stromal cells-6	Stromal	CL:0002134	stromal cell of ovarian medulla	False
 Placenta-Stromal cells-6	Stromal	CL:0002132	stromal cell of ovary	False
 Placenta-Stromal cells-6	Stromal	CL:0002574	stromal cell of pancreas	False
-Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-1	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000523	mononuclear cytotrophoblast cell	True
+Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-1	Syncytiotrophoblasts and villous cytotrophoblasts	Syncytiotrophoblasts and villous cytotrophoblasts	Syncytiotrophoblasts and villous cytotrophoblasts	True
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-1	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000511	androgen binding protein secreting cell	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-1	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000593	androgen secreting cell	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-1	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
@@ -2533,7 +2533,7 @@ Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-1	Syncytiotrophoblast
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-1	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000130	neuron associated cell (sensu Nematoda and Protostomia)	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-1	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000519	phagocyte (sensu Nematoda and Protostomia)	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-1	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000385	prohemocyte (sensu Nematoda and Protostomia)	False
-Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-2	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000523	mononuclear cytotrophoblast cell	True
+Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-2	Syncytiotrophoblasts and villous cytotrophoblasts	Syncytiotrophoblasts and villous cytotrophoblasts	Syncytiotrophoblasts and villous cytotrophoblasts	True
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-2	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000511	androgen binding protein secreting cell	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-2	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000593	androgen secreting cell	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-2	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
@@ -2543,7 +2543,7 @@ Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-2	Syncytiotrophoblast
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-2	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000130	neuron associated cell (sensu Nematoda and Protostomia)	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-2	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000519	phagocyte (sensu Nematoda and Protostomia)	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-2	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000385	prohemocyte (sensu Nematoda and Protostomia)	False
-Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-3	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000523	mononuclear cytotrophoblast cell	True
+Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-3	Syncytiotrophoblasts and villous cytotrophoblasts	Syncytiotrophoblasts and villous cytotrophoblasts	Syncytiotrophoblasts and villous cytotrophoblasts	True
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-3	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000511	androgen binding protein secreting cell	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-3	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000593	androgen secreting cell	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-3	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
@@ -2553,7 +2553,7 @@ Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-3	Syncytiotrophoblast
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-3	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000130	neuron associated cell (sensu Nematoda and Protostomia)	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-3	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000519	phagocyte (sensu Nematoda and Protostomia)	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-3	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000385	prohemocyte (sensu Nematoda and Protostomia)	False
-Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-4	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000523	mononuclear cytotrophoblast cell	True
+Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-4	Syncytiotrophoblasts and villous cytotrophoblasts	Syncytiotrophoblasts and villous cytotrophoblasts	Syncytiotrophoblasts and villous cytotrophoblasts	True
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-4	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000511	androgen binding protein secreting cell	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-4	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000593	androgen secreting cell	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-4	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
@@ -2563,7 +2563,7 @@ Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-4	Syncytiotrophoblast
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-4	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000130	neuron associated cell (sensu Nematoda and Protostomia)	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-4	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000519	phagocyte (sensu Nematoda and Protostomia)	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-4	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000385	prohemocyte (sensu Nematoda and Protostomia)	False
-Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-5	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000523	mononuclear cytotrophoblast cell	True
+Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-5	Syncytiotrophoblasts and villous cytotrophoblasts	Syncytiotrophoblasts and villous cytotrophoblasts	Syncytiotrophoblasts and villous cytotrophoblasts	True
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-5	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000511	androgen binding protein secreting cell	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-5	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000593	androgen secreting cell	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-5	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
@@ -2573,7 +2573,7 @@ Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-5	Syncytiotrophoblast
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-5	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000130	neuron associated cell (sensu Nematoda and Protostomia)	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-5	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000519	phagocyte (sensu Nematoda and Protostomia)	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-5	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000385	prohemocyte (sensu Nematoda and Protostomia)	False
-Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-6	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000523	mononuclear cytotrophoblast cell	True
+Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-6	Syncytiotrophoblasts and villous cytotrophoblasts	Syncytiotrophoblasts and villous cytotrophoblasts	Syncytiotrophoblasts and villous cytotrophoblasts	True
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-6	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000511	androgen binding protein secreting cell	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-6	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000593	androgen secreting cell	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-6	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
@@ -2583,7 +2583,7 @@ Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-6	Syncytiotrophoblast
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-6	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000130	neuron associated cell (sensu Nematoda and Protostomia)	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-6	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000519	phagocyte (sensu Nematoda and Protostomia)	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-6	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000385	prohemocyte (sensu Nematoda and Protostomia)	False
-Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-7	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000523	mononuclear cytotrophoblast cell	True
+Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-7	Syncytiotrophoblasts and villous cytotrophoblasts	Syncytiotrophoblasts and villous cytotrophoblasts	Syncytiotrophoblasts and villous cytotrophoblasts	True
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-7	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000511	androgen binding protein secreting cell	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-7	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000593	androgen secreting cell	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-7	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
@@ -2593,7 +2593,7 @@ Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-7	Syncytiotrophoblast
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-7	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000130	neuron associated cell (sensu Nematoda and Protostomia)	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-7	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000519	phagocyte (sensu Nematoda and Protostomia)	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-7	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000385	prohemocyte (sensu Nematoda and Protostomia)	False
-Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-8	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000523	mononuclear cytotrophoblast cell	True
+Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-8	Syncytiotrophoblasts and villous cytotrophoblasts	Syncytiotrophoblasts and villous cytotrophoblasts	Syncytiotrophoblasts and villous cytotrophoblasts	True
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-8	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000511	androgen binding protein secreting cell	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-8	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000593	androgen secreting cell	False
 Placenta-Syncytiotrophoblasts and villous cytotrophoblasts-8	Syncytiotrophoblasts and villous cytotrophoblasts	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
@@ -2859,7 +2859,7 @@ Stomach-Myeloid cells-1	Myeloid	CL:0000889	myeloid suppressor cell	False
 Stomach-Neuroendocrine cells-1	Neuroendocrine	CL:1000223	lung neuroendocrine cell	False
 Stomach-Neuroendocrine cells-1	Neuroendocrine	CL:0000165	neuroendocrine cell	True
 Stomach-Neuroendocrine cells-1	Neuroendocrine	CL:1000222	stomach neuroendocrine cell	False
-Stomach-Parietal and chief cells-1	Parietal and chief	CL:0000162	parietal cell	True
+Stomach-Parietal and chief cells-1	Parietal and chief	Parietal and chief	Parietal and chief	True
 Stomach-Parietal and chief cells-1	Parietal and chief	CL:0000511	androgen binding protein secreting cell	False
 Stomach-Parietal and chief cells-1	Parietal and chief	CL:0000593	androgen secreting cell	False
 Stomach-Parietal and chief cells-1	Parietal and chief	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
@@ -2869,7 +2869,7 @@ Stomach-Parietal and chief cells-1	Parietal and chief	CL:0000468	neuroglioblast 
 Stomach-Parietal and chief cells-1	Parietal and chief	CL:0000130	neuron associated cell (sensu Nematoda and Protostomia)	False
 Stomach-Parietal and chief cells-1	Parietal and chief	CL:0000519	phagocyte (sensu Nematoda and Protostomia)	False
 Stomach-Parietal and chief cells-1	Parietal and chief	CL:0000385	prohemocyte (sensu Nematoda and Protostomia)	False
-Stomach-Parietal and chief cells-2	Parietal and chief	CL:0000162	parietal cell	True
+Stomach-Parietal and chief cells-2	Parietal and chief	Parietal and chief	Parietal and chief	True
 Stomach-Parietal and chief cells-2	Parietal and chief	CL:0000511	androgen binding protein secreting cell	False
 Stomach-Parietal and chief cells-2	Parietal and chief	CL:0000593	androgen secreting cell	False
 Stomach-Parietal and chief cells-2	Parietal and chief	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
@@ -2879,7 +2879,7 @@ Stomach-Parietal and chief cells-2	Parietal and chief	CL:0000468	neuroglioblast 
 Stomach-Parietal and chief cells-2	Parietal and chief	CL:0000130	neuron associated cell (sensu Nematoda and Protostomia)	False
 Stomach-Parietal and chief cells-2	Parietal and chief	CL:0000519	phagocyte (sensu Nematoda and Protostomia)	False
 Stomach-Parietal and chief cells-2	Parietal and chief	CL:0000385	prohemocyte (sensu Nematoda and Protostomia)	False
-Stomach-Parietal and chief cells-3	Parietal and chief	CL:0000162	parietal cell	True
+Stomach-Parietal and chief cells-3	Parietal and chief	Parietal and chief	Parietal and chief	True
 Stomach-Parietal and chief cells-3	Parietal and chief	CL:0000511	androgen binding protein secreting cell	False
 Stomach-Parietal and chief cells-3	Parietal and chief	CL:0000593	androgen secreting cell	False
 Stomach-Parietal and chief cells-3	Parietal and chief	CL:0000340	glioblast (sensu Nematoda and Protostomia)	False
