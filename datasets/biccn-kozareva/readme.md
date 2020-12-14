@@ -8,16 +8,17 @@ Author: Pablo Garcia-Nieto
 
 Project title: An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types
 
-DOI: [https://doi.org/10.1101/2020.02.29.970558](https://doi.org/10.1101/2020.02.29.970558)
+DOI: [https://doi.org/10.1101/2020.03.04.976407](https://doi.org/10.1101/2020.03.04.976407)
 
 Reqs:
 - scanpy
 - cellxgene with schema functions
+- R and yaml package
 
 
 ## Curation steps
 
-Clone this repo and execute the step below from the repo path
+Clone this repo and execute the steps below from the downladed path
 
 - Download data to `./data/original/` from [https://singlecell.broadinstitute.org/single_cell/study/SCP795/a-transcriptomic-atlas-of-the-mouse-cerebellum#study-summary](https://singlecell.broadinstitute.org/single_cell/study/SCP795/a-transcriptomic-atlas-of-the-mouse-cerebellum#study-summary)
 
