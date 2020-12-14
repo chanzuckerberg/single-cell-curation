@@ -8,4 +8,10 @@ __pycache__
 # sc matrices
 *.h5ad
 *.mtx
+*.mtx.gz
 *.loom
+*.loom.gz
+
+# Kozareva big files
+cb_annotated_object.RDS
+cerebellum_metadata_updated_custom.tsv
