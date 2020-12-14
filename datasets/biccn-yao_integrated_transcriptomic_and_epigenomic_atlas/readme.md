@@ -1,4 +1,4 @@
-# Shendure data curation
+# Yao et al. data curation (BICCN)
 
 ## Project details
 
