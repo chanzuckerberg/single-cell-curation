@@ -1,0 +1,26 @@
+BICCN_class_label	BICCN_subclass_label	BICCN_ontology_term_id
+GABAergic	Lamp5	ILX:0770149
+GABAergic	Prog/IP	Prog/IP
+GABAergic	Pvalb	ILX:0770154
+GABAergic	Sncg	ILX:0770150
+GABAergic	Sst	ILX:0770152
+GABAergic	Vip	ILX:0770151
+Glutamatergic	CR	CR
+Glutamatergic	L2/3 IT	ILX:0770156
+Glutamatergic	L5 ET	ILX:0770160
+Glutamatergic	L5 IT	ILX:0770157
+Glutamatergic	L5/6 NP	ILX:0770161
+Glutamatergic	L6 CT	ILX:0770162
+Glutamatergic	L6 IT	ILX:0770158
+Glutamatergic	L6 IT Car3	ILX:0770159
+Glutamatergic	L6b	ILX:0770163
+Non-Neuronal	Astro	ILX:0770141
+Non-Neuronal	Endo	ILX:0770142
+Non-Neuronal	Macrophage	Macrophage
+Non-Neuronal	Micro	ILX:0770146
+Non-Neuronal	OPC	ILX:0770139
+Non-Neuronal	Oligo	ILX:0770140
+Non-Neuronal	Peri	ILX:0770145
+Non-Neuronal	Prog/IP	Prog/IP
+Non-Neuronal	SMC	ILX:0770144
+Non-Neuronal	VLMC	ILX:0770143

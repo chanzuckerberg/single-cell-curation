@@ -8,4 +8,11 @@ __pycache__
 # sc matrices
 *.h5ad
 *.mtx
+*.mtx.gz
 *.loom
+*.loom.gz
+./datasets/biccn-yao_integrated_transcriptomic_and_epigenomic_atlas/data/original/10X_cells_v2_AIBS
+./datasets/biccn-yao_integrated_transcriptomic_and_epigenomic_atlas/data/original/10X_cells_v3_AIBS
+./datasets/biccn-yao_integrated_transcriptomic_and_epigenomic_atlas/data/original/10X_nuclei_v2_AIBS
+./datasets/biccn-yao_integrated_transcriptomic_and_epigenomic_atlas/data/original/10X_nuclei_v3_AIBS
+./datasets/biccn-yao_integrated_transcriptomic_and_epigenomic_atlas/data/original/10X_nuclei_v3_Broad
