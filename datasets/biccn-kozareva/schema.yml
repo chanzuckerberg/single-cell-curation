@@ -1,0 +1,40 @@
+obs:
+  assay_ontology_term_id: EFO:0009922
+  ethnicity_ontology_term_id: na
+  sex:
+    sex:
+      male: male
+      female: female
+  disease_ontology_term_id: PATO:0000461
+  tissue_ontology_term_id: UBERON:0002037
+  development_stage_ontology_term_id: EFO:0001272
+  cell_type_ontology_term_id:
+    cell_type:
+      CL_0000099: CL_0000099
+      CL_0000498: CL_0000498
+      CL_0000121: CL_0000121
+      CL_0000065: CL_0000065
+      CL_0000644: CL_0000644
+      CL_0002603: CL_0002603
+      CL_0000128: CL_0000128
+      CL_0002453: CL_0002453
+      CL_0000119: CL_0000119
+      CL_0008030: CL_0008030
+      CL_0000235: CL_0000235
+      CL_0000129: CL_0000129
+      CL_0000057: CL_0000057
+      CL_0000115: CL_0000115
+      CL_0002671: CL_0002671
+      CL_0001031: CL_0001031
+uns:
+  version:
+    corpora_schema_version: 1.1.0
+    corpora_encoding_version: 0.1.0
+  organism: Mus musculus
+  organism_ontology_term_id: NCBITaxon:10090
+  layer_descriptions:
+    X: CPM and log1p
+    raw.X: raw
+  publication_doi: https://doi.org/10.1101/2020.03.04.976407
+  title: A transcriptomic atlas of the mouse cerebellum
+
