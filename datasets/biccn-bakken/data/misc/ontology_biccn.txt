@@ -1,0 +1,24 @@
+original_columns	original_values	BICCN_ontology_term_id	ontology_label	project_name	doi
+subclass_label	Astro	ILX:0770141	Astrocyte (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Endo	ILX:0770142	Endothelial cell (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	L2/3 IT	ILX:0770156	L2/3 IT neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	L5 ET	ILX:0770160	L5 ET neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	L5 IT	ILX:0770157	L5 IT neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	L5/6 NP	ILX:0770161	L5/6 NP neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	L6 CT	ILX:0770162	L6 CT neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	L6 IT	ILX:0770158	L6 IT neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	L6 IT Car3	ILX:0770159	L6 IT Car3 neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	L6b	ILX:0770163	L6b neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Lamp5	ILX:0770149	Lamp5 neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Meis2	ILX:0770155	Meis2 neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Micro-PVM	ILX:0770146	Microglia (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	OPC	ILX:0770139	Oligodendrocyte progenitor cell (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Oligo	ILX:0770140	Oligodendrocyte (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Peri	ILX:0770145	Pericyte (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Pvalb	ILX:0770154	Pvalb neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	SMC	ILX:0770144	Smooth muscle cell (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Sncg	Sncg	Sncg	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Sst	ILX:0770152	Sst neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Sst Chodl	ILX:0770153	Sst Chodl neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	VLMC	ILX:0770143	Vascular leptomeningeal cell (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Vip	ILX:0770151	Vip GABAergic neuron (BICCN 2020)	Bakken	https://doi.org/10.1101/2020.03.31.016972
