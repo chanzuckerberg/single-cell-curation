@@ -1,0 +1,5 @@
+orig.ident	orig.ident_lookup	organism_ontology_term_id	organism
+human	human	NCBITaxon:10090	Mus musculus
+macaque	macaque	NCBITaxon:9539	Macaca
+marmoset	marmoset	NCBITaxon:9483	Callithrix jacchus
+mouse	mouse	NCBITaxon:9606	Homo sapiens

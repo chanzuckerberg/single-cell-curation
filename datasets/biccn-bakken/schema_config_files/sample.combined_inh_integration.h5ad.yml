@@ -1,0 +1,36 @@
+fixup_gene_symbols:
+  X: log1p
+  raw.X: raw
+obs:
+  assay_ontology_term_id: EFO:0009922
+  ethnicity_ontology_term_id: unknown
+  sex:
+    Sex:
+      male: male
+      female: female
+      unknown: unknown
+  disease_ontology_term_id: PATO:0000461
+  tissue_ontology_term_id: UBERON:0001384
+  development_stage_ontology_term_id: unknown
+  cell_type_ontology_term_id:
+    BICCN_subclass_label:
+      Sst: CL:0000617
+      Pvalb: CL:0000617
+      Vip: CL:0000617
+      Lamp5: CL:0000617
+      Sncg: CL:0000617
+      Sst Chodl: CL:0000617
+      Meis2: CL:0000617
+uns:
+  version:
+    corpora_schema_version: 1.1.0
+    corpora_encoding_version: 0.1.0
+  organism: unknown
+  organism_ontology_term_id: ''
+  layer_descriptions:
+    X: SCT
+    raw.X: raw
+  publication_doi: https://doi.org/10.1101/2020.03.31.016972
+  title: Evolution of cellular diversity in primary motor cortex of human, marmoset
+    monkey, and mouse 3-species integration inhibitory neurons
+

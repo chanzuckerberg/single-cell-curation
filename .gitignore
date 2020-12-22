@@ -6,6 +6,7 @@ __pycache__
 *.DS_Store*
 
 # sc matrices
+*.RDS
 *.h5ad
 *.mtx
 *.mtx.gz
