@@ -1,0 +1,19 @@
+fixup_gene_symbols:
+    X: raw
+obs:
+    tissue_ontology_term_id: UBERON:0000955
+    assay_ontology_term_id: EFO:0010891
+    disease_ontology_term_id: PATO:0000461
+    sex: mixed
+    ethnicity_ontology_term_id: na
+    development_stage_ontology_term_id: unknown
+uns:
+    version:
+        corpora_schema_version: 1.1.0
+        corpora_encoding_version: 0.1.0
+    organism: Mus Musculus
+    organism_ontology_term_id: NCBITaxon:10090
+    layer_descriptions:
+        X: normalized_data
+    publication_doi: https://doi.org/10.1101/2020.05.10.087585
+    title: "An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum"
