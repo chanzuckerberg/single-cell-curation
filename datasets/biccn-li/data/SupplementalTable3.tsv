@@ -1,0 +1,161 @@
+Class	Major Type	Sub types	Class color	Major type color	Sub type color	Description	BICCN Ontology	Probable location (manually assigned)	NucleiCounts
+NonN	ASC	ASCN	#704E89	#A13F9E	#A097E3	Astrocytes, Cerebral nuclei	ILX:0770141	Cerebral nuclei	5239
+NonN	ASC	ASCG	#704E89	#A13F9E	#9C5B7E	Astrocytes, grey matter	ILX:0770141	Brain	75474
+NonN	ASC	ASCW	#704E89	#A13F9E	#B785E0	Astrocytes, white matter	ILX:0770141	Brain	7573
+NonN	OPC	OPC	#704E89	#B9A0D6	#E2A3E9	Oligodendrocytes precursor cells	ILX:0770139	Brain	30800
+NonN	IOL	COP	#704E89	#73669E	#B586BB	Committed oligodendrocytes cells (COP)	ILX:0770140	Brain	2423
+NonN	IOL	NFOL	#704E89	#73669E	#4772A9	Newly formed oligodendrocytes (NFOL)	ILX:0770140	Brain	1401
+NonN	OGC	MFOL	#704E89	#985695	#828BB7	Myelin forming oligodendrocytes (MFOL)	ILX:0770140	Brain	16569
+NonN	OGC	MOL	#704E89	#985695	#835BBA	Mature oligodendrocytes	ILX:0770140	Brain	60651
+NonN	MGL	MGL	#704E89	#DF8DB1	#7B679A	Microglia	ILX:0770146	Brain	29885
+NonN	MGL	PVM	#704E89	#DF8DB1	#B3B9EA	Perivascular macrophages	ILX:0770099 (?)	Brain	707
+NonN	RGL	NIPC	#704E89	#B14878	#626AB9	Neuronal intermediate progenitor cells	ILX:0770168	Brain	569
+NonN	RGL	RGDG	#704E89	#B14878	#6EA0E2	Dentate gyrus radial glia-like cells	ILX:0770169 (?)	Brain	1628
+NonN	RGL	RGSZ	#704E89	#B14878	#B75077	Subventricular zone radial glia-like cells	ILX:0770169 (?)	Brain	3481
+NonN	PER	PER	#704E89	#7355AF	#DE78B7	Pericytes	ILX:0770145	Brain	3268
+NonN	VEC	VEC	#704E89	#DC84D2	#EAB1D9	Vascular endothelial cells	ILX:0770142	Brain	2289
+NonN	VLMC	VLMC1	#704E89	#A78BDF	#C785A1	Vascular and leptomeningeal cells	ILX:0770143	Brain	7659
+NonN	VLMC	VLMC2	#704E89	#A78BDF	#A54AAC	Vascular and leptomeningeal cells	ILX:0770143	Brain	2866
+NonN	VLMC	VLMC3	#704E89	#A78BDF	#D87CD3	Vascular and leptomeningeal cells	ILX:0770143	Brain	1859
+NonN	VPIA	VPIA1	#704E89	#985B7A	#E985A9	Vascular and leptomeningeal cells, Pia	ILX:0770143	Pia/meninges surface	1109
+NonN	VPIA	VPIA2	#704E89	#985B7A	#965CA0	Vascular and leptomeningeal cells, Pia	ILX:0770143	Pia/meninges surface	3868
+NonN	VPIA	VPIA3	#704E89	#985B7A	#B34790	Cajal-Retzius like cells, Hippocampus	ILX:0770097 (?)	Hippocampus	240
+GABA	LAMGA	LAMGA1	#5B7C3D	#4D9F5F	#A8CAF1	CGE-derived neurogliaform cells, Lamp5	ILX:0770149	Hippocampus	1173
+GABA	LAMGA	LAMGA2	#5B7C3D	#4D9F5F	#46D2C9	CGE-derived neurogliaform cells, Lamp5	ILX:0770149	Cortex	2594
+GABA	LAMGA	LAMGA3	#5B7C3D	#4D9F5F	#2C791D	CGE-derived neurogliaform cells, Lamp5	ILX:0770149	Cortex	2515
+GABA	LAMGA	LAMGA4	#5B7C3D	#4D9F5F	#2A7859	CGE-derived neurogliaform cells, Lamp5	ILX:0770149	Cortex	1341
+GABA	VIPGA	VIPGA1	#5B7C3D	#3C81BB	#217C76	CGE-derived neurogliaform cells, Vip	ILX:0770151	Cortex	3748
+GABA	VIPGA	VIPGA2	#5B7C3D	#3C81BB	#76C4B5	CGE-derived neurogliaform cells, Sncg	ILX:0770150	Cortex	2200
+GABA	VIPGA	VIPGA3	#5B7C3D	#3C81BB	#53AE90	CGE-derived neurogliaform cells, Vip	ILX:0770151	Cortex	1480
+GABA	VIPGA	VIPGA4	#5B7C3D	#3C81BB	#2B7785	CGE-derived neurogliaform cells, Vip	ILX:0770151	Cortex	1324
+GABA	PVGA	PVGA1	#5B7C3D	#377549	#58A24C	MGE-derived neurogliaform cells, Pvalb	ILX:0770154	Cortex	10778
+GABA	PVGA	PVGA2	#5B7C3D	#377549	#399DC2	MGE-derived neurogliaform cells, Pvalb	ILX:0770154	Cortex	1982
+GABA	PVGA	PVGA3	#5B7C3D	#377549	#56B17D	MGE-derived neurogliaform cells, Pvalb	ILX:0770154	Cortex	1310
+GABA	PVGA	PVGA4	#5B7C3D	#377549	#4D99DE	MGE-derived neurogliaform cells, Pvalb	ILX:0770154	Cortex	1306
+GABA	PVGA	PVGA5	#5B7C3D	#377549	#80B8CF	MGE-derived neurogliaform cells, Pvalb	ILX:0770154	Cortex	1170
+GABA	PVGA	PVGA6	#5B7C3D	#377549	#83C78C	MGE-derived neurogliaform cells, Pvalb	ILX:0770154	Cortex	858
+GABA	PVGA	PVGA7	#5B7C3D	#377549	#51ECC2	MGE-derived neurogliaform cells, Pvalb	ILX:0770154	Cortex	748
+GABA	SSTGA	SSTGA1	#5B7C3D	#48C899	#7DCAA2	MGE-derived neurogliaform cells, Sst	ILX:0770152	Cortex	1994
+GABA	SSTGA	SSTGA2	#5B7C3D	#48C899	#4BA8B0	MGE-derived neurogliaform cells, Sst	ILX:0770152	Cortex	1851
+GABA	SSTGA	SSTGA3	#5B7C3D	#48C899	#5BEEEA	MGE-derived neurogliaform cells, Sst	ILX:0770152	Cortex	1493
+GABA	SSTGA	SSTGA4	#5B7C3D	#48C899	#7BE8CF	MGE-derived neurogliaform cells, Sst	ILX:0770152	Cortex	1464
+GABA	SSTGA	SSTGA5	#5B7C3D	#48C899	#2E7796	MGE-derived neurogliaform cells, Sst	ILX:0770152	Cortex	1302
+GABA	SSTGA	SSTGA6	#5B7C3D	#48C899	#78EDA3	MGE-derived neurogliaform cells, Sst	ILX:0770152	Cortex	1234
+GABA	SSTGA	SSTGA7	#5B7C3D	#48C899	#77E3EE	MGE-derived neurogliaform cells, Sst	ILX:0770152	Cortex	1137
+GABA	SSTGA	SSTGA8	#5B7C3D	#48C899	#74C4CD	MGE-derived neurogliaform cells, Sst	ILX:0770152	Cortex	1100
+GABA	SSTGA	SSTGA9	#5B7C3D	#48C899	#2A74B1	MGE-derived neurogliaform cells, Sst	ILX:0770152	Cortex	696
+GABA	SSTGA	SSTGA10	#5B7C3D	#48C899	#64A060	MGE-derived neurogliaform cells, Chodl	ILX:0770153	Cortex	513
+GABA	LSXGA	LSXGA1	#5B7C3D	#55C4B8	#65CF78	Inhibitory neurons, septal nucleus	ILX:0770098	Cerebral nuclei	4946
+GABA	LSXGA	LSXGA2	#5B7C3D	#55C4B8	#466D93	Inhibitory neurons, septal nucleus	ILX:0770098	Cerebral nuclei	2500
+GABA	LSXGA	LSXGA3	#5B7C3D	#55C4B8	#5AA89C	Inhibitory neurons, septal nucleus	ILX:0770098	Cerebral nuclei	2093
+GABA	LSXGA	LSXGA4	#5B7C3D	#55C4B8	#60B84F	Inhibitory neurons, septal nucleus	ILX:0770098	Cerebral nuclei	1896
+GABA	LSXGA	LSXGA5	#5B7C3D	#55C4B8	#94E1E0	Inhibitory neurons, septal nucleus	ILX:0770098	Cerebral nuclei	1330
+GABA	LSXGA	LSXGA6	#5B7C3D	#55C4B8	#3B917F	Inhibitory neurons, septal nucleus	ILX:0770098	Cerebral nuclei	631
+GABA	LSXGA	LSXGA7	#5B7C3D	#55C4B8	#439DD2	Inhibitory neurons, septal nucleus	ILX:0770098	Cerebral nuclei	548
+GABA	MSGA	MSGA1	#5B7C3D	#80BD92	#3C90A5	Inhibitory neurons, Medial septal	ILX:0770098	Cerebral nuclei	2784
+GABA	MSGA	MSGA2	#5B7C3D	#80BD92	#97E2CE	Inhibitory neurons, Medial septal	ILX:0770098	Cerebral nuclei	2132
+GABA	MSGA	MSGA3	#5B7C3D	#80BD92	#97C69F	Inhibitory neurons, Pallidum	ILX:0770098	Pallidum	1785
+GABA	MSGA	MSGA4	#5B7C3D	#80BD92	#65D49B	Inhibitory neurons, Pallidum	ILX:0770098	Pallidum	1765
+GABA	MSGA	MSGA5	#5B7C3D	#80BD92	#7FC574	Inhibitory neurons, Pallidum	ILX:0770098	Pallidum	1624
+GABA	MSGA	MSGA6	#5B7C3D	#80BD92	#678AAD	Inhibitory neurons, Medial septal	ILX:0770098	Cerebral nuclei	1478
+GABA	MSGA	MSGA7	#5B7C3D	#80BD92	#387A37	Inhibitory neurons, Medial septal	ILX:0770098	Cerebral nuclei	1403
+GABA	MSGA	MSGA8	#5B7C3D	#80BD92	#457746	Inhibitory neurons, Medial septal	ILX:0770098	Cerebral nuclei	1366
+GABA	MSGA	MSGA9	#5B7C3D	#80BD92	#3EA662	Inhibitory neurons, Medial septal	ILX:0770098	Cerebral nuclei	920
+GABA	MSGA	MSGA10	#5B7C3D	#80BD92	#3ADFEC	Inhibitory neurons, Medial septal	ILX:0770098	Cerebral nuclei	814
+GABA	MSGA	MSGA11	#5B7C3D	#80BD92	#649CB7	Inhibitory neurons, Medial septal	ILX:0770098	Cerebral nuclei	728
+GABA	MSGA	MSGA12	#5B7C3D	#80BD92	#4BD0EA	Inhibitory neurons, Chodl like	ILX:0770098	Cerebral nuclei	606
+GABA	MSGA	MSGA13	#5B7C3D	#80BD92	#2A8C3B	Inhibitory neurons, septal nucleus	ILX:0770098	Cerebral nuclei	564
+GABA	CNUGA	CNUGA	#5B7C3D	#63BECD	#44C1C5	Inhibitory neurons, striatum	ILX:0770098	Cerebral nuclei	93
+GABA	STRGA	STRGA1	#5B7C3D	#63C774	#7CB1EA	Foxp2 positive inhibitory neurons	ILX:0770098	Striatum	4667
+GABA	STRGA	STRGA2	#5B7C3D	#63C774	#2E8953	Matrix D1 like neurons, striatum	ILX:0770098	Striatum	4200
+GABA	STRGA	STRGA3	#5B7C3D	#63C774	#87ABD0	Foxp2 positive inhibitory neurons	ILX:0770098	Striatum	906
+GABA	STRGA	STRGA4	#5B7C3D	#63C774	#31AFA2	Matrix D1 like neurons, striatum	ILX:0770098	Striatum	2285
+GABA	STRGA	STRGA5	#5B7C3D	#63C774	#42B3CB	Patch D1/D2 like neurons, striatum	ILX:0770098	Striatum	1661
+GABA	STRGA	STRGA6	#5B7C3D	#63C774	#3AC57D	Inhibitory neurons, olfactory	ILX:0770098	Olfactory area	670
+GABA	D1MSN	D1MSN1	#5B7C3D	#4BBFE5	#319A73	D1 like medium spiny neurons, striatum	ILX:0770098	Striatum	9265
+GABA	D1MSN	D1MSN2	#5B7C3D	#4BBFE5	#35C197	D1 like medium spiny neurons, striatum	ILX:0770098	Striatum	7910
+GABA	D1MSN	D1MSN3	#5B7C3D	#4BBFE5	#7BC9EC	D1 medium spiny neurons, striatum	ILX:0770098	Striatum	5717
+GABA	D1MSN	D1MSN4	#5B7C3D	#4BBFE5	#40EED9	D1 medium spiny neurons, striatum	ILX:0770098	Striatum	2615
+GABA	D1MSN	D1MSN5	#5B7C3D	#4BBFE5	#8BE9B9	D1 medium spiny neurons, striatum	ILX:0770098	Striatum	1700
+GABA	D2MSN	D2MSN1	#5B7C3D	#348C93	#32AC50	D2 like medium spiny neurons, striatum	ILX:0770098	Striatum	7327
+GABA	D2MSN	D2MSN2	#5B7C3D	#348C93	#53CDB2	D2 medium spiny neurons, striatum	ILX:0770098	Striatum	6188
+GABA	D2MSN	D2MSN3	#5B7C3D	#348C93	#77AB81	D2 medium spiny neurons, striatum	ILX:0770098	Striatum	3812
+GABA	D2MSN	D2MSN4	#5B7C3D	#348C93	#358F94	D2 medium spiny neurons, striatum	ILX:0770098	Striatum	3021
+GABA	MXD	MXD	#5B7C3D	#8DB8DE	#58906A	Matrix D1 neurons, striatum	ILX:0770098	Pallidum	4792
+GABA	OBGA1	OBGA1	#5B7C3D	#43967C	#ABE4B9	Inhibitory neurons, olfactory bulb	ILX:0770098	Main and accessory olfactory bulb granular layer	9980
+GABA	OBGA2	OBGA2	#5B7C3D	#5EA9E5	#9DE59F	Inhibitory neurons, olfactory bulb	ILX:0770098	Olfactory bulb, inner granular layer	1078
+GABA	OBDOP	OBDOP1	#5B7C3D	#3D9B35	#4C88BB	Dopaminergic periglomerular interneuron, olfactory bulb	ILX:0770098	Olfactory bulb	1233
+GABA	OBDOP	OBDOP2	#5B7C3D	#3D9B35	#40E9A9	Dopaminergic periglomerular interneuron, olfactory bulb	ILX:0770098	Olfactory bulb	446
+GABA	OBNBL	OBNBL	#5B7C3D	#2D762A	#57B7ED	Neuroblasts, Olfactory	ILX:0770098	Olfactory	3014
+GABA	DGNBL	DGNBL1	#5B7C3D	#376A8D	#3EC3ED	Granule neuroblasts, dentate gyrus	ILX:0770098	Dentate gyrus	3685
+GABA	DGNBL	DGNBL2	#5B7C3D	#376A8D	#9DDCF1	Granule neuroblasts, dentate gyrus	ILX:0770098	Dentate gyrus	477
+GABA	DGNBL	DGNBL3	#5B7C3D	#376A8D	#91E887	Neuroblasts like, Olfactory	ILX:0770098	Olfactory	511
+Glutamate	ITL23GL	ITL23GL1	#8C4E3C	#E59D9F	#9F5B16	Excitatory neurons, Cortex L2/3	ILX:0770156	Cortical pyramidal layer 2/3	32566
+Glutamate	ITL23GL	ITL23GL2	#8C4E3C	#E59D9F	#EAC358	Excitatory neurons, Cortex L2/3	ILX:0770156	Cortical pyramidal layer 2/3	18312
+Glutamate	ITL23GL	ITL23GL3	#8C4E3C	#E59D9F	#DCA647	Excitatory neurons, Cortex L2/3	ILX:0770156	Cortical pyramidal layer 2/3	14933
+Glutamate	ITL4GL	ITL4GL1	#8C4E3C	#DDA58F	#EBCE95	Excitatory neurons, Cortex L4	ILX:0770174	Cortical pyramidal layer 4	16813
+Glutamate	ITL4GL	ITL4GL2	#8C4E3C	#DDA58F	#D8B663	Excitatory neurons, Cortex L4	ILX:0770174	Cortical pyramidal layer 4	10114
+Glutamate	ITL5GL	ITL5GL1	#8C4E3C	#E1A462	#9C5B2C	Excitatory neurons, Cortex L5	ILX:0770157	Cortical pyramidal layer 5	26533
+Glutamate	ITL5GL	ITL5GL2	#8C4E3C	#E1A462	#DE9851	Excitatory neurons, Cortex L5	ILX:0770157	Cortical pyramidal layer 5	5369
+Glutamate	ITL5GL	ITL5GL3	#8C4E3C	#E1A462	#C0916A	Excitatory neurons, Cortex L5	ILX:0770157	Cortical pyramidal layer 5	2681
+Glutamate	ITL6GL	ITL6GL1	#8C4E3C	#9E4954	#8C5E19	Excitatory neurons, Cortex L5	ILX:0770157	Cortical pyramidal layer 5	13212
+Glutamate	ITL6GL	ITL6GL2	#8C4E3C	#9E4954	#9A6366	Excitatory neurons, Cortex L6	ILX:0770158	Cortical pyramidal layer 6	8530
+Glutamate	ITL6GL	ITL6GL3	#8C4E3C	#9E4954	#F0BC93	Excitatory neurons, Cortex L6	ILX:0770158	Cortical pyramidal layer 6	6499
+Glutamate	ITL6GL	ITL6GL4	#8C4E3C	#9E4954	#A57534	Excitatory neurons, Cortex L6	ILX:0770158	Cortical pyramidal layer 6	6380
+Glutamate	ITL6GL	ITL6GL5	#8C4E3C	#9E4954	#BD9C42	Excitatory neurons, Cortex L5	ILX:0770157	Cortical pyramidal layer 5	5297
+Glutamate	ITL6GL	ITL6GL6	#8C4E3C	#9E4954	#C38E42	Excitatory neurons, Cortex L6	ILX:0770158	Cortical pyramidal layer 6	2383
+Glutamate	ITHGL	ITHGL1	#8C4E3C	#CFAE7B	#82671A	Excitatory neurons, Retrosplenial area	ILX:0770097 (?)	Cingulate/Retrosplenial area, layer 2	647
+Glutamate	ITHGL	ITHGL2	#8C4E3C	#CFAE7B	#A0801C	Excitatory neurons, Retrosplenial area	ILX:0770097 (?)	Cingulate/Retrosplenial area, layer 2	383
+Glutamate	ITHGL	ITHGL3	#8C4E3C	#CFAE7B	#B27466	Excitatory neurons, Retrosplenial area	ILX:0770097 (?)	Cingulate/Retrosplenial area, layer 2	147
+Glutamate	NPGL	NPGL1	#8C4E3C	#D38362	#BA7421	Excitatory neurons, Cortex NP	ILX:0770161	Cingulate/Retrosplenial area, layer 6	3531
+Glutamate	NPGL	NPGL2	#8C4E3C	#D38362	#7D6738	Excitatory neurons, Cortex NP	ILX:0770161	Cingulate/Retrosplenial area, layer 6	2502
+Glutamate	NPGL	NPGL3	#8C4E3C	#D38362	#EAA484	Excitatory neurons, Cortex NP	ILX:0770161	Cingulate/Retrosplenial area, layer 6	1278
+Glutamate	NPGL	NPGL4	#8C4E3C	#D38362	#C76E59	Excitatory neurons, Cortex NP	ILX:0770161	Cingulate/Retrosplenial area, layer 6	752
+Glutamate	NPGL	NPGL5	#8C4E3C	#D38362	#EAB19E	Excitatory neurons, Cortex NP	ILX:0770161	Cingulate/Retrosplenial area, layer 6	704
+Glutamate	PTGL	PTGL1	#8C4E3C	#9C5224	#AC4F48	Excitatory neurons, Cortex PT	ILX:0770097 (?)	Cortex pyramidal layer 5	2876
+Glutamate	PTGL	PTGL2	#8C4E3C	#9C5224	#F1B56A	Excitatory neurons, Cortex PT	ILX:0770097 (?)	Cortex pyramidal layer 5	2695
+Glutamate	PTGL	PTGL3	#8C4E3C	#9C5224	#D4BC95	Excitatory neurons, Cortex PT	ILX:0770097 (?)	Cortex pyramidal layer 5	1644
+Glutamate	PTGL	PTGL4	#8C4E3C	#9C5224	#C06A65	Excitatory neurons, Cortex PT	ILX:0770097 (?)	Cortex pyramidal layer 5	1586
+Glutamate	PTGL	PTGL5	#8C4E3C	#9C5224	#EABE7F	Excitatory neurons, Cortex PT	ILX:0770097 (?)	Cortex pyramidal layer 5	1053
+Glutamate	PTGL	PTGL6	#8C4E3C	#9C5224	#8A6245	Excitatory neurons, Cortex PT	ILX:0770097 (?)	Cortex pyramidal layer 5	995
+Glutamate	PTGL	PTGL7	#8C4E3C	#9C5224	#9C5E40	Excitatory neurons, Cortex PT	ILX:0770097 (?)	Cortex pyramidal layer 5	726
+Glutamate	PTGL	PTGL8	#8C4E3C	#9C5224	#9C5545	Excitatory neurons, Cortex PT/Priform cortex	ILX:0770097 (?)	Cortex pyramidal layer 5; Piriform pyramidal	717
+Glutamate	CTGL	CTGL1	#8C4E3C	#A78533	#EDD4AD	Excitatory neurons, Cortex CT	ILX:0770097 (?)	Cortex pyramidal layer 6	11026
+Glutamate	CTGL	CTGL2	#8C4E3C	#A78533	#C4A281	Excitatory neurons, Cortex CT	ILX:0770097 (?)	Cortex pyramidal layer 6	10243
+Glutamate	CTGL	CTGL3	#8C4E3C	#A78533	#D09082	Excitatory neurons, Cortex CT	ILX:0770097 (?)	Cortex pyramidal layer 6	9042
+Glutamate	CTGL	CTGL4	#8C4E3C	#A78533	#EEC4AD	Excitatory neurons, Cortex CT	ILX:0770097 (?)	Cortex pyramidal layer 6	5762
+Glutamate	CTGL	CTGL5	#8C4E3C	#A78533	#B99C5B	Excitatory neurons, Cortex CT	ILX:0770097 (?)	Cortex pyramidal layer 6	3444
+Glutamate	CTGL	CTGL6	#8C4E3C	#A78533	#BE8820	Excitatory neurons, Cortex CT	ILX:0770097 (?)	Cortical pyramidal layer 6	1197
+Glutamate	L6bGL	L6bGL1	#8C4E3C	#B27427	#C27A41	Excitatory neurons, Cortex L6b	ILX:0770163	Cortical pyramidal layer 6b	1383
+Glutamate	L6bGL	L6bGL2	#8C4E3C	#B27427	#C7A125	Excitatory neurons, Cortex L6b	ILX:0770163	Cortical pyramidal layer 6b	948
+Glutamate	L6bGL	L6bGL3	#8C4E3C	#B27427	#C67782	Excitatory neurons, Cortex L6b	ILX:0770163	Cortical pyramidal layer 6b	756
+Glutamate	L6bGL	L6bGL4	#8C4E3C	#B27427	#A65320	Excitatory neurons, Cortex L6b	ILX:0770163	Cortical pyramidal layer 6b	597
+Glutamate	L6bGL	L6bGL5	#8C4E3C	#B27427	#F2BABA	Excitatory neurons, Cortex L6b	ILX:0770163	Cortical pyramidal layer 6b	394
+Glutamate	L6bGL	L6bGL6	#8C4E3C	#B27427	#905C50	Excitatory neurons, Cortex L6b	ILX:0770163	Cortical pyramidal layer 6b	194
+Glutamate	CLAGL	CLAGL1	#8C4E3C	#AE716E	#AE744B	Excitatory neurons, Claustrum	ILX:0770128 (?)	Cortex	2540
+Glutamate	CLAGL	CLAGL2	#8C4E3C	#AE716E	#A85236	Excitatory neurons, Claustrum	ILX:0770128 (?)	Cortex	1090
+Glutamate	CLAGL	CLAGL3	#8C4E3C	#AE716E	#D3A19E	Excitatory neurons, Claustrum	ILX:0770128 (?)	Cortex	544
+Glutamate	CA1GL	CA1GL1	#8C4E3C	#D9797E	#C99C89	Excitatory neurons, hippocampus CA1	ILX:0770097 (?)	CA1	13827
+Glutamate	CA1GL	CA1GL2	#8C4E3C	#D9797E	#C8754C	Excitatory neurons, hippocampus CA1	ILX:0770097 (?)	CA1	4727
+Glutamate	CA1GL	CA1GL3	#8C4E3C	#D9797E	#EA9DA6	Excitatory neurons, hippocampus CA1	ILX:0770097 (?)	CA1; Cortical pyramidal layer 2/3	732
+Glutamate	CA3GL	CA3GL1	#8C4E3C	#CEA43A	#A77C62	Excitatory neurons, hippocampus CA3	ILX:0770097 (?)	CA3	9023
+Glutamate	CA3GL	CA3GL2	#8C4E3C	#CEA43A	#DE837D	Excitatory neurons, hippocampus CA3	ILX:0770097 (?)	CA3	1979
+Glutamate	CA3GL	CA3GL3	#8C4E3C	#CEA43A	#C98566	Excitatory neurons, hippocampus CA3	ILX:0770097 (?)	CA3	1523
+Glutamate	CA3GL	CA3GL4	#8C4E3C	#CEA43A	#ECA06F	Excitatory neurons, hippocampus CA3	ILX:0770097 (?)	CA3	1290
+Glutamate	CA3GL	CA3GL5	#8C4E3C	#CEA43A	#CE6673	Excitatory neurons, hippocampus CA3	ILX:0770097 (?)	CA3	898
+Glutamate	CA3GL	CA3GL6	#8C4E3C	#CEA43A	#F2D07E	Excitatory neurons, hippocampus CA3	ILX:0770097 (?)	CA3	457
+Glutamate	GRC	DGGR	#8C4E3C	#7F5E23	#A1545D	Granule neurons, Dentate gyrus	ILX:0770097 (?)	Dentate gyrus	61122
+Glutamate	CRC	CRC	#8C4E3C	#5593B4	#359421	Cajal-Retzius cells, Hippocampus	ILX:0770097 (?)	Hippocampus	704
+Glutamate	PIRGL	PIRGL	#8C4E3C	#885740	#9E8139	Excitatory neurons, Priform cortex	ILX:0770097 (?)	Piriform pyramidal	9834
+Glutamate	OBGL	OBGL1	#8C4E3C	#A44C40	#EE8891	Excitatory neurons, AON	ILX:0770097 (?)	Anterior olfactory nucleus	4726
+Glutamate	OBGL	OBGL2	#8C4E3C	#A44C40	#AE4857	Excitatory neurons, AON	ILX:0770097 (?)	Anterior olfactory nucleus	1714
+Glutamate	OBGL	OBGL3	#8C4E3C	#A44C40	#8C6133	Excitatory neurons, AON	ILX:0770097 (?)	Anterior olfactory nucleus	483
+Glutamate	OBGL	OBGL4	#8C4E3C	#A44C40	#F3A298	Excitatory neurons, AON	ILX:0770097 (?)	Anterior olfactory nucleus	348
+Glutamate	OBGL	OBGL5	#8C4E3C	#A44C40	#DBA771	Excitatory neurons, AON	ILX:0770097 (?)	Anterior olfactory nucleus	201
+Glutamate	OLFGL	OLFGL1	#8C4E3C	#A48258	#A4721A	Excitatory neurons, Priform cortex	ILX:0770097 (?)	Piriform pyramidal	13359
+Glutamate	OLFGL	OLFGL2	#8C4E3C	#A48258	#C5AB76	Excitatory neurons, Priform cortex	ILX:0770097 (?)	Piriform pyramidal	9900
+Glutamate	OLFGL	OLFGL3	#8C4E3C	#A48258	#A18A60	Excitatory neurons, Priform cortex	ILX:0770097 (?)	Piriform pyramidal	6616
+Glutamate	OLFGL	OLFGL4	#8C4E3C	#A48258	#BD8386	Excitatory neurons, Priform cortex	ILX:0770097 (?)	Piriform pyramidal	1612
+Glutamate	OLFGL	OLFGL5	#8C4E3C	#A48258	#EA8F75	Excitatory neurons, Priform cortex	ILX:0770097 (?)	Piriform pyramidal	675
+Glutamate	OLFGL	OLFGL6	#8C4E3C	#A48258	#9A7C47	Excitatory neurons, Priform cortex	ILX:0770097 (?)	Piriform pyramidal	597
+Glutamate	OLFGL	OLFGL7	#8C4E3C	#A48258	#C38D56	Excitatory neurons, Priform cortex	ILX:0770097 (?)	Piriform pyramidal	399
