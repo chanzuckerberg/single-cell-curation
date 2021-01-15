@@ -106,6 +106,8 @@ sc.pl.tsne(merged_ad)
 #Test known marker
 sc.pl.tsne(merged_ad, color = 'TSHZ2')
 
+#Force unique names for observations
+merged_ad.obs_names_make_unique()
 
 #Save the object
 merged_ad.write_h5ad("/Users/mlombardo/Documents/dev/czi/curation/Yao2020_epi/objects/Yao2020ATAC_allCells.h5ad")
