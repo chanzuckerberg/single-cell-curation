@@ -50,8 +50,8 @@ make_yaml_list <- function(title_suffix) {
                     ),
          
          uns = list(version = list(corpora_schema_version="1.1.0", corpora_encoding_version="0.1.0"),
-                    organism = "unknown", 
-                    organism_ontology_term_id = "",
+                    organism = "multiple", 
+                    organism_ontology_term_id = "NCBITaxon:9606",
                     layer_descriptions = list(X = "SCT", raw.X = "raw"), 
                     publication_doi = "https://doi.org/10.1101/2020.03.31.016972", 
                     title = paste("Evolution of cellular diversity in primary motor cortex of human, marmoset monkey, and mouse", title_suffix)

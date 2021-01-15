@@ -25,8 +25,8 @@ uns:
   version:
     corpora_schema_version: 1.1.0
     corpora_encoding_version: 0.1.0
-  organism: unknown
-  organism_ontology_term_id: ''
+  organism: multiple
+  organism_ontology_term_id: NCBITaxon:9606
   layer_descriptions:
     X: SCT
     raw.X: raw
