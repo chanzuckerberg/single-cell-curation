@@ -1,0 +1,54 @@
+obs:
+  assay_ontology_term_id: EFO:0008930
+  ethnicity_ontology_term_id: na
+  sex: male
+  disease_ontology_term_id: PATO:0000461
+  tissue_ontology_term_id: UBERON:0002436
+  development_stage_ontology_term_id: EFO:0001272
+  cell_type_ontology_term_id:
+    BICCN_cluster_label:
+      Vip: CL:0000617
+      L4: CL:0000679
+      L2/3: CL:0000679
+      L2/3_Syt10: CL:0000679
+      Pvalb: CL:0000617
+      Unknown: unknown
+      OPC: CL:0002453
+      Astrocyte: CL:0000127
+      L5a2: CL:0000679
+      L5a1: CL:0000679
+      L5: CL:0000679
+      Microglia: CL:0000129
+      Endothelial: CL:0000115
+      Sst_Cbln4: CL:0000617
+      Ndnf: CL:0000617
+      nan: unknown
+      L6b: CL:0000679
+      Sst: CL:0000617
+      Oligodendrocyte: CL:0000128
+      Th: CL:0000617
+      Sst_Nr2f2: CL:0000617
+      Sst_Clstn2: CL:0000617
+      L6a: CL:0000679
+      L5a: CL:0000679
+      Sst_Chodl: CL:0000617
+      Sst_Nmbr: CL:0000617
+      L6a2: CL:0000679
+      L5b: CL:0000679
+      L5b1: CL:0000679
+      L5_Chrna6: CL:0000679
+      L5b2: CL:0000679
+      L6a1: CL:0000679
+      Chodl: CL:0000617
+uns:
+  version:
+    corpora_schema_version: 1.1.0
+    corpora_encoding_version: 0.1.0
+  organism: Mus musculus
+  organism_ontology_term_id: NCBITaxon:10090
+  layer_descriptions:
+    X: RPKM
+    raw.X: raw
+  publication_doi: https://doi.org/10.1038/nn.4216
+  title: Adult mouse cortical cell taxonomy revealed by single cell transcriptomics
+
