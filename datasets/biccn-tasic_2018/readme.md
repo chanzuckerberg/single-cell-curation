@@ -1,4 +1,4 @@
-# Kozareva data curation (BICCN)
+# Tasic 2018 data curation (BICCN)
 
 ## Project details
 
