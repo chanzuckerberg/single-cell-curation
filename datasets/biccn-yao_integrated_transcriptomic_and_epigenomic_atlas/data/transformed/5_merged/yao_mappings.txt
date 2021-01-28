@@ -1,0 +1,438 @@
+BICCN_cluster_id	BICCN_cluster_label	BICCN_subclass_label	BICCN_class_label	BICCN_ontology_term_id	cell_type_ontology_term_id	cell_type
+48.0	L6 CT Grp_1	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+4.0	Lamp5 Slc35d3	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+49.0	L6 CT Grp_2	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+37.0	L5 IT S100b_1	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+36.0	L5 IT Tcap_2	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+55.0	L6b Shisa6	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+11.0	Vip Chat_2	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+33.0	L5 IT Rspo1	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+57.0	L6b Kcnip1_2	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+25.0	Pvalb Reln	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+54.0	L6b Ror1_2	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+7.0	Sncg	Sncg	GABAergic	ILX:0770150	CL:0000617	GABAergic neuron
+21.0	Sst Etv1	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+30.0	L2/3 IT Cdh13 Sla	L2/3 IT	Glutamatergic	ILX:0770156	CL:0000679	glutamatergic neuron
+42.0	L6 IT Sulf_3	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
+38.0	L5 IT S100b_2	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+58.0	Astro Aqp4	Astro	Non-Neuronal	ILX:0770141	CL:0000127	astrocyte
+27.0	Pvalb Calb1	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+35.0	L5 IT Tcap_1	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+31.0	L2/3 IT S100a6	L2/3 IT	Glutamatergic	ILX:0770156	CL:0000679	glutamatergic neuron
+6.0	Vip Serpinf1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+50.0	L6 CT Nxph2_1	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+34.0	L5 IT Rspo2	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+28.0	Pvalb Gpr149	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+17.0	Vip Crispld2	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+24.0	Sst Crhr2_2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+53.0	L6b Ror1_1	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+26.0	Pvalb Th	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+12.0	Vip Chat_3	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+46.0	L6 NP Trh	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+45.0	L5 NP Slc17a8	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+19.0	Sst Myh8_1	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+3.0	Lamp5 Pdlim5	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+15.0	Vip C1ql1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+18.0	Sst Chodl	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+8.0	Sncg Slc17a8	Sncg	GABAergic	ILX:0770150	CL:0000617	GABAergic neuron
+29.0	Pvalb Vipr2	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+40.0	L6 IT Sulf_1	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
+23.0	Sst Crhr2_1	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+32.0	L2/3 IT Macc1	L2/3 IT	Glutamatergic	ILX:0770156	CL:0000679	glutamatergic neuron
+9.0	Vip Igfbp6	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+1.0	Lamp5 Egln3_1	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+61.0	SMC Aoc3	SMC	Non-Neuronal	ILX:0770144	CL:0000192	smooth muscle cell
+39.0	L5 IT Pld5	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+10.0	Vip Chat_1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+5.0	Lamp5 Lhx6	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+52.0	L6b Rprm	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+16.0	Vip Gpc3	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+22.0	Sst C1ql3	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+14.0	Vip Htr1f	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+13.0	Vip Lmo1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+20.0	Sst Myh8_2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+44.0	L5 ET	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+41.0	L6 IT Sulf_2	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
+2.0	Lamp5 Egln3_2	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+56.0	L6b Kcnip1_1	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+59.0	VLMC	VLMC	Non-Neuronal	ILX:0770143	CL:0000708	leptomeningeal cell
+47.0	L6 CT Gpr139	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+60.0	Endo Slc38a5	Endo	Non-Neuronal	ILX:0770142	CL:0000115	endothelial cell
+43.0	L6 IT Car3	L6 IT Car3	Glutamatergic	ILX:0770159	CL:0000679	glutamatergic neuron
+51.0	L6 CT Nxph2_2	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+9.0	Sncg Slc17a8	Sncg	GABAergic	ILX:0770150	CL:0000617	GABAergic neuron
+48.0	Pvalb Calb1_1	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+56.0	L5 IT Rspo2_1	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+55.0	L5 IT Rspo1_1	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+76.0	L6b Shisa6_2_1	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+72.0	L6 CT Cpa6	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+67.0	L5 NP Trh	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+8.0	Sncg Col14a1	Sncg	GABAergic	ILX:0770150	CL:0000617	GABAergic neuron
+68.0	L6 NP Trh_1	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+5.0	Lamp5 Pdlim5	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+78.0	L6b Ror1	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+59.0	L5 IT S100b	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+54.0	L2/3 IT 	L2/3 IT	Glutamatergic	ILX:0770156	CL:0000679	glutamatergic neuron
+20.0	Vip Chat	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+23.0	Vip C1ql1_1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+57.0	L5 IT Tcap_1	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+89.0	Endo_3	Endo	Non-Neuronal	ILX:0770142	CL:0000115	endothelial cell
+61.0	L6 IT_2	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
+28.0	Sst Myh8_2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+36.0	Sst C1ql3_1	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+73.0	L6 CT Nxph2 Pou3f2	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+52.0	Pvalb Reln	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+6.0	Lamp5 Slc35d3	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+35.0	Sst Calb2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+53.0	Pvalb Vipr2	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+66.0	L5 NP Slc17a8	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+43.0	Sst Pvalb Etv1_2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+39.0	Sst Crhr2_1	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+50.0	Pvalb Gpr149	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+71.0	L6 CT Gpr139	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+10.0	Sncg Npy2r	Sncg	GABAergic	ILX:0770150	CL:0000617	GABAergic neuron
+75.0	L6b Shisa6_1	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+21.0	Vip Lypd1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+51.0	Pvalb Il1rapl2	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+38.0	Sst C1ql3_3	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+15.0	Vip Serpinf1_2	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+3.0	Lamp5 Egln3_2	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+22.0	Vip Gpc3	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+40.0	Sst Crhr2_2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+17.0	Vip Htr1f_1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+18.0	Vip Igfbp6	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+30.0	Sst Myh8_4	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+2.0	Lamp5 Egln3_1	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+47.0	Pvalb Gabrg1	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+25.0	Vip Crispld2	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+33.0	Sst Hspe_3	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+19.0	Vip Mybpc1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+29.0	Sst Myh8_3	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+81.0	Astro Aqp4	Astro	Non-Neuronal	ILX:0770141	CL:0000127	astrocyte
+32.0	Sst Hspe_2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+4.0	Lamp5 Egln3_3	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+7.0	Lamp5 Lhx6	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+77.0	L6b Shisa6_2_2	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+24.0	Vip C1ql1_2	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+80.0	L6b Kcnip1_2	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+63.0	L5 ET_1	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+58.0	L5 IT Tcap_2	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+60.0	L6 IT_1	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
+65.0	L5 ET_3	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+87.0	Endo_1	Endo	Non-Neuronal	ILX:0770142	CL:0000115	endothelial cell
+85.0	Oligo Opalin_1	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+70.0	L6 NP CT	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+1.0	Lamp5 Pax6	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+82.0	OPC Pdgfra	OPC	Non-Neuronal	ILX:0770139	CL:0002453	oligodendrocyte precursor cell
+13.0	Vip Crispld2	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+74.0	L6 CT Nxph2 Kit	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+44.0	Sst Pvalb Etv1_3	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+31.0	Sst Hspe_1	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+16.0	Vip Htr1f_2	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+86.0	Oligo Opalin_2	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+64.0	L5 ET_2	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+26.0	Sst Chodl	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+42.0	Sst Pvalb Etv1_1	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+90.0	Macrophage	Macrophage	Non-Neuronal	Macrophage	CL:0000235	macrophage
+46.0	Pvalb Sst Calb1_2	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+62.0	L6 IT Car3	L6 IT Car3	Glutamatergic	ILX:0770159	CL:0000679	glutamatergic neuron
+27.0	Sst Myh8_1	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+14.0	Vip Serpinf1_1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+37.0	Sst C1ql3_2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+79.0	L6b Kcnip1_1	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+11.0	Sncg Calb1_1	Sncg	GABAergic	ILX:0770150	CL:0000617	GABAergic neuron
+45.0	Pvalb Sst Calb1_1	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+12.0	Sncg Calb1_2	Sncg	GABAergic	ILX:0770150	CL:0000617	GABAergic neuron
+41.0	Sst Th	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+83.0	Oligo Enpp6_1	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+69.0	L6 NP Trh_2	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+49.0	Pvalb Calb1_2	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+34.0	Sst Hspe_4	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+84.0	Oligo Enpp6_2	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+88.0	Endo_2	Endo	Non-Neuronal	ILX:0770142	CL:0000115	endothelial cell
+59.0	L6b Shisa6	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+54.0	L6 CT Brinp3	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+11.0	Vip Chat	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+34.0	L5 IT Rspo1_3	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+30.0	L2/3 IT_2	L2/3 IT	Glutamatergic	ILX:0770156	CL:0000679	glutamatergic neuron
+29.0	L2/3 IT_1	L2/3 IT	Glutamatergic	ILX:0770156	CL:0000679	glutamatergic neuron
+52.0	L6 NP CT	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+35.0	L5 IT S100b	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+33.0	L5 IT Rspo1_2	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+41.0	L6 IT Sulf1_4	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
+31.0	L2/3 IT_3	L2/3 IT	Glutamatergic	ILX:0770156	CL:0000679	glutamatergic neuron
+6.0	Sncg Col14a1	Sncg	GABAergic	ILX:0770150	CL:0000617	GABAergic neuron
+56.0	L6 CT Nxph2	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+40.0	L6 IT Sulf1_3	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
+37.0	L5 IT Pld5_2	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+55.0	L6 CT Cpa6	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+27.0	Pvalb Reln	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+36.0	L5 IT Pld5_1	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+23.0	Pvalb Prdm8	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+24.0	Pvalb Gpr149	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+25.0	Pvalb Il1rapl2_1	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+48.0	L5 NP Slc17a8_1	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+42.0	L5 ET_1	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+15.0	Sst Hpse	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+14.0	Sst Myh8	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+51.0	L6 NP Trh_2	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+32.0	L5 IT Rspo1_1	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+66.0	Oligo Opalin	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+44.0	L5 ET_3	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+38.0	L6 IT Sulf1_1	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
+60.0	L6b Ror1	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+46.0	L5 ET_5	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+28.0	Pvalb Vipr2	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+12.0	Vip Crispld2	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+10.0	Vip Igfbp6	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+62.0	Astro Aqp4	Astro	Non-Neuronal	ILX:0770141	CL:0000127	astrocyte
+49.0	L5 NP Slc17a8_2	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+9.0	Vip Htr1f	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+26.0	Pvalb Il1rapl2_2	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+17.0	Sst C1ql3_1	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+63.0	Macrophage	Macrophage	Non-Neuronal	Macrophage	CL:0000235	macrophage
+64.0	OPC Pdgfra_1	OPC	Non-Neuronal	ILX:0770139	CL:0002453	oligodendrocyte precursor cell
+22.0	Pvalb Gabrg1	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+58.0	L6b Rprm_2	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+45.0	L5 ET_4	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+21.0	Sst Pvalb Etv1_3	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+43.0	L5 ET_2	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+50.0	L6 NP Trh_1	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+13.0	Sst Chodl	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+16.0	Sst Calb2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+39.0	L6 IT Sulf1_2	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
+65.0	OPC Pdgfra_2	OPC	Non-Neuronal	ILX:0770139	CL:0002453	oligodendrocyte precursor cell
+2.0	Lamp5 Egln3	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+47.0	L5 ET_6	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+8.0	Vip Serpinf1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+57.0	L6b Rprm_1	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+19.0	Sst Pvalb Etv1_1	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+67.0	Endo Slc38a5	Endo	Non-Neuronal	ILX:0770142	CL:0000115	endothelial cell
+18.0	Sst C1ql3_2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+7.0	Sncg Slc17a8	Sncg	GABAergic	ILX:0770150	CL:0000617	GABAergic neuron
+53.0	L6 CT Gpr139	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+20.0	Sst Pvalb Etv1_2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+61.0	L6b Kcnip1	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+42.0	L5 IT Tcap_2	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+41.0	L5 IT Tcap_1	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+20.0	Vip Gpc3	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+12.0	Vip Htr1f_2	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+48.0	L6 IT Sulf1_4	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
+21.0	Vip C1ql1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+64.0	L6 CT Nxph2 Kit	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+40.0	L2/3 IT	L2/3 IT	Glutamatergic	ILX:0770156	CL:0000679	glutamatergic neuron
+73.0	Oligo Opalin_1	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+61.0	L6 CT Cpa6_2	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+43.0	L5 IT S100b	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+44.0	L5 IT Pld5	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+60.0	L6 CT Cpa6_1	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+32.0	Sst Crhr2_1	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+5.0	Lamp5 Slc35d3_1	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+19.0	Vip Cbln4_2	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+47.0	L6 IT Sulf1_3	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
+56.0	L6 NP Trh_1	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+16.0	Vip Chat	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+54.0	L5 NP Slc17a8_2	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+14.0	Vip Mybpc1_1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+27.0	Sst Hpse_2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+45.0	L6 IT Sulf1_1	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
+53.0	L5 NP Slc17a8_1	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+75.0	Macrophage	Macrophage	Non-Neuronal	Macrophage	CL:0000235	macrophage
+10.0	Vip Serpinf1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+25.0	Sst Myh8_2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+58.0	L6 NP Trh_3	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+2.0	Lamp5 Egln3_2_1	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+24.0	Sst Myh8_1	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+22.0	Vip Crispld2	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+69.0	Astro Aqp4	Astro	Non-Neuronal	ILX:0770141	CL:0000127	astrocyte
+70.0	OPC Pdgfra	OPC	Non-Neuronal	ILX:0770139	CL:0002453	oligodendrocyte precursor cell
+46.0	L6 IT Sulf1_2	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
+65.0	L6b Rprm	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+63.0	L6 CT Nxph2 Pou3f2_2	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+13.0	Vip Igfbp6	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+4.0	Lamp5 Pdlim5_2	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+77.0	VLMC Kcnj8	VLMC	Non-Neuronal	ILX:0770143	CL:0000708	leptomeningeal cell
+3.0	Lamp5 Pdlim5_1	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+59.0	L6 CT Gpr139	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+17.0	Vip Lypd1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+29.0	Sst Calb2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+35.0	Sst Pvalb Etv1	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+76.0	Endo Slc38a5_1	Endo	Non-Neuronal	ILX:0770142	CL:0000115	endothelial cell
+30.0	Sst C1ql3_1	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+55.0	L5 NP Slc17a8_3	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+8.0	Vip Col14a1	Sncg	GABAergic	ILX:0770150	CL:0000617	GABAergic neuron
+51.0	L5 ET_2	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+28.0	Sst Hpse_3	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+49.0	L6 IT Car3	L6 IT Car3	Glutamatergic	ILX:0770159	CL:0000679	glutamatergic neuron
+78.0	SMC	SMC	Non-Neuronal	ILX:0770144	CL:0000192	smooth muscle cell
+9.0	Sncg_2	Sncg	GABAergic	ILX:0770150	CL:0000617	GABAergic neuron
+18.0	Vip Cbln4_1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+66.0	L6b Shisa6	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+15.0	Vip Mybpc1_2	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+6.0	Lamp5 Lhx6	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+33.0	Sst Crhr2_2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+62.0	L6 CT Nxph2 Pou3f2_1	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+52.0	L5 ET_3	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+72.0	Oligo Enpp6_2	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+26.0	Sst Hspe_1	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+31.0	Sst C1ql3_2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+11.0	Vip Htr1f_1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+50.0	L5 ET_1	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+74.0	Oligo Opalin_2	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+7.0	Sncg_1	Sncg	GABAergic	ILX:0770150	CL:0000617	GABAergic neuron
+67.0	L6b Ror1	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+34.0	Sst Th	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+57.0	L6 NP Trh_2	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+71.0	Oligo Enpp6_1	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+23.0	Sst Chodl	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+37.0	Pvalb Reln	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+36.0	Pvalb Gabrg1	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+68.0	L6b Kcnip1	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+38.0	Pvalb Calb1	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+39.0	Pvalb Vipr2	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+91.0	Astro Aqp4_1	Astro	Non-Neuronal	ILX:0770141	CL:0000127	astrocyte
+48.0	L2/3 IT_1	L2/3 IT	Glutamatergic	ILX:0770156	CL:0000679	glutamatergic neuron
+66.0	L6 CT Cpa6	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+113.0	Macrophage_2	Macrophage	Non-Neuronal	Macrophage	CL:0000235	macrophage
+64.0	L5/6 NP_3	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+33.0	Sst Calb2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+53.0	L6 IT Sulf1_1	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
+49.0	L2/3 IT_2	L2/3 IT	Glutamatergic	ILX:0770156	CL:0000679	glutamatergic neuron
+90.0	Oligo Opalin_4	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+50.0	L5 IT Rspo1	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+5.0	Lamp5 Egln3_3	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+63.0	L5/6 NP_2	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+56.0	L5 ET_1	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+21.0	Vip Htr1f	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+40.0	Pvalb Sst Th_2	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+43.0	Pvalb Gpr149	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+52.0	L5 IT Pld5	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+44.0	Pvalb Prdm8_2	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+51.0	L5 IT S100b	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+105.0	Peri	Peri	Non-Neuronal	ILX:0770145	CL:0000669	pericyte cell
+45.0	Pvalb Il1rapl2	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+88.0	Oligo Opalin_2	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+4.0	Lamp5 Egln3_2	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+60.0	L5 ET_5	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+54.0	L6 IT Sulf1 Fos	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
+57.0	L5 ET_2	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+35.0	Sst Etv1_2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+3.0	Lamp5 Egln3_1	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+22.0	Vip Chat_5	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+30.0	Sst Hpse_1	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+19.0	Vip Chat_2	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+32.0	Sst Hpse_3	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+76.0	OPC Pdgfra_3	OPC	Non-Neuronal	ILX:0770139	CL:0002453	oligodendrocyte precursor cell
+7.0	Lamp5 Slc35d3	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+101.0	VLMC_6	VLMC	Non-Neuronal	ILX:0770143	CL:0000708	leptomeningeal cell
+89.0	Oligo Opalin_3	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+114.0	Macrophage_3	Macrophage	Non-Neuronal	Macrophage	CL:0000235	macrophage
+87.0	Oligo Opalin_1	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+34.0	Sst Etv1_1	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+2.0	Lamp5 Pax6	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+93.0	Astro Aqp4_3	Astro	Non-Neuronal	ILX:0770141	CL:0000127	astrocyte
+6.0	Lamp5 Pdlim5	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+39.0	Pvalb Sst Th_1	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+65.0	L5/6 NP CT	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+23.0	Vip Crispld2	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+59.0	L5 ET_4	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+17.0	Vip Chat_1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+24.0	Vip Chat_6	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+108.0	Endo_3	Endo	Non-Neuronal	ILX:0770142	CL:0000115	endothelial cell
+55.0	L6 IT Sulf1_2	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
+41.0	Pvalb Sst Th_3	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+25.0	Vip Chat_7	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+10.0	Sncg Col14a1_2	Sncg	GABAergic	ILX:0770150	CL:0000617	GABAergic neuron
+58.0	L5 ET_3	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+112.0	Macrophage_1	Macrophage	Non-Neuronal	Macrophage	CL:0000235	macrophage
+16.0	Vip Igfbp6_2	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+75.0	OPC Pdgfra_2	OPC	Non-Neuronal	ILX:0770139	CL:0002453	oligodendrocyte precursor cell
+72.0	L6b Ror1_2	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+107.0	Endo_2	Endo	Non-Neuronal	ILX:0770142	CL:0000115	endothelial cell
+82.0	Oligo Enpp6_1	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+42.0	Pvalb Prdm8_1	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+29.0	Sst C1ql3	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+69.0	L6b Rprm_3	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+73.0	L6b Kcnip1	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+13.0	Vip Serpinf1_1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+47.0	Pvalb Vipr2	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+14.0	Vip Serpinf1_2	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+103.0	VLMC_8	VLMC	Non-Neuronal	ILX:0770143	CL:0000708	leptomeningeal cell
+20.0	Vip Chat_4	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+98.0	VLMC_3	VLMC	Non-Neuronal	ILX:0770143	CL:0000708	leptomeningeal cell
+96.0	VLMC_1	VLMC	Non-Neuronal	ILX:0770143	CL:0000708	leptomeningeal cell
+12.0	Sncg Slc17a8	Sncg	GABAergic	ILX:0770150	CL:0000617	GABAergic neuron
+102.0	VLMC_7	VLMC	Non-Neuronal	ILX:0770143	CL:0000708	leptomeningeal cell
+74.0	OPC Pdgfra_1	OPC	Non-Neuronal	ILX:0770139	CL:0002453	oligodendrocyte precursor cell
+11.0	Sncg Col14a1_3	Sncg	GABAergic	ILX:0770150	CL:0000617	GABAergic neuron
+109.0	Endo_4	Endo	Non-Neuronal	ILX:0770142	CL:0000115	endothelial cell
+18.0	Vip Chat_3	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+8.0	Lamp5 Lhx6	Lamp5	GABAergic	ILX:0770149	CL:0000617	GABAergic neuron
+94.0	Astro Aqp4_4	Astro	Non-Neuronal	ILX:0770141	CL:0000127	astrocyte
+31.0	Sst Hpse_2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+83.0	Oligo Enpp6_2	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+15.0	Vip Igfbp6_1	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+99.0	VLMC_4	VLMC	Non-Neuronal	ILX:0770143	CL:0000708	leptomeningeal cell
+100.0	VLMC_5	VLMC	Non-Neuronal	ILX:0770143	CL:0000708	leptomeningeal cell
+9.0	Sncg Col14a1_1	Sncg	GABAergic	ILX:0770150	CL:0000617	GABAergic neuron
+106.0	Endo_1	Endo	Non-Neuronal	ILX:0770142	CL:0000115	endothelial cell
+85.0	Oligo Enpp6_4	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+84.0	Oligo Enpp6_3	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+111.0	Endo_6	Endo	Non-Neuronal	ILX:0770142	CL:0000115	endothelial cell
+97.0	VLMC_2	VLMC	Non-Neuronal	ILX:0770143	CL:0000708	leptomeningeal cell
+86.0	Oligo Enpp6_5	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+1.0	CR	CR	Glutamatergic	CR	CL:0000679	glutamatergic neuron
+71.0	L6b Ror1_1	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+61.0	L5 ET_6	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+70.0	L6b Shisa6	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+62.0	L5/6 NP_1	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+80.0	Prog_4	Prog/IP	Non-Neuronal	Prog/IP		prog
+110.0	Endo_5	Endo	Non-Neuronal	ILX:0770142	CL:0000115	endothelial cell
+104.0	SMC	SMC	Non-Neuronal	ILX:0770144	CL:0000192	smooth muscle cell
+77.0	Prog_1	Prog/IP	GABAergic	Prog/IP	CL:0000617	GABAergic neuron
+81.0	Prog_5	Prog/IP	Non-Neuronal	Prog/IP		prog
+92.0	Astro Aqp4_2	Astro	Non-Neuronal	ILX:0770141	CL:0000127	astrocyte
+78.0	Prog_2	Prog/IP	GABAergic	Prog/IP	CL:0000617	GABAergic neuron
+79.0	Prog_3	Prog/IP	GABAergic	Prog/IP	CL:0000617	GABAergic neuron
+67.0	L6b Rprm_1	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+46.0	Pvalb Nkx2.1	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+68.0	L6b Rprm_2	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+25.0	L5 IT Rspo1_1	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+24.0	L2/3 IT	L2/3 IT	Glutamatergic	ILX:0770156	CL:0000679	glutamatergic neuron
+21.0	Pvalb Gpr149	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+37.0	L6 CT	L6 CT	Glutamatergic	ILX:0770162	CL:0000679	glutamatergic neuron
+28.0	L5 IT S100b_2	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+35.0	L5 NP Slc17a8	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+14.0	Sst Etv1_1	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+34.0	L5 ET_3	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+38.0	L6b Ror1	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+30.0	L6 IT Sulf_2	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
+13.0	Sst Myh8	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+22.0	Pvalb Il1rapl2	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+40.0	L6b Shisa6	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+26.0	L5 IT Rspo1_2	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+29.0	L6 IT Sulf_1	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
+36.0	L6 NP Trh	L5/6 NP	Glutamatergic	ILX:0770161	CL:0000679	glutamatergic neuron
+20.0	Pvalb Reln	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+27.0	L5 IT S100b_1	L5 IT	Glutamatergic	ILX:0770157	CL:0000679	glutamatergic neuron
+41.0	Astro Aqp4	Astro	Non-Neuronal	ILX:0770141	CL:0000127	astrocyte
+15.0	Sst Etv1_2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+8.0	Vip Rspo4	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+45.0	Micro Siglech	Micro	Non-Neuronal	ILX:0770146	CL:0000129	microglial cell
+11.0	Vip Crispld2	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+17.0	Sst Crhr2	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+43.0	Oligo Opalin Serpinb1a	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+16.0	Sst C1ql3	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+32.0	L5 ET_1	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+18.0	Sst Pvalb Th	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+23.0	Pvalb Vipr2	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+10.0	Vip Htr1f	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+9.0	Vip Cbln4	Vip	GABAergic	ILX:0770151	CL:0000617	GABAergic neuron
+46.0	Endo Slc38a5	Endo	Non-Neuronal	ILX:0770142	CL:0000115	endothelial cell
+33.0	L5 ET_2	L5 ET	Glutamatergic	ILX:0770160	CL:0000679	glutamatergic neuron
+39.0	L6b Kcnip1	L6b	Glutamatergic	ILX:0770163	CL:0000679	glutamatergic neuron
+44.0	Oligo Opalin Cntn1	Oligo	Non-Neuronal	ILX:0770140	CL:0000128	oligodendrocyte
+12.0	Sst Chodl	Sst	GABAergic	ILX:0770152	CL:0000617	GABAergic neuron
+19.0	Pvalb Sst Th	Pvalb	GABAergic	ILX:0770154	CL:0000617	GABAergic neuron
+42.0	OPC Pdgfra	OPC	Non-Neuronal	ILX:0770139	CL:0002453	oligodendrocyte precursor cell
+31.0	L6 IT Fos	L6 IT	Glutamatergic	ILX:0770158	CL:0000679	glutamatergic neuron
