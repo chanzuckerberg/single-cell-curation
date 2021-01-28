@@ -1,4 +1,4 @@
-# Bakken data curation (BICCN)
+# COVID-19 meta-analysis, Aronow Lab
 
 ## Project details
 
