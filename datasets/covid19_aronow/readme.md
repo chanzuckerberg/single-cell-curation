@@ -22,6 +22,8 @@ Note:
     - 5 individual datasets from other publications
     - 1 meta analysis integrating all 4 datasets
     - 4 meta analysis datasets contain a specific cell types with subcluster information
+- A note from Kang about embeddings from individual studies:
+    *Among those 5 datasets, Schulte-Schrepping et al. and Wilk et al. provided both cell type annotations and UMAP coordinates. We kept their original information in the h5ad files. Besides, we also added our reannotated cell designations. For the rest datasets which didn’t provide cell annotations or UMAP coordinates, we used our own annotations and UMAP coordinates.*
 
 ## Curation steps
 
