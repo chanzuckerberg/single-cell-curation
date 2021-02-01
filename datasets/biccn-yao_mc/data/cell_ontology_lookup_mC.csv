@@ -1,0 +1,44 @@
+BICCN_class_label,BICCN_subclass_label,BICCN_cluster_label,BICCN_ontology_term_id,cell_type,cell_type_ontology_term_id
+GABAergic neuron,CGE,CGE-VipNdnf_Lamp5-Ndnf,ILX:0770130,GABAergic neuron,CL:0000617
+GABAergic neuron,CGE,CGE-VipNdnf_Lamp5-Unc5d,ILX:0770130,GABAergic neuron,CL:0000617
+GABAergic neuron,CGE,CGE-VipNdnf_Pex5l,ILX:0770130,GABAergic neuron,CL:0000617
+GABAergic neuron,CGE,CGE-VipNdnf_Vip-Ano4,ILX:0770130,GABAergic neuron,CL:0000617
+GABAergic neuron,CGE,CGE-VipNdnf_Vip-Prr16,ILX:0770130,GABAergic neuron,CL:0000617
+GABAergic neuron,CGE,CGE-VipNdnf_Vip-Sorcs1,ILX:0770130,GABAergic neuron,CL:0000617
+GABAergic neuron,CGE,CGE-VipNdnf_Vip-Unc5b,ILX:0770130,GABAergic neuron,CL:0000617
+glutamatergic neuron,L2/3 IT,L23-IT-Cux2,ILX:0770156,glutamatergic neuron,CL:0000679
+glutamatergic neuron,L4,L4-IT-Rorb_Rorb-Cpne4,ILX:0770172,glutamatergic neuron,CL:0000679
+glutamatergic neuron,L4,L4-IT-Rorb_Rorb-Ryr3,ILX:0770172,glutamatergic neuron,CL:0000679
+glutamatergic neuron,L4,L4-IT-Rorb_Rorb-Tenm2,ILX:0770172,glutamatergic neuron,CL:0000679
+glutamatergic neuron,L5 IT,L5-IT-Deptor,ILX:0770157,glutamatergic neuron,CL:0000679
+glutamatergic neuron,L5 IT,L5-PT-Bcl6,ILX:0770157,glutamatergic neuron,CL:0000679
+glutamatergic neuron,L6 CT,L6-CT-Foxp2_Foxp2-Glra2,ILX:0770162,glutamatergic neuron,CL:0000679
+glutamatergic neuron,L6 CT,L6-CT-Foxp2_Foxp2-Kcnh5,ILX:0770162,glutamatergic neuron,CL:0000679
+glutamatergic neuron,L6 CT,L6-CT-Foxp2_Foxp2-Wscd1,ILX:0770162,glutamatergic neuron,CL:0000679
+glutamatergic neuron,L6 CT,L6-CT-Foxp2_Hcrtr2,ILX:0770162,glutamatergic neuron,CL:0000679
+glutamatergic neuron,L6 CT,L6-CT-Foxp2_Spon1,ILX:0770162,glutamatergic neuron,CL:0000679
+glutamatergic neuron,L6 IT,L6-IT-Sulf1_Cables1,ILX:0770158,glutamatergic neuron,CL:0000679
+glutamatergic neuron,L6 IT,L6-IT-Sulf1_Meis2,ILX:0770158,glutamatergic neuron,CL:0000679
+glutamatergic neuron,L6 IT,L6-IT-Sulf1_Pcdh15,ILX:0770158,glutamatergic neuron,CL:0000679
+glutamatergic neuron,L6 IT,L6-IT-Sulf1_Sulf1,ILX:0770158,glutamatergic neuron,CL:0000679
+glutamatergic neuron,L5/6 NP,L6-NP-Tshz2,ILX:0770161,glutamatergic neuron,CL:0000679
+glutamatergic neuron,L6b,L6b-Galnt10,ILX:0770163,glutamatergic neuron,CL:0000679
+GABAergic neuron,MGE,MGE-Pvalb_Chrna7,ILX:0770129,GABAergic neuron,CL:0000617
+GABAergic neuron,MGE,MGE-Pvalb_Cnih3,ILX:0770129,GABAergic neuron,CL:0000617
+GABAergic neuron,MGE,MGE-Pvalb_Man2a1,ILX:0770129,GABAergic neuron,CL:0000617
+GABAergic neuron,MGE,MGE-Pvalb_Unc5b,ILX:0770129,GABAergic neuron,CL:0000617
+GABAergic neuron,MGE,MGE-Sst_Chodl,ILX:0770129,GABAergic neuron,CL:0000617
+GABAergic neuron,MGE,MGE-Sst_Daam2,ILX:0770129,GABAergic neuron,CL:0000617
+GABAergic neuron,MGE,MGE-Sst_Gfra2,ILX:0770129,GABAergic neuron,CL:0000617
+GABAergic neuron,MGE,MGE-Sst_Kcnip4,ILX:0770129,GABAergic neuron,CL:0000617
+GABAergic neuron,MGE,MGE-Sst_Prep,ILX:0770129,GABAergic neuron,CL:0000617
+GABAergic neuron,MGE,MGE-Sst_Srrm4,ILX:0770129,GABAergic neuron,CL:0000617
+GABAergic neuron,MGE,MGE-Sst_Whrn,ILX:0770129,GABAergic neuron,CL:0000617
+Non-Neuronal,Astro,NonN_Astro-Slc1a2,ILX:0770141,astrocyte,CL:0000127
+Non-Neuronal,Endo,NonN_Endo-Nxn,ILX:0770142,endothelial cell,CL:0000115
+Non-Neuronal,Micro,NonN_Micro-Csf1r,ILX:0770146,microgial cell,CL:0000129
+Non-Neuronal,Oligo,NonN_ODC-Mog,ILX:0770140,oligodendrocyte,CL:0000128
+Non-Neuronal,OPC,NonN_OPC-Pdgfra,ILX:0770139,oligodendrocyte precursor cell,CL:0002453
+Non-Neuronal,SMC,NonN_SMC-Myo1b,ILX:0770144,smooth muscle cell,CL:0000192
+Non-Neuronal,VLMC,NonN_VLMC-Slc6a13,ILX:0770143,leptomeningeal cell,CL:0000708
+Non-Neuronal,Outlier,Outlier,ILX:0770099,Primary Motor Cortex Cell,UBERON:0001384
