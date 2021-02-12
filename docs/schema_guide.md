@@ -1,7 +1,7 @@
 # Cellxgene Schema Guide
 
 Datasets included in the [data portal](https://cellxgene.cziscience.com/) and hosted cellxgene need to follow the schema
-described [here](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/backend/schema/corpora_schema.md). That
+described [here](corpora_schema.md). That
 schema defines some required fields, requirements about feature labels, and some optional fields that mostly help with
 presentation.
 
@@ -13,10 +13,10 @@ cellxgene project, this was always done with engineering support. As we increase
 to eliminate the need for engineering support so that ultimately submitters themselves can create files that follow the
 schema.
 
-## `cellxgene schema apply`
+## `cellxgene-schema apply`
 
-To enable this, we have a new cellxgene subcommand, `cellxgene schema`, that handles applying and verifying the schema.
-Its first subcommand, `cellxgene schema apply`, takes three inputs:
+To enable this, we have a python package the supplies the `cellxgene-schema` command that handles applying and verifying the schema.
+Its first subcommand, `cellxgene-schema apply`, takes three inputs:
 
 1. A source h5ad file. The input needs to be an AnnData file, so if a submitter has, say, a serialized Seurat or
    SingleCellExperiment object, it needs to be converted to AnnData first. This can be done with
@@ -33,13 +33,10 @@ fields required for the 1.0.0 schema but is not yet filled in with any logic:
 ```
 uns:
     version:
-        corpora_schema_version: 1.0.0
+        corpora_schema_version: 1.1.0
         corpora_encoding_version: 0.1.0
-    contributors:
     title:
     layer_descriptions:
-    preprint_doi:
-    publication_doi:
     organism_ontology_term_id:
 obs:
     tissue_ontology_term_id:
@@ -57,21 +54,7 @@ The first section is `uns`, which includes metadata fields that describe the who
 [here](https://anndata.readthedocs.io/en/latest/) for further description of `uns` and `obs`.).
 
 The first line is `version`, which is required for most of our tooling to work. The schema version is set at
-1.0.0 in the example above, but of course for future versions that should be changed.
-
-Next is `contributors` which describes who is adding the dataset to the portal. If you consult the schema, you see that
-contributors is a list where each element can have `name`, `email`, and `institution`. So when filled out, the
-`contributors` field should look like this:
-
-```
-contributors:
-  - name: Mary B. Scientist
-    email: mbs@singlecell.edu
-    institution: Single-Cell University
-  - name: Robert J. Scientist
-    email: rjs@usingle.edu
-    institution: University of Single Cell
-```
+1.1.0 in the example above, but of course for future versions that should be changed.
 
 `title` is the name of the dataset, and is just a string that gets displayed in the portal and cellxgene to identify the
 dataset.
@@ -86,19 +69,13 @@ layer_descriptions:
 ```
 Note that one of the layers needs to be "raw", that is, the AnnData file must contain raw counts.
 
-The two DOI fields are optional but can be included if the dataset is associated with a publication or preprint. Note
-that the DOI should be a full url:
-```
-publication_doi: https://doi.org/10.1073%2Fpnas.83.15.5372
-```
-
 Finally, the `organism_ontology_term_id` field is the species of the donor organism from the NCBITaxon ontology. The
 value for _Homo sapiens_ is `NCBITaxon:9606`:
 ```
 organism_ontology_term_id: NCBITaxon:9606
 ```
 Note that the schema also requires a human-readable `organism` field, but this doesn't need to be included in the yaml.
-When the `cellxgene schema apply` script encounters an ontology field, it looks up the label for the term(s) and inserts it
+When the `cellxgene-schema apply` script encounters an ontology field, it looks up the label for the term(s) and inserts it
 into the appropriate field.
 
 
@@ -141,7 +118,7 @@ cell_type_ontology_term_id:
     new cell type: new cell type
 ```
 
-In these cases, the `cellxgene schema apply` script will leave the ontology field blank and move the free text
+In these cases, the `cellxgene-schema apply` script will leave the ontology field blank and move the free text
 description into the label field. So the `assay_ontology_term_id` in the new dataset would be `""` but `assay` would be
 `Sci-Plex`.
 
@@ -163,13 +140,18 @@ for each the raw `X` values. `sqrt` means `sqrt(X)` (this is not common). For la
 or SCTransform functions, the correct choice is usually `log1p`.
 
 
-### `cellxgene schema validate`
+### `cellxgene-schema validate`
 
-The next `cellxgene schema` subcommand is `cellxgene schema validate`, and it validates that a given h5ad follows a
+The next `cellxgene-schema` subcommand is `cellxgene-schema validate`, and it validates that a given h5ad follows a
 version of the schema. It accepts two parameters:
 
 1. The h5ad file to check
-2. The version of the schema to check against.
+2. Whether the validation should be "shallow"
+
+If the validation is shallow, all the script does is check for a valid schema version number in the `uns` metadata. This
+works because the `cellxgene-schema apply` command won't write the version into the file unless it verifies that the new
+h5ad file does indeed follow the schema. If the validation is "deep", then it reads the schema version and actually checks
+all the fields in the h5ad against it.
 
 If the validation succeeds, the command will have a zero exit code. If it does not, it will have a non-zero exit code
 and will print validation failure messages.
