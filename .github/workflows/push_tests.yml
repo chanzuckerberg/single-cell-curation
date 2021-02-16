@@ -42,7 +42,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
+          pip install -r cellxgene_schema_cli/requirements.txt
           pip install pytest
       - name: Unit tests
         run: make unit-test

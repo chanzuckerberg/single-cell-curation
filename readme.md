@@ -13,3 +13,18 @@ In principle anyone could reproduce our curation process following the dataset's
 ### docs
 
 General documents, files, or scripts that have been used or could be used in the future for curation or integration processes.
+
+### Schema CLI Tool
+
+In the `cellxgene_schema_cli` folder, there is a command line tool for applying and validating the cellxgene integration
+schema. In can be installed with
+
+```
+make install
+```
+
+and you can run the tests with
+
+```
+make unit-test
+```

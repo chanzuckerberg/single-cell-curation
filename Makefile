@@ -1,13 +1,12 @@
 .PHONY: fmt
 fmt:
-	black cellxgene_schema/ tests/
+	cd cellxgene_schema_cli/ && black cellxgene_schema/ tests/
 
 lint:
-	flake8 cellxgene_schema/ tests/
+	cd cellxgene_schema_cli/ && flake8 cellxgene_schema/ tests/
 
 install:
-	pip install -r requirements.txt
-	pip install .
+	cd cellxgene_schema_cli/ && pip install -r requirements.txt && pip install .
 
 unit-test:
-	pytest
+	cd cellxgene_schema_cli && pytest
