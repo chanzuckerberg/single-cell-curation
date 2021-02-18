@@ -28,3 +28,7 @@ and you can run the tests with
 ```
 make unit-test
 ```
+
+# Reporting Security Issues
+
+Please read our [security reporting policy](SECURITY.md)
