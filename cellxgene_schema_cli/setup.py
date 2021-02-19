@@ -1,12 +1,13 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open("requirements.txt") as fh:
     requirements = fh.read().splitlines()
 
 setup(
-    name="cellxgene",
+    name="cellxgene-schema",
     version="0.0.1",
-    packages=["cellxgene_schema"],
+    packages=find_packages(),
+    url="https://github.com/chanzuckerberg/single-cell-curation",
     license="MIT",
     author="Chan Zuckerberg Initiative",
     author_email="cellxgene@chanzuckerberg.com",
