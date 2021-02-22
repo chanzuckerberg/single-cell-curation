@@ -1,0 +1,206 @@
+obs:
+  assay_ontology_term_id: EFO:0009899
+  ethnicity_ontology_term_id: na
+  disease_ontology_term_id: PATO:0000461
+  cell_type_ontology_term_id:
+    cell_ontology_class:
+      B cell: CL:0000236
+      Bergmann glial cell: CL:0000644
+      Brush cell of epithelium proper of large intestine: CL:0002203
+      CD4-positive, alpha-beta T cell: CL:0000624
+      CD8-positive, alpha-beta T cell: CL:0000625
+      DN3 thymocyte: CL:0000807
+      DN4 thymocyte: CL:0000808
+      Kupffer cell: CL:0000091
+      Langerhans cell: CL:0000453
+      NK cell: CL:0000623
+      Schwann cell: CL:0002573
+      T cell: CL:0000084
+      adventitial cell: CL:0002503
+      alveolar macrophage: CL:0000583
+      aortic endothelial cell: CL:0002544
+      astrocyte: CL:0000127
+      atrial myocyte: CL:0002129
+      basal cell: CL:0000646
+      basal cell of epidermis: CL:0002187
+      basal epithelial cell of tracheobronchial tree: CL:0002329
+      basophil: CL:0000767
+      bladder cell: CL:1001319
+      bladder urothelial cell: CL:1001428
+      blood cell: CL:0000081
+      brain pericyte: CL:2000043
+      bronchial smooth muscle cell: CL:0002598
+      brush cell: CL:0002204
+      bulge keratinocyte: CL:0002337
+      cardiac neuron: CL:0010022
+      cardiomyocyte: CL:0000746
+      chondrocyte: CL:0000138
+      ciliated columnar cell of tracheobronchial tree: CL:0002145
+      classical monocyte: CL:0000860
+      club cell of bronchiole: CL:0000158
+      dendritic cell: CL:0000451
+      double negative T cell: CL:0002489
+      duct epithelial cell: CL:0000068
+      early pro-B cell: CL:0002046
+      endocardial cell: CL:0002350
+      endothelial cell: CL:0000115
+      endothelial cell of coronary artery: CL:2000018
+      endothelial cell of hepatic sinusoid: CL:1000398
+      endothelial cell of lymphatic vessel: CL:0002138
+      enterocyte of epithelium of large intestine: CL:0002071
+      enteroendocrine cell: CL:0000164
+      ependymal cell: CL:0000065
+      epidermal cell: CL:0000362
+      epithelial cell: CL:0000066
+      epithelial cell of large intestine: CL:0002253
+      epithelial cell of proximal tubule: CL:0002306
+      epithelial cell of thymus: CL:0002293
+      erythroblast: CL:0000765
+      erythrocyte: CL:0000232
+      erythroid progenitor: CL:0001066
+      fenestrated cell: CL:0000666
+      fibroblast: CL:0000057
+      fibroblast of cardiac tissue: CL:0002548
+      fibroblast of lung: CL:0002553
+      fibrocyte: CL:0000135
+      granulocyte: CL:0000094
+      granulocyte monocyte progenitor cell: CL:0000557
+      granulocytopoietic cell: CL:0002191
+      hematopoietic precursor cell: CL:0008001
+      hematopoietic stem cell: CL:0000037
+      hepatic stellate cell: CL:0000632
+      hepatocyte: CL:0000182
+      immature B cell: CL:0000816
+      immature NKT cell: CL:0000914
+      immature T cell: CL:0002420
+      intermediate monocyte: CL:0002393
+      interneuron: CL:0000099
+      intestinal crypt stem cell: CL:0002250
+      keratinocyte: CL:0000312
+      keratinocyte stem cell: CL:0002337
+      kidney capillary endothelial cell: CL:1000892
+      kidney cell: CL:1000497
+      kidney collecting duct epithelial cell: CL:1000454
+      kidney collecting duct principal cell: CL:1001431
+      kidney cortex artery cell: CL:1001045
+      kidney distal convoluted tubule epithelial cell: CL:1000849
+      kidney interstitial fibroblast: CL:1000692
+      kidney loop of Henle ascending limb epithelial cell: CL:1001016
+      kidney loop of Henle thick ascending limb epithelial cell: CL:1001106
+      kidney mesangial cell: CL:0000650
+      kidney proximal convoluted tubule epithelial cell: CL:1000838
+      kidney proximal straight tubule epithelial cell: CL:1000839
+      large intestine goblet cell: CL:1000320
+      late pro-B cell: CL:0002048
+      leukocyte: CL:0000738
+      luminal epithelial cell of mammary gland: CL:0002326
+      lung macrophage: CL:1001603
+      lung neuroendocrine cell: CL:1000223
+      lymphocyte: CL:0000542
+      lymphoid progenitor cell: CL:0000838
+      macrophage: CL:0000235
+      macrophage dendritic cell progenitor: CL:0002009
+      mast cell: CL:0000097
+      mature NK T cell: CL:0000814
+      mature alpha-beta T cell: CL:0000791
+      medium spiny neuron: CL:1001474
+      megakaryocyte-erythroid progenitor cell: CL:0000050
+      mesangial cell: CL:0000650
+      mesenchymal cell: CL:0008019
+      mesenchymal progenitor cell: ''
+      mesenchymal stem cell: CL:0000134
+      mesenchymal stem cell of adipose: CL:0002570
+      microglial cell: CL:0000129
+      monocyte: CL:0000576
+      mucus secreting cell: CL:0000319
+      myeloid cell: CL:0000763
+      myeloid dendritic cell: CL:0000782
+      myeloid leukocyte: CL:0000766
+      naive B cell: CL:0000788
+      naive T cell: CL:0000898
+      neuroendocrine cell: CL:0000165
+      neuroepithelial cell: CL:0002259
+      neuron: CL:0000540
+      neuronal stem cell: CL:0000047
+      neutrophil: CL:0000775
+      non-classical monocyte: CL:0000875
+      oligodendrocyte: CL:0000128
+      oligodendrocyte precursor cell: CL:0002453
+      pancreatic A cell: CL:0000171
+      pancreatic B cell: CL:0000169
+      pancreatic D cell: CL:0000173
+      pancreatic PP cell: CL:0002275
+      pancreatic acinar cell: CL:0002064
+      pancreatic ductal cel: CL:0002079
+      pancreatic ductal cell: CL:0002079
+      pancreatic stellate cell: CL:0002410
+      pericyte cell: CL:0000669
+      plasma cell: CL:0000786
+      plasmacytoid dendritic cell: CL:0000784
+      podocyte: CL:0000391
+      precursor B cell: CL:0000817
+      proerythroblast: CL:0000547
+      professional antigen presenting cell: CL:0000145
+      promonocyte: CL:0000559
+      pulmonary interstitial fibroblast: CL:0002241
+      regulatory T cell: CL:0000815
+      respiratory basal cell: CL:0002633
+      secretory cell: CL:0000151
+      skeletal muscle cell: CL:0000188
+      skeletal muscle satellite cell: CL:0000594
+      smooth muscle cell: CL:0000192
+      smooth muscle cell of the pulmonary artery: CL:0002591
+      smooth muscle cell of trachea: CL:0002600
+      stem cell of epidermis: CL:1000428
+      stromal cell: CL:0000499
+      thymocyte: CL:0000893
+      type I pneumocyte: CL:0002062
+      type II pneumocyte: CL:0002063
+      valve cell: CL:0000663
+      vein endothelial cell: CL:0002543
+      ventricular myocyte: CL:0002131
+  tissue_ontology_term_id:
+    tissue:
+      Skin: UBERON:0002097
+      Pancreas: UBERON:0001264
+      Limb_Muscle: UBERON:0003661
+      Heart: UBERON:0000948
+      Spleen: UBERON:0002106
+      Diaphragm: UBERON:0001103
+      Trachea: UBERON:0003126
+      Tongue: UBERON:0001723
+      Thymus: UBERON:0002370
+      Brain_Non-Myeloid: UBERON:0000955
+      Brain_Myeloid: UBERON:0000955
+      Bladder: UBERON:0009958
+      Large_Intestine: UBERON:0000059
+      BAT: UBERON:0001348
+      GAT: UBERON:0003428
+      MAT: UBERON:0015143
+      SCAT: UBERON:0002190
+      Lung: UBERON:0002048
+      Liver: UBERON:0002107
+      Marrow: UBERON:0002371
+      Kidney: UBERON:0002113
+      Aorta: UBERON:0000947
+      Mammary_Gland: UBERON:0001911
+  development_stage_ontology_term_id:
+    age:
+      1m: EFO:0000399
+      3m: EFO:0001272
+      18m: EFO:0001272
+      21m: EFO:0001272
+      24m: EFO:0001272
+      30m: EFO:0001272
+uns:
+  version:
+    corpora_schema_version: 1.1.0
+    corpora_encoding_version: 0.1.0
+  organism: Mus musculus
+  organism_ontology_term_id: NCBITaxon:10090
+  layer_descriptions:
+    X: log(counts_per_thousand+1)
+    raw.X: raw
+  publication_doi: https://doi.org/10.1038/s41586-020-2496-1
+  title: A single-cell transcriptomic atlas characterizes ageing tissues in the mouse
+
