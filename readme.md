@@ -58,13 +58,13 @@ fixup_gene_symbols:
 You can use the config file to augment a dataset with  the schema using:
 
 ```
-cellxgene schema apply --source-h5ad original.h5ad --remix-config config.yml --output-filename remixed.h5ad
+cellxgene-schema apply --source-h5ad original.h5ad --remix-config config.yml --output-filename remixed.h5ad
 ```
 
 And then verify that the schema was properly added with:
 
 ```
-cellxgene schema validate remixed.h5ad
+cellxgene-schema validate remixed.h5ad
 ```
 
 A detailed manual for the CLI and the config yaml file can be found [here](docs/schema_guide.md).
