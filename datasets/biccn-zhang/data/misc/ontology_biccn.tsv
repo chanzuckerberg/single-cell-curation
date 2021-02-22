@@ -1,0 +1,25 @@
+original_columns	original_values	BICCN_ontology_term_id	ontology_label	project_name	doi
+subclass	Astrocytes	ILX:0770141	Astrocyte (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105700
+subclass	Endothelial	ILX:0770142	Endothelial cell (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105701
+subclass	L23_IT	ILX:0770156	L2/3 IT neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105702
+subclass	L45_IT	ILX:0770174	L4/5 IT (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105703
+subclass	L56_NP	ILX:0770161	L5/6 NP neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105704
+subclass	L5_IT	ILX:0770157	L5 IT neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105705
+subclass	L5_PT	L5_PT	L5_PT	zheng	https://doi.org/10.1101/2020.06.04.105706
+subclass	L6_CT	ILX:0770162	L6 CT neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105707
+subclass	L6_IT	ILX:0770158	L6 IT neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105708
+subclass	L6_IT_Car3	ILX:0770158	L6 IT neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105709
+subclass	L6b	ILX:0770163	L6b neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105710
+subclass	Lamp5	ILX:0770149	Lamp5 neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105711
+subclass	Microglia	ILX:0770146	Microglia (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105712
+subclass	OPC	ILX:0770139	Oligodendrocyte progenitor cell (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105713
+subclass	Oligodendrocytes	ILX:0770140	Oligodendrocyte (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105714
+subclass	PVM	ILX:0770146	Microglia (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105715
+subclass	Pericytes	ILX:0770145	Pericyte (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105716
+subclass	Pvalb	ILX:0770154	Pvalb neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105717
+subclass	SMC	ILX:0770144	Smooth muscle cell (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105718
+subclass	Sncg	ILX:0770150	Sncg neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105719
+subclass	Sst	ILX:0770152	Sst neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105720
+subclass	Sst_Chodl	ILX:0770153	Sst Chodl neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105721
+subclass	VLMC	ILX:0770143	Vascular leptomeningeal cell (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105722
+subclass	Vip	ILX:0770151	Vip GABAergic neuron (BICCN 2020)	zheng	https://doi.org/10.1101/2020.06.04.105723
