@@ -23,5 +23,9 @@ __pycache__
 cb_annotated_object.RDS
 cerebellum_metadata_updated_custom.tsv
 
+# Zheng big files
+datasets/biccn-zhang/data/original/dataset_metadata.xlsx
+datasets/biccn-zhang/data/original/umap_embedding.csv
+
 # Tasic 2018 bigfiles
 GSE115746_cells_exon_counts.csv.gz
