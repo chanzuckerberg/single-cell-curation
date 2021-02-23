@@ -11,7 +11,13 @@ For information/issues about cellxgene and its portal please refer to:
 
 The central tool provided here is a CLI for augmenting datasets with the [cellxgene schema](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/backend/schema/corpora_schema_h5ad_implementation.md) so they can be hosted at [cellxgene's portal](https://cellxgene.cziscience.com/). 
 
-It can be installed by cloning this repository and running:
+It is available through pip:
+
+```
+pip install cellxgene-schema
+```
+
+It can also e installed from the source by cloning this repository and running:
 
 ```
 make install 
@@ -22,6 +28,7 @@ And you can run the test with:
 ```
 make unit-test
 ```
+
 
 ## Quick start
 
