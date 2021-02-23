@@ -1,6 +1,6 @@
 # cellxgene Data Integration Schema
 
-Authors: mkinsella@chanzuckerberg.com
+Contact: acarr@chanzuckerberg.com
 
 Document Status: _Approved_
 

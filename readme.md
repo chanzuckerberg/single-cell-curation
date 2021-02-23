@@ -9,7 +9,7 @@ For information/issues about cellxgene and its portal please refer to:
 
 ## Installation
 
-The central tool provided here is a CLI for augmenting datasets with the [cellxgene schema](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/backend/schema/corpora_schema_h5ad_implementation.md) so they can be hosted at [cellxgene's portal](https://cellxgene.cziscience.com/). 
+The central tool provided here is a CLI for augmenting datasets with the [cellxgene schema](docs/corpora_schema.md) so they can be hosted at [cellxgene's portal](https://cellxgene.cziscience.com/). 
 
 It is available through pip:
 
