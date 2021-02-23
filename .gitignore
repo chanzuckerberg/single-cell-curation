@@ -17,7 +17,11 @@ __pycache__
 ./datasets/biccn-yao_integrated_transcriptomic_and_epigenomic_atlas/data/original/10X_nuclei_v2_AIBS
 ./datasets/biccn-yao_integrated_transcriptomic_and_epigenomic_atlas/data/original/10X_nuclei_v3_AIBS
 ./datasets/biccn-yao_integrated_transcriptomic_and_epigenomic_atlas/data/original/10X_nuclei_v3_Broad
+./datasets/biccn-tasic_2018/data/original/GSE115746_cells_exon_counts.csv.gz
 
 # Kozareva big files
 cb_annotated_object.RDS
 cerebellum_metadata_updated_custom.tsv
+
+# Tasic 2018 bigfiles
+GSE115746_cells_exon_counts.csv.gz

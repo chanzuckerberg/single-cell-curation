@@ -1,0 +1,25 @@
+subclass	lookup_name	ontology_term_id	ontology_term_name	final
+L6 IT	L6 IT	CL:0000679		True
+Sst	Sst	CL:0000617		True
+VLMC	VLMC	CL:0000708		True
+L5 IT	L5 IT	CL:0000679		True
+L4	L4	CL:0000679		True
+Lamp5	Lamp5	CL:0000617		True
+Sncg	Sncg	CL:0000617		True
+Vip	Vip	CL:0000617		True
+Astro	Astro	CL:0000127		True
+Pvalb	Pvalb	CL:0000617		True
+L6 CT	L6 CT	CL:0000679		True
+No Class	No Class	unknown		True
+NP	NP	CL:0000679		True
+L2/3 IT	L2/3 IT	CL:0000679		True
+L5 PT	L5 PT	CL:0000679		True
+L6b	L6b	CL:0000679		True
+Oligo	Oligo	CL:0000128		True
+Serpinf1	Serpinf1	CL:0000617		True
+Endo	Endo	CL:0000115		True
+SMC	SMC	CL:0000192		True
+Meis2	Meis2	CL:0000617		True
+CR	CR	CL:0000679		True
+Macrophage	Macrophage	CL:0000235		True
+Peri	Peri	CL:0000669		True

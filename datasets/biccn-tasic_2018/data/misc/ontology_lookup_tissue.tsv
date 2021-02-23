@@ -1,0 +1,3 @@
+brain_region	lookup_name	ontology_term_id	ontology_term_name	final
+VISp	VISp	UBERON:0002436		True
+ALM	ALM	UBERON:0001870		True
