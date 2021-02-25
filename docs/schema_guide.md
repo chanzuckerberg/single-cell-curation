@@ -28,7 +28,7 @@ Its first subcommand, `cellxgene-schema apply`, takes three inputs:
 ### Configuration yaml
 
 The configuration yaml file describes how to apply the schema. This is an example of a "skeleton" yaml that has all the
-fields required for the 1.0.0 schema but is not yet filled in with any logic:
+fields required for the 1.1.0 schema but is not yet filled in with any logic:
 
 ```
 uns:
