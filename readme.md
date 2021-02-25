@@ -49,16 +49,14 @@ obs:
 uns:
   version:
     corpora_schema_version: 1.1.0
-    corpora_encoding_version: 0.1.0
   organism: Homo sapiens
   organism_ontology_term_id: NCBITaxon:9606
   layer_descriptions:
     X: log1p
    raw.X: raw
-  publication_doi: http://dx.doi.org/10.1126/science.aba7721
   title: Survey of human embryonic development
 fixup_gene_symbols:
-    X: log1p
+   X: log1p
    raw.X: raw
 ```
 
