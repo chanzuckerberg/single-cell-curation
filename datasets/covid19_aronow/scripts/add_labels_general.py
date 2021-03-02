@@ -6,7 +6,7 @@ import ontology, os, sys
 in_dir = sys.argv[1]
 out_dir = sys.argv[2]
 files = ['COVID-19_PBMC_Arunachalam_et_al.h5ad', 'COVID-19_PBMC_Guo_et_al.h5ad', 'COVID-19_PBMC_Lee_et_al.h5ad', 'COVID-19_PBMC_Schulte-Schrepping_et_al.h5ad', 'COVID-19_PBMC_Wilk_et_al.h5ad', 'B_cell_subcluster.h5ad',  'T_NK_Subcluster_0121.h5ad', 'monocyte_subcluster_0126.h5ad', 'platelets_subcluster.h5ad', 'PBMC_merged_normalized_addRaw_coordinatesFixed_0126.h5ad']
-#files = ['T_NK_Subcluster_0121.h5ad']
+files = ['T_NK_Subcluster_0121.h5ad']
 
 for c_file in files:
     
@@ -28,8 +28,9 @@ for c_file in files:
         
     # Eliminate empty clusters in T_NK_Subcluster_0121.h5ad
     if c_file == 'T_NK_Subcluster_0121.h5ad':
-        to_keep = dataset.obs.loc[dataset.obs['sub_cluster'] != '', ].index
-        dataset = dataset[to_keep,:]
+        #to_keep = dataset.obs.loc[dataset.obs['sub_cluster'] != '', ].index
+        #dataset = dataset[to_keep,:]
+        dataset.obs.drop(columns='sub_cluster', inplace=True)
 
     # Add labels for ontologies
     for column in columns:

@@ -48,7 +48,7 @@ Clone this repo and execute the steps below from the downladed path
 # For the meta analysis integrated data
 python3 scripts/add_labels.py
 # For the rest
-python3 scripts/add_labels_general.py ./data/original/ ./data/transformed/
+python3 scripts/add_labels_general.py ./data/original/ ./data/remixed/
 ```
 - Validate schema
 

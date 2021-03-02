@@ -58,7 +58,7 @@ for column in columns:
     dataset.obs[column + suffix].cat.remove_unused_categories(inplace=True)
     
 
-dataset.write('../data/remixed/PBMC_merged_normalized_addRaw_coordinatesFixed_0126.h5ad', compression='gzip')
+dataset.write('./data/remixed/PBMC_merged_normalized_addRaw_coordinatesFixed_0126.h5ad', compression='gzip')
 
 #for column in columns:
 #    uniq = dataset.obs[[column + suffix, column]].drop_duplicates()
