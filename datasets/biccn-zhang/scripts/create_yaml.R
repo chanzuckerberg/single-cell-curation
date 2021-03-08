@@ -46,7 +46,7 @@ make_yaml_list <- function() {
          uns = list(version = list(corpora_schema_version="1.1.0", corpora_encoding_version="0.1.0"),
                     organism = "Mus musculus", 
                     organism_ontology_term_id = "NCBITaxon:10090",
-                    layer_descriptions = list(X = "raw merfish (counts/cell volume)", raw.X = "raw merfish (counts/cell_volume)"), 
+                    layer_descriptions = list(X = "raw merfish (counts/cell volume)", raw.X = "raw"), 
                     publication_doi = "https://doi.org/10.1101/2020.06.04.105700", 
                     title = paste("Molecular, spatial and projection diversity of neurons in primary motor cortex revealed by in situ single-cell transcriptomics")
                     )

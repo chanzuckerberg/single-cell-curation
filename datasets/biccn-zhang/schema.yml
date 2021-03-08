@@ -39,7 +39,7 @@ uns:
   organism_ontology_term_id: NCBITaxon:10090
   layer_descriptions:
     X: raw merfish (counts/cell volume)
-    raw.X: raw merfish (counts/cell_volume)
+    raw.X: raw
   publication_doi: https://doi.org/10.1101/2020.06.04.105700
   title: Molecular, spatial and projection diversity of neurons in primary motor cortex
     revealed by in situ single-cell transcriptomics
