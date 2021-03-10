@@ -22,3 +22,5 @@ Marrow	marrow	UBERON:0002371	bone marrow	True	tissue
 Kidney	kidney	UBERON:0002113	kidney	True	tissue
 Aorta	aorta	UBERON:0000947	aorta	True	tissue
 Mammary_Gland	mammary gland	UBERON:0001911	mammary gland	True	tissue
+Heart_and_Aorta	heart	UBERON:0000948	heart	True	tissue
+Fat	fat	UBERON:0001013	adipose tissue	True	tissue

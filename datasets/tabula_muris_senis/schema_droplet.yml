@@ -107,7 +107,7 @@ obs:
       megakaryocyte-erythroid progenitor cell: CL:0000050
       mesangial cell: CL:0000650
       mesenchymal cell: CL:0008019
-      mesenchymal progenitor cell: ''
+      mesenchymal progenitor cell: CL:0000134
       mesenchymal stem cell: CL:0000134
       mesenchymal stem cell of adipose: CL:0002570
       microglial cell: CL:0000129
@@ -184,6 +184,8 @@ obs:
       Kidney: UBERON:0002113
       Aorta: UBERON:0000947
       Mammary_Gland: UBERON:0001911
+      Heart_and_Aorta: UBERON:0000948
+      Fat: UBERON:0001013
   development_stage_ontology_term_id:
     age:
       1m: EFO:0000399

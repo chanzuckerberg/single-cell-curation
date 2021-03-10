@@ -81,3 +81,14 @@ do
     cellxgene schema validate $i
 done
 ```
+
+- Append tissue information to dataset title
+
+```
+mkdir -p ./data/transformed/1_remixed_final/
+for i in ./data/transformed/1_remixed/*h5ad
+do
+    echo $i 
+    python3 ./scripts/append_tissue_to_title.py $i  ./data/transformed/1_remixed_final/$(basename $i)
+done
+```

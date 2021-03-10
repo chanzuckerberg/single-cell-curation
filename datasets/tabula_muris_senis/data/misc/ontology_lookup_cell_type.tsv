@@ -102,7 +102,7 @@ medium spiny neuron	medium spiny neuron	CL:1001474	medium spiny neuron	True	cell
 megakaryocyte-erythroid progenitor cell	megakaryocyte-erythroid progenitor cell	CL:0000050	megakaryocyte-erythroid progenitor cell	True	cell_type
 mesangial cell	mesangial cell	CL:0000650	mesangial cell	True	cell_type
 mesenchymal cell	mesenchymal cell	CL:0008019	mesenchymal cell	True	cell_type
-mesenchymal progenitor cell	mesenchymal progenitor cell			True	cell_type
+mesenchymal progenitor cell	mesenchymal progenitor cell	CL:0000134	mesenchymal stem cell	True	cell_type
 mesenchymal stem cell	mesenchymal stem cell	CL:0000134	mesenchymal stem cell	True	cell_type
 mesenchymal stem cell of adipose	mesenchymal stem cell of adipose	CL:0002570	mesenchymal stem cell of adipose	True	cell_type
 microglial cell	microglial cell	CL:0000129	microglial cell	True	cell_type
