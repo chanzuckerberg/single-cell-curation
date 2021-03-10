@@ -29,3 +29,6 @@ datasets/biccn-zhang/data/original/umap_embedding.csv
 
 # Tasic 2018 bigfiles
 GSE115746_cells_exon_counts.csv.gz
+
+# Zheng big files
+datasets/biccn-zhang/data/original/cell_metadata.csv
