@@ -78,11 +78,10 @@ for i in ./data/transformed/1_remixed/*h5ad
 do
     echo $i 
     python3 ./scripts/remove_obs_columns.py cell_ontology_class,cell_ontology_id $i 
-    cellxgene schema validate $i
 done
 ```
 
-- Append tissue information to dataset title
+- Append tissue information to dataset title and validate
 
 ```
 mkdir -p ./data/transformed/1_remixed_final/
@@ -90,5 +89,11 @@ for i in ./data/transformed/1_remixed/*h5ad
 do
     echo $i 
     python3 ./scripts/append_tissue_to_title.py $i  ./data/transformed/1_remixed_final/$(basename $i)
+done
+
+for i in ./data/transformed/1_remixed_final/*h5ad
+do
+    echo $i 
+    cellxgene schema validate $i
 done
 ```
