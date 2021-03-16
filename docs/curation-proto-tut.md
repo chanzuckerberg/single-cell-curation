@@ -18,7 +18,7 @@ In this tutorial, you will gain all the essential information for doing the foll
 Beyond this we hope that you see the value of using this portal as a publishing platform and also welcome any comments that pertain improving the portal and curation experience. You can contact us via [support email]()
 
 ## General data requirements
-- count matrix (required (expcept certain assayss))
+- count matrix (required (expcept certain assays))
 - normalized expression matrix used for visulization (required)
 - cell level metadata (required)
 - variable/feature level metadata (not required)
@@ -50,7 +50,7 @@ Talk about conversion - sceasy, other tools....
 
 ## Accepted data types
 
-Talk about the data types that we are able to support (it is mostly ambiguous, but anndata does have some limitations that can be mentioned about here)
+Talk about the data types that we are able to support (the tool is mostly ambiguous, but anndata does have some limitations that can be mentioned about here)
 
 Guidelines for curating the following assays. In each section, also include a link to curation of an object of the specified assay type:
 - ATAC/mC
@@ -85,6 +85,8 @@ In the obs slot, we store schema information at the individual cell level (impor
 
 ### Required cell level schema fields (i.e. what goes in `obs`?)
 
+Table will also include scenrios where ontologies can be relaxed
+
 | `obs` column name                    | Expected Value| Description        |
 | ------------------------------------ |:-------------:| ------------------:|
 | 'tissue'                             |               |                    |
@@ -100,3 +102,44 @@ In the obs slot, we store schema information at the individual cell level (impor
 | 'ethnicity_ontology_term_id	'        |               |                    |
 | 'development_stage'                  |               |                    |
 | 'development_stage_ontology_term_id	'|               |                    |
+
+
+## Using the CZI curation tools to apply the schema appropriately
+
+### `cellxgene schema apply`
+Necessary arguments
+- input h5ad
+- config file
+- output h5ad
+- warnings and errors
+
+### Config file structure
+What is the config YAML file and how does it modify your anndata object?
+
+### `cellxgene schema validate`
+
+Neccesary arguments:
+- h5ad to validate
+
+What does a succesful output look like?
+
+### Test `h5ad` in local version of cellxgene
+
+## Uploading data to the cellxgene data portal
+
+### Portal Sign in
+
+sign in options for the portal (gmail, github, etc)
+
+### Create a collection
+
+screenshot of creating a portal
+
+### Add a dataset to a collection
+
+
+### Remove dataset from a collection
+
+### Share uploaded datasets with private links
+
+### Publish Collection to the portal
