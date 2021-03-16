@@ -8,6 +8,10 @@ purpose: Motivate submission to the data portal give context
 
 Cellxgene's publishing platform and interactive single cell data explorer is a system which is optimized for easy access, interrogation and sharing/reuse of single cell data. In order to meet these standards and to facilitate easy navigation/aggregation among the growing number of single cell datasets, the cellxgene publishing platform currently accepts curated anndata objects adhering to a [comprehensive data schema (@TODO add link)](https://github.com/chanzuckerberg/single-cell-curation/main/docs/corpora_schema.md). 
 
+```
+Side by side screenshots of collection view, dataset view, explorer view
+```
+
 In this tutorial, you will gain all the essential information for doing the following: 
 - curating one of your own single cell datasets in a streamlined manner
 - using CZI curation tools to perform most of the curation work
@@ -16,6 +20,12 @@ In this tutorial, you will gain all the essential information for doing the foll
 - basic data exploration in the cellxgene explorer view
 
 Beyond this we hope that you see the value of using this portal as a publishing platform and also welcome any comments that pertain improving the portal and curation experience. You can contact us via [support email]()
+
+## Why should you contribute to the data portal
+ - link permanence, allows you to reference data portal links in publication with guarantee that the link will always be there
+ - sharing of private datasets with collaborators
+ - easy for readers to explore your dataset (with no extra work on your side - goodbye shiny!)
+ - accesibility of your dataset through many of the popular single cell toolchains
 
 ## General data requirements
 - count matrix (required (expcept certain assays))
@@ -127,19 +137,26 @@ What does a succesful output look like?
 
 ## Uploading data to the cellxgene data portal
 
+Introduce collection view, dataset view, and explorer view
+
 ### Portal Sign in
 
 sign in options for the portal (gmail, github, etc)
 
 ### Create a collection
 
-screenshot of creating a portal
+screenshot of creating a collection
 
 ### Add a dataset to a collection
 
+screenshot adding a dataset to collection
 
 ### Remove dataset from a collection
 
+screenshot removing dataset
+
 ### Share uploaded datasets with private links
+Explain that people can share private datasets 
+
 
 ### Publish Collection to the portal
