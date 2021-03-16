@@ -19,13 +19,23 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 
 - Talk about object structure
 - limitations 
-- what are the features/aspects of the anndata object that cellxgene data portal expects (essential slots/entries in the anndata object) - talk about where schema information is stored
+- what are the features/aspects of the anndata object that cellxgene data portal expects (essential slots/entries in the anndata object) - talk about where schema information is stored (schema info stored in obs and uns)
+- obs
+- uns
+- obsm ("X_example")
+- X
+- raw.X or raw layer
+- layers
+
+### Conversion to Anndata from other object types (seurat, loom, sce)
+
+Talk about conversion - sceasy, other tools....
 
 
 
 ## Accepted data types
 
-Talk about the data types that we are able to support (it is mostly ambiguous, but anndata does have some limitations that can be talk about here)
+Talk about the data types that we are able to support (it is mostly ambiguous, but anndata does have some limitations that can be mentioned about here)
 
 Guidelines for:
 - ATAC/mC
@@ -33,4 +43,45 @@ Guidelines for:
 - CITEseq
 - Spatial/Visium
 
-## 
+## Schema information
+
+As discussed before, schema information included in the uns slot gives us dataset level metadata (ex: doi, paper title). These metadata are stored in a dictionary of key value pairs. The required keys and constraints on their respective values are detailed in the table below:
+
+### Required/suggested dataset level schema fields (i.e. what goes in the `uns` slot?)
+
+- 'layer_descriptions'
+- 'organism'
+- 'organism_ontology_term_id',
+- 'publication_doi'
+- 'title'
+- 'version'
+
+| Key                         | Value         | Value description  |
+| --------------------------- |:-------------:| ------------------:|
+| 'version'                   |               |                    |
+| 'title'                     |               |                    |
+| 'publication_doi'           |               |                    |
+| 'organism'                  |               |                    |
+| 'organism_ontology_term_id' |               |                    |
+| 'layer_descriptions'        |               |                    |
+
+
+In the obs slot, we store schema information at the individual cell level (important to note here that while original metdata fields here are not altered or replaced, only augmeneted by additional schema specific columns). Each schema field that we require gets two columns in the obs dataframe  (one for the ontology term id, and one for the term itself)
+
+### Required cell level schema fields (i.e. what goes in `obs`?)
+
+| `obs` column name                    | Expected Value| Description        |
+| ------------------------------------ |:-------------:| ------------------:|
+| 'tissue'                             |               |                    |
+| 'tissue_ontology_term_id'            |               |                    |
+| 'assay'                              |               |                    |
+| 'assay_ontology_term_id'             |               |                    |
+| 'disease'                            |               |                    |
+| 'disease_ontology_term_id'           |               |                    |
+| 'cell_type'                          |               |                    |
+| 'cell_type_ontology_term_id'         |               |                    |
+| 'sex'                                |               |                    |
+| 'ethnicity'                          |               |                    |
+| 'ethnicity_ontology_term_id	'        |               |                    |
+| 'development_stage'                  |               |                    |
+| 'development_stage_ontology_term_id	'|               |                    |
