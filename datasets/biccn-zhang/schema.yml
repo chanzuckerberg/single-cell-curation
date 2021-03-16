@@ -1,0 +1,46 @@
+obs:
+  assay_ontology_term_id: EFO:0001272
+  ethnicity_ontology_term_id: na
+  sex: male
+  disease_ontology_term_id: PATO:0000461
+  tissue_ontology_term_id: UBERON:0001384
+  development_stage_ontology_term_id: EFO:0001272
+  cell_type_ontology_term_id:
+    BICCN_subclass_label:
+      Astrocytes: CL:0000127
+      Endothelial: CL:0000115
+      L23_IT: CL:0000679
+      L45_IT: CL:0000679
+      L56_NP: CL:0000679
+      L5_IT: CL:0000679
+      L5_PT: CL:0000679
+      L6_CT: CL:0000679
+      L6_IT: CL:0000679
+      L6_IT_Car3: CL:0000679
+      L6b: CL:0000679
+      Lamp5: CL:0000617
+      Microglia: CL:0000129
+      OPC: CL:0000115
+      Oligodendrocytes: CL:0000128
+      PVM: CL:0000129
+      Pericytes: CL:0000669
+      Pvalb: CL:0000617
+      SMC: CL:0000192
+      Sncg: CL:0000617
+      Sst: CL:0000617
+      Sst_Chodl: CL:0000617
+      VLMC: CL:0000708
+      Vip: CL:0000617
+uns:
+  version:
+    corpora_schema_version: 1.1.0
+    corpora_encoding_version: 0.1.0
+  organism: Mus musculus
+  organism_ontology_term_id: NCBITaxon:10090
+  layer_descriptions:
+    X: raw merfish (counts/cell volume)
+    raw.X: raw
+  publication_doi: https://doi.org/10.1101/2020.06.04.105700
+  title: Molecular, spatial and projection diversity of neurons in primary motor cortex
+    revealed by in situ single-cell transcriptomics
+

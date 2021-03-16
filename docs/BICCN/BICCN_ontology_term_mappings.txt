@@ -42,3 +42,107 @@ cell_type__custom@cell_type__ontology_label	macrophage@macrophage	macrophage		ko
 cell_type__custom@cell_type__ontology_label	microglial cell@microglial cell	ILX:0770146	Microglia (BICCN)	kozareva	https://doi.org/10.1101/2020.03.04.976407
 cell_type__custom@cell_type__ontology_label	oligodendrocyte@oligodendrocyte	ILX:0770140	Oligodendrocyte (BICCN)	kozareva	https://doi.org/10.1101/2020.03.04.976407
 cell_type__custom@cell_type__ontology_label	oligodendrocyte precursor cell@oligodendrocyte precursor cell	ILX:0770139	Oligodendrocyte progenitor cell (BICCN)	kozareva	https://doi.org/10.1101/2020.03.04.976407
+subclass_label	Astro	ILX:0770141	Astrocyte (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Endo	ILX:0770142	Endothelial cell (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	L2/3 IT	ILX:0770156	L2/3 IT neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	L5 ET	ILX:0770160	L5 ET neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	L5 IT	ILX:0770157	L5 IT neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	L5/6 NP	ILX:0770161	L5/6 NP neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	L6 CT	ILX:0770162	L6 CT neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	L6 IT	ILX:0770158	L6 IT neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	L6 IT Car3	ILX:0770159	L6 IT Car3 neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	L6b	ILX:0770163	L6b neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Lamp5	ILX:0770149	Lamp5 neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Meis2	ILX:0770155	Meis2 neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Micro-PVM	ILX:0770146	Microglia (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	OPC	ILX:0770139	Oligodendrocyte progenitor cell (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Oligo	ILX:0770140	Oligodendrocyte (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Peri	ILX:0770145	Pericyte (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Pvalb	ILX:0770154	Pvalb neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	SMC	ILX:0770144	Smooth muscle cell (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Sncg	Sncg	Sncg	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Sst	ILX:0770152	Sst neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Sst Chodl	ILX:0770153	Sst Chodl neuron (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	VLMC	ILX:0770143	Vascular leptomeningeal cell (BICCN)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+subclass_label	Vip	ILX:0770151	Vip GABAergic neuron (BICCN 2020)	Bakken	https://doi.org/10.1101/2020.03.31.016972
+sub_class	Astrocyte	ILX:0770141	Astrocyte (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	Chodl	ILX:0770152	Sst neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	Endothelial	ILX:0770142	Endothelial cell (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	L2/3	ILX:0770156	L2/3 IT neuron	tassic	https://doi.org/10.1038/nn.4216
+sub_class	L2/3_Syt10	ILX:0770156	L2/3 IT neuron	tassic	https://doi.org/10.1038/nn.4216
+sub_class	L4	ILX:0770174	L4/5 IT (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	L5	ILX:0770157	L5 IT neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	L5_Chrna6	ILX:0770157	L5 IT neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	L5a	ILX:0770157	L5 IT neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	L5a1	ILX:0770157	L5 IT neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	L5a2	ILX:0770157	L5 IT neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	L5b	ILX:0770157	L5 IT neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	L5b1	ILX:0770157	L5 IT neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	L5b2	ILX:0770157	L5 IT neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	L6a	ILX:0770158	L6 IT neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	L6a1	ILX:0770158	L6 IT neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	L6a2	ILX:0770158	L6 IT neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	L6b	ILX:0770163	L6b neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	Microglia	ILX:0770146	Microglia (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	Ndnf	Ndnf		tassic	https://doi.org/10.1038/nn.4216
+sub_class	OPC	ILX:0770139	Oligodendrocyte progenitor cell (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	Oligodendrocyte	ILX:0770140	Oligodendrocyte (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	Pvalb	ILX:0770154	Pvalb neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	Sst	ILX:0770152	Sst neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	Sst_Cbln4	ILX:0770152	Sst neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	Sst_Chodl	ILX:0770152	Sst neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	Sst_Clstn2	ILX:0770152	Sst neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	Sst_Nmbr	ILX:0770152	Sst neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	Sst_Nr2f2	ILX:0770152	Sst neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	Th	ILX:0770152	Sst neuron (BICCN)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	Unknown	unknown		tassic	https://doi.org/10.1038/nn.4216
+sub_class	Vip	ILX:0770151	Vip GABAergic neuron (BICCN 2020)	tassic	https://doi.org/10.1038/nn.4216
+sub_class	nan	unknown		tassic	https://doi.org/10.1038/nn.4216
+subclass	Astro	ILX:0770141	Astrocyte (BICCN)	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	CR	CR	CR	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	Endo	ILX:0770142	Endothelial cell (BICCN)	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	L2/3 IT	ILX:0770156	L2/3 IT (BICCN)	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	L4	L4	L4	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	L5 IT	ILX:0770157	L5 IT neuron (BICCN)	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	L5 PT	L5 PT	L5 PT	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	L6 CT	ILX:0770162	L6 CT neuron (BICCN)	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	L6 IT	ILX:0770158	L6 IT (BICCN)	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	L6b	ILX:0770163	L6b neuron (BICCN)	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	Lamp5	ILX:0770149	Lamp5 neuron (BICCN)	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	Macrophage	Macrophage	Macrophage	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	Meis2	ILX:0770155	Meis2 neuron (BICCN)	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	NP	NP	NP	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	No Class	unknown	unknown	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	Oligo	ILX:0770140	Oligodendrocyte	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	Peri	ILX:0770145	Pericyte (BICCN)	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	Pvalb	ILX:0770154	Pvalb neuron (BICCN)	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	SMC	ILX:0770144	Smooth muscle cell (BICCN)	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	Serpinf1	Serpinf1	Serpinf1	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	Sncg	ILX:0770150	Sncg (BICCN)	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	Sst	ILX:0770152	Sst neuron (BICCN)	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	VLMC	ILX:0770143	Vascular leptomeningeal cell (BICCN)	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	Vip	ILX:0770151	Vip GABAergic neuron (BICCN)	tassic_2018	https://doi.org/10.1038/s41586-018-0654-5
+subclass	Astrocytes	ILX:0770141	Astrocyte (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105700
+subclass	Endothelial	ILX:0770142	Endothelial cell (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105701
+subclass	L23_IT	ILX:0770156	L2/3 IT neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105702
+subclass	L45_IT	ILX:0770174	L4/5 IT (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105703
+subclass	L56_NP	ILX:0770161	L5/6 NP neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105704
+subclass	L5_IT	ILX:0770157	L5 IT neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105705
+subclass	L5_PT	L5_PT	L5_PT	zheng	https://doi.org/10.1101/2020.06.04.105706
+subclass	L6_CT	ILX:0770162	L6 CT neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105707
+subclass	L6_IT	ILX:0770158	L6 IT neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105708
+subclass	L6_IT_Car3	ILX:0770158	L6 IT neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105709
+subclass	L6b	ILX:0770163	L6b neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105710
+subclass	Lamp5	ILX:0770149	Lamp5 neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105711
+subclass	Microglia	ILX:0770146	Microglia (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105712
+subclass	OPC	ILX:0770139	Oligodendrocyte progenitor cell (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105713
+subclass	Oligodendrocytes	ILX:0770140	Oligodendrocyte (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105714
+subclass	PVM	ILX:0770146	Microglia (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105715
+subclass	Pericytes	ILX:0770145	Pericyte (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105716
+subclass	Pvalb	ILX:0770154	Pvalb neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105717
+subclass	SMC	ILX:0770144	Smooth muscle cell (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105718
+subclass	Sncg	ILX:0770150	Sncg neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105719
+subclass	Sst	ILX:0770152	Sst neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105720
+subclass	Sst_Chodl	ILX:0770153	Sst Chodl neuron (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105721
+subclass	VLMC	ILX:0770143	Vascular leptomeningeal cell (BICCN)	zheng	https://doi.org/10.1101/2020.06.04.105722
+subclass	Vip	ILX:0770151	Vip GABAergic neuron (BICCN 2020)	zheng	https://doi.org/10.1101/2020.06.04.105723
