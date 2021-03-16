@@ -25,7 +25,7 @@ Beyond this we hope that you see the value of using this portal as a publishing 
  - link permanence, allows you to reference data portal links in publication with guarantee that the link will always be there
  - sharing of private datasets with collaborators
  - easy for readers to explore your dataset (with no extra work on your side - goodbye shiny!)
- - accesibility of your dataset through many of the popular single cell toolchains
+ - accesibility of your dataset through many of the popular single cell toolchains (link to an instance of the cellxgene explorer app)
 
 ## General data requirements
 - count matrix (required (expcept certain assays))
@@ -145,18 +145,20 @@ sign in options for the portal (gmail, github, etc)
 
 ### Create a collection
 
-screenshot of creating a collection
+`screenshot of creating a collection`
 
 ### Add a dataset to a collection
 
-screenshot adding a dataset to collection
+`screenshot adding a dataset to collection`
 
 ### Remove dataset from a collection
 
-screenshot removing dataset
+`screenshot removing dataset`
 
 ### Share uploaded datasets with private links
 Explain that people can share private datasets 
 
 
 ### Publish Collection to the portal
+
+`Screenshot of Explorer mode`
