@@ -246,6 +246,13 @@ In the above table, the types of cell level metadata that is collected for the s
 
 <br/>
 
+The cellxgene curation tools include functions that can make the curation process easier for you. Essentially the workflow looks like this:
+1. create `config.yaml` that will specify how the schema is to be applied to your anndata object
+2. run `cellxgene schema apply`, which takes your config and source anndata file to produce a curated anndata object.
+3. use `cellxgene schema validate` to ensure that your curated object meets the schema requirements
+
+<br/>
+
 #### `config.yaml`
 
 <details>
@@ -253,6 +260,9 @@ In the above table, the types of cell level metadata that is collected for the s
 <summary> structuring your config file </summary>
 
 What is the config YAML file and how does it modify your anndata object?
+
+
+
 
 </details>
 
