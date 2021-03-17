@@ -251,6 +251,8 @@ The cellxgene curation tools include functions that can make the curation proces
 2. run `cellxgene schema apply`, which takes your config and source anndata file to produce a curated anndata object.
 3. use `cellxgene schema validate` to ensure that your curated object meets the schema requirements
 
+You can check out the full documenatation for this tooling [here](#schema_guide.md), but a quick introduction to the tools is below:
+
 <br/>
 
 #### `config.yaml`
@@ -261,6 +263,7 @@ The cellxgene curation tools include functions that can make the curation proces
 
 What is the config YAML file and how does it modify your anndata object?
 
+Your `config.yaml` file is used to update values and columns in `adata.uns` and `adata.obs` (repectively) with required schema information (as specified by the config file). Here is an example of a skeleton 
 
 
 
