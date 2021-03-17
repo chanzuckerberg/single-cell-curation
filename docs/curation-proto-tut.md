@@ -143,6 +143,8 @@ The purpose of the cellxgene schema is to support the construction of a data cor
 
 <br/>
 
+#### `uns`
+
 `adata.uns` is a dictionary of key values pairs that we use to store dataset level metadata. This is also where you store information on the different data representations that you are sharing (i.e you are sharing a raw counts matrix, normalized expression matrix, scaled and centered expression matrix)
 
 <details>
@@ -170,6 +172,8 @@ In the obs slot, we store schema information at the individual cell level (impor
 </details>
 
 <br/>
+
+#### `obs`
 
 `adata.obs` is a dataframe that is used to store cell level metadata. In addition to experiemental metadata, the following additional field are required:
 
@@ -202,7 +206,7 @@ Table will also include scenrios where ontologies can be relaxed
 
 <br/>
 
-`config.yaml`
+#### `config.yaml`
 
 <details>
  
@@ -215,7 +219,7 @@ What is the config YAML file and how does it modify your anndata object?
 <br/>
 
 
-`cellxgene schema apply`
+#### `cellxgene schema apply`
  
 <details>
  
@@ -231,7 +235,7 @@ Necessary arguments
 
 <br/>
 
-`cellxgene schema validate`
+#### `cellxgene schema validate`
 
 <details>
  
