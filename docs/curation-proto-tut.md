@@ -26,7 +26,6 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 <details>
 <summary>"Click to expand"</summary>
 
-- [Overview](#overview)
 - [Why contribute?](#why-contribute)
 - [Basic data requirements](#basic-data-requirements)
 - [Anndata object requirements](#anndata-object-requirements)
@@ -40,17 +39,18 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 
 <br/>
 
-## Overview
+## Why contribute?
 
 <!--- ![image](https://user-images.githubusercontent.com/25663501/111403110-d1589700-86a2-11eb-99dd-bf52e348d43a.png) --->
-
+<br/>
 <img src="https://user-images.githubusercontent.com/25663501/111403110-d1589700-86a2-11eb-99dd-bf52e348d43a.png" width="1000">
 
 <p align="center">
   <b> Figure: Collection View of the Cellxgene Data Portal <b>
 </p>
+<br/>
 
-## Why contribute?
+Reason to contribute:
  - link permanence, allows you to reference data portal links in publication with guarantee that the link will always be there
  - sharing of private datasets with collaborators
  - easy for readers to explore your dataset (with no extra work on your side - goodbye shiny!)
