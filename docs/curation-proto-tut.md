@@ -20,7 +20,7 @@ Cellxgene's publishing platform and interactive single cell data explorer is a s
 Beyond this we hope that you see the value of using this portal as a publishing platform and also welcome any comments that pertain improving the portal and curation experience. You can contact us via [support email]()
 
 <details>
-<summary><b>Table of contents<b></summary>
+<summary> <b> Table of contents <b> </summary>
 
 - [Why contribute?](#why-contribute)
 - [Basic data requirements](#basic-data-requirements)
@@ -34,6 +34,8 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 </details>
 
 <br/>
+
+---
 
 ## Why contribute?
 
