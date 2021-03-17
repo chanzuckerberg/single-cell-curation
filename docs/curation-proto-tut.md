@@ -169,7 +169,7 @@ In the obs slot, we store schema information at the individual cell level (impor
 
 <br/>
 
-Cell level metadata is stored in `adata.obs`. In addition to experiemental metadata, the following additional field are required:
+`adata.obs` is a dataframe that is used to store cell level metadata. In addition to experiemental metadata, the following additional field are required:
 
 <details>
 <summary>click to see required cell level metadata</summary>
