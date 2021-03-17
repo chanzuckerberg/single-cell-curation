@@ -208,22 +208,49 @@ Table will also include scenrios where ontologies can be relaxed
 
 <br/>
 
-### `cellxgene schema apply`
+`config.yaml`
+
+<details>
+ 
+<summary> structuring your config file </summary>
+
+What is the config YAML file and how does it modify your anndata object?
+
+</details>
+
+<br/>
+
+
+`cellxgene schema apply`
+ 
+<details>
+ 
+<summary> applying the schema </summary>
+
 Necessary arguments
 - input h5ad
 - config file
 - output h5ad
 - warnings and errors
 
-### Config file structure
-What is the config YAML file and how does it modify your anndata object?
+</details>
 
-### `cellxgene schema validate`
+<br/>
+
+`cellxgene schema validate`
+
+<details>
+ 
+<summary> validating the schema up</summary>
 
 Neccesary arguments:
 - h5ad to validate
 
 What does a succesful output look like?
+
+</details>
+
+<br/>
 
 ### Test `h5ad` in local version of cellxgene
 
