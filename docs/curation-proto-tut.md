@@ -141,8 +141,11 @@ Guidelines for curating the following assays. In each section, also include a li
 
 ## Schema definition
 
+<br/>
+
 As discussed before, schema information included in the uns slot gives us dataset level metadata (ex: doi, paper title). These metadata are stored in a dictionary of key value pairs. The required keys and constraints on their respective values are detailed in the table below:
 
+<br/>
 
 Dataset level metadata is stored in `adata.uns`, a dictionary of key values pairs that can hold miscellaneous information:
 
@@ -170,6 +173,7 @@ In the obs slot, we store schema information at the individual cell level (impor
 
 </details>
 
+<br/>
 
 Cell level metadata is stored in `adata.obs`. In addition to experiemental metadata, the following additional field are required:
 
@@ -196,7 +200,10 @@ Table will also include scenrios where ontologies can be relaxed
 
 </details>
 
+<br/>
+
 ## CZI curation tools
+
 <br/>
 
 ### `cellxgene schema apply`
