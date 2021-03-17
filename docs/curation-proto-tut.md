@@ -17,6 +17,7 @@ Cellxgene's publishing platform and interactive single cell data explorer is a s
 <details>
 <summary>"Click to expand"</summary>
 
+- [Overview](#overview)
 - [Why contribute?](#why-contribute)
 - [Basic data requirements](#Basic-data-requirements)
 - [Anndata object requirements](#anndata-object-requirements)
@@ -29,8 +30,10 @@ Cellxgene's publishing platform and interactive single cell data explorer is a s
 </details>
 
 ```
-Side by side screenshots of collection view, dataset view, explorer view
+----------------------------------------------------------
 ```
+
+## Overview
 
 <!--- ![image](https://user-images.githubusercontent.com/25663501/111403110-d1589700-86a2-11eb-99dd-bf52e348d43a.png) --->
 
