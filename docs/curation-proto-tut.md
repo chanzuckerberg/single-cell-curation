@@ -27,9 +27,6 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 - [Anndata object requirements](#anndata-object-requirements)
 - [Schema definition](#schema-definition)
 - [CZI curation tools](#czi-curation-tools)
-  * [`apply`](#cellxgene-schema-apply)
-  * [`config.yaml` file structure](#config-file-structure)
-  * [`validate`](#cellxgene-schema-validate)
 
 </details>
 
