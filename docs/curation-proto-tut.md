@@ -69,7 +69,15 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 <!--- ![image](https://user-images.githubusercontent.com/25663501/111377611-3c8c7400-8677-11eb-8176-cf9de8f64c70.png) --->
 
 <!--- resized anndata image below --->
-<img src="https://user-images.githubusercontent.com/25663501/111377611-3c8c7400-8677-11eb-8176-cf9de8f64c70.png" width="500">
+<!--- <img src="https://user-images.githubusercontent.com/25663501/111377611-3c8c7400-8677-11eb-8176-cf9de8f64c70.png" width="500"> --->
+
+<p align="center">
+  <img width="500" src="https://user-images.githubusercontent.com/25663501/111377611-3c8c7400-8677-11eb-8176-cf9de8f64c70.png">
+</p>
+
+<p align="center">
+  <b> Figure: Anndata components <b>
+</p>
 
 - Talk about object structure
 - limitations 
