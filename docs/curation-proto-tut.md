@@ -117,7 +117,10 @@ As discussed before, schema information included in the uns slot gives us datase
 
 ### Dataset level metadata
 
-`uns`
+`adata.uns`
+
+<details>
+<summary>click to expand schema definiton</summary>
 
 - 'layer_descriptions'
 - 'organism'
@@ -138,9 +141,14 @@ As discussed before, schema information included in the uns slot gives us datase
 
 In the obs slot, we store schema information at the individual cell level (important to note here that while original metdata fields here are not altered or replaced, only augmeneted by additional schema specific columns). Each schema field that we require gets two columns in the obs dataframe  (one for the ontology term id, and one for the term itself)
 
+</details>
+
 ### Cell level metadata
 
-`obs`
+`adata.obs`
+
+<details>
+<summary>click to expand schema definiton</summary>
 
 Table will also include scenrios where ontologies can be relaxed
 
@@ -160,11 +168,10 @@ Table will also include scenrios where ontologies can be relaxed
 | 'development_stage'                  |               |                    |
 | 'development_stage_ontology_term_id	'|               |                    |
 
+</details>
 
 ## CZI curation tools
 <br/>
-<details>
-<summary>To make sure markdown is rendered correctly in the collapsed section...</summary>
 
 ### `cellxgene schema apply`
 Necessary arguments
@@ -182,8 +189,6 @@ Neccesary arguments:
 - h5ad to validate
 
 What does a succesful output look like?
-
-</details>
 
 ### Test `h5ad` in local version of cellxgene
 
