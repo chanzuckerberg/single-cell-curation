@@ -47,7 +47,7 @@ This is some example text about why to contribute...
 </p>
 
 <p align="center">
-  <b> Figure: Collection View of the Cellxgene Data Portal <b>
+  <b> Figure: <b> Collection View of the Cellxgene Data Portal
 </p>
 <br/>
 
