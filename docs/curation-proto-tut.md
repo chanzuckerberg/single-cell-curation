@@ -89,7 +89,7 @@ Introductory text about anndata objects - link to anndata/scanpy
 </p>
 
 <p align="center">
-  <b> Figure: Anndata components <b>
+  <b> Figure:</b> Anndata components
 </p>
 
 This is some text introducting anndata
