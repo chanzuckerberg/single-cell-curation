@@ -26,8 +26,6 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 - [Basic data requirements](#basic-data-requirements)
 - [Anndata object requirements](#anndata-object-requirements)
 - [Schema definition](#schema-definition)
-  * [Dataset level metadata](#dataset-level-metadata)
-  * [Cell level metadata](#dataset-level-metadata)
 - [CZI curation tools](#czi-curation-tools)
   * [`apply`](#cellxgene-schema-apply)
   * [`config.yaml` file structure](#config-file-structure)
@@ -145,12 +143,11 @@ Guidelines for curating the following assays. In each section, also include a li
 
 As discussed before, schema information included in the uns slot gives us dataset level metadata (ex: doi, paper title). These metadata are stored in a dictionary of key value pairs. The required keys and constraints on their respective values are detailed in the table below:
 
-### Dataset level metadata
 
-`adata.uns`
+Dataset level metadata is stored in `adata.uns`, a dictionary of key values pairs that can hold miscellaneous information:
 
 <details>
-<summary>click to expand schema definiton</summary>
+<summary>click to see required dataset level metadata</summary>
 
 - 'layer_descriptions'
 - 'organism'
@@ -173,12 +170,11 @@ In the obs slot, we store schema information at the individual cell level (impor
 
 </details>
 
-### Cell level metadata
 
-`adata.obs`
+Cell level metadata is stored in `adata.obs`. In addition to experiemental metadata, the following additional field are required:
 
 <details>
-<summary>click to expand schema definiton</summary>
+<summary>click to see required cell level metadata</summary>
 
 Table will also include scenrios where ontologies can be relaxed
 
