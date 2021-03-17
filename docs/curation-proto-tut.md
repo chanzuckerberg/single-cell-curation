@@ -69,6 +69,8 @@ Reason to contribute:
  
 ## Basic data requirements
 
+<br/>
+
 <details>
 <summary>Easy as ABC...</summary>
 
@@ -80,6 +82,7 @@ Reason to contribute:
 
 </details>
 
+<br/>
 
 
 ## Anndata object requirements
