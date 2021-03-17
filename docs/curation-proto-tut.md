@@ -1,16 +1,50 @@
 # Cellxgene Curation Tutorial
 
-![image](https://user-images.githubusercontent.com/25663501/111377133-b07a4c80-8676-11eb-8eb8-07ca4d7a77e9.png)
+<!--- ![image](https://user-images.githubusercontent.com/25663501/111377133-b07a4c80-8676-11eb-8eb8-07ca4d7a77e9.png) --->
+
+<img align="right" src="https://user-images.githubusercontent.com/25663501/111377133-b07a4c80-8676-11eb-8eb8-07ca4d7a77e9.png">
 
 
-## Introduction
+
+
+## Overview
 purpose: Motivate submission to the data portal give context
 
 Cellxgene's publishing platform and interactive single cell data explorer is a system which is optimized for easy access, interrogation and sharing/reuse of single cell data. In order to meet these standards and to facilitate easy navigation/aggregation among the growing number of single cell datasets, the cellxgene publishing platform currently accepts curated anndata objects adhering to a [comprehensive data schema (@TODO add link)](https://github.com/chanzuckerberg/single-cell-curation/main/docs/corpora_schema.md). 
 
+<details>
+<summary>"Click to expand"</summary>
+
+- [Why markdown?](#why-markdown)
+- [Markdown basics](#markdown-basics)
+- [Advanced Formatting tips](#advanced-formatting-tips)
+  * [`left` alignment](#left-alignment)
+  * [`right` alignment](#right-alignment)
+  * [`center` alignment example](#center-alignment-example)
+  * [`collapse` Sections](#collapse-sections)
+  * [`additional links`](#additional-links)
+  * [Badges](#badges)
+- [Useful packages](#useful-packages)
+- [Useful utilities](#useful-utilities)
+- [How Serverless uses markdown](#how-serverless-uses-markdown)
+  * [DEMO](#demo)
+- [Other Markdown Resources](#other-markdown-resources)
+
+</details>
+
 ```
 Side by side screenshots of collection view, dataset view, explorer view
 ```
+
+<!--- ![image](https://user-images.githubusercontent.com/25663501/111403110-d1589700-86a2-11eb-99dd-bf52e348d43a.png) --->
+
+<img src="https://user-images.githubusercontent.com/25663501/111403110-d1589700-86a2-11eb-99dd-bf52e348d43a.png" width="1000">
+
+<p align="center">
+  <b> Figure: Collection View of the Cellxgene Data Portal <b>
+</p>
+
+
 
 In this tutorial, you will gain all the essential information for doing the following: 
 - curating one of your own single cell datasets in a streamlined manner
