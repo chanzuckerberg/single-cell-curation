@@ -29,9 +29,13 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 - [Anndata object requirements](#anndata-object-requirements)
   * [Format conversion](#format-conversion)
   * [Alternative assays](#alternative-assays)
-- [Useful utilities](#useful-utilities)
-- [How Serverless uses markdown](#how-serverless-uses-markdown)
-  * [DEMO](#demo)
+- [Schema definition](#schema-definition)
+  * [Dataset level metadata](#dataset-level-metadata)
+  * [Cell level metadata](#dataset-level-metadata)
+- [CZI curation tools](#czi-curation-tools)
+  * [`apply`](#cellxgene-schema-apply)
+  * [`config.yaml` file structure](#config-file-structure)
+  * [`validate`](#cellxgene-schema-validate)
 
 </details>
 
@@ -66,7 +70,7 @@ Reason to contribute:
 
 
 ## Anndata object requirements
-
+<br/>
 <!--- ![image](https://user-images.githubusercontent.com/25663501/111377611-3c8c7400-8677-11eb-8176-cf9de8f64c70.png) --->
 
 <!--- resized anndata image below --->
@@ -109,11 +113,13 @@ Guidelines for curating the following assays. In each section, also include a li
 - CITEseq
 - Spatial/Visium
 
-## Schema information
+## Schema definition
 
 As discussed before, schema information included in the uns slot gives us dataset level metadata (ex: doi, paper title). These metadata are stored in a dictionary of key value pairs. The required keys and constraints on their respective values are detailed in the table below:
 
-### Required/suggested dataset level schema fields (i.e. what goes in the `uns` slot?)
+### Dataset level metadata
+
+`uns`
 
 - 'layer_descriptions'
 - 'organism'
@@ -134,7 +140,9 @@ As discussed before, schema information included in the uns slot gives us datase
 
 In the obs slot, we store schema information at the individual cell level (important to note here that while original metdata fields here are not altered or replaced, only augmeneted by additional schema specific columns). Each schema field that we require gets two columns in the obs dataframe  (one for the ontology term id, and one for the term itself)
 
-### Required cell level schema fields (i.e. what goes in `obs`?)
+### Cell level metadata
+
+`obs`
 
 Table will also include scenrios where ontologies can be relaxed
 
@@ -155,7 +163,10 @@ Table will also include scenrios where ontologies can be relaxed
 | 'development_stage_ontology_term_id	'|               |                    |
 
 
-## Using the CZI curation tools to apply the schema appropriately
+## CZI curation tools
+
+<details>
+<summary>To make sure markdown is rendered correctly in the collapsed section...</summary>
 
 ### `cellxgene schema apply`
 Necessary arguments
@@ -173,6 +184,8 @@ Neccesary arguments:
 - h5ad to validate
 
 What does a succesful output look like?
+
+</details>
 
 ### Test `h5ad` in local version of cellxgene
 
