@@ -70,11 +70,18 @@ Reason to contribute:
 <br/>
  
 ## Basic data requirements
+
+<details>
+<summary>Easy as ABC...</summary>
+
 - count matrix (required (expcept certain assays))
 - normalized expression matrix used for visulization (required)
 - cell level metadata (required)
 - variable/feature level metadata (not required)
 - embedding (at least one required, UMAP, tSNE, spatial)
+
+</details>
+
 
 
 ## Anndata object requirements
