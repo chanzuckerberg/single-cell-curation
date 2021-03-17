@@ -141,7 +141,7 @@ As discussed **before**, schema information included in the uns slot gives us da
 
 <br/>
 
-Dataset level metadata is stored in `adata.uns`, a dictionary of key values pairs that can hold miscellaneous information:
+`adata.uns` is a dictionary of key values pairs that we use to store dataset level metadata. This is also where you store information on the different data representations that you are sharing (i.e you are sharing a raw counts matrix, normalized expression matrix, scaled and centered expression matrix)
 
 <details>
 <summary>click to see required dataset level metadata</summary>
@@ -153,14 +153,14 @@ Dataset level metadata is stored in `adata.uns`, a dictionary of key values pair
 - 'title'
 - 'version'
 
-| Key                         | Value         | Value description  |
-| --------------------------- |:-------------:| ------------------:|
-| 'version'                   |               |                    |
-| 'title'                     |               |                    |
-| 'publication_doi'           |               |                    |
-| 'organism'                  |               |                    |
-| 'organism_ontology_term_id' |               |                    |
-| 'layer_descriptions'        |               |                    |
+| Key                         | Value      | Description        | Example |
+| --------------------------- |:----------:| ------------------:| ---|
+| 'version'                   | string     |                    | `` |
+| 'title'                     | string     |                    | `` |
+| 'publication_doi'           | string     |                    | `` |
+| 'organism'                  | string     |                    | `` |
+| 'organism_ontology_term_id' | string     |                    | `` |
+| 'layer_descriptions'        | dictionary | See table below    | `` |
 
 
 In the obs slot, we store schema information at the individual cell level (important to note here that while original metdata fields here are not altered or replaced, only augmeneted by additional schema specific columns). Each schema field that we require gets two columns in the obs dataframe  (one for the ontology term id, and one for the term itself)
