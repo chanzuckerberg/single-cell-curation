@@ -176,21 +176,21 @@ Cell level metadata is stored in `adata.obs`. In addition to experiemental metad
 
 Table will also include scenrios where ontologies can be relaxed
 
-| `obs` column name                    | Expected Value| Description        |
-| ------------------------------------ |:-------------:| ------------------:|
-| 'tissue'                             |               |                    |
-| 'tissue_ontology_term_id'            |               |                    |
-| 'assay'                              |               |                    |
-| 'assay_ontology_term_id'             |               |                    |
-| 'disease'                            |               |                    |
-| 'disease_ontology_term_id'           |               |                    |
-| 'cell_type'                          |               |                    |
-| 'cell_type_ontology_term_id'         |               |                    |
-| 'sex'                                |               |                    |
-| 'ethnicity'                          |               |                    |
-| 'ethnicity_ontology_term_id	'        |               |                    |
-| 'development_stage'                  |               |                    |
-| 'development_stage_ontology_term_id	'|               |                    |
+| `obs` column name                    | Type   | Descritpion                                                   | Example         |
+| :----------------------------------- |:------:| -------------------------------------------------------------:|:------------------------------------------|
+| 'tissue'                             | string | UBERON term                                                   | `area postrema`                           |
+| 'tissue_ontology_term_id'            | string | UBERON term id                                                | `UBERON:0002162`                          |
+| 'assay'                              | string | EFO term                                                      | `scRNA-seq`                               |   
+| 'assay_ontology_term_id'             | string | EFO term id                                                   | `EFO:0008913`                             |
+| 'disease'                            | string | MONDO term or `normal`                                        | `kuru`                                    |
+| 'disease_ontology_term_id'           | string | MONDO term id or `PATO:0000461`                               | `MONDO:0006825`                           |
+| 'cell_type'                          | string | CL term                                                       | `excitatory neuron`                       |
+| 'cell_type_ontology_term_id'         | string | CL term id                                                    | `CL:0008030`                              |
+| 'sex'                                | string | `male`, `female`, `mixed`, `unknown`, or `other`              | `mixed`                                   |
+| 'ethnicity'                          | string | HANCESTRO term, `na` if non-human, `unknown` if not available | `genetically isolated population`         |
+| 'ethnicity_ontology_term_id	'        | string | HANCESTRO term id, `na` if non-human                          | `HANCESTRO:0290`                          |
+| 'development_stage'                  | string | HsapDv term, `unknown` if not available                       | `9th week post-fertilization human stage` |
+| 'development_stage_ontology_term_id	'| string | HsapDv term id if human, child of `EFO:0000399` otherwise     | `HsapDv:0000046`                          |
 
 </details>
 
