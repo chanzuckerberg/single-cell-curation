@@ -137,8 +137,12 @@ Guidelines for curating the following assays. In each section, also include a li
 
 <br/>
 
-The purpose of the cellxgene schema is to support the construction of a data corpus that facilitates data integration across multiple tissues and experiments. This goal requires that we collect a standardized set of metadata about single cell datasets that are uploaded to the cellxgene data portal. To make this process easy to adhere to, we only require a few fields (detailed below) to support easy search and integration across datasets. To access a more comprehensive decription about our schema requirents, you can refer to the [following resource](corpora_schema.md).
+The purpose of the cellxgene schema is to support the construction of a data corpus that facilitates data integration across multiple tissues and experiments. This goal requires that we collect a standardized set of metadata about single cell datasets that are uploaded to the cellxgene data portal. To make this process easy to adhere to, we only require a few fields (detailed below) to support easy search and integration across datasets. To access a more comprehensive decription about our schema requirements, you can refer to the [official schema definition](corpora_schema.md).
 
+#### Basic requirements ([expanded version](corpora_schema.md#basic-requirements))
+- **Unique observation identifiers:** Each observation (usually a cell) must have an id that is unique within the dataset.
+- **Unique feature identifiers:** Every feature (usually a gene or transcript) also needs a unique identifier.
+- **No PII:** No metadata can be personally identifiable: no names, dates of birth, specific locations, etc. There's a [list](https://docs.google.com/document/d/1nlUuRiQ8Awo_QsiVFi8OWdhGONjeaXE32z5GblVCfcI/edit?usp=sharing).
 
 
 <br/>
