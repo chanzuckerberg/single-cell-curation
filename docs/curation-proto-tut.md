@@ -26,7 +26,7 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 - [Basic data requirements](#basic-data-requirements)
 - [Anndata object requirements](#anndata-object-requirements)
 - [Schema definition](#schema-definition)
-- [CZI curation tools](#czi-curation-tools)
+- [Cellxgene curation tools](#cellxgene-curation-tools)
 
 </details>
 
@@ -202,7 +202,7 @@ Table will also include scenrios where ontologies can be relaxed
 
 <br/>
 
-## CZI curation tools
+## Cellxgene curation tools
 
 <br/>
 
