@@ -214,21 +214,29 @@ In our second table we, see how our different included representations can be de
 
 Table will also include scenrios where ontologies can be relaxed
 
-| `obs` column name                    | Type   | Descritpion                                                   | Example         |
-| :----------------------------------- |:------:| -------------------------------------------------------------:|:------------------------------------------|
-| 'tissue'                             | string | UBERON term                                                   | `area postrema`                           |
-| 'tissue_ontology_term_id'            | string | UBERON term id                                                | `UBERON:0002162`                          |
-| 'assay'                              | string | EFO term                                                      | `scRNA-seq`                               |   
-| 'assay_ontology_term_id'             | string | EFO term id                                                   | `EFO:0008913`                             |
-| 'disease'                            | string | MONDO term or `normal`                                        | `kuru`                                    |
-| 'disease_ontology_term_id'           | string | MONDO term id or `PATO:0000461`                               | `MONDO:0006825`                           |
-| 'cell_type'                          | string | CL term                                                       | `excitatory neuron`                       |
-| 'cell_type_ontology_term_id'         | string | CL term id                                                    | `CL:0008030`                              |
-| 'sex'                                | string | `male`, `female`, `mixed`, `unknown`, or `other`              | `mixed`                                   |
-| 'ethnicity'                          | string | HANCESTRO term, `na` if non-human, `unknown` if not available | `genetically isolated population`         |
-| 'ethnicity_ontology_term_id	'        | string | HANCESTRO term id, `na` if non-human                          | `HANCESTRO:0290`                          |
-| 'development_stage'                  | string | HsapDv term, `unknown` if not available                       | `9th week post-fertilization human stage` |
-| 'development_stage_ontology_term_id	'| string | HsapDv term id if human, child of `EFO:0000399` otherwise     | `HsapDv:0000046`                          |
+| `obs` column name                    | Type   | Descritpion                                                       | Example                                   |
+| :----------------------------------- |:------:| -----------------------------------------------------------------:|:------------------------------------------|
+| 'tissue'                             | string | UBERON term                                                       | `area postrema`                           |
+| 'tissue_ontology_term_id'            | string | UBERON term id                                                    | `UBERON:0002162`                          |
+| 'assay'                              | string | EFO term                                                          | `scRNA-seq`                               |   
+| 'assay_ontology_term_id'             | string | EFO term id                                                       | `EFO:0008913`                             |
+| 'disease'                            | string | MONDO term or `normal`                                            | `kuru`                                    |
+| 'disease_ontology_term_id'           | string | MONDO term id or `PATO:0000461`                                   | `MONDO:0006825`                           |
+| 'cell_type'                          | string | CL term (or UBERON term when no CL term is available)             | `excitatory neuron`                       |
+| 'cell_type_ontology_term_id'         | string | CL term id (or UBERON term id when no CL term id is is available) | `CL:0008030`                              |
+| 'sex'                                | string | `male`, `female`, `mixed`, `unknown`, or `other`                  | `mixed`                                   |
+| 'ethnicity'                          | string | HANCESTRO term, `na` if non-human, `unknown` if not available     | `genetically isolated population`         |
+| 'ethnicity_ontology_term_id	'        | string | HANCESTRO term id, `na` if non-human                              | `HANCESTRO:0290`                          |
+| 'development_stage'                  | string | HsapDv term, `unknown` if not available                           | `9th week post-fertilization human stage` |
+| 'development_stage_ontology_term_id	'| string | HsapDv term id if human, child of `EFO:0000399` otherwise         | `HsapDv:0000046`                          |
+
+<div align="center">
+  <b>Table: </b> Required cell level metadata
+</div>
+
+<br/>
+
+In the above table, the types of cell level metadata that is collected for the schema. In particular, it is imporant to exapnd on how to annotate `cell_type` field. In general, we try to find most specific ontology term that accurately represents a given cell type in your dataset. In the event that your cell type is not described accurately by any term in the `CL` ontology, then it is sufficient to report the most accurate `UBERON` term and id instead.
 
 </details>
 
