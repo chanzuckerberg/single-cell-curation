@@ -10,9 +10,7 @@
 <!--- ## Overview --->
 <!--- purpose: Motivate submission to the data portal give context --->
 
-Cellxgene's publishing platform and interactive single cell data explorer is a system which is optimized for easy access, interrogation and sharing/reuse of single cell data. In order to meet these standards and to facilitate easy navigation/aggregation among the growing number of single cell datasets, the cellxgene publishing platform currently accepts curated anndata objects adhering to a [comprehensive data schema (@TODO add link)](https://github.com/chanzuckerberg/single-cell-curation/main/docs/corpora_schema.md). 
-
-In this tutorial, you will gain all the essential information for doing the following: 
+Cellxgene's publishing platform and interactive single cell data explorer is a system which is optimized for easy access, interrogation and sharing/reuse of single cell data. In order to meet these standards and to facilitate easy navigation/aggregation among the growing number of single cell datasets, the cellxgene publishing platform currently accepts curated anndata objects adhering to a [comprehensive data schema (@TODO add link)](https://github.com/chanzuckerberg/single-cell-curation/main/docs/corpora_schema.md). In this tutorial, you will gain all the essential information for doing the following: 
 - curating one of your own single cell datasets in a streamlined manner
 - using CZI curation tools to perform most of the curation work
 - uploading data in the cellxgene data portal
