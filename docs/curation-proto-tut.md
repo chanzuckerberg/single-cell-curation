@@ -145,7 +145,7 @@ Guidelines for curating the following assays. In each section, also include a li
 
 <br/>
 
-As discussed before, schema information included in the uns slot gives us dataset level metadata (ex: doi, paper title). These metadata are stored in a dictionary of key value pairs. The required keys and constraints on their respective values are detailed in the table below:
+As discussed **before**, schema information included in the uns slot gives us dataset level metadata (ex: doi, paper title). These metadata are stored in a dictionary of key value pairs. The required keys and constraints on their respective values are detailed in the table below:
 
 <br/>
 
