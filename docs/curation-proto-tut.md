@@ -41,7 +41,10 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 
 <!--- ![image](https://user-images.githubusercontent.com/25663501/111403110-d1589700-86a2-11eb-99dd-bf52e348d43a.png) --->
 <br/>
-<img src="https://user-images.githubusercontent.com/25663501/111403110-d1589700-86a2-11eb-99dd-bf52e348d43a.png" width="1000">
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/25663501/111403110-d1589700-86a2-11eb-99dd-bf52e348d43a.png" width="1000">
+</p>
 
 <p align="center">
   <b> Figure: Collection View of the Cellxgene Data Portal <b>
