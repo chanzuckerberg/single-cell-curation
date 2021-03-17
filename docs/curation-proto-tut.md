@@ -38,7 +38,7 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 <br/>
 
 ## Why contribute?
-
+This is some example text
 <!--- ![image](https://user-images.githubusercontent.com/25663501/111403110-d1589700-86a2-11eb-99dd-bf52e348d43a.png) --->
 <br/>
 
@@ -79,6 +79,9 @@ Reason to contribute:
 <p align="center">
   <b> Figure: Anndata components <b>
 </p>
+
+This is some text introducting anndata
+
 
 - Talk about object structure
 - limitations 
