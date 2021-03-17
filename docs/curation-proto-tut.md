@@ -137,7 +137,9 @@ Guidelines for curating the following assays. In each section, also include a li
 
 <br/>
 
-As discussed **before**, schema information included in the uns slot gives us dataset level metadata (ex: doi, paper title). These metadata are stored in a dictionary of key value pairs. The required keys and constraints on their respective values are detailed in the table below:
+The purpose of the cellxgene schema is to support the construction of a data corpus that facilitates data integration across multiple tissues and experiments. This goal requires that we collect a standardized set of metadata about single cell datasets that are uploaded to the cellxgene data portal. To make this process easy to adhere to, we only require a few fields (detailed below) to support easy search and integration across datasets. To access a more comprehensive decription about our schema requirents, you can refer to the [following resource](corpora_schema.md).
+
+
 
 <br/>
 
