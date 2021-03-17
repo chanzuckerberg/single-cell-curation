@@ -85,6 +85,8 @@ Reason to contribute:
 ## Anndata object requirements
 
 <br/>
+Introductory text about anndata objects - link to anndata/scanpy
+<br/>
 
 <details>
 <summary>Anndata description</summary>
