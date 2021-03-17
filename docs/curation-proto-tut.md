@@ -15,20 +15,14 @@ Cellxgene's publishing platform and interactive single cell data explorer is a s
 <details>
 <summary>"Table of Contents"</summary>
 
-- [Why?](#why-contribute)
-- [Markdown basics](#markdown-basics)
-- [Advanced Formatting tips](#advanced-formatting-tips)
-  * [`left` alignment](#left-alignment)
-  * [`right` alignment](#right-alignment)
-  * [`center` alignment example](#center-alignment-example)
-  * [`collapse` Sections](#collapse-sections)
-  * [`additional links`](#additional-links)
-  * [Badges](#badges)
-- [Useful packages](#useful-packages)
+- [Why contribute?](#why-contribute)
+- [Basic data requirements](#Basic-data-requirements)
+- [Anndata object requirements](#anndata-object-requirements)
+  * [Format conversion](#format-conversion)
+  * [Alternative assays](#alternative-assays)
 - [Useful utilities](#useful-utilities)
 - [How Serverless uses markdown](#how-serverless-uses-markdown)
   * [DEMO](#demo)
-- [Other Markdown Resources](#other-markdown-resources)
 
 </details>
 
@@ -61,7 +55,7 @@ Beyond this we hope that you see the value of using this portal as a publishing 
  - easy for readers to explore your dataset (with no extra work on your side - goodbye shiny!)
  - accesibility of your dataset through many of the popular single cell toolchains (link to an instance of the cellxgene explorer app)
 
-## General data requirements
+## Basic data requirements
 - count matrix (required (expcept certain assays))
 - normalized expression matrix used for visulization (required)
 - cell level metadata (required)
@@ -69,7 +63,7 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 - embedding (at least one required, UMAP, tSNE, spatial)
 
 
-## Anndata object structure
+## Anndata object requirements
 
 <!--- ![image](https://user-images.githubusercontent.com/25663501/111377611-3c8c7400-8677-11eb-8176-cf9de8f64c70.png) --->
 
@@ -86,13 +80,13 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 - raw.X or raw layer
 - layers
 
-### Conversion to Anndata from other object types (seurat, loom, sce)
+### Format conversion
 
 Talk about conversion - sceasy, other tools....
 
 
 
-## Accepted data types
+### Alternative assays
 
 Talk about the data types that we are able to support (the tool is mostly ambiguous, but anndata does have some limitations that can be mentioned about here)
 
