@@ -85,11 +85,6 @@ Reason to contribute:
 
 
 ## Anndata object requirements
-<br/>
-<!--- ![image](https://user-images.githubusercontent.com/25663501/111377611-3c8c7400-8677-11eb-8176-cf9de8f64c70.png) --->
-
-<!--- resized anndata image below --->
-<!--- <img src="https://user-images.githubusercontent.com/25663501/111377611-3c8c7400-8677-11eb-8176-cf9de8f64c70.png" width="500"> --->
 
 <p align="center">
   <img width="500" src="https://user-images.githubusercontent.com/25663501/111377611-3c8c7400-8677-11eb-8176-cf9de8f64c70.png">
@@ -111,14 +106,27 @@ This is some text introducting anndata
 - X
 - raw.X or raw layer
 - layers
-
+ 
 ### Format conversion
 
+<br/>
+
+<details>
+<summary>Change things up</summary>
+ 
 Talk about conversion - sceasy, other tools....
+ 
+</details>
 
-
+<br/>
+ 
 
 ### Alternative assays
+
+<br/>
+
+<details>
+<summary>Gain a new perspeective</summary>
 
 Talk about the data types that we are able to support (the tool is mostly ambiguous, but anndata does have some limitations that can be mentioned about here)
 
@@ -127,6 +135,10 @@ Guidelines for curating the following assays. In each section, also include a li
 - RNAseq
 - CITEseq
 - Spatial/Visium
+
+</details>
+
+<br/>
 
 ## Schema definition
 
