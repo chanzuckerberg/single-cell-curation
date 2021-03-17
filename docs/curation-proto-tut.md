@@ -25,6 +25,7 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 - [Why contribute?](#why-contribute)
 - [Basic data requirements](#basic-data-requirements)
 - [Anndata object requirements](#anndata-object-requirements)
+  * [Anndata description](#anndata-description)
   * [Format conversion](#format-conversion)
   * [Alternative assays](#alternative-assays)
 - [Schema definition](#schema-definition)
@@ -86,6 +87,13 @@ Reason to contribute:
 
 ## Anndata object requirements
 
+### Anndata description
+
+<br/>
+
+<details>
+<summary>Anndata description</summary>
+
 <p align="center">
   <img width="500" src="https://user-images.githubusercontent.com/25663501/111377611-3c8c7400-8677-11eb-8176-cf9de8f64c70.png">
 </p>
@@ -106,6 +114,10 @@ This is some text introducting anndata
 - X
 - raw.X or raw layer
 - layers
+
+</details>
+
+<br/>
  
 ### Format conversion
 
