@@ -28,7 +28,7 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 
 - [Overview](#overview)
 - [Why contribute?](#why-contribute)
-- [Basic data requirements](#Basic-data-requirements)
+- [Basic data requirements](#basic-data-requirements)
 - [Anndata object requirements](#anndata-object-requirements)
   * [Format conversion](#format-conversion)
   * [Alternative assays](#alternative-assays)
@@ -37,6 +37,8 @@ Beyond this we hope that you see the value of using this portal as a publishing 
   * [DEMO](#demo)
 
 </details>
+
+<br/>
 
 ## Overview
 
