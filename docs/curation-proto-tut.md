@@ -13,9 +13,9 @@
 Cellxgene's publishing platform and interactive single cell data explorer is a system which is optimized for easy access, interrogation and sharing/reuse of single cell data. In order to meet these standards and to facilitate easy navigation/aggregation among the growing number of single cell datasets, the cellxgene publishing platform currently accepts curated anndata objects adhering to a [comprehensive data schema (@TODO add link)](https://github.com/chanzuckerberg/single-cell-curation/main/docs/corpora_schema.md). 
 
 <details>
-<summary>"Click to expand"</summary>
+<summary>"Table of Contents"</summary>
 
-- [Why markdown?](#why-markdown)
+- [Why?](#why-contribute)
 - [Markdown basics](#markdown-basics)
 - [Advanced Formatting tips](#advanced-formatting-tips)
   * [`left` alignment](#left-alignment)
@@ -55,7 +55,7 @@ In this tutorial, you will gain all the essential information for doing the foll
 
 Beyond this we hope that you see the value of using this portal as a publishing platform and also welcome any comments that pertain improving the portal and curation experience. You can contact us via [support email]()
 
-## Why should you contribute to the data portal
+## Why contribute?
  - link permanence, allows you to reference data portal links in publication with guarantee that the link will always be there
  - sharing of private datasets with collaborators
  - easy for readers to explore your dataset (with no extra work on your side - goodbye shiny!)
