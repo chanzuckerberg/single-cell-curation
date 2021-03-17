@@ -19,10 +19,8 @@ Cellxgene's publishing platform and interactive single cell data explorer is a s
 
 Beyond this we hope that you see the value of using this portal as a publishing platform and also welcome any comments that pertain improving the portal and curation experience. You can contact us via [support email]()
 
-### Table of contents
-
 <details>
-<summary>"Click to expand"</summary>
+<summary>"Table of contents"</summary>
 
 - [Why contribute?](#why-contribute)
 - [Basic data requirements](#basic-data-requirements)
@@ -164,7 +162,7 @@ Table will also include scenrios where ontologies can be relaxed
 
 
 ## CZI curation tools
-
+<br/>
 <details>
 <summary>To make sure markdown is rendered correctly in the collapsed section...</summary>
 
