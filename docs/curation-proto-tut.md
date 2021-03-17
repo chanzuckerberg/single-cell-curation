@@ -38,9 +38,6 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 
 <br/>
 
-<details>
-<summary>You know you want to...</summary>
-
 This is some example text about why to contribute...
 <!--- ![image](https://user-images.githubusercontent.com/25663501/111403110-d1589700-86a2-11eb-99dd-bf52e348d43a.png) --->
 <br/>
@@ -60,8 +57,6 @@ Reason to contribute:
  - easy for readers to explore your dataset (with no extra work on your side - goodbye shiny!)
  - accesibility of your dataset through many of the popular single cell toolchains (link to an instance of the cellxgene explorer app)
 
-</details>
-
 <br/>
  
 ## Basic data requirements
@@ -69,19 +64,11 @@ Reason to contribute:
 <br/>
 
 Some basic requirements...
-
-<br/>
-
-<details>
-<summary>Easy as ABC...</summary>
-
 - count matrix (required (expcept certain assays))
 - normalized expression matrix used for visulization (required)
 - cell level metadata (required)
 - variable/feature level metadata (not required)
 - embedding (at least one required, UMAP, tSNE, spatial)
-
-</details>
 
 <br/>
 
