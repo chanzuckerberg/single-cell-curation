@@ -68,6 +68,10 @@ Reason to contribute:
 
 <br/>
 
+Some basic requirements...
+
+<br/>
+
 <details>
 <summary>Easy as ABC...</summary>
 
