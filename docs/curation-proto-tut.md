@@ -25,9 +25,6 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 - [Why contribute?](#why-contribute)
 - [Basic data requirements](#basic-data-requirements)
 - [Anndata object requirements](#anndata-object-requirements)
-  * [Anndata description](#anndata-description)
-  * [Format conversion](#format-conversion)
-  * [Alternative assays](#alternative-assays)
 - [Schema definition](#schema-definition)
   * [Dataset level metadata](#dataset-level-metadata)
   * [Cell level metadata](#dataset-level-metadata)
@@ -87,8 +84,6 @@ Reason to contribute:
 
 ## Anndata object requirements
 
-### Anndata description
-
 <br/>
 
 <details>
@@ -119,12 +114,8 @@ This is some text introducting anndata
 
 <br/>
  
-### Format conversion
-
-<br/>
-
 <details>
-<summary>Change things up</summary>
+<summary>Format conversion (i.e. Seurat => Anndata) up</summary>
  
 Talk about conversion - sceasy, other tools....
  
@@ -132,13 +123,8 @@ Talk about conversion - sceasy, other tools....
 
 <br/>
  
-
-### Alternative assays
-
-<br/>
-
 <details>
-<summary>Gain a new perspeective</summary>
+<summary>Alternative assays</summary>
 
 Talk about the data types that we are able to support (the tool is mostly ambiguous, but anndata does have some limitations that can be mentioned about here)
 
