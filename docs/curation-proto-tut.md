@@ -267,30 +267,67 @@ You can check out the full documenatation for this tooling [here](#schema_guide.
  
 <summary> structuring your config file </summary>
 
-What is the config YAML file and how does it modify your anndata object?
-
 Your [`config.yaml`](example_config.yaml) file is used to update values and columns in `adata.uns` and `adata.obs` (repectively) with required schema information. Here is an example/mock of a config file:
 
 <br/>
 
+##### `uns` section
+
 ```
 uns:
     version:
-        corpora_schema_version: 1.1.0 #(ex: schema_version_number)
-        corpora_encoding_version: 1.1.0 #(ex: encoding version)
-    title: publication_title #(free text field)
+        corpora_schema_version: 1.1.0                           #(ex: schema_version_number)
+        corpora_encoding_version: 1.1.0                         #(ex: encoding version)
+    title: publication_title                                    #(free text field)
     layer_descriptions:
-        raw.X: raw #(it is essential for at one the layer_descriptions to be set to 'raw')
-        X: log1p #(free text description of normalization method )
-    organism: Homo sapiens #(Specify organism name)
-    organism_ontology_term_id: NCBITaxon:9606 #(#Specfiy organism NCBI Taxon ID)
+        raw.X: raw                                              #(it is essential for at one the layer_descriptions to be set to 'raw')
+        X: log1p                                                #(free text description of normalization method )
+    organism: Homo sapiens                                      #(Specify organism name)
+    organism_ontology_term_id: NCBITaxon:9606                   #(#Specfiy organism NCBI Taxon ID)
 
 ```
-<div align="center">
-  <b>Config uns section</b>
-</div>
+
 
 <br/>
+
+In the config file snippet above, our 0 level indendentation specifies that we are modifying the `uns` slot. The next level of indentation specifies a key name to add to `uns`. The key's corresponding value will the be string following the colon, or if the key is follow by more lines that are further indented, then the corresponding value will be a dictonary containing the key-value pairs specified in the subsequent lines. More concretely, `adata.uns['layer_descriptions']`, will return a dictionary with the key value pairs `{'raw.X': 'raw', 'X': 'log1p'}` after the schema config has been applied.
+
+
+**Note:** at least one of the keys in `layer_descriptions` must return the value 'raw'
+
+<br/>
+
+##### `obs` section
+
+<br/>
+
+```
+obs:
+    tissue_ontology_term_id: UBERON:0000006                                 #UBERON tissue term
+    assay_ontology_term_id: EFO:0010961                                     #EFO assay term
+    disease_ontology_term_id: PATO:0000461                                  #MONDO disease term or PATO:0000461
+    sex: male                                                               #male, female, mixed, unknown, or other
+    ethnicity_ontology_term_id: na                                          #HANCESTRO term
+    development_stage_ontology_term_id: HsapDv:0000160                      #HsapDv term
+    cell_type_ontology_term_id:
+      cell_label:                                                           #this is column name in your obs dataframe (the field that specifies cell type)
+        acinar: CL:0002064                                                  #mapping between cell types (specified in anndata object) and cl ontology id
+        alpha: CL:0000171
+        delta: CL:0000173
+        endothelial: CL:0000115
+        epsilon: CL:0005019
+
+```
+
+
+<br/>
+
+In the config file snippet above, the 0 level indentation specifies that we are modifying `obs`. At the first level of indentation, we start adding schema fields to `obs`. If the first level indentation fields ar follow by an ontology value (i.e. `tissue_ontology_term_id: UBERON:0000006`), then a column called `tissue_ontology_term_id` will created in the obs dataframe, and all of its values will be `UBERON:0000006`. Additionally, another column named `tissue` will be created with the corresponding UBERON term (`islet of Langerhans`).
+
+On other hand, if the schema field is followed by lines with have further indentation, then the next line in the config file specify a column whose values should be mapped to ontology terms (with these mappings specified by the subsequent lines). Two new columns will be added to the `obs` data frame `cell_type_ontology_term_id` and `cell_type`.
+
+<br/>
+
 
 </details>
 
