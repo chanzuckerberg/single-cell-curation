@@ -267,9 +267,9 @@ You can check out the full documenatation for this tooling [here](#schema_guide.
  
 <summary> structuring your config file </summary>
 
-Your [`config.yaml`](example_config.yaml) file is used to update values and columns in `adata.uns` and `adata.obs` (repectively) with required schema information. Here is an example/mock of a config file:
-
 <br/>
+
+Your [`config.yaml`](example_config.yaml) file is used to update values and columns in `adata.uns` and `adata.obs` (repectively) with required schema information. Here is an example/mock of a config file:
 
 ##### `uns` section
 
@@ -298,9 +298,6 @@ In the config file snippet above, our 0 level indendentation specifies that we a
 <br/>
 
 ##### `obs` section
-
-<br/>
-
 ```
 obs:
     tissue_ontology_term_id: UBERON:0000006                                 #UBERON tissue term
