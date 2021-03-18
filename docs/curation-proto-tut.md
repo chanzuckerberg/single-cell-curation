@@ -255,6 +255,12 @@ You can check out the full documenatation for this tooling [here](#schema_guide.
 
 <br/>
 
+#### Installation
+
+`pip install cellxgene-schema`
+
+<br/>
+
 #### `config.yaml`
 
 <details>
@@ -264,6 +270,8 @@ You can check out the full documenatation for this tooling [here](#schema_guide.
 What is the config YAML file and how does it modify your anndata object?
 
 Your [`config.yaml`](example_config.yaml) file is used to update values and columns in `adata.uns` and `adata.obs` (repectively) with required schema information. Here is an example/mock of a config file:
+
+<br/>
 
 ```
 uns:
@@ -278,8 +286,11 @@ uns:
     organism_ontology_term_id: NCBITaxon:9606 #(#Specfiy organism NCBI Taxon ID)
 
 ```
+<div align="center">
+  <b>Config uns section</b>
+</div>
 
-
+<br/>
 
 </details>
 
