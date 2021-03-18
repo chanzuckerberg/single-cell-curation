@@ -263,7 +263,21 @@ You can check out the full documenatation for this tooling [here](#schema_guide.
 
 What is the config YAML file and how does it modify your anndata object?
 
-Your `config.yaml` file is used to update values and columns in `adata.uns` and `adata.obs` (repectively) with required schema information (as specified by the config file). Here is an example of a skeleton 
+Your `config.yaml` file is used to update values and columns in `adata.uns` and `adata.obs` (repectively) with required schema information. Here is an example/mock of a config file:
+
+```
+uns:
+    version:
+        corpora_schema_version: 1.1.0 #(ex: schema_version_number)
+        corpora_encoding_version: 1.1.0 #(ex: encoding version)
+    title: publication_title #(free text field)
+    layer_descriptions:
+        raw.X: raw #(it is essential for at one the layer_descriptions to be set to 'raw')
+        X: log1p #(free text description of normalization method )
+    organism: Homo sapiens #(Specify organism name)
+    organism_ontology_term_id: NCBITaxon:9606 #(#Specfiy organism NCBI Taxon ID)
+
+```
 
 
 
