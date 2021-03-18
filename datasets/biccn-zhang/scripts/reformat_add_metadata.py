@@ -14,6 +14,7 @@ def main():
     
     #mtx_file_counts = "./data/original/counts.h5ad"
     #sample_metadata_file = "./data/original/cell_metadata.csv"
+    #cell_metadata = "./data/original/cell_metadata.csv"
     #umap_file = "./data/original/umap_embedding.csv"
     #out_file = "./data/transformed/1_reformatted/tassic.h5ad"
     
