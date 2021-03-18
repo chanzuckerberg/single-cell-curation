@@ -38,7 +38,6 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 
 <br/>
 
-This is some example text about why to contribute...
 <!--- ![image](https://user-images.githubusercontent.com/25663501/111403110-d1589700-86a2-11eb-99dd-bf52e348d43a.png) --->
 <br/>
 
@@ -49,6 +48,7 @@ This is some example text about why to contribute...
 <p align="center">
   <b> Figure: </b> Collection View of the Cellxgene Data Portal
 </p>
+
 <br/>
 
 Reason to contribute:
@@ -63,12 +63,15 @@ Reason to contribute:
 
 <br/>
 
-Some basic requirements...
-- count matrix (required (expcept certain assays))
-- normalized expression matrix used for visulization (required)
-- cell level metadata (required)
+The following elements of your single cell dataset are required. Note that, in addition to the following, other representations of the expression matrix (alternative normalization, SCTransform, corrected counts from SCTransform or background correction) can all be stored as `layers` your anndata object.
+
+- count matrix (except for certain assays)
+- normalized expression matrix used for visulization
+- cell level metadata
 - variable/feature level metadata (not required)
-- embedding (at least one required, UMAP, tSNE, spatial)
+- embedding (at least one required, UMAP, tSNE, spatial, PCA)
+
+
 
 <br/>
 
