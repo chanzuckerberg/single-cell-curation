@@ -63,7 +63,7 @@ Reason to contribute:
 
 <br/>
 
-The following elements of your single cell dataset are required. Note that, in addition to the following, other representations of the expression matrix (alternative normalization, SCTransform, corrected counts from SCTransform or background correction) can all be stored as `layers` your anndata object.
+The following elements of your single cell dataset are required. One of the prerequisites for contributing data to the portal is that you have these components represented as an `anndata` object (more on that in the next section). Note that, in addition to the following, other representations of the expression matrix (alternative normalization, SCTransform, corrected counts from SCTransform or background correction) can all be stored as `layers` your anndata object.
 
 - count matrix (except for certain assays)
 - normalized expression matrix used for visulization
