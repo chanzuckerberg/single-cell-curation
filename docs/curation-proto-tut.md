@@ -95,7 +95,7 @@ The following elements of your single cell dataset are required. One of the prer
 
 <br/>
 
-Introductory text about anndata objects - link to anndata/scanpy
+Contributing data to the cellxgene data portal or visualizing your data with the cellxgene explorer requires that your data is represented as an anndata data object. You can read more about Anndata through its [documentation site](https://anndata.readthedocs.io/en/latest/). Additionally, you can check out some of the requirements for using an anndata object with cellxgene [here](https://chanzuckerberg.github.io/cellxgene/posts/prepare). In this section of the tutorial, we will augment some of this information with some considerations that may be specific to the cellxgene curation process.
 
 <br/>
 
