@@ -17,7 +17,7 @@
 - navigating the portal and ensuring public or private access to your datasets
 - basic data exploration in the cellxgene explorer view
 
-Beyond this we hope that you see the value of using this portal as a publishing platform and also welcome any comments that pertain to improving the portal and curation experience. You can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com). You can check out the following links for more information on the cellxgene ecosytem:
+Beyond this we hope that you see the value of using this portal as a publishing platform and also welcome any comments that pertain to improving the portal and curation experience. You can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com). You can also check out the following links for more information on the cellxgene ecosytem:
 
 - [cellxgene data portal](https://cellxgene.cziscience.com/)
 - [cellxgene explorer github](https://github.com/chanzuckerberg/cellxgene)
