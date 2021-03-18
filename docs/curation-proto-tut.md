@@ -325,6 +325,7 @@ On other hand, if the schema field is followed by lines with have further indent
 
 <br/>
 
+@TODO - the fixup gene symbols section
 
 </details>
 
@@ -337,11 +338,16 @@ On other hand, if the schema field is followed by lines with have further indent
  
 <summary> applying the schema </summary>
 
-Necessary arguments
-- input h5ad
-- config file
-- output h5ad
-- warnings and errors
+<br/>
+
+In order to use the `cellxgene schema apply` command, you will need to pass the following required arguments:
+- `--source-h5ad` your original anndata file
+- `--remix-config` the `config.yaml` file that we specified above 
+- `--output-filename` the name of the resulting anndata that is consistent with the cellxgene schema
+
+<br/>
+
+The next step will be to validate the resulting object.
 
 </details>
 
@@ -351,12 +357,11 @@ Necessary arguments
 
 <details>
  
-<summary> validating the schema up</summary>
+<summary> validating the schema</summary>
 
-Neccesary arguments:
-- h5ad to validate
+<br/>
 
-What does a succesful output look like?
+In order to validate the remixed object, needs to simply run `cellxgene schema validate remixed_anndata.h5ad`. If there has been no terminal output from the function, then your object has been validated successfuly and is ready for upload!
 
 </details>
 
