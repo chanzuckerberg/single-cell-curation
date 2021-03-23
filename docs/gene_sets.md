@@ -34,7 +34,7 @@ Example:
 | club.cell     |                      | CYP2F2      | description      | Pubmed ID DCF678 | Primary Pubmed ID       |
 | macrophage    | description          | CD68        | description      |                  |                         |
 | macrophage    |                      | CD163       | description      |                  |                         |
-|
+
 
 ## Mandatory Header
 
@@ -67,7 +67,7 @@ If the `gene_set_name` is missing, validation MUST display a warning and fail th
 | club.cell     | description          | CCKAR       | description      |
 |     **~~?~~** |                      | SCGB3A2     | description      |
 | club.cell     |                      | CYP2F2      | description      |
-|
+
 
 All `gene_symbol(s)` for a `gene_set_name` MUST be on contiguous rows; otherwise, an out-of-order row is interpreted as a duplicate `gene_set_name`. In this case, validation MUST display a warning and fail the upload. This is illustrated by **~~club.cell~~** in the example:
 
@@ -79,7 +79,7 @@ All `gene_symbol(s)` for a `gene_set_name` MUST be on contiguous rows; otherwise
 | club.cell     |                      | CYP2F2      | description      |
 | macrophage    | description          | CD68        | description      |
 | **~~club.cell~~**     |                      | CD163       | description      |
-|
+
 
 When new gene sets are being added to a data collection on the portal, validation MUST detect `gene_set_name` collisions with current gene sets in the collection, display a warning, and fail the upload.  <br><br>
 
@@ -98,7 +98,7 @@ If the first instance of the `gene_set_description` is missing, validation MUST 
 | club.cell     |        **~~?~~**              | CCKAR       | description      |
 | club.cell     |                      | SCGB3A2     | description      |
 | club.cell     |                      | CYP2F2      | description      |
-|  <br><br>
+
 
 ### `gene_symbol`
 
@@ -111,7 +111,7 @@ The `gene_symbol` column MUST contain a value that is unique for the `gene_set_n
 | club.cell     | description          | CCKAR       | description      |
 | club.cell     |                      | SCGB3A2     | description      |
 | club.cell     |                      | **~~CCKAR~~**   | description      |
-|
+
 
 The value for a `gene_symbol` SHOULD follow [cellxgene schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/docs/corpora_schema.md) guidance for gene symbols. <br><br>
 
