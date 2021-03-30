@@ -47,8 +47,6 @@ The first row MUST contain header columns using reserved names in the following 
 
 Publishers MAY include additional header columns. It is RECOMMENDED that these custom columns observe the same self-documenting style - `column_name` and `column_description` for easier comprehension by data consumers.
 
-Only the values of `gene_set_name` and `gene_set_description` are presented to data consumers in the portal UX. 
-
 ## Rows
 
 Each subsequent row describes a gene in a gene set.
@@ -129,4 +127,10 @@ The value for a `gene_symbol` SHOULD follow [cellxgene schema](https://github.co
 
 ---
 
-The `gene_description` column MAY contain a value.
+The `gene_description` column MAY contain a value. <br><br>
+
+## Presentation in the cellxgene UX
+
+`gene_set_name` and `gene_set_description` are presented to data consumers  viewing data collections in the portal. They also may download gene sets.
+
+Users can [**explore**](https://cellxgene.cziscience.com/e/6acb6637-ac08-4a65-b2d1-581e51dc7ccf.cxg/) a dataset and its related gene sets in the data collection. In the visualization, `gene_set_name`, `gene_set_description`,  `gene_symbol`, and `gene_description` are presented to the user. The user may color by the mean expression of the gene set, select cells from a histogram showing the distribution of mean expression, and plot gene sets on the scatter plot.
