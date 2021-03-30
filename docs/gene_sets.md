@@ -54,7 +54,7 @@ Each subsequent row describes a gene in a gene set.
 
 ### Values
 
-The values for `gene_set_name`, `gene_set_description`, and `gene_symbol` MUST not contain illegal ASCII characters or sequences. If the following cases are detected, validation MUST display a warning and fail the upload:
+The values for `gene_set_name`, `gene_set_description`, and `gene_symbol` MUST NOT contain illegal ASCII characters or sequences. If the following cases are detected, validation MUST display a warning and fail the upload:
 
 * control characters (decimal 0-31)
 * DEL (decimal 127)
