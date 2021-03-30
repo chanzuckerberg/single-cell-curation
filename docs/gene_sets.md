@@ -21,7 +21,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## cellxgene gene set data format
   
-The cellxgene gene set data format is a [*Tidy* CSV](./gene_sets_example.csv) (comma-separated values) file using UTF-8 encoding. Multiple gene sets MAY be included in the file similar to the [Gene Matrix Transposed](https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29) or [Gene Matrix](https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMX:_Gene_MatriX_file_format_.28.2A.gmx.29) formats.
+The cellxgene gene set data format is a [*Tidy* CSV](./gene_sets_example.csv) (comma-separated values) file using ASCII encoding. Multiple gene sets MAY be included in the file similar to the [Gene Matrix Transposed](https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29) or [Gene Matrix](https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMX:_Gene_MatriX_file_format_.28.2A.gmx.29) formats.
 
 
 
@@ -53,6 +53,16 @@ Only the values of `gene_set_name` and `gene_set_description` are presented to d
 
 Each subsequent row describes a gene in a gene set.
 <br><br>
+
+### Values
+
+The values for required fields including `gene_set_name`, `gene_set_description`, and `gene_symbol` MUST not contain illegal ASCII characters or sequences. If the following cases are detected, validation MUST display a warning and fail:
+
+* control characters (decimal 0-31)
+* DEL (decimal 127)
+* leading spaces (decimal 32) in a field - "     This is an example"
+* trailing spaces (decimal 32) in a field - "This is an example     " 
+* multiple spaces (decimal 32) "internal" to a field - "This     is an example"
 
 ### `gene_set_name`
 
