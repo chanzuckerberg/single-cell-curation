@@ -77,7 +77,7 @@ If the `gene_set_name` is missing, validation MUST display an error message and 
 | club.cell     |                      | CYP2F2      | description      |
 
 
-All `gene_symbol(s)` for a `gene_set_name` MUST be on contiguous rows; otherwise, an out-of-order row is interpreted as a duplicate `gene_set_name`. In this case, validation MUST display an error message and fail the upload. This is illustrated by **~~club.cell~~** in the example:
+`gene_symbol(s)` for a `gene_set_name` MAY exist on noncontiguous rows. An out-of-order `gene_symbol` MUST be added to an existing `gene_set_name`. In the example below, **~~CD163~~** is added to the **club.cell** gene set:
 
 ---
 | gene_set_name | gene_set_description | gene_symbol | gene_description |
@@ -86,8 +86,8 @@ All `gene_symbol(s)` for a `gene_set_name` MUST be on contiguous rows; otherwise
 | club.cell     |                      | SCGB3A2     | description      |
 | club.cell     |                      | CYP2F2      | description      |
 | macrophage    | description          | CD68        | description      |
-| **~~club.cell~~**     |                      | CD163       | description      |
-
+| club.cell     |                      | **~~CD163~~**       | description      |
+<br>
 
 When new gene sets are being added to a data collection on the portal, validation MUST detect `gene_set_name` collisions with current gene sets in the collection, display an error message, and fail the upload.  <br><br>
 
