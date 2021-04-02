@@ -77,7 +77,7 @@ If the `gene_set_name` is missing, validation MUST display an error message and 
 | club.cell     |                      | CYP2F2      | description      |
 
 
-`gene_symbol(s)` for a `gene_set_name` MAY exist on noncontiguous rows. An out-of-order `gene_symbol` MUST be added to an existing `gene_set_name`. In the example below, **~~CD163~~** is added to the **club.cell** gene set:
+`gene_symbol(s)` for a `gene_set_name` MAY exist on noncontiguous rows. An out-of-order `gene_symbol` MUST be added to an existing `gene_set_name`. This is illustrated in the example, where **~~CD163~~** is added to the **club.cell** gene set:
 
 ---
 | gene_set_name | gene_set_description | gene_symbol | gene_description |
@@ -131,6 +131,6 @@ The `gene_description` column MAY contain a value. <br><br>
 
 ## Presentation in the cellxgene UX
 
-`gene_set_name` and `gene_set_description` are presented to data consumers  viewing data collections in the portal. They also may download gene sets.
+`gene_set_name` and `gene_set_description` are presented to users viewing data collections in the portal. They also may download gene sets.
 
 Users can [**explore**](https://cellxgene.cziscience.com/e/6acb6637-ac08-4a65-b2d1-581e51dc7ccf.cxg/) a dataset and its related gene sets in the data collection. In the visualization, `gene_set_name`, `gene_set_description`,  `gene_symbol`, and `gene_description` are presented to the user. The user may color by the mean expression of the gene set, select cells from a histogram showing the distribution of mean expression, and plot gene sets on the scatter plot.
