@@ -54,7 +54,7 @@ Each subsequent row describes a gene in a gene set.
 
 ### Values
 
-The values for `gene_set_name`, `gene_set_description`, and `gene_symbol` MUST NOT contain illegal ASCII characters or sequences. If the following cases are detected, validation MUST display a warning and fail the upload:
+The values for `gene_set_name`, `gene_set_description`, and `gene_symbol` MUST NOT contain illegal ASCII characters or sequences. If the following cases are detected, validation MUST display an error message and fail the upload:
 
 * control characters (decimal 0-31)
 * DEL (decimal 127)
@@ -68,7 +68,7 @@ The values for `gene_set_name`, `gene_set_description`, and `gene_symbol` MUST N
 
 The `gene_set_name` column MUST contain a value.
 
-If the `gene_set_name` is missing, validation MUST display a warning and fail the upload. This is illustrated by **~~?~~** in the example:
+If the `gene_set_name` is missing, validation MUST display an error message and fail the upload. This is illustrated by **~~?~~** in the example:
 
 | gene_set_name | gene_set_description | gene_symbol | gene_description |
 |---------------|----------------------|-------------|------------------|
@@ -77,7 +77,7 @@ If the `gene_set_name` is missing, validation MUST display a warning and fail th
 | club.cell     |                      | CYP2F2      | description      |
 
 
-All `gene_symbol(s)` for a `gene_set_name` MUST be on contiguous rows; otherwise, an out-of-order row is interpreted as a duplicate `gene_set_name`. In this case, validation MUST display a warning and fail the upload. This is illustrated by **~~club.cell~~** in the example:
+All `gene_symbol(s)` for a `gene_set_name` MUST be on contiguous rows; otherwise, an out-of-order row is interpreted as a duplicate `gene_set_name`. In this case, validation MUST display an error message and fail the upload. This is illustrated by **~~club.cell~~** in the example:
 
 ---
 | gene_set_name | gene_set_description | gene_symbol | gene_description |
@@ -89,7 +89,7 @@ All `gene_symbol(s)` for a `gene_set_name` MUST be on contiguous rows; otherwise
 | **~~club.cell~~**     |                      | CD163       | description      |
 
 
-When new gene sets are being added to a data collection on the portal, validation MUST detect `gene_set_name` collisions with current gene sets in the collection, display a warning, and fail the upload.  <br><br>
+When new gene sets are being added to a data collection on the portal, validation MUST detect `gene_set_name` collisions with current gene sets in the collection, display an error message, and fail the upload.  <br><br>
 
 ### `gene_set_description`
 
@@ -97,7 +97,7 @@ When new gene sets are being added to a data collection on the portal, validatio
 
 The first instance of a `gene_set_description` column for a specific `gene_set_name` MUST contain a value. All other instances are ignored in subsequent rows for the same `gene_set_name`.
 
-If the first instance of the `gene_set_description` is missing, validation MUST display a warning and fail the upload. This is illustrated by **~~?~~** in the example:
+If the first instance of the `gene_set_description` is missing, validation MUST display an error message and fail the upload. This is illustrated by **~~?~~** in the example:
 
 ---
 
@@ -112,7 +112,7 @@ If the first instance of the `gene_set_description` is missing, validation MUST 
 
 ---
 
-The `gene_symbol` column MUST contain a value that is unique for the `gene_set_name`. Validation MUST display warnings for a duplicate `gene_symbol` and fail the upload. This is illustrated by **~~CCKAR~~** in the example:
+The `gene_symbol` column MUST contain a value that is unique for the `gene_set_name`. Validation MUST display an error message for a duplicate `gene_symbol` and fail the upload. This is illustrated by **~~CCKAR~~** in the example:
 
 | gene_set_name | gene_set_description | gene_symbol | gene_description |
 |---------------|----------------------|-------------|------------------|
