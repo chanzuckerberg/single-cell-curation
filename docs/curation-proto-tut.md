@@ -10,7 +10,7 @@
 <!--- ## Overview --->
 <!--- purpose: Motivate submission to the data portal give context --->
 
-[Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) is a system which is optimized for easy access, interrogation and sharing/reuse of single cell data. In order to meet these standards and to facilitate easy navigation/aggregation among the growing number of single cell datasets, the cellxgene publishing platform currently accepts curated anndata objects adhering to a [comprehensive data schema](corpora_schema.md). In this tutorial, you will gain all the essential information for doing the following: 
+[Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) is a system which is optimized for easy access, interrogation and sharing/reuse of single cell data. In order to meet these standards and to facilitate easy navigation and aggregation among the growing number of single cell datasets, the cellxgene publishing platform currently accepts curated anndata objects adhering to a [succinct data schema](corpora_schema.md). In this tutorial, you will gain all the essential information for doing the following: 
 - curating one of your own single cell datasets in a streamlined manner
 - using CZI curation tools to perform most of the curation work
 - uploading data in the cellxgene data portal
@@ -25,8 +25,7 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 - [corpora schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/docs/corpora_schema.md)
 - [schema guide](https://github.com/chanzuckerberg/single-cell-curation/blob/main/docs/schema_guide.md)
 
-<details>
-<summary> Table of contents </summary>
+### Table of Contents
 
 - [Quick start](#quick-start)
 - [Why contribute?](#why-contribute)
@@ -34,8 +33,6 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 - [Anndata object requirements](#anndata-object-requirements)
 - [Schema definition](#schema-definition)
 - [Cellxgene curation tools](#cellxgene-curation-tools)
-
-</details>
 
 <br/>
 
@@ -91,23 +88,23 @@ The following elements of your single cell dataset are required. One of the prer
 <br/>
 
 
-## Anndata object requirements
+## anndata object requirements
 
 <br/>
 
-Contributing data to the cellxgene data portal or visualizing your data with the cellxgene explorer requires that your data is represented as an anndata data object. You can read more about Anndata through its [documentation site](https://anndata.readthedocs.io/en/latest/). Additionally, you can check out some of the requirements for using an anndata object with cellxgene [here](https://chanzuckerberg.github.io/cellxgene/posts/prepare). In this section of the tutorial, we will augment some of this information with some considerations that may be specific to the cellxgene curation process.
+Contributing data to the cellxgene data portal or visualizing your data with the cellxgene explorer requires that your data is represented as an anndata data object. You can read more about anndata through its [documentation site](https://anndata.readthedocs.io/en/latest/). Additionally, you can check out some of the requirements for using an anndata object with cellxgene [here](https://chanzuckerberg.github.io/cellxgene/posts/prepare). In this section of the tutorial, we will augment some of this information with some considerations that may be specific to the cellxgene curation process.
 
 <br/>
 
 <details>
-<summary>Anndata description</summary>
+<summary>anndata description</summary>
 
 <p align="center">
   <img width="500" src="https://user-images.githubusercontent.com/25663501/111377611-3c8c7400-8677-11eb-8176-cf9de8f64c70.png">
 </p>
 
 <p align="center">
-  <b> Figure:</b> Anndata components
+  <b> Figure:</b> anndata components
 </p>
 
 This is some text introducting anndata
@@ -128,7 +125,7 @@ This is some text introducting anndata
 <br/>
  
 <details>
-<summary>Format conversion (i.e. Seurat => Anndata) up</summary>
+<summary>Format conversion (i.e. Seurat => anndata) up</summary>
  
 Talk about conversion - sceasy, other tools....
  
