@@ -5,19 +5,12 @@
 <img align="right" src="https://user-images.githubusercontent.com/25663501/111377133-b07a4c80-8676-11eb-8eb8-07ca4d7a77e9.png">
 
 
-
-
 <!--- ## Overview --->
 <!--- purpose: Motivate submission to the data portal give context --->
 
-[Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) is a system which is optimized for easy access, interrogation and sharing/reuse of single cell data. In order to meet these standards and to facilitate easy navigation and aggregation among the growing number of single cell datasets, the cellxgene publishing platform currently accepts curated anndata objects adhering to a [succinct data schema](corpora_schema.md). In this tutorial, you will gain all the essential information for doing the following: 
-- curating one of your own single cell datasets in a streamlined manner
-- using CZI curation tools to perform most of the curation work
-- uploading data in the cellxgene data portal
-- navigating the portal and ensuring public or private access to your datasets
-- basic data exploration in the cellxgene explorer view
+[Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) is a system which is optimized for access, exploration and reuse of single cell data. In order to achieve these goals, the cellxgene platform currently accepts curated [anndata](https://anndata.readthedocs.io/en/latest/#) objects adhering to a [succinct data schema](corpora_schema.md). Adherence to a standardized data schema allows for efficient navigation and integration of the growing number of single cell datasets that are becoming available. In this tutorial, you will learn the essential information for curating a single cell dataset using CZI's curation tools and uploading to the data portal.
 
-Beyond this we hope that you see the value of using this portal as a publishing platform and also welcome any comments that pertain to improving the portal and curation experience. You can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com). You can also check out the following links for more information on the cellxgene ecosytem:
+If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com). You can also check out the following links for more information on the cellxgene ecosytem:
 
 - [cellxgene data portal](https://cellxgene.cziscience.com/)
 - [cellxgene explorer github](https://github.com/chanzuckerberg/cellxgene)
@@ -42,7 +35,7 @@ Beyond this we hope that you see the value of using this portal as a publishing 
 
 <br/>
 
-If you already know everything you need to know, then give curation a shot with this [quick start guide](https://github.com/chanzuckerberg/single-cell-curation#quick-start). Otherwise, continue reading!
+If you are already familiar with cellxgene, anndata, and the cellxgene data schema, then give curation a shot with this [quick start guide](https://github.com/chanzuckerberg/single-cell-curation#quick-start). Otherwise, continue reading!
 
 ---
 
