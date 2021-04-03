@@ -8,9 +8,16 @@
 <!--- ## Overview --->
 <!--- purpose: Motivate submission to the data portal give context --->
 
-[Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) is a system which is optimized for access, exploration and reuse of single cell data. In order to achieve these goals, the cellxgene platform currently accepts curated [anndata](https://anndata.readthedocs.io/en/latest/#) objects adhering to a [succinct data schema](corpora_schema.md). Adherence to a standardized data schema allows for efficient navigation and integration of the growing number of single cell datasets that are becoming available. In this tutorial, you will learn the essential information for curating a single cell dataset using CZI's curation tools and uploading to the data portal.
+[Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) is a system which is optimized for access, exploration and reuse of single cell data. In order to achieve these goals, the cellxgene platform currently accepts curated [anndata](https://anndata.readthedocs.io/en/latest/#) objects adhering to a [succinct data schema](corpora_schema.md). Adherence to a standardized data schema allows for efficient navigation and integration of the growing number of single cell datasets that are becoming available. In this tutorial, you will learn the essential information for curating a single cell dataset using CZI's curation tools and uploading to the data portal. Hosting your data on the cellxgene portal will offer the following benefits:
+ - link permanence
+ - sharing of private datasets with collaborators
+ - no barrier for readers to explore your dataset
+ - accesibility of your dataset in the major single cell data formats
 
-If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com). You can also check out the following links for more information on the cellxgene ecosytem:
+If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
+
+<!---
+You can also check out the following links for more information on the cellxgene ecosytem:
 
 - [cellxgene data portal](https://cellxgene.cziscience.com/)
 - [cellxgene explorer github](https://github.com/chanzuckerberg/cellxgene)
@@ -18,10 +25,12 @@ If you run into any issues during this tutorial, or have any suggestions on how 
 - [corpora schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/docs/corpora_schema.md)
 - [schema guide](https://github.com/chanzuckerberg/single-cell-curation/blob/main/docs/schema_guide.md)
 
+--->
+
 ### Table of Contents
 
 - [Quick start](#quick-start)
-- [Why contribute?](#why-contribute)
+<!--- - [Why contribute?](#why-contribute) --->
 - [Basic data requirements](#basic-data-requirements)
 - [Anndata object requirements](#anndata-object-requirements)
 - [Schema definition](#schema-definition)
@@ -39,13 +48,16 @@ If you are already familiar with cellxgene, anndata, and the cellxgene data sche
 
 ---
 
-## Why contribute?
+
+<!--- ## Why contribute? --->
 
 <br/>
 
 <!--- ![image](https://user-images.githubusercontent.com/25663501/111403110-d1589700-86a2-11eb-99dd-bf52e348d43a.png) --->
 <br/>
 
+
+<!---
 <p align="center">
   <img src="https://user-images.githubusercontent.com/25663501/111403110-d1589700-86a2-11eb-99dd-bf52e348d43a.png" width="1000">
 </p>
@@ -56,14 +68,17 @@ If you are already familiar with cellxgene, anndata, and the cellxgene data sche
 
 <br/>
 
+
 Reason to contribute:
- - link permanence, allows you to reference data portal links in publication with guarantee that the link will always be there
+ - link permanence
  - sharing of private datasets with collaborators
- - easy for readers to explore your dataset (with no extra work on your side - goodbye shiny!)
- - accesibility of your dataset through many of the popular single cell toolchains (link to an instance of the cellxgene explorer app)
+ - no barrier for readers to explore your dataset
+ - accesibility of your dataset in the major single cell data formats
 
 <br/>
  
+--->
+
 ## Basic data requirements
 
 <br/>
