@@ -81,6 +81,14 @@ Reason to contribute:
 
 ## Required data and `anndata` structure
 
+<p align="center">
+  <img width="500" src="https://user-images.githubusercontent.com/25663501/111377611-3c8c7400-8677-11eb-8176-cf9de8f64c70.png">
+</p>
+
+<p align="center">
+  <b> Figure:</b> anndata components
+</p>
+
 <br/>
 
 The following components are required for submission to the cellxgene data portal. 
@@ -91,7 +99,7 @@ The following components are required for submission to the cellxgene data porta
 - variable/feature level metadata (not required)
 - embedding (at least one required, UMAP, tSNE, spatial, PCA)
 
-These should be stored in the following locations in the anndata object:
+These should be stored in the following locations in the anndata object ([anndata documentation site](https://anndata.readthedocs.io/en/latest/)):
 
 <br/>
 
@@ -117,42 +125,7 @@ These should be stored in the following locations in the anndata object:
 
 **Note:** In addition to these data, other representations of the expression matrix (alternative normalizations, SCTransform, corrected counts from SCTransform or background corrected counts) can all be stored as `layers` your anndata object (as long as they maintain the same dimensionality of the main expression matrix used for visualization).
 
-
-
-
-<br/>
-
-
-## `anndata` object requirements
-
-<br/>
-
-Data that is contributed to the portal must be represented as an `anndata` data object. You can read more about `anndata` through its [documentation site](https://anndata.readthedocs.io/en/latest/). Additionally, you can check out some of the requirements for using an `anndata` object with cellxgene [here](https://chanzuckerberg.github.io/cellxgene/posts/prepare). In this section we will highlight requirements that make an `anndata` object compatible with cellxgene.
-
-<br/>
-
-<p align="center">
-  <img width="500" src="https://user-images.githubusercontent.com/25663501/111377611-3c8c7400-8677-11eb-8176-cf9de8f64c70.png">
-</p>
-
-<p align="center">
-  <b> Figure:</b> anndata components
-</p>
-
-The main components of the `anndata` are outlined in the image above. 
-
-
-- Talk about object structure
-- limitations 
-- what are the features/aspects of the anndata object that cellxgene data portal expects (essential slots/entries in the anndata object) - talk about where schema information is stored (schema info stored in obs and uns)
-- obs
-- uns
-- obsm ("X_example")
-- X
-- raw.X or raw layer
-- layers
-
-<br/>
+**Note:** Information which pertains to the cellxgene schema will be stored in the `adata.uns` and `adata.obs` slots of the `anndata` object and will be discussed in the next section.
  
 <details>
 <summary>Format conversion (i.e. Seurat => anndata) up</summary>
