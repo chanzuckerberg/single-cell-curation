@@ -83,14 +83,13 @@ Reason to contribute:
 
 <br/>
 
-The following elements of your single cell dataset are required. One of the prerequisites for contributing data to the portal is that you have these components represented as an `anndata` object (more on that in the next section). Note that, in addition to the following, other representations of the expression matrix (alternative normalization, SCTransform, corrected counts from SCTransform or background correction) can all be stored as `layers` your anndata object.
+The elements described below are required to be represented as an `anndata` object (more on that in the next section) for submission to the cellxgene data portal. Note that, in addition to the following, other representations of the expression matrix (alternative normalizations, SCTransform, corrected counts from SCTransform or background corrected counts) can all be stored as `layers` your anndata object (as long as they maintain the same dimensionality of the main expression matrix used for visualization).
 
-- count matrix (except for certain assays)
+- raw count matrix (except for certain assays such as scATACseq)
 - normalized expression matrix used for visulization
-- cell level metadata
+- cell level metadata (barcodes, cell type, tissue of origin, etc.)
 - variable/feature level metadata (not required)
 - embedding (at least one required, UMAP, tSNE, spatial, PCA)
-
 
 
 <br/>
@@ -100,7 +99,7 @@ The following elements of your single cell dataset are required. One of the prer
 
 <br/>
 
-Contributing data to the cellxgene data portal or visualizing your data with the cellxgene explorer requires that your data is represented as an anndata data object. You can read more about anndata through its [documentation site](https://anndata.readthedocs.io/en/latest/). Additionally, you can check out some of the requirements for using an anndata object with cellxgene [here](https://chanzuckerberg.github.io/cellxgene/posts/prepare). In this section of the tutorial, we will augment some of this information with some considerations that may be specific to the cellxgene curation process.
+Data that is contributed to the portal must be represented as an anndata data object. You can read more about anndata through its [documentation site](https://anndata.readthedocs.io/en/latest/). Additionally, you can check out some of the requirements for using an anndata object with cellxgene [here](https://chanzuckerberg.github.io/cellxgene/posts/prepare). In this section we will highlight requirements that make an anndata object compatible with cellxgene.
 
 <br/>
 
