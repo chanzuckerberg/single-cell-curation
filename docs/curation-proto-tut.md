@@ -171,34 +171,31 @@ The purpose of the cellxgene schema is to support the construction of a data cor
 
 `adata.uns` is a dictionary of key values pairs that we use to store dataset level metadata. This is also where you store information on the different data representations that you are sharing (i.e you are sharing a raw counts matrix, normalized expression matrix, scaled and centered expression matrix)
 
-<details>
-<summary>required and suggested dataset level metadata</summary>
-
 <br/>
 
 <div align="center">
 
-| Key                         | Value      | Description        | Example |
-| --------------------------- |:----------:| ------------------:| ---|
-| 'version'                   | string     |                    | `` |
-| 'title'                     | string     |                    | `` |
-| 'publication_doi'           | string     |                    | `` |
-| 'organism'                  | string     |                    | `` |
-| 'organism_ontology_term_id' | string     |                    | `` |
-| 'layer_descriptions'        | dictionary | See table below    | `` |
+| Key                         | Value      | Description                                                                  | Example                        |
+| --------------------------- |:----------:| :----------------------------------------------------------------------------| -------------------------------|
+| 'version'                   | string     | schema version(current version is `1.1.0`)                                   | `1.1.0`                        |
+| 'title'                     | string     | title of publication (followed by dataset title if more than one is present) | `An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum: GABAergic neurons` |
+| 'publication_doi'           | string     | DOI of preprint or official publication| `https://doi.org/10.1101/2020.05.10.087585` |
+| 'organism'                  | string     | name of organism (first letter capitalized) | `Mouse` |
+| 'organism_ontology_term_id' | string     | NCBI Taxon ID| `NCBI:txid10090` |
+| 'layer_descriptions'        | dictionary | a set of key value pairs defining the locations of different representations in the `anndata` object and an description of that representation. One of these key-value pairs must be on of `raw: raw` or `raw.X: raw`    | `{'X': 'log1p' (this value can be free text)}` |
 
 </div>
 
 <div align="center">
-  <b>Table: </b> Dataset level metadata
+  <b>Table: </b> Required and suggested dataset level metadata
 </div>
 
 <br/>
 
-In the above table we see what type on information is necessary at the dataset level. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+In the above table we see what type on information is necessary at the dataset level. Lorem ipsum 
 
 <br/>
-
+<!---
 <div align="center">
 
 | Key                         | Value      | Description        | Required                               |
@@ -217,11 +214,11 @@ In the above table we see what type on information is necessary at the dataset l
 </div>
 
 <br/>
+--->
 
 In our second table we, see how our different included representations can be described according to the schema standard. In this way, cellxgene explorer and data portal know how to access different parts of the object for visualization and access.
 
 
-</details>
 
 <br/>
 
