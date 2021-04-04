@@ -9,10 +9,10 @@
 <!--- purpose: Motivate submission to the data portal give context --->
 
 [Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) is a system which is optimized for access, exploration and reuse of single cell data. In order to achieve these goals, the cellxgene platform currently accepts curated [anndata](https://anndata.readthedocs.io/en/latest/#) objects adhering to a [succinct data schema](corpora_schema.md). Adherence to a standardized data schema allows for efficient navigation and integration of the growing number of single cell datasets that are becoming available. In this tutorial, you will learn the essential information for curating a single cell dataset using CZI's curation tools and uploading to the data portal. Hosting your data on the cellxgene portal will offer the following benefits:
- - link permanence
- - sharing of private datasets with collaborators
- - no barrier for readers to explore your dataset
- - accesibility of your dataset in the major single cell data formats
+ - link permanence (you can reference in your publication without ever worrying about dead links)
+ - sharing of private datasets with collaborators (keep the data private unitl it is ready for publication)
+ - no barrier for readers to explore your dataset (and no need for you to build your single cell data explorer)
+ - accesibility of your dataset in the major single cell data formats (including `anndata`, `seurat`, and `loom`)
 
 If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
 
@@ -46,14 +46,7 @@ If you are already familiar with cellxgene, anndata, and the cellxgene data sche
 
 ---
 
-
-<!--- ## Why contribute? --->
-
-<br/>
-
 <!--- ![image](https://user-images.githubusercontent.com/25663501/111403110-d1589700-86a2-11eb-99dd-bf52e348d43a.png) --->
-<br/>
-
 
 <!---
 <p align="center">
