@@ -118,12 +118,14 @@ These should be stored in the following locations in an `anndata` object (for mo
 
 **Note:** Information which pertains to the cellxgene schema will be stored in the `adata.uns` and `adata.obs` slots of the `anndata` object and will be discussed in the next section.
  
-<details>
-<summary>Format conversion (i.e. Seurat => anndata) up</summary>
+### Format conversion
  
-Talk about conversion - sceasy, other tools....
- 
-</details>
+There are a handful of tools that can be used to convert different single cell formats (`seurat`, `loom`, `sce`, `cds`) to `anndata`. We have had the most success with the R package [sceasy](https://github.com/cellgeni/sceasy). For relatively straightforward conversions, it is suitable to use the `sceasy::convertFormat()` function as specified in the sceasy documentation. For scenarios where you have multiple assays in the same object (as you may encounter in the `seurat` toolchain) it is recommended to check out the function definitions of the methods that are called by `convertFormat()`. For instance, if you look at the source code for `sceasy::seurat2anndata()`, you will see that the extra parameters `assay`, `main_layer`, and `transfer_layers` can be specified for control over which elements of the `seurat` object are carried into the `anndata` object. Check out the following function definitions and potentially use as a starting point for more customized conversions:
+
+- [`seurat2anndata()`](https://github.com/cellgeni/sceasy/blob/f8f0628a280e0880ea94b00100b463e1f6ba1994/R/functions.R#L14)
+- [`sce2anndata()`](https://github.com/cellgeni/sceasy/blob/f8f0628a280e0880ea94b00100b463e1f6ba1994/R/functions.R#L64)
+- [`loom2anndata()`](https://github.com/cellgeni/sceasy/blob/f8f0628a280e0880ea94b00100b463e1f6ba1994/R/functions.R#L116)
+
 
 <br/>
  
