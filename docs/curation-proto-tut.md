@@ -79,11 +79,11 @@ Reason to contribute:
  
 --->
 
-## Basic data requirements
+## Required data and `anndata` structure
 
 <br/>
 
-The elements described below are required to be represented as an `anndata` object (more on that in the next section) for submission to the cellxgene data portal. Note that, in addition to the following, other representations of the expression matrix (alternative normalizations, SCTransform, corrected counts from SCTransform or background corrected counts) can all be stored as `layers` your anndata object (as long as they maintain the same dimensionality of the main expression matrix used for visualization).
+The following components are required for submission to the cellxgene data portal. 
 
 - raw count matrix (except for certain assays such as scATACseq)
 - normalized expression matrix used for visulization
@@ -91,20 +91,45 @@ The elements described below are required to be represented as an `anndata` obje
 - variable/feature level metadata (not required)
 - embedding (at least one required, UMAP, tSNE, spatial, PCA)
 
+These should be stored in the following locations in the anndata object:
+
+<br/>
+
+<div align="center">
+
+| Component                       | `anndata` location                     | Notes                                           |
+| ------------------------------- |:--------------------------------------:| -----------------------------------------------:|
+| raw count matrix                | `adata.raw.X` or `adata.layers['raw']` | Not necessary for some assays                   |
+| normalized expression matrix    | `adata.X`                              | Used for visualization                          |
+| cell level metadata             | `adata.obs`                            |                                                 |
+| variable/feature level metadata | `adata.var`                            |                                                 |
+| embedding                       | `adata.obs`                            | Must start with the prefix 'X_' (i.e. 'X_UMAP') |
+
+</div>
+
+<div align="center">
+  <b>Table: </b> Required data and `anndata` object structure
+</div>
 
 <br/>
 
 
-## anndata object requirements
+
+**Note:** In addition to these data, other representations of the expression matrix (alternative normalizations, SCTransform, corrected counts from SCTransform or background corrected counts) can all be stored as `layers` your anndata object (as long as they maintain the same dimensionality of the main expression matrix used for visualization).
+
+
+
 
 <br/>
 
-Data that is contributed to the portal must be represented as an anndata data object. You can read more about anndata through its [documentation site](https://anndata.readthedocs.io/en/latest/). Additionally, you can check out some of the requirements for using an anndata object with cellxgene [here](https://chanzuckerberg.github.io/cellxgene/posts/prepare). In this section we will highlight requirements that make an anndata object compatible with cellxgene.
+
+## `anndata` object requirements
 
 <br/>
 
-<details>
-<summary>anndata description</summary>
+Data that is contributed to the portal must be represented as an `anndata` data object. You can read more about `anndata` through its [documentation site](https://anndata.readthedocs.io/en/latest/). Additionally, you can check out some of the requirements for using an `anndata` object with cellxgene [here](https://chanzuckerberg.github.io/cellxgene/posts/prepare). In this section we will highlight requirements that make an `anndata` object compatible with cellxgene.
+
+<br/>
 
 <p align="center">
   <img width="500" src="https://user-images.githubusercontent.com/25663501/111377611-3c8c7400-8677-11eb-8176-cf9de8f64c70.png">
@@ -114,7 +139,7 @@ Data that is contributed to the portal must be represented as an anndata data ob
   <b> Figure:</b> anndata components
 </p>
 
-This is some text introducting anndata
+The main components of the `anndata` are outlined in the image above. 
 
 
 - Talk about object structure
@@ -126,8 +151,6 @@ This is some text introducting anndata
 - X
 - raw.X or raw layer
 - layers
-
-</details>
 
 <br/>
  
