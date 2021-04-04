@@ -177,8 +177,8 @@ The purpose of the cellxgene schema is to support the construction of a data cor
 
 | Key                         | Value      | Description                                                                  | Example                        |
 | --------------------------- |:----------:| :----------------------------------------------------------------------------| -------------------------------|
-| 'version'                   | string     | schema version(current version is `1.1.0`)                                   | `1.1.0`                        |
-| 'title'                     | string     | title of publication (followed by dataset title if more than one is present) | `An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum: GABAergic neurons` |
+| 'version'                   | string     | schema version (current version is `1.1.0`)                                  | `1.1.0`                        |
+| 'title'                     | string     | title of publication (and title of dataset if more than one is being submitted) | `An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum: GABAergic neurons`|
 | 'publication_doi'           | string     | DOI of preprint or official publication| `https://doi.org/10.1101/2020.05.10.087585` |
 | 'organism'                  | string     | name of organism (first letter capitalized) | `Mouse` |
 | 'organism_ontology_term_id' | string     | NCBI Taxon ID| `NCBI:txid10090` |
@@ -192,7 +192,9 @@ The purpose of the cellxgene schema is to support the construction of a data cor
 
 <br/>
 
-In the above table we see what type on information is necessary at the dataset level. Lorem ipsum 
+In the above table we see what type on information is necessary at the dataset level. Two fields to pay extra attention to are the `title` and the `layer_descriptions` keys. Specifically, `title` should contain the name of the publication that the dataset is coming from. If there is more than one dataset associated with the publication, then the name of the dataset should be appended to the title (i.e. `'title': 'publication name: dataset title'`). This field will be used to name and distinguish different datasets in the same collection in the portal.
+
+At least one of the key value pairs in `layer_descriptions` needs to indicate the presence of a raw counts layers. This can either be specified as `raw: raw` or `raw.X: raw`. Additional layers may be specified and the values for these keys may be as descriptive as necessary (i.e. `scale.data: scaled and centered data`) 
 
 <br/>
 <!---
