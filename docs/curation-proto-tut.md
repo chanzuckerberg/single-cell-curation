@@ -218,10 +218,6 @@ At least one of the key value pairs in `layer_descriptions` needs to indicate th
 <br/>
 --->
 
-In our second table we, see how our different included representations can be described according to the schema standard. In this way, cellxgene explorer and data portal know how to access different parts of the object for visualization and access.
-
-
-
 <br/>
 
 #### `obs`
