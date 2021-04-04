@@ -14,7 +14,7 @@
  - no barrier for readers to explore your dataset (and no need for you to build your single cell data explorer)
  - accesibility of your dataset in the major single cell data formats (including `anndata`, `seurat`, and `loom`)
 
-If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
+This tutorial will consist of an explanation of 1) how to create and structure an `anndata` with your single cell data 2) how to augment this object with information that is specific to the cellxgene schema and 3) how to upload this object to the cellxgene data portal. If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
 
 <!---
 You can also check out the following links for more information on the cellxgene ecosytem:
@@ -90,7 +90,7 @@ The following components are required for submission to the cellxgene data porta
 - variable/feature level metadata (not required)
 - embedding (at least one required, UMAP, tSNE, spatial, PCA)
 
-These should be stored in the following locations in the anndata object ([anndata documentation site](https://anndata.readthedocs.io/en/latest/)):
+These should be stored in the following locations in an `anndata` object (for more information, please refer to the [anndata documentation site](https://anndata.readthedocs.io/en/latest/)):
 
 <br/>
 
