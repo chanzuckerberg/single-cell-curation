@@ -246,7 +246,7 @@ At least one of the key value pairs in `layer_descriptions` needs to indicate th
 
 <br/>
 
-In the above table, the types of cell level metadata that is collected for the schema. In particular, it is imporant to exapnd on how to annotate `cell_type` field. In general, we try to find most specific ontology term that accurately represents a given cell type in your dataset. In the event that your cell type is not described accurately by any term in the `CL` ontology, then it is sufficient to report the most accurate `UBERON` term and id instead.
+In the above table, the types of cell level metadata that is collected for the schema. In particular, it is imporant to exapnd on how to annotate `cell_type` field. In general, we try to find most specific ontology term that accurately represents a given cell type in your dataset. In the event that your cell type is not described accurately by any term in the `CL` ontology, then it is sufficient to report the most accurate `UBERON` term and id instead. In some cases, when neither the `CL` nor the `UBERON` term are descriptive enough, then it is possible to submit an empty string (`''`) for that entry.
 
 <br/>
 
