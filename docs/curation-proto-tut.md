@@ -106,6 +106,8 @@ These should be stored in the following locations in an `anndata` object (for mo
 
 </div>
 
+<br/>
+
 <div align="center">
   <b>Table: </b> Required data and `anndata` object structure
 </div>
@@ -126,6 +128,8 @@ There are a handful of tools that can be used to convert different single cell f
 - [`sce2anndata()`](https://github.com/cellgeni/sceasy/blob/f8f0628a280e0880ea94b00100b463e1f6ba1994/R/functions.R#L64)
 - [`loom2anndata()`](https://github.com/cellgeni/sceasy/blob/f8f0628a280e0880ea94b00100b463e1f6ba1994/R/functions.R#L116)
 
+
+**Note:** While `anndata` is able to accomodate multiple representations of an expression matrix in the object, matrices that are stored in `adata.layers` are required to be the same dimensions as `adata.X` (`adata.raw.X` may be of a different dimensionality though). In some scenarios, you may need to construct different `anndata` objects to accomodate different `assays` in the same experiment (for example, spliced vs unspliced counts in a sNuc-seq experiment).
 
 <br/>
  
