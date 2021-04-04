@@ -133,19 +133,23 @@ There are a handful of tools that can be used to convert different single cell f
 **Note:** While `anndata` is able to accomodate multiple representations of an expression matrix in the object, matrices that are stored in `adata.layers` are required to be the same dimensions as `adata.X` (`adata.raw.X` may be of a different dimensionality though). In some scenarios, you may need to construct different `anndata` objects to accomodate different `assays` in the same experiment (for example, spliced vs unspliced counts in a sNuc-seq experiment).
 
 <br/>
- 
-<details>
-<summary>Alternative assays</summary>
 
-Talk about the data types that we are able to support (the tool is mostly ambiguous, but anndata does have some limitations that can be mentioned about here)
+### Alternative assays
 
-Guidelines for curating the following assays. In each section, also include a link to curation of an object of the specified assay type:
+The cellxgene data portal and explorer are able to handle a wide range of single cell data types. Due to requirements of the the cellxgene schema and limitations of the `anndata` object structure, there are some assay specific considerations that ar outlined below
+
 - ATAC/mC
+  - raw data: Since there is not a standard way to generate a counts matrix or gene activity matrix for single cell epigenetic data, it is suitable to put a copy of `adata.X` in place of a raw data matrix. You can specify this assignment in `adata.uns`
+  - [Link to example curated dataset](www.example.com)
 - RNAseq
+  -  In some single cell toolchains, outputs of different computational methods may be of a different dimensionality than the input matrix (i.e SCTransform, or the scale.data slot in Seurat objects). Since `anndata` objects do not allow for matrices of different dimensions in `adata.layers`, it is suitable to pad the missing rows/features with zeros to ensure that indices (feature names) across different the different layers are matched. You can specify that these matrices were padded in `adata.uns['layer_descriptions']` as a part of the cellxgene schema. This allows users who may reuse your data to remove the padding from the matrix before working with the data further.
+  -  [Link to example curated dataset](www.example.com)
 - CITEseq
+  - TODO: considerations for CITE-seq...
+  - [Link to example curated dataset](www.example.com)
 - Spatial/Visium
-
-</details>
+  - Since spatial sequencing spots are not at the single cell level, you may wish to include prediction matrices that provide deconvolution information for each spot. These can generally be stored in `adata.uns` although it can be interesting to add prediction scores for each spot as new columns to the `adata.obs` dataframe
+  - [Link to example curated dataset](www.example.com)
 
 <br/>
 
