@@ -271,10 +271,6 @@ You can check out the full documenatation for this tooling [here](#schema_guide.
 
 #### `config.yaml`
 
-<details>
- 
-<summary> structuring your config file </summary>
-
 <br/>
 
 Your [`config.yaml`](example_config.yaml) file is used to update values and columns in `adata.uns` and `adata.obs` (repectively) with required schema information. Here is an example/mock of a config file:
@@ -335,17 +331,11 @@ On other hand, if the schema field is followed by lines with have further indent
 
 @TODO - the fixup gene symbols section
 
-</details>
-
 <br/>
 
 
 #### `cellxgene schema apply`
  
-<details>
- 
-<summary> applying the schema </summary>
-
 <br/>
 
 In order to use the `cellxgene schema apply` command, you will need to pass the following required arguments:
@@ -357,21 +347,13 @@ In order to use the `cellxgene schema apply` command, you will need to pass the 
 
 The next step will be to validate the resulting object.
 
-</details>
-
 <br/>
 
 #### `cellxgene schema validate`
 
-<details>
- 
-<summary> validating the schema</summary>
-
 <br/>
 
 In order to validate the remixed object, needs to simply run `cellxgene schema validate remixed_anndata.h5ad`. If there has been no terminal output from the function, then your object has been validated successfuly and is ready for upload!
-
-</details>
 
 <br/>
 
