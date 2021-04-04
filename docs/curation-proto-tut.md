@@ -224,11 +224,6 @@ At least one of the key value pairs in `layer_descriptions` needs to indicate th
 
 `adata.obs` is a dataframe that is used to store cell level metadata. In addition to experiemental metadata, the following additional field are required:
 
-<details>
-<summary>click to see required cell level metadata</summary>
-
-Table will also include scenrios where ontologies can be relaxed
-
 | `obs` column name                    | Type   | Descritpion                                                       | Example                                   |
 | :----------------------------------- |:------:| -----------------------------------------------------------------:|:------------------------------------------|
 | 'tissue'                             | string | UBERON term                                                       | `area postrema`                           |
@@ -252,8 +247,6 @@ Table will also include scenrios where ontologies can be relaxed
 <br/>
 
 In the above table, the types of cell level metadata that is collected for the schema. In particular, it is imporant to exapnd on how to annotate `cell_type` field. In general, we try to find most specific ontology term that accurately represents a given cell type in your dataset. In the event that your cell type is not described accurately by any term in the `CL` ontology, then it is sufficient to report the most accurate `UBERON` term and id instead.
-
-</details>
 
 <br/>
 
