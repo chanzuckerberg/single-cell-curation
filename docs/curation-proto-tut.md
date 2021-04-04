@@ -30,9 +30,7 @@ You can also check out the following links for more information on the cellxgene
 ### Table of Contents
 
 - [Quick start](#quick-start)
-<!--- - [Why contribute?](#why-contribute) --->
-- [Basic data requirements](#basic-data-requirements)
-- [Anndata object requirements](#anndata-object-requirements)
+- [Data requirements and anndata structure](#required-data-and-anndata-structure)
 - [Schema definition](#schema-definition)
 - [Cellxgene curation tools](#cellxgene-curation-tools)
 
