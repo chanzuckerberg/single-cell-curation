@@ -87,10 +87,11 @@ The following components are required for submission to the cellxgene data porta
 - raw count matrix (except for certain assays such as scATACseq)
 - normalized expression matrix used for visulization
 - cell level metadata (barcodes, cell type, tissue of origin, etc.)
-- variable/feature level metadata (not required)
 - embedding (at least one required, UMAP, tSNE, spatial, PCA)
 
-These should be stored in the following locations in an `anndata` object (for more information, please refer to the [anndata documentation site](https://anndata.readthedocs.io/en/latest/)):
+Additionally, variable and feature level metadata can be useful to include but is not required for construction of an `anndata` object.
+
+These components should be stored in the following locations in an `anndata` object (for more information, please refer to the [anndata documentation site](https://anndata.readthedocs.io/en/latest/)):
 
 <br/>
 
@@ -118,7 +119,7 @@ These should be stored in the following locations in an `anndata` object (for mo
 
 **Note:** In addition to these data, other representations of the expression matrix (alternative normalizations, SCTransform, corrected counts from SCTransform or background corrected counts) can all be stored as `layers` your anndata object (as long as they maintain the same dimensionality of the main expression matrix used for visualization).
 
-**Note:** Information which pertains to the cellxgene schema will be stored in the `adata.uns` and `adata.obs` slots of the `anndata` object and will be discussed in the next section.
+**Note:** Information which pertains to the cellxgene schema will be stored in the `adata.uns` and `adata.obs` slots of the `anndata` object and will be discussed in the [next section](#schema-definition).
  
 ### Format conversion
  
