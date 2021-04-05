@@ -31,6 +31,8 @@ You can also check out the following links for more information on the cellxgene
 
 - [Quick start](#quick-start)
 - [Data requirements and anndata structure](#required-data-and-anndata-structure)
+  - [Format conversion](#format-conversion)
+  - [Alternative assays](#alternative-assays) 
 - [Schema definition](#schema-definition)
 - [Cellxgene curation tools](#cellxgene-curation-tools)
 
