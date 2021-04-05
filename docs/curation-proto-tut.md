@@ -44,7 +44,8 @@ You can also check out the following links for more information on the cellxgene
     - [`obs` section](#obs-section)
     - [`fixup_gene_symbols` section](#fixup_gene_symbols-section-gene-symbol-harmonization)
   - [`cellxgene schema apply`](#cellxgene-schema-apply)
-  - [`cellxgene schema validate`](#cellxgene-schema-validate) 
+  - [`cellxgene schema validate`](#cellxgene-schema-validate)
+  - [Local testing and dropbox upload](#testing-locally-optional-and-upload-to-dropbox)
 
 <br/>
 
