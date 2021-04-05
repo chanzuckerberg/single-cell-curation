@@ -48,9 +48,9 @@ You can also check out the following links for more information on the cellxgene
   - [Local testing and dropbox upload](#testing-locally-optional-and-upload-to-dropbox)
 - [Uploading data to the cellxgene data portal](#uploading-data-to-the-cellxgene-data-portal)
   - [Portal sign in](#portal-sign-in)
-  - [Create a collection](#create-a-collection)
-  - [Add a dataset](#add-a-dataset-to-a-collection)
-  - [Remove a dataset](#remove-dataset-from-a-collection)
+  - [Create a private collection](#create-a-private-collection)
+  - [Add a dataset](#add-a-dataset-to-a-private-collection)
+  - [Remove a dataset](#remove-dataset-from-a-private-collection)
   - [Dataset actions](#dataset-actions)
   - [Publish collection](publish-collection-to-the-portal)
 - [Gene sets (under construction)](#gene-sets)
@@ -469,7 +469,7 @@ It should be noted that collections are displayed with specific metadata about t
 In the image above, we see an example of how the 'My Collections' page will look after you have uploaded a few datasets to the dataportal. Note that some of the collections in this example are published (publicly available) and one is private. The private collection is only available to people who you share the private link with. This allows for control over who views your datasets and for making amendmendents to datasets that have been uploaded to the portal previously. To add a new collection, we can simply click on the button highlighted above. 
 
 
-### Create a collection
+### Create a private collection
 
 <!--- ![image](https://user-images.githubusercontent.com/25663501/113528984-36135d00-9590-11eb-82a5-68ae4e5ddb1b.png) --->
 
@@ -492,7 +492,7 @@ Once you have clicked the 'Create Collection' button, you will be prompted to en
 
 You will also be required to agree to CZI's data submission policies which you can read in full by clicking 'Show Details'
 
-### Add a dataset to a collection
+### Add a dataset to a private collection
 
 <!--- ![image](https://user-images.githubusercontent.com/25663501/113529554-b5556080-9591-11eb-8e0e-274fcb1ff39a.png) --->
 
@@ -521,7 +521,7 @@ Once you have created a collection, you will have the ability to add a dataset. 
 <br/>
 
 
-### Remove dataset from a collection
+### Remove dataset from a private collection
 
 <!--- ![image](https://user-images.githubusercontent.com/25663501/113529632-edf53a00-9591-11eb-8ea4-575ca8c643f7.png) --->
 
