@@ -131,7 +131,7 @@ These components should be stored in the following locations in an `anndata` obj
 **Note:** Some assays, such as scATACseq or other epigenetic assays may not have a standardized way of representing a raw count matrix. While we still require there to be a matrix in location annotated as `raw`, some alternative options exist for these assays such as putting the un-normalized gene activity matrix in the `raw` slot. Since `adata.raw.X` can take matrices that are of a different dimensionality than `adata.X`, you could potentially put in a peak x cell matrix in this location instead. We leave this up to the author's discretion, but are happy to chat about options.
 --->
 
-**Note:** In addition to these data, other representations of the expression matrix (alternative normalizations, SCTransform, corrected counts from SCTransform or background corrected counts) can all be stored as `layers` your anndata object (as long as they maintain the same dimensionality of the main expression matrix used for visualization).
+**Note:** In addition to these data, other representations of the expression matrix (alternative normalizations, SCTransform, corrected counts from SCTransform or background corrected counts) can all be stored as `layers` in your anndata object (as long as they maintain the same dimensionality of the main expression matrix used for visualization).
 
 **Note:** Information which pertains to the cellxgene schema will be stored in the `adata.uns` and `adata.obs` slots of the `anndata` object and will be discussed in the [next section](#schema-definition).
  
@@ -171,7 +171,7 @@ The cellxgene data portal and explorer are able to handle a wide range of single
 
 <br/>
 
-The purpose of the cellxgene schema is to support the construction of a data corpus that facilitates data integration across multiple tissues and experiments. This goal requires that we collect a standardized set of metadata about single cell datasets that are uploaded to the cellxgene data portal. To make this process easy to adhere to, we only require a few fields (detailed below) to support easy search and integration across datasets. To access a more comprehensive decription about our schema requirements, you can refer to the [official schema definition](corpora_schema.md).
+The purpose of the cellxgene schema is to support the construction of a data corpus that facilitates data integration across multiple tissues and experiments. This goal requires that we collect a standardized set of metadata about single cell datasets that are uploaded to the cellxgene data portal. To make this process easy to adhere to, we only require a few fields (detailed below) to support easy search and integration across datasets. These metadata are stored within the `anndata` object (in `adata.uns` and `adata.obs`). To access a more comprehensive decription about our schema requirements, you can refer to the [official schema definition](corpora_schema.md).
 
 #### Basic requirements ([expanded version](corpora_schema.md#basic-requirements))
 - **Unique observation identifiers:** Each observation (usually a cell) must have an id that is unique within the dataset.
@@ -201,7 +201,7 @@ The purpose of the cellxgene schema is to support the construction of a data cor
 </div>
 
 <div align="center">
-  <b>Table: </b> Required and suggested dataset level metadata
+  <b> Table: </b> Required and suggested dataset level metadata
 </div>
 
 <br/>
@@ -226,7 +226,7 @@ At least one of the key value pairs in `layer_descriptions` needs to indicate th
 </div>
 
 <div align="center">
-  <b>Table: </b> Required and suggested data layers
+  <b> Table: </b> Required and suggested data layers
 </div>
 
 <br/>
@@ -238,7 +238,7 @@ At least one of the key value pairs in `layer_descriptions` needs to indicate th
 
 `adata.obs` is a dataframe that is used to store cell level metadata. In addition to experiemental metadata, the following additional field are required:
 
-| `obs` column name                    | Type   | Descritpion                                                       | Example                                   |
+| `obs` column name                    | Type   | Description                                                       | Example                                   |
 | :----------------------------------- |:------:| -----------------------------------------------------------------:|:------------------------------------------|
 | 'tissue'                             | string | UBERON term                                                       | `area postrema`                           |
 | 'tissue_ontology_term_id'            | string | UBERON term id                                                    | `UBERON:0002162`                          |
@@ -255,7 +255,7 @@ At least one of the key value pairs in `layer_descriptions` needs to indicate th
 | 'development_stage_ontology_term_id	'| string | HsapDv term id if human, child of `EFO:0000399` otherwise         | `HsapDv:0000046`                          |
 
 <div align="center">
-  <b>Table: </b> Required cell level metadata
+  <b> Table: </b> Required cell level metadata
 </div>
 
 <br/>
