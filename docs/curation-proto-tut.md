@@ -430,7 +430,17 @@ Navigate to my collections:
 
 ### Create a collection
 
-![image](https://user-images.githubusercontent.com/25663501/113528984-36135d00-9590-11eb-82a5-68ae4e5ddb1b.png)
+<!--- ![image](https://user-images.githubusercontent.com/25663501/113528984-36135d00-9590-11eb-82a5-68ae4e5ddb1b.png) --->
+
+<p align="center">
+  <img width="500" src="https://user-images.githubusercontent.com/25663501/113528984-36135d00-9590-11eb-82a5-68ae4e5ddb1b.png">
+</p>
+
+<p align="center">
+  <b> Figure:</b> Creating a collection
+</p>
+
+<br/>
 
 ### Add a dataset to a collection
 
