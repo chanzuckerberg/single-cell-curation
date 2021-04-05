@@ -446,19 +446,48 @@ Navigate to my collections:
 
 Highlight add dataset button
 
-![image](https://user-images.githubusercontent.com/25663501/113529554-b5556080-9591-11eb-8e0e-274fcb1ff39a.png)
+<!--- ![image](https://user-images.githubusercontent.com/25663501/113529554-b5556080-9591-11eb-8e0e-274fcb1ff39a.png) --->
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/25663501/113529554-b5556080-9591-11eb-8e0e-274fcb1ff39a.png">
+</p>
+
+<p align="center">
+  <b> Figure:</b> Add dataset to a collection
+</p>
+
+<br/>
 
 Choose from Dropbox:
 
-![image](https://user-images.githubusercontent.com/25663501/113529612-db7b0080-9591-11eb-9720-ae47155d62f8.png)
+<!--- ![image](https://user-images.githubusercontent.com/25663501/113529612-db7b0080-9591-11eb-9720-ae47155d62f8.png) --->
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/25663501/113529612-db7b0080-9591-11eb-9720-ae47155d62f8.png">
+</p>
+
+<p align="center">
+  <b> Figure:</b> Choose dataset from dropbox
+</p>
+
+<br/>
 
 
 ### Remove dataset from a collection
 
 `screenshot removing dataset`
 
-![image](https://user-images.githubusercontent.com/25663501/113529632-edf53a00-9591-11eb-8ea4-575ca8c643f7.png)
+<!--- ![image](https://user-images.githubusercontent.com/25663501/113529632-edf53a00-9591-11eb-8ea4-575ca8c643f7.png) --->
 
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/25663501/113529632-edf53a00-9591-11eb-8ea4-575ca8c643f7.png">
+</p>
+
+<p align="center">
+  <b> Figure:</b> Remove dataset from a collection
+</p>
+
+<br/>
 
 ### Share uploaded datasets with private links
 Explain that people can share private datasets 
