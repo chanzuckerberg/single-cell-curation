@@ -371,9 +371,9 @@ In order to validate the remixed object, needs to simply run `cellxgene schema v
 
 <br/>
 
-## Testing locally (optional)
+## Testing locally (optional) and upload to dropbox
 
-You can test you `anndata` object after schema application by running with a local installation of cellxgene (`cellxgene launch example.h5ad`)
+You can test you `anndata` object after schema application by running with a local installation of cellxgene (`cellxgene launch example.h5ad`). Following this optional testing, you can upload to dropbox which is required since datasets cannot be uploaded directly to the portal.
 
 ## Uploading data to the cellxgene data portal
 
@@ -386,7 +386,7 @@ sign in options for the portal (gmail, github, etc)
 <!--- ![image](https://user-images.githubusercontent.com/25663501/113528770-9f46a080-958f-11eb-83a1-36620e1543d2.png) --->
 
 <p align="center">
-  <img width="300" src="https://user-images.githubusercontent.com/25663501/113528770-9f46a080-958f-11eb-83a1-36620e1543d2.png">
+  <img width="250" src="https://user-images.githubusercontent.com/25663501/113528770-9f46a080-958f-11eb-83a1-36620e1543d2.png">
 </p>
 
 <p align="center">
@@ -398,10 +398,34 @@ sign in options for the portal (gmail, github, etc)
 
 Navigate to my collections:
 
-![image](https://user-images.githubusercontent.com/25663501/113528725-69a1b780-958f-11eb-9f69-5f5871c3c510.png)
+
+<!--- ![image](https://user-images.githubusercontent.com/25663501/113530303-a96a9e00-9593-11eb-91b7-0898d521314a.png) --->
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/25663501/113530303-a96a9e00-9593-11eb-91b7-0898d521314a.png">
+</p>
+
+<p align="center">
+  <b> Figure:</b> Navigate to "My Collections"
+</p>
+
+<br/>
 
 
-![image](https://user-images.githubusercontent.com/25663501/113528943-18de8e80-9590-11eb-92ab-2a606879b70c.png)
+<!--- ![image](https://user-images.githubusercontent.com/25663501/113528943-18de8e80-9590-11eb-92ab-2a606879b70c.png) --->
+
+<!--- ![image](https://user-images.githubusercontent.com/25663501/113530607-6d840880-9594-11eb-8af7-17f75d3a8a40.png) --->
+
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/25663501/113530607-6d840880-9594-11eb-8af7-17f75d3a8a40.png">
+</p>
+
+<p align="center">
+  <b> Figure:</b> My Collections
+</p>
+
+<br/>
 
 
 ### Create a collection
