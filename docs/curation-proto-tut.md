@@ -236,7 +236,7 @@ At least one of the key value pairs in `layer_descriptions` needs to indicate th
 
 #### `obs`
 
-`adata.obs` is a dataframe that is used to store cell level metadata. In addition to experiemental metadata, the following additional field are required:
+`adata.obs` is a dataframe that is used to store cell level metadata. In addition to experiemental metadata, the following additional fields are required:
 
 | `obs` column name                    | Type   | Description                                                       | Example                                   |
 | :----------------------------------- |:------:| -----------------------------------------------------------------:|:------------------------------------------|
