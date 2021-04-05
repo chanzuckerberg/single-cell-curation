@@ -383,17 +383,38 @@ Introduce collection view, dataset view, and explorer view
 
 sign in options for the portal (gmail, github, etc)
 
+![image](https://user-images.githubusercontent.com/25663501/113528770-9f46a080-958f-11eb-83a1-36620e1543d2.png)
+
+
+Navigate to my collections:
+
+![image](https://user-images.githubusercontent.com/25663501/113528725-69a1b780-958f-11eb-9f69-5f5871c3c510.png)
+
+
+![image](https://user-images.githubusercontent.com/25663501/113528943-18de8e80-9590-11eb-92ab-2a606879b70c.png)
+
+
 ### Create a collection
 
-`screenshot of creating a collection`
+![image](https://user-images.githubusercontent.com/25663501/113528984-36135d00-9590-11eb-82a5-68ae4e5ddb1b.png)
 
 ### Add a dataset to a collection
 
-`screenshot adding a dataset to collection`
+Highlight add dataset button
+
+![image](https://user-images.githubusercontent.com/25663501/113529554-b5556080-9591-11eb-8e0e-274fcb1ff39a.png)
+
+Choose from Dropbox:
+
+![image](https://user-images.githubusercontent.com/25663501/113529612-db7b0080-9591-11eb-9720-ae47155d62f8.png)
+
 
 ### Remove dataset from a collection
 
 `screenshot removing dataset`
+
+![image](https://user-images.githubusercontent.com/25663501/113529632-edf53a00-9591-11eb-8ea4-575ca8c643f7.png)
+
 
 ### Share uploaded datasets with private links
 Explain that people can share private datasets 
