@@ -10,11 +10,11 @@
 
 [Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) is a system which is optimized for access, exploration and reuse of single cell data. In order to achieve these goals, the cellxgene platform currently accepts curated [anndata](https://anndata.readthedocs.io/en/latest/#) objects adhering to a [succinct data schema](corpora_schema.md). Adherence to a standardized data schema allows for efficient navigation and integration of the growing number of single cell datasets that are becoming available. In this tutorial, you will learn the essential information for curating a single cell dataset using CZI's curation tools and uploading to the data portal. Hosting your data on the cellxgene portal will offer the following benefits:
  - link permanence (you can reference in your publication without ever worrying about dead links)
- - sharing of private datasets with collaborators (keep the data private unitl it is ready for publication)
+ - sharing of private datasets with collaborators (keep the data private until it is ready for publication)
  - no barrier for readers to explore your dataset (and no need for you to build your own single cell data explorer)
  - accesibility of your dataset in the major single cell data formats (including `anndata`, `seurat`, and `loom`)
 
-This tutorial will consist of an explanation of 1) how to create and structure an `anndata` with your single cell data 2) how to augment this object with information that is specific to the cellxgene schema and 3) how to upload this object to the cellxgene data portal. If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
+This tutorial will consist of an explanation of 1) how to create and structure an `anndata` object with your single cell data 2) how to augment this object with information that is specific to the cellxgene schema and 3) how to upload this object to the cellxgene data portal. If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
 
 <!---
 You can also check out the following links for more information on the cellxgene ecosytem:
@@ -110,13 +110,13 @@ These components should be stored in the following locations in an `anndata` obj
 
 <div align="center">
 
-| Component                       | `anndata` location                     | Notes                                                                  |
-| ------------------------------- |:--------------------------------------:|:-----------------------------------------------------------------------|
-| raw count matrix                | `adata.raw.X` or `adata.layers['raw']` | Necessary, with some exceptions (see [exceptions](#alternative-assays) |
-| normalized expression matrix    | `adata.X`                              | Used for visualization in cellxgene explorer                           |
-| cell level metadata             | `adata.obs`                            |                                                                        |
-| variable/feature level metadata | `adata.var`                            |                                                                        |
-| embedding                       | `adata.obsm`                           | Must start with the prefix 'X_' (i.e. adata.obsm['X_UMAP'])            |
+| Component                       | `anndata` location                     | Notes                                                                     |
+| ------------------------------- |:--------------------------------------:|:--------------------------------------------------------------------------|
+| raw count matrix                | `adata.raw.X` or `adata.layers['raw']` | Necessary, with some exceptions (see [exceptions](#alternative-assays))   |
+| normalized expression matrix    | `adata.X`                              | Used for visualization in cellxgene explorer                              |
+| cell level metadata             | `adata.obs`                            | Categorical and continuous metadata shown in left and right cellxgene explorer sidebars respectively (can be used to color cells) |
+| variable/feature level metadata | `adata.var`                            |                                                                           |
+| embedding                       | `adata.obsm`                           | Must start with the prefix 'X_' (i.e. adata.obsm['X_UMAP'])               |
 
 </div>
 
@@ -155,16 +155,16 @@ The cellxgene data portal and explorer are able to handle a wide range of single
 
 - ATAC/mC
   - raw data: Since there is not a standard way to generate a counts matrix or gene activity matrix for single cell epigenetic data, it is suitable to put a copy of `adata.X` in place of a raw data matrix. You can specify this assignment in `adata.uns`
-  - [Link to example curated dataset](www.example.com)
+  - [(Not Live)Link to example curated dataset](www.example.com)
 - RNAseq
   -  In some single cell toolchains, outputs of different computational methods may be of a different dimensionality than the input matrix (i.e SCTransform, or the scale.data slot in Seurat objects). Since `anndata` objects do not allow for matrices of different dimensions in `adata.layers`, it is suitable to pad the missing rows/features with zeros to ensure that indices (feature names) across different the different layers are matched. You can specify that these matrices were padded in `adata.uns['layer_descriptions']` as a part of the cellxgene schema. This allows users who may reuse your data to remove the padding from the matrix before working with the data further.
-  -  [Link to example curated dataset](www.example.com)
+  -  [(Not Live)Link to example curated dataset](www.example.com)
 - CITEseq
   - TODO: considerations for CITE-seq...
-  - [Link to example curated dataset](www.example.com)
+  - [(Not Live)Link to example curated dataset](www.example.com)
 - Spatial/Visium
   - Since spatial sequencing spots are not at the single cell level, you may wish to include prediction matrices that provide deconvolution information for each spot. These can generally be stored in `adata.uns` although it can be interesting to add prediction scores for each spot as new columns to the `adata.obs` dataframe
-  - [Link to example curated dataset](www.example.com)
+  - [(Not Live)Link to example curated dataset](www.example.com)
 
 <br/>
 
@@ -185,20 +185,20 @@ In this section, we are covering 1) what metadata are required to adhere to the 
 
 #### `uns`
 
-`adata.uns` is a dictionary of key values pairs that we use to store dataset level metadata. This is also where you store information on the different data representations that you are sharing (i.e you are sharing a raw counts matrix, normalized expression matrix, scaled and centered expression matrix)
+`adata.uns` is a dictionary of key-value pairs that we use to store dataset level metadata. This is also where you store information on the different data representations that you are sharing (i.e you are sharing a raw counts matrix, normalized expression matrix, scaled and centered expression matrix)
 
 <br/>
 
 <div align="center">
 
-| Key                         | Value      | Description                                                                  | Example                        |
-| --------------------------- |:----------:| :----------------------------------------------------------------------------| -------------------------------|
-| 'version'                   | string     | schema version (current version is `1.1.0`)                                  | `1.1.0`                        |
-| 'title'                     | string     | title of publication (and title of dataset if more than one is being submitted) | `An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum: GABAergic neurons`|
-| 'publication_doi'           | string     | DOI of preprint or official publication| `https://doi.org/10.1101/2020.05.10.087585` |
-| 'organism'                  | string     | name of organism (first letter capitalized) | `Mouse` |
-| 'organism_ontology_term_id' | string     | NCBI Taxon ID| `NCBI:txid10090` |
-| 'layer_descriptions'        | dictionary | a set of key value pairs defining the locations of different representations in the `anndata` object and an description of that representation. One of these key-value pairs must be on of `raw: raw` or `raw.X: raw`    | `{'X': 'log1p' (this value can be free text)}` |
+| Key                                      | Value      | Description                                                                  | Example                 |
+| ---------------------------------------- |:----------:| :----------------------------------------------------------------------------| ------------------------|
+| `adata.uns['version']`                   | string     | schema version (current version is `1.1.0`)                               | `1.1.0`           |
+| `adata.uns['title']`                     | string     | title of publication (and title of dataset if more than one is being submitted) | `An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum: GABAergic neurons`|
+| `adata.uns['publication_doi']`           | string     | DOI of preprint or official publication             | `https://doi.org/10.1101/2020.05.10.087585` |
+| `adata.uns['organism']`                  | string     | name of organism (first letter capitalized) | `Mouse` |
+| `adata.uns['organism_ontology_term_id']` | string     | NCBI Taxon ID| `NCBI:txid10090` |
+| `adata.uns['layer_descriptions']`        | dictionary | a set of key value pairs defining the locations of different representations in the `anndata` object and an description of that representation. One of these key-value pairs must be on of `raw: raw` or `raw.X: raw`    | `{'X': 'log1p' (this value can be free text)}` |
 
 </div>
 
