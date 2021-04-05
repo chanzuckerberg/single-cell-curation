@@ -97,13 +97,13 @@ These components should be stored in the following locations in an `anndata` obj
 
 <div align="center">
 
-| Component                       | `anndata` location                     | Notes                                                            |
-| ------------------------------- |:--------------------------------------:|:-----------------------------------------------------------------|
-| raw count matrix                | `adata.raw.X` or `adata.layers['raw']` | Necessary, with exceptions made for some assays (see note below) |
-| normalized expression matrix    | `adata.X`                              | Used for visualization in cellxgene explorer                     |
-| cell level metadata             | `adata.obs`                            |                                                                  |
-| variable/feature level metadata | `adata.var`                            |                                                                  |
-| embedding                       | `adata.obsm`                           | Must start with the prefix 'X_' (i.e. adata.obsm['X_UMAP'])      |
+| Component                       | `anndata` location                     | Notes                                                                  |
+| ------------------------------- |:--------------------------------------:|:-----------------------------------------------------------------------|
+| raw count matrix                | `adata.raw.X` or `adata.layers['raw']` | Necessary, with some exceptions (see [exceptions](#alternative-assays) |
+| normalized expression matrix    | `adata.X`                              | Used for visualization in cellxgene explorer                           |
+| cell level metadata             | `adata.obs`                            |                                                                        |
+| variable/feature level metadata | `adata.var`                            |                                                                        |
+| embedding                       | `adata.obsm`                           | Must start with the prefix 'X_' (i.e. adata.obsm['X_UMAP'])            |
 
 </div>
 
