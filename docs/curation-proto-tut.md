@@ -422,8 +422,9 @@ sign in options for the portal (gmail, github, etc)
 
 <br/>
 
+The cellxgene data portal offers multiple login options including sign-in with your gsuite and github accounts, or via email address.
 
-Navigate to my collections:
+<br/>
 
 
 <!--- ![image](https://user-images.githubusercontent.com/25663501/113530303-a96a9e00-9593-11eb-91b7-0898d521314a.png) --->
@@ -437,6 +438,9 @@ Navigate to my collections:
 </p>
 
 <br/>
+
+After you have logged in,  you will be able to navigate to the 'My Collections' page where you can view all of the datasets that you have uploaded to the portal.
+
 
 
 <!--- ![image](https://user-images.githubusercontent.com/25663501/113528943-18de8e80-9590-11eb-92ab-2a606879b70c.png) --->
@@ -454,6 +458,8 @@ Navigate to my collections:
 
 <br/>
 
+In the image above, we see an example of how the 'My Collections' page will look after you have uploaded a few datasets to the dataportal. Note that some of the collections in this example are published (publicly available) and one is private. The private collection is only available to people who you share the private link with. This allows for control over who views your datasets and for making amendmendents to datasets that have been uploaded to the portal previously. To add a new collection, we can simply click on the button highlighted above. 
+
 
 ### Create a collection
 
@@ -468,6 +474,13 @@ Navigate to my collections:
 </p>
 
 <br/>
+
+Once you have clicked the 'Create Collection' button, you will be prompted to enter the following information:
+
+- Collection Name (name of the publication)
+- Description (abstract of publication)
+- Contact Name (PI name) and contact email (PI email)
+- Add Link (link to relevant resources such as the publication itself, lab website, consortia/department website, entry in GEO or other raw data sources, etc.)
 
 ### Add a dataset to a collection
 
@@ -484,6 +497,9 @@ Highlight add dataset button
 </p>
 
 <br/>
+
+Once you have created a collection, you will have the ability to add a dataset. Once you click this button, you will be guided to dropbox, where you can select a dataset for upload.
+
 
 Choose from Dropbox:
 
@@ -516,8 +532,10 @@ Choose from Dropbox:
 
 <br/>
 
+In case you have uploaded the wrong dataset or want to update a dataset within a collection, you can delete a dataset associated with a collection (without deleting the collection itself).
+
 ### Share uploaded datasets with private links
-Explain that people can share private datasets 
+Upon successful dataset upload....
 
 
 ### Publish Collection to the portal
