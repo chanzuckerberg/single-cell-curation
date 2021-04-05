@@ -11,7 +11,7 @@
 [Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) is a system which is optimized for access, exploration and reuse of single cell data. In order to achieve these goals, the cellxgene platform currently accepts curated [anndata](https://anndata.readthedocs.io/en/latest/#) objects adhering to a [succinct data schema](corpora_schema.md). Adherence to a standardized data schema allows for efficient navigation and integration of the growing number of single cell datasets that are becoming available. In this tutorial, you will learn the essential information for curating a single cell dataset using CZI's curation tools and uploading to the data portal. Hosting your data on the cellxgene portal will offer the following benefits:
  - link permanence (you can reference in your publication without ever worrying about dead links)
  - sharing of private datasets with collaborators (keep the data private unitl it is ready for publication)
- - no barrier for readers to explore your dataset (and no need for you to build your single cell data explorer)
+ - no barrier for readers to explore your dataset (and no need for you to build your own single cell data explorer)
  - accesibility of your dataset in the major single cell data formats (including `anndata`, `seurat`, and `loom`)
 
 This tutorial will consist of an explanation of 1) how to create and structure an `anndata` with your single cell data 2) how to augment this object with information that is specific to the cellxgene schema and 3) how to upload this object to the cellxgene data portal. If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
@@ -97,13 +97,13 @@ These components should be stored in the following locations in an `anndata` obj
 
 <div align="center">
 
-| Component                       | `anndata` location                     | Notes                                           |
-| ------------------------------- |:--------------------------------------:| -----------------------------------------------:|
-| raw count matrix                | `adata.raw.X` or `adata.layers['raw']` | Not necessary for some assays                   |
-| normalized expression matrix    | `adata.X`                              | Used for visualization                          |
-| cell level metadata             | `adata.obs`                            |                                                 |
-| variable/feature level metadata | `adata.var`                            |                                                 |
-| embedding                       | `adata.obs`                            | Must start with the prefix 'X_' (i.e. 'X_UMAP') |
+| Component                       | `anndata` location                     | Notes                                                            |
+| ------------------------------- |:--------------------------------------:|:-----------------------------------------------------------------|
+| raw count matrix                | `adata.raw.X` or `adata.layers['raw']` | Necessary, with exceptions made for some assays (see note below) |
+| normalized expression matrix    | `adata.X`                              | Used for visualization in cellxgene explorer                     |
+| cell level metadata             | `adata.obs`                            |                                                                  |
+| variable/feature level metadata | `adata.var`                            |                                                                  |
+| embedding                       | `adata.obsm`                           | Must start with the prefix 'X_' (i.e. adata.obsm['X_UMAP'])      |
 
 </div>
 
@@ -115,7 +115,9 @@ These components should be stored in the following locations in an `anndata` obj
 
 <br/>
 
-
+<!---
+**Note:** Some assays, such as scATACseq or other epigenetic assays may not have a standardized way of representing a raw count matrix. While we still require there to be a matrix in location annotated as `raw`, some alternative options exist for these assays such as putting the un-normalized gene activity matrix in the `raw` slot. Since `adata.raw.X` can take matrices that are of a different dimensionality than `adata.X`, you could potentially put in a peak x cell matrix in this location instead. We leave this up to the author's discretion, but are happy to chat about options.
+--->
 
 **Note:** In addition to these data, other representations of the expression matrix (alternative normalizations, SCTransform, corrected counts from SCTransform or background corrected counts) can all be stored as `layers` your anndata object (as long as they maintain the same dimensionality of the main expression matrix used for visualization).
 
