@@ -385,13 +385,20 @@ In order to validate the remixed object, needs to simply run `cellxgene schema v
 
 <br/>
 
-## Testing locally (optional) and upload to dropbox
+### Testing locally (optional) and upload to dropbox
 
-You can test you `anndata` object after schema application by running with a local installation of cellxgene (`cellxgene launch example.h5ad`). Following this optional testing, you can upload to dropbox which is required since datasets cannot be uploaded directly to the portal.
+You can test you `anndata` object after schema application by running with a local installation of cellxgene (`cellxgene launch example.h5ad`). This allows you to preview how your dataset will appear in the cellxgene explorer view within the data portal. Following this optional testing, you need upload to dropbox which is required since datasets cannot be uploaded directly to the portal.
 
 ## Uploading data to the cellxgene data portal
 
-Introduce collection view, dataset view, and explorer view
+In general, the cellxgene data portal is oriented around grouping datasets by their association with a particular publication. We refer to all of the datasets associated with a publication as a collection. When you go to the homepage of the [cellxgene data portal](#https://cellxgene.cziscience.com/), you will see a list of collections (publications). To explore any of the data associated with these publications, you would click on a particular collection and be greeted by all of the datasets associated with that publication. In this next section, we will cover how to contribute your newly curated data to the cellxgene portal. Briefly, we will cover:
+
+- Login options
+- Discovering 'My Collections'
+- Creating a **private** collection
+- Adding datasets to a newly created collection
+- Sharing **private** collections with collaborators via private links
+- Publishing your collection for public access
 
 ### Portal Sign in
 
