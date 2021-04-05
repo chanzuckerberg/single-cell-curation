@@ -34,7 +34,17 @@ You can also check out the following links for more information on the cellxgene
   - [Format conversion](#format-conversion)
   - [Alternative assays](#alternative-assays) 
 - [Schema definition](#schema-definition)
+  - [Basic requirements](#basic-requirements)
+  - [`uns`](#uns)
+  - [`obs`](#obs) 
 - [Cellxgene curation tools](#cellxgene-curation-tools)
+  - [Installation](#installation)
+  - [`config.yaml`](#config.yaml)
+    - [`uns` section](#uns-section)
+    - [`obs` section](#obs-section)
+    - [`fixup_gene_symbols` section](#fixup_gene_symbols-section-gene-symbol-harmonization)
+  - [`cellxgene schema apply`](#cellxgene-schema-apply)
+  - [`cellxgene schema validate`](#cellxgene-schema-validate) 
 
 <br/>
 
