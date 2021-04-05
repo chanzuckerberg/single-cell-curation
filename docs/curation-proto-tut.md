@@ -289,21 +289,21 @@ You can check out the full documenatation for this tooling [here](#schema_guide.
 
 <br/>
 
-Your [`config.yaml`](example_config.yaml) file is used to update values and columns in `adata.uns` and `adata.obs` (repectively) with required schema information. Here is an example/mock of a config file:
+Your [`config.yaml`](example_config.yaml) file is used to update values and columns in `adata.uns` and `adata.obs` (respectively) with required schema information. Here is an example/mock of a config file:
 
 #### `uns` section
 
 ```
 uns:
     version:
-        corpora_schema_version: 1.1.0                           #(ex: schema_version_number)
-        corpora_encoding_version: 1.1.0                         #(ex: encoding version)
-    title: publication_title                                    #(free text field)
+        corpora_schema_version: 1.1.0          #(ex: schema_version_number)
+        corpora_encoding_version: 1.1.0        #(ex: encoding version)
+    title: publication_title                   #(free text field)
     layer_descriptions:
-        raw.X: raw                                              #(it is essential for at one the layer_descriptions to be set to 'raw')
-        X: log1p                                                #(free text description of normalization method )
-    organism: Homo sapiens                                      #(Specify organism name)
-    organism_ontology_term_id: NCBITaxon:9606                   #(#Specfiy organism NCBI Taxon ID)
+        raw.X: raw                             #(it is essential for at least one the layer_descriptions to be set to 'raw')
+        X: log1p                               #(free text description of normalization method )
+    organism: Homo sapiens                     #(Specify organism name)
+    organism_ontology_term_id: NCBITaxon:9606  #(Specfiy organism NCBI Taxon ID)
 
 ```
 
@@ -339,9 +339,9 @@ obs:
 
 <br/>
 
-In the config file snippet above, the 0 level indentation specifies that we are modifying `obs`. At the first level of indentation, we start adding schema fields to `obs`. If the first level indentation fields ar follow by an ontology value (i.e. `tissue_ontology_term_id: UBERON:0000006`), then a column called `tissue_ontology_term_id` will created in the obs dataframe, and all of its values will be `UBERON:0000006`. Additionally, another column named `tissue` will be created with the corresponding UBERON term (`islet of Langerhans`).
+In the config file snippet above, the 0 level indentation specifies that we are modifying `obs`. At the first level of indentation, we start adding schema fields to `obs`. If the first level indentation field is followed by an ontology term id (i.e. `tissue_ontology_term_id: UBERON:0000006`), then a column for that field will be created in the obs dataframe (i.e. a column called `tissue_ontology_term_id` will be created), and all of its values will take on the value specified after the colon (i.e. `UBERON:0000006`). Additionally, the cellxgene curation tools will search the ontology term id and create a corresponding column with the appropriately corresponding term (i.e. a column called `tissue` will be created and all values of that column will be `islet of Langerhans`).
 
-On other hand, if the schema field is followed by lines with have further indentation, then the next line in the config file specify a column whose values should be mapped to ontology terms (with these mappings specified by the subsequent lines). Two new columns will be added to the `obs` data frame `cell_type_ontology_term_id` and `cell_type`.
+On other hand, if the schema field is followed by lines which have further indentation, then the next line in the config file will specify a column whose values should be mapped to ontology terms (with these mappings specified by the subsequent lines). This is typically more relevant for specifiying cell labels. In our example above, two new columns will be added to the `obs` data frame `cell_type_ontology_term_id` and `cell_type`. The original column specifiying cell identity will be retained (and will be tagged with `_original`). The cellxgene curation tools never remove fields from the original dataset, they only add schema relevant information.
 
 <br/>
 
@@ -391,13 +391,13 @@ In order to validate the remixed object, needs to simply run `cellxgene schema v
 
 ### Testing locally (optional) and upload to dropbox
 
-You can test you `anndata` object after schema application by running with a local installation of cellxgene (`cellxgene launch example.h5ad`). This allows you to preview how your dataset will appear in the cellxgene explorer view within the data portal. Following this optional testing, you need upload to dropbox which is required since datasets cannot be uploaded directly to the portal.
+You can test your curated `anndata` object after schema application by running with a local installation of cellxgene (`cellxgene launch example.h5ad`). This allows you to preview how your dataset will appear in the cellxgene explorer view within the data portal. Following this optional testing, you need upload to dropbox which is required since datasets cannot be uploaded directly to the portal.
 
 ---
 
 ## Uploading data to the cellxgene data portal
 
-In general, the cellxgene data portal is oriented around grouping datasets by their association with a particular publication. We refer to all of the datasets associated with a publication as a collection. When you go to the homepage of the [cellxgene data portal](#https://cellxgene.cziscience.com/), you will see a list of collections (publications). To explore any of the data associated with these publications, you would click on a particular collection and be greeted by all of the datasets associated with that publication. In this next section, we will cover how to contribute your newly curated data to the cellxgene portal. Briefly, we will cover:
+In general, the cellxgene data portal is oriented around grouping datasets by their association with a particular publication. We refer to all of the datasets associated with a publication as a `collection`. When you go to the homepage of the [cellxgene data portal](#https://cellxgene.cziscience.com/), you will see a list of collections (publications). To explore any of the data associated with these publications, you would click on a particular collection and be greeted by all of the datasets associated with that publication. In this next section, we will cover how to contribute your newly curated data to the cellxgene portal. Briefly, we will cover:
 
 - Login options
 - Discovering 'My Collections'
@@ -439,7 +439,7 @@ The cellxgene data portal offers multiple login options including sign-in with y
 
 <br/>
 
-After you have logged in,  you will be able to navigate to the 'My Collections' page where you can view all of the datasets that you have uploaded to the portal.
+It should be noted that collections are displayed with specific metadata about the collections (including assays(s) used, organism(s) profiled, number of cells in the collection, the tissue profiled, and the disease state studied). After you have logged in,  you will be able to navigate to the 'My Collections' page where you can view all of the datasets that you have uploaded to the portal (if you are just starting out, the 'My Collections' view will be empty).
 
 
 
@@ -482,9 +482,9 @@ Once you have clicked the 'Create Collection' button, you will be prompted to en
 - Contact Name (PI name) and contact email (PI email)
 - Add Link (link to relevant resources such as the publication itself, lab website, consortia/department website, entry in GEO or other raw data sources, etc.)
 
-### Add a dataset to a collection
+You will also be required to agree to CZI's data submission policies which you can read in full by clicking 'Show Details'
 
-Highlight add dataset button
+### Add a dataset to a collection
 
 <!--- ![image](https://user-images.githubusercontent.com/25663501/113529554-b5556080-9591-11eb-8e0e-274fcb1ff39a.png) --->
 
@@ -499,9 +499,6 @@ Highlight add dataset button
 <br/>
 
 Once you have created a collection, you will have the ability to add a dataset. Once you click this button, you will be guided to dropbox, where you can select a dataset for upload.
-
-
-Choose from Dropbox:
 
 <!--- ![image](https://user-images.githubusercontent.com/25663501/113529612-db7b0080-9591-11eb-9720-ae47155d62f8.png) --->
 
@@ -518,8 +515,6 @@ Choose from Dropbox:
 
 ### Remove dataset from a collection
 
-`screenshot removing dataset`
-
 <!--- ![image](https://user-images.githubusercontent.com/25663501/113529632-edf53a00-9591-11eb-8ea4-575ca8c643f7.png) --->
 
 <p align="center">
@@ -535,9 +530,29 @@ Choose from Dropbox:
 In case you have uploaded the wrong dataset or want to update a dataset within a collection, you can delete a dataset associated with a collection (without deleting the collection itself).
 
 ### Share uploaded datasets with private links
-Upon successful dataset upload....
 
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/25663501/113614805-f8aae000-9620-11eb-8421-359e7ec69f86.png">
+</p>
+
+<p align="center">
+  <b> Figure:</b> Successful dataset upload
+</p>
+
+Once you have successfully uploaded a dataset to your collection, you are given options to delete the dataset, download (in `anndata` (`.h5ad`), `seurat V3` (`.rds`), or `.loom`), and explore the dataset using the cellxgene explorer. These options are given by the three icons on the right hand side of the entry.
 
 ### Publish Collection to the portal
 
-`Screenshot of Explorer mode`
+<!--- ![image](https://user-images.githubusercontent.com/25663501/113615336-b930c380-9621-11eb-88ae-7855a49c5c61.png) --->
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/25663501/113615336-b930c380-9621-11eb-88ae-7855a49c5c61.png">
+</p>
+
+<p align="center">
+  <b> Figure:</b> Publish your collection
+</p>
+
+Finally, if your collection is complete and you wish to share with the world, you simply need to hit publish (in the upper right hand side of the collection view). Congratulations! :partying_face:
+
+
