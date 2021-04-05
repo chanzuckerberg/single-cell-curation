@@ -52,7 +52,8 @@ You can also check out the following links for more information on the cellxgene
   - [Add a dataset](#add-a-dataset-to-a-collection)
   - [Remove a dataset](#remove-dataset-from-a-collection)
   - [Dataset actions](#dataset-actions)
-  - [Publish collection](publish-collection-to-the-portal)  
+  - [Publish collection](publish-collection-to-the-portal)
+- [Gene sets (under construction)](#gene-sets)
 
 <br/>
 
@@ -562,4 +563,8 @@ Once you have successfully uploaded a dataset to your collection, you are given 
 
 Finally, if your collection is complete and you wish to share with the world, you simply need to hit publish (in the upper right hand side of the collection view). Congratulations! :partying_face:
 
+## Gene sets
 
+The cellxgene data portal also includes the ability to upload relevant gene sets associated with the datasets in your collection. You can find a complete description of the requirements for the gene sets [here](./gene_sets.md)
+
+In the future, you will be able to upload a file that matches the format described in the linked documentation to allow collaborators and external readers to see markers that you have deemed important for defining cell types and cell states.
