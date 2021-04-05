@@ -8,13 +8,13 @@
 <!--- ## Overview --->
 <!--- purpose: Motivate submission to the data portal give context --->
 
-[Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) is a system which is optimized for access, exploration and reuse of single cell data. In order to achieve these goals, the cellxgene platform currently accepts curated [anndata](https://anndata.readthedocs.io/en/latest/#) objects adhering to a [succinct data schema](corpora_schema.md). Adherence to a standardized data schema allows for efficient navigation and integration of the growing number of single cell datasets that are becoming available. In this tutorial, you will learn the essential information for curating a single cell dataset using CZI's curation tools and uploading to the data portal. Hosting your data on the cellxgene portal will offer the following benefits:
+[Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) is a system which is optimized for access, exploration and reuse of single cell data. In order to achieve these goals, the cellxgene platform currently accepts curated [AnnData](https://anndata.readthedocs.io/en/latest/#) objects adhering to a [succinct data schema](corpora_schema.md). Adherence to a standardized data schema allows for efficient navigation and integration of the growing number of single cell datasets that are becoming available. In this tutorial, you will learn the essential information for curating a single cell dataset using CZI's curation tools and uploading to the data portal. Hosting your data on the cellxgene portal will offer the following benefits:
  - link permanence (you can reference in your publication without ever worrying about dead links)
  - sharing of private datasets with collaborators (keep the data private until it is ready for publication)
  - no barrier for readers to explore your dataset (and no need for you to build your own single cell data explorer)
- - accesibility of your dataset in the major single cell data formats (including `anndata`, `seurat`, and `loom`)
+ - accesibility of your dataset in the major single cell data formats (including `AnnData`, `seurat`, and `loom`)
 
-This tutorial will consist of an explanation of 1) how to create and structure an `anndata` object with your single cell data 2) how to augment this object with information that is specific to the cellxgene schema and 3) how to upload this object to the cellxgene data portal. If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
+This tutorial will consist of an explanation of 1) how to create and structure an `AnnData` object with your single cell data 2) how to augment this object with information that is specific to the cellxgene schema and 3) how to upload this object to the cellxgene data portal. If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
 
 <!---
 You can also check out the following links for more information on the cellxgene ecosytem:
@@ -30,7 +30,7 @@ You can also check out the following links for more information on the cellxgene
 ### Table of Contents
 
 - [Quick start](#quick-start)
-- [Data requirements and anndata structure](#required-data-and-anndata-structure)
+- [Data requirements and AnnData structure](#required-data-and-anndata-structure)
   - [Format conversion](#format-conversion)
   - [Alternative assays](#alternative-assays) 
 - [Schema definition](#schema-definition)
@@ -48,9 +48,9 @@ You can also check out the following links for more information on the cellxgene
   - [Local testing and dropbox upload](#testing-locally-optional-and-upload-to-dropbox)
 - [Uploading data to the cellxgene data portal](#uploading-data-to-the-cellxgene-data-portal)
   - [Portal sign in](#portal-sign-in)
-  - [Create a collection](#create-a-collection)
-  - [Add a dataset](#add-a-dataset-to-a-collection)
-  - [Remove a dataset](#remove-dataset-from-a-collection)
+  - [Create a private collection](#create-a-private-collection)
+  - [Add a dataset](#add-a-dataset-to-a-private-collection)
+  - [Remove a dataset](#remove-dataset-from-a-private-collection)
   - [Dataset actions](#dataset-actions)
   - [Publish collection](publish-collection-to-the-portal)
 - [Gene sets (under construction)](#gene-sets)
@@ -63,7 +63,7 @@ You can also check out the following links for more information on the cellxgene
 
 <br/>
 
-If you are already familiar with cellxgene, anndata, and the cellxgene data schema, then give curation a shot with this [quick start guide](https://github.com/chanzuckerberg/single-cell-curation#quick-start). Otherwise, continue reading!
+If you are already familiar with cellxgene, AnnData, and the cellxgene data schema, then give curation a shot with this [quick start guide](https://github.com/chanzuckerberg/single-cell-curation#quick-start). Otherwise, continue reading!
 
 ---
 
@@ -91,14 +91,14 @@ Reason to contribute:
  
 --->
 
-## Required data and `anndata` structure
+## Required data and `AnnData` structure
 
 <p align="center">
   <img width="500" src="https://user-images.githubusercontent.com/25663501/111377611-3c8c7400-8677-11eb-8176-cf9de8f64c70.png">
 </p>
 
 <p align="center">
-  <b> Figure:</b> anndata components
+  <b> Figure:</b> AnnData components
 </p>
 
 <br/>
@@ -110,15 +110,15 @@ The following components are required for submission to the cellxgene data porta
 - cell level metadata (barcodes, cell type, tissue of origin, etc.)
 - embedding (at least one required, UMAP, tSNE, spatial, PCA)
 
-Additionally, variable and feature level metadata can be useful to include but is not required for construction of an `anndata` object.
+Additionally, variable and feature level metadata can be useful to include but is not required for construction of an `AnnData` object.
 
-These components should be stored in the following locations in an `anndata` object (for more information, please refer to the [anndata documentation site](https://anndata.readthedocs.io/en/latest/)):
+These components should be stored in the following locations in an `AnnData` object (for more information, please refer to the [AnnData documentation site](https://anndata.readthedocs.io/en/latest/)):
 
 <br/>
 
 <div align="center">
 
-| Component                       | `anndata` location                     | Notes                                                                     |
+| Component                       | `AnnData` location                     | Notes                                                                     |
 | ------------------------------- |:--------------------------------------:|:--------------------------------------------------------------------------|
 | raw count matrix                | `adata.raw.X` or `adata.layers['raw']` | Necessary, with some exceptions (see [exceptions](#alternative-assays))   |
 | normalized expression matrix    | `adata.X`                              | Used for visualization in cellxgene explorer                              |
@@ -131,7 +131,7 @@ These components should be stored in the following locations in an `anndata` obj
 <br/>
 
 <div align="center">
-  <b> Table: </b> Required data and `anndata` object structure
+  <b> Table: </b> Required data and `AnnData` object structure
 </div>
 
 <br/>
@@ -140,32 +140,32 @@ These components should be stored in the following locations in an `anndata` obj
 **Note:** Some assays, such as scATACseq or other epigenetic assays may not have a standardized way of representing a raw count matrix. While we still require there to be a matrix in location annotated as `raw`, some alternative options exist for these assays such as putting the un-normalized gene activity matrix in the `raw` slot. Since `adata.raw.X` can take matrices that are of a different dimensionality than `adata.X`, you could potentially put in a peak x cell matrix in this location instead. We leave this up to the author's discretion, but are happy to chat about options.
 --->
 
-**Note:** In addition to these data, other representations of the expression matrix (alternative normalizations, SCTransform, corrected counts from SCTransform or background corrected counts) can all be stored as `layers` in your anndata object (as long as they maintain the same dimensionality of the main expression matrix used for visualization).
+**Note:** In addition to these data, other representations of the expression matrix (alternative normalizations, SCTransform, corrected counts from SCTransform or background corrected counts) can all be stored as `layers` in your `AnnData` object (as long as they maintain the same dimensionality of the main expression matrix used for visualization).
 
-**Note:** Information which pertains to the cellxgene schema will be stored in the `adata.uns` and `adata.obs` slots of the `anndata` object and will be discussed in the [next section](#schema-definition).
+**Note:** Information which pertains to the cellxgene schema will be stored in the `adata.uns` and `adata.obs` slots of the `AnnData` object and will be discussed in the [next section](#schema-definition).
  
 ### Format conversion
  
-There are a handful of tools that can be used to convert different single cell formats (`seurat`, `loom`, `sce`, `cds`) to `anndata`. We have had the most success with the R package [sceasy](https://github.com/cellgeni/sceasy). For relatively straightforward conversions, it is suitable to use the `sceasy::convertFormat()` function as specified in the sceasy documentation. For scenarios where you have multiple assays in the same object (as you may encounter in the `seurat` toolchain) it is recommended to check out the function definitions of the methods that are called by `convertFormat()`. For instance, if you look at the source code for `sceasy::seurat2anndata()`, you will see that the extra parameters `assay`, `main_layer`, and `transfer_layers` can be specified for control over which elements of the `seurat` object are carried into the `anndata` object. Check out the following function definitions and potentially use as a starting point for more customized conversions:
+There are a handful of tools that can be used to convert different single cell formats (`seurat`, `loom`, `sce`, `cds`) to `AnnData`. We have had the most success with the R package [sceasy](https://github.com/cellgeni/sceasy). For relatively straightforward conversions, it is suitable to use the `sceasy::convertFormat()` function as specified in the sceasy documentation. For scenarios where you have multiple assays in the same object (as you may encounter in the `seurat` toolchain) it is recommended to check out the function definitions of the methods that are called by `convertFormat()`. For instance, if you look at the source code for `sceasy::seurat2anndata()`, you will see that the extra parameters `assay`, `main_layer`, and `transfer_layers` can be specified for control over which elements of the `seurat` object are carried into the `AnnData` object. Check out the following function definitions and potentially use as a starting point for more customized conversions:
 
 - [`seurat2anndata()`](https://github.com/cellgeni/sceasy/blob/f8f0628a280e0880ea94b00100b463e1f6ba1994/R/functions.R#L14)
 - [`sce2anndata()`](https://github.com/cellgeni/sceasy/blob/f8f0628a280e0880ea94b00100b463e1f6ba1994/R/functions.R#L64)
 - [`loom2anndata()`](https://github.com/cellgeni/sceasy/blob/f8f0628a280e0880ea94b00100b463e1f6ba1994/R/functions.R#L116)
 
 
-**Note:** While `anndata` is able to accomodate multiple representations of an expression matrix in the object, matrices that are stored in `adata.layers` are required to be the same dimensions as `adata.X` (`adata.raw.X` may be of a different dimensionality though). In some scenarios, you may need to construct different `anndata` objects to accomodate different `assays` in the same experiment (for example, spliced vs unspliced counts in a sNuc-seq experiment).
+**Note:** While `AnnData` is able to accomodate multiple representations of an expression matrix in the object, matrices that are stored in `adata.layers` are required to be the same dimensions as `adata.X` (`adata.raw.X` may be of a different dimensionality though). In some scenarios, you may need to construct different `AnnData` objects to accomodate different `assays` in the same experiment (for example, spliced vs unspliced counts in a sNuc-seq experiment).
 
 <br/>
 
 ### Alternative assays
 
-The cellxgene data portal and explorer are able to handle a wide range of single cell data types. Due to requirements of the cellxgene schema and limitations of the `anndata` object structure, there are some assay specific considerations that are outlined below
+The cellxgene data portal and explorer are able to handle a wide range of single cell data types. Due to requirements of the cellxgene schema and limitations of the `AnnData` object structure, there are some assay specific considerations that are outlined below
 
 - ATAC/mC
   - raw data: Since there is not a standard way to generate a counts matrix or gene activity matrix for single cell epigenetic data, it is suitable to put a copy of `adata.X` in place of a raw data matrix. You can specify this assignment in `adata.uns`
   - [(Not Live)Link to example curated dataset](www.example.com)
 - RNAseq
-  -  In some single cell toolchains, outputs of different computational methods may be of a different dimensionality than the input matrix (i.e SCTransform, or the scale.data slot in Seurat objects). Since `anndata` objects do not allow for matrices of different dimensions in `adata.layers`, it is suitable to pad the missing rows/features with zeros to ensure that indices (feature names) across different the different layers are matched. You can specify that these matrices were padded in `adata.uns['layer_descriptions']` as a part of the cellxgene schema. This allows users who may reuse your data to remove the padding from the matrix before working with the data further.
+  -  In some single cell toolchains, outputs of different computational methods may be of a different dimensionality than the input matrix (i.e SCTransform, or the scale.data slot in Seurat objects). Since `AnnData` objects do not allow for matrices of different dimensions in `adata.layers`, it is suitable to pad the missing rows/features with zeros to ensure that indices (feature names) across different the different layers are matched. You can specify that these matrices were padded in `adata.uns['layer_descriptions']` as a part of the cellxgene schema. This allows users who may reuse your data to remove the padding from the matrix before working with the data further.
   -  [(Not Live)Link to example curated dataset](www.example.com)
 - CITEseq
   - TODO: considerations for CITE-seq...
@@ -182,9 +182,9 @@ The cellxgene data portal and explorer are able to handle a wide range of single
 
 <br/>
 
-The purpose of the cellxgene schema is to support the construction of a data corpus that facilitates data integration across multiple tissues and experiments. This goal requires that we collect a standardized set of metadata about single cell datasets that are uploaded to the cellxgene data portal. To make this process easy to adhere to, we only require a few fields (detailed below) to support easy search and integration across datasets. These metadata are stored within the `anndata` object (in `adata.uns` and `adata.obs`). To access a more comprehensive decription about our schema requirements, you can refer to the [official schema definition](corpora_schema.md).
+The purpose of the cellxgene schema is to support the construction of a data corpus that facilitates data integration across multiple tissues and experiments. This goal requires that we collect a standardized set of metadata about single cell datasets that are uploaded to the cellxgene data portal. To make this process easy to adhere to, we only require a few fields (detailed below) to support easy search and integration across datasets. These metadata are stored within the `AnnData` object (in `adata.uns` and `adata.obs`). To access a more comprehensive decription about our schema requirements, you can refer to the [official schema definition](corpora_schema.md).
 
-In this section, we are covering 1) what metadata are required to adhere to the cellxgene schema and 2) the locations of these metadata in the `anndata` object. While it is possible to build an object that is acceptable by the cellxgene schema manually, in the [next section](#cellxgene-curation-tools), we will show you how to perform this curation with tools provided by the CZI curation team.
+In this section, we are covering 1) what metadata are required to adhere to the cellxgene schema and 2) the locations of these metadata in the `AnnData` object. While it is possible to build an object that is acceptable by the cellxgene schema manually, in the [next section](#cellxgene-curation-tools), we will show you how to perform this curation with tools provided by the CZI curation team.
 
 #### Basic requirements ([expanded version](corpora_schema.md#basic-requirements))
 - **Unique observation identifiers:** Each observation (usually a cell) must have an id that is unique within the dataset.
@@ -206,7 +206,7 @@ In this section, we are covering 1) what metadata are required to adhere to the 
 | `adata.uns['publication_doi']`           | string     | DOI of preprint or official publication             | `https://doi.org/10.1101/2020.05.10.087585` |
 | `adata.uns['organism']`                  | string     | name of organism (first letter capitalized) | `Mouse` |
 | `adata.uns['organism_ontology_term_id']` | string     | NCBI Taxon ID| `NCBI:txid10090` |
-| `adata.uns['layer_descriptions']`        | dictionary | a set of key value pairs defining the locations of different representations in the `anndata` object and an description of that representation. One of these key-value pairs must be on of `raw: raw` or `raw.X: raw`    | `{'X': 'log1p' (this value can be free text)}` |
+| `adata.uns['layer_descriptions']`        | dictionary | a set of key value pairs defining the locations of different representations in the `AnnData` object and an description of that representation. One of these key-value pairs must be on of `raw: raw` or `raw.X: raw`    | `{'X': 'log1p' (this value can be free text)}` |
 
 </div>
 
@@ -279,8 +279,8 @@ In the above table, the types of cell level metadata that is collected for the s
 <br/>
 
 The cellxgene curation tools include functions that can make the curation process easier for you. Essentially the workflow looks like this:
-1. create `config.yaml` that will specify how the schema is to be applied to your anndata object (see example [here](example_config.yaml))
-2. run `cellxgene schema apply`, which takes your config and source anndata file to produce a curated anndata object.
+1. create `config.yaml` that will specify how the schema is to be applied to your `AnnData` object (see example [here](example_config.yaml))
+2. run `cellxgene schema apply`, which takes your config and source `AnnData` file to produce a curated `Anndata` object.
 3. use `cellxgene schema validate` to ensure that your curated object meets the schema requirements
 
 You can check out the full documenatation for this tooling [here](#schema_guide.md), but a quick introduction to the tools is below:
@@ -336,7 +336,7 @@ obs:
     development_stage_ontology_term_id: HsapDv:0000160   #HsapDv term
     cell_type_ontology_term_id:
       cell_label:                                        #this is column name in your obs dataframe (the field that specifies cell type)
-        acinar: CL:0002064                               #mapping between cell types (specified in anndata object) and cl ontology id
+        acinar: CL:0002064                               #mapping between cell types (specified in AnnData object) and cl ontology id
         alpha: CL:0000171
         delta: CL:0000173
         endothelial: CL:0000115
@@ -379,9 +379,9 @@ or SCTransform functions, the correct choice is usually `log1p`.
 <br/>
 
 In order to use the `cellxgene schema apply` command, you will need to pass the following required arguments:
-- `--source-h5ad` your original anndata file
+- `--source-h5ad` your original `AnnData` file
 - `--remix-config` the `config.yaml` file that we specified above 
-- `--output-filename` the name of the resulting anndata that is consistent with the cellxgene schema
+- `--output-filename` the name of the resulting `AnnData` that is consistent with the cellxgene schema
 
 <br/>
 
@@ -393,13 +393,13 @@ The next step will be to validate the resulting object.
 
 <br/>
 
-In order to validate the remixed object, needs to simply run `cellxgene schema validate remixed_anndata.h5ad`. If there has been no terminal output from the function, then your object has been validated successfuly and is ready for upload!
+In order to validate the remixed object, needs to simply run `cellxgene schema validate path_to_remixed_anndata.h5ad`. If there has been no terminal output from the function, then your object has been validated successfuly and is ready for upload!
 
 <br/>
 
 ### Testing locally (optional) and upload to dropbox
 
-You can test your curated `anndata` object after schema application by running with a local installation of cellxgene (`cellxgene launch example.h5ad`). This allows you to preview how your dataset will appear in the cellxgene explorer view within the data portal. Following this optional testing, you need upload to dropbox which is required since datasets cannot be uploaded directly to the portal.
+You can test your curated `AnnData` object after schema application by running with a local installation of cellxgene (`cellxgene launch example.h5ad`). This allows you to preview how your dataset will appear in the cellxgene explorer view within the data portal. Following this optional testing, you need upload to dropbox which is required since datasets cannot be uploaded directly to the portal.
 
 ---
 
@@ -469,7 +469,7 @@ It should be noted that collections are displayed with specific metadata about t
 In the image above, we see an example of how the 'My Collections' page will look after you have uploaded a few datasets to the dataportal. Note that some of the collections in this example are published (publicly available) and one is private. The private collection is only available to people who you share the private link with. This allows for control over who views your datasets and for making amendmendents to datasets that have been uploaded to the portal previously. To add a new collection, we can simply click on the button highlighted above. 
 
 
-### Create a collection
+### Create a private collection
 
 <!--- ![image](https://user-images.githubusercontent.com/25663501/113528984-36135d00-9590-11eb-82a5-68ae4e5ddb1b.png) --->
 
@@ -492,7 +492,7 @@ Once you have clicked the 'Create Collection' button, you will be prompted to en
 
 You will also be required to agree to CZI's data submission policies which you can read in full by clicking 'Show Details'
 
-### Add a dataset to a collection
+### Add a dataset to a private collection
 
 <!--- ![image](https://user-images.githubusercontent.com/25663501/113529554-b5556080-9591-11eb-8e0e-274fcb1ff39a.png) --->
 
@@ -521,7 +521,7 @@ Once you have created a collection, you will have the ability to add a dataset. 
 <br/>
 
 
-### Remove dataset from a collection
+### Remove dataset from a private collection
 
 <!--- ![image](https://user-images.githubusercontent.com/25663501/113529632-edf53a00-9591-11eb-8ea4-575ca8c643f7.png) --->
 
