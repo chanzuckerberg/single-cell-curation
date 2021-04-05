@@ -383,7 +383,17 @@ Introduce collection view, dataset view, and explorer view
 
 sign in options for the portal (gmail, github, etc)
 
-![image](https://user-images.githubusercontent.com/25663501/113528770-9f46a080-958f-11eb-83a1-36620e1543d2.png)
+<!--- ![image](https://user-images.githubusercontent.com/25663501/113528770-9f46a080-958f-11eb-83a1-36620e1543d2.png) --->
+
+<p align="center">
+  <img width="300" src="https://user-images.githubusercontent.com/25663501/113528770-9f46a080-958f-11eb-83a1-36620e1543d2.png">
+</p>
+
+<p align="center">
+  <b> Figure:</b> Login options
+</p>
+
+<br/>
 
 
 Navigate to my collections:
