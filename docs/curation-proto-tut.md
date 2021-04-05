@@ -263,19 +263,19 @@ You can check out the full documenatation for this tooling [here](#schema_guide.
 
 <br/>
 
-#### Installation
+### Installation
 
 `pip install cellxgene-schema`
 
 <br/>
 
-#### `config.yaml`
+### `config.yaml`
 
 <br/>
 
 Your [`config.yaml`](example_config.yaml) file is used to update values and columns in `adata.uns` and `adata.obs` (repectively) with required schema information. Here is an example/mock of a config file:
 
-##### `uns` section
+#### `uns` section
 
 ```
 uns:
@@ -301,18 +301,18 @@ In the config file snippet above, our 0 level indendentation specifies that we a
 
 <br/>
 
-##### `obs` section
+#### `obs` section
 ```
 obs:
-    tissue_ontology_term_id: UBERON:0000006                                 #UBERON tissue term
-    assay_ontology_term_id: EFO:0010961                                     #EFO assay term
-    disease_ontology_term_id: PATO:0000461                                  #MONDO disease term or PATO:0000461
-    sex: male                                                               #male, female, mixed, unknown, or other
-    ethnicity_ontology_term_id: na                                          #HANCESTRO term
-    development_stage_ontology_term_id: HsapDv:0000160                      #HsapDv term
+    tissue_ontology_term_id: UBERON:0000006              #UBERON tissue term
+    assay_ontology_term_id: EFO:0010961                  #EFO assay term
+    disease_ontology_term_id: PATO:0000461               #MONDO disease term or PATO:0000461
+    sex: male                                            #male, female, mixed, unknown, or other
+    ethnicity_ontology_term_id: na                       #HANCESTRO term
+    development_stage_ontology_term_id: HsapDv:0000160   #HsapDv term
     cell_type_ontology_term_id:
-      cell_label:                                                           #this is column name in your obs dataframe (the field that specifies cell type)
-        acinar: CL:0002064                                                  #mapping between cell types (specified in anndata object) and cl ontology id
+      cell_label:                                        #this is column name in your obs dataframe (the field that specifies cell type)
+        acinar: CL:0002064                               #mapping between cell types (specified in anndata object) and cl ontology id
         alpha: CL:0000171
         delta: CL:0000173
         endothelial: CL:0000115
@@ -348,7 +348,7 @@ or SCTransform functions, the correct choice is usually `log1p`.
 <br/>
 
 
-#### `cellxgene schema apply`
+### `cellxgene schema apply`
  
 <br/>
 
@@ -363,7 +363,7 @@ The next step will be to validate the resulting object.
 
 <br/>
 
-#### `cellxgene schema validate`
+### `cellxgene schema validate`
 
 <br/>
 
@@ -371,7 +371,9 @@ In order to validate the remixed object, needs to simply run `cellxgene schema v
 
 <br/>
 
-### Test `h5ad` in local version of cellxgene
+## Testing locally (optional)
+
+You can test you `anndata` object after schema application by running with a local installation of cellxgene (`cellxgene launch example.h5ad`)
 
 ## Uploading data to the cellxgene data portal
 
