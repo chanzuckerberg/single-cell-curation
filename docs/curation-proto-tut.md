@@ -329,7 +329,21 @@ On other hand, if the schema field is followed by lines with have further indent
 
 <br/>
 
-@TODO - the fixup gene symbols section
+#### `fixup_gene_symbols` section (gene symbol harmonization)
+
+The last section describes how gene symbol conversion should be applied to each of the layers. This is similar to the
+`layer_descriptions` field above, but there are only three permitted values: `raw`, `log1p`, and `sqrt`:
+
+```
+fixup_gene_symbols:
+  X: log1p
+  raw.X: raw
+```
+
+This tells the script how each each layer was transformed from raw values that can be directly summed. `raw` means that
+the layer contains raw counts or some linear tranformation of raw counts. `log1p` means that the layer has `log(X + 1)`
+for each the raw `X` values. `sqrt` means `sqrt(X)` (this is not common). For layers produced by Seurat's normalization
+or SCTransform functions, the correct choice is usually `log1p`.
 
 <br/>
 
