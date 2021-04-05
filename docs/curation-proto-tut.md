@@ -46,6 +46,13 @@ You can also check out the following links for more information on the cellxgene
   - [`cellxgene schema apply`](#cellxgene-schema-apply)
   - [`cellxgene schema validate`](#cellxgene-schema-validate)
   - [Local testing and dropbox upload](#testing-locally-optional-and-upload-to-dropbox)
+- [Uploading data to the cellxgene data portal](#uploading-data-to-the-cellxgene-data-portal)
+  - [Portal sign in](#portal-sign-in)
+  - [Create a collection](#create-a-collection)
+  - [Add a dataset](#add-a-dataset-to-a-collection)
+  - [Remove a dataset](#remove-dataset-from-a-collection)
+  - [Dataset actions](#dataset-actions)
+  - [Publish collection](publish-collection-to-the-portal)  
 
 <br/>
 
@@ -529,7 +536,7 @@ Once you have created a collection, you will have the ability to add a dataset. 
 
 In case you have uploaded the wrong dataset or want to update a dataset within a collection, you can delete a dataset associated with a collection (without deleting the collection itself).
 
-### Share uploaded datasets with private links
+### Dataset actions
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/25663501/113614805-f8aae000-9620-11eb-8421-359e7ec69f86.png">
