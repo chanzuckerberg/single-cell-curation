@@ -122,7 +122,7 @@ These components should be stored in the following locations in an `anndata` obj
 <br/>
 
 <div align="center">
-  <b>Table: </b> Required data and `anndata` object structure
+  <b> Table: </b> Required data and `anndata` object structure
 </div>
 
 <br/>
@@ -150,7 +150,7 @@ There are a handful of tools that can be used to convert different single cell f
 
 ### Alternative assays
 
-The cellxgene data portal and explorer are able to handle a wide range of single cell data types. Due to requirements of the the cellxgene schema and limitations of the `anndata` object structure, there are some assay specific considerations that ar outlined below
+The cellxgene data portal and explorer are able to handle a wide range of single cell data types. Due to requirements of the cellxgene schema and limitations of the `anndata` object structure, there are some assay specific considerations that are outlined below
 
 - ATAC/mC
   - raw data: Since there is not a standard way to generate a counts matrix or gene activity matrix for single cell epigenetic data, it is suitable to put a copy of `adata.X` in place of a raw data matrix. You can specify this assignment in `adata.uns`
