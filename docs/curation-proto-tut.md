@@ -167,19 +167,20 @@ The cellxgene data portal and explorer are able to handle a wide range of single
 
 <br/>
 
+---
+
 ## Schema definition
 
 <br/>
 
 The purpose of the cellxgene schema is to support the construction of a data corpus that facilitates data integration across multiple tissues and experiments. This goal requires that we collect a standardized set of metadata about single cell datasets that are uploaded to the cellxgene data portal. To make this process easy to adhere to, we only require a few fields (detailed below) to support easy search and integration across datasets. These metadata are stored within the `anndata` object (in `adata.uns` and `adata.obs`). To access a more comprehensive decription about our schema requirements, you can refer to the [official schema definition](corpora_schema.md).
 
+In this section, we are covering 1) what metadata are required to adhere to the cellxgene schema and 2) the locations of these metadata in the `anndata` object. While it is possible to build an object that is acceptable by the cellxgene schema manually, in the [next section](#cellxgene-curation-tools), we will show you how to perform this curation with tools provided by the CZI curation team.
+
 #### Basic requirements ([expanded version](corpora_schema.md#basic-requirements))
 - **Unique observation identifiers:** Each observation (usually a cell) must have an id that is unique within the dataset.
 - **Unique feature identifiers:** Every feature (usually a gene or transcript) also needs a unique identifier.
 - **No PII:** No metadata can be personally identifiable: no names, dates of birth, specific locations, etc. There's a [list](https://docs.google.com/document/d/1nlUuRiQ8Awo_QsiVFi8OWdhGONjeaXE32z5GblVCfcI/edit?usp=sharing).
-
-
-<br/>
 
 #### `uns`
 
@@ -232,8 +233,6 @@ At least one of the key value pairs in `layer_descriptions` needs to indicate th
 <br/>
 --->
 
-<br/>
-
 #### `obs`
 
 `adata.obs` is a dataframe that is used to store cell level metadata. In addition to experiemental metadata, the following additional field are required:
@@ -263,6 +262,8 @@ At least one of the key value pairs in `layer_descriptions` needs to indicate th
 In the above table, the types of cell level metadata that is collected for the schema. In particular, it is imporant to exapnd on how to annotate `cell_type` field. In general, we try to find most specific ontology term that accurately represents a given cell type in your dataset. In the event that your cell type is not described accurately by any term in the `CL` ontology, then it is sufficient to report the most accurate `UBERON` term and id instead. In some cases, when neither the `CL` nor the `UBERON` term are descriptive enough, then it is possible to submit an empty string (`''`) for that entry.
 
 <br/>
+
+---
 
 ## Cellxgene curation tools
 
@@ -308,7 +309,7 @@ uns:
 
 <br/>
 
-In the config file snippet above, our 0 level indendentation specifies that we are modifying the `uns` slot. The next level of indentation specifies a key name to add to `uns`. The key's corresponding value will the be string following the colon, or if the key is follow by more lines that are further indented, then the corresponding value will be a dictonary containing the key-value pairs specified in the subsequent lines. More concretely, `adata.uns['layer_descriptions']`, will return a dictionary with the key value pairs `{'raw.X': 'raw', 'X': 'log1p'}` after the schema config has been applied.
+In the config file snippet above, our 0 level indendentation specifies that we are modifying the `uns` slot (remember that `adata.uns` is a dictionary of key-value pairs). The next level of indentation specifies a key name to add to `uns`. The key's corresponding value will the be string following the colon, or if the key is follow by more lines that are further indented, then the corresponding value will be a dictonary containing the key-value pairs specified in the subsequent lines. More concretely, `adata.uns['layer_descriptions']`, will return a dictionary with the key value pairs `{'raw.X': 'raw', 'X': 'log1p'}` after the schema config has been applied.
 
 
 **Note:** at least one of the keys in `layer_descriptions` must return the value 'raw'
@@ -359,6 +360,8 @@ the layer contains raw counts or some linear tranformation of raw counts. `log1p
 for each the raw `X` values. `sqrt` means `sqrt(X)` (this is not common). For layers produced by Seurat's normalization
 or SCTransform functions, the correct choice is usually `log1p`.
 
+**Note**: If a layer is not specified in the `fixup_gene_symbols` section, then it will not be carried over into the curated object. If no layers are specified in `fixup_gene_symbols` or if `fixup_gene_symbols` is not included the `config.yaml` file at all, then all layers will be carried over into the curated object.
+
 <br/>
 
 
@@ -388,6 +391,8 @@ In order to validate the remixed object, needs to simply run `cellxgene schema v
 ### Testing locally (optional) and upload to dropbox
 
 You can test you `anndata` object after schema application by running with a local installation of cellxgene (`cellxgene launch example.h5ad`). This allows you to preview how your dataset will appear in the cellxgene explorer view within the data portal. Following this optional testing, you need upload to dropbox which is required since datasets cannot be uploaded directly to the portal.
+
+---
 
 ## Uploading data to the cellxgene data portal
 
