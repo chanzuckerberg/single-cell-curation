@@ -51,7 +51,7 @@ make_yaml_list <- function() {
                     organism_ontology_term_id = "NCBITaxon:10090",
                     layer_descriptions = list(X = "log(CPM+1)", raw.X = "raw"), 
                     publication_doi = "https://doi.org/10.1038/nn.4216", 
-                    title = paste("Adult mouse cortical cell taxonomy revealed by single cell transcriptomics")
+                    title = paste("Shared and distinct transcriptomic cell types across neocortical areas")
                     )
          )
     
