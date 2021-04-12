@@ -50,7 +50,7 @@ fixup_gene_symbols:
 ```
 
 #### Unstructured metadata
-The first section is `uns`, which includes metadata fields that describe the whole dataset (see 
+The first section is `uns`, which includes metadata fields that describe the whole dataset (see
 [here](https://anndata.readthedocs.io/en/latest/) for further description of `uns` and `obs`.).
 
 The first line is `version`, which is required for most of our tooling to work. The schema version is set at
@@ -125,7 +125,7 @@ description into the label field. So the `assay_ontology_term_id` in the new dat
 
 #### Gene symbol harmonization
 
-The last section describes how gene symbol conversion should be applied to each of the layers. This is similar to the
+The last section describes how gene symbol conversion should be applied to each of the layers in the case where duplicate symbols are identified. This is similar to the
 `layer_descriptions` field above, but there are only three permitted values: `raw`, `log1p`, and `sqrt`:
 
 ```
