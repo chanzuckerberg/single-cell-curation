@@ -8,16 +8,16 @@
 <!--- ## Overview --->
 <!--- purpose: Motivate submission to the data portal give context --->
 
-[Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) is a system which is optimized for access, exploration and reuse of single cell data. In order to achieve these goals, the cellxgene platform currently accepts curated [AnnData](https://anndata.readthedocs.io/en/latest/#) objects adhering to a [succinct data schema](corpora_schema.md). Adherence to a standardized data schema allows for efficient navigation and integration of the growing number of single cell datasets that are becoming available. In this tutorial, you will learn the essential information for curating a single cell dataset using CZI's curation tools and uploading to the data portal. Hosting your data on the cellxgene portal will offer the following benefits:
+[Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) are optimized for access, exploration and reuse of single cell data. To achieve these goals, the cellxgene platform currently accepts curated [AnnData](https://anndata.readthedocs.io/en/latest/#) objects adhering to a [succinct data schema](corpora_schema.md). Adherence to a standardized data schema allows for efficient navigation and integration of the growing number of single cell datasets. In this tutorial, you will learn the essential information for curating a single cell dataset using CZI's curation tools and uploading to the data portal. Hosting your data on the cellxgene portal offers the following benefits:
  - link permanence (you can reference in your publication without ever worrying about dead links)
  - sharing of private datasets with collaborators (keep the data private until it is ready for publication)
  - no barrier for readers to explore your dataset (and no need for you to build your own single cell data explorer)
- - accesibility of your dataset in the major single cell data formats (including `AnnData`, `seurat`, and `loom`)
+ - availability of your dataset in the major single cell data formats (including `AnnData`, `seurat`, and `loom`)
 
 This tutorial will consist of an explanation of 1) how to create and structure an `AnnData` object with your single cell data 2) how to augment this object with information that is specific to the cellxgene schema and 3) how to upload this object to the cellxgene data portal. If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
 
 <!---
-You can also check out the following links for more information on the cellxgene ecosytem:
+You can also check out the following links for more information on the cellxgene ecosystem:
 
 - [cellxgene data portal](https://cellxgene.cziscience.com/)
 - [cellxgene explorer github](https://github.com/chanzuckerberg/cellxgene)
@@ -106,7 +106,7 @@ Reason to contribute:
 The following components are required for submission to the cellxgene data portal. 
 
 - raw count matrix (except for certain assays such as scATACseq)
-- normalized expression matrix used for visulization
+- normalized expression matrix used for visualization
 - cell level metadata (barcodes, cell type, tissue of origin, etc.)
 - embedding (at least one required, UMAP, tSNE, spatial, PCA)
 
@@ -153,7 +153,7 @@ There are a handful of tools that can be used to convert different single cell f
 - [`loom2anndata()`](https://github.com/cellgeni/sceasy/blob/f8f0628a280e0880ea94b00100b463e1f6ba1994/R/functions.R#L116)
 
 
-**Note:** While `AnnData` is able to accomodate multiple representations of an expression matrix in the object, matrices that are stored in `adata.layers` are required to be the same dimensions as `adata.X` (`adata.raw.X` may be of a different dimensionality though). In some scenarios, you may need to construct different `AnnData` objects to accomodate different `assays` in the same experiment (for example, spliced vs unspliced counts in a sNuc-seq experiment).
+**Note:** While `AnnData` is able to accommodate multiple representations of an expression matrix in the object, matrices that are stored in `adata.layers` are required to be the same dimensions as `adata.X` (`adata.raw.X` may be of a different dimensionality though). In some scenarios, you may need to construct different `AnnData` objects to accommodate different `assays` in the same experiment (for example, spliced vs unspliced counts in a sNuc-seq experiment).
 
 <br/>
 
@@ -171,7 +171,7 @@ The cellxgene data portal and explorer are able to handle a wide range of single
   - TODO: considerations for CITE-seq...
   - [(Not Live)Link to example curated dataset](www.example.com)
 - Spatial/Visium
-  - Since spatial sequencing spots are not at the single cell level, you may wish to include prediction matrices that provide deconvolution information for each spot. These can generally be stored in `adata.uns` although it can be interesting to add prediction scores for each spot as new columns to the `adata.obs` dataframe
+  - Since spatial sequencing spots are not at the single cell level, you may wish to include prediction matrices that provide deconvolution information for each spot. These can generally be stored in `adata.uns` although it can be interesting to add prediction scores for each spot as new columns to the `adata.obs` dataframe (to get a cell type score for each spot)
   - [(Not Live)Link to example curated dataset](www.example.com)
 
 <br/>
@@ -182,7 +182,7 @@ The cellxgene data portal and explorer are able to handle a wide range of single
 
 <br/>
 
-The purpose of the cellxgene schema is to support the construction of a data corpus that facilitates data integration across multiple tissues and experiments. This goal requires that we collect a standardized set of metadata about single cell datasets that are uploaded to the cellxgene data portal. To make this process easy to adhere to, we only require a few fields (detailed below) to support easy search and integration across datasets. These metadata are stored within the `AnnData` object (in `adata.uns` and `adata.obs`). To access a more comprehensive decription about our schema requirements, you can refer to the [official schema definition](corpora_schema.md).
+The purpose of the cellxgene schema is to support the construction of a data corpus that facilitates data integration across multiple tissues and experiments. This goal requires a standardized set of metadata for the single cell datasets that are uploaded to the cellxgene data portal. To make this process easy to adhere to, the schema only requires a few fields (detailed below) to support easy search and integration across datasets.. These metadata are stored within the `AnnData` object (in `adata.uns` and `adata.obs`). To access a more comprehensive description about the cellxgene schema requirements, you can refer to the [official schema definition](corpora_schema.md).
 
 In this section, we are covering 1) what metadata are required to adhere to the cellxgene schema and 2) the locations of these metadata in the `AnnData` object. While it is possible to build an object that is acceptable by the cellxgene schema manually, in the [next section](#cellxgene-curation-tools), we will show you how to perform this curation with tools provided by the CZI curation team.
 
@@ -206,7 +206,7 @@ In this section, we are covering 1) what metadata are required to adhere to the 
 | `adata.uns['publication_doi']`           | string     | DOI of preprint or official publication             | `https://doi.org/10.1101/2020.05.10.087585` |
 | `adata.uns['organism']`                  | string     | name of organism (first letter capitalized) | `Mouse` |
 | `adata.uns['organism_ontology_term_id']` | string     | NCBI Taxon ID| `NCBI:txid10090` |
-| `adata.uns['layer_descriptions']`        | dictionary | a set of key value pairs defining the locations of different representations in the `AnnData` object and an description of that representation. One of these key-value pairs must be on of `raw: raw` or `raw.X: raw`    | `{'X': 'log1p' (this value can be free text)}` |
+| `adata.uns['layer_descriptions']`        | dictionary | a set of key value pairs defining the locations of different representations in the `AnnData` object and a description of that representation. One of these key-value pairs must be one of `raw: raw` or `raw.X: raw`    | `{'X': 'log1p' (this value can be free text)}` |
 
 </div>
 
@@ -244,7 +244,7 @@ At least one of the key value pairs in `layer_descriptions` needs to indicate th
 
 #### `obs`
 
-`adata.obs` is a dataframe that is used to store cell level metadata. In addition to experiemental metadata, the following additional fields are required:
+`adata.obs` is a dataframe that is used to store cell level metadata. In addition to experimental metadata, the following additional fields are required:
 
 | `obs` column name                    | Type   | Description                                                       | Example                                   |
 | :----------------------------------- |:------:| -----------------------------------------------------------------:|:------------------------------------------|
@@ -253,9 +253,9 @@ At least one of the key value pairs in `layer_descriptions` needs to indicate th
 | 'assay'                              | string | EFO term                                                          | `scRNA-seq`                               |   
 | 'assay_ontology_term_id'             | string | EFO term id                                                       | `EFO:0008913`                             |
 | 'disease'                            | string | MONDO term or `normal`                                            | `kuru`                                    |
-| 'disease_ontology_term_id'           | string | MONDO term id or `PATO:0000461`                                   | `MONDO:0006825`                           |
+| 'disease_ontology_term_id'           | string | MONDO term id for a disease or `PATO:0000461` for normal          | `MONDO:0006825`                           |
 | 'cell_type'                          | string | CL term (or UBERON term when no CL term is available)             | `excitatory neuron`                       |
-| 'cell_type_ontology_term_id'         | string | CL term id (or UBERON term id when no CL term id is is available) | `CL:0008030`                              |
+| 'cell_type_ontology_term_id'         | string | CL term id (or UBERON term id when no CL term id is available)    | `CL:0008030`                              |
 | 'sex'                                | string | `male`, `female`, `mixed`, `unknown`, or `other`                  | `mixed`                                   |
 | 'ethnicity'                          | string | HANCESTRO term, `na` if non-human, `unknown` if not available     | `genetically isolated population`         |
 | 'ethnicity_ontology_term_id	'        | string | HANCESTRO term id, `na` if non-human                              | `HANCESTRO:0290`                          |
@@ -268,7 +268,7 @@ At least one of the key value pairs in `layer_descriptions` needs to indicate th
 
 <br/>
 
-In the above table, the types of cell level metadata that is collected for the schema. In particular, it is imporant to exapnd on how to annotate `cell_type` field. In general, we try to find most specific ontology term that accurately represents a given cell type in your dataset. In the event that your cell type is not described accurately by any term in the `CL` ontology, then it is sufficient to report the most accurate `UBERON` term and id instead. In some cases, when neither the `CL` nor the `UBERON` term are descriptive enough, then it is possible to submit an empty string (`''`) for that entry.
+In the above table, the types of cell level metadata that is collected for the schema. In particular, it is important to expand on how to annotate `cell_type` field. In general, we try to find the most specific ontology term that accurately represents a given cell type in your dataset. In the event that your cell type is not described accurately by any term in the `CL` ontology, then it is sufficient to report the most accurate `UBERON` term and id instead. In some cases, when neither the `CL` nor the `UBERON` term are descriptive enough, then it is possible to submit an empty string (`''`) for that entry (for both the `cell_type` and the `cell_type_ontology_term_id`).
 
 <br/>
 
@@ -283,7 +283,7 @@ The cellxgene curation tools include functions that can make the curation proces
 2. run `cellxgene schema apply`, which takes your config and source `AnnData` file to produce a curated `Anndata` object.
 3. use `cellxgene schema validate` to ensure that your curated object meets the schema requirements
 
-You can check out the full documenatation for this tooling [here](#schema_guide.md), but a quick introduction to the tools is below:
+You can check out the full documentation for this tooling [here](#schema_guide.md), but a quick introduction to the tools is below:
 
 <br/>
 
@@ -318,7 +318,7 @@ uns:
 
 <br/>
 
-In the config file snippet above, our 0 level indendentation specifies that we are modifying the `uns` slot (remember that `adata.uns` is a dictionary of key-value pairs). The next level of indentation specifies a key name to add to `uns`. The key's corresponding value will the be string following the colon, or if the key is follow by more lines that are further indented, then the corresponding value will be a dictonary containing the key-value pairs specified in the subsequent lines. More concretely, `adata.uns['layer_descriptions']`, will return a dictionary with the key value pairs `{'raw.X': 'raw', 'X': 'log1p'}` after the schema config has been applied.
+In the config file snippet above, our 0 level indentation specifies that we are modifying the `uns` slot (remember that `adata.uns` is a dictionary of key-value pairs). The next level of indentation specifies a key name to add to `uns`. The key's corresponding value is the string following the colon, or if the key is followed by more lines that are further indented, then the corresponding value is a dictionary containing the key-value pairs specified in the subsequent lines. More concretely, `adata.uns['layer_descriptions']` returns a dictionary with the key value pairs `{'raw.X': 'raw', 'X': 'log1p'}` after the schema config has been applied.
 
 
 **Note:** at least one of the keys in `layer_descriptions` must return the value 'raw'
@@ -349,7 +349,7 @@ obs:
 
 In the config file snippet above, the 0 level indentation specifies that we are modifying `obs`. At the first level of indentation, we start adding schema fields to `obs`. If the first level indentation field is followed by an ontology term id (i.e. `tissue_ontology_term_id: UBERON:0000006`), then a column for that field will be created in the obs dataframe (i.e. a column called `tissue_ontology_term_id` will be created), and all of its values will take on the value specified after the colon (i.e. `UBERON:0000006`). Additionally, the cellxgene curation tools will search the ontology term id and create a corresponding column with the appropriately corresponding term (i.e. a column called `tissue` will be created and all values of that column will be `islet of Langerhans`).
 
-On other hand, if the schema field is followed by lines which have further indentation, then the next line in the config file will specify a column whose values should be mapped to ontology terms (with these mappings specified by the subsequent lines). This is typically more relevant for specifiying cell labels. In our example above, two new columns will be added to the `obs` data frame `cell_type_ontology_term_id` and `cell_type`. The original column specifiying cell identity will be retained (and will be tagged with `_original`). The cellxgene curation tools never remove fields from the original dataset, they only add schema relevant information.
+On other hand, if the schema field is followed by lines which have further indentation, then the next line in the config file will specify a column whose values should be mapped to ontology terms (with these mappings specified by the subsequent lines). This is typically more relevant for specifying cell labels. In our example above, two new columns will be added to the `obs` data frame `cell_type_ontology_term_id` and `cell_type`. The original column specifying cell identity will be retained (and will be tagged with `_original`). The cellxgene curation tools never remove fields from the original dataset, they only add schema relevant information.
 
 <br/>
 
@@ -364,8 +364,8 @@ fixup_gene_symbols:
   raw.X: raw
 ```
 
-This tells the script how each each layer was transformed from raw values that can be directly summed. `raw` means that
-the layer contains raw counts or some linear tranformation of raw counts. `log1p` means that the layer has `log(X + 1)`
+This tells the script how each layer was transformed from raw values that can be directly summed. `raw` means that
+the layer contains raw counts or some linear transformation of raw counts. `log1p` means that the layer has `log(X + 1)`
 for each the raw `X` values. `sqrt` means `sqrt(X)` (this is not common). For layers produced by Seurat's normalization
 or SCTransform functions, the correct choice is usually `log1p`.
 
@@ -393,7 +393,7 @@ The next step will be to validate the resulting object.
 
 <br/>
 
-In order to validate the remixed object, needs to simply run `cellxgene schema validate path_to_remixed_anndata.h5ad`. If there has been no terminal output from the function, then your object has been validated successfuly and is ready for upload!
+In order to validate the remixed object, needs to simply run `cellxgene schema validate path_to_remixed_anndata.h5ad`. If there has been no terminal output from the function, then your object has been validated successfully and is ready for upload!
 
 <br/>
 
@@ -466,7 +466,7 @@ It should be noted that collections are displayed with specific metadata about t
 
 <br/>
 
-In the image above, we see an example of how the 'My Collections' page will look after you have uploaded a few datasets to the dataportal. Note that some of the collections in this example are published (publicly available) and one is private. The private collection is only available to people who you share the private link with. This allows for control over who views your datasets and for making amendmendents to datasets that have been uploaded to the portal previously. To add a new collection, we can simply click on the button highlighted above. 
+In the image above, we see an example of how the 'My Collections' page will look after you have uploaded a few datasets to the data portal. Note that some of the collections in this example are published (publicly available) and one is private. The private collection is only available to people who you share the private link with. This allows for control over who views your datasets and for making revisions to datasets that have been uploaded to the portal previously. To add a new collection, we can simply click on the button highlighted above. 
 
 
 ### Create a private collection
@@ -535,7 +535,7 @@ Once you have created a collection, you will have the ability to add a dataset. 
 
 <br/>
 
-In case you have uploaded the wrong dataset or want to update a dataset within a collection, you can delete a dataset associated with a collection (without deleting the collection itself).
+In case you have uploaded the wrong dataset or want to submit an updated dataset within a collection, you can delete a dataset associated with a collection (without deleting the collection itself).
 
 ### Dataset actions
 
@@ -547,7 +547,7 @@ In case you have uploaded the wrong dataset or want to update a dataset within a
   <b> Figure:</b> Successful dataset upload
 </p>
 
-Once you have successfully uploaded a dataset to your collection, you are given options to delete the dataset, download (in `anndata` (`.h5ad`), `seurat V3` (`.rds`), or `.loom`), and explore the dataset using the cellxgene explorer. These options are given by the three icons on the right hand side of the entry.
+Once you have successfully uploaded a dataset to your private collection, you are given options to delete the dataset, download (in `anndata` (`.h5ad`), `seurat V3` (`.rds`), or `.loom`), and explore the dataset using the cellxgene explorer. These options are given by the three icons on the right hand side of the entry.
 
 ### Publish Collection to the portal
 
@@ -558,10 +558,10 @@ Once you have successfully uploaded a dataset to your collection, you are given 
 </p>
 
 <p align="center">
-  <b> Figure:</b> Publish your collection
+  <b> Figure:</b> Publish your private collection
 </p>
 
-Finally, if your collection is complete and you wish to share with the world, you simply need to hit publish (in the upper right hand side of the collection view). Congratulations! :partying_face:
+Finally, if your private collection is complete and you wish to share with the world, you simply need to hit publish (in the upper right hand side of the collection view). Congratulations! :partying_face:
 
 ## Gene sets
 
