@@ -68,7 +68,7 @@ produce the matrix layer in question.
 |---------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|---------------|----------------------------------------------------------------------------------------------------|----------------------|--------------|
 | scRNA-seq (UMI, e.g. 10x v3)          | Values MUST be de-duplicated molecule counts.                                                                                                 | REQUIRED      |                                                                                                    | STRONGLY RECOMMENDED | OPTIONAL     |
 | scRNA-seq (non-UMI, e.g. SS2)         | Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM).                                         | REQUIRED      |                                                                                                    | STRONGLY RECOMMENDED | OPTIONAL     |
-| Accessibility (e.g. ATAC-seq, mC-seq) |                                                                                                                                               | NOT REQUIRED  |                                                                                                    | REQUIRED             | OPTIONAL     |
+| Accessibility (e.g. ATAC-seq, mC-seq) |                                                                                                                                               | NOT REQUIRED  | Values MUST correspond to gene features (e.g. HGNC symbols if human)                               | REQUIRED             | OPTIONAL     |
 
 ### Schema Version
 
