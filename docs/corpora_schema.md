@@ -42,7 +42,7 @@ schema. If it does not, it will reject the dataset with an appropriate error mes
     single value.
 *   **No PII**. Curators agree to this requirement as part of the data submission policy. However, it is not strictly enforced in our validation tooling because it
 *   is difficult for software to predict what is and is not PII. It is up to the submitter to ensure that no metadata can be personally identifiable: no names,
-*   dates of birth, specific locations, etc. There's a [list](https://docs.google.com/document/d/1nlUuRiQ8Awo_QsiVFi8OWdhGONjeaXE32z5GblVCfcI/edit?usp=sharing).
+*   dates of birth, specific locations, etc. There's a [list](https://docs.google.com/document/d/1sboOmbafvMh3VYjK1-3MAUt0I13UUJfkQseq8ANLPl8/edit).
 
 ### Matrix Layers
 
