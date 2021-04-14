@@ -100,7 +100,7 @@ In addition to these free text fields (except sex), each cell MUST also have ont
 
 **Field name**|**Constraints**
 :--|:--
-tissue\_ontology\_term\_id|UBERON term
+tissue\_ontology\_term\_id|UBERON term. This field SHOULD be appended with " (cell culture)" or " (organoid)" if appropriate.
 assay\_ontology\_term\_id|EFO term
 disease\_ontology\_term\_id|MONDO term or [PATO:0000461](http://bioportal.bioontology.org/ontologies/PATO?p=classes&conceptid=PATO%3A0000461)
 cell\_type\_ontology\_term\_id|CL term
