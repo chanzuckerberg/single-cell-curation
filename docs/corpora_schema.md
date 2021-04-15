@@ -71,19 +71,14 @@ produce the matrix layer in question.
 | scRNA-seq (non-UMI, e.g. SS2)         | Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM).                                         | REQUIRED        |                                                                                                    | STRONGLY RECOMMENDED  | OPTIONAL     |
 | Accessibility (e.g. ATAC-seq, mC-seq) |                                                                                                                                               | NOT REQUIRED    | Values MUST correspond to gene features (e.g. HGNC symbols if human)                               | REQUIRED              | OPTIONAL     |
 
-### Schema Version
-
-Datasets in the Data Portal MUST store the version of the schema they follow (that is, the version of this document) as
-well as the version of the particular encoding used. The encoding is documented
-[elsewhere](https://chanzuckerbergteam.slack.com/archives/C018B64J3HN/p1617907599111700) and describes technical details
-of how the schema should be serialized in a particular file format.
-
 **Field name**|**Constraints**
 :--|:--
 corpora_schema_version|Follows [SemVer](https://semver.org/) conventions
 corpora_encoding_version|Follows [SemVer](https://semver.org/) conventions
 
 ### Integration Metadata
+
+#### Cell Metadata
 
 To support data integration, each cell MUST have the following metadata:
 
@@ -97,7 +92,10 @@ sex|"male", "female", "mixed", "unknown", or "other"
 ethnicity|string, "na" if non-human, "unknown" if not available
 development\_stage|string, "unknown" if not available
 
-In addition to these free text fields (except sex), each cell MUST also have ontology values:
+In addition to these free text fields (except sex), each cell MUST also have ontology annotations:
+
+Ontology terms MUST use [OBO-format ID](http://www.obofoundry.org/id-policy.html), meaning they are a CURIE
+where the prefix identifies the ontology. For example `EFO:0000001` is a term in the `EFO` ontology.
 
 **Field name**|**Constraints**
 :--|:--
@@ -117,21 +115,23 @@ precise accurate term may be the root of the cell ontology `cell`, or its child 
 migrate datasets to more defined terms as they are defined. In the mean time, having these less precise terms maximizes the findability (and therefore reusability)  
 of datasets.
 
-Ontology terms MUST use [OBO-format ID](http://www.obofoundry.org/id-policy.html), meaning they are a CURIE
-where the prefix identifies the ontology. For example `EFO:0000001` is a term in the `EFO` ontology.
+#### Gene Metadata
 
-If the features of the dataset are human genes, then the feature ids MUST be [HGNC](https://www.genenames.org/about/guidelines/#!/#tocAnchor-1-7) approved
-gene symbols.
+Cellxgene uses standard gene symbols to ensure that all datasets it stores measure the same features and can therefore be integrated.
+If the samples being measured are human, then the feature ids MUST be [HGNC](https://www.genenames.org/about/guidelines/#!/#tocAnchor-1-7) approved
+gene symbols. If the features are mouse genes, then the feature ids SHOULD be [MGI](http://www.informatics.jax.org/mgihome/nomen/gene.shtml) gene symbols.
+For other organisms, gene symbols SHOULD be the accepted standard human readable symbols for that organism.
 
-Similarly if the features are mouse genes, then the feature ids SHOULD be [MGI](http://www.informatics.jax.org/mgihome/nomen/gene.shtml) gene symbols.
+#### Dataset Metadata
 
-Finally, the whole dataset MUST be annotated with fields that indicate the organism and describe the meanings of the [matrix layers](#Matrix-Layers):
+There are several fields that annotate the whole dataset that MUST be provided.
 
 **Field name**|**Constraints**
 :--|:--
 organism|String
 organism\_ontology\_term\_id|NCBITaxon term
-layer\_descriptions|Mapping from {layer\_name: layer\_description, ...}
+layer\_descriptions|A dictionary whose keys MUST be the layer names whose values are free text description of how the layer was created (e.g. "counts per million")
+version|A dictionary with a key `corpora_schema_version` and its value MUST be the schema encoding version. See [here](https://chanzuckerbergteam.slack.com/archives/C018B64J3HN/p1617907599111700) for documentation that describes the encoding.
 
 
 ### Presentation Metadata
