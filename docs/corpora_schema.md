@@ -112,7 +112,10 @@ cellxgene requires ontology terms to enable search, comparison, and integration 
 precise accurate term MUST be used. For example if the `cell_type` field describes a relay interneuron, but the most specific available term in the CL
 ontology is CL:0000099 ("Interneuron"), then the interneuron term can be used to fulfill this requirement, and ensures that users searching for "neuron"
 are able to find these data. Users will still be able to access more specific cell type annotations that have been submitted with the
-data (but aren't required by the schema).
+data (but aren't required by the schema). A dataset comprising cells of the human embryo provides a more extreme example. In this case, the most  
+precise accurate term may be the root of the cell ontology `cell`, or its child term `cell in vitro`. The Cell Ontology is expanding over time, and we hope to
+migrate datasets to more defined terms as they are defined. In the mean time, having these less precise terms maximizes the findability (and therefore reusability)  
+of datasets.
 
 Ontology terms MUST use [OBO-format ID](http://www.obofoundry.org/id-policy.html), meaning they are a CURIE
 where the prefix identifies the ontology. For example `EFO:0000001` is a term in the `EFO` ontology.
