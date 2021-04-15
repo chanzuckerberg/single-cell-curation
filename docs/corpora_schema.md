@@ -51,8 +51,9 @@ cellxgene requires submission of "raw" data suitable for computational reuse, wh
 visualization in the explorer be included. cellxgene uses `AnnData` for data ingestion, and uses `AnnData`'s `layers` functionality to accept multiple matrix layers,
 such as "raw" and "final". This imposes some requirements on data of all assay types:
 
-*   Anndata provides a [raw](https://anndata.readthedocs.io/en/latest/anndata.AnnData.raw.html#anndata.AnnData.raw) attribute. If a raw matrix is required for an assay
-    type, it SHOULD be stored in `AnnData.raw`, but MAY be stored in `AnnData.layers["raw"]`.
+*   The "final" matrix MUST be stored in `AnnData.X`
+*   If a raw matrix is required for an assay type, it MUST be stored in `AnnData.layers["raw"]`.
+*   Additional layers provided at author discretion MAY be stored in `AnnData.layers` with author-selected keys.
 *   AnnData requires that matrix layers MUST have the same dimension, so raw count matrices MUST include the same cells and genes as the final. Because it is impractical to
     retain all barcodes in raw and final matrices, cells MUST be filtered from both. By contrast, those wishing to reuse datasets require access to raw gene expression values,
     so genes MUST be present in both datasets. Summarizing, any cell barcodes that are removed from the data MUST be filtered from both raw and final matrices.
@@ -64,11 +65,11 @@ an assay you would like to publish, please post an issue on this repository to s
 the cellxgene schema does not have any other requirements on data in those layers beyond the ones listed above. This is usually the case when there are many ways to
 produce the matrix layer in question.
 
-| Assay                                 | Raw requirements                                                                                                                              | Raw Required? | Final Requirements                                                                                 | Final Required?      | Other Layers |
-|---------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|---------------|----------------------------------------------------------------------------------------------------|----------------------|--------------|
-| scRNA-seq (UMI, e.g. 10x v3)          | Values MUST be de-duplicated molecule counts.                                                                                                 | REQUIRED      |                                                                                                    | STRONGLY RECOMMENDED | OPTIONAL     |
-| scRNA-seq (non-UMI, e.g. SS2)         | Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM).                                         | REQUIRED      |                                                                                                    | STRONGLY RECOMMENDED | OPTIONAL     |
-| Accessibility (e.g. ATAC-seq, mC-seq) |                                                                                                                                               | NOT REQUIRED  | Values MUST correspond to gene features (e.g. HGNC symbols if human)                               | REQUIRED             | OPTIONAL     |
+| Assay                                 | "raw" requirements                                                                                                                            | "raw" Required? | Final ("X") Requirements                                                                           | Final ("X") Required? | Other Layers |
+|---------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|-----------------|----------------------------------------------------------------------------------------------------|-----------------------|--------------|
+| scRNA-seq (UMI, e.g. 10x v3)          | Values MUST be de-duplicated molecule counts.                                                                                                 | REQUIRED        |                                                                                                    | STRONGLY RECOMMENDED  | OPTIONAL     |
+| scRNA-seq (non-UMI, e.g. SS2)         | Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM).                                         | REQUIRED        |                                                                                                    | STRONGLY RECOMMENDED  | OPTIONAL     |
+| Accessibility (e.g. ATAC-seq, mC-seq) |                                                                                                                                               | NOT REQUIRED    | Values MUST correspond to gene features (e.g. HGNC symbols if human)                               | REQUIRED              | OPTIONAL     |
 
 ### Schema Version
 
@@ -127,7 +128,7 @@ Finally, the whole dataset MUST be annotated with fields that indicate the organ
 :--|:--
 organism|String
 organism\_ontology\_term\_id|NCBITaxon term
-layer\_descriptions|Mapping from {layer\_name: layer\_description, ...} Each description is free text, though one layer must be described as "raw".
+layer\_descriptions|Mapping from {layer\_name: layer\_description, ...}
 
 
 ### Presentation Metadata
@@ -201,7 +202,3 @@ X_umap for example.
 
 Finally, the dataset-level metadata is stored in `uns`, which is just key-value pairs.
 
-Note that anndata supports "layers" and "raw" values for counts. Those are permitted, but cellxgene will treat `X` as the "final" matrix for further
-visualization. Once anndata [unifies its treatment of layers](https://github.com/theislab/anndata/issues/244), cellxgene will use the "default" as the
-final matrix, however that ends up being specified. In anndata files, the layer_descriptions dictionary should have a key "X" and optionally "raw.X" to
-describe those layers.
