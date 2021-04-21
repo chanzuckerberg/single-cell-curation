@@ -71,11 +71,6 @@ produce the matrix layer in question.
 | scRNA-seq (non-UMI, e.g. SS2)         | Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM).                                         | REQUIRED        |                                                                                                    | STRONGLY RECOMMENDED  | OPTIONAL     |
 | Accessibility (e.g. ATAC-seq, mC-seq) |                                                                                                                                               | NOT REQUIRED    | Values MUST correspond to gene features (e.g. HGNC symbols if human)                               | REQUIRED              | OPTIONAL     |
 
-**Field name**|**Constraints**
-:--|:--
-corpora_schema_version|Follows [SemVer](https://semver.org/) conventions
-corpora_encoding_version|Follows [SemVer](https://semver.org/) conventions
-
 ### Integration Metadata
 
 #### Cell Metadata
