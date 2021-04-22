@@ -4,7 +4,7 @@ Contact: acarr@chanzuckerberg.com
 
 Document Status: _Approved_
 
-Version: 1.1.0
+Version: 1.2.0
 
 Date Last Modified: 2020-12-11
 
@@ -141,6 +141,7 @@ organism|String
 organism\_ontology\_term\_id|NCBITaxon term
 layer\_descriptions|A dictionary whose keys MUST be the layer names whose values are free text description of how the layer was created (e.g. "counts per million")
 version|A dictionary with a key `corpora_schema_version` and its value MUST be the schema encoding version. See [here](https://github.com/chanzuckerberg/single-cell-curation/tree/main/docs/encodings/) for documentation that describes the encoding.
+batch_condition|A string or list of string keys of cell metadata fields (which MUST exist, but need not be defined by this schema) that together define the "batches" that a normalization or integration algorithm should be aware of. For example if "patient" "seqBatch" exist and describe the cells, then `"patient"` or `["patient", "seqBatch"]` would be valid batch_condition values.
 
 
 ### Presentation Metadata
