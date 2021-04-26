@@ -4,10 +4,11 @@ Contact: acarr@chanzuckerberg.com
 
 Document Status: _Approved_
 
-Version: 1.1.0
+Version: 1.2.0
 
 Date Last Modified: 2020-12-11
 
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED" "MAY", and "OPTIONAL" in this document are to be interpreted as described in [BCP 14](https://tools.ietf.org/html/bcp14), [RFC2119](https://www.rfc-editor.org/rfc/rfc2119.txt), and [RFC8174](https://www.rfc-editor.org/rfc/rfc8174.txt) when, and only when, they appear in all capitals, as shown here.
 
 ## Background
 
@@ -20,23 +21,32 @@ These fields are expected to be very useful for data integration and also simply
 
 Note that the requirements in the schema are just the minimum required information. Datasets often have additional metadata, which is preserved in datasets submitted to the Data Portal.
 
-## Curation and Validation
+## Purpose
 
-When a submitter is preparing a dataset for the cellxgene Data Portal, they can use the `cellxgene-schema apply` command line tool to apply changes to their dataset so that it follows the schema.
-When that tool successfully completes, it will give the submitter a message that the dataset is ready to be submitted to the Data Portal, and it will write the schema version number into the dataset's metadata.
+This document describes the schema, a type of contract, that the cellxgene application expects all files to adhere to so that it can enable searching, filtering, and integration of datasets it hosts.
+It is intentionally general because cellxgene supports multiple download formats, each of which adheres to this schema.
 
-Then, when the submitter uploads the dataset to the Data Portal, the Data Portal will verify that the dataset does indeed follow an accepted version of the schema. If it does not, it will reject the dataset with an appropriate error message.
+Users interested in creating a new format that adheres to the cellxgene schema or who want to understand what metadata all cellxgene files can be expected to carry should read this document.
 
-## Schema
+Users interested in the schema's implementation should review the [encoding documents](https://github.com/chanzuckerberg/single-cell-curation/tree/main/docs/encodings/), which describe how cellxgene expects data to be uploaded in AnnData, and the formats of cellxgene's downloadable matrix files.
 
-### Basic Requirements
+Users interested in converting and uploading data to cellxgene should review the [schema_guide](https://github.com/chanzuckerberg/single-cell-curation/blob/main/docs/schema_guide.md), which describes a process for curating datasets that adhere to this schema.
 
-*   **Unique feature identifiers**. Every gene feature MUST be assigned a unique identifier.
-    This is occasionally not present because of one-to-many mappings between gene symbols and other gene ids.
-    In cases where there are duplicated feature identifiers, they will need to be appropriately combined before submission.
-    For example, raw counts will be summed and logged counts will be exponentiated, summed, and logged.
-    This is needed for the explorer to function.
-    When a user requests gene expression information, the explorer needs to be able to unambiguously return a single value.
+## Overview
+
+This schema describes data that measure the phenotypes of cells. It supports multiple assay types, but each assay takes the form of one or more two dimensional matrices whose values are quantitative measures of the genes of cells.
+
+The schema additionally describes how the dataset, genes, and cells should be annotated to describe the biological and technical characteristics of the data.
+
+This document is split into six main sections:
+* [General requirements](#general-requirements)
+* [Matrix layers](#matrix-layers), which describe the data required for different assays
+* [Cell metadata](#cell-metadata), which describe each cell in the dataset
+* [Gene metadata](#gene-metadata), which describe each gene in the dataset
+* [Dataset metadata](#dataset-metadata), which describe the dataset as a whole
+* [Presentation metadata](#presentation-metadata), which are used by the application to adjust the presentation of submitted datasets.
+
+### General Requirements
 
 *   **No PII**. Curators agree to this requirement as part of the data submission policy.
     However, it is not strictly enforced in our validation tooling because it is difficult for software to predict what is and is not PII.
@@ -46,26 +56,22 @@ Then, when the submitter uploads the dataset to the Data Portal, the Data Portal
 ### Matrix Layers
 
 cellxgene's data requirements are tailored to optimize data reuse. Because each assay has different characteristics, our requirements differ by assay type. In general,
-cellxgene requires submission of "raw" data suitable for computational reuse, when a standard form exists, and strongly suggests that a "final" matrix suitable for
-visualization in the explorer be included. cellxgene uses `AnnData` for data ingestion, and uses `AnnData`'s `layers` functionality to accept multiple matrix layers,
-such as "raw" and "final". This imposes some requirements on data of all assay types:
+cellxgene requires submission of "raw" data suitable for computational reuse when a standard form exists, and strongly suggests that a "final" matrix suitable for
+visualization in the explorer be included. So that cellxgene's data can be provided in download formats suitable for both R and Python, the schema imposes the following requirements:
 
-*   The "final" matrix MUST be stored in `AnnData.X`
-*   If a raw matrix is required for an assay type, it MUST be stored in `AnnData.layers["raw"]`.
-*   Additional layers provided at author discretion MAY be stored in `AnnData.layers` with author-selected keys.
-*   AnnData requires that matrix layers MUST have the same dimension, so raw count matrices MUST include the same cells and genes as the final.
-    Because it is impractical to retain all barcodes in raw and final matrices, cells MUST be filtered from both.
+*   All matrix layers MUST have the same shape, and have the same cell labels and gene labels.
+*   Because it is impractical to retain all barcodes in raw and final matrices, any low quality cell filtering MUST be applied to both.
     By contrast, those wishing to reuse datasets require access to raw gene expression values, so genes MUST be present in both datasets.
-    Summarizing, any cell barcodes that are removed from the data MUST be filtered from both raw and final matrices.
-    By contrast, genes MUST NOT be filtered from the raw matrix.
-    Any genes that publishers wish to filter from the final matrix MAY have their values replaced by np.nan, which will mask them from exploration.
+    Summarizing, any cell barcodes that are removed from the data MUST be filtered from both raw and final matrices and genes MUST NOT be filtered from the raw matrix.
+*   Any genes that publishers wish to filter from the final matrix MAY have their values replaced by a language appropriate "null" value (e.g. `np.nan` for python), which will mask them from exploration.
+*   Additional layers provided at author discretion MAY be stored using author-selected keys, but MUST have the same cells and genes as other layers.
 
 In addition to these general requirements, the following table describes the matrix data and layers requirements that are assay-specific.
 If cellxgene does not support an assay you would like to publish, please post an issue on this repository to start a conversation about extending the schema.
 If an entry in the table is empty, the cellxgene schema does not have any other requirements on data in those layers beyond the ones listed above.
 This is usually the case when there are many ways to produce the matrix layer in question.
 
-| Assay                                 | "raw" requirements                                                                                                                            | "raw" Required? | Final ("X") Requirements                                                                             | Final ("X") Required? | Other Layers |
+| Assay                                 | "raw" requirements                                                                                                                            | "raw" required? | "final" requirements                                                                             | "final" required? | Other layers |
 |---------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|-----------------|------------------------------------------------------------------------------------------------------|-----------------------|--------------|
 | scRNA-seq (UMI, e.g. 10x v3)          | Values MUST be de-duplicated molecule counts.                                                                                                 | REQUIRED        |                                                                                                      | STRONGLY RECOMMENDED  | OPTIONAL     |
 | scRNA-seq (non-UMI, e.g. SS2)         | Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM).                                         | REQUIRED        |                                                                                                      | STRONGLY RECOMMENDED  | OPTIONAL     |
@@ -74,9 +80,32 @@ This is usually the case when there are many ways to produce the matrix layer in
 
 ### Integration Metadata
 
+cellxgene requires ontology terms to enable search, comparison, and integration of data.
+Ontology terms MUST use [OBO-format ID](http://www.obofoundry.org/id-policy.html), meaning they are a CURIE where the prefix identifies the ontology.
+For example `EFO:0000001` is a term in the `EFO` ontology.
+
+When no appropriate ontology value is available, then the most precise accurate term MUST be used.
+For example if the `cell_type` field describes a relay interneuron, but the most specific available term in the CL ontology is CL:0000099 ("Interneuron"), then the interneuron term can be used to fulfill this requirement, and ensures that users searching for "neuron" are able to find these data.
+Users will still be able to access more specific cell type annotations that have been submitted with the data (but aren't required by the schema).
+A dataset comprising cells of the human embryo provides a more extreme example.
+In this case, the most  precise accurate term may be the root of the cell ontology `cell`, or its child term `cell in vitro`.
+The Cell Ontology is expanding over time, and we hope to migrate datasets to more defined terms as they are defined.
+In the mean time, using Cell Ontology terms maximizes the findability (and therefore reusability) of datasets.
+
 #### Cell Metadata
 
-To support data integration, each cell MUST have the following metadata:
+Each cell MUST be annotated with the following ontology terms.
+
+**Field name**|**Constraints**
+:--|:--
+tissue\_ontology\_term\_id|UBERON term. This field SHOULD be appended with " (cell culture)" or " (organoid)" if appropriate.
+assay\_ontology\_term\_id|EFO term
+disease\_ontology\_term\_id|MONDO term or [PATO:0000461](http://bioportal.bioontology.org/ontologies/PATO?p=classes&conceptid=PATO%3A0000461)
+cell\_type\_ontology\_term\_id|CL term
+ethnicity\_ontology\_term\_id|HANCESTRO term, "na" if non-human
+development\_stage\_ontology\_term\_id|HsapDv term if human, child of EFO:0000399 otherwise
+
+With the exception of sex, which does not adhere to an ontology, the ontology label MUST also be provided and MUST match the paired ontology term:
 
 **Field name**|**Constraints**
 :--|:--
@@ -88,52 +117,36 @@ sex|"male", "female", "mixed", "unknown", or "other"
 ethnicity|string, "na" if non-human, "unknown" if not available
 development\_stage|string, "unknown" if not available
 
-In addition to these free text fields (except sex), each cell MUST also have ontology annotations:
-
-Ontology terms MUST use [OBO-format ID](http://www.obofoundry.org/id-policy.html), meaning they are a CURIE
-where the prefix identifies the ontology. For example `EFO:0000001` is a term in the `EFO` ontology.
-
-**Field name**|**Constraints**
-:--|:--
-tissue\_ontology\_term\_id|UBERON term. This field SHOULD be appended with " (cell culture)" or " (organoid)" if appropriate.
-assay\_ontology\_term\_id|EFO term
-disease\_ontology\_term\_id|MONDO term or [PATO:0000461](http://bioportal.bioontology.org/ontologies/PATO?p=classes&conceptid=PATO%3A0000461)
-cell\_type\_ontology\_term\_id|CL term
-ethnicity\_ontology\_term\_id|HANCESTRO term, "na" if non-human
-development\_stage\_ontology\_term\_id|HsapDv term if human, child of EFO:0000399 otherwise
-
-cellxgene requires ontology terms to enable search, comparison, and integration of data.
-When no appropriate ontology value is available, then the most precise accurate term MUST be used.
-For example if the `cell_type` field describes a relay interneuron, but the most specific available term in the CL ontology is CL:0000099 ("Interneuron"), then the interneuron term can be used to fulfill this requirement, and ensures that users searching for "neuron" are able to find these data.
-Users will still be able to access more specific cell type annotations that have been submitted with the data (but aren't required by the schema).
-A dataset comprising cells of the human embryo provides a more extreme example.
-In this case, the most  precise accurate term may be the root of the cell ontology `cell`, or its child term `cell in vitro`.
-The Cell Ontology is expanding over time, and we hope to migrate datasets to more defined terms as they are defined.
-In the mean time, having these less precise terms maximizes the findability (and therefore reusability)
-of datasets.
-
 #### Gene Metadata
 
 Cellxgene uses standard gene symbols to ensure that all datasets it stores measure the same features and can therefore be integrated.
+
+Every gene feature MUST be assigned a unique identifier.
+This is occasionally not present because of one-to-many mappings between gene symbols and other gene ids.
+In cases where there are duplicated feature identifiers, they will need to be appropriately combined before submission.
+This is needed for the explorer to function.
+When a user requests gene expression information, the explorer needs to be able to unambiguously return a single value.
+
 If the samples being measured are human, then the feature ids MUST be [HGNC](https://www.genenames.org/about/guidelines/#!/#tocAnchor-1-7) approved gene symbols.
 If the features are mouse genes, then the feature ids SHOULD be [MGI](http://www.informatics.jax.org/mgihome/nomen/gene.shtml) gene symbols.
 For other organisms, gene symbols SHOULD be the accepted standard human readable symbols for that organism.
 
 #### Dataset Metadata
 
-There are several fields that annotate the whole dataset that MUST be provided.
+There following fields annotate the whole dataset and MUST be provided.
 
 **Field name**|**Constraints**
 :--|:--
 organism|String
 organism\_ontology\_term\_id|NCBITaxon term
-layer\_descriptions|A dictionary whose keys MUST be the layer names whose values are free text description of how the layer was created (e.g. "counts per million")
-version|A dictionary with a key `corpora_schema_version` and its value MUST be the schema encoding version. See [here](https://chanzuckerbergteam.slack.com/archives/C018B64J3HN/p1617907599111700) for documentation that describes the encoding.
+layer\_descriptions|Dictionary\[String\]|Keys MUST be the layer names whose values are free text description of how the layer was created (e.g. "counts per million")
+version|Dictionary| MUST contain key `corpora_schema_version` and its value MUST be the schema encoding version. See [here](https://github.com/chanzuckerberg/single-cell-curation/tree/main/docs/encodings/) for documentation that describes the encoding.
+batch_condition|String \| List\[String\]| values MUST match cell metadata keys. Together, these keys define the "batches" that a normalization or integration algorithm should be aware of. For example if "patient" "seqBatch" are keys of vectors of cell metadata `"patient"`, `"seqBatch"`, or `["patient", "seqBatch"]` would be valid batch_condition values.
 
 
 ### Presentation Metadata
 
-There are also fields that are required so that the cellxgene Data Portal and Explorer can present datasets appropriately.
+There are two fields that are required so that the cellxgene Data Portal and Explorer can present datasets appropriately.
 
 * Each dataset MUST have at least one **embedding**, a mapping from each cell to a tuple of floats of length at least 2.
   These are usually generated by algorithms like umap or tsne, but can also represent `(x, y)` coordinates of cells in spatial assays.
@@ -186,17 +199,3 @@ The color code at the nth position in the array corresponds to category n in the
    </td>
   </tr>
 </table>
-
-### **Scanpy/AnnData**
-
-The Data Portal requires submitted count matrices and associated metadata to be in [Anndata](https://anndata.readthedocs.io/en/stable/) format, the hdf5-based file format used by scanpy.
-There is a python library for interacting with it. The count data is stored in an attribute `X` of shape (# of cells, # of genes).
-`X` MUST be a numpy.ndarray or a scipy.sparse.spmatrix.
-
-Information about cells and genes are stored in `obs` and `var` dataframes, respectively. Each of those has an index which can serve as cell and gene ids if all the values are unique.
-
-The `obs` dataframe must store all the cell-level metadata except for embeddings. So, there must be columns named "tissue", "assay", "disease", and "cell_type".
-
-Embeddings are stored in `obsm` with a key name of "X_{description}" where description provides some information about how the embedding was generated, X_umap for example.
-
-Finally, the dataset-level metadata is stored in `uns`, which is just key-value pairs.
