@@ -47,6 +47,8 @@ title|`str`|
 layer\_descriptions|`dict` with string keys and values|One key must be "X" which describes the transformations (if any) performed to produce the X matrix cellxgene displays.
 organism|`str`|
 organism\_ontology\_term\_id|`str`|
+batch\_condition|`str` OR `list[str]`. `str` values must refer to keys in `obs`.
+
 ​
 The cellxgene schema defines the following optional keys and values in `uns`. If the key is present, then the value must not be empty.
 ​
