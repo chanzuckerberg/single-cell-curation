@@ -96,7 +96,7 @@ where the prefix identifies the ontology. For example `EFO:0000001` is a term in
 :--|:--
 tissue\_ontology\_term\_id|UBERON term. This field SHOULD be appended with " (cell culture)" or " (organoid)" if appropriate.
 assay\_ontology\_term\_id|EFO term
-disease\_ontology\_term\_id|MONDO term or [PATO:0000461](http://bioportal.bioontology.org/ontologies/PATO?p=classes&conceptid=PATO%3A0000461)
+disease\_ontology\_term\_id|MONDO term or [PATO:0000461](https://bioportal.bioontology.org/ontologies/PATO/?p=classes&conceptid=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FPATO_0000461)
 cell\_type\_ontology\_term\_id|CL term
 ethnicity\_ontology\_term\_id|HANCESTRO term, "na" if non-human
 development\_stage\_ontology\_term\_id|HsapDv term if human, child of EFO:0000399 otherwise
