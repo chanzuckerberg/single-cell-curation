@@ -4,7 +4,7 @@ Contact: acarr@chanzuckerberg.com
 
 Document Status: _Approved_
 
-Version: 1.1.0
+Version: 1.2.0
 
 Date Last Modified: 2020-12-11
 
@@ -90,7 +90,7 @@ Users will still be able to access more specific cell type annotations that have
 A dataset comprising cells of the human embryo provides a more extreme example.
 In this case, the most  precise accurate term may be the root of the cell ontology `cell`, or its child term `cell in vitro`.
 The Cell Ontology is expanding over time, and we hope to migrate datasets to more defined terms as they are defined.
-In the mean time, having these less precise terms maximizes the findability (and therefore reusability) of datasets.
+In the mean time, using Cell Ontology terms maximizes the findability (and therefore reusability) of datasets.
 
 #### Cell Metadata
 
@@ -139,8 +139,9 @@ There following fields annotate the whole dataset and MUST be provided.
 :--|:--
 organism|String
 organism\_ontology\_term\_id|NCBITaxon term
-layer\_descriptions|A dictionary whose keys MUST be the layer names whose values are free text description of how the layer was created (e.g. "counts per million")
-version|A dictionary with a key `corpora_schema_version` and its value MUST be the schema encoding version. See [here](https://github.com/chanzuckerberg/single-cell-curation/tree/main/docs/encodings/) for documentation that describes the encoding.
+layer\_descriptions|Dictionary\[String\]|Keys MUST be the layer names whose values are free text description of how the layer was created (e.g. "counts per million")
+version|Dictionary| MUST contain key `corpora_schema_version` and its value MUST be the schema encoding version. See [here](https://github.com/chanzuckerberg/single-cell-curation/tree/main/docs/encodings/) for documentation that describes the encoding.
+batch_condition|String \| List\[String\]| values MUST match cell metadata keys. Together, these keys define the "batches" that a normalization or integration algorithm should be aware of. For example if "patient" "seqBatch" are keys of vectors of cell metadata `"patient"`, `"seqBatch"`, or `["patient", "seqBatch"]` would be valid batch_condition values.
 
 
 ### Presentation Metadata
