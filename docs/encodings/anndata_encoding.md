@@ -42,7 +42,7 @@ Recall that `uns` is a mapping with `str`s as keys. The cellxgene data integrati
 ​
 **Key**|**Value Type**|**Notes**
 -----|-----|-----
-version|`dict` with keys "corpora_schema_version" and "corpora_encoding_version" indicating the version of the schema and schema encoding used to create the h5ad.
+version|`dict`|Contains keys "corpora_schema_version" and "corpora_encoding_version" indicating the version of the schema and schema encoding used to create the h5ad.
 title|`str`|
 layer\_descriptions|`dict` with string keys and values|One key must be "X" which describes the transformations (if any) performed to produce the X matrix cellxgene displays.
 organism|`str`|
