@@ -120,7 +120,7 @@ These components should be stored in the following locations in an `AnnData` obj
 
 | Component  | `AnnData` location            | Data Type                      | Notes                                                          |
 | ---------- |:-----------------------------:|:------------------------------:|:---------------------------------------------------------------|
-| raw count matrix | `adata.raw.X` or `adata.layers['raw']` | Numpy array or scipy sparse CSC matrix | Necessary, with some exceptions (see [exceptions](#alternative-assays))   |
+| raw count matrix | `adata.layers['raw']` | Numpy array or scipy sparse CSC matrix | Necessary, with some exceptions (see [exceptions](#alternative-assays))   |
 | normalized expression matrix | `adata.X`  | Numpy array or scipy sparse CSC matrix | Used for visualization in cellxgene explorer                   |
 | cell level metadata | `adata.obs` | Pandas dataframe | Categorical and continuous metadata shown in left and right cellxgene explorer sidebars respectively (can be used to color cells) |
 | variable/feature level metadata | `adata.var`   | Pandas dataframe|                                                             |
