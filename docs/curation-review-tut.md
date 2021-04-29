@@ -1,12 +1,8 @@
 # Cellxgene Curation Tutorial
 
-<!--- ![image](https://user-images.githubusercontent.com/25663501/111377133-b07a4c80-8676-11eb-8eb8-07ca4d7a77e9.png) --->
-
 <img align="right" src="https://user-images.githubusercontent.com/25663501/111377133-b07a4c80-8676-11eb-8eb8-07ca4d7a77e9.png">
 
-
 <!--- ## Overview --->
-<!--- purpose: Motivate submission to the data portal give context --->
 
 [Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) are optimized for access, exploration and reuse of single cell data. To achieve these goals, the cellxgene platform currently accepts curated [AnnData](https://anndata.readthedocs.io/en/latest/#) objects adhering to a [succinct data schema](corpora_schema.md). Adherence to a standardized data schema allows for efficient navigation and integration of the growing number of single cell datasets. In this tutorial, you will learn the essential information for curating a single cell dataset using CZI's curation tools and uploading to the data portal. Hosting your data on the cellxgene portal offers the following benefits:
  - link permanence (you can reference in your publication without ever worrying about dead links)
@@ -15,17 +11,6 @@
  - availability of your dataset in the major single cell data formats (including `AnnData`, `seurat`, and `loom`)
 
 This tutorial will consist of an explanation of 1) how to create and structure an `AnnData` object with your single cell data 2) how to augment this object with information that is specific to the cellxgene schema and 3) how to upload this object to the cellxgene data portal. If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
-
-<!---
-You can also check out the following links for more information on the cellxgene ecosystem:
-
-- [cellxgene data portal](https://cellxgene.cziscience.com/)
-- [cellxgene explorer github](https://github.com/chanzuckerberg/cellxgene)
-- [cellxgene data portal github](https://github.com/chanzuckerberg/corpora-data-portal)
-- [corpora schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/docs/corpora_schema.md)
-- [schema guide](https://github.com/chanzuckerberg/single-cell-curation/blob/main/docs/schema_guide.md)
-
---->
 
 ### Table of Contents
 
@@ -67,29 +52,6 @@ If you are already familiar with cellxgene, AnnData, and the cellxgene data sche
 
 ---
 
-<!--- ![image](https://user-images.githubusercontent.com/25663501/111403110-d1589700-86a2-11eb-99dd-bf52e348d43a.png) --->
-
-<!---
-<p align="center">
-  <img src="https://user-images.githubusercontent.com/25663501/111403110-d1589700-86a2-11eb-99dd-bf52e348d43a.png" width="1000">
-</p>
-
-<p align="center">
-  <b> Figure: </b> Collection View of the Cellxgene Data Portal
-</p>
-
-<br/>
-
-
-Reason to contribute:
- - link permanence
- - sharing of private datasets with collaborators
- - no barrier for readers to explore your dataset
- - accesibility of your dataset in the major single cell data formats
-
-<br/>
- 
---->
 
 ## Required data and `AnnData` structure
 
@@ -135,10 +97,6 @@ These components should be stored in the following locations in an `AnnData` obj
 </div>
 
 <br/>
-
-<!---
-**Note:** Some assays, such as scATACseq or other epigenetic assays may not have a standardized way of representing a raw count matrix. While we still require there to be a matrix in location annotated as `raw`, some alternative options exist for these assays such as putting the un-normalized gene activity matrix in the `raw` slot. Since `adata.raw.X` can take matrices that are of a different dimensionality than `adata.X`, you could potentially put in a peak x cell matrix in this location instead. We leave this up to the author's discretion, but are happy to chat about options.
---->
 
 **Note:** In addition to these data, other representations of the expression matrix (alternative normalizations, SCTransform, corrected counts from SCTransform or background corrected counts) can all be stored as `layers` in your `AnnData` object (as long as they maintain the same dimensionality of the main expression matrix used for visualization).
 
@@ -221,26 +179,6 @@ In the above table we see what type on information is necessary at the dataset l
 At least one of the key value pairs in `layer_descriptions` needs to indicate the presence of a raw counts layers. This can either be specified as `raw: raw` or `raw.X: raw`. Additional layers may be specified and the values for these keys may be as descriptive as necessary (i.e. `scale.data: scaled and centered data`) 
 
 <br/>
-<!---
-<div align="center">
-
-| Key                         | Value      | Description        | Required                               |
-| --------------------------- |:----------:| ------------------:| -------------------------------------- |
-| 'raw'                       | string     |                    | required (unless `raw.X` is specified) |
-| 'raw.X'                     | string     |                    | required (unless `raw`) is specified   |
-| 'X'                         | string     |                    | required (used for visualization)      |
-| 'corrected.counts'          | string     |                    | optional                               |
-| 'scale.data'                | string     |                    | optional                               |
-| 'sct'                       | string     |                    | optional                               |
-
-</div>
-
-<div align="center">
-  <b> Table: </b> Required and suggested data layers
-</div>
-
-<br/>
---->
 
 #### `obs`
 
@@ -314,18 +252,16 @@ uns:
     organism_ontology_term_id: NCBITaxon:9606  #(Specfiy organism NCBI Taxon ID)
 
 ```
-
-
 <br/>
 
 In the config file snippet above, our 0 level indentation specifies that we are modifying the `uns` slot (remember that `adata.uns` is a dictionary of key-value pairs). The next level of indentation specifies a key name to add to `uns`. The key's corresponding value is the string following the colon, or if the key is followed by more lines that are further indented, then the corresponding value is a dictionary containing the key-value pairs specified in the subsequent lines. More concretely, `adata.uns['layer_descriptions']` returns a dictionary with the key value pairs `{'raw.X': 'raw', 'X': 'log1p'}` after the schema config has been applied.
-
 
 **Note:** at least one of the keys in `layer_descriptions` must return the value 'raw'
 
 <br/>
 
 #### `obs` section
+
 ```
 obs:
     tissue_ontology_term_id: UBERON:0000006              #UBERON tissue term
@@ -341,9 +277,7 @@ obs:
         delta: CL:0000173
         endothelial: CL:0000115
         epsilon: CL:0005019
-
 ```
-
 
 <br/>
 
@@ -418,8 +352,6 @@ In general, the cellxgene data portal is oriented around grouping datasets by th
 
 sign in options for the portal (gmail, github, etc)
 
-<!--- ![image](https://user-images.githubusercontent.com/25663501/113528770-9f46a080-958f-11eb-83a1-36620e1543d2.png) --->
-
 <p align="center">
   <img width="250" src="https://user-images.githubusercontent.com/25663501/113528770-9f46a080-958f-11eb-83a1-36620e1543d2.png">
 </p>
@@ -434,9 +366,6 @@ The cellxgene data portal offers multiple login options including sign-in with y
 
 <br/>
 
-
-<!--- ![image](https://user-images.githubusercontent.com/25663501/113530303-a96a9e00-9593-11eb-91b7-0898d521314a.png) --->
-
 <p align="center">
   <img src="https://user-images.githubusercontent.com/25663501/113530303-a96a9e00-9593-11eb-91b7-0898d521314a.png">
 </p>
@@ -448,13 +377,6 @@ The cellxgene data portal offers multiple login options including sign-in with y
 <br/>
 
 It should be noted that collections are displayed with specific metadata about the collections (including assays(s) used, organism(s) profiled, number of cells in the collection, the tissue profiled, and the disease state studied). After you have logged in,  you will be able to navigate to the 'My Collections' page where you can view all of the datasets that you have uploaded to the portal (if you are just starting out, the 'My Collections' view will be empty).
-
-
-
-<!--- ![image](https://user-images.githubusercontent.com/25663501/113528943-18de8e80-9590-11eb-92ab-2a606879b70c.png) --->
-
-<!--- ![image](https://user-images.githubusercontent.com/25663501/113530607-6d840880-9594-11eb-8af7-17f75d3a8a40.png) --->
-
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/25663501/113530607-6d840880-9594-11eb-8af7-17f75d3a8a40.png">
@@ -470,8 +392,6 @@ In the image above, we see an example of how the 'My Collections' page will look
 
 
 ### Create a private collection
-
-<!--- ![image](https://user-images.githubusercontent.com/25663501/113528984-36135d00-9590-11eb-82a5-68ae4e5ddb1b.png) --->
 
 <p align="center">
   <img width="500" src="https://user-images.githubusercontent.com/25663501/113528984-36135d00-9590-11eb-82a5-68ae4e5ddb1b.png">
@@ -494,8 +414,6 @@ You will also be required to agree to CZI's data submission policies which you c
 
 ### Add a dataset to a private collection
 
-<!--- ![image](https://user-images.githubusercontent.com/25663501/113529554-b5556080-9591-11eb-8e0e-274fcb1ff39a.png) --->
-
 <p align="center">
   <img src="https://user-images.githubusercontent.com/25663501/113529554-b5556080-9591-11eb-8e0e-274fcb1ff39a.png">
 </p>
@@ -507,8 +425,6 @@ You will also be required to agree to CZI's data submission policies which you c
 <br/>
 
 Once you have created a collection, you will have the ability to add a dataset. Once you click this button, you will be guided to dropbox, where you can select a dataset for upload.
-
-<!--- ![image](https://user-images.githubusercontent.com/25663501/113529612-db7b0080-9591-11eb-9720-ae47155d62f8.png) --->
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/25663501/113529612-db7b0080-9591-11eb-9720-ae47155d62f8.png">
@@ -522,8 +438,6 @@ Once you have created a collection, you will have the ability to add a dataset. 
 
 
 ### Remove dataset from a private collection
-
-<!--- ![image](https://user-images.githubusercontent.com/25663501/113529632-edf53a00-9591-11eb-8ea4-575ca8c643f7.png) --->
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/25663501/113529632-edf53a00-9591-11eb-8ea4-575ca8c643f7.png">
@@ -550,8 +464,6 @@ In case you have uploaded the wrong dataset or want to submit an updated dataset
 Once you have successfully uploaded a dataset to your private collection, you are given options to delete the dataset, download (in `anndata` (`.h5ad`), `seurat V3` (`.rds`), or `.loom`), and explore the dataset using the cellxgene explorer. These options are given by the three icons on the right hand side of the entry.
 
 ### Publish Collection to the portal
-
-<!--- ![image](https://user-images.githubusercontent.com/25663501/113615336-b930c380-9621-11eb-88ae-7855a49c5c61.png) --->
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/25663501/113615336-b930c380-9621-11eb-88ae-7855a49c5c61.png">
