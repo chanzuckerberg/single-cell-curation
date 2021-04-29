@@ -339,7 +339,7 @@ You can test your curated `AnnData` object after schema application by running w
 
 ## Uploading data to the cellxgene data portal
 
-In general, the cellxgene data portal is oriented around grouping datasets by their association with a particular publication. We refer to all of the datasets associated with a publication as a `collection`. When you go to the homepage of the [cellxgene data portal](#https://cellxgene.cziscience.com/), you will see a list of collections (publications). To explore any of the data associated with these publications, you would click on a particular collection and be greeted by all of the datasets associated with that publication. In this next section, we will cover how to contribute your newly curated data to the cellxgene portal. Briefly, we will cover:
+In general, the cellxgene data portal is oriented around grouping datasets by their association with a particular publication. We refer to all of the datasets associated with a publication as a `collection`. When you go to the homepage of the [cellxgene data portal](#https://cellxgene.cziscience.com/), you will see a list of collections (publications). To explore any of the data associated with these publications, you would click on a particular collection and be greeted by all of the datasets associated with that publication. In this section, we will cover how to contribute your newly curated data to the cellxgene portal. Briefly, we will cover:
 
 - Login options
 - Discovering 'My Collections'
@@ -388,7 +388,7 @@ It should be noted that collections are displayed with specific metadata about t
 
 <br/>
 
-In the image above, we see an example of how the 'My Collections' page will look after you have uploaded a few datasets to the data portal. Note that some of the collections in this example are published (publicly available) and one is private. The private collection is only available to people who you share the private link with. This allows for control over who views your datasets and for making revisions to datasets that have been uploaded to the portal previously. To add a new collection, we can simply click on the button highlighted above. 
+In the image above, we see an example of how the 'My Collections' page will look after you have uploaded a few datasets to the data portal. Note that some of the collections in this example are published (publicly available) and one is private. All collections start as private and are only made public when the author decides so. The private collection is only available to people who you share the private link with. This allows for control over who views your datasets and for making revisions to datasets that have been uploaded to the portal previously. To add a new collection, we can simply click on the button highlighted above.
 
 
 ### Create a private collection
@@ -424,7 +424,7 @@ You will also be required to agree to CZI's data submission policies which you c
 
 <br/>
 
-Once you have created a collection, you will have the ability to add a dataset. Once you click this button, you will be guided to dropbox, where you can select a dataset for upload.
+Once you have created a private collection, you will have the ability to add a dataset. Once you click this button, you will be guided to dropbox, where you can select a dataset for upload.
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/25663501/113529612-db7b0080-9591-11eb-9720-ae47155d62f8.png">
@@ -449,7 +449,7 @@ Once you have created a collection, you will have the ability to add a dataset. 
 
 <br/>
 
-In case you have uploaded the wrong dataset or want to submit an updated dataset within a collection, you can delete a dataset associated with a collection (without deleting the collection itself).
+In case you have uploaded the wrong dataset or want to submit an updated dataset within a private collection, you can delete a dataset associated with a private collection (without deleting the private collection itself).
 
 ### Dataset actions
 
