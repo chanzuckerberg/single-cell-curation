@@ -157,13 +157,13 @@ In this section, we are covering 1) what metadata are required to adhere to the 
 
 <div align="center">
 
-| Key                                      | Value      | Description                                                                  | Example                 |
-| ---------------------------------------- |:----------:| :----------------------------------------------------------------------------| ------------------------|
-| `adata.uns['version']`                   | string     | schema version (current version is `1.1.0`)                               | `1.1.0`           |
-| `adata.uns['title']`                     | string     | title of publication (and title of dataset if more than one is being submitted) | `An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum: GABAergic neurons`|
-| `adata.uns['publication_doi']`           | string     | DOI of preprint or official publication             | `https://doi.org/10.1101/2020.05.10.087585` |
-| `adata.uns['organism']`                  | string     | name of organism (options are `Human` or `Mouse`) | `Mouse` |
-| `adata.uns['organism_ontology_term_id']` | string     | NCBI Taxon ID| `NCBI:txid10090` |
+| Key                                      | Value      | Description                                                                     | Example               |
+| ---------------------------------------- |:----------:| :-------------------------------------------------------------------------------| ----------------------|
+| `adata.uns['version']`                   | string     | schema version (current version is `1.1.0`)                                     | `1.1.0`               |
+| `adata.uns['title']`                     | string     | title of publication (and title of dataset if more than one is being submitted) | `10X PBMC`            |
+| `adata.uns['publication_doi']`           | string     | DOI of preprint or official publication                   | `https://doi.org/00.0000/2021.01.01.000000` |
+| `adata.uns['organism']`                  | string     | name of organism (options are `Human` or `Mouse`)                               | `Human`               |
+| `adata.uns['organism_ontology_term_id']` | string     | NCBI Taxon ID                                                                   | `NCBITaxon:9606`      |
 | `adata.uns['layer_descriptions']`        | dictionary | a set of key value pairs defining the locations of different representations in the `AnnData` object and a description of that representation. One of these key-value pairs must be `raw: raw`  | `{'X': 'log1p' (this value can be free text)}` |
 
 </div>
@@ -186,19 +186,19 @@ At least one of the key value pairs in `layer_descriptions` needs to indicate th
 
 | `obs` column name                    | Type   | Description                                                       | Example                                   |
 | :----------------------------------- |:------:| -----------------------------------------------------------------:|:------------------------------------------|
-| 'tissue'                             | string | UBERON term                                                       | `area postrema`                           |
-| 'tissue_ontology_term_id'            | string | UBERON term id                                                    | `UBERON:0002162`                          |
+| 'tissue'                             | string | UBERON term                                                       | `blood`.                                  |
+| 'tissue_ontology_term_id'            | string | UBERON term id                                                    | `UBERON:0000178`                          |
 | 'assay'                              | string | EFO term                                                          | `scRNA-seq`                               |   
 | 'assay_ontology_term_id'             | string | EFO term id                                                       | `EFO:0008913`                             |
-| 'disease'                            | string | MONDO term or `normal`                                            | `kuru`                                    |
-| 'disease_ontology_term_id'           | string | MONDO term id for a disease or `PATO:0000461` for normal          | `MONDO:0006825`                           |
-| 'cell_type'                          | string | CL term                                                           | `excitatory neuron`                       |
-| 'cell_type_ontology_term_id'         | string | CL term id                                                        | `CL:0008030`                              |
-| 'sex'                                | string | `male`, `female`, `mixed`, `unknown`, or `other`                  | `mixed`                                   |
-| 'ethnicity'                          | string | HANCESTRO term, `na` if non-human, `unknown` if not available     | `genetically isolated population`         |
-| 'ethnicity_ontology_term_id	'        | string | HANCESTRO term id, `na` if non-human                              | `HANCESTRO:0290`                          |
-| 'development_stage'                  | string | HsapDv term, `unknown` if not available                           | `9th week post-fertilization human stage` |
-| 'development_stage_ontology_term_id	'| string | HsapDv term id if human, child of `EFO:0000399` otherwise         | `HsapDv:0000046`                          |
+| 'disease'                            | string | MONDO term or `normal`                                            | `normal`                                  |
+| 'disease_ontology_term_id'           | string | MONDO term id for a disease or `PATO:0000461` for normal          | `PATO:0000461`                            |
+| 'cell_type'                          | string | CL term                                                           | `megakaryocyte`                           |
+| 'cell_type_ontology_term_id'         | string | CL term id                                                        | `CL:0000556`                              |
+| 'sex'                                | string | `male`, `female`, `mixed`, `unknown`, or `other`                  | `unknown`                                 |
+| 'ethnicity'                          | string | HANCESTRO term, `na` if non-human, `unknown` if not available     | `unknown`                                 |
+| 'ethnicity_ontology_term_id	'        | string | HANCESTRO term id, `na` if non-human                              | `unknown`                                 |
+| 'development_stage'                  | string | HsapDv term, `unknown` if not available                           | `Human Adult Stage`                       |
+| 'development_stage_ontology_term_id	'| string | HsapDv term id if human, child of `EFO:0000399` otherwise         | `HsapDv:0000087`                          |
 
 <div align="center">
   <b> Table: </b> Required cell level metadata
@@ -236,21 +236,22 @@ You can check out the full documentation for this tooling [here](#schema_guide.m
 
 <br/>
 
-Your [`config.yaml`](example_config.yaml) file is used to update values and columns in `adata.uns` and `adata.obs` (respectively) with required schema information. Here is an example/mock of a config file:
+Your [`config.yaml`](example_config.yaml) file is used to update values and columns in `adata.uns` and `adata.obs` (respectively) with required schema information. All original columns in the dataset will be preserved. For fields where you need to enter an ontology ID, you can use the [EBI Ontology Lookup Service](https://www.ebi.ac.uk/ols/index) to search for the appropriate terms.  This file will also standardize gene symbols in your dataset via the `fixup_gene_symbols` section. Here is an example/mock of a config file:
 
 #### `uns` section
 
 ```
 uns:
     version:
-        corpora_schema_version: 1.1.0          #(ex: schema_version_number)
-        corpora_encoding_version: 1.1.0        #(ex: encoding version)
-    title: publication_title                   #(free text field)
+        corpora_schema_version: 1.1.0                          #(ex: schema_version_number)
+        corpora_encoding_version: 1.1.0                        #(ex: encoding version)
+    title: 10X PBMC Demo Collection                            #(free text field)
+    publication_doi: https://doi.org/00.0000/2021.01.01.000000
     layer_descriptions:
-        raw.X: raw                             #(it is essential for at least one the layer_descriptions to be set to 'raw')
-        X: log1p                               #(free text description of normalization method )
-    organism: Homo sapiens                     #(Specify organism name)
-    organism_ontology_term_id: NCBITaxon:9606  #(Specfiy organism NCBI Taxon ID)
+        raw: raw                                               #(it is essential for at least one the layer_descriptions to be set to 'raw')
+        X: log1p                                               #(free text description of normalization method )
+    organism: Human.                                           #(Specify organism name)
+    organism_ontology_term_id: NCBITaxon:9606                  #(Specfiy organism NCBI Taxon ID)
 
 ```
 <br/>
@@ -265,24 +266,27 @@ In the config file snippet above, our 0 level indentation specifies that we are 
 
 ```
 obs:
-    tissue_ontology_term_id: UBERON:0000006              #UBERON tissue term
-    assay_ontology_term_id: EFO:0010961                  #EFO assay term
+    tissue_ontology_term_id: UBERON:0000178              #UBERON tissue term
+    assay_ontology_term_id: EFO:0008913                  #EFO assay term
     disease_ontology_term_id: PATO:0000461               #MONDO disease term or PATO:0000461
-    sex: male                                            #male, female, mixed, unknown, or other
-    ethnicity_ontology_term_id: na                       #HANCESTRO term
-    development_stage_ontology_term_id: HsapDv:0000160   #HsapDv term
+    sex: unknown                                         #male, female, mixed, unknown, or other
+    ethnicity_ontology_term_id: unknown                  #HANCESTRO term
+    development_stage_ontology_term_id: HsapDv:0000087   #HsapDv term
     cell_type_ontology_term_id:
-      cell_label:                                        #this is column name in your obs dataframe (the field that specifies cell type)
-        acinar: CL:0002064                               #mapping between cell types (specified in AnnData object) and cl ontology id
-        alpha: CL:0000171
-        delta: CL:0000173
-        endothelial: CL:0000115
-        epsilon: CL:0005019
+      louvain:                                           #this is column name in your obs dataframe (the field that specifies cell type)
+        NK: CL:0000623                                   #Link an ontology ID to each value in your cell type column
+        Dendritic: CL:0000451
+        CD4 T: CL:0000624
+        FCGR3A Monocytes: CL:0002396
+        Megakaryocytes: CL:0000556
+        B: CL:0000236
+        CD8 T: CL:0000625
+        CD14 Monocytes: CL:0001055
 ```
 
 <br/>
 
-In the config file snippet above, the 0 level indentation specifies that we are modifying `obs`. At the first level of indentation, we start adding schema fields to `obs`. If the first level indentation field is followed by an ontology term id (i.e. `tissue_ontology_term_id: UBERON:0000006`), then a column for that field will be created in the obs dataframe (i.e. a column called `tissue_ontology_term_id` will be created), and all of its values will take on the value specified after the colon (i.e. `UBERON:0000006`). Additionally, the cellxgene curation tools will search the ontology term id and create a corresponding column with the appropriately corresponding term (i.e. a column called `tissue` will be created and all values of that column will be `islet of Langerhans`).
+In the config file snippet above, the 0 level indentation specifies that we are modifying `obs`. At the first level of indentation, we start adding schema fields to `obs`. If the first level indentation field is followed by an ontology term id (i.e. `tissue_ontology_term_id: UBERON:0000178`), then a column for that field will be created in the obs dataframe (i.e. a column called `tissue_ontology_term_id` will be created), and all of its values will take on the value specified after the colon (i.e. `UBERON:0000178`). Additionally, the cellxgene curation tools will search the ontology term id and create a corresponding column with the appropriately corresponding term (i.e. a column called `tissue` will be created and all values of that column will be `blood`).
 
 On other hand, if the schema field is followed by lines which have further indentation, then the next line in the config file will specify a column whose values should be mapped to ontology terms (with these mappings specified by the subsequent lines). This is typically more relevant for specifying cell labels. In our example above, two new columns will be added to the `obs` data frame `cell_type_ontology_term_id` and `cell_type`. The original column specifying cell identity will be retained (and will be tagged with `_original`). The cellxgene curation tools never remove fields from the original dataset, they only add schema relevant information.
 
