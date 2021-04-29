@@ -480,3 +480,7 @@ Finally, if your private collection is complete and you wish to share with the w
 The cellxgene data portal also includes the ability to upload relevant gene sets associated with the datasets in your collection. You can find a complete description of the requirements for the gene sets [here](./gene_sets.md)
 
 In the future, you will be able to upload a file that matches the format described in the linked documentation to allow collaborators and external readers to see markers that you have deemed important for defining cell types and cell states.
+
+## Future Work
+
+Placeholder
