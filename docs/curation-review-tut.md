@@ -162,9 +162,9 @@ In this section, we are covering 1) what metadata are required to adhere to the 
 | `adata.uns['version']`                   | string     | schema version (current version is `1.1.0`)                               | `1.1.0`           |
 | `adata.uns['title']`                     | string     | title of publication (and title of dataset if more than one is being submitted) | `An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum: GABAergic neurons`|
 | `adata.uns['publication_doi']`           | string     | DOI of preprint or official publication             | `https://doi.org/10.1101/2020.05.10.087585` |
-| `adata.uns['organism']`                  | string     | name of organism (first letter capitalized) | `Mouse` |
+| `adata.uns['organism']`                  | string     | name of organism (options are `Human` or `Mouse`) | `Mouse` |
 | `adata.uns['organism_ontology_term_id']` | string     | NCBI Taxon ID| `NCBI:txid10090` |
-| `adata.uns['layer_descriptions']`        | dictionary | a set of key value pairs defining the locations of different representations in the `AnnData` object and a description of that representation. One of these key-value pairs must be one of `raw: raw` or `raw.X: raw`    | `{'X': 'log1p' (this value can be free text)}` |
+| `adata.uns['layer_descriptions']`        | dictionary | a set of key value pairs defining the locations of different representations in the `AnnData` object and a description of that representation. One of these key-value pairs must be `raw: raw`  | `{'X': 'log1p' (this value can be free text)}` |
 
 </div>
 
@@ -176,7 +176,7 @@ In this section, we are covering 1) what metadata are required to adhere to the 
 
 In the above table we see what type on information is necessary at the dataset level. Two fields to pay extra attention to are the `title` and the `layer_descriptions` keys. Specifically, `title` should contain the name of the publication that the dataset is coming from. If there is more than one dataset associated with the publication, then the name of the dataset should be appended to the title (i.e. `'title': 'publication name: dataset title'`). This field will be used to name and distinguish different datasets in the same collection in the portal.
 
-At least one of the key value pairs in `layer_descriptions` needs to indicate the presence of a raw counts layers. This can either be specified as `raw: raw` or `raw.X: raw`. Additional layers may be specified and the values for these keys may be as descriptive as necessary (i.e. `scale.data: scaled and centered data`) 
+At least one of the key value pairs in `layer_descriptions` needs to indicate the presence of a raw counts layers. This must be specified as `raw: raw`. Additional layers may be specified and the values for these keys may be as descriptive as necessary (i.e. `scale.data: scaled and centered data`).
 
 <br/>
 
@@ -192,8 +192,8 @@ At least one of the key value pairs in `layer_descriptions` needs to indicate th
 | 'assay_ontology_term_id'             | string | EFO term id                                                       | `EFO:0008913`                             |
 | 'disease'                            | string | MONDO term or `normal`                                            | `kuru`                                    |
 | 'disease_ontology_term_id'           | string | MONDO term id for a disease or `PATO:0000461` for normal          | `MONDO:0006825`                           |
-| 'cell_type'                          | string | CL term (or UBERON term when no CL term is available)             | `excitatory neuron`                       |
-| 'cell_type_ontology_term_id'         | string | CL term id (or UBERON term id when no CL term id is available)    | `CL:0008030`                              |
+| 'cell_type'                          | string | CL term                                                           | `excitatory neuron`                       |
+| 'cell_type_ontology_term_id'         | string | CL term id                                                        | `CL:0008030`                              |
 | 'sex'                                | string | `male`, `female`, `mixed`, `unknown`, or `other`                  | `mixed`                                   |
 | 'ethnicity'                          | string | HANCESTRO term, `na` if non-human, `unknown` if not available     | `genetically isolated population`         |
 | 'ethnicity_ontology_term_id	'        | string | HANCESTRO term id, `na` if non-human                              | `HANCESTRO:0290`                          |
@@ -206,8 +206,9 @@ At least one of the key value pairs in `layer_descriptions` needs to indicate th
 
 <br/>
 
-In the above table, the types of cell level metadata that is collected for the schema. In particular, it is important to expand on how to annotate `cell_type` field. In general, we try to find the most specific ontology term that accurately represents a given cell type in your dataset. In the event that your cell type is not described accurately by any term in the `CL` ontology, then it is sufficient to report the most accurate `UBERON` term and id instead. In some cases, when neither the `CL` nor the `UBERON` term are descriptive enough, then it is possible to submit an empty string (`''`) for that entry (for both the `cell_type` and the `cell_type_ontology_term_id`).
+**Note:** When annotating the `cell_type` field you should generally try to find the most specific ontology term that accurately represents a given cell type in your dataset.
 
+**Note** The `tissue` field must be appended with " (cell culture)" or " (organoid)" if appropriate
 <br/>
 
 ---
