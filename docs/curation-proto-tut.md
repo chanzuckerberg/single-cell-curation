@@ -4,13 +4,16 @@
 
 <!--- ## Overview --->
 
-[Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) are optimized for access, exploration and reuse of single cell data. To achieve these goals, the cellxgene platform currently accepts curated [AnnData](https://anndata.readthedocs.io/en/latest/#) objects adhering to a [succinct data schema](corpora_schema.md). Adherence to a standardized data schema allows for efficient navigation and integration of the growing number of single cell datasets. In this tutorial, you will learn the essential information for curating a single cell dataset using CZI's curation tools and uploading to the data portal. Hosting your data on the cellxgene portal offers the following benefits:
+[Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) are optimized for access, exploration and reuse of single cell data. To achieve these goals, the cellxgene platform currently accepts curated [AnnData](https://anndata.readthedocs.io/en/latest/#) objects adhering to a [succinct data schema](corpora_schema.md). Adherence to a standardized data schema allows for efficient navigation and integration of the growing number of single cell datasets. In addition to standardization, Hosting your data on the cellxgene portal offers the following benefits:
  - link permanence (you can reference in your publication without ever worrying about dead links)
  - sharing of private datasets with collaborators (keep the data private until it is ready for publication)
  - no barrier for readers to explore your dataset (and no need for you to build your own single cell data explorer)
  - availability of your dataset in the major single cell data formats (including `AnnData`, `seurat`, and `loom`)
 
-This tutorial will consist of an explanation of 1) how to create and structure an `AnnData` object with your single cell data 2) how to augment this object with information that is specific to the cellxgene schema and 3) how to upload this object to the cellxgene data portal. If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
+This tutorial will consist of an explanation and demonstration of: 
+ - how to create and structure an `AnnData` object with your single cell data
+ - how to augment this object with information that is specific to the cellxgene schema
+ - 3) how to upload this object to the cellxgene data portal. If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
 
 ### Table of Contents
 
@@ -52,6 +55,15 @@ If you are already familiar with cellxgene, AnnData, and the cellxgene data sche
 
 ---
 
+## Use Case
+
+Through the duration of this tutorial, we will use the 10X PBMC 3K dataset to demonstrate the structure of a dataset before and after curation, as well as show you examples of how to apply the schema and what tools you can use to help you.
+
+You can download an AnnData object ready for curation by running the following command:
+
+`wget https://cellxgene-example-data.czi.technology/pbmc3k.h5ad ./pbmc3k.h5ad`
+
+In this `Anndata` object you should the required data in the required structure which we will discuss in the next section.
 
 ## Required data and `AnnData` structure
 
@@ -65,7 +77,7 @@ If you are already familiar with cellxgene, AnnData, and the cellxgene data sche
 
 <br/>
 
-The following components are required for submission to the cellxgene data portal. 
+The following components are required for submission to the cellxgene data portal:
 
 - raw count matrix (except for certain assays such as scATACseq)
 - normalized expression matrix used for visualization
@@ -97,6 +109,15 @@ These components should be stored in the following locations in an `AnnData` obj
 </div>
 
 <br/>
+
+We can confirm this structure in our PBMC3K demo dataset. To get started try out the following:
+
+```
+import scanpy as sc
+adata = sc.read_h5ad('pbmc3k.h5ad')#Read in object
+
+adata.X.shape # dimensions of normalized expression matrix
+```
 
 **Note:** In addition to these data, other representations of the expression matrix (alternative normalizations, SCTransform, corrected counts from SCTransform or background corrected counts) can all be stored as `layers` in your `AnnData` object (as long as they maintain the same dimensionality of the main expression matrix used for visualization).
 
@@ -140,7 +161,7 @@ The cellxgene data portal and explorer are able to handle a wide range of single
 
 <br/>
 
-The purpose of the cellxgene schema is to support the construction of a data corpus that facilitates data integration across multiple tissues and experiments. This goal requires a standardized set of metadata for the single cell datasets that are uploaded to the cellxgene data portal. To make this process easy to adhere to, the schema only requires a few fields (detailed below) to support easy search and integration across datasets.. These metadata are stored within the `AnnData` object (in `adata.uns` and `adata.obs`). To access a more comprehensive description about the cellxgene schema requirements, you can refer to the [official schema definition](corpora_schema.md).
+The purpose of the cellxgene schema is to support the construction of a data corpus that facilitates data integration across multiple tissues and experiments. This goal requires a standardized set of metadata for the single cell datasets that are uploaded to the cellxgene data portal. To make this process easy to adhere to, the schema only requires a few fields (detailed below) to support easy search and integration across datasets. These metadata are stored within the `AnnData` object (in `adata.uns` and `adata.obs`). To access a more comprehensive description about the cellxgene schema requirements, you can refer to the [official schema definition](corpora_schema.md).
 
 In this section, we are covering 1) what metadata are required to adhere to the cellxgene schema and 2) the locations of these metadata in the `AnnData` object. While it is possible to build an object that is acceptable by the cellxgene schema manually, in the [next section](#cellxgene-curation-tools), we will show you how to perform this curation with tools provided by the CZI curation team.
 
