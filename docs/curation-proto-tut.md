@@ -57,11 +57,21 @@ If you are already familiar with cellxgene, AnnData, and the cellxgene data sche
 
 ## Use Case
 
-Through the duration of this tutorial, we will use the 10X PBMC 3K dataset to demonstrate the structure of a dataset before and after curation, as well as show you examples of how to apply the schema and what tools you can use to help you.
+If we take a reductionist attitude, the cellxgene curation process consists only a few steps
 
-You can download an AnnData object ready for curation by running the following command:
+```
+#Obtain data
+wget https://cellxgene-example-data.czi.technology/pbmc3k.h5ad ./pbmc3k.h5ad
 
-`wget https://cellxgene-example-data.czi.technology/pbmc3k.h5ad ./pbmc3k.h5ad`
+Apply the schema according to a config file and produce a surated object
+cellxgene schema apply --source-h5ad pbmc3k_updated.h5ad --remix-config config.yaml --output-filename pbmc3k_curated.h5ad
+
+#Validate that the curation processs has succeeded
+cellxgene schema validate pbmc3k_curated.h5ad
+```
+
+This is a bit of oversimplification as data often needs to be restructured to be compatible to cellxgene (although this dataset is in the correct structure) and specifying the config file ([example](config.yaml)) requires that you perform ontology linking prior to schema application.Through the duration of this tutorial, you can refer to the 10X PBMC 3K dataset to model the structure of a dataset before and after curation, as well as show you examples of how to apply the schema and what tools you can use to help you.
+
 
 In this `Anndata` object you should the required data in the required structure which we will discuss in the next section.
 
@@ -161,14 +171,12 @@ The cellxgene data portal and explorer are able to handle a wide range of single
 
 <br/>
 
-The purpose of the cellxgene schema is to support the construction of a data corpus that facilitates data integration across multiple tissues and experiments. This goal requires a standardized set of metadata for the single cell datasets that are uploaded to the cellxgene data portal. To make this process easy to adhere to, the schema only requires a few fields (detailed below) to support easy search and integration across datasets. These metadata are stored within the `AnnData` object (in `adata.uns` and `adata.obs`). To access a more comprehensive description about the cellxgene schema requirements, you can refer to the [official schema definition](corpora_schema.md).
+The curation process requires that we collect metadata for a few fields. These fields are defined by the [corpora schema](corpora_schema.md) to support easy search and integration across datasets. These metadata are stored within the `AnnData` object (in `adata.uns` and `adata.obs`).In this section, we are covering:
 
-In this section, we are covering 1) what metadata are required to adhere to the cellxgene schema and 2) the locations of these metadata in the `AnnData` object. While it is possible to build an object that is acceptable by the cellxgene schema manually, in the [next section](#cellxgene-curation-tools), we will show you how to perform this curation with tools provided by the CZI curation team.
+ - what metadata are required to adhere to the cellxgene schema and
+ - the locations of these metadata in the `AnnData` object. 
 
-#### Basic requirements ([expanded version](corpora_schema.md#basic-requirements))
-- **Unique observation identifiers:** Each observation (usually a cell) must have an id that is unique within the dataset.
-- **Unique feature identifiers:** Every feature (usually a gene or transcript) also needs a unique identifier.
-- **No PII:** No metadata can be personally identifiable: no names, dates of birth, specific locations, etc. There's a [list](https://docs.google.com/document/d/1nlUuRiQ8Awo_QsiVFi8OWdhGONjeaXE32z5GblVCfcI/edit?usp=sharing).
+While it is possible to build an object that is acceptable by the cellxgene schema manually, in the [next section](#cellxgene-curation-tools), we will show you how to perform this curation with tools provided by the CZI curation team.
 
 #### `uns`
 
@@ -195,9 +203,9 @@ In this section, we are covering 1) what metadata are required to adhere to the 
 
 <br/>
 
-In the above table we see what type on information is necessary at the dataset level. Two fields to pay extra attention to are the `title` and the `layer_descriptions` keys. Specifically, `title` should contain the name of the publication that the dataset is coming from. If there is more than one dataset associated with the publication, then the name of the dataset should be appended to the title (i.e. `'title': 'publication name: dataset title'`). This field will be used to name and distinguish different datasets in the same collection in the portal.
-
-At least one of the key value pairs in `layer_descriptions` needs to indicate the presence of a raw counts layers. This must be specified as `raw: raw`. Additional layers may be specified and the values for these keys may be as descriptive as necessary (i.e. `scale.data: scaled and centered data`).
+In the above table we see what type on information is necessary at the dataset level. You should pay extra attention to the `title` and the `layer_descriptions` keys. More specifically:
+ - `title` should contain the name of the publication that the dataset is coming from. If there is more than one dataset associated with the publication, then the name of the dataset should be appended to the title (i.e. `'title': 'publication name: dataset title'`). This field will be used to name and distinguish different datasets in the same collection in the portal.
+ - At least one of the key value pairs in `layer_descriptions` needs to indicate the presence of a raw counts layers. This must be specified as `raw: raw` (which implies that `adata.layers['raw']` is where your raw counts are stored). Additional layers may be specified and the values for these keys may be as descriptive as necessary (i.e. `scale.data: scaled and centered data`).
 
 <br/>
 
