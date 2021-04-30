@@ -63,17 +63,14 @@ If we take a reductionist attitude, the cellxgene curation process consists only
 #Obtain data
 wget https://cellxgene-example-data.czi.technology/pbmc3k.h5ad ./pbmc3k.h5ad
 
-Apply the schema according to a config file and produce a surated object
+Apply the schema according to a config file and produce a curated object
 cellxgene schema apply --source-h5ad pbmc3k_updated.h5ad --remix-config config.yaml --output-filename pbmc3k_curated.h5ad
 
 #Validate that the curation processs has succeeded
 cellxgene schema validate pbmc3k_curated.h5ad
 ```
 
-This is a bit of oversimplification as data often needs to be restructured to be compatible to cellxgene (although this dataset is in the correct structure) and specifying the config file ([example](config.yaml)) requires that you perform ontology linking prior to schema application.Through the duration of this tutorial, you can refer to the 10X PBMC 3K dataset to model the structure of a dataset before and after curation, as well as show you examples of how to apply the schema and what tools you can use to help you.
-
-
-In this `Anndata` object you should the required data in the required structure which we will discuss in the next section.
+This is a bit of oversimplification as data often needs to be restructured to be compatible with cellxgene (although this dataset is in the correct structure) and specifying the config file ([example](config.yaml)) requires that you perform ontology linking prior to schema application.Through the duration of this tutorial, you can refer to the 10X PBMC 3K dataset to model the structure of a dataset before and after curation, as well as show you examples of how to apply the schema and what tools you can use to help you.
 
 ## Required data and `AnnData` structure
 
@@ -180,7 +177,7 @@ While it is possible to build an object that is acceptable by the cellxgene sche
 
 #### `uns`
 
-`adata.uns` is a dictionary of key-value pairs that we use to store dataset level metadata. This is also where you store information on the different data representations that you are sharing (i.e you are sharing a raw counts matrix, normalized expression matrix, scaled and centered expression matrix)
+`adata.uns` is a dictionary of key-value pairs that we use to store dataset level metadata. This is also where you store information on the different data representations that you are sharing (i.e you are sharing a raw counts matrix, normalized expression matrix, scaled and centered expression matrix). Right now, the `uns` slot in our pbmc3k dataset in not populated, but after curation it would contain the following key - value pairs:
 
 <br/>
 
@@ -247,8 +244,8 @@ In the above table we see what type on information is necessary at the dataset l
 <br/>
 
 The cellxgene curation tools include functions that can make the curation process easier for you. Essentially the workflow looks like this:
-1. create `config.yaml` that will specify how the schema is to be applied to your `AnnData` object (see example [here](example_config.yaml))
-2. run `cellxgene schema apply`, which takes your config and source `AnnData` file to produce a curated `Anndata` object.
+1. create `config.yaml` that will specify how the schema is to be applied to your `AnnData` object (see example our pbmc3k dataset [here](example_config.yaml))
+2. run `cellxgene schema apply`, which takes your config and source `AnnData` file to produce a curated `Anndata` object
 3. use `cellxgene schema validate` to ensure that your curated object meets the schema requirements
 
 You can check out the full documentation for this tooling [here](#schema_guide.md), but a quick introduction to the tools is below:
@@ -265,7 +262,7 @@ You can check out the full documentation for this tooling [here](#schema_guide.m
 
 <br/>
 
-Your [`config.yaml`](example_config.yaml) file is used to update values and columns in `adata.uns` and `adata.obs` (respectively) with required schema information. All original columns in the dataset will be preserved. For fields where you need to enter an ontology ID, you can use the [EBI Ontology Lookup Service](https://www.ebi.ac.uk/ols/index) to search for the appropriate terms.  This file will also standardize gene symbols in your dataset via the `fixup_gene_symbols` section. Here is an example/mock of a config file:
+Your [`config.yaml`](example_config.yaml) file is used to update values and columns in `adata.uns` and `adata.obs` (respectively) with required schema information. All original columns in the dataset will be preserved. For fields where you need to enter an ontology ID, you can use the [EBI Ontology Lookup Service](https://www.ebi.ac.uk/ols/index) to search for the appropriate terms.  This file will also standardize gene symbols in your dataset via the `fixup_gene_symbols` section. Here is an example/mock of a config file for our pbmc3k dataset:
 
 #### `uns` section
 
@@ -274,7 +271,7 @@ uns:
     version:
         corpora_schema_version: 1.1.0                          #(ex: schema_version_number)
         corpora_encoding_version: 1.1.0                        #(ex: encoding version)
-    title: 10X PBMC Demo Collection                            #(free text field)
+    title: 10X PBMC Demo.                                      #(free text field)
     publication_doi: https://doi.org/00.0000/2021.01.01.000000
     layer_descriptions:
         raw: raw                                               #(it is essential for at least one the layer_descriptions to be set to 'raw')
@@ -285,7 +282,7 @@ uns:
 ```
 <br/>
 
-In the config file snippet above, our 0 level indentation specifies that we are modifying the `uns` slot (remember that `adata.uns` is a dictionary of key-value pairs). The next level of indentation specifies a key name to add to `uns`. The key's corresponding value is the string following the colon, or if the key is followed by more lines that are further indented, then the corresponding value is a dictionary containing the key-value pairs specified in the subsequent lines. More concretely, `adata.uns['layer_descriptions']` returns a dictionary with the key value pairs `{'raw.X': 'raw', 'X': 'log1p'}` after the schema config has been applied.
+In the config file snippet above, our 0 level indentation specifies that we are modifying the `uns` slot (remember that `adata.uns` is a dictionary of key-value pairs). The next level of indentation specifies a key name to add to `uns`. The key's corresponding value is the string following the colon, or if the key is followed by more lines that are further indented, then the corresponding value is a dictionary containing the key-value pairs specified in the subsequent lines. More concretely, `adata.uns['layer_descriptions']` returns a dictionary with the key value pairs `{'raw': 'raw', 'X': 'log1p'}` after the schema config has been applied.
 
 **Note:** at least one of the keys in `layer_descriptions` must return the value 'raw'
 
@@ -353,6 +350,10 @@ In order to use the `cellxgene schema apply` command, you will need to pass the 
 
 <br/>
 
+For our pbmc3k dataset, the call to apply the schema will look like this:
+
+`cellxgene schema apply --source-h5ad pbmc3k_updated.h5ad --remix-config config.yaml --output-filename pbmc3k_curated.h5ad`
+
 The next step will be to validate the resulting object.
 
 <br/>
@@ -363,11 +364,15 @@ The next step will be to validate the resulting object.
 
 In order to validate the remixed object, needs to simply run `cellxgene schema validate path_to_remixed_anndata.h5ad`. If there has been no terminal output from the function, then your object has been validated successfully and is ready for upload!
 
+For our pbmc3k dataset, the call to apply the schema will look like this:
+
+`cellxgene schema validate pbmc3k_curated.h5ad`
+
 <br/>
 
 ### Testing locally (optional) and upload to dropbox
 
-You can test your curated `AnnData` object after schema application by running with a local installation of cellxgene (`cellxgene launch example.h5ad`). This allows you to preview how your dataset will appear in the cellxgene explorer view within the data portal. Following this optional testing, you need upload to dropbox which is required since datasets cannot be uploaded directly to the portal.
+You can test your curated `AnnData` object after schema application by running with a local installation of cellxgene (`cellxgene launch pbmc3k_curated.h5ad`). This allows you to preview how your dataset will appear in the cellxgene explorer view within the data portal. Following this optional testing, you need upload to dropbox which is required since datasets cannot be uploaded directly to the portal.
 
 ---
 
