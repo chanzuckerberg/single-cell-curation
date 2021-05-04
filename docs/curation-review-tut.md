@@ -4,13 +4,16 @@
 
 <!--- ## Overview --->
 
-[Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) are optimized for access, exploration and reuse of single cell data. To achieve these goals, the cellxgene platform currently accepts curated [AnnData](https://anndata.readthedocs.io/en/latest/#) objects adhering to a [succinct data schema](corpora_schema.md). Adherence to a standardized data schema allows for efficient navigation and integration of the growing number of single cell datasets. In this tutorial, you will learn the essential information for curating a single cell dataset using CZI's curation tools and uploading to the data portal. Hosting your data on the cellxgene portal offers the following benefits:
+[Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) are optimized for access, exploration and reuse of single cell data. To achieve these goals, the cellxgene platform currently accepts curated [AnnData](https://anndata.readthedocs.io/en/latest/#) objects adhering to a [succinct data schema](corpora_schema.md). Adherence to a standardized data schema allows for efficient navigation and integration of the growing number of single cell datasets. In addition to standardization, Hosting your data on the cellxgene portal offers the following benefits:
  - link permanence (you can reference in your publication without ever worrying about dead links)
  - sharing of private datasets with collaborators (keep the data private until it is ready for publication)
  - no barrier for readers to explore your dataset (and no need for you to build your own single cell data explorer)
  - availability of your dataset in the major single cell data formats (including `AnnData`, `seurat`, and `loom`)
 
-This tutorial will consist of an explanation of 1) how to create and structure an `AnnData` object with your single cell data 2) how to augment this object with information that is specific to the cellxgene schema and 3) how to upload this object to the cellxgene data portal. If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
+This tutorial will consist of an explanation and demonstration of: 
+ - how to create and structure an `AnnData` object with your single cell data
+ - how to augment this object with information that is specific to the cellxgene schema
+ - 3) how to upload this object to the cellxgene data portal. If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
 
 ### Table of Contents
 
@@ -52,6 +55,22 @@ If you are already familiar with cellxgene, AnnData, and the cellxgene data sche
 
 ---
 
+## Use Case
+
+If we take a reductionist attitude, the cellxgene curation process consists only a few steps
+
+```
+#Obtain data
+wget https://cellxgene-example-data.czi.technology/pbmc3k.h5ad ./pbmc3k.h5ad
+
+Apply the schema according to a config file and produce a curated object
+cellxgene schema apply --source-h5ad pbmc3k_updated.h5ad --remix-config config.yaml --output-filename pbmc3k_curated.h5ad
+
+#Validate that the curation processs has succeeded
+cellxgene schema validate pbmc3k_curated.h5ad
+```
+
+This is a bit of oversimplification as data often needs to be restructured to be compatible with cellxgene (although this dataset is in the correct structure) and specifying the config file ([example](config.yaml)) requires that you perform ontology linking prior to schema application.Through the duration of this tutorial, you can refer to the 10X PBMC 3K dataset to model the structure of a dataset before and after curation, as well as show you examples of how to apply the schema and what tools you can use to help you.
 
 ## Required data and `AnnData` structure
 
@@ -65,7 +84,7 @@ If you are already familiar with cellxgene, AnnData, and the cellxgene data sche
 
 <br/>
 
-The following components are required for submission to the cellxgene data portal. 
+The following components are required for submission to the cellxgene data portal:
 
 - raw count matrix (except for certain assays such as scATACseq)
 - normalized expression matrix used for visualization
@@ -97,6 +116,15 @@ These components should be stored in the following locations in an `AnnData` obj
 </div>
 
 <br/>
+
+We can confirm this structure in our PBMC3K demo dataset. To get started try out the following:
+
+```
+import scanpy as sc
+adata = sc.read_h5ad('pbmc3k.h5ad')#Read in object
+
+adata.X.shape # dimensions of normalized expression matrix
+```
 
 **Note:** In addition to these data, other representations of the expression matrix (alternative normalizations, SCTransform, corrected counts from SCTransform or background corrected counts) can all be stored as `layers` in your `AnnData` object (as long as they maintain the same dimensionality of the main expression matrix used for visualization).
 
@@ -140,30 +168,28 @@ The cellxgene data portal and explorer are able to handle a wide range of single
 
 <br/>
 
-The purpose of the cellxgene schema is to support the construction of a data corpus that facilitates data integration across multiple tissues and experiments. This goal requires a standardized set of metadata for the single cell datasets that are uploaded to the cellxgene data portal. To make this process easy to adhere to, the schema only requires a few fields (detailed below) to support easy search and integration across datasets.. These metadata are stored within the `AnnData` object (in `adata.uns` and `adata.obs`). To access a more comprehensive description about the cellxgene schema requirements, you can refer to the [official schema definition](corpora_schema.md).
+The curation process requires that we collect metadata for a few fields. These fields are defined by the [corpora schema](corpora_schema.md) to support easy search and integration across datasets. These metadata are stored within the `AnnData` object (in `adata.uns` and `adata.obs`).In this section, we are covering:
 
-In this section, we are covering 1) what metadata are required to adhere to the cellxgene schema and 2) the locations of these metadata in the `AnnData` object. While it is possible to build an object that is acceptable by the cellxgene schema manually, in the [next section](#cellxgene-curation-tools), we will show you how to perform this curation with tools provided by the CZI curation team.
+ - what metadata are required to adhere to the cellxgene schema and
+ - the locations of these metadata in the `AnnData` object. 
 
-#### Basic requirements ([expanded version](corpora_schema.md#basic-requirements))
-- **Unique observation identifiers:** Each observation (usually a cell) must have an id that is unique within the dataset.
-- **Unique feature identifiers:** Every feature (usually a gene or transcript) also needs a unique identifier.
-- **No PII:** No metadata can be personally identifiable: no names, dates of birth, specific locations, etc. There's a [list](https://docs.google.com/document/d/1nlUuRiQ8Awo_QsiVFi8OWdhGONjeaXE32z5GblVCfcI/edit?usp=sharing).
+While it is possible to build an object that is acceptable by the cellxgene schema manually, in the [next section](#cellxgene-curation-tools), we will show you how to perform this curation with tools provided by the CZI curation team.
 
 #### `uns`
 
-`adata.uns` is a dictionary of key-value pairs that we use to store dataset level metadata. This is also where you store information on the different data representations that you are sharing (i.e you are sharing a raw counts matrix, normalized expression matrix, scaled and centered expression matrix)
+`adata.uns` is a dictionary of key-value pairs that we use to store dataset level metadata. This is also where you store information on the different data representations that you are sharing (i.e you are sharing a raw counts matrix, normalized expression matrix, scaled and centered expression matrix). Right now, the `uns` slot in our pbmc3k dataset in not populated, but after curation it would contain the following key - value pairs:
 
 <br/>
 
 <div align="center">
 
-| Key                                      | Value      | Description                                                                  | Example                 |
-| ---------------------------------------- |:----------:| :----------------------------------------------------------------------------| ------------------------|
-| `adata.uns['version']`                   | string     | schema version (current version is `1.1.0`)                               | `1.1.0`           |
-| `adata.uns['title']`                     | string     | title of publication (and title of dataset if more than one is being submitted) | `An Atlas of Gene Regulatory Elements in Adult Mouse Cerebrum: GABAergic neurons`|
-| `adata.uns['publication_doi']`           | string     | DOI of preprint or official publication             | `https://doi.org/10.1101/2020.05.10.087585` |
-| `adata.uns['organism']`                  | string     | name of organism (options are `Human` or `Mouse`) | `Mouse` |
-| `adata.uns['organism_ontology_term_id']` | string     | NCBI Taxon ID| `NCBI:txid10090` |
+| Key                                      | Value      | Description                                                                     | Example               |
+| ---------------------------------------- |:----------:| :-------------------------------------------------------------------------------| ----------------------|
+| `adata.uns['version']`                   | string     | schema version (current version is `1.1.0`)                                     | `1.1.0`               |
+| `adata.uns['title']`                     | string     | title of publication (and title of dataset if more than one is being submitted) | `10X PBMC`            |
+| `adata.uns['publication_doi']`           | string     | DOI of preprint or official publication                   | `https://doi.org/00.0000/2021.01.01.000000` |
+| `adata.uns['organism']`                  | string     | name of organism (options are `Human` or `Mouse`)                               | `Human`               |
+| `adata.uns['organism_ontology_term_id']` | string     | NCBI Taxon ID                                                                   | `NCBITaxon:9606`      |
 | `adata.uns['layer_descriptions']`        | dictionary | a set of key value pairs defining the locations of different representations in the `AnnData` object and a description of that representation. One of these key-value pairs must be `raw: raw`  | `{'X': 'log1p' (this value can be free text)}` |
 
 </div>
@@ -174,9 +200,9 @@ In this section, we are covering 1) what metadata are required to adhere to the 
 
 <br/>
 
-In the above table we see what type on information is necessary at the dataset level. Two fields to pay extra attention to are the `title` and the `layer_descriptions` keys. Specifically, `title` should contain the name of the publication that the dataset is coming from. If there is more than one dataset associated with the publication, then the name of the dataset should be appended to the title (i.e. `'title': 'publication name: dataset title'`). This field will be used to name and distinguish different datasets in the same collection in the portal.
-
-At least one of the key value pairs in `layer_descriptions` needs to indicate the presence of a raw counts layers. This must be specified as `raw: raw`. Additional layers may be specified and the values for these keys may be as descriptive as necessary (i.e. `scale.data: scaled and centered data`).
+In the above table we see what type on information is necessary at the dataset level. You should pay extra attention to the `title` and the `layer_descriptions` keys. More specifically:
+ - `title` should contain the name of the publication that the dataset is coming from. If there is more than one dataset associated with the publication, then the name of the dataset should be appended to the title (i.e. `'title': 'publication name: dataset title'`). This field will be used to name and distinguish different datasets in the same collection in the portal.
+ - At least one of the key value pairs in `layer_descriptions` needs to indicate the presence of a raw counts layers. This must be specified as `raw: raw` (which implies that `adata.layers['raw']` is where your raw counts are stored). Additional layers may be specified and the values for these keys may be as descriptive as necessary (i.e. `scale.data: scaled and centered data`).
 
 <br/>
 
@@ -186,19 +212,19 @@ At least one of the key value pairs in `layer_descriptions` needs to indicate th
 
 | `obs` column name                    | Type   | Description                                                       | Example                                   |
 | :----------------------------------- |:------:| -----------------------------------------------------------------:|:------------------------------------------|
-| 'tissue'                             | string | UBERON term                                                       | `area postrema`                           |
-| 'tissue_ontology_term_id'            | string | UBERON term id                                                    | `UBERON:0002162`                          |
+| 'tissue'                             | string | UBERON term                                                       | `blood`.                                  |
+| 'tissue_ontology_term_id'            | string | UBERON term id                                                    | `UBERON:0000178`                          |
 | 'assay'                              | string | EFO term                                                          | `scRNA-seq`                               |   
 | 'assay_ontology_term_id'             | string | EFO term id                                                       | `EFO:0008913`                             |
-| 'disease'                            | string | MONDO term or `normal`                                            | `kuru`                                    |
-| 'disease_ontology_term_id'           | string | MONDO term id for a disease or `PATO:0000461` for normal          | `MONDO:0006825`                           |
-| 'cell_type'                          | string | CL term                                                           | `excitatory neuron`                       |
-| 'cell_type_ontology_term_id'         | string | CL term id                                                        | `CL:0008030`                              |
-| 'sex'                                | string | `male`, `female`, `mixed`, `unknown`, or `other`                  | `mixed`                                   |
-| 'ethnicity'                          | string | HANCESTRO term, `na` if non-human, `unknown` if not available     | `genetically isolated population`         |
-| 'ethnicity_ontology_term_id	'        | string | HANCESTRO term id, `na` if non-human                              | `HANCESTRO:0290`                          |
-| 'development_stage'                  | string | HsapDv term, `unknown` if not available                           | `9th week post-fertilization human stage` |
-| 'development_stage_ontology_term_id	'| string | HsapDv term id if human, child of `EFO:0000399` otherwise         | `HsapDv:0000046`                          |
+| 'disease'                            | string | MONDO term or `normal`                                            | `normal`                                  |
+| 'disease_ontology_term_id'           | string | MONDO term id for a disease or `PATO:0000461` for normal          | `PATO:0000461`                            |
+| 'cell_type'                          | string | CL term                                                           | `megakaryocyte`                           |
+| 'cell_type_ontology_term_id'         | string | CL term id                                                        | `CL:0000556`                              |
+| 'sex'                                | string | `male`, `female`, `mixed`, `unknown`, or `other`                  | `unknown`                                 |
+| 'ethnicity'                          | string | HANCESTRO term, `na` if non-human, `unknown` if not available     | `unknown`                                 |
+| 'ethnicity_ontology_term_id	'        | string | HANCESTRO term id, `na` if non-human                              | `unknown`                                 |
+| 'development_stage'                  | string | HsapDv term, `unknown` if not available                           | `Human Adult Stage`                       |
+| 'development_stage_ontology_term_id	'| string | HsapDv term id if human, child of `EFO:0000399` otherwise         | `HsapDv:0000087`                          |
 
 <div align="center">
   <b> Table: </b> Required cell level metadata
@@ -218,8 +244,8 @@ At least one of the key value pairs in `layer_descriptions` needs to indicate th
 <br/>
 
 The cellxgene curation tools include functions that can make the curation process easier for you. Essentially the workflow looks like this:
-1. create `config.yaml` that will specify how the schema is to be applied to your `AnnData` object (see example [here](example_config.yaml))
-2. run `cellxgene schema apply`, which takes your config and source `AnnData` file to produce a curated `Anndata` object.
+1. create `config.yaml` that will specify how the schema is to be applied to your `AnnData` object (see example our pbmc3k dataset [here](example_config.yaml))
+2. run `cellxgene schema apply`, which takes your config and source `AnnData` file to produce a curated `Anndata` object
 3. use `cellxgene schema validate` to ensure that your curated object meets the schema requirements
 
 You can check out the full documentation for this tooling [here](#schema_guide.md), but a quick introduction to the tools is below:
@@ -236,26 +262,27 @@ You can check out the full documentation for this tooling [here](#schema_guide.m
 
 <br/>
 
-Your [`config.yaml`](example_config.yaml) file is used to update values and columns in `adata.uns` and `adata.obs` (respectively) with required schema information. Here is an example/mock of a config file:
+Your [`config.yaml`](example_config.yaml) file is used to update values and columns in `adata.uns` and `adata.obs` (respectively) with required schema information. All original columns in the dataset will be preserved. For fields where you need to enter an ontology ID, you can use the [EBI Ontology Lookup Service](https://www.ebi.ac.uk/ols/index) to search for the appropriate terms.  This file will also standardize gene symbols in your dataset via the `fixup_gene_symbols` section. Here is an example/mock of a config file for our pbmc3k dataset:
 
 #### `uns` section
 
 ```
 uns:
     version:
-        corpora_schema_version: 1.1.0          #(ex: schema_version_number)
-        corpora_encoding_version: 1.1.0        #(ex: encoding version)
-    title: publication_title                   #(free text field)
+        corpora_schema_version: 1.1.0                          #(ex: schema_version_number)
+        corpora_encoding_version: 1.1.0                        #(ex: encoding version)
+    title: 10X PBMC Demo.                                      #(free text field)
+    publication_doi: https://doi.org/00.0000/2021.01.01.000000
     layer_descriptions:
-        raw.X: raw                             #(it is essential for at least one the layer_descriptions to be set to 'raw')
-        X: log1p                               #(free text description of normalization method )
-    organism: Homo sapiens                     #(Specify organism name)
-    organism_ontology_term_id: NCBITaxon:9606  #(Specfiy organism NCBI Taxon ID)
+        raw: raw                                               #(it is essential for at least one the layer_descriptions to be set to 'raw')
+        X: log1p                                               #(free text description of normalization method )
+    organism: Human.                                           #(Specify organism name)
+    organism_ontology_term_id: NCBITaxon:9606                  #(Specfiy organism NCBI Taxon ID)
 
 ```
 <br/>
 
-In the config file snippet above, our 0 level indentation specifies that we are modifying the `uns` slot (remember that `adata.uns` is a dictionary of key-value pairs). The next level of indentation specifies a key name to add to `uns`. The key's corresponding value is the string following the colon, or if the key is followed by more lines that are further indented, then the corresponding value is a dictionary containing the key-value pairs specified in the subsequent lines. More concretely, `adata.uns['layer_descriptions']` returns a dictionary with the key value pairs `{'raw.X': 'raw', 'X': 'log1p'}` after the schema config has been applied.
+In the config file snippet above, our 0 level indentation specifies that we are modifying the `uns` slot (remember that `adata.uns` is a dictionary of key-value pairs). The next level of indentation specifies a key name to add to `uns`. The key's corresponding value is the string following the colon, or if the key is followed by more lines that are further indented, then the corresponding value is a dictionary containing the key-value pairs specified in the subsequent lines. More concretely, `adata.uns['layer_descriptions']` returns a dictionary with the key value pairs `{'raw': 'raw', 'X': 'log1p'}` after the schema config has been applied.
 
 **Note:** at least one of the keys in `layer_descriptions` must return the value 'raw'
 
@@ -265,24 +292,27 @@ In the config file snippet above, our 0 level indentation specifies that we are 
 
 ```
 obs:
-    tissue_ontology_term_id: UBERON:0000006              #UBERON tissue term
-    assay_ontology_term_id: EFO:0010961                  #EFO assay term
+    tissue_ontology_term_id: UBERON:0000178              #UBERON tissue term
+    assay_ontology_term_id: EFO:0008913                  #EFO assay term
     disease_ontology_term_id: PATO:0000461               #MONDO disease term or PATO:0000461
-    sex: male                                            #male, female, mixed, unknown, or other
-    ethnicity_ontology_term_id: na                       #HANCESTRO term
-    development_stage_ontology_term_id: HsapDv:0000160   #HsapDv term
+    sex: unknown                                         #male, female, mixed, unknown, or other
+    ethnicity_ontology_term_id: unknown                  #HANCESTRO term
+    development_stage_ontology_term_id: HsapDv:0000087   #HsapDv term
     cell_type_ontology_term_id:
-      cell_label:                                        #this is column name in your obs dataframe (the field that specifies cell type)
-        acinar: CL:0002064                               #mapping between cell types (specified in AnnData object) and cl ontology id
-        alpha: CL:0000171
-        delta: CL:0000173
-        endothelial: CL:0000115
-        epsilon: CL:0005019
+      louvain:                                           #this is column name in your obs dataframe (the field that specifies cell type)
+        NK: CL:0000623                                   #Link an ontology ID to each value in your cell type column
+        Dendritic: CL:0000451
+        CD4 T: CL:0000624
+        FCGR3A Monocytes: CL:0002396
+        Megakaryocytes: CL:0000556
+        B: CL:0000236
+        CD8 T: CL:0000625
+        CD14 Monocytes: CL:0001055
 ```
 
 <br/>
 
-In the config file snippet above, the 0 level indentation specifies that we are modifying `obs`. At the first level of indentation, we start adding schema fields to `obs`. If the first level indentation field is followed by an ontology term id (i.e. `tissue_ontology_term_id: UBERON:0000006`), then a column for that field will be created in the obs dataframe (i.e. a column called `tissue_ontology_term_id` will be created), and all of its values will take on the value specified after the colon (i.e. `UBERON:0000006`). Additionally, the cellxgene curation tools will search the ontology term id and create a corresponding column with the appropriately corresponding term (i.e. a column called `tissue` will be created and all values of that column will be `islet of Langerhans`).
+In the config file snippet above, the 0 level indentation specifies that we are modifying `obs`. At the first level of indentation, we start adding schema fields to `obs`. If the first level indentation field is followed by an ontology term id (i.e. `tissue_ontology_term_id: UBERON:0000178`), then a column for that field will be created in the obs dataframe (i.e. a column called `tissue_ontology_term_id` will be created), and all of its values will take on the value specified after the colon (i.e. `UBERON:0000178`). Additionally, the cellxgene curation tools will search the ontology term id and create a corresponding column with the appropriately corresponding term (i.e. a column called `tissue` will be created and all values of that column will be `blood`).
 
 On other hand, if the schema field is followed by lines which have further indentation, then the next line in the config file will specify a column whose values should be mapped to ontology terms (with these mappings specified by the subsequent lines). This is typically more relevant for specifying cell labels. In our example above, two new columns will be added to the `obs` data frame `cell_type_ontology_term_id` and `cell_type`. The original column specifying cell identity will be retained (and will be tagged with `_original`). The cellxgene curation tools never remove fields from the original dataset, they only add schema relevant information.
 
@@ -320,6 +350,10 @@ In order to use the `cellxgene schema apply` command, you will need to pass the 
 
 <br/>
 
+For our pbmc3k dataset, the call to apply the schema will look like this:
+
+`cellxgene schema apply --source-h5ad pbmc3k_updated.h5ad --remix-config config.yaml --output-filename pbmc3k_curated.h5ad`
+
 The next step will be to validate the resulting object.
 
 <br/>
@@ -330,11 +364,15 @@ The next step will be to validate the resulting object.
 
 In order to validate the remixed object, needs to simply run `cellxgene schema validate path_to_remixed_anndata.h5ad`. If there has been no terminal output from the function, then your object has been validated successfully and is ready for upload!
 
+For our pbmc3k dataset, the call to apply the schema will look like this:
+
+`cellxgene schema validate pbmc3k_curated.h5ad`
+
 <br/>
 
 ### Testing locally (optional) and upload to dropbox
 
-You can test your curated `AnnData` object after schema application by running with a local installation of cellxgene (`cellxgene launch example.h5ad`). This allows you to preview how your dataset will appear in the cellxgene explorer view within the data portal. Following this optional testing, you need upload to dropbox which is required since datasets cannot be uploaded directly to the portal.
+You can test your curated `AnnData` object after schema application by running with a local installation of cellxgene (`cellxgene launch pbmc3k_curated.h5ad`). This allows you to preview how your dataset will appear in the cellxgene explorer view within the data portal. Following this optional testing, you need upload to dropbox which is required since datasets cannot be uploaded directly to the portal.
 
 ---
 
