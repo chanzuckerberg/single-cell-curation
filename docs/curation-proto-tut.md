@@ -13,7 +13,7 @@
 This tutorial will consist of an explanation and demonstration of: 
  - how to create and structure an `AnnData` object with your single cell data
  - how to augment this object with information that is specific to the cellxgene schema
- - 3) how to upload this object to the cellxgene data portal. If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
+ - how to upload this object to the cellxgene data portal. If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
 
 ### Table of Contents
 
@@ -72,172 +72,46 @@ cellxgene schema validate pbmc3k_curated.h5ad
 
 This is a bit of oversimplification as data often needs to be restructured to be compatible with cellxgene (although this dataset is in the correct structure) and specifying the config file ([example](config.yaml)) requires that you perform ontology linking prior to schema application.Through the duration of this tutorial, you can refer to the 10X PBMC 3K dataset to model the structure of a dataset before and after curation, as well as show you examples of how to apply the schema and what tools you can use to help you.
 
-## Required data and `AnnData` structure
 
-<p align="center">
-  <img width="500" src="https://user-images.githubusercontent.com/25663501/111377611-3c8c7400-8677-11eb-8176-cf9de8f64c70.png">
-</p>
+## `AnnData` Preparation
 
-<p align="center">
-  <b> Figure:</b> AnnData components
-</p>
-
-<br/>
-
-The following components are required for submission to the cellxgene data portal:
-
-- raw count matrix (except for certain assays such as scATACseq)
-- normalized expression matrix used for visualization
-- cell level metadata (barcodes, cell type, tissue of origin, etc.)
-- embedding (at least one required, UMAP, tSNE, spatial, PCA)
-
-Additionally, variable and feature level metadata can be useful to include but is not required for construction of an `AnnData` object.
-
-These components should be stored in the following locations in an `AnnData` object (for more information, please refer to the [AnnData documentation site](https://anndata.readthedocs.io/en/latest/)):
-
-<br/>
-
-<div align="center">
-
-| Component  | `AnnData` location            | Data Type                      | Notes                                                          |
-| ---------- |:-----------------------------:|:------------------------------:|:---------------------------------------------------------------|
-| raw count matrix | `adata.layers['raw']` | Numpy array or scipy sparse CSC matrix | Necessary, with some exceptions (see [exceptions](#alternative-assays))   |
-| normalized expression matrix | `adata.X`  | Numpy array or scipy sparse CSC matrix | Used for visualization in cellxgene explorer                   |
-| cell level metadata | `adata.obs` | Pandas dataframe | Categorical and continuous metadata shown in left and right cellxgene explorer sidebars respectively (can be used to color cells) |
-| variable/feature level metadata | `adata.var`   | Pandas dataframe|                                                             |
-| embedding                       | `adata.obsm`                           | Numpy array | Must start with the prefix 'X_' (i.e. adata.obsm['X_UMAP'])               |
-
-</div>
-
-<br/>
-
-<div align="center">
-  <b> Table: </b> Required data and `AnnData` object structure
-</div>
-
-<br/>
-
-We can confirm this structure in our PBMC3K demo dataset. To get started try out the following:
+The main prequisite for submitting your data to the cellxgene data portal is that it is structured in `AnnData` format. Below we see the rough steps for downloading our demo dataset: PBMC 3K from 10X. You can read more about the origin of this dataset from the [10X website](https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k). We will start preparing the `AnnData` object by downloading the necessary files below
 
 ```
+wget  counts.tsv#count matrix
+wget  norm_x.tsv#X matrix
+wget  pbmc_obs.tsv #Cell metadata
+wget  umap.tsv #embedding
+```
+
+Next, we can load each of these components into a python environment with ScanPy and Pandas installed ([ScanPy docs](https://anndata.readthedocs.io/en/latest/) and [Pandas docs](https://pandas.pydata.org/docs/getting_started/index.html)). We can read in our different components like so:
+
+```
+import pandas as pd
 import scanpy as sc
-adata = sc.read_h5ad('pbmc3k.h5ad')#Read in object
 
-adata.X.shape # dimensions of normalized expression matrix
+#Reading in data
+adata = sc.read_text(...) #Read in counts matrix - returns an AnnData object - stored in raw.X (?)
+normalized_X = pd.read_csv(...) #Read in normalized expression matrix
+embeddings = pd.read_csv(...).to_numpy() #Read in embeddings and convert into numpy array
+obs_metadata = pd.read_csv(...) #Read in cell metadata (cluster assignment, qc metadata, etc...)
+
+#Assign components to appropriate locations in AnnData
+adata.X = normalized_X
+adata.obsm['X_embeddingName'] = embeddings #embedding name must be prefixed with 'X_'
+adata.obs = obs_metadata
 ```
 
-**Note:** In addition to these data, other representations of the expression matrix (alternative normalizations, SCTransform, corrected counts from SCTransform or background corrected counts) can all be stored as `layers` in your `AnnData` object (as long as they maintain the same dimensionality of the main expression matrix used for visualization).
+In our example, our observational metadata (`adata.obs`) is not quite amenable to the curation process. This is because our cluster assignments are currently integers and are not biologically interpretable. To fix this, we can update the cluster metadata in our `AnnData` object like so:
 
-**Note:** Information which pertains to the cellxgene schema will be stored in the `adata.uns` and `adata.obs` slots of the `AnnData` object and will be discussed in the [next section](#schema-definition).
- 
-### Format conversion
- 
-There are a handful of tools that can be used to convert different single cell formats (`seurat`, `loom`, `sce`, `cds`) to `AnnData`. We have had the most success with the R package [sceasy](https://github.com/cellgeni/sceasy). For relatively straightforward conversions, it is suitable to use the `sceasy::convertFormat()` function as specified in the sceasy documentation. For scenarios where you have multiple assays in the same object (as you may encounter in the `seurat` toolchain) it is recommended to check out the function definitions of the methods that are called by `convertFormat()`. For instance, if you look at the source code for `sceasy::seurat2anndata()`, you will see that the extra parameters `assay`, `main_layer`, and `transfer_layers` can be specified for control over which elements of the `seurat` object are carried into the `AnnData` object. Check out the following function definitions and potentially use as a starting point for more customized conversions:
+```
+#Create a list to map current cluster ids (stored in adata.obs['leiden']) to cell type names
+#these map to the ordering of the current cluster ids in the object, (which in this case is 1, 2, 3, ...)
 
-- [`seurat2anndata()`](https://github.com/cellgeni/sceasy/blob/f8f0628a280e0880ea94b00100b463e1f6ba1994/R/functions.R#L14)
-- [`sce2anndata()`](https://github.com/cellgeni/sceasy/blob/f8f0628a280e0880ea94b00100b463e1f6ba1994/R/functions.R#L64)
-- [`loom2anndata()`](https://github.com/cellgeni/sceasy/blob/f8f0628a280e0880ea94b00100b463e1f6ba1994/R/functions.R#L116)
+cell_names = ['CD4 T', 'CD14 Monocytes', 'B', 'CD8 T', 'NK', 'FCGR3A Monocytes', 'Dendritic', 'Megakaryocytes']
 
-
-**Note:** While `AnnData` is able to accommodate multiple representations of an expression matrix in the object, matrices that are stored in `adata.layers` are required to be the same dimensions as `adata.X` (`adata.raw.X` may be of a different dimensionality though). In some scenarios, you may need to construct different `AnnData` objects to accommodate different `assays` in the same experiment (for example, spliced vs unspliced counts in a sNuc-seq experiment).
-
-<br/>
-
-### Alternative assays
-
-The cellxgene data portal and explorer are able to handle a wide range of single cell data types. Due to requirements of the cellxgene schema and limitations of the `AnnData` object structure, there are some assay specific considerations that are outlined below
-
-- ATAC/mC
-  - raw data: Since there is not a standard way to generate a counts matrix or gene activity matrix for single cell epigenetic data, it is suitable to put a copy of `adata.X` in place of a raw data matrix. You can specify this assignment in `adata.uns`
-  - [(Not Live)Link to example curated dataset](www.example.com)
-- RNAseq
-  -  In some single cell toolchains, outputs of different computational methods may be of a different dimensionality than the input matrix (i.e SCTransform, or the scale.data slot in Seurat objects). Since `AnnData` objects do not allow for matrices of different dimensions in `adata.layers`, it is suitable to pad the missing rows/features with zeros to ensure that indices (feature names) across different the different layers are matched. You can specify that these matrices were padded in `adata.uns['layer_descriptions']` as a part of the cellxgene schema. This allows users who may reuse your data to remove the padding from the matrix before working with the data further.
-  -  [(Not Live)Link to example curated dataset](www.example.com)
-- CITEseq
-  - TODO: considerations for CITE-seq...
-  - [(Not Live)Link to example curated dataset](www.example.com)
-- Spatial/Visium
-  - Since spatial sequencing spots are not at the single cell level, you may wish to include prediction matrices that provide deconvolution information for each spot. These can generally be stored in `adata.uns` although it can be interesting to add prediction scores for each spot as new columns to the `adata.obs` dataframe (to get a cell type score for each spot)
-  - [(Not Live)Link to example curated dataset](www.example.com)
-
-<br/>
-
----
-
-## Schema definition
-
-<br/>
-
-The curation process requires that we collect metadata for a few fields. These fields are defined by the [corpora schema](corpora_schema.md) to support easy search and integration across datasets. These metadata are stored within the `AnnData` object (in `adata.uns` and `adata.obs`).In this section, we are covering:
-
- - what metadata are required to adhere to the cellxgene schema and
- - the locations of these metadata in the `AnnData` object. 
-
-While it is possible to build an object that is acceptable by the cellxgene schema manually, in the [next section](#cellxgene-curation-tools), we will show you how to perform this curation with tools provided by the CZI curation team.
-
-#### `uns`
-
-`adata.uns` is a dictionary of key-value pairs that we use to store dataset level metadata. This is also where you store information on the different data representations that you are sharing (i.e you are sharing a raw counts matrix, normalized expression matrix, scaled and centered expression matrix). Right now, the `uns` slot in our pbmc3k dataset in not populated, but after curation it would contain the following key - value pairs:
-
-<br/>
-
-<div align="center">
-
-| Key                                      | Value      | Description                                                                     | Example               |
-| ---------------------------------------- |:----------:| :-------------------------------------------------------------------------------| ----------------------|
-| `adata.uns['version']`                   | string     | schema version (current version is `1.1.0`)                                     | `1.1.0`               |
-| `adata.uns['title']`                     | string     | title of publication (and title of dataset if more than one is being submitted) | `10X PBMC`            |
-| `adata.uns['publication_doi']`           | string     | DOI of preprint or official publication                   | `https://doi.org/00.0000/2021.01.01.000000` |
-| `adata.uns['organism']`                  | string     | name of organism (options are `Human` or `Mouse`)                               | `Human`               |
-| `adata.uns['organism_ontology_term_id']` | string     | NCBI Taxon ID                                                                   | `NCBITaxon:9606`      |
-| `adata.uns['layer_descriptions']`        | dictionary | a set of key value pairs defining the locations of different representations in the `AnnData` object and a description of that representation. One of these key-value pairs must be `raw: raw`  | `{'X': 'log1p' (this value can be free text)}` |
-
-</div>
-
-<div align="center">
-  <b> Table: </b> Required and suggested dataset level metadata
-</div>
-
-<br/>
-
-In the above table we see what type on information is necessary at the dataset level. You should pay extra attention to the `title` and the `layer_descriptions` keys. More specifically:
- - `title` should contain the name of the publication that the dataset is coming from. If there is more than one dataset associated with the publication, then the name of the dataset should be appended to the title (i.e. `'title': 'publication name: dataset title'`). This field will be used to name and distinguish different datasets in the same collection in the portal.
- - At least one of the key value pairs in `layer_descriptions` needs to indicate the presence of a raw counts layers. This must be specified as `raw: raw` (which implies that `adata.layers['raw']` is where your raw counts are stored). Additional layers may be specified and the values for these keys may be as descriptive as necessary (i.e. `scale.data: scaled and centered data`).
-
-<br/>
-
-#### `obs`
-
-`adata.obs` is a dataframe that is used to store cell level metadata. In addition to experimental metadata, the following additional fields are required:
-
-| `obs` column name                    | Type   | Description                                                       | Example                                   |
-| :----------------------------------- |:------:| -----------------------------------------------------------------:|:------------------------------------------|
-| 'tissue'                             | string | UBERON term                                                       | `blood`.                                  |
-| 'tissue_ontology_term_id'            | string | UBERON term id                                                    | `UBERON:0000178`                          |
-| 'assay'                              | string | EFO term                                                          | `scRNA-seq`                               |   
-| 'assay_ontology_term_id'             | string | EFO term id                                                       | `EFO:0008913`                             |
-| 'disease'                            | string | MONDO term or `normal`                                            | `normal`                                  |
-| 'disease_ontology_term_id'           | string | MONDO term id for a disease or `PATO:0000461` for normal          | `PATO:0000461`                            |
-| 'cell_type'                          | string | CL term                                                           | `megakaryocyte`                           |
-| 'cell_type_ontology_term_id'         | string | CL term id                                                        | `CL:0000556`                              |
-| 'sex'                                | string | `male`, `female`, `mixed`, `unknown`, or `other`                  | `unknown`                                 |
-| 'ethnicity'                          | string | HANCESTRO term, `na` if non-human, `unknown` if not available     | `unknown`                                 |
-| 'ethnicity_ontology_term_id	'        | string | HANCESTRO term id, `na` if non-human                              | `unknown`                                 |
-| 'development_stage'                  | string | HsapDv term, `unknown` if not available                           | `Human Adult Stage`                       |
-| 'development_stage_ontology_term_id	'| string | HsapDv term id if human, child of `EFO:0000399` otherwise         | `HsapDv:0000087`                          |
-
-<div align="center">
-  <b> Table: </b> Required cell level metadata
-</div>
-
-<br/>
-
-**Note:** When annotating the `cell_type` field you should generally try to find the most specific ontology term that accurately represents a given cell type in your dataset.
-
-**Note** The `tissue` field must be appended with " (cell culture)" or " (organoid)" if appropriate
-<br/>
-
----
+adata.rename_categories('louvain', cell_names)
+```
 
 ## Cellxgene curation tools
 
@@ -523,3 +397,182 @@ In the future, you will be able to upload a file that matches the format describ
 ## Future Work
 
 Placeholder
+
+
+## Appendices
+
+<details>
+  <summary>Appendix 1: AnnData Structure </summary>
+
+## Required data and `AnnData` structure
+
+<p align="center">
+  <img width="500" src="https://user-images.githubusercontent.com/25663501/111377611-3c8c7400-8677-11eb-8176-cf9de8f64c70.png">
+</p>
+
+<p align="center">
+  <b> Figure:</b> AnnData components
+</p>
+
+<br/>
+
+The following components are required for submission to the cellxgene data portal:
+
+- raw count matrix (except for certain assays such as scATACseq)
+- normalized expression matrix used for visualization
+- cell level metadata (barcodes, cell type, tissue of origin, etc.)
+- embedding (at least one required, UMAP, tSNE, spatial, PCA)
+
+Additionally, variable and feature level metadata can be useful to include but is not required for construction of an `AnnData` object.
+
+These components should be stored in the following locations in an `AnnData` object (for more information, please refer to the [AnnData documentation site](https://anndata.readthedocs.io/en/latest/)):
+
+<br/>
+
+<div align="center">
+
+| Component  | `AnnData` location            | Data Type                      | Notes                                                          |
+| ---------- |:-----------------------------:|:------------------------------:|:---------------------------------------------------------------|
+| raw count matrix | `adata.layers['raw']` | Numpy array or scipy sparse CSC matrix | Necessary, with some exceptions (see [exceptions](#alternative-assays))   |
+| normalized expression matrix | `adata.X`  | Numpy array or scipy sparse CSC matrix | Used for visualization in cellxgene explorer                   |
+| cell level metadata | `adata.obs` | Pandas dataframe | Categorical and continuous metadata shown in left and right cellxgene explorer sidebars respectively (can be used to color cells) |
+| variable/feature level metadata | `adata.var`   | Pandas dataframe|                                                             |
+| embedding                       | `adata.obsm`                           | Numpy array | Must start with the prefix 'X_' (i.e. adata.obsm['X_UMAP'])               |
+
+</div>
+
+<br/>
+
+<div align="center">
+  <b> Table: </b> Required data and `AnnData` object structure
+</div>
+
+<br/>
+
+We can confirm this structure in our PBMC3K demo dataset. To get started try out the following:
+
+```
+import scanpy as sc
+adata = sc.read_h5ad('pbmc3k.h5ad')#Read in object
+
+adata.X.shape # dimensions of normalized expression matrix
+```
+
+**Note:** In addition to these data, other representations of the expression matrix (alternative normalizations, SCTransform, corrected counts from SCTransform or background corrected counts) can all be stored as `layers` in your `AnnData` object (as long as they maintain the same dimensionality of the main expression matrix used for visualization).
+
+**Note:** Information which pertains to the cellxgene schema will be stored in the `adata.uns` and `adata.obs` slots of the `AnnData` object and will be discussed in the [next section](#schema-definition).
+ 
+### Format conversion
+ 
+There are a handful of tools that can be used to convert different single cell formats (`seurat`, `loom`, `sce`, `cds`) to `AnnData`. We have had the most success with the R package [sceasy](https://github.com/cellgeni/sceasy). For relatively straightforward conversions, it is suitable to use the `sceasy::convertFormat()` function as specified in the sceasy documentation. For scenarios where you have multiple assays in the same object (as you may encounter in the `seurat` toolchain) it is recommended to check out the function definitions of the methods that are called by `convertFormat()`. For instance, if you look at the source code for `sceasy::seurat2anndata()`, you will see that the extra parameters `assay`, `main_layer`, and `transfer_layers` can be specified for control over which elements of the `seurat` object are carried into the `AnnData` object. Check out the following function definitions and potentially use as a starting point for more customized conversions:
+
+- [`seurat2anndata()`](https://github.com/cellgeni/sceasy/blob/f8f0628a280e0880ea94b00100b463e1f6ba1994/R/functions.R#L14)
+- [`sce2anndata()`](https://github.com/cellgeni/sceasy/blob/f8f0628a280e0880ea94b00100b463e1f6ba1994/R/functions.R#L64)
+- [`loom2anndata()`](https://github.com/cellgeni/sceasy/blob/f8f0628a280e0880ea94b00100b463e1f6ba1994/R/functions.R#L116)
+
+
+**Note:** While `AnnData` is able to accommodate multiple representations of an expression matrix in the object, matrices that are stored in `adata.layers` are required to be the same dimensions as `adata.X` (`adata.raw.X` may be of a different dimensionality though). In some scenarios, you may need to construct different `AnnData` objects to accommodate different `assays` in the same experiment (for example, spliced vs unspliced counts in a sNuc-seq experiment).
+
+<br/>
+
+### Alternative assays
+
+The cellxgene data portal and explorer are able to handle a wide range of single cell data types. Due to requirements of the cellxgene schema and limitations of the `AnnData` object structure, there are some assay specific considerations that are outlined below
+
+- ATAC/mC
+  - raw data: Since there is not a standard way to generate a counts matrix or gene activity matrix for single cell epigenetic data, it is suitable to put a copy of `adata.X` in place of a raw data matrix. You can specify this assignment in `adata.uns`
+  - [(Not Live)Link to example curated dataset](www.example.com)
+- RNAseq
+  -  In some single cell toolchains, outputs of different computational methods may be of a different dimensionality than the input matrix (i.e SCTransform, or the scale.data slot in Seurat objects). Since `AnnData` objects do not allow for matrices of different dimensions in `adata.layers`, it is suitable to pad the missing rows/features with zeros to ensure that indices (feature names) across different the different layers are matched. You can specify that these matrices were padded in `adata.uns['layer_descriptions']` as a part of the cellxgene schema. This allows users who may reuse your data to remove the padding from the matrix before working with the data further.
+  -  [(Not Live)Link to example curated dataset](www.example.com)
+- CITEseq
+  - TODO: considerations for CITE-seq...
+  - [(Not Live)Link to example curated dataset](www.example.com)
+- Spatial/Visium
+  - Since spatial sequencing spots are not at the single cell level, you may wish to include prediction matrices that provide deconvolution information for each spot. These can generally be stored in `adata.uns` although it can be interesting to add prediction scores for each spot as new columns to the `adata.obs` dataframe (to get a cell type score for each spot)
+  - [(Not Live)Link to example curated dataset](www.example.com)
+
+<br/>
+
+</details>
+---
+
+<details>
+  <summary>Appendix 2: Schema Definition </summary>
+
+## Schema definition
+
+<br/>
+
+The curation process requires that we collect metadata for a few fields. These fields are defined by the [corpora schema](corpora_schema.md) to support easy search and integration across datasets. These metadata are stored within the `AnnData` object (in `adata.uns` and `adata.obs`).In this section, we are covering:
+
+ - what metadata are required to adhere to the cellxgene schema and
+ - the locations of these metadata in the `AnnData` object. 
+
+While it is possible to build an object that is acceptable by the cellxgene schema manually, in the [next section](#cellxgene-curation-tools), we will show you how to perform this curation with tools provided by the CZI curation team.
+
+#### `uns`
+
+`adata.uns` is a dictionary of key-value pairs that we use to store dataset level metadata. This is also where you store information on the different data representations that you are sharing (i.e you are sharing a raw counts matrix, normalized expression matrix, scaled and centered expression matrix). Right now, the `uns` slot in our pbmc3k dataset in not populated, but after curation it would contain the following key - value pairs:
+
+<br/>
+
+<div align="center">
+
+| Key                                      | Value      | Description                                                                     | Example               |
+| ---------------------------------------- |:----------:| :-------------------------------------------------------------------------------| ----------------------|
+| `adata.uns['version']`                   | string     | schema version (current version is `1.1.0`)                                     | `1.1.0`               |
+| `adata.uns['title']`                     | string     | title of publication (and title of dataset if more than one is being submitted) | `10X PBMC`            |
+| `adata.uns['publication_doi']`           | string     | DOI of preprint or official publication                   | `https://doi.org/00.0000/2021.01.01.000000` |
+| `adata.uns['organism']`                  | string     | name of organism (options are `Human` or `Mouse`)                               | `Human`               |
+| `adata.uns['organism_ontology_term_id']` | string     | NCBI Taxon ID                                                                   | `NCBITaxon:9606`      |
+| `adata.uns['layer_descriptions']`        | dictionary | a set of key value pairs defining the locations of different representations in the `AnnData` object and a description of that representation. One of these key-value pairs must be `raw: raw`  | `{'X': 'log1p' (this value can be free text)}` |
+
+</div>
+
+<div align="center">
+  <b> Table: </b> Required and suggested dataset level metadata
+</div>
+
+<br/>
+
+In the above table we see what type on information is necessary at the dataset level. You should pay extra attention to the `title` and the `layer_descriptions` keys. More specifically:
+ - `title` should contain the name of the publication that the dataset is coming from. If there is more than one dataset associated with the publication, then the name of the dataset should be appended to the title (i.e. `'title': 'publication name: dataset title'`). This field will be used to name and distinguish different datasets in the same collection in the portal.
+ - At least one of the key value pairs in `layer_descriptions` needs to indicate the presence of a raw counts layers. This must be specified as `raw: raw` (which implies that `adata.layers['raw']` is where your raw counts are stored). Additional layers may be specified and the values for these keys may be as descriptive as necessary (i.e. `scale.data: scaled and centered data`).
+
+<br/>
+
+#### `obs`
+
+`adata.obs` is a dataframe that is used to store cell level metadata. In addition to experimental metadata, the following additional fields are required:
+
+| `obs` column name                    | Type   | Description                                                       | Example                                   |
+| :----------------------------------- |:------:| -----------------------------------------------------------------:|:------------------------------------------|
+| 'tissue'                             | string | UBERON term                                                       | `blood`.                                  |
+| 'tissue_ontology_term_id'            | string | UBERON term id                                                    | `UBERON:0000178`                          |
+| 'assay'                              | string | EFO term                                                          | `scRNA-seq`                               |   
+| 'assay_ontology_term_id'             | string | EFO term id                                                       | `EFO:0008913`                             |
+| 'disease'                            | string | MONDO term or `normal`                                            | `normal`                                  |
+| 'disease_ontology_term_id'           | string | MONDO term id for a disease or `PATO:0000461` for normal          | `PATO:0000461`                            |
+| 'cell_type'                          | string | CL term                                                           | `megakaryocyte`                           |
+| 'cell_type_ontology_term_id'         | string | CL term id                                                        | `CL:0000556`                              |
+| 'sex'                                | string | `male`, `female`, `mixed`, `unknown`, or `other`                  | `unknown`                                 |
+| 'ethnicity'                          | string | HANCESTRO term, `na` if non-human, `unknown` if not available     | `unknown`                                 |
+| 'ethnicity_ontology_term_id	'        | string | HANCESTRO term id, `na` if non-human                              | `unknown`                                 |
+| 'development_stage'                  | string | HsapDv term, `unknown` if not available                           | `Human Adult Stage`                       |
+| 'development_stage_ontology_term_id	'| string | HsapDv term id if human, child of `EFO:0000399` otherwise         | `HsapDv:0000087`                          |
+
+<div align="center">
+  <b> Table: </b> Required cell level metadata
+</div>
+
+<br/>
+
+**Note:** When annotating the `cell_type` field you should generally try to find the most specific ontology term that accurately represents a given cell type in your dataset.
+
+**Note** The `tissue` field must be appended with " (cell culture)" or " (organoid)" if appropriate
+<br/>
+
+---
+
+</details>
