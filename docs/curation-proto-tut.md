@@ -148,8 +148,8 @@ Your [`config.yaml`](example_config.yaml) file is used to update values and colu
 ```
 uns:
     version:
-        corpora_schema_version: 1.1.0                          #(ex: schema_version_number) - find current schema version number 
-        corpora_encoding_version: 1.1.0                        #(ex: encoding version)
+        corpora_schema_version: 0.1.1                          #(ex: schema_version_number) - find current schema version number 
+        corpora_encoding_version: 0.1.1                        #(ex: encoding version)
     title: 10X PBMC Demo.                                      #(free text field)
     publication_doi: https://doi.org/00.0000/2021.01.01.000000
     layer_descriptions:
@@ -261,7 +261,7 @@ or SCTransform functions, the correct choice is usually `log1p`.
 <br/>
 
 
-### `cellxgene schema apply`
+### `cellxgene-schema apply`
  
 <br/>
 
@@ -274,13 +274,13 @@ In order to use the `cellxgene schema apply` command, you will need to pass the 
 
 For our pbmc3k dataset, the call to apply the schema will look like this:
 
-`cellxgene schema apply --source-h5ad pbmc3k_updated.h5ad --remix-config config.yaml --output-filename pbmc3k_curated.h5ad`
+`cellxgene-schema apply --source-h5ad pbmc3k_updated.h5ad --remix-config config.yaml --output-filename pbmc3k_curated.h5ad`
 
 The next step will be to validate the resulting object.
 
 <br/>
 
-### `cellxgene schema validate`
+### `cellxgene-schema validate`
 
 <br/>
 
@@ -288,7 +288,7 @@ In order to validate the remixed object, needs to simply run `cellxgene schema v
 
 For our pbmc3k dataset, the call to apply the schema will look like this:
 
-`cellxgene schema validate pbmc3k_curated.h5ad`
+`cellxgene-schema validate pbmc3k_curated.h5ad`
 
 <br/>
 
