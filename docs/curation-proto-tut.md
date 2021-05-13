@@ -113,12 +113,17 @@ cell_names = ['CD4 T', 'CD14 Monocytes', 'B', 'CD8 T', 'NK', 'FCGR3A Monocytes',
 adata.rename_categories('louvain', cell_names)
 ```
 
+Above we have kept the column `louvain`, but renamed all the categories in that column to labels that we are able to link to an ontology. After this step, we are ready to write our `AnnData` file and use the cellxgene curation command line tools.
+
+`adata.write_h5ad('pbmc3k.h5ad')`
+
+
 ## Cellxgene curation tools
 
 <br/>
 
-The cellxgene curation tools include functions that can make the curation process easier for you. Essentially the workflow looks like this:
-1. create `config.yaml` that will specify how the schema is to be applied to your `AnnData` object (see example our pbmc3k dataset [here](example_config.yaml))
+The cellxgene curation tools include functions that can make the curation process easier for you. They allow you to specify the appopriate ontologies that capture important metadata about your object and do so in an additive way (i.e. no original metadata in your dataset are removed or changed during schema application). The workflow to apply the schema looks like this:
+1. create a `config.yaml` file that will specify how the schema is to be applied to your `AnnData` object (see example our pbmc3k dataset [here](example_config.yaml))
 2. run `cellxgene schema apply`, which takes your config and source `AnnData` file to produce a curated `Anndata` object
 3. use `cellxgene schema validate` to ensure that your curated object meets the schema requirements
 
@@ -143,14 +148,14 @@ Your [`config.yaml`](example_config.yaml) file is used to update values and colu
 ```
 uns:
     version:
-        corpora_schema_version: 1.1.0                          #(ex: schema_version_number)
+        corpora_schema_version: 1.1.0                          #(ex: schema_version_number) - find current schema version number 
         corpora_encoding_version: 1.1.0                        #(ex: encoding version)
     title: 10X PBMC Demo.                                      #(free text field)
     publication_doi: https://doi.org/00.0000/2021.01.01.000000
     layer_descriptions:
         raw: raw                                               #(it is essential for at least one the layer_descriptions to be set to 'raw')
         X: log1p                                               #(free text description of normalization method )
-    organism: Human.                                           #(Specify organism name)
+    organism: Human                                            #(Specify organism name)
     organism_ontology_term_id: NCBITaxon:9606                  #(Specfiy organism NCBI Taxon ID)
 
 ```
@@ -163,6 +168,49 @@ In the config file snippet above, our 0 level indentation specifies that we are 
 <br/>
 
 #### `obs` section
+
+Before we talk explicitly about the `obs` section of the `config` file, we will discuss how to lookup ontologies for a partciluar field (i.e. cluster/cell type). In general we aim to find the highest resolution term that desribes a field entry. To give a more concrete example, we can consider the `louvain` column in our observational metadata. The values in this column correspond to cell type annotations. We can view the different cell types that are present in the dataset by running:
+
+```
+>>> set(obj.obs['louvain'])
+{'NK', 'Dendritic', 'CD4 T', 'FCGR3A Monocytes', 'Megakaryocytes', 'B', 'CD8 T', 'CD14 Monocytes'}
+```
+
+To find an ontology that maps to a given cell type (for this example, let's consider the Natural Killer cells (coded as `NK` in our object)), we simply need to head to [EBI's Ontology Lookup Service](https://www.ebi.ac.uk/ols/index), search for 'Natural Killer Cells', and filtered by the desired ontology (in this case, we `CL` for cell type). A screenshot of such a lookup is presented below.
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/25663501/118162747-1cff9680-b3ef-11eb-92ea-11defb7c88b4.png">
+</p>
+
+<p align="center">
+  <b> Figure:</b> EBI Ontology Lookup Service: https://www.ebi.ac.uk/ols/index
+</p>
+
+In this image, we have searched for our cell type and presented with a list of ontology terms and ids that could potentially fit our cell type. Choose the term that most closely represents your cell type. If your cell type annotations are very high resolution, but are not represented by equally specific ontology terms, it is ok to use a higher level term or to collapse multiple fine grained cell types into a more general term (ex: neuronal datasets where, neuronal subtypes may be denoted by combinations of specific markers and neurotransmitters).
+
+Once we have performed this lookup for all of the cell type present in our `louvain` column, we can fill in the appropriate fields to perform the mapping in our config file. Below is a skeleton config file with the cell type ontologies linked:
+
+```
+obs:
+    tissue_ontology_term_id:                             #UBERON tissue term
+    assay_ontology_term_id:                              #EFO assay term
+    disease_ontology_term_id:                            #MONDO disease term or PATO:0000461
+    sex: unknown                                         #male, female, mixed, unknown, or other
+    ethnicity_ontology_term_id: unknown                  #HANCESTRO term
+    development_stage_ontology_term_id:                  #HsapDv term
+    cell_type_ontology_term_id:
+      louvain:                                           #this is column name in your obs dataframe (the field that specifies cell type)
+        NK: CL:0000623                                   #Link an ontology ID to each value in your cell type column
+        Dendritic: CL:0000451
+        CD4 T: CL:0000624
+        FCGR3A Monocytes: CL:0002396
+        Megakaryocytes: CL:0000556
+        B: CL:0000236
+        CD8 T: CL:0000625
+        CD14 Monocytes: CL:0001055
+```
+
+Essentially, the mapping is performed for the `cell_type_ontology_term_id` column by specifiying 1) the target column (second level of indentation) and  2) each of the unique values in the target along with their corresponding ontology term ids (third level of indentation). Now that we understand how to map ontology term ids for a column like cell type, let's find out how to fully specify the `obs` section of the config file, like in the example below:
 
 ```
 obs:
