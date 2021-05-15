@@ -57,20 +57,13 @@ If you are already familiar with cellxgene, AnnData, and the cellxgene data sche
 
 ## Use Case
 
-If we take a reductionist attitude, the cellxgene curation process consists only a few steps
+If we take a reductionist attitude, the cellxgene curation process consists only a few steps:
 
-```
-#Obtain data
-wget https://cellxgene-example-data.czi.technology/pbmc3k.h5ad ./pbmc3k.h5ad
+- apply schema to your single cell data (curation)
+- validate that the curation process has succeeded
+- upload curated data to the cellxgene data portal
 
-Apply the schema according to a config file and produce a curated object
-cellxgene schema apply --source-h5ad pbmc3k_updated.h5ad --remix-config config.yaml --output-filename pbmc3k_curated.h5ad
-
-#Validate that the curation processs has succeeded
-cellxgene schema validate pbmc3k_curated.h5ad
-```
-
-This is a bit of oversimplification as data often needs to be restructured to be compatible with cellxgene (although this dataset is in the correct structure) and specifying the config file ([example](config.yaml)) requires that you perform ontology linking prior to schema application.Through the duration of this tutorial, you can refer to the 10X PBMC 3K dataset to model the structure of a dataset before and after curation, as well as show you examples of how to apply the schema and what tools you can use to help you.
+This is a bit of oversimplification as data often needs to be restructured to be compatible with cellxgene (although this dataset is in the correct structure) and specifying the config file ([example](config.yaml)) requires that you perform ontology linking prior to schema application. During this tutorial, you can refer to the 10X PBMC 3K dataset to model the structure of a dataset before and after curation, as well as show you examples of how to apply the schema and what tools you can use to help you.
 
 
 ## `AnnData` Preparation
@@ -78,10 +71,10 @@ This is a bit of oversimplification as data often needs to be restructured to be
 The main prequisite for submitting your data to the cellxgene data portal is that it is structured in `AnnData` format. Below we see the rough steps for downloading our demo dataset: PBMC 3K from 10X. You can read more about the origin of this dataset from the [10X website](https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k). We will start preparing the `AnnData` object by downloading the necessary files below
 
 ```
-wget  counts.tsv#count matrix
-wget  norm_x.tsv#X matrix
-wget  pbmc_obs.tsv #Cell metadata
-wget  umap.tsv #embedding
+curl  counts.tsv#count matrix
+curl  norm_x.tsv#X matrix
+curl  pbmc_obs.tsv #Cell metadata
+curl  umap.tsv #embedding
 ```
 
 Next, we can load each of these components into a python environment with ScanPy and Pandas installed ([ScanPy docs](https://anndata.readthedocs.io/en/latest/) and [Pandas docs](https://pandas.pydata.org/docs/getting_started/index.html)). We can read in our different components like so:
@@ -90,23 +83,23 @@ Next, we can load each of these components into a python environment with ScanPy
 import pandas as pd
 import scanpy as sc
 
-#Reading in data
-adata = sc.read_text(...) #Read in counts matrix - returns an AnnData object - stored in raw.X (?)
-normalized_X = pd.read_csv(...) #Read in normalized expression matrix
-embeddings = pd.read_csv(...).to_numpy() #Read in embeddings and convert into numpy array
-obs_metadata = pd.read_csv(...) #Read in cell metadata (cluster assignment, qc metadata, etc...)
+# Reading in data - you can also check out the scanpy function read_mtx() for reading in 10X file formats...
+adata = sc.read_text(...)  # Read in counts matrix - returns an AnnData object - stored in raw.X (?)
+normalized_X = pd.read_csv(...)  # Read in normalized expression matrix
+embeddings = pd.read_csv(...).to_numpy()  # Read in embeddings and convert into numpy array
+obs_metadata = pd.read_csv(...)  # Read in cell metadata (cluster assignment, qc metadata, etc...)
 
 #Assign components to appropriate locations in AnnData
 adata.X = normalized_X
-adata.obsm['X_embeddingName'] = embeddings #embedding name must be prefixed with 'X_'
+adata.obsm['X_embeddingName'] = embeddings  # embedding name must be prefixed with 'X_'
 adata.obs = obs_metadata
 ```
 
 In our example, our observational metadata (`adata.obs`) is not quite amenable to the curation process. This is because our cluster assignments are currently integers and are not biologically interpretable. To fix this, we can update the cluster metadata in our `AnnData` object like so:
 
 ```
-#Create a list to map current cluster ids (stored in adata.obs['leiden']) to cell type names
-#these map to the ordering of the current cluster ids in the object, (which in this case is 1, 2, 3, ...)
+# Create a list to map current cluster ids (stored in adata.obs['leiden']) to cell type names
+# these map to the ordering of the current cluster ids in the object, (which in this case is 1, 2, 3, ...)
 
 cell_names = ['CD4 T', 'CD14 Monocytes', 'B', 'CD8 T', 'NK', 'FCGR3A Monocytes', 'Dendritic', 'Megakaryocytes']
 
@@ -148,15 +141,15 @@ Your [`config.yaml`](example_config.yaml) file is used to update values and colu
 ```
 uns:
     version:
-        corpora_schema_version: 0.1.1                          #(ex: schema_version_number) - find current schema version number 
-        corpora_encoding_version: 0.1.1                        #(ex: encoding version)
-    title: 10X PBMC Demo.                                      #(free text field)
+        corpora_schema_version: 0.1.1                          # ex: find current schema version number in the corpora schema definition
+        corpora_encoding_version: 0.1.1                        # ex: encoding version
+    title: 10X PBMC Demo                                       # free text field
     publication_doi: https://doi.org/00.0000/2021.01.01.000000
     layer_descriptions:
-        raw: raw                                               #(it is essential for at least one the layer_descriptions to be set to 'raw')
-        X: log1p                                               #(free text description of normalization method )
-    organism: Human                                            #(Specify organism name)
-    organism_ontology_term_id: NCBITaxon:9606                  #(Specfiy organism NCBI Taxon ID)
+        raw: raw                                               # it is essential for at least one the layer_descriptions to be set to 'raw'
+        X: log1p                                               # free text description of normalization method
+    organism: Human                                            # Specify organism name
+    organism_ontology_term_id: NCBITaxon:9606                  # Specfiy organism NCBI Taxon ID
 
 ```
 <br/>
