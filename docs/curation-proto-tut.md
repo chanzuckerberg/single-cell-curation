@@ -71,10 +71,11 @@ This is a bit of oversimplification as data often needs to be restructured to be
 The main prequisite for submitting your data to the cellxgene data portal is that it is structured in `AnnData` format. Below we see the rough steps for downloading our demo dataset: PBMC 3K from 10X. You can read more about the origin of this dataset from the [10X website](https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k). We will start preparing the `AnnData` object by downloading the necessary files below
 
 ```
-curl  counts.tsv#count matrix
-curl  norm_x.tsv#X matrix
-curl  pbmc_obs.tsv #Cell metadata
-curl  umap.tsv #embedding
+curl https://cellxgene-curation-tutorial.s3.us-east-2.amazonaws.com/counts.mtx >> counts.mtx  # count matrix
+curl https://cellxgene-curation-tutorial.s3.us-east-2.amazonaws.com/normalized_expression.mtx >> normalized_expression.mtx  # x matrix
+curl https://cellxgene-curation-tutorial.s3.us-east-2.amazonaws.com/cell_metadata.tsv >> cell_metadata.tsv  # cell metadata
+curl https://cellxgene-curation-tutorial.s3.us-east-2.amazonaws.com/umap_embedding.csv >> umap_embedding.csv  # embedding
+curl https://cellxgene-curation-tutorial.s3.us-east-2.amazonaws.com/var_metadata.tsv >> var_metadata.tsv  # var metadata
 ```
 
 Next, we can load each of these components into a python environment with ScanPy and Pandas installed ([ScanPy docs](https://anndata.readthedocs.io/en/latest/) and [Pandas docs](https://pandas.pydata.org/docs/getting_started/index.html)). We can read in our different components like so:
