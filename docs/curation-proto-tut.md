@@ -111,8 +111,8 @@ import scanpy as sc
 raw_adata = sc.read_mtx('counts.mtx')  # Read in counts matrix - returns an AnnData object - stored in raw.X (?)
 adata = pd.read_mtx('normalized_expression.mtx')  # Read in normalized expression matrix
 embeddings = pd.read_csv('umap_embedding.csv', header = None).to_numpy()  # Read in embeddings and convert into numpy array
-obs_metadata = pd.read_csv('cell_metadata.tsv')  # Read in cell metadata (cluster assignment, qc metadata, etc...)
-var_metadata = pd.read_csv('var_metadata.tsv')
+obs_metadata = pd.read_csv('cell_metadata.tsv', sep='\t')  # Read in cell metadata (cluster assignment, qc metadata, etc...)
+var_metadata = pd.read_csv('var_metadata.tsv', sep='\t')
 
 #Assign components to appropriate locations in AnnData
 adata.raw = raw_adata #stash our counts/raw adata in the raw slot of the normalized adata object - counts will be accessible via adata.raw.X
@@ -121,18 +121,27 @@ adata.obs = obs_metadata
 adata.var = var_metadata
 ```
 
-In our example, our observational metadata (`adata.obs`) is not quite amenable to the curation process. This is because our cluster assignments are currently integers and are not biologically interpretable. To fix this, we can update the cluster metadata in our `AnnData` object like so:
+There may scenarios where you need to perform conversion of the values in your `obs` data frame to change them into a representation that is human readable. In our example, our observational metadata (`adata.obs`) is not quite amenable to the curation process (specifically, the `leiden`). This is because our cluster assignments are currently integers and are not biologically interpretable. To fix this, we can update the cluster metadata in our `AnnData` object like so:
 
 ```
 # Create a list to map current cluster ids (stored in adata.obs['leiden']) to cell type names
-# these map to the ordering of the current cluster ids in the object, (which in this case is 1, 2, 3, ...)
+# these map to the ordering of the current cluster ids in the object, (which in this case is 0, 1, 2, 3, ...)
 
+#First convert integer values in our leiden column to categorical values instead of integer values
+adata.obs['leiden'] = adata.obs.leiden.astype('category')
+
+#Define the appropriate cell names/types to map the column to
 cell_names = ['CD4 T', 'CD14 Monocytes', 'B', 'CD8 T', 'NK', 'FCGR3A Monocytes', 'Dendritic', 'Megakaryocytes']
 
-adata.rename_categories('louvain', cell_names)
+#Perform the mapping
+adata.rename_categories('leiden', cell_names)
+
+#You can check out the resulting values in your obs dataframe like so
+adata.obs.head()
+
 ```
 
-Above we have kept the column `louvain`, but renamed all the categories in that column to labels that we are able to link to an ontology. After this step, we are ready to write our `AnnData` file and use the cellxgene curation command line tools.
+Above we have kept the column `leiden`, but renamed all the categories in that column to labels that we are able to link to an ontology. After this step, we are ready to write our `AnnData` file and use the cellxgene curation command line tools. Please note that we also have an identical column called louvain where this step had already been performed previously. You can use either of these columns to perform the demo curation process. Going forward, we will continue using the `leiden` column for annotating cell types in our AnnData object. 
 
 `adata.write_h5ad('pbmc3k.h5ad')`
 
