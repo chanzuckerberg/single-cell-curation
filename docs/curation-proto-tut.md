@@ -65,6 +65,21 @@ If we take a reductionist attitude, the cellxgene curation process consists only
 
 This is a bit of oversimplification as data often needs to be restructured to be compatible with cellxgene (although this dataset is in the correct structure) and specifying the config file ([example](config.yaml)) requires that you perform ontology linking prior to schema application. During this tutorial, you can refer to the 10X PBMC 3K dataset to model the structure of a dataset before and after curation, as well as show you examples of how to apply the schema and what tools you can use to help you.
 
+## Creating a curation environment (optional)
+
+To start this tutorial, we will be creating a conda environment where we can install the cellxgene curation tools and their dependencies. If you already have conda installed ([reference for the uninitiated](https://conda.io/projects/conda/en/latest/index.html)) - this is a simple process and you can run the following in a new terminal:
+
+```
+conda create -n "curation_env" python=3.8.0
+conda activate curation_env
+```
+After you run the `activate` command, you should be inside of your conda environment. We can install some required packages by running the appropriate pip commands inside of our activated environment:
+
+```
+pip install scanpy
+pip install cellxgene-schema # we can also install these curation tools after the AnnData prep section
+```
+
 
 ## `AnnData` Preparation
 
@@ -78,22 +93,32 @@ curl https://cellxgene-curation-tutorial.s3.us-east-2.amazonaws.com/umap_embeddi
 curl https://cellxgene-curation-tutorial.s3.us-east-2.amazonaws.com/var_metadata.tsv >> var_metadata.tsv  # var metadata
 ```
 
-Next, we can load each of these components into a python environment with ScanPy and Pandas installed ([ScanPy docs](https://anndata.readthedocs.io/en/latest/) and [Pandas docs](https://pandas.pydata.org/docs/getting_started/index.html)). We can read in our different components like so:
+Next, we can load each of these components into a python environment with ScanPy and Pandas installed ([ScanPy docs](https://anndata.readthedocs.io/en/latest/) and [Pandas docs](https://pandas.pydata.org/docs/getting_started/index.html)). 
+
+Enter a python environment by typing the following into your terminal:
+
+```
+python
+```
+
+We can read in our different components like so:
 
 ```
 import pandas as pd
 import scanpy as sc
 
 # Reading in data - you can also check out the scanpy function read_mtx() for reading in 10X file formats...
-adata = sc.read_text(...)  # Read in counts matrix - returns an AnnData object - stored in raw.X (?)
-normalized_X = pd.read_csv(...)  # Read in normalized expression matrix
-embeddings = pd.read_csv(...).to_numpy()  # Read in embeddings and convert into numpy array
-obs_metadata = pd.read_csv(...)  # Read in cell metadata (cluster assignment, qc metadata, etc...)
+raw_adata = sc.read_mtx('counts.mtx')  # Read in counts matrix - returns an AnnData object - stored in raw.X (?)
+adata = pd.read_mtx('normalized_expression.mtx')  # Read in normalized expression matrix
+embeddings = pd.read_csv('umap_embedding.csv', header = None).to_numpy()  # Read in embeddings and convert into numpy array
+obs_metadata = pd.read_csv('cell_metadata.tsv')  # Read in cell metadata (cluster assignment, qc metadata, etc...)
+var_metadata = pd.read_csv('var_metadata.tsv')
 
 #Assign components to appropriate locations in AnnData
-adata.X = normalized_X
-adata.obsm['X_embeddingName'] = embeddings  # embedding name must be prefixed with 'X_'
+adata.raw = raw_adata #stash our counts/raw adata in the raw slot of the normalized adata object - counts will be accessible via adata.raw.X
+adata.obsm['X_umap'] = embeddings  # embedding name must be prefixed with 'X_'
 adata.obs = obs_metadata
+adata.var = var_metadata
 ```
 
 In our example, our observational metadata (`adata.obs`) is not quite amenable to the curation process. This is because our cluster assignments are currently integers and are not biologically interpretable. To fix this, we can update the cluster metadata in our `AnnData` object like so:
