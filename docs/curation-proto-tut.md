@@ -101,13 +101,13 @@ Enter a python environment by typing the following into your terminal:
 python
 ```
 
-We can read in our different components like so:
+Once we see our python prompt (indicated by `>>>`), we can read in our different components and construct our Anndata object like so:
 
 ```
 import pandas as pd
 import scanpy as sc
 
-# Reading in data - you can also check out the scanpy function read_mtx() for reading in 10X file formats...
+# Reading in data - you can also check out more scanpy functions for reading in different file formats...
 raw_adata = sc.read_mtx('counts.mtx')  # Read in counts matrix - returns an AnnData object - stored in raw.X (?)
 adata = pd.read_mtx('normalized_expression.mtx')  # Read in normalized expression matrix
 embeddings = pd.read_csv('umap_embedding.csv', header = None).to_numpy()  # Read in embeddings and convert into numpy array
