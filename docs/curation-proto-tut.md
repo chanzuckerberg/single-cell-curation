@@ -169,7 +169,13 @@ You can check out the full documentation for this tooling [here](#schema_guide.m
 
 <br/>
 
-Your [`config.yaml`](example_config.yaml) file is used to update values and columns in `adata.uns` and `adata.obs` (respectively) with required schema information. All original columns in the dataset will be preserved. For fields where you need to enter an ontology ID, you can use the [EBI Ontology Lookup Service](https://www.ebi.ac.uk/ols/index) to search for the appropriate terms.  This file will also standardize gene symbols in your dataset via the `fixup_gene_symbols` section. Here is an example/mock of a config file for our pbmc3k dataset:
+Your [`config.yaml`](example_config.yaml) file is used to update values and columns in `adata.uns` and `adata.obs` (respectively) with required schema information. All original columns in the dataset will be preserved. For fields where you need to enter an ontology ID, you can use the [EBI Ontology Lookup Service](https://www.ebi.ac.uk/ols/index) to search for the appropriate terms.  This file will also standardize gene symbols in your dataset via the `fixup_gene_symbols` section. You can download the example config to your local machine (and redirect it to a local file named `config.yaml`) using the following command (and view/edit using any text editor):
+
+```
+curl https://raw.githubusercontent.com/chanzuckerberg/single-cell-curation/tutorial-prototype/docs/example_config.yaml >> config.yaml
+```
+
+Here is an example/mock of a config file for our pbmc3k dataset:
 
 #### `uns` section
 
@@ -302,7 +308,9 @@ In order to use the `cellxgene schema apply` command, you will need to pass the 
 
 For our pbmc3k dataset, the call to apply the schema will look like this:
 
-`cellxgene-schema apply --source-h5ad pbmc3k_updated.h5ad --remix-config config.yaml --output-filename pbmc3k_curated.h5ad`
+```
+cellxgene-schema apply --source-h5ad pbmc3k.h5ad --remix-config config.yaml --output-filename pbmc3k_curated.h5ad
+```
 
 The next step will be to validate the resulting object.
 
@@ -316,7 +324,9 @@ In order to validate the remixed object, needs to simply run `cellxgene schema v
 
 For our pbmc3k dataset, the call to apply the schema will look like this:
 
-`cellxgene-schema validate pbmc3k_curated.h5ad`
+```
+cellxgene-schema validate pbmc3k_curated.h5ad
+```
 
 <br/>
 
