@@ -5,7 +5,7 @@ uns:
   organism: Homo sapiens
   organism_ontology_term_id: NCBITaxon:9606
   layer_descriptions:
-    raw: raw
+    raw.X: raw
     X: log1p
   publication_doi: https://doi.org/00.0000/2021.01.1.000000
   title: PBMC 3K
@@ -28,4 +28,4 @@ obs:
   development_stage_ontology_term_id: HsapDv:0000087  
 fixup_gene_symbols:
   X: log1p
-  raw: raw
+  raw.X: raw
