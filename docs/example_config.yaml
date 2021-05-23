@@ -1,27 +1,31 @@
 uns:
-    version:
-        corpora_schema_version: 1.1.0 ##version_number (find current version at wwww..)
-        corpora_encoding_version: 1.1.0 ##encoding version (find current version at www...)
-    title: publication_title #(free text title of your paper)
-    layer_descriptions:
-        raw.X: raw #(one layer description has to be 'raw')
-        X: log1p #free text description of normalization
-    organism: Homo sapiens #Species name
-    organism_ontology_term_id: NCBITaxon:9606 #(#Specfiy organism NCBI Taxon ID)
-obs:
-    tissue_ontology_term_id: UBERON:0000006 #UBERON tissue term
-    assay_ontology_term_id: EFO:0010961 #EFO assay term
-    disease_ontology_term_id: PATO:0000461 #MONDO disease term or PATO:0000461
-    sex: male #male, female, mixed, unknown, or other
-    ethnicity_ontology_term_id: na #HANCESTRO term
-    development_stage_ontology_term_id: HsapDv:0000160 #HsapDv term
-    cell_type_ontology_term_id:
-      cell_label: #this is column name in your obs dataframe (the field that specifies cell type)
-        acinar: CL:0002064 #mapping between cell types as listed in your source anndata object and their appropriate CL ontology term IDs (provided by you)
-        alpha: CL:0000171
-        delta: CL:0000173
-        endothelial: CL:0000115
-        epsilon: CL:0005019
-fixup_gene_symbols: #Unique gene symbols...?
-    raw.X: raw
+  version:
+    corpora_schema_version: 1.1.0
+    corpora_encoding_version: 0.1.0
+  organism: Homo sapiens
+  organism_ontology_term_id: NCBITaxon:9606
+  layer_descriptions:
+    raw: raw
     X: log1p
+  publication_doi: https://doi.org/00.0000/2021.01.1.000000
+  title: PBMC 3K
+obs:
+  assay_ontology_term_id: EFO:0008913
+  ethnicity_ontology_term_id: unknown
+  sex: unknown
+  disease_ontology_term_id: PATO:0000461
+  tissue_ontology_term_id: UBERON:0000178
+  cell_type_ontology_term_id:
+    louvain:
+      NK: CL:0000623
+      Dendritic: CL:0000451
+      CD4 T: CL:0000624
+      FCGR3A Monocytes: CL:0002396
+      Megakaryocytes: CL:0000556
+      B: CL:0000236
+      CD8 T: CL:0000625
+      CD14 Monocytes: CL:0001055
+  development_stage_ontology_term_id: HsapDv:0000087  
+fixup_gene_symbols:
+  X: log1p
+  raw: raw
