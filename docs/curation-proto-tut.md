@@ -291,7 +291,7 @@ fixup_gene_symbols:
 This tells the script how each layer was transformed from raw values that can be directly summed. `raw` means that
 the layer contains raw counts or some linear transformation of raw counts. `log1p` means that the layer has `log(X + 1)`
 for each the raw `X` values. `sqrt` means `sqrt(X)` (this is not common). For layers produced by Seurat's normalization
-or SCTransform functions, the correct choice is usually `log1p`.
+or SCTransform functions, the correct choice is usually `log1p`. In our PBMC 3K example, the normalized expression matrix has been logged.
 
 **Note**: If a layer is not specified in the `fixup_gene_symbols` section, then it will not be carried over into the curated object. If no layers are specified in `fixup_gene_symbols` or if `fixup_gene_symbols` is not included the `config.yaml` file at all, then all layers will be carried over into the curated object.
 
@@ -383,7 +383,7 @@ In general, the cellxgene data portal is oriented around grouping datasets by th
 
 ### Portal Sign in
 
-sign in options for the portal (gmail, github, etc)
+In order to upload your data go to [cellxgene.cziscience.com](cellxgene.cziscience.com), find the login section at the top right corner and select one of the sign in options for the portal (gmail, github, etc):
 
 <p align="center">
   <img width="250" src="https://user-images.githubusercontent.com/25663501/113528770-9f46a080-958f-11eb-83a1-36620e1543d2.png">
