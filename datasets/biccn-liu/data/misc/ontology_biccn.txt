@@ -1,0 +1,42 @@
+original_columns	original_values	BICCN_ontology_term_id	ontology_label	project_name	doi
+MajorType	MGE-Sst	ILX:0770152	Sst neuron (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	CA3	ILX:0770097	Excitatory glutamatergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	CA1	ILX:0770097	Excitatory glutamatergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	CA3-St18	ILX:0770097	Excitatory glutamatergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	Unc5c	ILX:0770098	Inhibitory GABAergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	Gfra1	ILX:0770097	Excitatory glutamatergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	ODC	ILX:0770140	Oligodendrocyte (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	PC	ILX:0770145	Pericyte (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	ANP	ILX:0770099	Non-neuronal (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	IT-L5	ILX:0770157	L5 IT neuron (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	NP-L6	ILX:0770161	L5/6 NP neuron (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	CGE-Lamp5	ILX:0770149	Lamp5 neuron (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	CT-L6	ILX:0770162	L6 CT neuron (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	IG-CA2	ILX:0770097	Excitatory glutamatergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	DG-po	ILX:0770097	Excitatory glutamatergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	DG	ILX:0770097	Excitatory glutamatergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	CGE-Vip	ILX:0770151	Vip GABAergic neuron (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	OPC	ILX:0770139	Oligodendrocyte progenitor cell (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	ASC	ILX:0770141	Astrocyte (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	MGC	ILX:0770146	Microglia (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	PAL-Inh	ILX:0770098	Inhibitory GABAergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	PT-L5	ILX:0770097	Excitatory glutamatergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	MGE-Pvalb	ILX:0770154	Pvalb neuron (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	VLMC	ILX:0770143	Vascular leptomeningeal cell (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	EC	ILX:0770142	Endothelial cell (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	VLMC-Pia	ILX:0770143	Vascular leptomeningeal cell (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	OLF	ILX:0770098	Inhibitory GABAergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	MSN-D2	ILX:0770098	Inhibitory GABAergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	L6b	ILX:0770163	L6b neuron (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	IT-L6	ILX:0770158	L6 IT neuron (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	IT-L23	ILX:0770097	Excitatory glutamatergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	IT-L4	ILX:0770097	Excitatory glutamatergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	OLF-Exc	ILX:0770097	Excitatory glutamatergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	CLA	ILX:0770097	Excitatory glutamatergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	Foxp2	ILX:0770098	Inhibitory GABAergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	MSN-D1	ILX:0770098	Inhibitory GABAergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	LSX-Inh	ILX:0770098	Inhibitory GABAergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	D1L-Fstl4	ILX:0770098	Inhibitory GABAergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	EP	ILX:0770097	Excitatory glutamatergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	D1L-PAL	ILX:0770098	Inhibitory GABAergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
+MajorType	Chd7	ILX:0770098	Inhibitory GABAergic cortical neurons (BICCN)	liu	https://doi.org/10.1101/2020.04.30.069377
