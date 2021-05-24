@@ -63,11 +63,11 @@ If we take a reductionist attitude, the cellxgene curation process consists only
 - validate that the curation process has succeeded
 - upload curated data to the cellxgene data portal
 
-This is a bit of oversimplification as data often needs to be restructured to be compatible with cellxgene (although this dataset is in the correct structure) and specifying the config file ([example](config.yaml)) requires that you perform ontology linking prior to schema application. During this tutorial, you can refer to the 10X PBMC 3K dataset to model the structure of a dataset before and after curation, as well as show you examples of how to apply the schema and what tools you can use to help you.
+This is a bit of oversimplification as data often needs to be restructured to be compatible with cellxgene and specifying the config file ([example](example_config.yaml)) requires that you perform ontology linking prior to schema application. During this tutorial, you can refer to the 10X PBMC 3K dataset to model the structure of a dataset before and after curation, as well as show you examples of how to apply the schema and what tools you can use to help you.
 
 ## Creating a curation environment (optional)
 
-To start this tutorial, we will be creating a conda environment where we can install the cellxgene curation tools and their dependencies. If you already have conda installed ([reference for the uninitiated](https://conda.io/projects/conda/en/latest/index.html)) - this is a simple process and you can run the following in a new terminal:
+To start this tutorial, we will be creating a conda environment where we can install the cellxgene curation tools and their dependencies. If you already have conda installed ([reference for the uninitiated](https://conda.io/projects/conda/en/latest/index.html)), this is a simple process and you can run the following in a new terminal:
 
 ```
 conda create -n "curation_env" python=3.8.0
@@ -83,7 +83,7 @@ pip install cellxgene-schema # we can also install these curation tools after th
 
 ## `AnnData` Preparation
 
-The main prequisite for submitting your data to the cellxgene data portal is that it is structured in `AnnData` format. Below we see the rough steps for downloading our demo dataset: PBMC 3K from 10X. You can read more about the origin of this dataset from the [10X website](https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k). We will start preparing the `AnnData` object by downloading the necessary files below
+The main prequisite for submitting your data to the cellxgene data portal is that it is structured in `AnnData` format. Below we see the rough steps for downloading our demo dataset: PBMC 3K from 10X. You can read more about the origin of this dataset from the [10X website](https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k). We will start preparing the `AnnData` object by downloading the necessary files below (note: you can also access and download the necessary files from [this dropbox link](https://www.dropbox.com/sh/pgby9xn0v7tx3vi/AAAB8dTsXcjjFgNiIOGw7yYNa?dl=0)). 
 
 ```
 curl https://cellxgene-curation-tutorial.s3.us-east-2.amazonaws.com/counts.mtx >> counts.mtx  # count matrix
@@ -108,20 +108,20 @@ import pandas as pd
 import scanpy as sc
 
 # Reading in data - you can also check out more scanpy functions for reading in different file formats...
-raw_adata = sc.read_mtx('counts.mtx')  # Read in counts matrix - returns an AnnData object - stored in raw.X (?)
-adata = pd.read_mtx('normalized_expression.mtx')  # Read in normalized expression matrix
+raw_adata = sc.read_mtx('counts.mtx')  # Read in counts matrix - returns an AnnData object - count matrix is stored in raw_adata.X
+adata = pd.read_mtx('normalized_expression.mtx')  # Read in normalized expression matrix - normalized expression matrix is stored in adata.X
 embeddings = pd.read_csv('umap_embedding.csv', header = None).to_numpy()  # Read in embeddings and convert into numpy array
 obs_metadata = pd.read_csv('cell_metadata.tsv', sep='\t')  # Read in cell metadata (cluster assignment, qc metadata, etc...)
-var_metadata = pd.read_csv('var_metadata.tsv', sep='\t')
+var_metadata = pd.read_csv('var_metadata.tsv', sep='\t') # Read in variable metadata (dispersion, function annotation, etc)
 
-#Assign components to appropriate locations in AnnData
-adata.raw = raw_adata #stash our counts/raw adata in the raw slot of the normalized adata object - counts will be accessible via adata.raw.X
+# Assign components to appropriate locations in AnnData
+adata.raw = raw_adata  # stash our counts/raw adata in the raw slot of the normalized adata object - counts will be accessible via adata.raw.X
 adata.obsm['X_umap'] = embeddings  # embedding name must be prefixed with 'X_'
 adata.obs = obs_metadata
 adata.var = var_metadata
 ```
 
-There may scenarios where you need to perform conversion of the values in your `obs` data frame to change them into a representation that is human readable. In our example, our observational metadata (`adata.obs`) is not quite amenable to the curation process (specifically, the `leiden`). This is because our cluster assignments are currently integers and are not biologically interpretable. To fix this, we can update the cluster metadata in our `AnnData` object like so:
+There may be scenarios where you need to perform conversion of the values in your `obs` data frame to change them into a representation that is human readable. In our example, our observational metadata (`adata.obs`) is not quite amenable to the curation process (specifically, the `leiden`). This is because our cluster assignments are currently integers and are not biologically interpretable. To fix this, we can update the cluster metadata in our `AnnData` object like so:
 
 ```
 # Create a list to map current cluster ids (stored in adata.obs['leiden']) to cell type names
@@ -160,6 +160,8 @@ You can check out the full documentation for this tooling [here](#schema_guide.m
 <br/>
 
 ### Installation
+
+You can install the cellxgene curation tools either inside of a conda environment/virtual environment (recommended) or in your system python install like so: 
 
 `pip install cellxgene-schema`
 
