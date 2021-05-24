@@ -12,7 +12,7 @@
 
 This tutorial will consist of an explanation and demonstration of: 
  - how to create and structure an `AnnData` object with your single cell data
- - how to augment this object with information that is specific to the cellxgene schema
+ - how to augment this object with information that is specific to the cellxgene schema (this information will be used to make your data findable, reusable, and integrable in the cellxgene data portal)
  - how to upload this object to the cellxgene data portal. If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
 
 ### Table of Contents
@@ -145,6 +145,7 @@ Above we have kept the column `leiden`, but renamed all the categories in that c
 
 `adata.write_h5ad('pbmc3k.h5ad')`
 
+Now that we have created and written our AnnData file, we are ready to pursue the curation process. It is important to note that the curatin process is additive and does not change any of the information that was stored in the original AnnData object. To get a better sense of what the AnnData object should look like after schema injection you can refer to [this encoding document](https://github.com/chanzuckerberg/single-cell-curation/blob/ambrosecarr/schema-v1.1.1/schema/1.1.1/anndata_encoding.md)
 
 ## Cellxgene curation tools
 
@@ -184,7 +185,7 @@ Here is an example/mock of a config file for our pbmc3k dataset:
 ```
 uns:
     version:
-        corpora_schema_version: 0.1.1                          # ex: find current schema version number in the corpora schema definition
+        corpora_schema_version: 1.1.0                          # ex: find current schema version number in the corpora schema definition
         corpora_encoding_version: 0.1.1                        # ex: encoding version
     title: 10X PBMC Demo                                       # free text field
     publication_doi: https://doi.org/00.0000/2021.01.01.000000
@@ -314,7 +315,31 @@ For our pbmc3k dataset, the call to apply the schema will look like this:
 cellxgene-schema apply --source-h5ad pbmc3k.h5ad --remix-config config.yaml --output-filename pbmc3k_curated.h5ad
 ```
 
-The next step will be to validate the resulting object.
+It is important to note that this function is quite verbose. Even in a successufl application of the schema, you will get warnings and output to the terminal:
+
+```
+(curation_env) user@MACOS curation-tutorial-test % cellxgene-schema apply --source-h5ad pbmc3k.h5ad --remix-config config.yaml --output-filename pbmc3k_curated.h5ad                    
+/Users/user1/opt/anaconda3/envs/curation_env/lib/python3.8/site-packages/anndata/_core/anndata.py:120: ImplicitModificationWarning: Transforming to str index.
+  warnings.warn("Transforming to str index.", ImplicitModificationWarning)
+WARNING:root:Some symbols are simulaneously withdrawn and approved
+We will treat them at approved:
+{'LMO7-AS1', 'EXT2', 'HAP1', 'FHL1', 'APPL1', 'F11', 'MPP5'}
+... storing 'assay_ontology_term_id' as categorical
+... storing 'assay' as categorical
+... storing 'ethnicity_ontology_term_id' as categorical
+... storing 'ethnicity' as categorical
+... storing 'sex' as categorical
+... storing 'disease_ontology_term_id' as categorical
+... storing 'disease' as categorical
+... storing 'tissue_ontology_term_id' as categorical
+... storing 'tissue' as categorical
+... storing 'cell_type_ontology_term_id' as categorical
+... storing 'cell_type' as categorical
+... storing 'development_stage_ontology_term_id' as categorical
+... storing 'development_stage' as categorical
+```
+
+In cases, where you have specified the config file incorrectly, or where the AnnData object has been constructed incorrectly, you will receive output from the function that can help you diagnose the issue. In most cases where the config file has been incorrectly specified, the function will still output a new Anndata object, however it will not pass the next validation step. In all cases where curation was unsuccessful, the `apply` subcommand will remove the schema version from the new object.
 
 <br/>
 
@@ -329,6 +354,13 @@ For our pbmc3k dataset, the call to apply the schema will look like this:
 ```
 cellxgene-schema validate pbmc3k_curated.h5ad
 ```
+Contrary to the `apply` subcommand, `validate` is not very verbose and will print nothing in cases where the curation was successful:
+
+```
+(curation_env) user@MACOS curation-tutorial-test % cellxgene-schema validate pbmc3k_curated.h5ad
+(curation_env) user@MACOS curation-tutorial-test % 
+```
+In cases where the curation was not a success, you will get a message that lets you that the schema version is missing. This means that you should return to the output of the `apply` subcommand to troubleshoot the issue.
 
 <br/>
 
