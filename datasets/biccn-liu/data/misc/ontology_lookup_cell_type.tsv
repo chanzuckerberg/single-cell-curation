@@ -1,4 +1,4 @@
-cell_states	lookup_name	ontology_term_id	ontology_term_name	final	type
+BICCN_subclass_label	lookup_name	ontology_term_id	ontology_term_name	final	type
 MGE-Sst	gabaergic neuron	CL:0000617	GABAergic neuron	"True"	cell_type
 CA3	glutamatergic neuron	CL:0000679	glutamatergic neuron	"True"	cell_type
 CA1	glutamatergic neuron	CL:0000679	glutamatergic neuron	"True"	cell_type

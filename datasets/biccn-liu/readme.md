@@ -38,9 +38,9 @@ mkdir -p ./data/transformed/2_reformatted
 for i in ./data/original/*h5ad
 do
     python3 ./scripts/append_biccn_ontology.py $i ./data/misc/ontology_biccn.txt ./data/transformed/2_reformatted/temp_biccn.h5ad
-    python3 ./scripts/add_raw.py ./data/transformed/2_reformatted/temp_biccn.h5ad ./data/transformed/2_reformatted/temp_biccn_2.h5ad
-    python3 ./scripts/rename_columns_anndata.py MajorType:BICCN_subclass_label,CellClass:BICCN_class_label,SubType:BICCN_cluster_label ./data/transformed/2_reformatted/temp_biccn_2.h5ad ./data/transformed/2_reformatted/$(basename $i)
-    rm ./data/transformed/2_normalized/temp*
+    #python3 ./scripts/add_raw.py ./data/transformed/2_reformatted/temp_biccn.h5ad ./data/transformed/2_reformatted/temp_biccn_2.h5ad
+    python3 ./scripts/rename_columns_anndata.py MajorType:BICCN_subclass_label,CellClass:BICCN_class_label,SubType:BICCN_cluster_label ./data/transformed/2_reformatted/temp_biccn.h5ad ./data/transformed/2_reformatted/$(basename $i)
+    rm ./data/transformed/2_reformatted/temp*
 done
 
 ```

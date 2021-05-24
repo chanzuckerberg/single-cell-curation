@@ -38,11 +38,12 @@ main <- function(cmdArgs=commandArgs(T)) {
 make_yaml_list <- function(dataset_title) {
     
     x <- list(
-         fixup_gene_symbols = list(X = "raw", raw.X = "raw"),
+         #fixup_gene_symbols = list(X = "raw", raw.X = "raw"),
+         fixup_gene_symbols = list(X = "raw"),
          obs = list(
                     sex = 'male',
                     disease_ontology_term_id =  'PATO:0000461',
-                    assay_ontotlogy_termi_id = 'EFO:0008939',
+                    assay_ontology_term_id = 'EFO:0008939',
                     ethnicity_ontology_term_id =  'na',
                     development_stage_ontology_term_id = 'EFO:0001272'
                     ),
@@ -50,7 +51,8 @@ make_yaml_list <- function(dataset_title) {
          uns = list(version = list(corpora_schema_version="1.1.0", corpora_encoding_version="0.1.0"),
                     organism = "Mus musculus", 
                     organism_ontology_term_id = "NCBITaxon:10090",
-                    layer_descriptions = list(X = "normalized by posterior probability", raw.X = "raw"), 
+                    #layer_descriptions = list(X = "normalized by posterior probability", raw.X = "raw"), 
+                    layer_descriptions = list(X = "raw"), 
                     title = dataset_title
                     )
          )
