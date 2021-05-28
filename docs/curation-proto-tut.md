@@ -4,16 +4,21 @@
 
 <!--- ## Overview --->
 
-[Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) are optimized for access, exploration and reuse of single cell data. To achieve these goals, the cellxgene platform currently accepts curated [AnnData](https://anndata.readthedocs.io/en/latest/#) objects adhering to a [succinct data schema](corpora_schema.md). Adherence to a standardized data schema allows for efficient navigation and integration of the growing number of single cell datasets. In addition to standardization, Hosting your data on the cellxgene portal offers the following benefits:
- - link permanence (you can reference in your publication without ever worrying about dead links)
- - sharing of private datasets with collaborators (keep the data private until it is ready for publication)
- - no barrier for readers to explore your dataset (and no need for you to build your own single cell data explorer)
- - availability of your dataset in the major single cell data formats (including `AnnData`, `seurat`, and `loom`)
+[Cellxgene's publishing platform](https://cellxgene.cziscience.com/) and [interactive single cell data explorer](https://github.com/chanzuckerberg/cellxgene) are optimized for access, exploration and reuse of single cell data. To enable this, all data published on cellxgene adhere to a standardized data schema, which allows for efficient navigation and integration of the growing number of single cell datasets. Publishing your data on the cellxgene portal offers the following benefits:
 
+ - Link permanence (you can reference in your publication without ever worrying about dead links)
+ - Sharing of private datasets with collaborators (keep the data private until it is ready for publication)
+ - Enables visual exploration that works at scale (and no need for you to build your own single cell data explorer)
+ - Availability of your dataset in major single cell data formats (including `AnnData` and `seurat`)
+
+To publish your data on the platform, cellxgene requires that you create [AnnData](https://anndata.readthedocs.io/en/latest/#) objects adhering to a [succinct data schema](corpora_schema.md). 
+   
 This tutorial will consist of an explanation and demonstration of: 
  - how to create and structure an `AnnData` object with your single cell data
- - how to augment this object with information that is specific to the cellxgene schema (this information will be used to make your data findable, reusable, and integrable in the cellxgene data portal)
- - how to upload this object to the cellxgene data portal. If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
+ - how to augment the `AnnData` object with metadata required by the cellxgene schema (this information will be used to make your data findable, reusable, and interoperable)
+ - how to upload this object to the cellxgene data portal. 
+   
+If you run into any issues during this tutorial, or have any suggestions on how to improve the portal and curation experience, you can contact us via [cellxgene@chanzuckerberg.com](cellxgene@chanzuckerberg.com).
 
 ### Table of Contents
 
@@ -57,35 +62,33 @@ If you are already familiar with cellxgene, AnnData, and the cellxgene data sche
 
 ## Use Case
 
-If we take a reductionist attitude, the cellxgene curation process consists only a few steps:
+The cellxgene curation process consists of only a few steps:
 
-- apply schema to your single cell data (curation)
-- validate that the curation process has succeeded
-- upload curated data to the cellxgene data portal
-
-This is a bit of oversimplification as data often needs to be restructured to be compatible with cellxgene and specifying the config file ([example](example_config.yaml)) requires that you perform ontology linking prior to schema application. During this tutorial, you can refer to the 10X PBMC 3K dataset to model the structure of a dataset before and after curation, as well as show you examples of how to apply the schema and what tools you can use to help you.
+- Transform your data into AnnData format.
+- Apply schema to your single cell data (curation).
+- Validate that the curation process has succeeded.
+- Upload curated data to the cellxgene data portal.
 
 ## Creating a curation environment (optional)
 
 To start this tutorial, we will be creating a conda environment where we can install the cellxgene curation tools and their dependencies. If you already have conda installed ([reference for the uninitiated](https://conda.io/projects/conda/en/latest/index.html)), this is a simple process and you can run the following in a new terminal:
 
-```
+```bash
 conda create -n "curation_env" python=3.8.0
 conda activate curation_env
 ```
 After you run the `activate` command, you should be inside of your conda environment. We can install some required packages by running the appropriate pip commands inside of our activated environment:
 
-```
+```bash
+pip install pandas
 pip install scanpy
-pip install cellxgene-schema # we can also install these curation tools after the AnnData prep section
 ```
-
 
 ## `AnnData` Preparation
 
 The main prequisite for submitting your data to the cellxgene data portal is that it is structured in `AnnData` format. Below we see the rough steps for downloading our demo dataset: PBMC 3K from 10X. You can read more about the origin of this dataset from the [10X website](https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/pbmc3k). We will start preparing the `AnnData` object by downloading the necessary files below (note: you can also access and download the necessary files from [this dropbox link](https://www.dropbox.com/sh/pgby9xn0v7tx3vi/AAAB8dTsXcjjFgNiIOGw7yYNa?dl=0)). 
 
-```
+```bash
 curl https://cellxgene-curation-tutorial.s3.us-east-2.amazonaws.com/counts.mtx >> counts.mtx  # count matrix
 curl https://cellxgene-curation-tutorial.s3.us-east-2.amazonaws.com/normalized_expression.mtx >> normalized_expression.mtx  # x matrix
 curl https://cellxgene-curation-tutorial.s3.us-east-2.amazonaws.com/cell_metadata.tsv >> cell_metadata.tsv  # cell metadata
@@ -97,22 +100,22 @@ Next, we can load each of these components into a python environment with ScanPy
 
 Enter a python environment by typing the following into your terminal:
 
-```
+```bash
 python
 ```
 
 Once we see our python prompt (indicated by `>>>`), we can read in our different components and construct our Anndata object like so:
 
-```
+```python
 import pandas as pd
 import scanpy as sc
 
 # Reading in data - you can also check out more scanpy functions for reading in different file formats...
 raw_adata = sc.read_mtx('counts.mtx')  # Read in counts matrix - returns an AnnData object - count matrix is stored in raw_adata.X
-adata = pd.read_mtx('normalized_expression.mtx')  # Read in normalized expression matrix - normalized expression matrix is stored in adata.X
-embeddings = pd.read_csv('umap_embedding.csv', header = None).to_numpy()  # Read in embeddings and convert into numpy array
+adata = sc.read_mtx('normalized_expression.mtx')  # Read in normalized expression matrix - normalized expression matrix is stored in adata.X
+embeddings = pd.read_csv('umap_embedding.csv', header = None).to_numpy()  # Read in embeddings and convert into numpy array; AnnData requires obsm objects be formatted as numpy arrays
 obs_metadata = pd.read_csv('cell_metadata.tsv', sep='\t')  # Read in cell metadata (cluster assignment, qc metadata, etc...)
-var_metadata = pd.read_csv('var_metadata.tsv', sep='\t') # Read in variable metadata (dispersion, function annotation, etc)
+var_metadata = pd.read_csv('var_metadata.tsv', sep='\t')  # Read in variable metadata (dispersion, function annotation, etc)
 
 # Assign components to appropriate locations in AnnData
 adata.raw = raw_adata  # stash our counts/raw adata in the raw slot of the normalized adata object - counts will be accessible via adata.raw.X
@@ -121,29 +124,30 @@ adata.obs = obs_metadata
 adata.var = var_metadata
 ```
 
-There may be scenarios where you need to perform conversion of the values in your `obs` data frame to change them into a representation that is human readable. In our example, our observational metadata (`adata.obs`) is not quite amenable to the curation process (specifically, the `leiden`). This is because our cluster assignments are currently integers and are not biologically interpretable. To fix this, we can update the cluster metadata in our `AnnData` object like so:
+There may be scenarios where you want to perform conversion of the values in your `obs` data frame to change them into a representation that is human readable. In our example, our observational metadata (`adata.obs`) is not quite amenable to the curation process (specifically, the `leiden`). This is because our cluster assignments are currently integers and are not biologically interpretable. To fix this, we can update the cluster metadata in our `AnnData` object to map the cluster IDs to the cell types they label:
 
-```
+```python
 # Create a list to map current cluster ids (stored in adata.obs['leiden']) to cell type names
 # these map to the ordering of the current cluster ids in the object, (which in this case is 0, 1, 2, 3, ...)
 
-#First convert integer values in our leiden column to categorical values instead of integer values
+# First convert integer values in our leiden column to categorical values instead of integer values
 adata.obs['leiden'] = adata.obs.leiden.astype('category')
 
-#Define the appropriate cell names/types to map the column to
+# Define the appropriate cell names/types to map the column to
 cell_names = ['CD4 T', 'CD14 Monocytes', 'B', 'CD8 T', 'NK', 'FCGR3A Monocytes', 'Dendritic', 'Megakaryocytes']
 
-#Perform the mapping
+# Perform the mapping
 adata.rename_categories('leiden', cell_names)
 
-#You can check out the resulting values in your obs dataframe like so
+# You can check out the resulting values in your obs dataframe like so
 adata.obs.head()
-
 ```
 
-Above we have kept the column `leiden`, but renamed all the categories in that column to labels that we are able to link to an ontology. After this step, we are ready to write our `AnnData` file and use the cellxgene curation command line tools. Please note that we also have an identical column called louvain where this step had already been performed previously. You can use either of these columns to perform the demo curation process. Going forward, we will continue using the `leiden` column for annotating cell types in our AnnData object. 
+Above we have kept the column `leiden`, but renamed all the categories in that column to labels that we will be able to link to an ontology. After this step, we are ready to write our `AnnData` file and use the cellxgene curation command line tools. Please note that the dataset also has an identical column called louvain where this step had already been performed previously. You can use either of these columns to perform the demo curation process. Going forward, we will continue using the `leiden` column for annotating cell types in the AnnData object. 
 
-`adata.write_h5ad('pbmc3k.h5ad')`
+```python
+adata.write_h5ad('pbmc3k.h5ad')
+```
 
 Now that we have created and written our AnnData file, we are ready to pursue the curation process. It is important to note that the curatin process is additive and does not change any of the information that was stored in the original AnnData object. To get a better sense of what the AnnData object should look like after schema injection you can refer to [this encoding document](https://github.com/chanzuckerberg/single-cell-curation/blob/ambrosecarr/schema-v1.1.1/schema/1.1.1/anndata_encoding.md)
 
@@ -151,12 +155,12 @@ Now that we have created and written our AnnData file, we are ready to pursue th
 
 <br/>
 
-The cellxgene curation tools include functions that can make the curation process easier for you. They allow you to specify the appopriate ontologies that capture important metadata about your object and do so in an additive way (i.e. no original metadata in your dataset are removed or changed during schema application). The workflow to apply the schema looks like this:
-1. create a `config.yaml` file that will specify how the schema is to be applied to your `AnnData` object (see example our pbmc3k dataset [here](example_config.yaml))
-2. run `cellxgene schema apply`, which takes your config and source `AnnData` file to produce a curated `Anndata` object
-3. use `cellxgene schema validate` to ensure that your curated object meets the schema requirements
+The cellxgene curation tools provide functions that can make the curation process easier. They allow you to specify the appopriate ontologies that capture important metadata about your object and do so in an additive way (i.e. no original metadata in your dataset are removed during schema application). The workflow to apply the schema looks like this:
+1. Create a `config.yaml` file that will specify how the schema is to be applied to your `AnnData` object (see a worked example matching the pbmc3k dataset [here](example_config.yaml)).
+2. Run `cellxgene schema apply`, which takes the `config.yaml` and source `AnnData` file to produce a curated `Anndata` object.
+3. Use `cellxgene schema validate` to ensure that your curated object meets the schema requirements.
 
-You can check out the full documentation for this tooling [here](#schema_guide.md), but a quick introduction to the tools is below:
+You can check out the full documentation for this tooling [here](#schema_guide.md), but a quick introduction to the tools is provided below.
 
 <br/>
 
@@ -164,7 +168,9 @@ You can check out the full documentation for this tooling [here](#schema_guide.m
 
 You can install the cellxgene curation tools either inside of a conda environment/virtual environment (recommended) or in your system python install like so: 
 
-`pip install cellxgene-schema`
+```bash
+pip install cellxgene-schema
+```
 
 <br/>
 
@@ -172,17 +178,17 @@ You can install the cellxgene curation tools either inside of a conda environmen
 
 <br/>
 
-Your [`config.yaml`](example_config.yaml) file is used to update values and columns in `adata.uns` and `adata.obs` (respectively) with required schema information. All original columns in the dataset will be preserved. For fields where you need to enter an ontology ID, you can use the [EBI Ontology Lookup Service](https://www.ebi.ac.uk/ols/index) to search for the appropriate terms.  This file will also standardize gene symbols in your dataset via the `fixup_gene_symbols` section. You can download the example config to your local machine (and redirect it to a local file named `config.yaml`) using the following command (and view/edit using any text editor):
+The [`config.yaml`](example_config.yaml) file is used to update values and columns in `adata.uns` and `adata.obs` (respectively) with required schema information. All original columns in the dataset will be preserved. For fields where you need to enter an ontology ID, you can use the [EBI Ontology Lookup Service](https://www.ebi.ac.uk/ols/index) to search for the appropriate terms.  This file will also standardize gene symbols in your dataset via the `fixup_gene_symbols` section. You can download the example config to your local machine (and redirect it to a local file named `config.yaml`) using the following command (and view/edit using any text editor):
 
-```
+```bash
 curl https://raw.githubusercontent.com/chanzuckerberg/single-cell-curation/tutorial-prototype/docs/example_config.yaml >> config.yaml
 ```
 
-Here is an example/mock of a config file for our pbmc3k dataset:
+The below sections walk through the downloaded config file which matches the pbmc3k dataset.
 
 #### `uns` section
 
-```
+```yaml
 uns:
     version:
         corpora_schema_version: 1.1.0                          # ex: find current schema version number in the corpora schema definition
@@ -198,22 +204,25 @@ uns:
 ```
 <br/>
 
-In the config file snippet above, our 0 level indentation specifies that we are modifying the `uns` slot (remember that `adata.uns` is a dictionary of key-value pairs). The next level of indentation specifies a key name to add to `uns`. The key's corresponding value is the string following the colon, or if the key is followed by more lines that are further indented, then the corresponding value is a dictionary containing the key-value pairs specified in the subsequent lines. More concretely, `adata.uns['layer_descriptions']` returns a dictionary with the key value pairs `{'raw': 'raw', 'X': 'log1p'}` after the schema config has been applied.
+In the config file snippet above, the 0 level indentation specifies that the `uns` slot is being modified (remember that `adata.uns` is a dictionary of key-value pairs). The next level of indentation specifies a key name to add to `uns`. The key's corresponding value is the string following the colon, or if the key is followed by more lines that are further indented, then the corresponding value is a dictionary containing the key-value pairs specified in the subsequent lines. More concretely, `adata.uns['layer_descriptions']` is added to `anndata.uns` as a dictionary with the key value pairs `{'raw': 'raw', 'X': 'log1p'}` when `cellxgene-schema apply` is run.
 
-**Note:** at least one of the keys in `layer_descriptions` must return the value 'raw'
+**Note:** [at least one of the keys in `layer_descriptions` must return the value 'raw'](https://github.com/chanzuckerberg/single-cell-curation/blob/tutorial-prototype/docs/schema_guide.md#unstructured-metadata)
 
 <br/>
 
 #### `obs` section
 
-Before we talk explicitly about the `obs` section of the `config` file, we will discuss how to lookup ontologies for a partciluar field (i.e. cluster/cell type). In general we aim to find the highest resolution term that desribes a field entry. To give a more concrete example, we can consider the `louvain` column in our observational metadata. The values in this column correspond to cell type annotations. We can view the different cell types that are present in the dataset by running:
+The cell metadata required by the cellxgene schema are structured metadata that are part of ontologies that enable powerful search and comparison capabilities. For this reason, Before describing the `obs` section of the `config` file, it's important to discuss how to look up ontologies for a particular field (i.e. cluster/cell type). In general we aim to find the highest resolution term that accurately describes a field entry. To give a more concrete example, we can consider the `louvain` column in our observational metadata. The values in this column correspond to cell type annotations. We can view the different cell types that are present in the dataset by running:
 
-```
->>> set(obj.obs['louvain'])
+```python
+>>> import scanpy as sc
+
+>>> adata = sc.read("pbmc3k.h5ad")
+>>> set(adata.obs['louvain'])
 {'NK', 'Dendritic', 'CD4 T', 'FCGR3A Monocytes', 'Megakaryocytes', 'B', 'CD8 T', 'CD14 Monocytes'}
 ```
 
-To find an ontology that maps to a given cell type (for this example, let's consider the Natural Killer cells (coded as `NK` in our object)), we simply need to head to [EBI's Ontology Lookup Service](https://www.ebi.ac.uk/ols/index), search for 'Natural Killer Cells', and filtered by the desired ontology (in this case, we `CL` for cell type). A screenshot of such a lookup is presented below.
+To find an ontology that maps to a given cell type (for this example, consider the Natural Killer cells (coded as `NK` in the `AnnData` object)), head to [EBI's Ontology Lookup Service](https://www.ebi.ac.uk/ols/index), search for 'Natural Killer Cells', filtered by the desired ontology (in this case, `CL` for cell type). A screenshot of such a lookup is presented below.
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/25663501/118162747-1cff9680-b3ef-11eb-92ea-11defb7c88b4.png">
@@ -223,11 +232,11 @@ To find an ontology that maps to a given cell type (for this example, let's cons
   <b> Figure:</b> EBI Ontology Lookup Service: https://www.ebi.ac.uk/ols/index
 </p>
 
-In this image, we have searched for our cell type and presented with a list of ontology terms and ids that could potentially fit our cell type. Choose the term that most closely represents your cell type. If your cell type annotations are very high resolution, but are not represented by equally specific ontology terms, it is ok to use a higher level term or to collapse multiple fine grained cell types into a more general term (ex: neuronal datasets where, neuronal subtypes may be denoted by combinations of specific markers and neurotransmitters).
+In this image, the search presents a list of ontology terms and ids that could potentially fit "Natural Killer cells". Choose the term that most closely represents the cell type query. If the data contains very specific cell types, they may not be represented by equally specific ontology terms. In this case, cellxgene recommends using a higher level term or collapsing multiple fine grained cell types into a more general term (This might occur in brain datasets where neuronal subtypes may be denoted by combinations of specific markers and neurotransmitters).
 
-Once we have performed this lookup for all of the cell type present in our `louvain` column, we can fill in the appropriate fields to perform the mapping in our config file. Below is a skeleton config file with the cell type ontologies linked:
+Once this lookup has been performed for all of the cell type present in the `louvain` column, the appropriate fields can be filled in our config file. Below is a skeleton config file with the cell type ontologies filled in:
 
-```
+```yaml
 obs:
     tissue_ontology_term_id:                             #UBERON tissue term
     assay_ontology_term_id:                              #EFO assay term
@@ -249,7 +258,7 @@ obs:
 
 Essentially, the mapping is performed for the `cell_type_ontology_term_id` column by specifiying 1) the target column (second level of indentation) and  2) each of the unique values in the target along with their corresponding ontology term ids (third level of indentation). Now that we understand how to map ontology term ids for a column like cell type, let's find out how to fully specify the `obs` section of the config file, like in the example below:
 
-```
+```yaml
 obs:
     tissue_ontology_term_id: UBERON:0000178              #UBERON tissue term
     assay_ontology_term_id: EFO:0008913                  #EFO assay term
@@ -273,16 +282,16 @@ obs:
 
 In the config file snippet above, the 0 level indentation specifies that we are modifying `obs`. At the first level of indentation, we start adding schema fields to `obs`. If the first level indentation field is followed by an ontology term id (i.e. `tissue_ontology_term_id: UBERON:0000178`), then a column for that field will be created in the obs dataframe (i.e. a column called `tissue_ontology_term_id` will be created), and all of its values will take on the value specified after the colon (i.e. `UBERON:0000178`). Additionally, the cellxgene curation tools will search the ontology term id and create a corresponding column with the appropriately corresponding term (i.e. a column called `tissue` will be created and all values of that column will be `blood`).
 
-On other hand, if the schema field is followed by lines which have further indentation, then the next line in the config file will specify a column whose values should be mapped to ontology terms (with these mappings specified by the subsequent lines). This is typically more relevant for specifying cell labels. In our example above, two new columns will be added to the `obs` data frame `cell_type_ontology_term_id` and `cell_type`. The original column specifying cell identity will be retained (and will be tagged with `_original`). The cellxgene curation tools never remove fields from the original dataset, they only add schema relevant information.
+On other hand, if the schema field is followed by lines which have further indentation, then the next line in the config file will specify a column whose values should be mapped to ontology terms (with these mappings specified by the subsequent lines). This is typically more relevant for specifying cell labels. In our example above, two new columns will be added to the `obs` data frame `cell_type_ontology_term_id` and `cell_type`. The original column specifying cell identity will be retained (and will be tagged with `_original`; this is how cellxgene deals with column name collisions). The cellxgene curation tools never remove fields from the original dataset, they only add schema relevant information.
 
 <br/>
 
 #### `fixup_gene_symbols` section (gene symbol harmonization)
 
-The last section describes how gene symbol conversion should be applied to each of the layers. This is similar to the
+The cellxgene explorer requires unique gene symbols. The last section describes how gene symbol conversion should be applied to each of the layers, when necessary. This is similar to the
 `layer_descriptions` field above, but there are only three permitted values: `raw`, `log1p`, and `sqrt`:
 
-```
+```yaml
 fixup_gene_symbols:
   X: log1p
   raw.X: raw
@@ -304,7 +313,7 @@ or SCTransform functions, the correct choice is usually `log1p`. In our PBMC 3K 
 
 In order to use the `cellxgene schema apply` command, you will need to pass the following required arguments:
 - `--source-h5ad` your original `AnnData` file
-- `--remix-config` the `config.yaml` file that we specified above 
+- `--remix-config` the `example_config.yaml` file that we specified above 
 - `--output-filename` the name of the resulting `AnnData` that is consistent with the cellxgene schema
 
 <br/>
@@ -312,12 +321,12 @@ In order to use the `cellxgene schema apply` command, you will need to pass the 
 For our pbmc3k dataset, the call to apply the schema will look like this:
 
 ```
-cellxgene-schema apply --source-h5ad pbmc3k.h5ad --remix-config config.yaml --output-filename pbmc3k_curated.h5ad
+cellxgene-schema apply --source-h5ad pbmc3k.h5ad --remix-config example_config.yaml --output-filename pbmc3k_curated.h5ad
 ```
 
-It is important to note that this function is quite verbose. Even in a successufl application of the schema, you will get warnings and output to the terminal:
+It is important to note that this function is quite verbose. Even in a successful application of the schema, you will get warnings and output to the terminal:
 
-```
+```bash
 (curation_env) user@MACOS curation-tutorial-test % cellxgene-schema apply --source-h5ad pbmc3k.h5ad --remix-config config.yaml --output-filename pbmc3k_curated.h5ad                    
 /Users/user1/opt/anaconda3/envs/curation_env/lib/python3.8/site-packages/anndata/_core/anndata.py:120: ImplicitModificationWarning: Transforming to str index.
   warnings.warn("Transforming to str index.", ImplicitModificationWarning)
@@ -351,12 +360,12 @@ In order to validate the remixed object, needs to simply run `cellxgene schema v
 
 For our pbmc3k dataset, the call to apply the schema will look like this:
 
-```
+```bash
 cellxgene-schema validate pbmc3k_curated.h5ad
 ```
 Contrary to the `apply` subcommand, `validate` is not very verbose and will print nothing in cases where the curation was successful:
 
-```
+```bash
 (curation_env) user@MACOS curation-tutorial-test % cellxgene-schema validate pbmc3k_curated.h5ad
 (curation_env) user@MACOS curation-tutorial-test % 
 ```
@@ -421,7 +430,7 @@ It should be noted that collections are displayed with specific metadata about t
 
 <br/>
 
-In the image above, we see an example of how the 'My Collections' page will look after you have uploaded a few datasets to the data portal. Note that some of the collections in this example are published (publicly available) and one is private. All collections start as private and are only made public when the author decides so. The private collection is only available to people who you share the private link with. This allows for control over who views your datasets and for making revisions to datasets that have been uploaded to the portal previously. To add a new collection, we can simply click on the button highlighted above.
+The image above shows an example of how the 'My Collections' page will look after a few datasets have been uploaded to the data portal. Note that some of the collections in this example are published (publicly available) and one is private. All collections start as private and are only made public when the author decides so. The private collection is only available to people who you share the private link with. This allows for control over who views your datasets and for making revisions to datasets that have been uploaded to the portal previously. To add a new collection, simply click on the button highlighted above.
 
 
 ### Create a private collection
@@ -436,7 +445,7 @@ In the image above, we see an example of how the 'My Collections' page will look
 
 <br/>
 
-Once you have clicked the 'Create Collection' button, you will be prompted to enter the following information:
+Once the 'Create Collection' button has been clicked, you will be prompted to enter the following information:
 
 - Collection Name (name of the publication)
 - Description (abstract of publication)
@@ -494,7 +503,7 @@ In case you have uploaded the wrong dataset or want to submit an updated dataset
   <b> Figure:</b> Successful dataset upload
 </p>
 
-Once you have successfully uploaded a dataset to your private collection, you are given options to delete the dataset, download (in `anndata` (`.h5ad`), `seurat V3` (`.rds`), or `.loom`), and explore the dataset using the cellxgene explorer. These options are given by the three icons on the right hand side of the entry.
+Once you have successfully uploaded a dataset to your private collection, you are given options to delete the dataset, download (in `anndata` (`.h5ad`) or `seurat V3` (`.rds`)), and explore the dataset using the cellxgene explorer. These options are given by the two icons on the right hand side of the entry.
 
 ### Publish Collection to the portal
 
@@ -510,7 +519,7 @@ Finally, if your private collection is complete and you wish to share with the w
 
 ## Gene sets
 
-The cellxgene data portal also includes the ability to upload relevant gene sets associated with the datasets in your collection. You can find a complete description of the requirements for the gene sets [here](./gene_sets.md)
+The cellxgene data portal will soon include the ability to upload relevant gene sets associated with the datasets in your collection. You can find a complete description of the requirements for the gene sets [here](./gene_sets.md)
 
 In the future, you will be able to upload a file that matches the format described in the linked documentation to allow collaborators and external readers to see markers that you have deemed important for defining cell types and cell states.
 
@@ -571,16 +580,14 @@ These components should be stored in the following locations in an `AnnData` obj
 
 We can confirm this structure in our PBMC3K demo dataset. To get started try out the following:
 
-```
+```python
 import scanpy as sc
-adata = sc.read_h5ad('pbmc3k.h5ad')#Read in object
+adata = sc.read_h5ad('pbmc3k.h5ad')  # Read in object
 
 adata.X.shape # dimensions of normalized expression matrix
 ```
 
 **Note:** In addition to these data, other representations of the expression matrix (alternative normalizations, SCTransform, corrected counts from SCTransform or background corrected counts) can all be stored as `layers` in your `AnnData` object (as long as they maintain the same dimensionality of the main expression matrix used for visualization).
-
-**Note:** Information which pertains to the cellxgene schema will be stored in the `adata.uns` and `adata.obs` slots of the `AnnData` object and will be discussed in the [next section](#schema-definition).
  
 ### Format conversion
  
@@ -591,7 +598,7 @@ There are a handful of tools that can be used to convert different single cell f
 - [`loom2anndata()`](https://github.com/cellgeni/sceasy/blob/f8f0628a280e0880ea94b00100b463e1f6ba1994/R/functions.R#L116)
 
 
-**Note:** While `AnnData` is able to accommodate multiple representations of an expression matrix in the object, matrices that are stored in `adata.layers` are required to be the same dimensions as `adata.X` (`adata.raw.X` may be of a different dimensionality though). In some scenarios, you may need to construct different `AnnData` objects to accommodate different `assays` in the same experiment (for example, spliced vs unspliced counts in a sNuc-seq experiment).
+**Note:** While `AnnData` is able to accommodate multiple representations of an expression matrix in the object, matrices that are stored in `adata.layers` are required to be the same dimensions as `adata.X` (`adata.raw.X` may be of a different dimensionality). 
 
 <br/>
 
