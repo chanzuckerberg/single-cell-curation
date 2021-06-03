@@ -1,0 +1,7 @@
+status	lookup_name	ontology_term_id	ontology_term_name	final	type
+rest_CD8	rest_CD8	CL:0000811	CD8-positive, alpha-beta thymocyte	True	cell_type
+rest_CD4	rest_CD4	CL:0000810	CD4-positive, alpha-beta thymocyte	True	cell_type
+rest_unassigned	rest_unassigned	CL:0000790	immature alpha-beta T cell	True	cell_type
+act_CD4	act_CD4	CL:0000624	CD4-positive, alpha-beta T cell	True	cell_type
+act_CD8	act_CD8	CL:0000625	CD8-positive, alpha-beta T cell	True	cell_type
+act_unassigned	act_unassigned	CL:0000791	mature alpha-beta T cell	True	cell_type
