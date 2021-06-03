@@ -1,0 +1,78 @@
+original_columns	original_values	BICCN_ontology_term_id	ontology_label	project_name	doi
+RNA type	L2/3 IT_2	ILX:0770156	L2/3 IT neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L2/3 IT_3	ILX:0770156	L2/3 IT neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L4/5 IT_1	ILX:0770174	L4/5 IT (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L4/5 IT_2	ILX:0770174	L4/5 IT (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L5 ET_1	ILX:0770160	L5 ET neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L5 ET_2	ILX:0770160	L5 ET neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L5 ET_3	ILX:0770160	L5 ET neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L5 ET_4	ILX:0770160	L5 ET neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L5 IT_1	ILX:0770157	L5 IT neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L5 IT_2	ILX:0770157	L5 IT neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L5 IT_3	ILX:0770157	L5 IT neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L5 IT_4	ILX:0770157	L5 IT neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L5/6 NP CT	ILX:0770161	L5/6 NP neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L5/6 NP_1	ILX:0770161	L5/6 NP neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L5/6 NP_2	ILX:0770161	L5/6 NP neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L5/6 NP_3	ILX:0770161	L5/6 NP neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L6 CT Cpa6	ILX:0770162	L6 CT neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L6 CT Grp	ILX:0770162	L6 CT neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L6 CT Pou3f2	ILX:0770162	L6 CT neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L6 IT_1	ILX:0770158	L6 IT neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L6 IT_2	ILX:0770158	L6 IT neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L6b Col6a1	ILX:0770163	L6b neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L6b Kcnip1	ILX:0770163	L6b neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L6b Ror1	ILX:0770163	L6b neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L6b Shisa6_1	ILX:0770163	L6b neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	L6b Shisa6_2	ILX:0770163	L6b neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Lamp5 Egln3_1	ILX:0770149	Lamp5 neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Lamp5 Egln3_2	ILX:0770149	Lamp5 neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Lamp5 Lhx6	ILX:0770149	Lamp5 neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Lamp5 Pax6	ILX:0770149	Lamp5 neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Lamp5 Pdlim5_1	ILX:0770149	Lamp5 neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Lamp5 Pdlim5_2	ILX:0770149	Lamp5 neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Lamp5 Slc35d3	ILX:0770149	Lamp5 neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Pvalb Calb1_1	ILX:0770154	Pvalb neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Pvalb Calb1_2	ILX:0770154	Pvalb neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Pvalb Egfem1	ILX:0770154	Pvalb neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Pvalb Gabrg1	ILX:0770154	Pvalb neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Pvalb Gpr149	ILX:0770154	Pvalb neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Pvalb Il1rapl2	ILX:0770154	Pvalb neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Pvalb Kank4	ILX:0770154	Pvalb neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Pvalb Reln	ILX:0770154	Pvalb neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Pvalb Vipr2_2	ILX:0770154	Pvalb neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sncg Calb1_1	ILX:0770150	Sncg neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sncg Calb1_2	ILX:0770150	Sncg neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sncg Col14a1	ILX:0770150	Sncg neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sncg Npy2r	ILX:0770150	Sncg neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sst C1ql3_1	ILX:0770152	Sst neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sst C1ql3_2	ILX:0770152	Sst neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sst Calb2	ILX:0770152	Sst neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sst Chodl	ILX:0770152	Sst neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sst Crhr2_1	ILX:0770152	Sst neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sst Crhr2_2	ILX:0770152	Sst neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sst Etv1	ILX:0770152	Sst neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sst Hpse	ILX:0770152	Sst neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sst Htr1a	ILX:0770152	Sst neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sst Myh8_1	ILX:0770152	Sst neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sst Myh8_2	ILX:0770152	Sst neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sst Myh8_3	ILX:0770152	Sst neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sst Penk	ILX:0770152	Sst neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sst Pvalb Calb2	ILX:0770152	Sst neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sst Pvalb Etv1	ILX:0770152	Sst neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sst Tac2	ILX:0770152	Sst neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sst Th_1	ILX:0770152	Sst neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Sst Th_3	ILX:0770152	Sst neuron (BICCN)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Vip C1ql1	ILX:0770151	Vip GABAergic neuron (BICCN 2020)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Vip Chat_1	ILX:0770151	Vip GABAergic neuron (BICCN 2020)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Vip Chat_2	ILX:0770151	Vip GABAergic neuron (BICCN 2020)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Vip Gpc3	ILX:0770151	Vip GABAergic neuron (BICCN 2020)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Vip Htr1f	ILX:0770151	Vip GABAergic neuron (BICCN 2020)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Vip Mybpc1_1	ILX:0770151	Vip GABAergic neuron (BICCN 2020)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Vip Mybpc1_2	ILX:0770151	Vip GABAergic neuron (BICCN 2020)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Vip Mybpc1_3	ILX:0770151	Vip GABAergic neuron (BICCN 2020)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Vip Serpinf1_1	ILX:0770151	Vip GABAergic neuron (BICCN 2020)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Vip Serpinf1_2	ILX:0770151	Vip GABAergic neuron (BICCN 2020)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Vip Serpinf1_3	ILX:0770151	Vip GABAergic neuron (BICCN 2020)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	Vip Sncg	ILX:0770151	Vip GABAergic neuron (BICCN 2020)	scala	https://doi.org/10.1038/s41586-020-2907-3
+RNA type	nan		unknown	scala	https://doi.org/10.1038/s41586-020-2907-3
