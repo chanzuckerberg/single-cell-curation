@@ -1,0 +1,26 @@
+tissue	tissuelookup_name	ontology_term_id	ontology_term_name	final	type
+Skin	skin	UBERON:0002097	skin of the body	True	tissue
+Pancreas	pancreas	UBERON:0001264	pancreas	True	tissue
+Limb_Muscle	limb muscle	UBERON:0003661	limb muscle	True	tissue
+Heart	heart	UBERON:0000948	heart	True	tissue
+Spleen	spleen	UBERON:0002106	spleen	True	tissue
+Diaphragm	diaphragm	UBERON:0001103	diaphragm	True	tissue
+Trachea	trachea	UBERON:0003126	trachea	True	tissue
+Tongue	tongue	UBERON:0001723	tongue	True	tissue
+Thymus	thymus	UBERON:0002370	thymus	True	tissue
+Brain_Non-Myeloid	brain non-myeloid	UBERON:0000955	brain	True	tissue
+Brain_Myeloid	brain myeloid	UBERON:0000955	brain	True	tissue
+Bladder	bladder	UBERON:0009958	bladder lumen	True	tissue
+Large_Intestine	large intestine	UBERON:0000059	large intestine	True	tissue
+BAT	bat	UBERON:0001348	brown adipose tissue	True	tissue
+GAT	gat	UBERON:0003428	gonadal fat pad	True	tissue
+MAT	mat	UBERON:0015143	mature mesenteric fat pad	True	tissue
+SCAT	scat	UBERON:0002190	mature mesenteric fat pad	True	tissue
+Lung	lung	UBERON:0002048	lung	True	tissue
+Liver	liver	UBERON:0002107	liver	True	tissue
+Marrow	marrow	UBERON:0002371	bone marrow	True	tissue
+Kidney	kidney	UBERON:0002113	kidney	True	tissue
+Aorta	aorta	UBERON:0000947	aorta	True	tissue
+Mammary_Gland	mammary gland	UBERON:0001911	mammary gland	True	tissue
+Heart_and_Aorta	heart	UBERON:0000948	heart	True	tissue
+Fat	fat	UBERON:0001013	adipose tissue	True	tissue

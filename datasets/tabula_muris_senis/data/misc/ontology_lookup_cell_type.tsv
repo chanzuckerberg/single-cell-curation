@@ -1,0 +1,156 @@
+cell_ontology_class	cell_ontology_classlookup_name	ontology_term_id	ontology_term_name	final	type
+B cell	b cell	CL:0000236	B cell	True	cell_type
+Bergmann glial cell	bergmann glial cell	CL:0000644	Bergmann glial cell	True	cell_type
+Brush cell of epithelium proper of large intestine	brush cell of epithelium proper of large intestine	CL:0002203	brush cell of epithelium proper of large intestine	True	cell_type
+CD4-positive, alpha-beta T cell	cd4-positive, alpha-beta t cell	CL:0000624	CD4-positive, alpha-beta T cell	True	cell_type
+CD8-positive, alpha-beta T cell	cd8-positive, alpha-beta t cell	CL:0000625	CD8-positive, alpha-beta T cell	True	cell_type
+DN3 thymocyte	dn3 thymocyte	CL:0000807	DN3 thymocyte	True	cell_type
+DN4 thymocyte	dn4 thymocyte	CL:0000808	DN4 thymocyte	True	cell_type
+Kupffer cell	kupffer cell	CL:0000091	Kupffer cell	True	cell_type
+Langerhans cell	langerhans cell	CL:0000453	Langerhans cell	True	cell_type
+NK cell	nk cell	CL:0000623	natural killer cell	True	cell_type
+Schwann cell	schwann cell	CL:0002573	Schwann cell	True	cell_type
+T cell	t cell	CL:0000084	T cell	True	cell_type
+adventitial cell	adventitial cell	CL:0002503	adventitial cell	True	cell_type
+alveolar macrophage	alveolar macrophage	CL:0000583	alveolar macrophage	True	cell_type
+aortic endothelial cell	aortic endothelial cell	CL:0002544	aortic endothelial cell	True	cell_type
+astrocyte	astrocyte	CL:0000127	astrocyte	True	cell_type
+atrial myocyte	atrial myocyte	CL:0002129	regular atrial cardiac myocyte	True	cell_type
+basal cell	basal cell	CL:0000646	basal cell	True	cell_type
+basal cell of epidermis	basal cell of epidermis	CL:0002187	basal cell of epidermis	True	cell_type
+basal epithelial cell of tracheobronchial tree	basal epithelial cell of tracheobronchial tree	CL:0002329	basal epithelial cell of tracheobronchial tree	True	cell_type
+basophil	basophil	CL:0000767	basophil	True	cell_type
+bladder cell	bladder cell	CL:1001319	bladder cell	True	cell_type
+bladder urothelial cell	bladder urothelial cell	CL:1001428	bladder urothelial cell	True	cell_type
+blood cell	blood cell	CL:0000081	blood cell	True	cell_type
+brain pericyte	brain pericyte	CL:2000043	brain pericyte	True	cell_type
+bronchial smooth muscle cell	bronchial smooth muscle cell	CL:0002598	bronchial smooth muscle cell	True	cell_type
+brush cell	brush cell	CL:0002204	brush cell	True	cell_type
+bulge keratinocyte	bulge keratinocyte	CL:0002337	keratinocyte stem cell	True	cell_type
+cardiac neuron	cardiac neuron	CL:0010022	cardiac neuron	True	cell_type
+cardiomyocyte	cardiomyocyte	CL:0000746	cardiac muscle cell	True	cell_type
+chondrocyte	chondrocyte	CL:0000138	chondrocyte	True	cell_type
+ciliated columnar cell of tracheobronchial tree	ciliated columnar cell of tracheobronchial tree	CL:0002145	ciliated columnar cell of tracheobronchial tree	True	cell_type
+classical monocyte	classical monocyte	CL:0000860	classical monocyte	True	cell_type
+club cell of bronchiole	club cell of bronchiole	CL:0000158	club cell	True	cell_type
+dendritic cell	dendritic cell	CL:0000451	dendritic cell	True	cell_type
+double negative T cell	double negative t cell	CL:0002489	double negative thymocyte	True	cell_type
+duct epithelial cell	duct epithelial cell	CL:0000068	duct epithelial cell	True	cell_type
+early pro-B cell	early pro-b cell	CL:0002046	early pro-B cell	True	cell_type
+endocardial cell	endocardial cell	CL:0002350	endocardial cell	True	cell_type
+endothelial cell	endothelial cell	CL:0000115	endothelial cell	True	cell_type
+endothelial cell of coronary artery	endothelial cell of coronary artery	CL:2000018	endothelial cell of coronary artery	True	cell_type
+endothelial cell of hepatic sinusoid	endothelial cell of hepatic sinusoid	CL:1000398	endothelial cell of hepatic sinusoid	True	cell_type
+endothelial cell of lymphatic vessel	endothelial cell of lymphatic vessel	CL:0002138	endothelial cell of lymphatic vessel	True	cell_type
+enterocyte of epithelium of large intestine	enterocyte of epithelium of large intestine	CL:0002071	enterocyte of epithelium of large intestine	True	cell_type
+enteroendocrine cell	enteroendocrine cell	CL:0000164	enteroendocrine cell	True	cell_type
+ependymal cell	ependymal cell	CL:0000065	ependymal cell	True	cell_type
+epidermal cell	epidermal cell	CL:0000362	epidermal cell	True	cell_type
+epithelial cell	epithelial cell	CL:0000066	epithelial cell	True	cell_type
+epithelial cell of large intestine	epithelial cell of large intestine	CL:0002253	epithelial cell of large intestine	True	cell_type
+epithelial cell of proximal tubule	epithelial cell of proximal tubule	CL:0002306	epithelial cell of proximal tubule	True	cell_type
+epithelial cell of thymus	epithelial cell of thymus	CL:0002293	epithelial cell of thymus	True	cell_type
+erythroblast	erythroblast	CL:0000765	erythroblast	True	cell_type
+erythrocyte	erythrocyte	CL:0000232	erythrocyte	True	cell_type
+erythroid progenitor	erythroid progenitor	CL:0001066	erythroid progenitor cell, mammalian	True	cell_type
+fenestrated cell	fenestrated cell	CL:0000666	fenestrated cell	True	cell_type
+fibroblast	fibroblast	CL:0000057	fibroblast	True	cell_type
+fibroblast of cardiac tissue	fibroblast of cardiac tissue	CL:0002548	fibroblast of cardiac tissue	True	cell_type
+fibroblast of lung	fibroblast of lung	CL:0002553	fibroblast of lung	True	cell_type
+fibrocyte	fibrocyte	CL:0000135	fibrocyte	True	cell_type
+granulocyte	granulocyte	CL:0000094	granulocyte	True	cell_type
+granulocyte monocyte progenitor cell	granulocyte monocyte progenitor cell	CL:0000557	granulocyte monocyte progenitor cell	True	cell_type
+granulocytopoietic cell	granulocytopoietic cell	CL:0002191	granulocytopoietic cell	True	cell_type
+hematopoietic precursor cell	hematopoietic precursor cell	CL:0008001	hematopoietic precursor cell	True	cell_type
+hematopoietic stem cell	hematopoietic stem cell	CL:0000037	hematopoietic stem cell	True	cell_type
+hepatic stellate cell	hepatic stellate cell	CL:0000632	hepatic stellate cell	True	cell_type
+hepatocyte	hepatocyte	CL:0000182	hepatocyte	True	cell_type
+immature B cell	immature b cell	CL:0000816	immature B cell	True	cell_type
+immature NKT cell	immature nkt cell	CL:0000914	immature NK T cell	True	cell_type
+immature T cell	immature t cell	CL:0002420	immature T cell	True	cell_type
+intermediate monocyte	intermediate monocyte	CL:0002393	intermediate monocyte	True	cell_type
+interneuron	interneuron	CL:0000099	interneuron	True	cell_type
+intestinal crypt stem cell	intestinal crypt stem cell	CL:0002250	intestinal crypt stem cell	True	cell_type
+keratinocyte	keratinocyte	CL:0000312	keratinocyte	True	cell_type
+keratinocyte stem cell	keratinocyte stem cell	CL:0002337	keratinocyte stem cell	True	cell_type
+kidney capillary endothelial cell	kidney capillary endothelial cell	CL:1000892	kidney capillary endothelial cell	True	cell_type
+kidney cell	kidney cell	CL:1000497	kidney cell	True	cell_type
+kidney collecting duct epithelial cell	kidney collecting duct epithelial cell	CL:1000454	kidney collecting duct epithelial cell	True	cell_type
+kidney collecting duct principal cell	kidney collecting duct principal cell	CL:1001431	kidney collecting duct principal cell	True	cell_type
+kidney cortex artery cell	kidney cortex artery cell	CL:1001045	kidney cortex artery cell	True	cell_type
+kidney distal convoluted tubule epithelial cell	kidney distal convoluted tubule epithelial cell	CL:1000849	kidney distal convoluted tubule epithelial cell	True	cell_type
+kidney interstitial fibroblast	kidney interstitial fibroblast	CL:1000692	kidney interstitial fibroblast	True	cell_type
+kidney loop of Henle ascending limb epithelial cell	kidney loop of henle ascending limb epithelial cell	CL:1001016	kidney loop of Henle ascending limb epithelial cell	True	cell_type
+kidney loop of Henle thick ascending limb epithelial cell	kidney loop of henle thick ascending limb epithelial cell	CL:1001106	kidney loop of Henle thick ascending limb epithelial cell	True	cell_type
+kidney mesangial cell	kidney mesangial cell	CL:0000650	mesangial cell	True	cell_type
+kidney proximal convoluted tubule epithelial cell	kidney proximal convoluted tubule epithelial cell	CL:1000838	kidney proximal convoluted tubule epithelial cell	True	cell_type
+kidney proximal straight tubule epithelial cell	kidney proximal straight tubule epithelial cell	CL:1000839	kidney proximal straight tubule epithelial cell	True	cell_type
+large intestine goblet cell	large intestine goblet cell	CL:1000320	large intestine goblet cell	True	cell_type
+late pro-B cell	late pro-b cell	CL:0002048	late pro-B cell	True	cell_type
+leukocyte	leukocyte	CL:0000738	leukocyte	True	cell_type
+luminal epithelial cell of mammary gland	luminal epithelial cell of mammary gland	CL:0002326	luminal epithelial cell of mammary gland	True	cell_type
+lung macrophage	lung macrophage	CL:1001603	lung macrophage	True	cell_type
+lung neuroendocrine cell	lung neuroendocrine cell	CL:1000223	lung neuroendocrine cell	True	cell_type
+lymphocyte	lymphocyte	CL:0000542	lymphocyte	True	cell_type
+lymphoid progenitor cell	lymphoid progenitor cell	CL:0000838	lymphoid lineage restricted progenitor cell	True	cell_type
+macrophage	macrophage	CL:0000235	macrophage	True	cell_type
+macrophage dendritic cell progenitor	macrophage dendritic cell progenitor	CL:0002009	macrophage dendritic cell progenitor	True	cell_type
+mast cell	mast cell	CL:0000097	mast cell	True	cell_type
+mature NK T cell	mature nk t cell	CL:0000814	mature NK T cell	True	cell_type
+mature alpha-beta T cell	mature alpha-beta t cell	CL:0000791	mature alpha-beta T cell	True	cell_type
+medium spiny neuron	medium spiny neuron	CL:1001474	medium spiny neuron	True	cell_type
+megakaryocyte-erythroid progenitor cell	megakaryocyte-erythroid progenitor cell	CL:0000050	megakaryocyte-erythroid progenitor cell	True	cell_type
+mesangial cell	mesangial cell	CL:0000650	mesangial cell	True	cell_type
+mesenchymal cell	mesenchymal cell	CL:0008019	mesenchymal cell	True	cell_type
+mesenchymal progenitor cell	mesenchymal progenitor cell	CL:0000134	mesenchymal stem cell	True	cell_type
+mesenchymal stem cell	mesenchymal stem cell	CL:0000134	mesenchymal stem cell	True	cell_type
+mesenchymal stem cell of adipose	mesenchymal stem cell of adipose	CL:0002570	mesenchymal stem cell of adipose	True	cell_type
+microglial cell	microglial cell	CL:0000129	microglial cell	True	cell_type
+monocyte	monocyte	CL:0000576	monocyte	True	cell_type
+mucus secreting cell	mucus secreting cell	CL:0000319	mucus secreting cell	True	cell_type
+myeloid cell	myeloid cell	CL:0000763	myeloid cell	True	cell_type
+myeloid dendritic cell	myeloid dendritic cell	CL:0000782	myeloid dendritic cell	True	cell_type
+myeloid leukocyte	myeloid leukocyte	CL:0000766	myeloid leukocyte	True	cell_type
+naive B cell	naive b cell	CL:0000788	naive B cell	True	cell_type
+naive T cell	naive t cell	CL:0000898	naive T cell	True	cell_type
+neuroendocrine cell	neuroendocrine cell	CL:0000165	neuroendocrine cell	True	cell_type
+neuroepithelial cell	neuroepithelial cell	CL:0002259	neuroepithelial stem cell	True	cell_type
+neuron	neuron	CL:0000540	neuron	True	cell_type
+neuronal stem cell	neuronal stem cell	CL:0000047	neuronal stem cell	True	cell_type
+neutrophil	neutrophil	CL:0000775	neutrophil	True	cell_type
+non-classical monocyte	non-classical monocyte	CL:0000875	non-classical monocyte	True	cell_type
+oligodendrocyte	oligodendrocyte	CL:0000128	oligodendrocyte	True	cell_type
+oligodendrocyte precursor cell	oligodendrocyte precursor cell	CL:0002453	oligodendrocyte precursor cell	True	cell_type
+pancreatic A cell	pancreatic a cell	CL:0000171	pancreatic A cell	True	cell_type
+pancreatic B cell	pancreatic b cell	CL:0000169	type B pancreatic cell	True	cell_type
+pancreatic D cell	pancreatic d cell	CL:0000173	pancreatic D cell	True	cell_type
+pancreatic PP cell	pancreatic pp cell	CL:0002275	pancreatic PP cell	True	cell_type
+pancreatic acinar cell	pancreatic acinar cell	CL:0002064	pancreatic acinar cell	True	cell_type
+pancreatic ductal cel	pancreatic ductal cel	CL:0002079	pancreatic ductal cell	True	cell_type
+pancreatic ductal cell	pancreatic ductal cell	CL:0002079	pancreatic ductal cell	True	cell_type
+pancreatic stellate cell	pancreatic stellate cell	CL:0002410	pancreatic stellate cell	True	cell_type
+pericyte cell	pericyte cell	CL:0000669	pericyte cell	True	cell_type
+plasma cell	plasma cell	CL:0000786	plasma cell	True	cell_type
+plasmacytoid dendritic cell	plasmacytoid dendritic cell	CL:0000784	plasmacytoid dendritic cell	True	cell_type
+podocyte	podocyte	CL:0000391	podocyte (sensu Diptera)	True	cell_type
+precursor B cell	precursor b cell	CL:0000817	precursor B cell	True	cell_type
+proerythroblast	proerythroblast	CL:0000547	proerythroblast	True	cell_type
+professional antigen presenting cell	professional antigen presenting cell	CL:0000145	professional antigen presenting cell	True	cell_type
+promonocyte	promonocyte	CL:0000559	promonocyte	True	cell_type
+pulmonary interstitial fibroblast	pulmonary interstitial fibroblast	CL:0002241	pulmonary interstitial fibroblast	True	cell_type
+regulatory T cell	regulatory t cell	CL:0000815	regulatory T cell	True	cell_type
+respiratory basal cell	respiratory basal cell	CL:0002633	respiratory basal cell	True	cell_type
+secretory cell	secretory cell	CL:0000151	secretory cell	True	cell_type
+skeletal muscle cell	skeletal muscle cell	CL:0000188	cell of skeletal muscle	True	cell_type
+skeletal muscle satellite cell	skeletal muscle satellite cell	CL:0000594	skeletal muscle satellite cell	True	cell_type
+smooth muscle cell	smooth muscle cell	CL:0000192	smooth muscle cell	True	cell_type
+smooth muscle cell of the pulmonary artery	smooth muscle cell of the pulmonary artery	CL:0002591	smooth muscle cell of the pulmonary artery	True	cell_type
+smooth muscle cell of trachea	smooth muscle cell of trachea	CL:0002600	smooth muscle cell of trachea	True	cell_type
+stem cell of epidermis	stem cell of epidermis	CL:1000428	stem cell of epidermis	True	cell_type
+stromal cell	stromal cell	CL:0000499	stromal cell	True	cell_type
+thymocyte	thymocyte	CL:0000893	thymocyte	True	cell_type
+type I pneumocyte	type i pneumocyte	CL:0002062	type I pneumocyte	True	cell_type
+type II pneumocyte	type ii pneumocyte	CL:0002063	type II pneumocyte	True	cell_type
+valve cell	valve cell	CL:0000663	valve cell	True	cell_type
+vein endothelial cell	vein endothelial cell	CL:0002543	vein endothelial cell	True	cell_type
+ventricular myocyte	ventricular myocyte	CL:0002131	regular ventricular cardiac myocyte	True	cell_type
