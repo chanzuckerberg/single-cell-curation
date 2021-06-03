@@ -1,0 +1,42 @@
+obs:
+  assay_ontology_term_id: EFO:0008992
+  sex: male
+  disease_ontology_term_id: PATO:0000461
+  cell_type_ontology_term_id:
+    status:
+      rest_CD8: CL:0000811
+      rest_CD4: CL:0000810
+      rest_unassigned: CL:0000790
+      act_CD4: CL:0000624
+      act_CD8: CL:0000625
+      act_unassigned: CL:0000791
+  development_stage_ontology_term_id:
+    donor:
+      Donor1: HsapDv:0000159
+      Donor2: HsapDv:0000146
+      DonorA: unknown
+      DonorB: unknown
+  ethnicity_ontology_term_id:
+    donor:
+      Donor1: HANCESTRO:0014
+      Donor2: HANCESTRO:0005
+      DonorA: unknown
+      DonorB: unknown
+  tissue_ontology_term_id:
+    tissue:
+      lung: UBERON:0002048
+      lymph node: UBERON:0000029
+      blood: UBERON:0000178
+      bone marrow: UBERON:0002371
+uns:
+  version:
+    corpora_schema_version: 1.1.0
+    corpora_encoding_version: 0.1.0
+  organism: Homo sapiens
+  organism_ontology_term_id: NCBITaxon:9606
+  layer_descriptions:
+    X: log(CPM + 1)
+    raw.X: raw
+  title: Single-cell transcriptomics of human T cells reveals tissue and activation
+    signatures in health and disease
+

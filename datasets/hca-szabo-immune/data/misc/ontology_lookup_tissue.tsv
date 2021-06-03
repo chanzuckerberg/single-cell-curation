@@ -1,0 +1,5 @@
+tissue	lookup_name	ontology_term_id	ontology_term_name	final	type
+lung	lung	UBERON:0002048		True	tissue
+lymph node	lymph node	UBERON:0000029		True	tissue
+blood	blood	UBERON:0000178		True	tissue
+bone marrow	ALM	UBERON:0002371		True	tissue
