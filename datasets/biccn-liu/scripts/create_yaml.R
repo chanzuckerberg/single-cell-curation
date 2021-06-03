@@ -1,29 +1,29 @@
 # Create cellxgene schema yaml file
 
+
 library("yaml")
 
 main <- function(cmdArgs=commandArgs(T)) {
     
-    cell_type_file <- cmdArgs[1]
-    tissue_file <- cmdArgs[2]
-    out_file <- cmdArgs[3]
+    dataset_title <- cmdArgs[1]
+    lookup_table_files <- cmdArgs[c(-1, -length(cmdArgs))]
+    out_file <- cmdArgs[length(cmdArgs)]
     
     #cell_type_file <- '../data/misc/ontology_lookup_cell_type.tsv'
     
     # Create backbone of the yml with manual values
-    yaml_final <- make_yaml_list()
+    yaml_final <- make_yaml_list(dataset_title)
     
     # Read suggested term tables
-    cell_type <- read.table(cell_type_file, sep = '\t', stringsAsFactors = F, header = T)
-    tissue <- read.table(tissue_file, sep = '\t', stringsAsFactors = F, header = T)
+    lookup_tables <- lapply(lookup_table_files, read.table, sep='\t', stringsAsFactors=F, header=T)
     
     # Verify there's only on ontology term per item and convert to list
-    cell_type_yaml = lookup_table_to_list(cell_type)
-    tissue_yaml = lookup_table_to_list(tissue)
+    lookup_tables <- lapply(lookup_tables, lookup_table_to_list)
     
     # Appending to yaml
-    yaml_final$obs <- c(yaml_final$obs, list(cell_type_ontology_term_id = list(BICCN_subclass_label = cell_type_yaml)),
-                                        list(tissue_ontology_term_id = list(brain_region = tissue_yaml)))
+    for (i in lookup_tables) 
+        yaml_final$obs <- c(yaml_final$obs, i)
+                        
     yaml_final <- as.yaml(yaml_final)
     
     # Eliminate single quotes in numbers
@@ -35,23 +35,25 @@ main <- function(cmdArgs=commandArgs(T)) {
 
 
 #' Creates backbone of yaml
-make_yaml_list <- function() {
+make_yaml_list <- function(dataset_title) {
     
     x <- list(
-         fixup_gene_symbols = list(X = "log1p", raw.X = "raw"),
-         obs = list(assay_ontology_term_id = "EFO:0008930",
-                    ethnicity_ontology_term_id = "na",
-                    sex = list(sex = list(M='male', F='female')),
+         #fixup_gene_symbols = list(X = "raw", raw.X = "raw"),
+         fixup_gene_symbols = list(X = "raw"),
+         obs = list(
+                    sex = 'male',
                     disease_ontology_term_id =  'PATO:0000461',
-                    development_stage_ontology_term_id = "EFO:0001272"
+                    assay_ontology_term_id = 'EFO:0008939',
+                    ethnicity_ontology_term_id =  'na',
+                    development_stage_ontology_term_id = 'EFO:0001272'
                     ),
          
          uns = list(version = list(corpora_schema_version="1.1.0", corpora_encoding_version="0.1.0"),
                     organism = "Mus musculus", 
                     organism_ontology_term_id = "NCBITaxon:10090",
-                    layer_descriptions = list(X = "log(CPM+1)", raw.X = "raw"), 
-                    publication_doi = "https://doi.org/10.1038/nn.4216", 
-                    title = paste("Shared and distinct transcriptomic cell types across neocortical areas")
+                    #layer_descriptions = list(X = "normalized by posterior probability", raw.X = "raw"), 
+                    layer_descriptions = list(X = "raw"), 
+                    title = dataset_title
                     )
          )
     
@@ -71,9 +73,14 @@ lookup_table_to_list <- function(x) {
     validate_lookup_table(x)
     
     x <- x[x$final, ]
+    type <- x$type[1]
+    orignal_column <- colnames(x)[1]
     
     results  <- setNames(x[, 3, drop = T], x[, 1, drop = T])
-    results <- as.list(results)
+    results <- list(list(as.list(results)))
+    #browser()
+    names(results) <- paste0(type, '_ontology_term_id')
+    names(results[[1]]) <- orignal_column
     
     return(results)
     
@@ -85,7 +92,11 @@ validate_lookup_table <- function(x) {
     
     if(any(tallies!=1)){
         incorrect <- names(tallies[tallies!=1])
-        stop("The following categories don't have exactly one ontology selected", paste(incorrect, collapse = ", "))
+        stop("Lookup table error: The following categories don't have exactly one ontology selected", paste(incorrect, collapse = ", "))
+    }
+    
+    if(length(unique(x$type)) > 1) {
+        stop("Lookup table error: only one type per table is allowed, I found these multiple types: ", paste(unique(x$type), collapse=", "))
     }
 }
 
