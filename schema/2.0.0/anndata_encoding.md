@@ -50,8 +50,6 @@ If the key is present, then the value must not be empty.
 **Key**|**Value Type**|**Notes**
 -----|-----|-----
 default\_embedding|`str`|Must match a key to an embedding in `obsm`.
-default\_field|`str`|Must match a column name in `obs`
-tags|`list` of `str`s|
 <obs\_column>\_colors|`list` of color specifications (see anndata/cellxgene documentation)|<obs\_column> must be a column name in `obs`. There may be multiple keys like this.
 ​
 ## `obsm`
@@ -91,3 +89,4 @@ Moreover, `var.index` must contain the human-readable display names for features
 * [#43](https://github.com/chanzuckerberg/single-cell-curation/issues/43) obsm MUST be encoded as numpy arrays
 * AnnData MUST contain a raw layer.
 * Moved organism from uns to obs
+* `tags` and `default_field` presentation metadata are not used by the application and have been deprecated.
