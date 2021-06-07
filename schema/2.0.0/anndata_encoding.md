@@ -41,8 +41,6 @@ Recall that `uns` is a mapping with `str`s as keys. The cellxgene data integrati
 version|`dict`|Contains keys "corpora_schema_version" and "corpora_encoding_version" indicating the version of the schema and schema encoding used to create the h5ad.
 title|`str`|
 layer\_descriptions|`dict` with string keys and values|One key must be "X" which describes the transformations (if any) performed to produce the X matrix cellxgene displays.
-organism|`str`|
-organism\_ontology\_term\_id|`str`|
 batch\_condition|`str` OR `list[str]`. `str` values must refer to keys in `obs`.
 
 ​
@@ -67,6 +65,7 @@ The cellxgene schema requires a number of columns be present in the `obs` datafr
 ​
 **Key**|**Value Type**|**Notes**
 -----|-----|-----
+organism|`str` or categorical with `str` categories|
 tissue|`str` or categorical with `str` categories|
 assay|`str` or categorical with `str` categories|
 disease|`str` or categorical with `str` categories|
@@ -74,6 +73,7 @@ cell\_type|`str` or categorical with `str` categories|
 sex|`str` or categorical with `str` categories|
 ethnicity|`str` or categorical with `str` categories|
 development\_stage|`str` or categorical with `str` categories|
+organism\_ontology\_term\_id|`str` or categorical with `str` categories|Not necessarily human-readable
 tissue\_ontology\_term\_id|`str` or categorical with `str` categories|Not necessarily human-readable
 assay\_ontology\_term\_id|`str` or categorical with `str` categories|Not necessarily human-readable
 disease\_ontology\_term\_id|`str` or categorical with `str` categories|Not necessarily human-readable
@@ -90,3 +90,4 @@ Moreover, `var.index` must contain the human-readable display names for features
 
 * [#43](https://github.com/chanzuckerberg/single-cell-curation/issues/43) obsm MUST be encoded as numpy arrays
 * AnnData MUST contain a raw layer.
+* Moved organism from uns to obs
