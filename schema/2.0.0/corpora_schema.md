@@ -96,6 +96,7 @@ Each cell MUST be annotated with the following ontology terms.
 
 **Field name**|**Constraints**
 :--|:--
+| organism\_ontology\_term\_id 	| NCBITaxon term 	|
 tissue\_ontology\_term\_id|UBERON term. This field SHOULD be appended with " (cell culture)" or " (organoid)" if appropriate.
 assay\_ontology\_term\_id|EFO term
 disease\_ontology\_term\_id|MONDO term or [PATO:0000461](https://bioportal.bioontology.org/ontologies/PATO/?p=classes&conceptid=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FPATO_0000461)
@@ -107,6 +108,7 @@ With the exception of sex, which does not adhere to an ontology, the ontology la
 
 **Field name**|**Constraints**
 :--|:--
+organism|string
 tissue|string. This field SHOULD be appended with " (cell culture)" or " (organoid)" if appropriate.
 assay|string
 disease|string
@@ -135,8 +137,6 @@ There following fields annotate the whole dataset and MUST be provided.
 
 **Field name**|**Constraints**
 :--|:--
-organism|String
-organism\_ontology\_term\_id|NCBITaxon term
 layer\_descriptions|Dictionary\[String\]|Keys MUST be the layer names whose values are free text description of how the layer was created (e.g. "counts per million")
 version|Dictionary| MUST contain key `corpora_schema_version` and its value MUST be the schema encoding version. See [here](https://github.com/chanzuckerberg/single-cell-curation/tree/main/docs/encodings/) for documentation that describes the encoding.
 batch_condition|String \| List\[String\]| values MUST match cell metadata keys. Together, these keys define the "batches" that a normalization or integration algorithm should be aware of. For example if "patient" "seqBatch" are keys of vectors of cell metadata `"patient"`, `"seqBatch"`, or `["patient", "seqBatch"]` would be valid batch_condition values.
@@ -210,6 +210,10 @@ The color code at the nth position in the array corresponds to category n in the
   * `ontology_term_id` fields may **not** be empty strings when no appropriate ontology value is available.
 
 * `tags` and `default_field` presentation metadata are not used by the application and have been deprecated.
+
+* Changed one metadata field:
+  * [#7](https://github.com/chanzuckerberg/single-cell-curation/issues/7), [#8](https://github.com/chanzuckerberg/single-cell-curation/issues/8) Move organism from "dataset" metadata to "cell" metadata
+
 * Specifies the version of HGNC to validate against.
 
 
