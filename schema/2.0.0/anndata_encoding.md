@@ -78,7 +78,9 @@ disease\_ontology\_term\_id|`str` or categorical with `str` categories|Not neces
 cell\_type\_ontology\_term\_id|`str` or categorical with `str` categories|Not necessarily human-readable
 ethnicity\_ontology\_term\_id|`str` or categorical with `str` categories|Not necessarily human-readable
 development\_stage\_ontology\_term\_id|`str` or categorical with `str` categories|Not necessarily human-readable
-​
+​sex\_ontology\_term\_id|`str` or categorical with `str` categories|Not necessarily human-readable
+|||
+
 ## `var`
 ​
 cellxgene requires unique feature identifiers, so the index of `var` must not contain any duplicate values.
@@ -90,3 +92,4 @@ Moreover, `var.index` must contain the human-readable display names for features
 * AnnData MUST contain a raw layer.
 * Moved organism from uns to obs
 * `tags` and `default_field` presentation metadata are not used by the application and have been deprecated.
+* Added `sex_ontology_term_id` to obs
