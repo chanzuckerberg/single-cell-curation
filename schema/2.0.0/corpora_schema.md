@@ -272,6 +272,6 @@ The color code at the nth position in the array corresponds to category n in the
 
 * Updated the **Gene Metadata** section to require ENSEMBL identifiers instead of HGNC symbols. Added `gene_id` and `gene_symbol`.
 
-* ~~Specifies the version of HGNC to validate against.~~
+* Specifies the ontology versions for validation
 
 
