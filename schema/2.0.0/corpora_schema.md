@@ -90,6 +90,54 @@ In this case, the most  precise accurate term may be the root of the cell ontolo
 The Cell Ontology is expanding over time, and we hope to migrate datasets to more defined terms as they are defined.
 In the mean time, using Cell Ontology terms maximizes the findability (and therefore reusability) of datasets.
 
+
+### Required Ontologies
+
+| Ontology | Required version | Download |
+|:--|:--|:--|
+| [Ensembl (Human)] | Human reference GRCh38 (GENCODE v32/Ensembl 98)] matching [cellranger 2020-A (July 7, 2020) release] | [gencode.v32.primary_assembly.annotation.gtf] |
+| [Ensembl (Mouse)] | Mouse reference mm10 (GENCODE vM23/Ensembl 98) matching [cellranger 2020-A (July 7, 2020) release]| [gencode.vM23.primary_assembly.annotation.gtf] |
+| [NCBI organismal classification] | [2021-02-15] | [ncbitaxon.owl] |
+| [Uberon multi-species anatomy ontology] | [2021-02-12] |  [composite-vertebrate.owl]  |
+| [Cell Ontology (CL)] | included with Uberon | included with Uberon |
+| [Experimental Factor Ontology (EFO)] | [2021-05-17 EFO 3.30.0] | [efo-base.owl] |
+| [Mondo Disease Ontology (MONDO)] | [2021-06-01] | [mondo.owl] | 
+| [Human Ancestry Ontology (HANCESTRO)] | 2021-01-04 (2.5) | hancestro.owl from [OLS]  (Note: [HANCESTRO releases] do not include .owl files) |
+| | | |
+
+[ENSEMBL (Human)]: http://www.ensembl.org/Homo_sapiens/Info/Index
+[gencode.v32.primary_assembly.annotation.gtf]:http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/gencode.v32.primary_assembly.annotation.gtf.gz"
+
+[ENSEMBL (Mouse)]: http://www.ensembl.org/Mus_musculus/Info/Index
+[gencode.vM23.primary_assembly.annotation.gtf]:http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M23/gencode.vM23.primary_assembly.annotation.gtf.gz"
+
+[cellranger 2020-A (July 7, 2020) release]: https://support.10xgenomics.com/single-cell-gene-expression/software/release-notes/build
+
+
+[NCBI organismal classification]: http://obofoundry.org/ontology/ncbitaxon.html
+[2021-02-15]: https://github.com/obophenotype/ncbitaxon/releases/tag/v2021-02-15
+[ncbitaxon.owl]: https://github.com/obophenotype/ncbitaxon/releases/download/v2021-02-15/ncbitaxon.owl.gz
+
+[Uberon multi-species anatomy ontology]: http://www.obofoundry.org/ontology/uberon.html
+[2021-02-12]: https://github.com/obophenotype/uberon/releases/tag/v2021-02-12
+[composite-vertebrate.owl]: https://github.com/obophenotype/uberon/releases/download/v2021-02-12/composite-vertebrate.owl
+
+[Cell Ontology (CL)]: http://obofoundry.org/ontology/cl.html
+
+[Experimental Factor Ontology (EFO)]: http://www.ebi.ac.uk/efo
+[2021-05-17 EFO 3.30.0]: https://github.com/EBISPOT/efo/releases/tag/v3.30.0
+[efo-base.owl]: https://github.com/EBISPOT/efo/releases/download/v3.30.0/efo-base.owl
+
+[Mondo Disease Ontology (MONDO)]: http://obofoundry.org/ontology/mondo.html
+
+[2021-06-01]: https://github.com/monarch-initiative/mondo/releases/tag/v2021-06-01
+
+[mondo.owl]: https://github.com/monarch-initiative/mondo/releases/download/v2021-06-01/mondo.owl
+
+[Human Ancestry Ontology (HANCESTRO)]: http://www.obofoundry.org/ontology/hancestro.html
+[OLS]: https://www.ebi.ac.uk/ols/ontologies/hancestro
+[HANCESTRO releases]: https://github.com/EBISPOT/ancestro/releases
+
 #### Cell Metadata
 
 Each cell MUST be annotated with the following ontology terms by the curator.
