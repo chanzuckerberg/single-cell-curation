@@ -84,7 +84,7 @@ development\_stage\_ontology\_term\_id|`str` or categorical with `str` categorie
 ## `var`
 ​
 cellxgene requires unique feature identifiers, so the index of `var` must not contain any duplicate values.
-Moreover, `var.index` must contain the human-readable display names for features, for example HGNC symbols.
+Moreover, `var.index` must contain the gene identifiers for features, for example ENSEMBL identifiers.
 
 ## Appendix A. Changelog
 
@@ -93,3 +93,4 @@ Moreover, `var.index` must contain the human-readable display names for features
 * Moved organism from uns to obs
 * `tags` and `default_field` presentation metadata are not used by the application and have been deprecated.
 * Added `sex_ontology_term_id` to obs
+* Updated **var** section to use ENSEMBL identifiers instead of HGNC symbols
