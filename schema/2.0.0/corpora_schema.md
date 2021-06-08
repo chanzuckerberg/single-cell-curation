@@ -92,30 +92,32 @@ In the mean time, using Cell Ontology terms maximizes the findability (and there
 
 #### Cell Metadata
 
-Each cell MUST be annotated with the following ontology terms.
+Each cell MUST be annotated with the following ontology terms by the curator.
 
-**Field name**|**Constraints**
-:--|:--
-| organism\_ontology\_term\_id 	| NCBITaxon term 	|
-tissue\_ontology\_term\_id|UBERON term. This field SHOULD be appended with " (cell culture)" or " (organoid)" if appropriate.
-assay\_ontology\_term\_id|EFO term
-disease\_ontology\_term\_id|MONDO term or [PATO:0000461](https://bioportal.bioontology.org/ontologies/PATO/?p=classes&conceptid=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FPATO_0000461)
-cell\_type\_ontology\_term\_id|CL term
-ethnicity\_ontology\_term\_id|HANCESTRO term, "na" if non-human
-development\_stage\_ontology\_term\_id|HsapDv term if human, child of EFO:0000399 otherwise
+| Field name | Constraints |  Annotator |
+:--|:--|:--
+| organism_ontology_term_id | NCBITaxon term | Curator |
+| tissue_ontology_term_id | UBERON term. This SHOULD be appended with " (cell culture)" or " (organoid)" if appropriate. | Curator |
+| assay_ontology_term_id | EFO term | Curator |
+| disease_ontology_term_id | MONDO term or [PATO:0000461](https://bioportal.bioontology.org/ontologies/PATO/?p=classes&conceptid=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FPATO_0000461) | Curator |
+| cell_type_ontology_term_id | CL term | Curator |
+| ethnicity_ontology_term_id | `organism_ontolology_term_id` is “NCBITaxon:9606”. This MUST be either a HANCESTRO term or “unknown” if unavailable. <br><br> `organism_ontolology_term_id` is NOT “NCBITaxon:9606”. This MUST be "na". | Curator |
+| development_stage_ontology_term_id | If unavailable, this MUST be "unknown". <br><br> `organism_ontolology_term_id` is “NCBITaxon:9606. This MUST be a HsapDv term.<br><br> `organism_ontolology_term_id` is NOT “NCBITaxon:9606”. This MUST be a child of "EFO:0000399". | Curator |
+| | |
 
-With the exception of sex, which does not adhere to an ontology, the ontology label MUST also be provided and MUST match the paired ontology term:
+With the exception of `sex`, which does not adhere to an ontology, the ontology label MUST be applied by curation software and MUST match the paired ontology term:
 
-**Field name**|**Constraints**
-:--|:--
-organism|string
-tissue|string. This field SHOULD be appended with " (cell culture)" or " (organoid)" if appropriate.
-assay|string
-disease|string
-cell\_type|string
-sex|"male", "female", "mixed", "unknown", or "other"
-ethnicity|string, "na" if non-human, "unknown" if not available
-development\_stage|string, "unknown" if not available
+| Field name | Constraints | Annotator |
+:--|:--|:--
+| organism | string | Software |
+| tissue | string. This MUST be appended with " (cell culture)" or " (organoid)" if set in the matching identifier. | Software |
+| assay | string | Software |
+| disease | string | Software |
+| cell_type | string | Software |
+| ethnicity | string. This MUST be "na" or "unknown" if set in the matching identifier. | Software |
+| development_stage | string. This MUST be "unknown" if set in the matching identifier | Software |
+| sex | "male", "female", "mixed", "unknown", or "other" | Curator |
+| | |
 
 #### Gene Metadata
 
