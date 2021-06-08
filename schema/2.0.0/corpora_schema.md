@@ -99,13 +99,14 @@ Each cell MUST be annotated with the following ontology terms by the curator.
 | organism_ontology_term_id | NCBITaxon term | Curator |
 | tissue_ontology_term_id | UBERON term. This SHOULD be appended with " (cell culture)" or " (organoid)" if appropriate. | Curator |
 | assay_ontology_term_id | EFO term | Curator |
-| disease_ontology_term_id | MONDO term or [PATO:0000461](https://bioportal.bioontology.org/ontologies/PATO/?p=classes&conceptid=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FPATO_0000461) | Curator |
+| disease_ontology_term_id | MONDO term or [PATO:0000461](http://purl.obolibrary.org/obo/PATO_0000461) | Curator |
 | cell_type_ontology_term_id | CL term | Curator |
 | ethnicity_ontology_term_id | `organism_ontolology_term_id` is “NCBITaxon:9606”. This MUST be either a HANCESTRO term or “unknown” if unavailable. <br><br> `organism_ontolology_term_id` is NOT “NCBITaxon:9606”. This MUST be "na". | Curator |
 | development_stage_ontology_term_id | If unavailable, this MUST be "unknown". <br><br> `organism_ontolology_term_id` is “NCBITaxon:9606. This MUST be a HsapDv term.<br><br> `organism_ontolology_term_id` is NOT “NCBITaxon:9606”. This MUST be a child of "EFO:0000399". | Curator |
+| sex_ontology_term_id | This MUST be a child of [PATO:0001894](http://purl.obolibrary.org/obo/PATO_0001894) | | Curator |
 | | |
 
-With the exception of `sex`, which does not adhere to an ontology, the ontology label MUST be applied by curation software and MUST match the paired ontology term:
+The ontology labels MUST be applied by curation software and MUST match the paired ontology term:
 
 | Field name | Constraints | Annotator |
 :--|:--|:--
@@ -116,7 +117,7 @@ With the exception of `sex`, which does not adhere to an ontology, the ontology 
 | cell_type | string | Software |
 | ethnicity | string. This MUST be "na" or "unknown" if set in the matching identifier. | Software |
 | development_stage | string. This MUST be "unknown" if set in the matching identifier | Software |
-| sex | "male", "female", "mixed", "unknown", or "other" | Curator |
+| sex | string | Software |
 | | |
 
 #### Gene Metadata
