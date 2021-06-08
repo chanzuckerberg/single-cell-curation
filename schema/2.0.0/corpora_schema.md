@@ -122,21 +122,24 @@ The ontology labels MUST be applied by curation software and MUST match the pair
 
 #### Gene Metadata
 
-Cellxgene uses standard gene symbols to ensure that all datasets it stores measure the same features and can therefore be integrated.
+Cellxgene uses standard gene identifiers to ensure that all datasets it stores measure the same features and can therefore be integrated.
 
 Every gene feature MUST be assigned a unique identifier.
-This is occasionally not present because of one-to-many mappings between gene symbols and other gene ids.
-In cases where there are duplicated feature identifiers, they will need to be appropriately combined before submission.
-This is needed for the explorer to function.
-When a user requests gene expression information, the explorer needs to be able to unambiguously return a single value.
+This is occasionally not present because of one-to-many mappings between gene symbols and other gene identifiers.
+In cases where there are duplicated feature identifiers, they MUST be appropriately combined before submission.
+This is required for the explorer to function.
+When a user requests gene expression information, the explorer must unambiguously return a single value.
 
-If the samples being measured are human, then the feature ids MUST be [HGNC](https://www.genenames.org/about/guidelines/#!/#tocAnchor-1-7) approved gene symbols.
-If the features are mouse genes, then the feature ids SHOULD be [MGI](http://www.informatics.jax.org/mgihome/nomen/gene.shtml) gene symbols.
-For other organisms, gene symbols SHOULD be the accepted standard human readable symbols for that organism.
+| Field name | Constraints | Annotator |
+:--|:--|:--
+| gene_id | ENSEMBL term from the ontology required for the organism of the gene feature  | Curator |
+| gene_symbol | string | Software |
+
+~~For other organisms, gene symbols SHOULD be the accepted standard human readable symbols for that organism.~~
 
 #### Dataset Metadata
 
-There following fields annotate the whole dataset and MUST be provided.
+The following fields annotate the whole dataset and MUST be provided.
 
 **Field name**|**Constraints**
 :--|:--
@@ -217,6 +220,10 @@ The color code at the nth position in the array corresponds to category n in the
 * Changed one metadata field:
   * [#7](https://github.com/chanzuckerberg/single-cell-curation/issues/7), [#8](https://github.com/chanzuckerberg/single-cell-curation/issues/8) Move organism from "dataset" metadata to "cell" metadata
 
-* Specifies the version of HGNC to validate against.
+* Added `sex_ontology_term_id` and ontology
+
+* Updated the **Gene Metadata** section to require ENSEMBL identifiers instead of HGNC symbols. Added `gene_id` and `gene_symbol`.
+
+* ~~Specifies the version of HGNC to validate against.~~
 
 
