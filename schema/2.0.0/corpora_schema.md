@@ -135,7 +135,7 @@ Each cell MUST be annotated with the following ontology terms by the curator.
 :--|:--|:--
 | organism_ontology_term_id | NCBITaxon term | Curator |
 | tissue_ontology_term_id | UBERON term. This SHOULD be appended with " (cell culture)" or " (organoid)" if appropriate. | Curator |
-| assay_ontology_term_id | EFO term | Curator |
+| assay_ontology_term_id | This MUST be a child of [EFO:0002694](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0002694). If there is not an exact match for the assay, *clarifying text* MAY be appended in parentheses such as " (sci-plex)". | Curator |
 | disease_ontology_term_id | MONDO term or [PATO:0000461](http://purl.obolibrary.org/obo/PATO_0000461) | Curator |
 | cell_type_ontology_term_id | CL term | Curator |
 | ethnicity_ontology_term_id | `organism_ontolology_term_id` is “NCBITaxon:9606”. This MUST be either a HANCESTRO term or “unknown” if unavailable. <br><br> `organism_ontolology_term_id` is NOT “NCBITaxon:9606”. This MUST be "na". | Curator |
@@ -149,7 +149,7 @@ The ontology labels MUST be applied by curation software and MUST match the pair
 :--|:--|:--
 | organism | string | Software |
 | tissue | string. This MUST be appended with " (cell culture)" or " (organoid)" if set in the matching identifier. | Software |
-| assay | string | Software |
+| assay | string. This MUST be appended with any *clarifing text* set in matching identifier. | Software |
 | disease | string | Software |
 | cell_type | string | Software |
 | ethnicity | string. This MUST be "na" or "unknown" if set in the matching identifier. | Software |
@@ -184,7 +184,7 @@ When a user requests gene expression information, the explorer must unambiguousl
 | Field name | Constraints | Annotator |
 :--|:--|:--
 | feature_biotype | "gene" | Software |
-| feature_id | ENSEMBL term from the required version corresponding to the organism for the gene feature  | Curator |
+| ENSEMBL  | ENSEMBL term from the required version corresponding to the organism for the gene feature  | Curator |
 | feature_name | string. ENSEMBL gene name | Software |
 |||
 
@@ -275,6 +275,6 @@ The color code at the nth position in the array corresponds to category n in the
 
 * Updated the **Gene Metadata** section to require ENSEMBL identifiers instead of HGNC symbols. Added `gene_id` and `gene_symbol`.
 
-* Specifies the ontology versions for validation
+* Specifies the cell ontology and ENSEMBL gene versions for validation
 
-
+* Updated gene_metadata to include feature_biotype, ENSEMBL feature_id, and ENSEMBL feature_name
