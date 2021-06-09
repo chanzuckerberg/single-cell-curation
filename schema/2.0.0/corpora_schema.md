@@ -79,7 +79,7 @@ This is usually the case when there are many ways to produce the matrix layer in
 ### Integration Metadata
 
 cellxgene requires ontology terms to enable search, comparison, and integration of data.
-Ontology terms MUST use [OBO-format ID](http://www.obofoundry.org/id-policy.html), meaning they are a CURIE where the prefix identifies the ontology.
+Ontology terms for cell metadata MUST use [OBO-format ID](http://www.obofoundry.org/id-policy.html), meaning they are a CURIE where the prefix identifies the ontology.
 For example `EFO:0000001` is a term in the `EFO` ontology.
 
 When no appropriate ontology value is available, then the most precise accurate term MUST be used.
@@ -95,8 +95,6 @@ In the mean time, using Cell Ontology terms maximizes the findability (and there
 
 | Ontology | Required version | Download |
 |:--|:--|:--|
-| [Ensembl (Human)] | Human reference GRCh38 (GENCODE v32/Ensembl 98)] matching [cellranger 2020-A (July 7, 2020) release] | [gencode.v32.primary_assembly.annotation.gtf] |
-| [Ensembl (Mouse)] | Mouse reference mm10 (GENCODE vM23/Ensembl 98) matching [cellranger 2020-A (July 7, 2020) release]| [gencode.vM23.primary_assembly.annotation.gtf] |
 | [NCBI organismal classification] | [2021-02-15] | [ncbitaxon.owl] |
 | [Uberon multi-species anatomy ontology] | [2021-02-12] |  [composite-vertebrate.owl]  |
 | [Cell Ontology (CL)] | included with Uberon | included with Uberon |
@@ -104,15 +102,6 @@ In the mean time, using Cell Ontology terms maximizes the findability (and there
 | [Mondo Disease Ontology (MONDO)] | [2021-06-01] | [mondo.owl] | 
 | [Human Ancestry Ontology (HANCESTRO)] | 2021-01-04 (2.5) | hancestro.owl from [OLS]  (Note: [HANCESTRO releases] do not include .owl files) |
 | | | |
-
-[ENSEMBL (Human)]: http://www.ensembl.org/Homo_sapiens/Info/Index
-[gencode.v32.primary_assembly.annotation.gtf]:http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/gencode.v32.primary_assembly.annotation.gtf.gz"
-
-[ENSEMBL (Mouse)]: http://www.ensembl.org/Mus_musculus/Info/Index
-[gencode.vM23.primary_assembly.annotation.gtf]:http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M23/gencode.vM23.primary_assembly.annotation.gtf.gz"
-
-[cellranger 2020-A (July 7, 2020) release]: https://support.10xgenomics.com/single-cell-gene-expression/software/release-notes/build
-
 
 [NCBI organismal classification]: http://obofoundry.org/ontology/ncbitaxon.html
 [2021-02-15]: https://github.com/obophenotype/ncbitaxon/releases/tag/v2021-02-15
@@ -170,7 +159,21 @@ The ontology labels MUST be applied by curation software and MUST match the pair
 
 #### Gene Metadata
 
-Cellxgene uses standard gene identifiers to ensure that all datasets it stores measure the same features and can therefore be integrated.
+
+Cellxgene uses ENSEMBL gene identifiers to ensure that all datasets it stores measure the same features and can therefore be integrated.
+
+| Organism | Required version | Download |
+|:--|:--|:--|
+| [ENSEMBL (Human)] | Human reference GRCh38 (GENCODE v32/Ensembl 98)] matching [cellranger 2020-A (July 7, 2020) release] | [gencode.v32.primary_assembly.annotation.gtf] |
+| [ENSEMBL (Mouse)] | Mouse reference mm10 (GENCODE vM23/Ensembl 98) matching [cellranger 2020-A (July 7, 2020) release]| [gencode.vM23.primary_assembly.annotation.gtf] |
+
+[ENSEMBL (Human)]: http://www.ensembl.org/Homo_sapiens/Info/Index
+[gencode.v32.primary_assembly.annotation.gtf]:http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/gencode.v32.primary_assembly.annotation.gtf.gz"
+
+[ENSEMBL (Mouse)]: http://www.ensembl.org/Mus_musculus/Info/Index
+[gencode.vM23.primary_assembly.annotation.gtf]:http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M23/gencode.vM23.primary_assembly.annotation.gtf.gz"
+
+[cellranger 2020-A (July 7, 2020) release]: https://support.10xgenomics.com/single-cell-gene-expression/software/release-notes/build
 
 Every gene feature MUST be assigned a unique identifier.
 This is occasionally not present because of one-to-many mappings between gene symbols and other gene identifiers.
@@ -180,10 +183,10 @@ When a user requests gene expression information, the explorer must unambiguousl
 
 | Field name | Constraints | Annotator |
 :--|:--|:--
-| gene_id | ENSEMBL term from the ontology required for the organism of the gene feature  | Curator |
-| gene_symbol | string | Software |
-
-~~For other organisms, gene symbols SHOULD be the accepted standard human readable symbols for that organism.~~
+| feature_biotype | "gene" | Software |
+| feature_id | ENSEMBL term from the required version corresponding to the organism for the gene feature  | Curator |
+| feature_name | string. ENSEMBL gene name | Software |
+|||
 
 #### Dataset Metadata
 
