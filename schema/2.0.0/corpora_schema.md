@@ -100,7 +100,9 @@ In the meantime, using Cell Ontology terms maximizes the findability (and theref
 | [Cell Ontology (CL)] | included with Uberon | included with Uberon |
 | [Experimental Factor Ontology (EFO)] | [2021-05-17 EFO 3.30.0] | [efo-base.owl] |
 | [Mondo Disease Ontology (MONDO)] | [2021-06-01] | [mondo.owl] | 
-| [Human Ancestry Ontology (HANCESTRO)] | 2021-01-04 (2.5) | hancestro.owl from [OLS]  (Note: [HANCESTRO releases] do not include .owl files) |
+| [Human Ancestry Ontology (HANCESTRO)] | [2021-01-04 (2.5)] | hancestro.owl included in Source code distribution  |
+| [Human Developmental Stages (HsapDv)] | [2016-07-06 (0.1)] | hsapdv.owl included in Source code distribution |
+| [Phenotype And Trait Ontology (PATO)] | [2021-05-26] | pato.owl included in Source code distribution |
 | | | |
 
 [NCBI organismal classification]: http://obofoundry.org/ontology/ncbitaxon.html
@@ -118,14 +120,17 @@ In the meantime, using Cell Ontology terms maximizes the findability (and theref
 [efo-base.owl]: https://github.com/EBISPOT/efo/releases/download/v3.30.0/efo-base.owl
 
 [Mondo Disease Ontology (MONDO)]: http://obofoundry.org/ontology/mondo.html
-
 [2021-06-01]: https://github.com/monarch-initiative/mondo/releases/tag/v2021-06-01
-
 [mondo.owl]: https://github.com/monarch-initiative/mondo/releases/download/v2021-06-01/mondo.owl
 
 [Human Ancestry Ontology (HANCESTRO)]: http://www.obofoundry.org/ontology/hancestro.html
-[OLS]: https://www.ebi.ac.uk/ols/ontologies/hancestro
-[HANCESTRO releases]: https://github.com/EBISPOT/ancestro/releases
+[2021-01-04 (2.5)]: https://github.com/EBISPOT/ancestro/releases/tag/2.5
+
+[Human Developmental Stages (HsapDv)]: http://www.obofoundry.org/ontology/hsapdv.html
+[2016-07-06 (0.1)]: https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/0.1
+
+[Phenotype And Trait Ontology (PATO)]: http://www.obofoundry.org/ontology/pato.html
+[2021-05-26]: https://github.com/pato-ontology/pato/releases/tag/v2021-05-26
 
 #### Cell Metadata
 
