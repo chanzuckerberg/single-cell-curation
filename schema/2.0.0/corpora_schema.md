@@ -30,12 +30,11 @@ Users interested in creating a new format that adheres to the cellxgene schema o
 
 Users interested in the schema's implementation should review the [encoding documents](https://github.com/chanzuckerberg/single-cell-curation/tree/main/docs/encodings/), which describe how cellxgene expects data to be uploaded in AnnData, and the formats of cellxgene's downloadable matrix files.
 
-Users interested in converting and uploading data to cellxgene should review the [schema_guide](https://github.com/chanzuckerberg/single-cell-curation/blob/main/docs/schema_guide.md), which describes a process for curating datasets that adhere to this schema.
+~~Users interested in converting and uploading data to cellxgene should review the [schema_guide](https://github.com/chanzuckerberg/single-cell-curation/blob/main/docs/schema_guide.md), which describes a process for curating datasets that adhere to this schema.~~
 
 ## Overview
 
-This schema describes data that measure the phenotypes of cells.  
-It supports multiple assay types, but each assay takes the form of one or more two dimensional matrices whose values are quantitative measures of the genes of cells.
+This schema supports multiple assay types. Each assay takes the form of one or more two-dimensional matrices whose values are quantitative measures of the phenotypes of cells.
 
 The schema additionally describes how the dataset, genes, and cells should be annotated to describe the biological and technical characteristics of the data.
 
@@ -79,7 +78,7 @@ This is usually the case when there are many ways to produce the matrix layer in
 ### Integration Metadata
 
 cellxgene requires ontology terms to enable search, comparison, and integration of data.
-Ontology terms for cell metadata MUST use [OBO-format ID](http://www.obofoundry.org/id-policy.html), meaning they are a CURIE where the prefix identifies the ontology.
+Ontology terms for cell metadata MUST use [OBO-format identifiers](http://www.obofoundry.org/id-policy.html), meaning a CURIE (prefixed identifier) of the form **Ontology:Identifier**.
 For example [EFO:0000001](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0000001) is a term in the `EFO` ontology.
 
 When no appropriate ontology value is available, then the most precise accurate term MUST be used.
@@ -92,6 +91,8 @@ In the meantime, using Cell Ontology terms maximizes the findability (and theref
 
 
 ### Required Ontologies
+
+The following ontology dependencies are *pinned* for this version of the schema.
 
 | Ontology | Required version | Download |
 |:--|:--|:--|
@@ -145,27 +146,28 @@ Each cell MUST be annotated with the following ontology terms by the curator.
 | assay_ontology_term_id | This MUST be a child of [EFO:0002694](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0002694). If there is not an exact match for the assay, *clarifying text* MAY be appended in parentheses such as " (sci-plex)". | Curator |
 | disease_ontology_term_id | MONDO term or [PATO:0000461](http://purl.obolibrary.org/obo/PATO_0000461) | Curator |
 | cell_type_ontology_term_id | CL term | Curator |
-| ethnicity_ontology_term_id | `organism_ontolology_term_id` is “NCBITaxon:9606”. This MUST be either a HANCESTRO term or “unknown” if unavailable. <br><br> `organism_ontolology_term_id` is “NCBITaxon:10090”. This MUST be "na". | Curator |
-| development_stage_ontology_term_id | If unavailable, this MUST be "unknown". <br><br> `organism_ontolology_term_id` is “NCBITaxon:9606". This MUST be a HsapDv term.<br><br> `organism_ontolology_term_id` is “NCBITaxon:10090”. This MUST a MmusDv term. | Curator |
-| sex_ontology_term_id | This MUST be a child of [PATO:0001894](http://purl.obolibrary.org/obo/PATO_0001894) | | Curator |
+| ethnicity_ontology_term_id | If `organism_ontolology_term_id` is “NCBITaxon:9606”, this MUST be either a HANCESTRO term or “unknown” if unavailable. <br><br> If `organism_ontolology_term_id` is “NCBITaxon:10090”, this MUST be "na". | Curator |
+| development_stage_ontology_term_id | If unavailable, this MUST be "unknown". <br><br> If `organism_ontolology_term_id` is “NCBITaxon:9606", this MUST be a HsapDv term.<br><br> If `organism_ontolology_term_id` is “NCBITaxon:10090”, this MUST a MmusDv term. | Curator |
+| sex_ontology_term_id | This MUST be a child of [PATO:0001894](http://purl.obolibrary.org/obo/PATO_0001894) | Curator |
 | | |
 
-The ontology labels MUST be applied by curation software and MUST match the paired ontology term:
+Curators SHOULD NOT annotate the following fields which are the human-readable names that MUST match the corresponding ontology term identifier.
+
+These will be automatically set by the cellxgene Data Portal when a dataset is uploaded.
 
 | Field name | Constraints | Annotator |
 :--|:--|:--
-| organism | string | Software |
-| tissue | string. This MUST be appended with " (cell culture)" or " (organoid)" if set in the matching identifier. | Software |
-| assay | string. This MUST be appended with any *clarifying text* set in matching identifier. | Software |
-| disease | string | Software |
-| cell_type | string | Software |
-| ethnicity | string. This MUST be "na" or "unknown" if set in the matching identifier. | Software |
-| development_stage | string. This MUST be "unknown" if set in the matching identifier | Software |
-| sex | string | Software |
+| organism | string | Data Portal |
+| tissue | string. This MUST be appended with " (cell culture)" or " (organoid)" if set in the matching identifier. | Data Portal |
+| assay | string. This MUST be appended with any *clarifying text* set in matching identifier. | Data Portal |
+| disease | string | Data Portal |
+| cell_type | string | Data Portal |
+| ethnicity | string. This MUST be "na" or "unknown" if set in the matching identifier. | Data Portal |
+| development_stage | string. This MUST be "unknown" if set in the matching identifier | Data Portal |
+| sex | string | Data Portal |
 | | |
 
 #### Gene Metadata
-
 
 Cellxgene uses ENSEMBL gene identifiers to ensure that all datasets it stores measure the same features and can therefore be integrated.
 
