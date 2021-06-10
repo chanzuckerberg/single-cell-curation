@@ -80,14 +80,14 @@ This is usually the case when there are many ways to produce the matrix layer in
 
 cellxgene requires ontology terms to enable search, comparison, and integration of data.
 Ontology terms for cell metadata MUST use [OBO-format ID](http://www.obofoundry.org/id-policy.html), meaning they are a CURIE where the prefix identifies the ontology.
-For example `EFO:0000001` is a term in the `EFO` ontology.
+For example [EFO:0000001](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0000001) is a term in the `EFO` ontology.
 
 When no appropriate ontology value is available, then the most precise accurate term MUST be used.
-For example if the `cell_type` field describes a relay interneuron, but the most specific available term in the CL ontology is CL:0000099 ("Interneuron"), then the interneuron term can be used to fulfill this requirement and ensures that users searching for "neuron" are able to find these data.
+For example if the `cell_type` field describes a relay interneuron, but the most specific available term in the CL ontology is [CL:0000099 ("interneuron")](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000099), then the interneuron term can be used to fulfill this requirement and ensures that users searching for "neuron" are able to find these data.
 Users will still be able to access more specific cell type annotations that have been submitted with the data (but aren't required by the schema).
 A dataset comprising cells of the human embryo provides a more extreme example.
-In this case, the most  precise accurate term may be the root of the cell ontology `cell`, or its child term `cell in vitro`.
-The Cell Ontology is expanding over time, and we hope to migrate datasets to more defined terms as they are defined.
+In this case, the most precise accurate term is [CL:0000003 ("native cell")](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000003)
+The Cell Ontology is expanding over time, and we hope to migrate datasets to more precise terms as they are defined.
 In the meantime, using Cell Ontology terms maximizes the findability (and therefore reusability) of datasets.
 
 
