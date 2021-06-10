@@ -102,6 +102,7 @@ In the meantime, using Cell Ontology terms maximizes the findability (and theref
 | [Mondo Disease Ontology (MONDO)] | [2021-06-01] | [mondo.owl] | 
 | [Human Ancestry Ontology (HANCESTRO)] | [2021-01-04 (2.5)] | hancestro.owl included in Source code distribution  |
 | [Human Developmental Stages (HsapDv)] | [2016-07-06 (0.1)] | hsapdv.owl included in Source code distribution |
+| [Mouse Developmental Stages (MmusDv)]| [2016-07-06 (0.1)] | mmusdv.owl included in Source code distribution |
 | [Phenotype And Trait Ontology (PATO)] | [2021-05-26] | pato.owl included in Source code distribution |
 | | | |
 
@@ -127,6 +128,7 @@ In the meantime, using Cell Ontology terms maximizes the findability (and theref
 [2021-01-04 (2.5)]: https://github.com/EBISPOT/ancestro/releases/tag/2.5
 
 [Human Developmental Stages (HsapDv)]: http://www.obofoundry.org/ontology/hsapdv.html
+[Mouse Developmental Stages (MmusDv)]: http://obofoundry.org/ontology/mmusdv.html
 [2016-07-06 (0.1)]: https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/0.1
 
 [Phenotype And Trait Ontology (PATO)]: http://www.obofoundry.org/ontology/pato.html
