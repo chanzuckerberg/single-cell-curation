@@ -192,9 +192,9 @@ When a user requests gene expression information, the explorer must unambiguousl
 
 | Field name | Constraints | Annotator |
 :--|:--|:--
-| feature_biotype | "gene" | Software |
+| feature_biotype | "gene" | Data Portal |
 | feature_id  | ENSEMBL term from the required version corresponding to the organism for the gene feature  | Curator |
-| feature_name | string. ENSEMBL gene name | Software |
+| feature_name | string. ENSEMBL gene name | Data Portal |
 |||
 
 #### Dataset Metadata
