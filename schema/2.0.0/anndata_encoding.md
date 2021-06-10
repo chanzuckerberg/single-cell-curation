@@ -1,13 +1,13 @@
 # cellxgene Data Integration Schema AnnData Implementation
 ​
 Authors: acarr@chanzuckerberg.com
-​
+
 Document Status: _Approved_
-​
+
 Version: 2.0.0
-​
+
 Date Last Modified: 2021-06-07
-​
+
 cellxgene Data Portal datasets are stored in the HDF5-backed AnnData format as written by version 0.7 of the anndata library.  
 One goal of using this format is to have all metadata stored in the same file as the data, so cellxgene will have access to all metadata within a single file.
 ​
