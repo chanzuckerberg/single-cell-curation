@@ -96,7 +96,7 @@ In the meantime, using Cell Ontology terms maximizes the findability (and theref
 | Ontology | Required version | Download |
 |:--|:--|:--|
 | [NCBI organismal classification] | [2021-02-15] | [ncbitaxon.owl] |
-| [Uberon multi-species anatomy ontology] | [2021-02-12] |  [composite-vertebrate.owl]  |
+| [Uberon multi-species anatomy ontology (UBERON)] | [2021-02-12] |  [composite-vertebrate.owl]  |
 | [Cell Ontology (CL)] | included with Uberon | included with Uberon |
 | [Experimental Factor Ontology (EFO)] | [2021-05-17 EFO 3.30.0] | [efo-base.owl] |
 | [Mondo Disease Ontology (MONDO)] | [2021-06-01] | [mondo.owl] | 
@@ -107,7 +107,7 @@ In the meantime, using Cell Ontology terms maximizes the findability (and theref
 [2021-02-15]: https://github.com/obophenotype/ncbitaxon/releases/tag/v2021-02-15
 [ncbitaxon.owl]: https://github.com/obophenotype/ncbitaxon/releases/download/v2021-02-15/ncbitaxon.owl.gz
 
-[Uberon multi-species anatomy ontology]: http://www.obofoundry.org/ontology/uberon.html
+[Uberon multi-species anatomy ontology (UBERON)]: http://www.obofoundry.org/ontology/uberon.html
 [2021-02-12]: https://github.com/obophenotype/uberon/releases/tag/v2021-02-12
 [composite-vertebrate.owl]: https://github.com/obophenotype/uberon/releases/download/v2021-02-12/composite-vertebrate.owl
 
@@ -133,13 +133,13 @@ Each cell MUST be annotated with the following ontology terms by the curator.
 
 | Field name | Constraints |  Annotator |
 :--|:--|:--
-| organism_ontology_term_id | NCBITaxon term | Curator |
+| organism_ontology_term_id | This MUST be either "NCBITaxon:9606" or "NCBITaxon:10090". | Curator |
 | tissue_ontology_term_id | UBERON term. This SHOULD be appended with " (cell culture)" or " (organoid)" if appropriate. | Curator |
 | assay_ontology_term_id | This MUST be a child of [EFO:0002694](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0002694). If there is not an exact match for the assay, *clarifying text* MAY be appended in parentheses such as " (sci-plex)". | Curator |
 | disease_ontology_term_id | MONDO term or [PATO:0000461](http://purl.obolibrary.org/obo/PATO_0000461) | Curator |
 | cell_type_ontology_term_id | CL term | Curator |
 | ethnicity_ontology_term_id | `organism_ontolology_term_id` is “NCBITaxon:9606”. This MUST be either a HANCESTRO term or “unknown” if unavailable. <br><br> `organism_ontolology_term_id` is NOT “NCBITaxon:9606”. This MUST be "na". | Curator |
-| development_stage_ontology_term_id | If unavailable, this MUST be "unknown". <br><br> `organism_ontolology_term_id` is “NCBITaxon:9606. This MUST be a HsapDv term.<br><br> `organism_ontolology_term_id` is NOT “NCBITaxon:9606”. This MUST be a child of "EFO:0000399". | Curator |
+| development_stage_ontology_term_id | If unavailable, this MUST be "unknown". <br><br> `organism_ontolology_term_id` is “NCBITaxon:9606". This MUST be a HsapDv term.<br><br> `organism_ontolology_term_id` is NOT “NCBITaxon:9606”. This MUST be a child of [EFO:0000399](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0000399). | Curator |
 | sex_ontology_term_id | This MUST be a child of [PATO:0001894](http://purl.obolibrary.org/obo/PATO_0001894) | | Curator |
 | | |
 
