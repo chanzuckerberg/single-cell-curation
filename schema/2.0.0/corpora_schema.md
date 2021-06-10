@@ -145,8 +145,8 @@ Each cell MUST be annotated with the following ontology terms by the curator.
 | assay_ontology_term_id | This MUST be a child of [EFO:0002694](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0002694). If there is not an exact match for the assay, *clarifying text* MAY be appended in parentheses such as " (sci-plex)". | Curator |
 | disease_ontology_term_id | MONDO term or [PATO:0000461](http://purl.obolibrary.org/obo/PATO_0000461) | Curator |
 | cell_type_ontology_term_id | CL term | Curator |
-| ethnicity_ontology_term_id | `organism_ontolology_term_id` is “NCBITaxon:9606”. This MUST be either a HANCESTRO term or “unknown” if unavailable. <br><br> `organism_ontolology_term_id` is NOT “NCBITaxon:9606”. This MUST be "na". | Curator |
-| development_stage_ontology_term_id | If unavailable, this MUST be "unknown". <br><br> `organism_ontolology_term_id` is “NCBITaxon:9606". This MUST be a HsapDv term.<br><br> `organism_ontolology_term_id` is NOT “NCBITaxon:9606”. This MUST be a child of [EFO:0000399](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0000399). | Curator |
+| ethnicity_ontology_term_id | `organism_ontolology_term_id` is “NCBITaxon:9606”. This MUST be either a HANCESTRO term or “unknown” if unavailable. <br><br> `organism_ontolology_term_id` is “NCBITaxon:10090”. This MUST be "na". | Curator |
+| development_stage_ontology_term_id | If unavailable, this MUST be "unknown". <br><br> `organism_ontolology_term_id` is “NCBITaxon:9606". This MUST be a HsapDv term.<br><br> `organism_ontolology_term_id` is “NCBITaxon:10090”. This MUST a MmusDv term. | Curator |
 | sex_ontology_term_id | This MUST be a child of [PATO:0001894](http://purl.obolibrary.org/obo/PATO_0001894) | | Curator |
 | | |
 
