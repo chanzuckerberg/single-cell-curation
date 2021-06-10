@@ -147,7 +147,7 @@ Each cell MUST be annotated with the following ontology terms by the curator.
 | disease_ontology_term_id | MONDO term or [PATO:0000461](http://purl.obolibrary.org/obo/PATO_0000461) | Curator |
 | cell_type_ontology_term_id | CL term | Curator |
 | ethnicity_ontology_term_id | If `organism_ontolology_term_id` is “NCBITaxon:9606”, this MUST be either a HANCESTRO term or “unknown” if unavailable. <br><br> If `organism_ontolology_term_id` is “NCBITaxon:10090”, this MUST be "na". | Curator |
-| development_stage_ontology_term_id | If unavailable, this MUST be "unknown". <br><br> If `organism_ontolology_term_id` is “NCBITaxon:9606", this MUST be a HsapDv term.<br><br> If `organism_ontolology_term_id` is “NCBITaxon:10090”, this MUST a MmusDv term. | Curator |
+| development_stage_ontology_term_id | If unavailable, this MUST be "unknown". <br><br> If `organism_ontolology_term_id` is “NCBITaxon:9606", this MUST be a HsapDv term.<br><br> If `organism_ontolology_term_id` is “NCBITaxon:10090”, this MUST a MmusDv term with the following restrictions: <br><br> **Prenatal stages** MUST be in the range beginning with "MmusDv:0000003" and ending with "MmusDv:0000035". <br><br> **Postnatal stages (1-4 weeks)** MUST be in the range beginning with "MmusDv:0000045" and ending with "MmusDv:0000048". <br><br> **Postnatal stages (after week 4)** MUST be in the range beginning with "MmusDv:0000062" and ending with "MmusDv:0000091". | Curator |
 | sex_ontology_term_id | This MUST be a child of [PATO:0001894](http://purl.obolibrary.org/obo/PATO_0001894) | Curator |
 | | |
 
