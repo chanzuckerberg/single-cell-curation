@@ -107,46 +107,55 @@ In the meantime, using Cell Ontology terms maximizes the findability (and theref
 
 The following ontology dependencies are *pinned* for this version of the schema.
 
-| Ontology | Required version | Download |
+**EDITOR NOTE**: *There are more recent versions of hsapdv.owl and mmusdv.owl on the OLS site, but these downloads are missing a specific version number for pinning.*
+
+| Ontology | OBO Prefix | Required version |
 |:--|:--|:--|
-| [NCBI organismal classification] | [2021-02-15] | [ncbitaxon.owl] |
-| [Uberon multi-species anatomy ontology (UBERON)] | [2021-02-12] |  [composite-vertebrate.owl]  |
-| [Cell Ontology (CL)] | included with Uberon | included with Uberon |
-| [Experimental Factor Ontology (EFO)] | [2021-05-17 EFO 3.30.0] | [efo-base.owl] |
-| [Mondo Disease Ontology (MONDO)] | [2021-06-01] | [mondo.owl] | 
-| [Human Ancestry Ontology (HANCESTRO)] | [2021-01-04 (2.5)] | hancestro.owl included in Source code distribution  |
-| [Human Developmental Stages (HsapDv)] | [2016-07-06 (0.1)] | hsapdv.owl included in Source code distribution |
-| [Mouse Developmental Stages (MmusDv)]| [2016-07-06 (0.1)] | mmusdv.owl included in Source code distribution |
-| [Phenotype And Trait Ontology (PATO)] | [2021-05-26] | pato.owl included in Source code distribution |
+| [Cell Ontology] | CL | [cl.owl] : [2021-04-22]|
+| [Experimental Factor Ontology] | EFO | [efo.owl] : [2021-05-17 EFO 3.30.0]
+| [Human Ancestry Ontology] | HANCESTRO |[hancestro.owl] : [2021-01-04 (2.5)] |
+| [Human Developmental Stages] |  HsapDv | [hsapdv.owl] : [2016-07-06 (0.1)] |
+| [Mondo Disease Ontology] | MONDO |[mondo.owl] : [2021-06-01] |
+| [Mouse Developmental Stages]| MmusDv |  [mmusdv.owl] : [2016-07-06 (0.1)] |
+| [NCBI organismal classification] |  NCBITaxon | [ncbitaxon.owl] : [2021-02-15] |
+| [Phenotype And Trait Ontology] | PATO | [pato.owl] : [2021-05-26] |  |
+| [Uberon multi-species anatomy ontology] |  UBERON | [uberon.owl] : [2021-02-12] |
 | | | |
+
+[Cell Ontology]: http://obofoundry.org/ontology/cl.html
+[2021-04-22]: https://github.com/obophenotype/cell-ontology/releases/tag/v2021-04-22
+[cl.owl]: https://github.com/obophenotype/cell-ontology/blob/v2021-04-22/cl.owl
+
+[Experimental Factor Ontology]: http://www.ebi.ac.uk/efo
+[2021-05-17 EFO 3.30.0]: https://github.com/EBISPOT/efo/releases/tag/v3.30.0
+[efo.owl]: https://github.com/EBISPOT/efo/releases/download/v3.30.0/efo.owl
+
+[Human Ancestry Ontology]: http://www.obofoundry.org/ontology/hancestro.html
+[2021-01-04 (2.5)]: https://github.com/EBISPOT/ancestro/releases/tag/2.5
+[hancestro.owl]: https://github.com/EBISPOT/ancestro/blob/2.5/hancestro.owl
+
+[Human Developmental Stages]: http://www.obofoundry.org/ontology/hsapdv.html
+[hsapdv.owl]: https://github.com/obophenotype/developmental-stage-ontologies/blob/0.1/src/hsapdv/hsapdv.owl
+[2016-07-06 (0.1)]: https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/0.1
+
+[Mondo Disease Ontology]: http://obofoundry.org/ontology/mondo.html
+[2021-06-01]: https://github.com/monarch-initiative/mondo/releases/tag/v2021-06-01
+[mondo.owl]: https://github.com/monarch-initiative/mondo/releases/download/v2021-06-01/mondo.owl
+
+[Mouse Developmental Stages]: http://obofoundry.org/ontology/mmusdv.html
+[mmusdv.owl]: https://github.com/obophenotype/developmental-stage-ontologies/blob/0.1/src/mmusdv/mmusdv.owl
 
 [NCBI organismal classification]: http://obofoundry.org/ontology/ncbitaxon.html
 [2021-02-15]: https://github.com/obophenotype/ncbitaxon/releases/tag/v2021-02-15
 [ncbitaxon.owl]: https://github.com/obophenotype/ncbitaxon/releases/download/v2021-02-15/ncbitaxon.owl.gz
 
-[Uberon multi-species anatomy ontology (UBERON)]: http://www.obofoundry.org/ontology/uberon.html
-[2021-02-12]: https://github.com/obophenotype/uberon/releases/tag/v2021-02-12
-[composite-vertebrate.owl]: https://github.com/obophenotype/uberon/releases/download/v2021-02-12/composite-vertebrate.owl
-
-[Cell Ontology (CL)]: http://obofoundry.org/ontology/cl.html
-
-[Experimental Factor Ontology (EFO)]: http://www.ebi.ac.uk/efo
-[2021-05-17 EFO 3.30.0]: https://github.com/EBISPOT/efo/releases/tag/v3.30.0
-[efo-base.owl]: https://github.com/EBISPOT/efo/releases/download/v3.30.0/efo-base.owl
-
-[Mondo Disease Ontology (MONDO)]: http://obofoundry.org/ontology/mondo.html
-[2021-06-01]: https://github.com/monarch-initiative/mondo/releases/tag/v2021-06-01
-[mondo.owl]: https://github.com/monarch-initiative/mondo/releases/download/v2021-06-01/mondo.owl
-
-[Human Ancestry Ontology (HANCESTRO)]: http://www.obofoundry.org/ontology/hancestro.html
-[2021-01-04 (2.5)]: https://github.com/EBISPOT/ancestro/releases/tag/2.5
-
-[Human Developmental Stages (HsapDv)]: http://www.obofoundry.org/ontology/hsapdv.html
-[Mouse Developmental Stages (MmusDv)]: http://obofoundry.org/ontology/mmusdv.html
-[2016-07-06 (0.1)]: https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/0.1
-
-[Phenotype And Trait Ontology (PATO)]: http://www.obofoundry.org/ontology/pato.html
+[Phenotype And Trait Ontology]: http://www.obofoundry.org/ontology/pato.html
 [2021-05-26]: https://github.com/pato-ontology/pato/releases/tag/v2021-05-26
+[pato.owl]: https://github.com/pato-ontology/pato/blob/v2021-05-26/pato.owl
+
+[Uberon multi-species anatomy ontology]: http://www.obofoundry.org/ontology/uberon.html
+[2021-02-12]: https://github.com/obophenotype/uberon/releases/tag/v2021-02-12
+[uberon.owl]: https://github.com/obophenotype/uberon/blob/v2021-02-12/uberon.owl
 
 ## `obs` (Cell Metadata)
 
