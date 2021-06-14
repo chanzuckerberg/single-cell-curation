@@ -161,36 +161,36 @@ The following ontology dependencies are *pinned* for this version of the schema.
 
 ## `obs` (Cell Metadata)
 
-With the exception of `is_primary_data`, the following columns in the `obs` dataframe MUST be annotated with the required ontology terms by the curator. The value types are `str` or categorical with `str` categories.
+`obs` is a [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html).
+
+ The following columns in the `obs` dataframe MUST be annotated by the curator:
 
 | Key | Value | Annotator |
 |-|-|-|
-| organism_ontology_term_id | This MUST be either "NCBITaxon:9606" or "NCBITaxon:10090". | Curator |
-| tissue_ontology_term_id | UBERON term. This SHOULD be appended with " (cell culture)" or " (organoid)" if appropriate. | Curator |
-| assay_ontology_term_id | This MUST be a child of [EFO:0002694](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0002694). If there is not an exact match for the assay, *clarifying text* MAY be appended in parentheses such as " (sci-plex)". | Curator |
-| disease_ontology_term_id | MONDO term or [PATO:0000461](http://purl.obolibrary.org/obo/PATO_0000461) | Curator |
-| cell_type_ontology_term_id | CL term | Curator |
-| ethnicity_ontology_term_id | If `organism_ontolology_term_id` is “NCBITaxon:9606”, this MUST be either a HANCESTRO term or “unknown” if unavailable. <br><br> If `organism_ontolology_term_id` is “NCBITaxon:10090”, this MUST be "na". | Curator |
-| development_stage_ontology_term_id | If unavailable, this MUST be "unknown". <br><br> If `organism_ontolology_term_id` is “NCBITaxon:9606", this MUST be a HsapDv term.<br><br> If `organism_ontolology_term_id` is “NCBITaxon:10090”, this MUST a MmusDv term with the following restrictions: <br><br> **Prenatal stages** MUST be in the range beginning with "MmusDv:0000003" and ending with "MmusDv:0000035". <br><br> **Postnatal stages (1-4 weeks)** MUST be in the range beginning with "MmusDv:0000045" and ending with "MmusDv:0000048". <br><br> **Postnatal stages (after week 4)** MUST be in the range beginning with "MmusDv:0000062" and ending with "MmusDv:0000091". | Curator |
-| sex_ontology_term_id | This MUST be a child of [PATO:0001894](http://purl.obolibrary.org/obo/PATO_0001894) | Curator |
+| assay_ontology_term_id | `str` or categorical with `str` categories. This MUST be a child of [EFO:0002694](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0002694). If there is not an exact match for the assay, *clarifying text* MAY be appended in parentheses such as " (sci-plex)". | Curator |
+| cell_type_ontology_term_id | `str` or categorical with `str` categories. This MUST be a CL term. | Curator |
+| development_stage_ontology_term_id | `str` or categorical with `str` categories. If unavailable, this MUST be "unknown". <br><br> If `organism_ontolology_term_id` is “NCBITaxon:9606", this MUST be a HsapDv term.<br><br> If `organism_ontolology_term_id` is “NCBITaxon:10090”, this MUST a MmusDv term with the following restrictions: <br><br> **Prenatal stages** MUST be in the range beginning with "MmusDv:0000003" and ending with "MmusDv:0000035". <br><br> **Postnatal stages (1-4 weeks)** MUST be in the range beginning with "MmusDv:0000045" and ending with "MmusDv:0000048". <br><br> **Postnatal stages (after week 4)** MUST be in the range beginning with "MmusDv:0000062" and ending with "MmusDv:0000091". | Curator |
+| disease_ontology_term_id | `str` or categorical with `str` categories. This MUST be a MONDO term or [PATO:0000461](http://purl.obolibrary.org/obo/PATO_0000461) | Curator |
+| ethnicity_ontology_term_id | `str` or categorical with `str` categories. If `organism_ontolology_term_id` is “NCBITaxon:9606”, this MUST be either a HANCESTRO term or “unknown” if unavailable. <br><br> If `organism_ontolology_term_id` is “NCBITaxon:10090”, this MUST be "na". | Curator |
 | is_primary_data | `Bool`. This MUST be `True` if this is the canonical instance of this cellular observation and `False` if not. This is commonly `False` for meta-analyses reusing data or for secondary views of data. | Curator |
-|  |  |  |
+| organism_ontology_term_id | `str` or categorical with `str` categories. This MUST be either "NCBITaxon:9606" or "NCBITaxon:10090". | Curator |
+| sex_ontology_term_id | `str` or categorical with `str` categories. This MUST be a child of [PATO:0001894](http://purl.obolibrary.org/obo/PATO_0001894) | Curator |
+| tissue_ontology_term_id | `str` or categorical with `str` categories. . This MUST be an UBERON term. This SHOULD be appended with " (cell culture)" or " (organoid)" if appropriate. | Curator |
+| | | |
 
 Curators SHOULD NOT annotate the following columns in the `obs` dataframe which are the human-readable names that MUST match the corresponding ontology term identifier. These columns MUST be automatically annotated by the cellxgene Data Portal when a dataset is uploaded.
 
-The value types are `str` or categorical with `str` categories.
-
 | Key | Value | Annotator |
 :--|:--|:--
-| organism | | Data Portal |
-| tissue | This MUST be appended with " (cell culture)" or " (organoid)" if set in the matching identifier. | Data Portal |
-| assay | This MUST be appended with any *clarifying text* set in matching identifier. | Data Portal |
-| disease |  | Data Portal |
-| cell_type |  | Data Portal |
-| ethnicity | This MUST be "na" or "unknown" if set in the matching identifier. | Data Portal |
-| development_stage | This MUST be "unknown" if set in the matching identifier | Data Portal |
-| sex | | Data Portal |
-| | |
+| assay | `str` or categorical with `str` categories. This MUST be appended with any *clarifying text* set in matching identifier. | Data Portal |
+| cell_type | `str` or categorical with `str` categories. | Data Portal |
+| development_stage | `str` or categorical with `str` categories. This MUST be "unknown" if set in the matching identifier | Data Portal |
+| disease | `str` or categorical with `str` categories | Data Portal |
+| ethnicity | `str` or categorical with `str` categories. This MUST be "na" or "unknown" if set in the matching identifier. | Data Portal |
+| organism | `str` or categorical with `str` categories | Data Portal |
+| sex | `str` or categorical with `str` categories | Data Portal |
+| tissue | `str` or categorical with `str` categories. This MUST be appended with " (cell culture)" or " (organoid)" if set in the matching identifier. | Data Portal |
+| | | |
 
 ## `var` (Gene Metadata)
 
