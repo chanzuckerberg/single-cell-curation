@@ -105,6 +105,10 @@ for "native cell".
 The Cell Ontology is expanding over time, and we hope to migrate datasets to more precise terms as they are defined.
 In the meantime, using Cell Ontology terms maximizes the findability (and therefore reusability) of datasets.
 
+#### Gene Annotation
+
+cellxgene uses ENSEMBL gene identifiers to ensure that all datasets it stores measure the same features and can therefore be integrated.
+
 ### Required Ontologies
 
 The following ontology dependencies are *pinned* for this version of the schema.
@@ -159,11 +163,29 @@ The following ontology dependencies are *pinned* for this version of the schema.
 [2021-02-12]: https://github.com/obophenotype/uberon/releases/tag/v2021-02-12
 [uberon.owl]: https://github.com/obophenotype/uberon/blob/v2021-02-12/uberon.owl
 
+### Required Gene Annotations
+
+The following gene annotation dependencies are *pinned* for this version of the schema.
+
+| Organism | Required version | Download |
+|:--|:--|:--|
+| [ENSEMBL (Human)] | Human reference GRCh38 (GENCODE v32/Ensembl 98)] matching [cellranger 2020-A (July 7, 2020) release] | [gencode.v32.primary_assembly.annotation.gtf] |
+| [ENSEMBL (Mouse)] | Mouse reference mm10 (GENCODE vM23/Ensembl 98) matching [cellranger 2020-A (July 7, 2020) release]| [gencode.vM23.primary_assembly.annotation.gtf] |
+|||
+
+[ENSEMBL (Human)]: http://www.ensembl.org/Homo_sapiens/Info/Index
+[gencode.v32.primary_assembly.annotation.gtf]:http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/gencode.v32.primary_assembly.annotation.gtf.gz"
+
+[ENSEMBL (Mouse)]: http://www.ensembl.org/Mus_musculus/Info/Index
+[gencode.vM23.primary_assembly.annotation.gtf]:http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M23/gencode.vM23.primary_assembly.annotation.gtf.gz"
+
+[cellranger 2020-A (July 7, 2020) release]: https://support.10xgenomics.com/single-cell-gene-expression/software/release-notes/build
+
 ## `obs` (Cell Metadata)
 
 `obs` is a [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html).
 
- The following columns in the `obs` dataframe MUST be annotated by the curator:
+Curators MUST annotate the following columns in the `obs` dataframe:
 
 | Key | Value | Annotator |
 |-|-|-|
@@ -194,32 +216,24 @@ Curators SHOULD NOT annotate the following columns in the `obs` dataframe which 
 
 ## `var` (Gene Metadata)
 
-cellxgene uses ENSEMBL gene identifiers to ensure that all datasets it stores measure the same features and can therefore be integrated.
-
-| Organism | Required version | Download |
-|:--|:--|:--|
-| [ENSEMBL (Human)] | Human reference GRCh38 (GENCODE v32/Ensembl 98)] matching [cellranger 2020-A (July 7, 2020) release] | [gencode.v32.primary_assembly.annotation.gtf] |
-| [ENSEMBL (Mouse)] | Mouse reference mm10 (GENCODE vM23/Ensembl 98) matching [cellranger 2020-A (July 7, 2020) release]| [gencode.vM23.primary_assembly.annotation.gtf] |
-|||
-
-[ENSEMBL (Human)]: http://www.ensembl.org/Homo_sapiens/Info/Index
-[gencode.v32.primary_assembly.annotation.gtf]:http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/gencode.v32.primary_assembly.annotation.gtf.gz"
-
-[ENSEMBL (Mouse)]: http://www.ensembl.org/Mus_musculus/Info/Index
-[gencode.vM23.primary_assembly.annotation.gtf]:http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M23/gencode.vM23.primary_assembly.annotation.gtf.gz"
-
-[cellranger 2020-A (July 7, 2020) release]: https://support.10xgenomics.com/single-cell-gene-expression/software/release-notes/build
+`var` is a [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html).
 
 `var.index` MUST contain the ENSEMBL gene identifiers for features. cellxgene requires unique feature identifiers, so the index of `var` MUST NOT contain any duplicate values.
 
-The value types are `str`.
+Curators MUST annotate the following columns in the `var` dataframe:
 
 | Key | Value | Annotator |
 :--|:--|:--
-| feature_biotype | "gene" | Data Portal |
-| feature_id  | ENSEMBL term from the required version corresponding to the organism for the gene feature  | Curator |
-| feature_name | ENSEMBL gene name corresponding to the `feature_id` | Data Portal |
-|||
+| feature_biotype | This MUST be "gene". | Data Portal |
+| feature_id (`var.index`) | `str`. This MUST be an ENSEMBL term from the gene annotation corresponding to the organism for the gene.  | Curator |
+||||
+
+Curators SHOULD NOT annotate the following column in the `var` dataframe which is the human-readable name that MUST match the corresponding gene identifier. This column MUST be automatically annotated by the cellxgene Data Portal when a dataset is uploaded.
+
+| Key | Value | Annotator |
+:--|:--|:--
+| feature_name | `str`. This MUST be the ENSEMBL gene name corresponding to the `feature_id` | Data Portal |
+||||
 
 ## `obsm` (Embeddings)
 
