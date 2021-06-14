@@ -237,16 +237,16 @@ Curators SHOULD NOT annotate the following column in the `var` dataframe which i
 
 ## `obsm` (Embeddings)
 
-`obsm` is a mapping from `str` keys to numpy arrays of shape `(n_obs, m)` where `n_obs` is the number of rows in `X` and `m >= 1`. 
+For each `str` key, `obsm` stores a `numpy.ndarray` of shape `(n_obs, m)`, where `n_obs` is the number of rows in `X` and `m >= 1`.
 
-To display a dataset in cellxgene Explorer, the dataset MUST one or more two-dimensional (`m >= 2`) embeddings (tSNE, UMAP, PCA, spatial coordinates) annotated by the curator in `obsm`. The key for an embedding MUST begin with `X_`.
+To display a dataset in cellxgene Explorer, Curators MUST annotate **one or more** two-dimensional (`m >= 2`) embeddings (tSNE, UMAP, PCA, spatial coordinates) in `obsm`. The key for the embedding MUST be prefixed with `X_`. The text that follows this prefix is presented to users in the cellxgene Explorer *Embedding Choice* selector.
 
 To illustrate, the [Krasnow Lab Human Lung Cell Atlas, 10X dataset](https://cellxgene.cziscience.com/e/krasnow_lab_human_lung_cell_atlas_10x-1-remixed.cxg/) in the [A molecular cell atlas of the human lung from single cell RNA sequencing collection](https://cellxgene.cziscience.com/collections/5d445965-6f1a-4b68-ba3a-b8f765155d3a) defines two embeddings in `obsm`:
 
 * 'X_Compartment_tSNE'
 * 'X_tSNE'
 
-Users can then choose which embedding is visualized in cellxgene Explorer:
+Users can then choose whether the 'Compartment_tSNE' or the 'tSNE' embedding  is visualized in cellxgene Explorer:
 
 ![Embeddings Illustration](images/embeddings.png
 )
