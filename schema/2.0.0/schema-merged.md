@@ -251,24 +251,26 @@ Users can then choose whether the 'Compartment_tSNE' or the 'tSNE' embedding  is
 ![Embeddings Illustration](images/embeddings.png
 )
 
+See also `default_embedding` in `uns`.
+
 ## `uns` (Dataset Metadata)
 
-Recall that `uns` is a mapping with a `str` key. The curator MUST annotate the following keys and values in `uns`:
+`uns` is a ordered dictionary with a `str` key. Curators MUST annotate the following keys and values in `uns`:
 
 | Key | Value | Annotator |
 :--|:--|:--|
-| schema_version| `str`. "2.0.0" | Curator |
-| title | `str`. This text describes and differentiates the dataset from others in the same collection. It is displayed on a page in the cellxgene Portal that also has the collection name. For example, in the collection [Cells of the adult human heart](https://cellxgene.cziscience.com/collections/b52eb423-5d0d-4645-b217-e1c6d38b2e72), the first dataset name is "All — Cells of the adult human heart". | Curator |
-| layer_descriptions | `dict` with `str` keys and values. Keys MUST be the layer names whose values are free text descriptions of how the layer was created (e.g. "counts per million"). One key MUST be "X" which describes the transformations (if any) performed to produce the X matrix cellxgene displays. | Curator |
+| layer_descriptions | `dict` with `str` keys and values. Keys MUST be the layer names whose values are free text descriptions of how the layer was created (e.g. "counts per million"). One key MUST be "X" which describes the transformations (if any) performed to produce the X matrix that cellxgene Explorer displays. | Curator |
+| schema_version| `str`. This MUST be "2.0.0". | Curator |
+| title | `str`. This text describes and differentiates the dataset from others in the same collection. It is displayed on a page in the cellxgene Portal that also has the collection name. To illustrate, in the [Cells of the adult human heart collection](https://cellxgene.cziscience.com/collections/b52eb423-5d0d-4645-b217-e1c6d38b2e72), the first dataset name is "All — Cells of the adult human heart". | Curator |
 ||||
 
-​The curator MAY also annotate the following optional keys and values in `uns`. If the key is present, then its value MUST NOT be empty.
+​Curators MAY also annotate the following optional keys and values in `uns`. If the key is present, then its value MUST NOT be empty.
 ​
 | Key | Value | Annotator |
 :--|:--|:--|
 | batch_condition | `str` or `list[str]`. `str` values must refer to cell metadata keys in `obs`. Together, these keys define the "batches" that a normalization or integration algorithm should be aware of. For example if "patient" and "seqBatch" are keys of vectors of cell metadata, either `"patient"`, `"seqBatch"`, or `["patient", "seqBatch"]` are valid values. | Curator |
 | default\_embedding|`str`. MUST match a key to an embedding in `obsm` for the embedding to display by default. | Curator |
-| <obs_column>_colors where <obs_column> MUST be a column name from `obs`. |`list` of  color values in the formats supported by [matplotlib](https://matplotlib.org/stable/tutorials/colors/colors.html). <br>**EDITOR NOTE**: This requires further development.  | Curator |
+| <obs_column>_colors where <obs_column> MUST be a column name from `obs`. |`list` of  color values in the formats supported by [matplotlib](https://matplotlib.org/stable/tutorials/colors/colors.html). cellxgene Explorer will display [scanpy-style color information](https://github.com/chanzuckerberg/cellxgene/issues/1152#issue-564361541). | Curator |
 ||||
 
 ## Appendix A. Changelog
