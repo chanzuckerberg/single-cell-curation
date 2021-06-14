@@ -150,7 +150,7 @@ The following ontology dependencies are *pinned* for this version of the schema.
 
 ## `obs` (Cell Metadata)
 
-The following columns in the `obs` dataframe MUST be annotated with the required ontology terms by the curator. The value types are `str` or categorical with `str` categories.
+With the exception of `is_primary_data`, the following columns in the `obs` dataframe MUST be annotated with the required ontology terms by the curator. The value types are `str` or categorical with `str` categories.
 
 | Key | Value | Annotator |
 |-|-|-|
@@ -162,7 +162,8 @@ The following columns in the `obs` dataframe MUST be annotated with the required
 | ethnicity_ontology_term_id | If `organism_ontolology_term_id` is “NCBITaxon:9606”, this MUST be either a HANCESTRO term or “unknown” if unavailable. <br><br> If `organism_ontolology_term_id` is “NCBITaxon:10090”, this MUST be "na". | Curator |
 | development_stage_ontology_term_id | If unavailable, this MUST be "unknown". <br><br> If `organism_ontolology_term_id` is “NCBITaxon:9606", this MUST be a HsapDv term.<br><br> If `organism_ontolology_term_id` is “NCBITaxon:10090”, this MUST a MmusDv term with the following restrictions: <br><br> **Prenatal stages** MUST be in the range beginning with "MmusDv:0000003" and ending with "MmusDv:0000035". <br><br> **Postnatal stages (1-4 weeks)** MUST be in the range beginning with "MmusDv:0000045" and ending with "MmusDv:0000048". <br><br> **Postnatal stages (after week 4)** MUST be in the range beginning with "MmusDv:0000062" and ending with "MmusDv:0000091". | Curator |
 | sex_ontology_term_id | This MUST be a child of [PATO:0001894](http://purl.obolibrary.org/obo/PATO_0001894) | Curator |
-|  |  |  
+| is_primary_data | `Bool`. This MUST be `True` if this is the canonical instance of this cellular observation and `False` if not. This is commonly `False` for meta-analyses reusing data or for secondary views of data. | Curator |
+|  |  |  |
 
 Curators SHOULD NOT annotate the following columns in the `obs` dataframe which are the human-readable names that MUST match the corresponding ontology term identifier. These columns MUST be automatically annotated by the cellxgene Data Portal when a dataset is uploaded.
 
