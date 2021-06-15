@@ -13,25 +13,19 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## Background
 
+## Background
+
 cellxgene aims to support the publication, sharing, and exploration of single-cell datasets.
 Building on those published datasets, cellxgene seeks to create references of the phenotypes and composition of cells that make up human tissues.
+
 Creating references from multiple datasets requires some harmonization of metadata and features in the cellxgene Data Portal. But if that harmonization is too onerous, it will burden the goal of rapid data sharing.
 
-cellxgene balances publishing and reference creation needs by requiring datasets hosted in the cellxgene Data Portal to follow a small schema with only a few required fields.
-These fields are expected to be very useful for data integration and also simply and readily available from data submitters.
+cellxgene balances publishing and reference creation needs by requiring datasets hosted in the cellxgene Data Portal to include a small set of metadata readily available from data submitters.
 
-Note that the requirements in the schema are just the minimum required information. Datasets often have additional metadata, which is preserved in datasets submitted to the Data Portal.
+This document describes the schema, a type of contract, that cellxgene requires all datasets to adhere to so that it can enable searching, filtering, and integration of datasets it hosts.
 
-## Purpose
+Note that the requirements in the schema are just the minimum required information. Datasets often have additional metadata, which is preserved in datasets submitted to the cellxgene Data Portal.
 
-This document describes the schema, a type of contract, that cellxgene requires all files to adhere to so that it can enable searching, filtering, and integration of datasets it hosts.
-~~It is intentionally general because cellxgene supports multiple download formats, each of which adheres to this schema.~~
-
-~~Users interested in creating a new format that adheres to the cellxgene schema or who want to understand what metadata all cellxgene files can be expected to carry should read this document.~~
-
-~~Users interested in the schema's implementation should review the [encoding documents](https://github.com/chanzuckerberg/single-cell-curation/tree/main/docs/encodings/), which describe how cellxgene expects data to be uploaded in AnnData, and the formats of cellxgene's downloadable matrix files.~~
-
-~~Users interested in converting and uploading data to cellxgene should review the [schema_guide](https://github.com/chanzuckerberg/single-cell-curation/blob/main/docs/schema_guide.md), which describes a process for curating datasets that adhere to this schema.~~
 
 ## Overview
 
