@@ -7,18 +7,15 @@ Document Status: _Approved_
 
 Version: 2.0.0
 
-Date Last Modified: 2021-06-07
+Date Last Modified: 2021-06-07 **EDITOR NOTE**: *Update before publishing*
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED" "MAY", and "OPTIONAL" in this document are to be interpreted as described in [BCP 14](https://tools.ietf.org/html/bcp14), [RFC2119](https://www.rfc-editor.org/rfc/rfc2119.txt), and [RFC8174](https://www.rfc-editor.org/rfc/rfc8174.txt) when, and only when, they appear in all capitals, as shown here.
 
 ## Background
 
-cellxgene aims to support the publication, sharing, and exploration of single-cell datasets.
-Building on those published datasets, cellxgene seeks to create references of the phenotypes and composition of cells that make up human tissues.
+cellxgene aims to support the publication, sharing, and exploration of single-cell datasets. Building on those published datasets, cellxgene seeks to create references of the phenotypes and composition of cells that make up human tissues.
 
-Creating references from multiple datasets requires some harmonization of metadata and features in the cellxgene Data Portal. But if that harmonization is too onerous, it will burden the goal of rapid data sharing.
-
-cellxgene balances publishing and reference creation needs by requiring datasets hosted in the cellxgene Data Portal to include a small set of metadata readily available from data submitters.
+Creating references from multiple datasets requires some harmonization of metadata and features in the cellxgene Data Portal. But if that harmonization is too onerous, it will burden the goal of rapid data sharing. cellxgene balances publishing and reference creation needs by requiring datasets hosted in the cellxgene Data Portal to include a small set of metadata readily available from data submitters.
 
 This document describes the schema, a type of contract, that cellxgene requires all datasets to adhere to so that it can enable searching, filtering, and integration of datasets it hosts.
 
@@ -36,7 +33,7 @@ This document is organized by:
 * [`obs` (Cell metadata)](#obs-(cell-metadata)), which describe each cell in the dataset
 * [`var` (Gene metadata)](#var-(gene-metadata)), which describe each gene in the dataset
 * [`obsm` (Embeddings)](#obsm-(embeddings)), which describe embeddings for each dataset
-* [`uns` (Dataset metadata](#uns-(dataset-metadata)), which describe the dataset as a whole
+* [`uns` (Dataset metadata)](#uns-(dataset-metadata)), which describe the dataset as a whole
 
 ## General Requirements
 
@@ -54,12 +51,12 @@ The types below are python3 types. Note that a python3 `str` is a sequence of Un
 
 cellxgene does not impose any additional constraints on the `X` data matrix. It may be sparse or dense and any numeric [`numpy.dtype`](https://numpy.org/doc/stable/reference/arrays.dtypes.html).
 
-cellxgene's data requirements are tailored to optimize data reuse. Because each assay has different characteristics, the requirements differ by assay type. In general,
-cellxgene requires submission of "raw" data suitable for computational reuse when a standard form exists and strongly recommends that a "final" matrix suitable for
+cellxgene's matrix layer requirements are tailored to optimize data reuse. Because each assay has different characteristics, the requirements differ by assay type. In general,
+cellxgene requires submission of "raw" data suitable for computational reuse when a standard raw matrix format exists for an assay and strongly recommends that a "final" matrix suitable for
 visualization in the explorer be included. So that cellxgene's data can be provided in download formats suitable for both R and Python, the schema imposes the following requirements:
 
 *   All matrix layers MUST have the same shape, and have the same cell labels and gene labels.
-*   Because it is impractical to retain all barcodes in raw and final matrices, any low quality cell filtering MUST be applied to both.
+*   Because it is impractical to retain all barcodes in raw and final matrices, any cell filtering MUST be applied to both.
     By contrast, those wishing to reuse datasets require access to raw gene expression values, so genes MUST be present in both datasets.
     Summarizing, any cell barcodes that are removed from the data MUST be filtered from both raw and final matrices and genes MUST NOT be filtered from the raw matrix.
 *   Any genes that publishers wish to filter from the final matrix MAY have their values replaced by a language appropriate "null" value (e.g. [`np.nan`](https://numpy.org/doc/stable/reference/constants.html#numpy.nan) for python), which will mask them from exploration.
@@ -79,7 +76,7 @@ This is usually the case when there are many ways to produce the matrix layer in
 
 cellxgene requires ontology terms to enable search, comparison, and integration of data.
 Ontology terms for cell metadata MUST use [OBO-format identifiers](http://www.obofoundry.org/id-policy.html), meaning a CURIE (prefixed identifier) of the form **Ontology:Identifier**.
-For example [EFO:0000001](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0000001) is a term in the `EFO` ontology.
+For example, [EFO:0000001](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0000001) is a term in the `EFO` ontology.
 
 When no appropriate ontology value is available, then the most precise accurate term MUST be used.
 For example if the `cell_type` field describes a relay interneuron, but the most specific available term in the CL ontology is [CL:0000099](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000099) for "interneuron", then the interneuron term can be used to fulfill this requirement and ensures that users searching for "neuron" are able to find these data.
@@ -87,9 +84,6 @@ Users will still be able to access more specific cell type annotations that have
 A dataset comprising cells of the human embryo provides a more extreme example.
 In this case, the most precise accurate term is [CL:0000003](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000003)
 for "native cell".
-
-~~The Cell Ontology is expanding over time, and we hope to migrate datasets to more precise terms as they are defined.
-In the meantime, using Cell Ontology terms maximizes the findability (and therefore reusability) of datasets.~~
 
 #### Gene Annotation
 
@@ -175,29 +169,29 @@ Curators MUST annotate the following columns in the `obs` dataframe:
 
 | Key | Value | Annotator |
 |-|-|-|
-| assay_ontology_term_id | `str` or categorical with `str` categories. This MUST be a child of [EFO:0002694](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0002694). If there is not an exact match for the assay, *clarifying text* MAY be appended in parentheses such as " (sci-plex)". | Curator |
-| cell_type_ontology_term_id | `str` or categorical with `str` categories. This MUST be a CL term. | Curator |
-| development_stage_ontology_term_id | `str` or categorical with `str` categories. If unavailable, this MUST be "unknown". <br><br> If `organism_ontolology_term_id` is “NCBITaxon:9606", this MUST be a HsapDv term.<br><br> If `organism_ontolology_term_id` is “NCBITaxon:10090”, this MUST a MmusDv term with the following restrictions: <br><br> **Prenatal stages** MUST be in the range beginning with "MmusDv:0000003" and ending with "MmusDv:0000035". <br><br> **Postnatal stages (1-4 weeks)** MUST be in the range beginning with "MmusDv:0000045" and ending with "MmusDv:0000048". <br><br> **Postnatal stages (after week 4)** MUST be in the range beginning with "MmusDv:0000062" and ending with "MmusDv:0000091". | Curator |
-| disease_ontology_term_id | `str` or categorical with `str` categories. This MUST be a MONDO term or [PATO:0000461](http://purl.obolibrary.org/obo/PATO_0000461) | Curator |
-| ethnicity_ontology_term_id | `str` or categorical with `str` categories. If `organism_ontolology_term_id` is “NCBITaxon:9606”, this MUST be either a HANCESTRO term or “unknown” if unavailable. <br><br> If `organism_ontolology_term_id` is “NCBITaxon:10090”, this MUST be "na". | Curator |
-| is_primary_data | `Bool`. This MUST be `True` if this is the canonical instance of this cellular observation and `False` if not. This is commonly `False` for meta-analyses reusing data or for secondary views of data. | Curator |
-| organism_ontology_term_id | `str` or categorical with `str` categories. This MUST be either "NCBITaxon:9606" or "NCBITaxon:10090". | Curator |
-| sex_ontology_term_id | `str` or categorical with `str` categories. This MUST be a child of [PATO:0001894](http://purl.obolibrary.org/obo/PATO_0001894) | Curator |
-| tissue_ontology_term_id | `str` or categorical with `str` categories. This MUST be an UBERON term. This SHOULD be appended with " (cell culture)" or " (organoid)" if appropriate. | Curator |
+| assay_ontology_term_id | categorical with `str` categories. This MUST be a child of "experimental process". See [EFO:0002694](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0002694) for details. If there is not an exact match for the assay, *clarifying text* MAY be appended in parentheses such as `" (sci-plex)"`. | Curator |
+| cell_type_ontology_term_id | categorical with `str` categories. This MUST be a CL term. | Curator |
+| development_stage_ontology_term_id | categorical with `str` categories. If unavailable, this MUST be `"unknown"`. <br><br> If `organism_ontolology_term_id` is `"NCBITaxon:9606"`, this MUST be a HsapDv term.<br><br> If `organism_ontolology_term_id` is `"NCBITaxon:10090"`, this MUST a MmusDv term with the following restrictions: <br><br> **Prenatal stages** MUST be in the range beginning with "MmusDv:0000003" and ending with "MmusDv:0000035". <br><br> **Postnatal stages (1-4 weeks)** MUST be in the range beginning with "MmusDv:0000045" and ending with "MmusDv:0000048". <br><br> **Postnatal stages (after week 4)** MUST be in the range beginning with "MmusDv:0000062" and ending with "MmusDv:0000091". | Curator |
+| disease_ontology_term_id | categorical with `str` categories. This MUST be a MONDO term or [PATO:0000461](http://purl.obolibrary.org/obo/PATO_0000461) for "normal". | Curator |
+| ethnicity_ontology_term_id | categorical with `str` categories. If `organism_ontolology_term_id` is `"NCBITaxon:9606"`, this MUST be either a HANCESTRO term or `"unknown"` if unavailable. <br><br> If `organism_ontolology_term_id` is `"NCBITaxon:10090"`, this MUST be `"na"`. | Curator |
+| is_primary_data | `bool`. This MUST be `True` if this is the canonical instance of this cellular observation and `False` if not. This is commonly `False` for meta-analyses reusing data or for secondary views of data. | Curator |
+| organism_ontology_term_id | categorical with `str` categories. This MUST be either `"NCBITaxon:9606"` or `"NCBITaxon:10090"`. | Curator |
+| sex_ontology_term_id | categorical with `str` categories. This MUST be a child of "phenotypic sex". See [PATO:0001894](http://purl.obolibrary.org/obo/PATO_0001894) for details. | Curator |
+| tissue_ontology_term_id | categorical with `str` categories. This MUST be an UBERON term. This SHOULD be appended with `" (cell culture)"` or `" (organoid)"` if appropriate. | Curator |
 | | | |
 
-Curators SHOULD NOT annotate the following columns in the `obs` dataframe which are the human-readable names that MUST match the corresponding ontology term identifier. These columns MUST be automatically annotated by the cellxgene Data Portal when a dataset is uploaded.
+When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding ontology term identifier to the `obs` dataframe. Curators SHOULD NOT annotate the following columns.
 
 | Key | Value | Annotator |
 :--|:--|:--
-| assay | `str` or categorical with `str` categories. This MUST be appended with any *clarifying text* set in matching identifier. | Data Portal |
-| cell_type | `str` or categorical with `str` categories. | Data Portal |
-| development_stage | `str` or categorical with `str` categories. This MUST be "unknown" if set in the matching identifier | Data Portal |
-| disease | `str` or categorical with `str` categories | Data Portal |
-| ethnicity | `str` or categorical with `str` categories. This MUST be "na" or "unknown" if set in the matching identifier. | Data Portal |
-| organism | `str` or categorical with `str` categories | Data Portal |
-| sex | `str` or categorical with `str` categories | Data Portal |
-| tissue | `str` or categorical with `str` categories. This MUST be appended with " (cell culture)" or " (organoid)" if set in the matching identifier. | Data Portal |
+| assay | categorical with `str` categories. This MUST be appended with any *clarifying text* set in the matching identifier. | Data Portal |
+| cell_type | categorical with `str` categories. | Data Portal |
+| development_stage | categorical with `str` categories. This MUST be `"unknown"` if set in the matching identifier | Data Portal |
+| disease | categorical with `str` categories | Data Portal |
+| ethnicity | categorical with `str` categories. This MUST be `"na"` or `"unknown"` if set in the matching identifier. | Data Portal |
+| organism | categorical with `str` categories | Data Portal |
+| sex | categorical with `str` categories | Data Portal |
+| tissue | categorical with `str` categories. This MUST be appended with `" (cell culture)"` or `" (organoid)"` if set in the matching identifier. | Data Portal |
 | | | |
 
 ## `var` (Gene Metadata)
@@ -210,11 +204,11 @@ Curators MUST annotate the following columns in the `var` dataframe:
 
 | Key | Value | Annotator |
 :--|:--|:--
-| feature_biotype | This MUST be "gene". | Data Portal |
+| feature_biotype | This MUST be `"gene"`. | Data Portal |
 | feature_id (`var.index`) | `str`. This MUST be an ENSEMBL term from the gene annotation corresponding to the organism for the gene.  | Curator |
 ||||
 
-Curators SHOULD NOT annotate the following column in the `var` dataframe which is the human-readable name that MUST match the corresponding gene identifier. This column MUST be automatically annotated by the cellxgene Data Portal when a dataset is uploaded.
+When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding gene identifier to the `var` dataframe. Curators SHOULD NOT annotate the following column.
 
 | Key | Value | Annotator |
 :--|:--|:--
@@ -225,12 +219,12 @@ Curators SHOULD NOT annotate the following column in the `var` dataframe which i
 
 For each `str` key, `obsm` stores a `numpy.ndarray` of shape `(n_obs, m)`, where `n_obs` is the number of rows in `X` and `m >= 1`.
 
-To display a dataset in cellxgene Explorer, Curators MUST annotate **one or more** two-dimensional (`m >= 2`) embeddings (tSNE, UMAP, PCA, spatial coordinates) in `obsm`. The key for the embedding MUST be prefixed with `X_`. The text that follows this prefix is presented to users in the cellxgene Explorer *Embedding Choice* selector.
+To display a dataset in cellxgene Explorer, Curators MUST annotate **one or more** two-dimensional (`m >= 2`) embeddings (e.g. tSNE, UMAP, PCA, spatial coordinates) in `obsm`. The key for the embedding MUST be prefixed with `X_`. The text that follows this prefix is presented to users in the cellxgene Explorer *Embedding Choice* selector.
 
 To illustrate, the [Krasnow Lab Human Lung Cell Atlas, 10X dataset](https://cellxgene.cziscience.com/e/krasnow_lab_human_lung_cell_atlas_10x-1-remixed.cxg/) in the [A molecular cell atlas of the human lung from single cell RNA sequencing collection](https://cellxgene.cziscience.com/collections/5d445965-6f1a-4b68-ba3a-b8f765155d3a) defines two embeddings in `obsm`:
 
-* 'X_Compartment_tSNE'
-* 'X_tSNE'
+* `'X_Compartment_tSNE'`
+* `'X_tSNE'`
 
 Users can then choose whether the 'Compartment_tSNE' or the 'tSNE' embedding  is visualized in cellxgene Explorer:
 
@@ -245,8 +239,8 @@ See also `default_embedding` in `uns`.
 
 | Key | Value | Annotator |
 :--|:--|:--|
-| layer_descriptions | `dict` with `str` keys and values. Keys MUST be the layer names whose values are free text descriptions for how the layer was created (e.g. "counts per million"). One key MUST be "X" which describes the transformations (if any) performed to produce the `X` matrix that cellxgene Explorer displays. | Curator |
-| schema_version| `str`. This MUST be "2.0.0". | Curator |
+| layer_descriptions | `dict` with `str` keys and values. Keys MUST be the layer names whose values are free text descriptions for how the layer was created (e.g. "counts per million"). One key MUST be "X" which describes the transformations (if any) performed to produce the `X` matrix that cellxgene Explorer displays. If a raw layer is present, the layer description value MUST be `"raw"`. | Curator |
+| schema_version| `str`. This MUST be `"2.0.0"`. | Curator |
 | title | `str`. This text describes and differentiates the dataset from others in the same collection. It is displayed on a page in the cellxgene Portal that also has the collection name. To illustrate, the first dataset name in the [Cells of the adult human heart collection](https://cellxgene.cziscience.com/collections/b52eb423-5d0d-4645-b217-e1c6d38b2e72) is "All — Cells of the adult human heart". | Curator |
 ||||
 
