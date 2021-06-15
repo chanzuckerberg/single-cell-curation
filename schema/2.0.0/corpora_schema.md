@@ -59,13 +59,12 @@ visualization in the explorer be included. So that cellxgene's data can be provi
 
 *   All matrix layers MUST have the same shape, and have the same cell labels and gene labels.
 *   Because it is impractical to retain all barcodes in raw and final matrices, any cell filtering MUST be applied to both.
-    By contrast, those wishing to reuse datasets require access to raw gene expression values, so genes MUST be present in both datasets.
+    By contrast, those wishing to reuse datasets require access to raw gene expression values, so genes MUST NOT be filtered from either dataset.
     Summarizing, any cell barcodes that are removed from the data MUST be filtered from both raw and final matrices and genes MUST NOT be filtered from the raw matrix.
 *   Any genes that publishers wish to filter from the final matrix MAY have their values replaced by a language appropriate "null" value (e.g. [`np.nan`](https://numpy.org/doc/stable/reference/constants.html#numpy.nan) for python), which will mask them from exploration.
 *   Additional layers provided at author discretion MAY be stored using author-selected keys, but MUST have the same cells and genes as other layers.
 
-In addition to these general requirements, the following table describes the matrix data and layers requirements that are assay-specific. If an entry in the table is empty, the cellxgene schema does not have any other requirements on data in those layers beyond the ones listed above.
-This is usually the case when there are many ways to produce the matrix layer in question.
+The following table describes the matrix data and layers requirements that are **assay-specific**. If an entry in the table is empty, the cellxgene schema does not have any other requirements on data in those layers beyond the ones listed above.
 
 | Assay | "raw" required? | "raw" requirements | "final" required? | "final" requirements | Other layers |
 |-|-|-|-|-|-|
@@ -86,10 +85,6 @@ Users will still be able to access more specific cell type annotations that have
 A dataset comprising cells of the human embryo provides a more extreme example.
 In this case, the most precise accurate term is [CL:0000003](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000003)
 for "native cell".
-
-#### Gene Annotation
-
-cellxgene requires ENSEMBL gene identifiers to ensure that all datasets it stores measure the same features and can therefore be integrated.
 
 ### Required Ontologies
 
@@ -146,6 +141,8 @@ The following ontology dependencies are *pinned* for this version of the schema.
 [uberon.owl]: https://github.com/obophenotype/uberon/blob/v2021-02-12/uberon.owl
 
 ### Required Gene Annotations
+
+cellxgene requires ENSEMBL gene identifiers to ensure that all datasets it stores measure the same features and can therefore be integrated.
 
 The following gene annotation dependencies are *pinned* for this version of the schema.
 
