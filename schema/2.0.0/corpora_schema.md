@@ -49,7 +49,9 @@ The types below are python3 types. Note that a python3 `str` is a sequence of Un
 
 ## `X` (Matrix Layers)
 
-cellxgene does not impose any additional constraints on the `X` data matrix. It may be sparse or dense and any numeric [`numpy.dtype`](https://numpy.org/doc/stable/reference/arrays.dtypes.html).
+cellxgene does not impose any additional constraints on the `X` data matrix.
+
+In any layer, if a matrix has 50% or more  values that are zeros, it is STRONGLY RECOMMENDED that the matrix be encoded as a [`scipy.sparse.csr_matrix`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.html).
 
 cellxgene's matrix layer requirements are tailored to optimize data reuse. Because each assay has different characteristics, the requirements differ by assay type. In general,
 cellxgene requires submission of "raw" data suitable for computational reuse when a standard raw matrix format exists for an assay and strongly recommends that a "final" matrix suitable for
@@ -67,9 +69,9 @@ This is usually the case when there are many ways to produce the matrix layer in
 
 | Assay | "raw" required? | "raw" requirements | "final" required? | "final" requirements | Other layers |
 |-|-|-|-|-|-|
-| scRNA-seq (UMI, e.g. 10x v3) | REQUIRED in AnnData.layers["raw"] unless no "final" is provided, then AnnData.X | Values MUST be de-duplicated molecule counts. | STRONGLY RECOMMENDED |  | OPTIONAL |
-| scRNA-seq (non-UMI, e.g. SS2) | REQUIRED in AnnData.layers["raw"] unless no "final" is provided, then AnnData.X | Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM). | STRONGLY RECOMMENDED |  | OPTIONAL |
-| Accessibility (e.g. ATAC-seq, mC-seq) | NOT REQUIRED |  | REQUIRED in AnnData.X | Values MUST correspond to ENSEMBL gene identifiers  | OPTIONAL |
+| scRNA-seq (UMI, e.g. 10x v3) | REQUIRED in `AnnData.raw.X` unless no "final" is provided, then `AnnData.X` | Values MUST be de-duplicated molecule counts. | STRONGLY RECOMMENDED |  | OPTIONAL |
+| scRNA-seq (non-UMI, e.g. SS2) | REQUIRED in `AnnData.raw.X` unless no "final" is provided, then `AnnData.X` | Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM). | STRONGLY RECOMMENDED |  | OPTIONAL |
+| Accessibility (e.g. ATAC-seq, mC-seq) | NOT REQUIRED |  | REQUIRED in `AnnData.X` | Values MUST correspond to ENSEMBL gene identifiers  | OPTIONAL |
 ||||
 
 ## Integration Metadata
@@ -239,7 +241,7 @@ See also `default_embedding` in `uns`.
 
 | Key | Value | Annotator |
 :--|:--|:--|
-| layer_descriptions | `dict` with `str` keys and values. Keys MUST be the layer names whose values are free text descriptions for how the layer was created (e.g. "counts per million"). One key MUST be "X" which describes the transformations (if any) performed to produce the `X` matrix that cellxgene Explorer displays. If a raw layer is present, the layer description value MUST be `"raw"`. | Curator |
+| layer_descriptions | `dict` with `str` keys and values. Keys MUST be the layer names whose values are free text descriptions for how the layer was created (e.g. "counts per million"). One key MUST be `"X"` which describes the transformations (if any) performed to produce the `X` matrix that cellxgene Explorer displays. If a raw layer is present, the layer description value MUST be `"raw"`. | Curator |
 | schema_version| `str`. This MUST be `"2.0.0"`. | Curator |
 | title | `str`. This text describes and differentiates the dataset from others in the same collection. It is displayed on a page in the cellxgene Portal that also has the collection name. To illustrate, the first dataset name in the [Cells of the adult human heart collection](https://cellxgene.cziscience.com/collections/b52eb423-5d0d-4645-b217-e1c6d38b2e72) is "All — Cells of the adult human heart". | Curator |
 ||||
