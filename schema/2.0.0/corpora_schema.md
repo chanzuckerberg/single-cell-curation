@@ -254,7 +254,7 @@ See also `default_embedding` in `uns`.
 ​
 | Key | Value | Annotator |
 :--|:--|:--|
-| batch_condition | `str` or `list[str]`. `str` values must refer to cell metadata keys in `obs`. Together, these keys define the "batches" that a normalization or integration algorithm should be aware of. For example if "patient" and "seqBatch" are keys of vectors of cell metadata, either `"patient"`, `"seqBatch"`, or `["patient", "seqBatch"]` are valid values. | Curator |
+| batch_condition | `str` or `list[str]`. `str` values MUST refer to cell metadata keys in `obs`. Together, these keys define the "batches" that a normalization or integration algorithm should be aware of. For example if "patient" and "seqBatch" are keys of vectors of cell metadata, either `"patient"`, `"seqBatch"`, or `["patient", "seqBatch"]` are valid values. | Curator |
 | default\_embedding|`str`. The `str` value MUST match a key to an embedding in `obsm` for the embedding to display by default. | Curator |
 | <obs_column>_colors where <obs_column> MUST be a column name from `obs`. | `list` of  color values in the formats supported by [matplotlib](https://matplotlib.org/stable/tutorials/colors/colors.html). cellxgene Explorer will display [scanpy-style color information](https://github.com/chanzuckerberg/cellxgene/issues/1152#issue-564361541). | Curator |
 ||||
