@@ -13,8 +13,6 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## Background
 
-## Background
-
 cellxgene aims to support the publication, sharing, and exploration of single-cell datasets.
 Building on those published datasets, cellxgene seeks to create references of the phenotypes and composition of cells that make up human tissues.
 
@@ -25,7 +23,6 @@ cellxgene balances publishing and reference creation needs by requiring datasets
 This document describes the schema, a type of contract, that cellxgene requires all datasets to adhere to so that it can enable searching, filtering, and integration of datasets it hosts.
 
 Note that the requirements in the schema are just the minimum required information. Datasets often have additional metadata, which is preserved in datasets submitted to the cellxgene Data Portal.
-
 
 ## Overview
 
@@ -40,20 +37,17 @@ This document is organized by:
 * [`var` (Gene metadata)](#var-(gene-metadata)), which describe each gene in the dataset
 * [`obsm` (Embeddings)](#obsm-(embeddings)), which describe embeddings for each dataset
 * [`uns` (Dataset metadata](#uns-(dataset-metadata)), which describe the dataset as a whole
-* ~~[Presentation metadata](#presentation-metadata), which are used by the application to adjust the presentation of submitted datasets.~~
 
 ## General Requirements
 
-* AnnData - The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `uns`, `obs`, and `obsm` attributes are described below.
-​
-~~An h5ad that observes the schema MUST include a `version` attribute in `uns` which is a `dict`, and that dict will have a key "corpora_schema_version".~~
+* **AnnData** - The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `uns`, `obs`, and `obsm` attributes are described below.
 
 *   **No PII**. Curators agree to this requirement as part of the data submission policy.
     However, it is not strictly enforced in our validation tooling because it is difficult for software to predict what is and is not PII.
     It is up to the submitter to ensure that no metadata can be personally identifiable: no names, dates of birth, specific locations, etc.
     See this [list](https://docs.google.com/document/d/1sboOmbafvMh3VYjK1-3MAUt0I13UUJfkQseq8ANLPl8/edit) for guidance.
 
-#### Note on types
+#### *Note on types*
 The types below are python3 types. Note that a python3 `str` is a sequence of Unicode code points, which is stored null-terminated and UTF-8-encoded by anndata.
 
 ## `X` (Matrix Layers)
@@ -71,9 +65,7 @@ visualization in the explorer be included. So that cellxgene's data can be provi
 *   Any genes that publishers wish to filter from the final matrix MAY have their values replaced by a language appropriate "null" value (e.g. [`np.nan`](https://numpy.org/doc/stable/reference/constants.html#numpy.nan) for python), which will mask them from exploration.
 *   Additional layers provided at author discretion MAY be stored using author-selected keys, but MUST have the same cells and genes as other layers.
 
-In addition to these general requirements, the following table describes the matrix data and layers requirements that are assay-specific.
-~~If cellxgene does not support an assay you would like to publish, please post an issue on this repository to start a conversation about extending the schema.~~
-If an entry in the table is empty, the cellxgene schema does not have any other requirements on data in those layers beyond the ones listed above.
+In addition to these general requirements, the following table describes the matrix data and layers requirements that are assay-specific. If an entry in the table is empty, the cellxgene schema does not have any other requirements on data in those layers beyond the ones listed above.
 This is usually the case when there are many ways to produce the matrix layer in question.
 
 | Assay | "raw" required? | "raw" requirements | "final" required? | "final" requirements | Other layers |
@@ -96,18 +88,18 @@ A dataset comprising cells of the human embryo provides a more extreme example.
 In this case, the most precise accurate term is [CL:0000003](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000003)
 for "native cell".
 
-The Cell Ontology is expanding over time, and we hope to migrate datasets to more precise terms as they are defined.
-In the meantime, using Cell Ontology terms maximizes the findability (and therefore reusability) of datasets.
+~~The Cell Ontology is expanding over time, and we hope to migrate datasets to more precise terms as they are defined.
+In the meantime, using Cell Ontology terms maximizes the findability (and therefore reusability) of datasets.~~
 
 #### Gene Annotation
 
-cellxgene uses ENSEMBL gene identifiers to ensure that all datasets it stores measure the same features and can therefore be integrated.
+cellxgene requires ENSEMBL gene identifiers to ensure that all datasets it stores measure the same features and can therefore be integrated.
 
 ### Required Ontologies
 
 The following ontology dependencies are *pinned* for this version of the schema.
 
-**EDITOR NOTE**: *There are more recent versions of hsapdv.owl and mmusdv.owl on the OLS site, but these downloads are missing a specific version number for pinning.*
+**EDITOR NOTE**: *[Remove before publishing] There are more recent versions of hsapdv.owl and mmusdv.owl on the OLS site, but these downloads are missing a specific version number for pinning.*
 
 | Ontology | OBO Prefix | Required version |
 |:--|:--|:--|
@@ -191,7 +183,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
 | is_primary_data | `Bool`. This MUST be `True` if this is the canonical instance of this cellular observation and `False` if not. This is commonly `False` for meta-analyses reusing data or for secondary views of data. | Curator |
 | organism_ontology_term_id | `str` or categorical with `str` categories. This MUST be either "NCBITaxon:9606" or "NCBITaxon:10090". | Curator |
 | sex_ontology_term_id | `str` or categorical with `str` categories. This MUST be a child of [PATO:0001894](http://purl.obolibrary.org/obo/PATO_0001894) | Curator |
-| tissue_ontology_term_id | `str` or categorical with `str` categories. . This MUST be an UBERON term. This SHOULD be appended with " (cell culture)" or " (organoid)" if appropriate. | Curator |
+| tissue_ontology_term_id | `str` or categorical with `str` categories. This MUST be an UBERON term. This SHOULD be appended with " (cell culture)" or " (organoid)" if appropriate. | Curator |
 | | | |
 
 Curators SHOULD NOT annotate the following columns in the `obs` dataframe which are the human-readable names that MUST match the corresponding ontology term identifier. These columns MUST be automatically annotated by the cellxgene Data Portal when a dataset is uploaded.
@@ -212,7 +204,7 @@ Curators SHOULD NOT annotate the following columns in the `obs` dataframe which 
 
 `var` is a [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html).
 
-`var.index` MUST contain the ENSEMBL gene identifiers for features. cellxgene requires unique feature identifiers, so the index of `var` MUST NOT contain any duplicate values.
+`var.index` MUST contain unique ENSEMBL gene identifiers for features. 
 
 Curators MUST annotate the following columns in the `var` dataframe:
 
@@ -226,7 +218,7 @@ Curators SHOULD NOT annotate the following column in the `var` dataframe which i
 
 | Key | Value | Annotator |
 :--|:--|:--
-| feature_name | `str`. This MUST be the ENSEMBL gene name corresponding to the `feature_id` | Data Portal |
+| feature_name | `str`. This MUST be the ENSEMBL gene name corresponding to the `feature_id`. | Data Portal |
 ||||
 
 ## `obsm` (Embeddings)
@@ -253,9 +245,9 @@ See also `default_embedding` in `uns`.
 
 | Key | Value | Annotator |
 :--|:--|:--|
-| layer_descriptions | `dict` with `str` keys and values. Keys MUST be the layer names whose values are free text descriptions of how the layer was created (e.g. "counts per million"). One key MUST be "X" which describes the transformations (if any) performed to produce the X matrix that cellxgene Explorer displays. | Curator |
+| layer_descriptions | `dict` with `str` keys and values. Keys MUST be the layer names whose values are free text descriptions for how the layer was created (e.g. "counts per million"). One key MUST be "X" which describes the transformations (if any) performed to produce the `X` matrix that cellxgene Explorer displays. | Curator |
 | schema_version| `str`. This MUST be "2.0.0". | Curator |
-| title | `str`. This text describes and differentiates the dataset from others in the same collection. It is displayed on a page in the cellxgene Portal that also has the collection name. To illustrate, in the [Cells of the adult human heart collection](https://cellxgene.cziscience.com/collections/b52eb423-5d0d-4645-b217-e1c6d38b2e72), the first dataset name is "All — Cells of the adult human heart". | Curator |
+| title | `str`. This text describes and differentiates the dataset from others in the same collection. It is displayed on a page in the cellxgene Portal that also has the collection name. To illustrate, the first dataset name in the [Cells of the adult human heart collection](https://cellxgene.cziscience.com/collections/b52eb423-5d0d-4645-b217-e1c6d38b2e72) is "All — Cells of the adult human heart". | Curator |
 ||||
 
 ​Curators MAY also annotate the following optional keys and values in `uns`. If the key is present, then its value MUST NOT be empty.
@@ -263,10 +255,10 @@ See also `default_embedding` in `uns`.
 | Key | Value | Annotator |
 :--|:--|:--|
 | batch_condition | `str` or `list[str]`. `str` values must refer to cell metadata keys in `obs`. Together, these keys define the "batches" that a normalization or integration algorithm should be aware of. For example if "patient" and "seqBatch" are keys of vectors of cell metadata, either `"patient"`, `"seqBatch"`, or `["patient", "seqBatch"]` are valid values. | Curator |
-| default\_embedding|`str`. MUST match a key to an embedding in `obsm` for the embedding to display by default. | Curator |
-| <obs_column>_colors where <obs_column> MUST be a column name from `obs`. |`list` of  color values in the formats supported by [matplotlib](https://matplotlib.org/stable/tutorials/colors/colors.html). cellxgene Explorer will display [scanpy-style color information](https://github.com/chanzuckerberg/cellxgene/issues/1152#issue-564361541). | Curator |
+| default\_embedding|`str`. The `str` value MUST match a key to an embedding in `obsm` for the embedding to display by default. | Curator |
+| <obs_column>_colors where <obs_column> MUST be a column name from `obs`. | `list` of  color values in the formats supported by [matplotlib](https://matplotlib.org/stable/tutorials/colors/colors.html). cellxgene Explorer will display [scanpy-style color information](https://github.com/chanzuckerberg/cellxgene/issues/1152#issue-564361541). | Curator |
 ||||
 
 ## Appendix A. Changelog
 
-**EDITOR NOTE**: Update prior to final commit
+**EDITOR NOTE**: *Update prior to final commit*
