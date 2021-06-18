@@ -39,6 +39,12 @@ This document is organized by:
 
 * **AnnData** - The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `uns`, `obs`, and `obsm` attributes are described below.
 
+* **Organisms**. Datasets MUST contain either Human or Mouse data. No other organisms are accepted by the cellxgene Data Portal. 
+
+* **Name Collisions in Metadata**. If a metadata key exists in the original dataset with the exact name required by the schema but with values that cannot be accurately mapped to the schema, `"key"` MUST be renamed to `"key_original"`. For example, if there is a `"cell_type"` in the original dataset with values that cannot be mapped, then it MUST be renamed to `"cell_type_original"`. 
+
+* **Redundant Metadata**. If a metadata key exists in the original dataset with a different name than required by the schema and with values that can be accurately mapped to the schema, it is STRONGLY RECOMMENDED that Curators request the permission of the author(s) to rename that key and remodel its values as needed to match the key and values in the schema to eliminate redundant metadata. Common cases are `"Sex"` instead of `"sex"` and `"Age"` instead of `"development_stage"`.
+
 *   **No PII**. Curators agree to this requirement as part of the data submission policy.
     However, it is not strictly enforced in our validation tooling because it is difficult for software to predict what is and is not PII.
     It is up to the submitter to ensure that no metadata can be personally identifiable: no names, dates of birth, specific locations, etc.
