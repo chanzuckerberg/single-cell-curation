@@ -79,11 +79,11 @@ cellxgene requires ontology terms to enable search, comparison, and integration 
 Ontology terms for cell metadata MUST use [OBO-format identifiers](http://www.obofoundry.org/id-policy.html), meaning a CURIE (prefixed identifier) of the form **Ontology:Identifier**.
 For example, [EFO:0000001](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0000001) is a term in the `EFO` ontology.
 
-When no appropriate ontology value is available, then the most precise accurate term MUST be used.
+When no appropriate ontology value is available, then the most accurate term MUST be used.
 For example if the `cell_type` field describes a relay interneuron, but the most specific available term in the CL ontology is [CL:0000099](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000099) for "interneuron", then the interneuron term can be used to fulfill this requirement and ensures that users searching for "neuron" are able to find these data.
 Users will still be able to access more specific cell type annotations that have been submitted with the data (but aren't required by the schema).
 A dataset comprising cells of the human embryo provides a more extreme example.
-In this case, the most precise accurate term is [CL:0000003](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000003)
+In this case, the most accurate term is [CL:0000003](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000003)
 for "native cell".
 
 ### Required Ontologies
@@ -203,7 +203,7 @@ Curators MUST annotate the following columns in the `var` dataframe:
 
 | Key | Value | Annotator |
 :--|:--|:--
-| feature_biotype | This MUST be `"gene"`. | Data Portal |
+| feature_biotype | This MUST be `"gene"`. | Curator |
 | feature_id (`var.index`) | `str`. This MUST be an ENSEMBL term from the gene annotation corresponding to the organism for the gene.  | Curator |
 ||||
 
@@ -240,7 +240,7 @@ See also `default_embedding` in `uns`.
 :--|:--|:--|
 | layer_descriptions | `dict` with `str` keys and values. Keys MUST be the layer names whose values are free text descriptions for how the layer was created (e.g. "counts per million"). One key MUST be `"X"` which describes the transformations (if any) performed to produce the `X` matrix that cellxgene Explorer displays. If a raw layer is present, the layer description value MUST be `"raw"`. | Curator |
 | schema_version| `str`. This MUST be `"2.0.0"`. | Curator |
-| title | `str`. This text describes and differentiates the dataset from others in the same collection. It is displayed on a page in the cellxgene Portal that also has the collection name. To illustrate, the first dataset name in the [Cells of the adult human heart collection](https://cellxgene.cziscience.com/collections/b52eb423-5d0d-4645-b217-e1c6d38b2e72) is "All — Cells of the adult human heart". | Curator |
+| title | `str`. This text describes and differentiates the dataset from others in the same collection. It is displayed on a page in the cellxgene Data Portal that also has the collection name. To illustrate, the first dataset name in the [Cells of the adult human heart collection](https://cellxgene.cziscience.com/collections/b52eb423-5d0d-4645-b217-e1c6d38b2e72) is "All — Cells of the adult human heart". | Curator |
 ||||
 
 ​Curators MAY also annotate the following optional keys and values in `uns`. If the key is present, then its value MUST NOT be empty.
