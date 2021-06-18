@@ -57,7 +57,7 @@ The types below are python3 types. Note that a python3 `str` is a sequence of Un
 
 cellxgene does not impose any additional constraints on the `X` data matrix.
 
-In any layer, if a matrix has 50% or more  values that are zeros, it is STRONGLY RECOMMENDED that the matrix be encoded as a [`scipy.sparse.csr_matrix`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.html).
+In any layer, if a matrix has 50% or more values that are zeros, it is STRONGLY RECOMMENDED that the matrix be encoded as a [`scipy.sparse.csr_matrix`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.html).
 
 cellxgene's matrix layer requirements are tailored to optimize data reuse. Because each assay has different characteristics, the requirements differ by assay type. In general,
 cellxgene requires submission of "raw" data suitable for computational reuse when a standard raw matrix format exists for an assay and strongly recommends that a "final" matrix suitable for
@@ -72,12 +72,12 @@ visualization in the explorer be included. So that cellxgene's data can be provi
 
 The following table describes the matrix data and layers requirements that are **assay-specific**. If an entry in the table is empty, the cellxgene schema does not have any other requirements on data in those layers beyond the ones listed above.
 
-| Assay | "raw" required? | "raw" requirements | "final" required? | "final" requirements | Other layers |
-|-|-|-|-|-|-|
-| scRNA-seq (UMI, e.g. 10x v3) | REQUIRED in `AnnData.raw.X` unless no "final" is provided, then `AnnData.X` | Values MUST be de-duplicated molecule counts. | STRONGLY RECOMMENDED |  | OPTIONAL |
-| scRNA-seq (non-UMI, e.g. SS2) | REQUIRED in `AnnData.raw.X` unless no "final" is provided, then `AnnData.X` | Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM). | STRONGLY RECOMMENDED |  | OPTIONAL |
-| Accessibility (e.g. ATAC-seq, mC-seq) | NOT REQUIRED |  | REQUIRED in `AnnData.X` | Values MUST correspond to ENSEMBL gene identifiers  | OPTIONAL |
-||||
+| Assay | "raw" required? | "raw" location | "final" required? | "final" location |
+|-|-|-|-|-|
+| scRNA-seq (UMI, e.g. 10x v3) | REQUIRED. Values MUST be de-duplicated molecule counts. | `AnnData.raw.X` unless no "final" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
+| scRNA-seq (non-UMI, e.g. SS2) | REQUIRED. Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM). | `AnnData.raw.X` unless no "final" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
+| Accessibility (e.g. ATAC-seq, mC-seq) | NOT REQUIRED | | REQUIRED | `AnnData.X` | STRONGLY RECOMMENDED |
+|||||
 
 ## Integration Metadata
 
