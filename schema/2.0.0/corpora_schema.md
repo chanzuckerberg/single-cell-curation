@@ -39,7 +39,7 @@ This document is organized by:
 
 * **AnnData** - The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `uns`, `obs`, and `obsm` attributes are described below.
 
-* **Organisms**. Datasets MUST contain either Human or Mouse data. No other organisms are accepted by the cellxgene Data Portal. 
+* **Organisms**. Data MUST be either Human or Mouse data. No other organisms are accepted by the cellxgene Data Portal. 
 
 * **Name Collisions in Metadata**. If a metadata key exists in the original dataset with the exact name required by the schema but with values that cannot be accurately mapped to the schema, `"key"` MUST be renamed to `"key_original"`. For example, if there is a `"cell_type"` in the original dataset with values that cannot be mapped, then it MUST be renamed to `"cell_type_original"`. 
 
