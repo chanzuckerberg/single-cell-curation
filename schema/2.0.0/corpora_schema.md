@@ -43,7 +43,7 @@ This document is organized by:
 
 * **Name Collisions in Metadata**. If a metadata key exists in the original dataset with the exact name required by the schema but with values that cannot be accurately mapped to the schema, `"key"` MUST be renamed to `"key_original"`. For example, if there is a `"cell_type"` in the original dataset with values that cannot be mapped, then it MUST be renamed to `"cell_type_original"`. 
 
-* **Redundant Metadata**. If a metadata key exists in the original dataset with a different name than required by the schema and with values that can be accurately mapped to the schema, it is STRONGLY RECOMMENDED that Curators request the permission of the author(s) to rename that key and remodel its values as needed to match the key and values in the schema to eliminate redundant metadata. Common cases are `"Sex"` instead of `"sex"` and `"Age"` instead of `"development_stage"`.
+* **Redundant Metadata**. It is STRONGLY RECOMMENDED to avoid multiple metadata fields containing identical or similar information. 
 
 *   **No PII**. Curators agree to this requirement as part of the data submission policy.
     However, it is not strictly enforced in our validation tooling because it is difficult for software to predict what is and is not PII.
