@@ -55,13 +55,13 @@ The types below are python3 types. Note that a python3 `str` is a sequence of Un
 
 ## `X` (Matrix Layers)
 
-cellxgene does not impose any additional constraints on the `X` data matrix.
+The data stored in the `X` data matrix is the data that is viewable in cellxgene Explorer. cellxgene does not impose any additional constraints on the `X` data matrix.
 
 In any layer, if a matrix has 50% or more values that are zeros, it is STRONGLY RECOMMENDED that the matrix be encoded as a [`scipy.sparse.csr_matrix`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.html).
 
 cellxgene's matrix layer requirements are tailored to optimize data reuse. Because each assay has different characteristics, the requirements differ by assay type. In general,
 cellxgene requires submission of "raw" data suitable for computational reuse when a standard raw matrix format exists for an assay and strongly recommends that a "final" matrix suitable for
-visualization in the explorer be included. So that cellxgene's data can be provided in download formats suitable for both R and Python, the schema imposes the following requirements:
+visualization in cellxgene Explorer be included. So that cellxgene's data can be provided in download formats suitable for both R and Python, the schema imposes the following requirements:
 
 *   All matrix layers MUST have the same shape, and have the same cell labels and gene labels.
 *   Because it is impractical to retain all barcodes in raw and final matrices, any cell filtering MUST be applied to both.
@@ -223,7 +223,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
 
 For each `str` key, `obsm` stores a `numpy.ndarray` of shape `(n_obs, m)`, where `n_obs` is the number of rows in `X` and `m >= 1`.
 
-To display a dataset in cellxgene Explorer, Curators MUST annotate **one or more** two-dimensional (`m >= 2`) embeddings (e.g. tSNE, UMAP, PCA, spatial coordinates) in `obsm`. The key for the embedding MUST be prefixed with `X_`. The text that follows this prefix is presented to users in the cellxgene Explorer *Embedding Choice* selector.
+To display a dataset in cellxgene Explorer, Curators MUST annotate **one or more** two-dimensional (`m >= 2`) embeddings (e.g. tSNE, UMAP, PCA, spatial coordinates) in `obsm`. The key for the embedding MUST be prefixed with `X_`. The text that follows this prefix is presented to users in cellxgene Explorer *Embedding Choice* selector.
 
 To illustrate, the [Krasnow Lab Human Lung Cell Atlas, 10X dataset](https://cellxgene.cziscience.com/e/krasnow_lab_human_lung_cell_atlas_10x-1-remixed.cxg/) in the [A molecular cell atlas of the human lung from single cell RNA sequencing collection](https://cellxgene.cziscience.com/collections/5d445965-6f1a-4b68-ba3a-b8f765155d3a) defines two embeddings in `obsm`:
 
