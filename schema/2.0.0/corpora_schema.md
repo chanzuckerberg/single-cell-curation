@@ -41,7 +41,7 @@ This document is organized by:
 
 * **Organisms**. Data MUST be either Human or Mouse data. No other organisms are accepted by the cellxgene Data Portal. 
 
-* **Name Collisions in Metadata**. If a metadata key exists in the original dataset with the exact name required by the schema but with values that cannot be accurately mapped to the schema, `"key"` MUST be renamed to `"key_original"`. For example, if there is a `"cell_type"` in the original dataset with values that cannot be mapped, then it MUST be renamed to `"cell_type_original"`. 
+* **Reserved Names**. The names of the metadata keys specified by the cellxgene schema are reserved and MUST be unique. For example, there cannot be a duplicate `"feature_biotype"` key in AnnData `var`. 
 
 * **Redundant Metadata**. It is STRONGLY RECOMMENDED to avoid multiple metadata fields containing identical or similar information. 
 
@@ -190,7 +190,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
 :--|:--|:--
 | assay | categorical with `str` categories. This MUST be appended with any *clarifying text* set in the matching identifier. | Data Portal |
 | cell_type | categorical with `str` categories. | Data Portal |
-| development_stage | categorical with `str` categories. This MUST be `"unknown"` if set in the matching identifier | Data Portal |
+| development_stage | categorical with `str` categories. This MUST be `"unknown"` if set in the matching identifier. | Data Portal |
 | disease | categorical with `str` categories | Data Portal |
 | ethnicity | categorical with `str` categories. This MUST be `"na"` or `"unknown"` if set in the matching identifier. | Data Portal |
 | organism | categorical with `str` categories | Data Portal |
