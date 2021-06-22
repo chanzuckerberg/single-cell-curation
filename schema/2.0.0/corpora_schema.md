@@ -68,7 +68,7 @@ visualization in cellxgene Explorer be included. So that cellxgene's data can be
     By contrast, those wishing to reuse datasets require access to raw gene expression values, so genes MUST NOT be filtered from either dataset.
     Summarizing, any cell barcodes that are removed from the data MUST be filtered from both raw and final matrices and genes MUST NOT be filtered from the raw matrix.
 *   Any genes that publishers wish to filter from the final matrix MAY have their values replaced by a language appropriate "null" value (e.g. [`np.nan`](https://numpy.org/doc/stable/reference/constants.html#numpy.nan) for python), which will mask them from exploration.
-*   Additional layers provided at author discretion MAY be stored using author-selected keys, but MUST have the same cells and genes as other layers.
+*   Additional layers provided at author discretion MAY be stored using author-selected keys, but MUST have the same cells and genes as other layers. It is STRONGLY RECOMMENDED that these layers have names that accurately summarize what the numbers in the layer represent (e.g. `"counts_per_million"`, `"SCTransform_normalized"`, or `"RNA_velocity_unspliced"`).
 
 The following table describes the matrix data and layers requirements that are **assay-specific**. If an entry in the table is empty, the cellxgene schema does not have any other requirements on data in those layers beyond the ones listed above.
 
@@ -243,7 +243,7 @@ See also `default_embedding` in `uns`.
 
 | Key | Value | Annotator |
 :--|:--|:--|
-| layer_descriptions | `dict` with `str` keys and values. Keys MUST be the layer names whose values are free text descriptions for how the layer was created (e.g. "counts per million"). One key MUST be `"X"` which describes the transformations (if any) performed to produce the `X` matrix that cellxgene Explorer displays. If a raw layer is present, the layer description value MUST be `"raw"`. | Curator |
+| normalization | `str`. SHOULD describe the method used to normalize the data stored in AnnData `X`. If data in `X` are raw, this value SHOULD be `"none`".
 | schema_version| `str`. This MUST be `"2.0.0"`. | Curator |
 | title | `str`. This text describes and differentiates the dataset from others in the same collection. It is displayed on a page in the cellxgene Data Portal that also has the collection name. To illustrate, the first dataset name in the [Cells of the adult human heart collection](https://cellxgene.cziscience.com/collections/b52eb423-5d0d-4645-b217-e1c6d38b2e72) is "All — Cells of the adult human heart". | Curator |
 ||||
