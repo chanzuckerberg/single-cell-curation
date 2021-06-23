@@ -171,18 +171,273 @@ The following gene annotation dependencies are *pinned* for this version of the 
 
 Curators MUST annotate the following columns in the `obs` dataframe:
 
-| Key | Value | Annotator |
-|-|-|-|
-| assay_ontology_term_id | categorical with `str` categories. This MUST be a child of "experimental process". See [EFO:0002694](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0002694) for details. If there is not an exact match for the assay, *clarifying text* MAY be appended in parentheses such as `" (sci-plex)"`. | Curator |
-| cell_type_ontology_term_id | categorical with `str` categories. This MUST be a CL term. | Curator |
-| development_stage_ontology_term_id | categorical with `str` categories. If unavailable, this MUST be `"unknown"`. <br><br> If `organism_ontolology_term_id` is `"NCBITaxon:9606"`, this MUST be a HsapDv term.<br><br> If `organism_ontolology_term_id` is `"NCBITaxon:10090"`, this MUST a MmusDv term with the following restrictions: <br><br> **Prenatal stages** MUST be in the range beginning with "MmusDv:0000003" and ending with "MmusDv:0000035". <br><br> **Postnatal stages (1-4 weeks)** MUST be in the range beginning with "MmusDv:0000045" and ending with "MmusDv:0000048". <br><br> **Postnatal stages (after week 4)** MUST be in the range beginning with "MmusDv:0000062" and ending with "MmusDv:0000091". | Curator |
-| disease_ontology_term_id | categorical with `str` categories. This MUST be a MONDO term or [PATO:0000461](http://purl.obolibrary.org/obo/PATO_0000461) for "normal". | Curator |
-| ethnicity_ontology_term_id | categorical with `str` categories. If `organism_ontolology_term_id` is `"NCBITaxon:9606"`, this MUST be either a HANCESTRO term or `"unknown"` if unavailable. <br><br> If `organism_ontolology_term_id` is `"NCBITaxon:10090"`, this MUST be `"na"`. | Curator |
-| is_primary_data | `bool`. This MUST be `True` if this is the canonical instance of this cellular observation and `False` if not. This is commonly `False` for meta-analyses reusing data or for secondary views of data. | Curator |
-| organism_ontology_term_id | categorical with `str` categories. This MUST be either `"NCBITaxon:9606"` or `"NCBITaxon:10090"`. | Curator |
-| sex_ontology_term_id | categorical with `str` categories. This MUST be a child of "phenotypic sex". See [PATO:0001894](http://purl.obolibrary.org/obo/PATO_0001894) for details. | Curator |
-| tissue_ontology_term_id | categorical with `str` categories. This MUST be an UBERON term. This SHOULD be appended with `" (cell culture)"` or `" (organoid)"` if appropriate. | Curator |
-| | | |
+### assay_ontology_term_id
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>assay_ontology_term_id</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator<td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. An assay based on 10X Genomics products SHOULD either be <a href="https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0008995">EFO:0008995</a> for <i>10x technology</i> or preferably its most accurate child. Other assays SHOULD be the most accurate child of either <a href="https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0002772">EFO:0002772</a> for <i>assay by molecule</i> or <a href="https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_001018">EFO:0010183</a>  for <i>single cell library construction</i>.<br><br>
+        If there is not an exact match for the assay, clarifying text MAY be appended in parentheses to the most accurate term . For example, the sci-plex assay could be curated as <code>"EFO:0010183 (sci-plex)"</code>.<br><br>Recommended keys for specific assays:
+          <br><br>
+          <table>
+          <thead>
+          <tr>
+          <th>Use</th>
+          <th>For</th>
+          </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>EFO:0009899</td>
+              <td><i>10x 3' v2</i></td>
+            </tr>
+            <tr>
+              <td>EFO:0009922</td>
+              <td><i>10x 3' v3</i></td>
+            </tr>
+            <tr>
+              <td>EFO:0011025</td>
+              <td><i>10x 5' v1</i></td>
+            </tr>
+            <tr>
+              <td>EFO:0008930</td>
+              <td><i>Smart-seq</i></td>
+            </tr>
+            <tr>
+              <td>EFO:0008931</td>
+              <td><i>Smart-seq2</i></td>
+            </tr>
+          </tbody></table>
+        </td>
+    </tr>
+</tbody></table>
+<br><br>
+
+### cell_type_ontology_term_id
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>cell_type_ontology_term_id</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator<td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. This MUST be a CL term.
+        </td>
+    </tr>
+</tbody></table>
+<br><br>
+
+### development_stage_ontology_term_id
+
+
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>development_stage_ontology_term_id</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator<td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. If unavailable, this MUST be <code>"unknown"</code>.<br><br>If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be a HsapDv term with the following restrictions:
+          <br><br>
+          <table>
+          <thead>
+          <tr>
+          <th>For</th>
+          <th>Use</th>
+          </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Embryonic stage</td>
+              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=carnegie&submit=Search+terms">Carnegie stages 1-23</a> (up to 8 weeks after conception; e.g. <a href="http://www.ontobee.org/ontology/HsapDv?iri=http://purl.obolibrary.org/obo/HsapDv_0000003">HsapDv:0000003</a>)</td>
+            </tr>
+            <tr>
+              <td>Fetal development</td>
+              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=post-fertilization&submit=Search+terms">9 to 38 week post-fertilization human stages</a> (9 weeks after conception and before birth; e.g. <a href="http://www.ontobee.org/ontology/HsapDv?iri=http://purl.obolibrary.org/obo/HsapDv_0000046">HsapDv:0000046</a>)</td>
+            </tr>
+            <tr>
+              <td>After birth for the first 12 months</td>
+              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=month-old&submit=Search+terms">1 to 12 month-old human stages</a> (e.g. <a href="http://www.ontobee.org/ontology/HsapDv?iri=http://purl.obolibrary.org/obo/HsapDv_0000174">HsapDv:0000174)</a></td>
+            </tr>
+            <tr>
+              <td>After the first 12 months post-birth</td>
+              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=year-old&submit=Search+terms">year-old human stages</a> (e.g. <a href="http://www.ontobee.org/ontology/HsapDv?iri=http://purl.obolibrary.org/obo/HsapDv_0000246">HsapDv:0000246)</a></td>
+            </tr>
+          </tbody></table>
+          <br><br>If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i></code>, this MUST be a MmusDv term with the following restrictions:
+          <br><br>
+          <table>
+          <thead>
+          <tr>
+          <th>For</th>
+          <th>Use</th>
+          </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>From the time of conception to 1 month after birth</td>
+              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=theiler+stage&submit=Search+terms">Theiler stages</a> (e.g. <a href="http://www.ontobee.org/ontology/MmusDv?iri=http://purl.obolibrary.org/obo/MmusDv_0000003">MmusDv:0000003</a>)</td>
+            </tr>
+            <tr>
+              <td>From 2 months after birth</td>
+              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=month-old&submit=Search+terms"> month-old stages</a> (e.g. <a href="http://www.ontobee.org/ontology/MmusDv?iri=http://purl.obolibrary.org/obo/MmusDv_0000062">MmusDv:0000062)</a></td>
+            </tr>
+          </tbody></table>
+        </td>
+    </tr>
+</tbody></table>
+<br><br>
+
+### disease_ontology_term_id
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>disease_ontology_term_id</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator<td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. This MUST be a MONDO term or <a href="http://purl.obolibrary.org/obo/PATO_0000461">PATO:0000461</a> for <i>normal</i> or <i>healthy</i>.
+        </td>
+    </tr>
+</tbody></table>
+<br><br>
+
+### ethnicity_ontology_term_id
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>ethnicity_ontology_term_id</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator<td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be either a HANCESTRO term or <code>"unknown"</code> if unavailable. <br><br> If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i>, this MUST be <code>"na"</code>.
+        </td>
+    </tr>
+</tbody></table>
+<br><br>
+
+### is_primary_data
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>is_primary_data</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator<td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>bool</code>. This MUST be <code>True</code> if this is the canonical instance of this cellular observation and <code>False</code> if not. This is commonly <code>False</code> for meta-analyses reusing data or for secondary views of data.
+        </td>
+    </tr>
+</tbody></table>
+<br><br>
+
+### organism_ontology_term_id
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>organism_ontology_term_id</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator<td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. This MUST be either <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i> or <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i>.
+        </td>
+    </tr>
+</tbody></table>
+<br><br>
+
+### sex_ontology_term_id
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>sex_ontology_term_id</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator<td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. This MUST be a child of "phenotypic sex". See <a href="http://purl.obolibrary.org/obo/PATO_0001894">PATO:0001894</a> for details.
+        </td>
+    </tr>
+</tbody></table>
+<br><br>
+
+### organism_ontology_term_id
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>organism_ontology_term_id</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator<td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. This MUST be either <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i> or <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i>.
+        </td>
+    </tr>
+</tbody></table>
+<br><br>
+
+### tissue_ontology_term_id
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>tissue_ontology_term_id</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator<td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. <b>EDITOR NOTE</b>: <i>Ambrose to draft CL or UBERON revision and specific guidance to curators</i>.
+        </td>
+    </tr>
+</tbody></table>
+<br><br>
 
 When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding ontology term identifier to the `obs` dataframe. Curators SHOULD NOT annotate the following columns.
 
