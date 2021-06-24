@@ -422,19 +422,19 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <tbody>
             <tr>
               <td>Cell Culture</td>
-              <td>MUST be a CL term appended with <code>" (cell culture)"</code> (e.g. <a href="http://purl.obolibrary.org/obo/CL_0000057"><code>"CL:0000057</a> (cell culture)"</code> for the WTC-11 cell line)</td>
+              <td>MUST be a CL term appended with <code>" (cell culture)"</code><br>(e.g. <a href="http://purl.obolibrary.org/obo/CL_0000057"><code>"CL:0000057</a> (cell culture)"</code> for the WTC-11 cell line)</td>
             </tr>
             <tr>
               <td>Organoid</td>
-              <td>MUST be an UBERON term appended with <code>" (organoid)"</code> (e.g. <a href="http://purl.obolibrary.org/obo/UBERON_0000955"><code>"UBERON:0000955</a> (organoid)"</code> for a <i>brain organoid</i>)</td>
+              <td>MUST be an UBERON term appended with <code>" (organoid)"</code><br>(e.g. <a href="http://purl.obolibrary.org/obo/UBERON_0000955"><code>"UBERON:0000955</a> (organoid)"</code> for a <i>brain organoid</i>)</td>
             </tr>
             <tr>
               <td><a href="https://en.wikipedia.org/wiki/Flow_cytometry#Cell_sorting_by_flow_cytometry">Sorted cells</a> from a tissue</td>
-              <td>MUST be a CL term (e.g. <a href="http://purl.obolibrary.org/obo/CL_0000766"><code>"CL:0000766"</code></a> for sorted <i>myeloid leukocyte</i> cells)</i></td>
+              <td>MUST be a CL term<br>(e.g. <a href="http://purl.obolibrary.org/obo/CL_0000766"><code>"CL:0000766"</code></a> for sorted <i>myeloid leukocyte</i> cells)</i></td>
             </tr>
             <tr>
               <td>Tissue</td>
-              <td>MUST be an UBERON term (e.g. <a href="http://purl.obolibrary.org/obo/UBERON_0008930"><code>"UBERON:0008930"</code></a> for a <i>sematosensory cortex</i> tissue sample)</td>
+              <td>MUST be an UBERON term<br>(e.g. <a href="http://purl.obolibrary.org/obo/UBERON_0008930"><code>"UBERON:0008930"</code></a> for a <i>sematosensory cortex</i> tissue sample)</td>
             </tr>
           </tbody></table>
         </td>
