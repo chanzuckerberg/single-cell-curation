@@ -29,11 +29,11 @@ The schema additionally describes how the dataset, genes, and cells are annotate
 
 This document is organized by:
 * [General requirements](#general-requirements)
-* [`X` (Matrix layers)](#x-(matrix-layers)), which describe the data required for different assays
-* [`obs` (Cell metadata)](#obs-(cell-metadata)), which describe each cell in the dataset
-* [`var` (Gene metadata)](#var-(gene-metadata)), which describe each gene in the dataset
-* [`obsm` (Embeddings)](#obsm-(embeddings)), which describe embeddings for each dataset
-* [`uns` (Dataset metadata)](#uns-(dataset-metadata)), which describe the dataset as a whole
+* [`X` (Matrix layers)](#x-matrix-layers), which describe the data required for different assays
+* [`obs` (Cell metadata)](#obs-cell-metadata), which describe each cell in the dataset
+* [`var` (Gene metadata)](#var-gene-metadata), which describe each gene in the dataset
+* [`obsm` (Embeddings)](#obsm-embeddings), which describe each embedding in the dataset
+* [`uns` (Dataset metadata)](#uns-dataset-metadata), which describe the dataset as a whole
 
 ## General Requirements
 
