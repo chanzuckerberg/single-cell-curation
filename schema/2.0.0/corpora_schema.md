@@ -813,4 +813,41 @@ See also `default_embedding` in `uns`.
 
 ## Appendix A. Changelog
 
-**EDITOR NOTE**: *Update prior to final commit*
+schema v2.0.0 substantially *remodeled* schema v1.1.0:
+
+* "must", "should", and select other words have a defined, standard meaning.
+
+* Curators are responsible for annotating ontology or gene identifiers. The cellxgene Data Portal adds the assigned human-readable names for the indentifiers.
+
+* Documented and *pinned* the required versions of ontologies and gene annotations used in schema validation.
+
+* General Requirements
+  * AnnData is now the canonical data format. The schema outline and descriptions are AnnData-centric.
+
+  * Only Human and Mouse data are accepted by the cellxgene Data Portal. 
+
+  * Policies for reserved names and redundant metadata are documented.
+
+  * [#45](https://github.com/chanzuckerberg/single-cell-curation/issues/45) Updated reference to new PII content
+
+* X (matrix layers)
+  * Added guidance for sparse matrices
+  * Clarified matrix requirements by assay
+
+* obs (cell metadata)
+  * Empty ontology fields are no longer permitted.
+  * Moved organism from uns to obs
+  * Clarified requirements and added detailed guidance for assays, tissue, and development stages
+  * Added ontology for mouse development stages
+  * Added ontology for sex
+  * Added `is_primary_data`
+
+* var
+  * Replaced HGNC **symbols** as `var.index` with ENSEMBL **identifiers** 
+  * Added feature biotype, ENSEMBL id, and ENSEMBL name
+
+* uns
+  * Added `batch_condition`
+  * Replaced `layer_descriptions` with `normalization`
+  * Replaced `version` which included `corpora_schema_version` and `corpora_encoding_version` with `schema_version`
+  * Deprecated `tags` and `default_field` presentation metadata
