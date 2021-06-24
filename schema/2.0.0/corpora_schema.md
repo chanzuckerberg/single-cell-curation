@@ -95,8 +95,6 @@ Users will still be able to access more specific cell type annotations that have
 
 The following ontology dependencies are *pinned* for this version of the schema.
 
-**EDITOR NOTE**: *[Remove before publishing] There are more recent versions of hsapdv.owl and mmusdv.owl on the OLS site, but these downloads are missing a specific version number for pinning.*
-
 | Ontology | OBO Prefix | Required version |
 |:--|:--|:--|
 | [Cell Ontology] | CL | [cl.owl] : [2021-06-21]|
