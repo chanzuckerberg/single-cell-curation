@@ -184,36 +184,36 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. An assay based on 10X Genomics products SHOULD either be <a href="https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0008995">EFO:0008995</a> for <i>10x technology</i> or preferably its most accurate child. Other assays SHOULD be the most accurate child of either <a href="https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0002772">EFO:0002772</a> for <i>assay by molecule</i> or <a href="https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_001018">EFO:0010183</a>  for <i>single cell library construction</i>.<br><br>
-        If there is not an exact match for the assay, clarifying text MAY be appended in parentheses to the most accurate term . For example, the sci-plex assay could be curated as <code>"EFO:0010183 (sci-plex)"</code>.<br><br>Recommended keys for specific assays:
+        <td>categorical with <code>str</code> categories. An assay based on 10X Genomics products SHOULD either be <a href="http://www.ebi.ac.uk/efo/EFO_0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i> or <b>preferably</b> its most accurate child. Other assays SHOULD be the most accurate child of either <a href="http://www.ebi.ac.uk/efo/EFO_0002772">EFO:0002772</a> for <i>assay by molecule</i> or <a href="http://www.ebi.ac.uk/efo/EFO_0010183">EFO:0010183</a>  for <i>single cell library construction</i>.<br><br>
+        If there is not an exact match for the assay, clarifying text MAY be appended in parentheses to the most accurate term. For example, the sci-plex assay could be curated as <code>"EFO:0010183 (sci-plex)"</code>.<br><br>Recommended keys for specific assays:
           <br><br>
           <table>
           <thead>
           <tr>
-          <th>Use</th>
           <th>For</th>
+          <th>Use</th>
           </tr>
           </thead>
           <tbody>
             <tr>
-              <td>EFO:0009899</td>
               <td><i>10x 3' v2</i></td>
+              <td><a href="http://www.ebi.ac.uk/efo/EFO_0009899">EFO:0009899</a></td>
             </tr>
             <tr>
-              <td>EFO:0009922</td>
               <td><i>10x 3' v3</i></td>
+              <td><a href="http://www.ebi.ac.uk/efo/EFO_0009922">EFO:0009922</a></td>
             </tr>
             <tr>
-              <td>EFO:0011025</td>
               <td><i>10x 5' v1</i></td>
+              <td><a href="http://www.ebi.ac.uk/efo/EFO_0011025">EFO:0011025</a></td>
             </tr>
             <tr>
-              <td>EFO:0008930</td>
               <td><i>Smart-seq</i></td>
+              <td><a href="http://www.ebi.ac.uk/efo/EFO_0008930">EFO:0008930</a></td>
             </tr>
             <tr>
-              <td>EFO:0008931</td>
               <td><i>Smart-seq2</i></td>
+              <td><a href="http://www.ebi.ac.uk/efo/EFO_0008931">EFO:0008931</a></td>
             </tr>
           </tbody></table>
         </td>
@@ -242,8 +242,6 @@ Curators MUST annotate the following columns in the `obs` dataframe:
 
 ### development_stage_ontology_term_id
 
-
-
 <table><tbody>
     <tr>
       <th>Key</th>
@@ -267,19 +265,19 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <tbody>
             <tr>
               <td>Embryonic stage</td>
-              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=carnegie&submit=Search+terms">Carnegie stages 1-23</a> (up to 8 weeks after conception; e.g. <a href="http://www.ontobee.org/ontology/HsapDv?iri=http://purl.obolibrary.org/obo/HsapDv_0000003">HsapDv:0000003</a>)</td>
+              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=carnegie&submit=Search+terms">Carnegie stages 1-23</a> (up to 8 weeks after conception; e.g. <a href="http://purl.obolibrary.org/obo/HsapDv_0000003">HsapDv:0000003</a>)</td>
             </tr>
             <tr>
               <td>Fetal development</td>
-              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=post-fertilization&submit=Search+terms">9 to 38 week post-fertilization human stages</a> (9 weeks after conception and before birth; e.g. <a href="http://www.ontobee.org/ontology/HsapDv?iri=http://purl.obolibrary.org/obo/HsapDv_0000046">HsapDv:0000046</a>)</td>
+              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=post-fertilization&submit=Search+terms">9 to 38 week post-fertilization human stages</a> (9 weeks after conception and before birth; e.g. <a href="http://purl.obolibrary.org/obo/HsapDv_0000046">HsapDv:0000046</a>)</td>
             </tr>
             <tr>
               <td>After birth for the first 12 months</td>
-              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=month-old&submit=Search+terms">1 to 12 month-old human stages</a> (e.g. <a href="http://www.ontobee.org/ontology/HsapDv?iri=http://purl.obolibrary.org/obo/HsapDv_0000174">HsapDv:0000174)</a></td>
+              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=month-old&submit=Search+terms">1 to 12 month-old human stages</a> (e.g. <a href="http://purl.obolibrary.org/obo/HsapDv_0000174">HsapDv:0000174)</a></td>
             </tr>
             <tr>
               <td>After the first 12 months post-birth</td>
-              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=year-old&submit=Search+terms">year-old human stages</a> (e.g. <a href="http://www.ontobee.org/ontology/HsapDv?iri=http://purl.obolibrary.org/obo/HsapDv_0000246">HsapDv:0000246)</a></td>
+              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=year-old&submit=Search+terms">year-old human stages</a> (e.g. <a href="http://purl.obolibrary.org/obo/HsapDv_0000246">HsapDv:0000246)</a></td>
             </tr>
           </tbody></table>
           <br><br>If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i></code>, this MUST be a MmusDv term with the following restrictions:
@@ -294,11 +292,11 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <tbody>
             <tr>
               <td>From the time of conception to 1 month after birth</td>
-              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=theiler+stage&submit=Search+terms">Theiler stages</a> (e.g. <a href="http://www.ontobee.org/ontology/MmusDv?iri=http://purl.obolibrary.org/obo/MmusDv_0000003">MmusDv:0000003</a>)</td>
+              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=theiler+stage&submit=Search+terms">Theiler stages</a> (e.g. <a href="http://purl.obolibrary.org/obo/MmusDv_0000003">MmusDv:0000003</a>)</td>
             </tr>
             <tr>
               <td>From 2 months after birth</td>
-              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=month-old&submit=Search+terms"> month-old stages</a> (e.g. <a href="http://www.ontobee.org/ontology/MmusDv?iri=http://purl.obolibrary.org/obo/MmusDv_0000062">MmusDv:0000062)</a></td>
+              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=month-old&submit=Search+terms"> month-old stages</a> (e.g. <a href="http://purl.obolibrary.org/obo/MmusDv_0000062">MmusDv:0000062)</a></td>
             </tr>
           </tbody></table>
         </td>
@@ -319,7 +317,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be a MONDO term or <a href="http://purl.obolibrary.org/obo/PATO_0000461">PATO:0000461</a> for <i>normal</i> or <i>healthy</i>.
+        <td>categorical with <code>str</code> categories. This MUST be a MONDO term or <a href="http://purl.obolibrary.org/obo/PATO_0000461"><code>"PATO:0000461"</code></a> for <i>normal</i> or <i>healthy</i>.
         </td>
     </tr>
 </tbody></table>
@@ -395,26 +393,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be a child of "phenotypic sex". See <a href="http://purl.obolibrary.org/obo/PATO_0001894">PATO:0001894</a> for details.
-        </td>
-    </tr>
-</tbody></table>
-<br><br>
-
-### organism_ontology_term_id
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>organism_ontology_term_id</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Curator<td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be either <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i> or <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i>.
+        <td>categorical with <code>str</code> categories. This MUST be a child of <a href="http://purl.obolibrary.org/obo/PATO_0001894">PATO:0001894</a> for  <i>phenotypic sex</i>.
         </td>
     </tr>
 </tbody></table>
@@ -431,9 +410,35 @@ Curators MUST annotate the following columns in the `obs` dataframe:
       <th>Annotator</th>
       <td>Curator<td>
     </tr>
-    <tr>
+   <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. <b>EDITOR NOTE</b>: <i>Ambrose to draft CL or UBERON revision and specific guidance to curators</i>.
+        <td>categorical with <code>str</code> categories. MUST be the term that best describes the tissue that this cell was derived from, depending on the type of biological sample:
+          <br><br>
+          <table>
+          <thead>
+          <tr>
+          <th>For</th>
+          <th>Use</th>
+          </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Cell Culture</td>
+              <td>MUST be a CL term appended with <code>" (cell culture)"</code> (e.g. <a href="http://purl.obolibrary.org/obo/CL_0000057"><code>"CL:0000057</a> (cell culture)"</code> for the WTC-11 cell line)</td>
+            </tr>
+            <tr>
+              <td>Organoid</td>
+              <td>MUST be an UBERON term appended with <code>" (organoid)"</code> (e.g. <a href="http://purl.obolibrary.org/obo/UBERON_0000955"><code>"UBERON:0000955</a> (organoid)"</code> for a <i>brain organoid</i>)</td>
+            </tr>
+            <tr>
+              <td><a href="https://en.wikipedia.org/wiki/Flow_cytometry#Cell_sorting_by_flow_cytometry">Sorted cells</a> from a tissue</td>
+              <td>MUST be a CL term (e.g. <a href="http://purl.obolibrary.org/obo/CL_0000766"><code>"CL:0000766"</code></a> for sorted <i>myeloid leukocyte</i> cells)</i></td>
+            </tr>
+            <tr>
+              <td>Tissue</td>
+              <td>MUST be an UBERON term (e.g. <a href="http://purl.obolibrary.org/obo/UBERON_0008930"><code>"UBERON:0008930"</code></a> for a <i>sematosensory cortex</i> tissue sample)</td>
+            </tr>
+          </tbody></table>
         </td>
     </tr>
 </tbody></table>
