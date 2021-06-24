@@ -37,7 +37,7 @@ This document is organized by:
 
 ## General Requirements
 
-* **AnnData** - The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `uns`, `obs`, and `obsm` attributes are described below.
+* **AnnData** - The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `obsm`, and `uns` attributes are described below.
 
 * **Organisms**. Data MUST be either Human or Mouse data. No other organisms are accepted by the cellxgene Data Portal. 
 
