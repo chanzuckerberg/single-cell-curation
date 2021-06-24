@@ -183,7 +183,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     <tr>
       <th>Value</th>
         <td>categorical with <code>str</code> categories. An assay based on 10X Genomics products SHOULD either be <a href="http://www.ebi.ac.uk/efo/EFO_0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i> or <b>preferably</b> its most accurate child. Other assays SHOULD be the most accurate child of either <a href="http://www.ebi.ac.uk/efo/EFO_0002772">EFO:0002772</a> for <i>assay by molecule</i> or <a href="http://www.ebi.ac.uk/efo/EFO_0010183">EFO:0010183</a>  for <i>single cell library construction</i>.<br><br>
-        If there is not an exact match for the assay, clarifying text MAY be appended in parentheses to the most accurate term. For example, the sci-plex assay could be curated as <code>"EFO:0010183 (sci-plex)"</code>.<br><br>Recommended keys for specific assays:
+        If there is not an exact match for the assay, clarifying text MAY be appended in parentheses to the most accurate term. For example, the sci-plex assay could be curated as <code>"EFO:0010183 (sci-plex)"</code>.<br><br>Recommended values for specific assays:
           <br><br>
           <table>
           <thead>
@@ -195,29 +195,29 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <tbody>
             <tr>
               <td><i>10x 3' v2</i></td>
-              <td><a href="http://www.ebi.ac.uk/efo/EFO_0009899">EFO:0009899</a></td>
+              <td><a href="http://www.ebi.ac.uk/efo/EFO_0009899"><code>"EFO:0009899"</code></a></td>
             </tr>
             <tr>
               <td><i>10x 3' v3</i></td>
-              <td><a href="http://www.ebi.ac.uk/efo/EFO_0009922">EFO:0009922</a></td>
+              <td><a href="http://www.ebi.ac.uk/efo/EFO_0009922"><code>"EFO:0009922"</code></a></td>
             </tr>
             <tr>
               <td><i>10x 5' v1</i></td>
-              <td><a href="http://www.ebi.ac.uk/efo/EFO_0011025">EFO:0011025</a></td>
+              <td><a href="http://www.ebi.ac.uk/efo/EFO_0011025"><code>"EFO:0011025"</code></a></td>
             </tr>
             <tr>
               <td><i>Smart-seq</i></td>
-              <td><a href="http://www.ebi.ac.uk/efo/EFO_0008930">EFO:0008930</a></td>
+              <td><a href="http://www.ebi.ac.uk/efo/EFO_0008930"><code>"EFO:0008930"</code></a></td>
             </tr>
             <tr>
               <td><i>Smart-seq2</i></td>
-              <td><a href="http://www.ebi.ac.uk/efo/EFO_0008931">EFO:0008931</a></td>
+              <td><a href="http://www.ebi.ac.uk/efo/EFO_0008931"><code>"EFO:0008931"</code></a></td>
             </tr>
           </tbody></table>
         </td>
     </tr>
 </tbody></table>
-<br><br>
+<br>
 
 ### cell_type_ontology_term_id
 
@@ -232,11 +232,11 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be a CL term.
+        <td>categorical with <code>str</code> categories. This MUST be a CL term. 
         </td>
     </tr>
 </tbody></table>
-<br><br>
+<br>
 
 ### development_stage_ontology_term_id
 
@@ -251,7 +251,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If unavailable, this MUST be <code>"unknown"</code>.<br><br>If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be a HsapDv term<br> with the following restrictions:
+        <td>categorical with <code>str</code> categories. If unavailable, this MUST be <code>"unknown"</code>.<br><br>If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be the most<br>accurate HsapDv term with the following STRONGLY RECOMMENDED:
           <br><br>
           <table>
           <thead>
@@ -275,10 +275,10 @@ Curators MUST annotate the following columns in the `obs` dataframe:
             </tr>
             <tr>
               <td>After the first 12<br>months post-birth</td>
-              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=year-old&submit=Search+terms">year-old human stages</a> (e.g. <a href="http://purl.obolibrary.org/obo/HsapDv_0000246">HsapDv:0000246)</a></td>
+              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=year-old&submit=Search+terms">year-old human stages</a><br>(e.g. <a href="http://purl.obolibrary.org/obo/HsapDv_0000246">HsapDv:0000246)</a></td>
             </tr>
           </tbody></table>
-          <br>If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i></code>, this MUST be a MmusDv term<br>with the following restrictions:
+          <br>If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i></code>, this MUST be the most<br>accurate MmusDv term with the following STRONGLY RECOMMENDED:
           <br><br>
           <table>
           <thead>
@@ -300,7 +300,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
         </td>
     </tr>
 </tbody></table>
-<br><br>
+<br>
 
 ### disease_ontology_term_id
 
@@ -319,7 +319,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
         </td>
     </tr>
 </tbody></table>
-<br><br>
+<br>
 
 ### ethnicity_ontology_term_id
 
@@ -338,7 +338,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
         </td>
     </tr>
 </tbody></table>
-<br><br>
+<br>
 
 ### is_primary_data
 
@@ -357,7 +357,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
         </td>
     </tr>
 </tbody></table>
-<br><br>
+<br>
 
 ### organism_ontology_term_id
 
@@ -376,7 +376,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
         </td>
     </tr>
 </tbody></table>
-<br><br>
+<br>
 
 ### sex_ontology_term_id
 
@@ -395,7 +395,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
         </td>
     </tr>
 </tbody></table>
-<br><br>
+<br>
 
 ### tissue_ontology_term_id
 
@@ -410,7 +410,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
    <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. MUST be the term that best describes the tissue that this cell was derived from, depending on the type of biological sample:
+        <td>categorical with <code>str</code> categories. This MUST be the term that best describes the tissue that this cell was derived from, depending on the type of biological sample:
           <br><br>
           <table>
           <thead>
@@ -421,40 +421,181 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           </thead>
           <tbody>
             <tr>
+            <tr>
+              <td>Tissue</td>
+              <td>MUST be an UBERON term<br>(e.g. <a href="http://purl.obolibrary.org/obo/UBERON_0008930"><code>"UBERON:0008930"</code></a> for a <i>sematosensory cortex</i> tissue sample)</td>
+            </tr>
               <td>Cell Culture</td>
-              <td>MUST be a CL term appended with <code>" (cell culture)"</code><br>(e.g. <a href="http://purl.obolibrary.org/obo/CL_0000057"><code>"CL:0000057</a> (cell culture)"</code> for the WTC-11 cell line)</td>
+              <td>MUST be a CL term appended with <code>" (cell culture)"</code><br>(e.g. <a href="http://purl.obolibrary.org/obo/CL_0000057"><code>"CL:0000057</a> (cell culture)"</code> for the <i>WTC-11 cell line</i>)</td>
             </tr>
             <tr>
               <td>Organoid</td>
               <td>MUST be an UBERON term appended with <code>" (organoid)"</code><br>(e.g. <a href="http://purl.obolibrary.org/obo/UBERON_0000955"><code>"UBERON:0000955</a> (organoid)"</code> for a <i>brain organoid</i>)</td>
             </tr>
             <tr>
-              <td><a href="https://en.wikipedia.org/wiki/Flow_cytometry#Cell_sorting_by_flow_cytometry">Sorted cells</a> from a tissue</td>
-              <td>MUST be a CL term<br>(e.g. <a href="http://purl.obolibrary.org/obo/CL_0000766"><code>"CL:0000766"</code></a> for sorted <i>myeloid leukocyte</i> cells)</i></td>
-            </tr>
-            <tr>
-              <td>Tissue</td>
-              <td>MUST be an UBERON term<br>(e.g. <a href="http://purl.obolibrary.org/obo/UBERON_0008930"><code>"UBERON:0008930"</code></a> for a <i>sematosensory cortex</i> tissue sample)</td>
+              <td>Enriched,<br>Sorted,or<br>Isolated<br>Cells from<br>a tissue</td>
+              <td>MUST be an UBERON or CL term.<br>SHOULD NOT use terms that do not capture the tissue of origin.<br>(e.g. In the case of <i>CD3+ kidney cells</i>, use <a href="https://www.ebi.ac.uk/ols/ontologies/uberon/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FUBERON_0002113"><code>"UBERON:0002113"</code></a> for <i>kidney</i><br> instead of <a href="https://www.ebi.ac.uk/ols/ontologies/cl/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FCL_0000084"><code>"CL:000084"</code></a> for <i>T cell</i>. However, in the case of <i>EPCAM+ cervical cells</i>,<br>use <a href="https://www.ebi.ac.uk/ols/ontologies/cl/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FCL_0000066"><code>"CL:000066"</code></a> for <i>epithelial cell</i> of the cervix.)
+              </td>
             </tr>
           </tbody></table>
         </td>
     </tr>
 </tbody></table>
-<br><br>
+<br>
 
-When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding ontology term identifier to the `obs` dataframe. Curators SHOULD NOT annotate the following columns.
+When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding ontology term to the `obs` dataframe. Curators SHOULD NOT annotate the following columns.
 
-| Key | Value | Annotator |
-:--|:--|:--
-| assay | categorical with `str` categories. This MUST be appended with any *clarifying text* set in the matching identifier. | Data Portal |
-| cell_type | categorical with `str` categories. | Data Portal |
-| development_stage | categorical with `str` categories. This MUST be `"unknown"` if set in the matching identifier. | Data Portal |
-| disease | categorical with `str` categories | Data Portal |
-| ethnicity | categorical with `str` categories. This MUST be `"na"` or `"unknown"` if set in the matching identifier. | Data Portal |
-| organism | categorical with `str` categories | Data Portal |
-| sex | categorical with `str` categories | Data Portal |
-| tissue | categorical with `str` categories. This MUST be appended with `" (cell culture)"` or `" (organoid)"` if set in the matching identifier. | Data Portal |
-| | | |
+### assay
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>assay</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Data Portal</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. This is the human-readable name assigned to the value of <code>assay_ontology_term_id</code>. This MUST be appended with any clarifying text set in <code>assay_ontology_term_id</code>.<br> For example, if the sci-plex assay was curated as <code>"EFO:0010183 (sci-plex)"</code>, then the <code>assay</code> value would be <code>"single-cell library construction (sci-plex)"</code>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### cell_type
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>cell_type</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Data Portal</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. This is the human-readable name assigned to the value of <code>cell_type_ontology_term_id</code>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### development_stage
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>assay</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Data Portal</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. This is the human-readable name assigned to the value of <code>development_stage_ontology_term_id</code>. This MUST be <code>"unknown"</code> if set in <code>development_stage_ontology_term_id</code>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### disease
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>disease</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Data Portal</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. This is the human-readable name assigned to the value of <code>disease_ontology_term_id</code>. 
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### ethnicity
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>ethnicity</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Data Portal</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. This is the human-readable name assigned to the value of <code>ethnicity_ontology_term_id</code>. This MUST be <code>"na"</code> or <code>"unknown"</code> if set in <code>ethnicity_ontology_term_id</code>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### organism
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>organism</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Data Portal</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. This is the human-readable name assigned to the value of <code>organism_ontology_term_id</code>. 
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### sex
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>sex</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Data Portal</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. This is the human-readable name assigned to the value of <code>sex_ontology_term_id</code>. 
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### tissue
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>organism</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Data Portal</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. This is the human-readable name assigned to the value of <code>tissue_ontology_term_id</code>. This MUST append <code>" (cell culture)"</code> or <code>" (organoid)"</code> if set in <code>tissue_ontology_term_id</code>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
 
 ## `var` (Gene Metadata)
 
