@@ -668,14 +668,14 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
 
 For each `str` key, `obsm` stores a `numpy.ndarray` of shape `(n_obs, m)`, where `n_obs` is the number of rows in `X` and `m >= 1`.
 
-To display a dataset in cellxgene Explorer, Curators MUST annotate **one or more** two-dimensional (`m >= 2`) embeddings (e.g. tSNE, UMAP, PCA, spatial coordinates) in `obsm`. The key for the embedding MUST be prefixed with `X_`. The text that follows this prefix is presented to users in cellxgene Explorer *Embedding Choice* selector.
+To display a dataset in cellxgene Explorer, Curators MUST annotate **one or more** two-dimensional (`m >= 2`) embeddings (e.g. tSNE, UMAP, PCA, spatial coordinates) in `obsm`. The key for the embedding MUST be prefixed with `"X_"`. The text that follows this prefix is presented to users in cellxgene Explorer *Embedding Choice* selector.
 
 To illustrate, the [Krasnow Lab Human Lung Cell Atlas, 10X dataset](https://cellxgene.cziscience.com/e/krasnow_lab_human_lung_cell_atlas_10x-1-remixed.cxg/) in the [A molecular cell atlas of the human lung from single cell RNA sequencing collection](https://cellxgene.cziscience.com/collections/5d445965-6f1a-4b68-ba3a-b8f765155d3a) defines two embeddings in `obsm`:
 
-* `'X_Compartment_tSNE'`
-* `'X_tSNE'`
+* `"X_Compartment_tSNE"`
+* `"X_tSNE"`
 
-Users can then choose whether the 'Compartment_tSNE' or the 'tSNE' embedding  is visualized in cellxgene Explorer:
+Users can then choose which embedding is visualized in cellxgene Explorer:
 
 ![Embeddings Illustration](images/embeddings.png
 )
@@ -686,21 +686,130 @@ See also `default_embedding` in `uns`.
 
 `uns` is a ordered dictionary with a `str` key. Curators MUST annotate the following keys and values in `uns`:
 
-| Key | Value | Annotator |
-:--|:--|:--|
-| normalization | `str`. SHOULD describe the method used to normalize the data stored in AnnData `X`. If data in `X` are raw, this value SHOULD be `"none`".
-| schema_version| `str`. This MUST be `"2.0.0"`. | Curator |
-| title | `str`. This text describes and differentiates the dataset from others in the same collection. It is displayed on a page in the cellxgene Data Portal that also has the collection name. To illustrate, the first dataset name in the [Cells of the adult human heart collection](https://cellxgene.cziscience.com/collections/b52eb423-5d0d-4645-b217-e1c6d38b2e72) is "All — Cells of the adult human heart". | Curator |
-||||
+### normalization
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>normalization</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          <code>str</code>. SHOULD describe the method used to normalize the data stored in AnnData <code>X</code>. If data in <code>X</code> are raw, this value SHOULD be <code>"none"</code>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### schema_version
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>schema_version</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          This MUST be <code>"2.0.0"</code>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### title
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>title</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          <code>str</code>. This text describes and differentiates the dataset from others in the same collection. It is displayed on a page in the cellxgene Data Portal that also has the collection name. To illustrate, the first dataset name in the <a href="https://cellxgene.cziscience.com/collections/b52eb423-5d0d-4645-b217-e1c6d38b2e72">Cells of the adult human heart collection</a> is "All — Cells of the adult human heart".
+        </td>
+    </tr>
+</tbody></table>
+<br>
 
 ​Curators MAY also annotate the following optional keys and values in `uns`. If the key is present, then its value MUST NOT be empty.
 ​
-| Key | Value | Annotator |
-:--|:--|:--|
-| batch_condition | `str` or `list[str]`. `str` values MUST refer to cell metadata keys in `obs`. Together, these keys define the "batches" that a normalization or integration algorithm should be aware of. For example if "patient" and "seqBatch" are keys of vectors of cell metadata, either `"patient"`, `"seqBatch"`, or `["patient", "seqBatch"]` are valid values. | Curator |
-| default\_embedding|`str`. The `str` value MUST match a key to an embedding in `obsm` for the embedding to display by default. | Curator |
-| <obs_column>_colors where <obs_column> MUST be a column name from `obs`. | `list` of  color values in the formats supported by [matplotlib](https://matplotlib.org/stable/tutorials/colors/colors.html). cellxgene Explorer will display [scanpy-style color information](https://github.com/chanzuckerberg/cellxgene/issues/1152#issue-564361541). | Curator |
-||||
+### batch_condition
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>batch_condition</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          <code>str</code> or <code>list[str]</code>. <code>str</code> values MUST refer to cell metadata keys in <code>obs</code>. Together, these keys define the <i>batches</i> that a normalization or integration algorithm should be aware of. For example if <code>"patient"</code> and <code>"seqBatch"</code> are keys of vectors of cell metadata, either <code>"patient"</code>, <code>"seqBatch"</code>, or <code>["patient", "seqBatch"]</code> are valid values.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### default_embedding
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>default_embedding</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          <code>str</code>. The value MUST match a key to an embedding in <code>obsm</code> for the embedding to display by default.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### <i>obs_column</i>_colors
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>
+      <i>obs_column</i>_colors
+         where <i>obs_column</i> MUST be a column name from <code>obs</code>
+      </td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          <code>list</code> of  color values in the formats supported by <a href="https://matplotlib.org/stable/tutorials/colors/colors.html">matplotlib</a>. cellxgene Explorer will display <a href="https://github.com/chanzuckerberg/cellxgene/issues/1152#issue-56436154">scanpy-style color information</a>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
 
 ## Appendix A. Changelog
 
