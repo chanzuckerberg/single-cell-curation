@@ -178,7 +178,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator<td>
+      <td>Curator</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -228,7 +228,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator<td>
+      <td>Curator</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -247,7 +247,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator<td>
+      <td>Curator</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -311,7 +311,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator<td>
+      <td>Curator</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -330,7 +330,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator<td>
+      <td>Curator</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -349,7 +349,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator<td>
+      <td>Curator</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -368,7 +368,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator<td>
+      <td>Curator</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -387,7 +387,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator<td>
+      <td>Curator</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -406,7 +406,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator<td>
+      <td>Curator</td>
     </tr>
    <tr>
       <th>Value</th>
