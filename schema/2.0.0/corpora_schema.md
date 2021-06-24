@@ -443,7 +443,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
 </tbody></table>
 <br>
 
-When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding ontology term to the `obs` dataframe. Curators SHOULD NOT annotate the following columns.
+When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding ontology term to the `obs` dataframe. Curators MUST NOT annotate the following columns.
 
 ### assay
 
@@ -458,7 +458,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This is the human-readable name assigned to the value of <code>assay_ontology_term_id</code>. This MUST be appended with any clarifying text set in <code>assay_ontology_term_id</code>.<br> For example, if the sci-plex assay was curated as <code>"EFO:0010183 (sci-plex)"</code>, then the <code>assay</code> value would be <code>"single-cell library construction (sci-plex)"</code>.
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>assay_ontology_term_id</code>. This MUST be appended with any clarifying text set in <code>assay_ontology_term_id</code>.<br> For example, if the sci-plex assay was curated as <code>"EFO:0010183 (sci-plex)"</code>, then the <code>assay</code> value would be <code>"single-cell library construction (sci-plex)"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -477,7 +477,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This is the human-readable name assigned to the value of <code>cell_type_ontology_term_id</code>.
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>cell_type_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -496,7 +496,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This is the human-readable name assigned to the value of <code>development_stage_ontology_term_id</code>. This MUST be <code>"unknown"</code> if set in <code>development_stage_ontology_term_id</code>.
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>development_stage_ontology_term_id</code>. This MUST be <code>"unknown"</code> if set in <code>development_stage_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -515,7 +515,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This is the human-readable name assigned to the value of <code>disease_ontology_term_id</code>. 
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>disease_ontology_term_id</code>. 
         </td>
     </tr>
 </tbody></table>
@@ -534,7 +534,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This is the human-readable name assigned to the value of <code>ethnicity_ontology_term_id</code>. This MUST be <code>"na"</code> or <code>"unknown"</code> if set in <code>ethnicity_ontology_term_id</code>.
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>ethnicity_ontology_term_id</code>. This MUST be <code>"na"</code> or <code>"unknown"</code> if set in <code>ethnicity_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -553,7 +553,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This is the human-readable name assigned to the value of <code>organism_ontology_term_id</code>. 
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>organism_ontology_term_id</code>. 
         </td>
     </tr>
 </tbody></table>
@@ -572,7 +572,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This is the human-readable name assigned to the value of <code>sex_ontology_term_id</code>. 
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>sex_ontology_term_id</code>. 
         </td>
     </tr>
 </tbody></table>
@@ -591,7 +591,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This is the human-readable name assigned to the value of <code>tissue_ontology_term_id</code>. This MUST append <code>" (cell culture)"</code> or <code>" (organoid)"</code> if set in <code>tissue_ontology_term_id</code>.
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>tissue_ontology_term_id</code>. This MUST append <code>" (cell culture)"</code> or <code>" (organoid)"</code> if set in <code>tissue_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -605,18 +605,64 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
 
 Curators MUST annotate the following columns in the `var` dataframe:
 
-| Key | Value | Annotator |
-:--|:--|:--
-| feature_biotype | This MUST be `"gene"`. | Curator |
-| feature_id (`var.index`) | `str`. This MUST be an ENSEMBL term from the gene annotation corresponding to the organism for the gene.  | Curator |
-||||
+### feature_biotype
 
-When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding gene identifier to the `var` dataframe. Curators SHOULD NOT annotate the following column.
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>feature_biotype</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>This MUST be <code>"gene"</code>.  
+        </td>
+    </tr>
+</tbody></table>
+<br>
 
-| Key | Value | Annotator |
-:--|:--|:--
-| feature_name | `str`. This MUST be the ENSEMBL gene name corresponding to the `feature_id`. | Data Portal |
-||||
+### feature_id
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>feature_id <code>(var.index)</code></td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>str</code>. This MUST be an ENSEMBL term from the gene annotation corresponding to the organism for the gene.  
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding gene identifier to the `var` dataframe. Curators MUST NOT annotate the following column:
+
+### feature_ name
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>feature_name</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Data Portal</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>str</code>. This MUST be the human-readable ENSEMBL gene name assigned to the <code>feature_id<code>.  
+        </td>
+    </tr>
+</tbody></table>
+<br>
 
 ## `obsm` (Embeddings)
 
