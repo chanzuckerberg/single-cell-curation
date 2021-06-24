@@ -87,7 +87,7 @@ For example, [EFO:0000001](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_
 
 When no appropriate ontology value is available, then the most accurate term MUST be used. 
 
-For example if the `cell_type` field describes a relay interneuron, but the most specific available term in the CL ontology is [CL:0000099](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000099) for *interneuron*, then the interneuron term can be used to fulfill this requirement and ensures that users searching for "neuron" are able to find these data. If no appropriate high-level term can be found or the cell type is unknown, then the most accurate term is [CL:0000003](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000003) for *native cell*.
+For example if `cell_type_ontology_term_id` describes a relay interneuron, but the most specific available term in the CL ontology is [CL:0000099](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000099) for *interneuron*, then the interneuron term can be used to fulfill this requirement and ensures that users searching for "neuron" are able to find these data. If no appropriate high-level term can be found or the cell type is unknown, then the most accurate term is [CL:0000003](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000003) for *native cell*.
 
 Users will still be able to access more specific cell type annotations that have been submitted with the dataset (but aren't required by the schema).
 
