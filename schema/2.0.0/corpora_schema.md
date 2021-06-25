@@ -391,7 +391,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be a child of <a href="http://purl.obolibrary.org/obo/PATO_0001894">PATO:0001894</a> for  <i>phenotypic sex</i>.
+        <td>categorical with <code>str</code> categories. This MUST be a child of <a href="http://purl.obolibrary.org/obo/PATO_0001894">PATO:0001894</a> for  <i>phenotypic sex</i> or <code>"unknown"</code> if unavailable..
         </td>
     </tr>
 </tbody></table>
@@ -572,7 +572,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>sex_ontology_term_id</code>. 
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>sex_ontology_term_id</code>. This MUST be <code>"unknown"</code> if set in <code>sex_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
