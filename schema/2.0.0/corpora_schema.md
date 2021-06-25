@@ -7,8 +7,6 @@ Document Status: _Approved_
 
 Version: 2.0.0
 
-Date Last Modified: 2021-06-07 **EDITOR NOTE**: *Update before publishing*
-
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED" "MAY", and "OPTIONAL" in this document are to be interpreted as described in [BCP 14](https://tools.ietf.org/html/bcp14), [RFC2119](https://www.rfc-editor.org/rfc/rfc2119.txt), and [RFC8174](https://www.rfc-editor.org/rfc/rfc8174.txt) when, and only when, they appear in all capitals, as shown here.
 
 ## Background
@@ -182,7 +180,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. An assay based on 10X Genomics products SHOULD either be <a href="http://www.ebi.ac.uk/efo/EFO_0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i> or <b>preferably</b> its most accurate child. Other assays SHOULD be the most accurate child of either <a href="http://www.ebi.ac.uk/efo/EFO_0002772">EFO:0002772</a> for <i>assay by molecule</i> or <a href="http://www.ebi.ac.uk/efo/EFO_0010183">EFO:0010183</a>  for <i>single cell library construction</i>.<br><br>
+        <td>categorical with <code>str</code> categories. This MUST be an EFO term.<br><br>An assay based on 10X Genomics products SHOULD either be <a href="http://www.ebi.ac.uk/efo/EFO_0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i> or <b>preferably</b> its most accurate child. Other assays SHOULD be the most accurate child of either <a href="http://www.ebi.ac.uk/efo/EFO_0002772">EFO:0002772</a> for <i>assay by molecule</i> or <a href="http://www.ebi.ac.uk/efo/EFO_0010183">EFO:0010183</a>  for <i>single cell library construction</i>.<br><br>
         If there is not an exact match for the assay, clarifying text MAY be appended in parentheses to the most accurate term. For example, the sci-plex assay could be curated as <code>"EFO:0010183 (sci-plex)"</code>.<br><br>Recommended values for specific assays:
           <br><br>
           <table>
@@ -391,7 +389,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be a child of <a href="http://purl.obolibrary.org/obo/PATO_0001894">PATO:0001894</a> for  <i>phenotypic sex</i> or <code>"unknown"</code> if unavailable..
+        <td>categorical with <code>str</code> categories. This MUST be a child of <a href="http://purl.obolibrary.org/obo/PATO_0001894">PATO:0001894</a> for  <i>phenotypic sex</i> or <code>"unknown"</code> if unavailable.
         </td>
     </tr>
 </tbody></table>
@@ -434,7 +432,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
             </tr>
             <tr>
               <td>Enriched,<br>Sorted,or<br>Isolated<br>Cells from<br>a tissue</td>
-              <td>MUST be an UBERON or CL term.<br>SHOULD NOT use terms that do not capture the tissue of origin.<br>(e.g. In the case of <i>CD3+ kidney cells</i>, use <a href="https://www.ebi.ac.uk/ols/ontologies/uberon/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FUBERON_0002113"><code>"UBERON:0002113"</code></a> for <i>kidney</i><br> instead of <a href="https://www.ebi.ac.uk/ols/ontologies/cl/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FCL_0000084"><code>"CL:000084"</code></a> for <i>T cell</i>. However, in the case of <i>EPCAM+ cervical cells</i>,<br>use <a href="https://www.ebi.ac.uk/ols/ontologies/cl/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FCL_0000066"><code>"CL:000066"</code></a> for <i>epithelial cell</i> of the cervix.)
+              <td>MUST be an UBERON or CL term and SHOULD NOT use terms that do not capture<br> the tissue of origin<br>(e.g. In the case of <i>CD3+ kidney cells</i>, use <a href="https://www.ebi.ac.uk/ols/ontologies/uberon/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FUBERON_0002113"><code>"UBERON:0002113"</code></a> for <i>kidney</i><br> instead of <a href="https://www.ebi.ac.uk/ols/ontologies/cl/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FCL_0000084"><code>"CL:000084"</code></a> for <i>T cell</i>. However, in the case of <i>EPCAM+ cervical cells</i>,<br>use <a href="https://www.ebi.ac.uk/ols/ontologies/cl/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FCL_0000066"><code>"CL:000066"</code></a> for <i>epithelial cell</i> of the cervix.)
               </td>
             </tr>
           </tbody></table>
@@ -458,7 +456,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>assay_ontology_term_id</code>. Any clarifying text set in <code>assay_ontology_term_id</code> MUST be appended.<br><br> For example, if the sci-plex assay was curated as <code>"EFO:0010183 (sci-plex)"</code>, then the <code>assay</code> value would be <code>"single-cell library construction (sci-plex)"</code>.
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>assay_ontology_term_id</code>. Any clarifying text appended in parentheses in <code>assay_ontology_term_id</code> MUST be appended to <code>assay</code>.<br><br> For example, if the sci-plex assay was curated as <code>"EFO:0010183 (sci-plex)"</code>, then the value would be <code>"single-cell library construction (sci-plex)"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -591,8 +589,8 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>tissue_ontology_term_id</code>. <code>" (cell culture)"</code> or <code>" (organoid)"</code> MUST be appended if set in <code>tissue_ontology_term_id</code>.<br><br>
-       For example, if the value of the <code>tissue_ontology_term_id</code> was curated as <code>"CL:0000057 (cell culture)"</code>, then the <code>tissue</code> value would be <code>"fibroblast (cell culture)"</code>.
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>tissue_ontology_term_id</code>. <code>" (cell culture)"</code> or <code>" (organoid)"</code> MUST be appended if present in <code>tissue_ontology_term_id</code>.<br><br>
+       For example, if the value of the <code>tissue_ontology_term_id</code> was curated as <code>"CL:0000057 (cell culture)"</code>, then the value would be <code>"fibroblast (cell culture)"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -659,7 +657,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>str</code>. This MUST be the human-readable ENSEMBL gene name assigned to the <code>feature_id<code>.  
+        <td><code>str</code>. This MUST be the human-readable ENSEMBL gene name assigned to the <code>feature_id</code>.  
         </td>
     </tr>
 </tbody></table>
@@ -669,7 +667,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
 
 For each `str` key, `obsm` stores a `numpy.ndarray` of shape `(n_obs, m)`, where `n_obs` is the number of rows in `X` and `m >= 1`.
 
-To display a dataset in cellxgene Explorer, Curators MUST annotate **one or more** two-dimensional (`m >= 2`) embeddings (e.g. tSNE, UMAP, PCA, spatial coordinates) in `obsm`. The key for the embedding MUST be prefixed with `"X_"`. The text that follows this prefix is presented to users in cellxgene Explorer *Embedding Choice* selector.
+To display a dataset in cellxgene Explorer, Curators MUST annotate **one or more** two-dimensional (`m >= 2`) embeddings (e.g. tSNE, UMAP, PCA, spatial coordinates) in `obsm`. The key for the embedding MUST be prefixed with `"X_"`. The text that follows this prefix is presented to users in the *Embedding Choice* selector in cellxgene Explorer.
 
 To illustrate, the [Krasnow Lab Human Lung Cell Atlas, 10X dataset](https://cellxgene.cziscience.com/e/krasnow_lab_human_lung_cell_atlas_10x-1-remixed.cxg/) in the [A molecular cell atlas of the human lung from single cell RNA sequencing collection](https://cellxgene.cziscience.com/collections/5d445965-6f1a-4b68-ba3a-b8f765155d3a) defines two embeddings in `obsm`:
 
@@ -701,7 +699,7 @@ See also `default_embedding` in `uns`.
     <tr>
       <th>Value</th>
         <td>
-          <code>str</code>. SHOULD describe the method used to normalize the data stored in AnnData <code>X</code>. If data in <code>X</code> are raw, this value SHOULD be <code>"none"</code>.
+          <code>str</code>. This SHOULD describe the method used to normalize the data stored in AnnData <code>X</code>. If data in <code>X</code> are raw, this value SHOULD be <code>"none"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -783,7 +781,7 @@ See also `default_embedding` in `uns`.
     <tr>
       <th>Value</th>
         <td>
-          <code>str</code>. The value MUST match a key to an embedding in <code>obsm</code> for the embedding to display by default.
+          <code>str</code>. The value MUST match a key to an embedding in <code>obsm</code> for the embedding to display by default in cellxgene Explorer.
         </td>
     </tr>
 </tbody></table>
@@ -796,7 +794,7 @@ See also `default_embedding` in `uns`.
       <th>Key</th>
       <td>
       <i>obs_column</i>_colors
-         where <i>obs_column</i> MUST be a column name from <code>obs</code>
+         where <i>obs_column</i> MUST refer to cell metadata keys in <code>obs</code>
       </td>
     </tr>
     <tr>
@@ -818,7 +816,7 @@ schema v2.0.0 substantially *remodeled* schema v1.1.0:
 
 * "must", "should", and select other words have a defined, standard meaning.
 
-* Curators are responsible for annotating ontology or gene identifiers. The cellxgene Data Portal adds the assigned human-readable names for the indentifiers.
+* Curators are responsible for annotating ontology and gene identifiers. The cellxgene Data Portal adds the assigned human-readable names for all indentifiers.
 
 * Documented and *pinned* the required versions of ontologies and gene annotations used in schema validation.
 
