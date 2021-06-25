@@ -39,7 +39,7 @@ This document is organized by:
 
 * **Organisms**. Data MUST be either Human or Mouse data. No other organisms are accepted by the cellxgene Data Portal. 
 
-* **Reserved Names**. The names of the metadata keys specified by the cellxgene schema are reserved and MUST be unique. For example, there cannot be a duplicate `"feature_biotype"` key in AnnData `var`. 
+* **Reserved Names**. The names of the metadata keys specified by the cellxgene schema are reserved and MUST be unique. For example, duplicate `"feature_biotype"` keys in AnnData `var` are not allowed.
 
 * **Redundant Metadata**. It is STRONGLY RECOMMENDED to avoid multiple metadata fields containing identical or similar information. 
 
@@ -181,7 +181,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     <tr>
       <th>Value</th>
         <td>categorical with <code>str</code> categories. This MUST be an EFO term.<br><br>An assay based on 10X Genomics products SHOULD either be <a href="http://www.ebi.ac.uk/efo/EFO_0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i> or <b>preferably</b> its most accurate child. Other assays SHOULD be the most accurate child of either <a href="http://www.ebi.ac.uk/efo/EFO_0002772">EFO:0002772</a> for <i>assay by molecule</i> or <a href="http://www.ebi.ac.uk/efo/EFO_0010183">EFO:0010183</a>  for <i>single cell library construction</i>.<br><br>
-        If there is not an exact match for the assay, clarifying text MAY be appended in parentheses to the most accurate term. For example, the sci-plex assay could be curated as <code>"EFO:0010183 (sci-plex)"</code>.<br><br>Recommended values for specific assays:
+        If there is not an exact match for the assay, clarifying text MAY be enclosed in parentheses and appended to the most accurate term. For example, the sci-plex assay could be curated as <code>"EFO:0010183 (sci-plex)"</code>.<br><br>Recommended values for specific assays:
           <br><br>
           <table>
           <thead>
@@ -431,7 +431,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td>MUST be an UBERON term appended with <code>" (organoid)"</code><br>(e.g. <a href="http://purl.obolibrary.org/obo/UBERON_0000955"><code>"UBERON:0000955</a> (organoid)"</code> for a <i>brain organoid</i>)</td>
             </tr>
             <tr>
-              <td>Enriched,<br>Sorted,or<br>Isolated<br>Cells from<br>a tissue</td>
+              <td>Enriched,<br>Sorted,or<br>Isolated<br>Cells from<br>a Tissue</td>
               <td>MUST be an UBERON or CL term and SHOULD NOT use terms that do not capture<br> the tissue of origin<br>(e.g. In the case of <i>CD3+ kidney cells</i>, use <a href="https://www.ebi.ac.uk/ols/ontologies/uberon/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FUBERON_0002113"><code>"UBERON:0002113"</code></a> for <i>kidney</i><br> instead of <a href="https://www.ebi.ac.uk/ols/ontologies/cl/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FCL_0000084"><code>"CL:000084"</code></a> for <i>T cell</i>. However, in the case of <i>EPCAM+ cervical cells</i>,<br>use <a href="https://www.ebi.ac.uk/ols/ontologies/cl/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FCL_0000066"><code>"CL:000066"</code></a> for <i>epithelial cell</i> of the cervix.)
               </td>
             </tr>
@@ -456,7 +456,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>assay_ontology_term_id</code>. Any clarifying text appended in parentheses in <code>assay_ontology_term_id</code> MUST be appended to <code>assay</code>.<br><br> For example, if the sci-plex assay was curated as <code>"EFO:0010183 (sci-plex)"</code>, then the value would be <code>"single-cell library construction (sci-plex)"</code>.
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>assay_ontology_term_id</code>. Any clarifying text enclosed in parentheses and appended to <code>assay_ontology_term_id</code> MUST be appended to <code>assay</code>.<br><br> For example, if the sci-plex assay was curated as <code>"EFO:0010183 (sci-plex)"</code>, then the value would be <code>"single-cell library construction (sci-plex)"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -590,7 +590,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     <tr>
       <th>Value</th>
         <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>tissue_ontology_term_id</code>. <code>" (cell culture)"</code> or <code>" (organoid)"</code> MUST be appended if present in <code>tissue_ontology_term_id</code>.<br><br>
-       For example, if the value of the <code>tissue_ontology_term_id</code> was curated as <code>"CL:0000057 (cell culture)"</code>, then the value would be <code>"fibroblast (cell culture)"</code>.
+       For example, if the <code>tissue_ontology_term_id</code> was curated as <code>"CL:0000057 (cell culture)"</code>, then the value would be <code>"fibroblast (cell culture)"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -699,7 +699,7 @@ See also `default_embedding` in `uns`.
     <tr>
       <th>Value</th>
         <td>
-          <code>str</code>. This SHOULD describe the method used to normalize the data stored in AnnData <code>X</code>. If data in <code>X</code> are raw, this value SHOULD be <code>"none"</code>.
+          <code>str</code>. This SHOULD describe the method used to normalize the data stored in AnnData <code>X</code>. If data in <code>X</code> are raw, this SHOULD be <code>"none"</code>.
         </td>
     </tr>
 </tbody></table>
