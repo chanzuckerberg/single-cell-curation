@@ -261,19 +261,19 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <tbody>
             <tr>
               <td>Embryonic stage</td>
-              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=carnegie&submit=Search+terms">Carnegie stages 1-23</a><br>(up to 8 weeks after conception; e.g. <a href="http://purl.obolibrary.org/obo/HsapDv_0000003">HsapDv:0000003</a>)</td>
+              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=carnegie&submit=Search+terms">Carnegie stages 1-23</a><br>(up to 8 weeks after conception; e.g. <a href="http://purl.obolibrary.org/obo/HsapDv_0000003">HsapDv:0000003</a>)</td>
             </tr>
             <tr>
               <td>Fetal development</td>
-              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=post-fertilization&submit=Search+terms">9 to 38 week post-fertilization human stages</a><br>(9 weeks after conception and before birth; e.g. <a href="http://purl.obolibrary.org/obo/HsapDv_0000046">HsapDv:0000046</a>)</td>
+              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=post-fertilization&submit=Search+terms">9 to 38 week post-fertilization human stages</a><br>(9 weeks after conception and before birth; e.g. <a href="http://purl.obolibrary.org/obo/HsapDv_0000046">HsapDv:0000046</a>)</td>
             </tr>
             <tr>
               <td>After birth for the<br>first 12 months</td>
-              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=month-old&submit=Search+terms">1 to 12 month-old human stages</a><br>(e.g. <a href="http://purl.obolibrary.org/obo/HsapDv_0000174">HsapDv:0000174)</a></td>
+              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=month-old&submit=Search+terms">1 to 12 month-old human stages</a><br>(e.g. <a href="http://purl.obolibrary.org/obo/HsapDv_0000174">HsapDv:0000174)</a></td>
             </tr>
             <tr>
               <td>After the first 12<br>months post-birth</td>
-              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=year-old&submit=Search+terms">year-old human stages</a><br>(e.g. <a href="http://purl.obolibrary.org/obo/HsapDv_0000246">HsapDv:0000246)</a></td>
+              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=year-old&submit=Search+terms">year-old human stages</a><br>(e.g. <a href="http://purl.obolibrary.org/obo/HsapDv_0000246">HsapDv:0000246)</a></td>
             </tr>
           </tbody></table>
           <br>If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i></code>, this MUST be the most<br>accurate MmusDv term with the following STRONGLY RECOMMENDED:
@@ -288,11 +288,11 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <tbody>
             <tr>
               <td>From the time of conception<br>to 1 month after birth</td>
-              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=theiler+stage&submit=Search+terms">Theiler stages</a><br>(e.g. <a href="http://purl.obolibrary.org/obo/MmusDv_0000003">MmusDv:0000003</a>)</td>
+              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=theiler+stage&submit=Search+terms">Theiler stages</a><br>(e.g. <a href="http://purl.obolibrary.org/obo/MmusDv_0000003">MmusDv:0000003</a>)</td>
             </tr>
             <tr>
               <td>From 2 months after birth</td>
-              <td>MUST be a term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=month-old&submit=Search+terms"> month-old stages</a><br>(e.g. <a href="http://purl.obolibrary.org/obo/MmusDv_0000062">MmusDv:0000062)</a></td>
+              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=month-old&submit=Search+terms"> month-old stages</a><br>(e.g. <a href="http://purl.obolibrary.org/obo/MmusDv_0000062">MmusDv:0000062)</a></td>
             </tr>
           </tbody></table>
         </td>
