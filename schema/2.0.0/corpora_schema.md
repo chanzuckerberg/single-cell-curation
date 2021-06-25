@@ -458,7 +458,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>assay_ontology_term_id</code>. This MUST be appended with any clarifying text set in <code>assay_ontology_term_id</code>.<br> For example, if the sci-plex assay was curated as <code>"EFO:0010183 (sci-plex)"</code>, then the <code>assay</code> value would be <code>"single-cell library construction (sci-plex)"</code>.
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>assay_ontology_term_id</code>. Any clarifying text set in <code>assay_ontology_term_id</code> MUST be appended.<br><br> For example, if the sci-plex assay was curated as <code>"EFO:0010183 (sci-plex)"</code>, then the <code>assay</code> value would be <code>"single-cell library construction (sci-plex)"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -496,7 +496,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>development_stage_ontology_term_id</code>. This MUST be <code>"unknown"</code> if set in <code>development_stage_ontology_term_id</code>.
+        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if set in <code>development_stage_ontology_term_id</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>development_stage_ontology_term_id</code>. 
         </td>
     </tr>
 </tbody></table>
@@ -534,7 +534,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>ethnicity_ontology_term_id</code>. This MUST be <code>"na"</code> or <code>"unknown"</code> if set in <code>ethnicity_ontology_term_id</code>.
+        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code> or <code>"unknown"</code> if set in <code>ethnicity_ontology_term_id</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>ethnicity_ontology_term_id</code>. 
         </td>
     </tr>
 </tbody></table>
@@ -572,7 +572,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>sex_ontology_term_id</code>. This MUST be <code>"unknown"</code> if set in <code>sex_ontology_term_id</code>.
+        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if set in <code>sex_ontology_term_id</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>sex_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -591,7 +591,8 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>tissue_ontology_term_id</code>. This MUST append <code>" (cell culture)"</code> or <code>" (organoid)"</code> if set in <code>tissue_ontology_term_id</code>.
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>tissue_ontology_term_id</code>. <code>" (cell culture)"</code> or <code>" (organoid)"</code> MUST be appended if set in <code>tissue_ontology_term_id</code>.<br><br>
+       For example, if the value of the <code>tissue_ontology_term_id</code> was curated as <code>"CL:0000057 (cell culture)"</code>, then the <code>tissue</code> value would be <code>"fibroblast (cell culture)"</code>.
         </td>
     </tr>
 </tbody></table>
