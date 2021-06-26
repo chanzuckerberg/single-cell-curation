@@ -787,28 +787,6 @@ See also `default_embedding` in `uns`.
 </tbody></table>
 <br>
 
-### <i>obs_column</i>_colors
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>
-      <i>obs_column</i>_colors
-         where <i>obs_column</i> MUST refer to cell metadata keys in <code>obs</code>
-      </td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Curator</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>
-          <code>list</code> of  color values in the formats supported by <a href="https://matplotlib.org/stable/tutorials/colors/colors.html">matplotlib</a>. cellxgene Explorer will display <a href="https://github.com/chanzuckerberg/cellxgene/issues/1152#issue-56436154">scanpy-style color information</a>.
-        </td>
-    </tr>
-</tbody></table>
-<br>
 
 ## Appendix A. Changelog
 
@@ -850,3 +828,4 @@ schema v2.0.0 substantially *remodeled* schema v1.1.0:
   * Replaced `layer_descriptions` with `normalization`
   * Replaced `version` which included `corpora_schema_version` and `corpora_encoding_version` with `schema_version`
   * Deprecated `tags` and `default_field` presentation metadata
+  * Removed <code><i>obs_column</i>_colors</code>
