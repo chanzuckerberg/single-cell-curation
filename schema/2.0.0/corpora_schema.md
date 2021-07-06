@@ -486,7 +486,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>assay</td>
+      <td>development_stage</td>
     </tr>
     <tr>
       <th>Annotator</th>
@@ -794,7 +794,7 @@ schema v2.0.0 substantially *remodeled* schema v1.1.0:
 
 * "must", "should", and select other words have a defined, standard meaning.
 
-* Curators are responsible for annotating ontology and gene identifiers. The cellxgene Data Portal adds the assigned human-readable names for all indentifiers.
+* Curators are responsible for annotating ontology and gene identifiers. The cellxgene Data Portal adds the assigned human-readable names for all identifiers.
 
 * Documented and *pinned* the required versions of ontologies and gene annotations used in schema validation.
 
