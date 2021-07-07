@@ -419,10 +419,10 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           </thead>
           <tbody>
             <tr>
-            <tr>
               <td>Tissue</td>
               <td>MUST be an UBERON term<br>(e.g. <a href="http://purl.obolibrary.org/obo/UBERON_0008930"><code>"UBERON:0008930"</code></a> for a <i>sematosensory cortex</i> tissue sample)</td>
             </tr>
+            <tr>
               <td>Cell Culture</td>
               <td>MUST be a CL term appended with <code>" (cell culture)"</code><br>(e.g. <code><a href="http://purl.obolibrary.org/obo/CL_0000057">"CL:0000057</a> (cell culture)"</code> for the <i>WTC-11 cell line</i>)</td>
             </tr>
@@ -667,7 +667,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
 
 For each `str` key, `obsm` stores a `numpy.ndarray` of shape `(n_obs, m)`, where `n_obs` is the number of rows in `X` and `m >= 1`.
 
-To display a dataset in cellxgene Explorer, Curators MUST annotate **one or more** two-dimensional (`m >= 2`) embeddings (e.g. tSNE, UMAP, PCA, spatial coordinates) in `obsm`. The key for the embedding MUST be prefixed with `"X_"`. The text that follows this prefix is presented to users in the *Embedding Choice* selector in cellxgene Explorer.
+To display a dataset in cellxgene Explorer, Curators MUST annotate **one or more** two-dimensional (`m >= 2`) embeddings (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`. The key for the embedding MUST be prefixed with `"X_"`. The text that follows this prefix is presented to users in the *Embedding Choice* selector in cellxgene Explorer.
 
 To illustrate, the [Krasnow Lab Human Lung Cell Atlas, 10X dataset](https://cellxgene.cziscience.com/e/krasnow_lab_human_lung_cell_atlas_10x-1-remixed.cxg/) in the [A molecular cell atlas of the human lung from single cell RNA sequencing collection](https://cellxgene.cziscience.com/collections/5d445965-6f1a-4b68-ba3a-b8f765155d3a) defines two embeddings in `obsm`:
 
