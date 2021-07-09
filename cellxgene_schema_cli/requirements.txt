@@ -1,7 +1,0 @@
-Click
-PyYAML
-anndata
-numpy
-pandas
-requests
-scanpy
