@@ -1,0 +1,12 @@
+setup.cfg
+setup.py
+cellxgene_schema/__init__.py
+cellxgene_schema/cli.py
+cellxgene_schema/ontology.py
+cellxgene_schema.egg-info/PKG-INFO
+cellxgene_schema.egg-info/SOURCES.txt
+cellxgene_schema.egg-info/dependency_links.txt
+cellxgene_schema.egg-info/entry_points.txt
+cellxgene_schema.egg-info/not-zip-safe
+cellxgene_schema.egg-info/requires.txt
+cellxgene_schema.egg-info/top_level.txt

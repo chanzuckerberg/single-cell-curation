@@ -1,0 +1,3 @@
+[console_scripts]
+cellxgene-schema = cellxgene_schema.cli:schema_cli
+
