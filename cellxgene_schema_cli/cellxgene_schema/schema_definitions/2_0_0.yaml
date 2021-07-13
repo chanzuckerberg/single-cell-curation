@@ -1,0 +1,16 @@
+title: Corpora schema version 2.0.0
+type: anndata
+components:
+    obs:
+        type: dataframe
+        index:
+            unique: true
+        columns:
+            cell_type_ontology_term_id:
+                type: curie
+                curie_constraints:
+                    ontologies:
+                        - CL
+                add_labels:
+                    type: curie
+                    to: cell_type

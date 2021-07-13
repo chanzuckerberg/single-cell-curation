@@ -2,6 +2,7 @@ import unittest
 
 from cellxgene_schema import ontology
 
+
 class TestGeneChecker(unittest.TestCase):
     def setUp(self):
         self.valid_species = ["Homo sapiens", "Mus musculus"]
@@ -21,7 +22,6 @@ class TestGeneChecker(unittest.TestCase):
             "Mus musculus": ["ENSG00000141510", "GENE"]
 
         }
-
 
     def test_species_validity(self):
         for species in self.valid_species:
@@ -49,8 +49,8 @@ class TestGeneChecker(unittest.TestCase):
                     geneChecker.get_symbol(gene_id)
 
 
-
 class TestOntologyChecker(unittest.TestCase):
+
     def setUp(self):
         self.ontologyChecker = ontology.ontologyChecker()
 
@@ -75,6 +75,9 @@ class TestOntologyChecker(unittest.TestCase):
             "MmusDv": {
                 "MmusDv:0000062": "2 month-old stage",
                 "MmusDv:0000003": "Theiler stage 01"
+            },
+            "HsapDv": {
+                "HsapDv:0000174": "1 month-old human stage"
             },
             "NCBITaxon": {
                 "NCBITaxon:9606": "Homo sapiens",
