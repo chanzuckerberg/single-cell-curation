@@ -581,7 +581,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>organism</td>
+      <td>tissue</td>
     </tr>
     <tr>
       <th>Annotator</th>
