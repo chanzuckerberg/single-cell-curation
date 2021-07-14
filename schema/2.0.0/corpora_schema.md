@@ -180,7 +180,14 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be an EFO term.<br><br>An assay based on 10X Genomics products SHOULD either be <a href="http://www.ebi.ac.uk/efo/EFO_0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i> or <b>preferably</b> its most accurate child. Other assays SHOULD be the most accurate child of either <a href="http://www.ebi.ac.uk/efo/EFO_0002772">EFO:0002772</a> for <i>assay by molecule</i> or <a href="http://www.ebi.ac.uk/efo/EFO_0010183">EFO:0010183</a>  for <i>single cell library construction</i>.<br><br>
+        <td>categorical with <code>str</code> categories. This MUST be an EFO term and either:<br><br>
+          <ul><li>
+            <a href="http://www.ebi.ac.uk/efo/EFO_0002772"><code>"EFO:0002772"</code></a> for <i>assay by molecule</i> or <b>preferably</b> its most accurate child
+          </li>
+          <li>
+            <a href="http://www.ebi.ac.uk/efo/EFO_0010183"><code>"EFO:0010183"</code></a>  for <i>single cell library construction</i> or <b>preferably</b> its most accurate child
+          </li></ul>
+        An assay based on 10X Genomics products SHOULD either be <a href="http://www.ebi.ac.uk/efo/EFO_0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i> or <b>preferably</b> its most accurate child. An assay based on <i>SMART (Switching Mechanism at the 5' end of the RNA Template) or SMARTer technology</i> SHOULD either be <a href="http://www.ebi.ac.uk/efo/EFO_0010184"><code>"EFO:0010184"</code></a> for <i>Smart-like</i> or preferably its most accurate child.<br><br>
         If there is not an exact match for the assay, clarifying text MAY be enclosed in parentheses and appended to the most accurate term. For example, the sci-plex assay could be curated as <code>"EFO:0010183 (sci-plex)"</code>.<br><br>Recommended values for specific assays:
           <br><br>
           <table>
