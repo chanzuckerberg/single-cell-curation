@@ -3,11 +3,20 @@ import os
 import gzip
 import json
 
+
 class geneChecker:
     """Handles checking gene ids, retrieves symbols"""
 
-    GENE_FILES = {"Homo sapiens": os.path.join(os.path.dirname(os.path.realpath(__file__)), "ontology_files/genes_homo_sapiens.csv.gz"),
-                  "Mus musculus": os.path.join(os.path.dirname(os.path.realpath(__file__)), "ontology_files/genes_mus_musculus.csv.gz")}
+    GENE_FILES = {
+        "Homo sapiens": os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "ontology_files/genes_homo_sapiens.csv.gz",
+        ),
+        "Mus musculus": os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "ontology_files/genes_mus_musculus.csv.gz",
+        ),
+    }
 
     def __init__(self, species):
         """
@@ -37,7 +46,9 @@ class geneChecker:
         """
 
         if not self.is_valid_id(gene_id):
-            raise ValueError(f"The id '{gene_id}' is not a valid ENSEMBL id for '{self.species}'")
+            raise ValueError(
+                f"The id '{gene_id}' is not a valid ENSEMBL id for '{self.species}'"
+            )
 
     def get_symbol(self, gene_id):
         """
@@ -52,7 +63,10 @@ class geneChecker:
 class ontologyChecker:
     """Handles checking ontology term ids, retrieves ontology labels and ancestors"""
 
-    JSON_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ontology_files/all_ontology.json.gz")
+    JSON_FILE = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        "ontology_files/all_ontology.json.gz",
+    )
 
     def __init__(self):
         with gzip.open(self.JSON_FILE, "rt") as json_o:
@@ -78,7 +92,9 @@ class ontologyChecker:
         ontology = onto_and_term[0]
 
         if len(onto_and_term) != 2:
-            raise ValueError(f"'{term_id}' term id's format is invalid, it must be of the from 'Ontology:Id'")
+            raise ValueError(
+                f"'{term_id}' term id's format is invalid, it must be of the from 'Ontology:Id'"
+            )
 
         if mode == "all":
             return self.get_term_dict(ontology, term_id)
@@ -102,7 +118,6 @@ class ontologyChecker:
         else:
             print(self.get_info(term_id, mode))
 
-
     def get_term_dict(self, ontology, term_id):
         """
         Returns a dictionary with all the information from a given ontology and term_id
@@ -110,7 +125,6 @@ class ontologyChecker:
 
         self.assert_term_id(ontology, term_id)
         return self.ontology_dict[ontology][term_id]
-
 
     def get_term_label(self, ontology, term_id):
         """
@@ -160,7 +174,9 @@ class ontologyChecker:
         """
 
         if not self.is_valid_ontology(ontology):
-            raise ValueError(f"The ontology '{ontology}' is not present in the ontology checker")
+            raise ValueError(
+                f"The ontology '{ontology}' is not present in the ontology checker"
+            )
 
     def assert_term_id(self, ontology, term_id):
         """
@@ -168,7 +184,9 @@ class ontologyChecker:
         """
 
         if not self.is_valid_term_id(ontology, term_id):
-            raise ValueError(f"The term id '{term_id}' is not present in the ontology '{ontology}'")
+            raise ValueError(
+                f"The term id '{term_id}' is not present in the ontology '{ontology}'"
+            )
 
     def assert_descendent_of(self, ontology, query_term_id, target_term_id):
         """
@@ -176,7 +194,7 @@ class ontologyChecker:
         """
 
         if not self.is_descendent_of(ontology, query_term_id, target_term_id):
-            raise ValueError(f"The term id '{query_term_id}' is not a descendent of the term id '{target_term_id}'"
-                             f" in the ontology '{ontology}'")
-
-
+            raise ValueError(
+                f"The term id '{query_term_id}' is not a descendent of the term id '{target_term_id}'"
+                f" in the ontology '{ontology}'"
+            )

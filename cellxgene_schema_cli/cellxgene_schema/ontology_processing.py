@@ -6,10 +6,16 @@ import gzip
 import json
 
 
-def _dowload_owls(owl_info_yml=os.path.join(os.path.dirname(os.path.realpath(__file__)), "ontology_files/owl_info.yml"),
-                  output_dir=os.path.join(os.path.dirname(os.path.realpath(__file__)), "ontology_files/")):
+def _dowload_owls(
+    owl_info_yml=os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "ontology_files/owl_info.yml"
+    ),
+    output_dir=os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "ontology_files/"
+    ),
+):
 
-    """ Downloads the ontology owl files specified in 'owl_info_yml' into 'output_dir' """
+    """Downloads the ontology owl files specified in 'owl_info_yml' into 'output_dir'"""
 
     with open(owl_info_yml, "r") as owl_info_handle:
         owl_info = yaml.safe_load(owl_info_handle)
@@ -38,13 +44,23 @@ def _decompress(infile, tofile):
     """
     Decompresses a gziped file
     """
-    with open(infile, 'rb') as inf, open(tofile, 'w', encoding='utf8') as tof:
-        decom_str = gzip.decompress(inf.read()).decode('utf-8')
+    with open(infile, "rb") as inf, open(tofile, "w", encoding="utf8") as tof:
+        decom_str = gzip.decompress(inf.read()).decode("utf-8")
         tof.write(decom_str)
 
-def _parse_owls(working_dir=os.path.join(os.path.dirname(os.path.realpath(__file__)), "ontology_files"),
-                owl_info_yml=os.path.join(os.path.dirname(os.path.realpath(__file__)), "ontology_files/owl_info.yml"),
-                output_json_file=os.path.join(os.path.dirname(os.path.realpath(__file__)), "ontology_files/all_ontology.json.gz")):
+
+def _parse_owls(
+    working_dir=os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "ontology_files"
+    ),
+    owl_info_yml=os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "ontology_files/owl_info.yml"
+    ),
+    output_json_file=os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        "ontology_files/all_ontology.json.gz",
+    ),
+):
 
     """
     Parser all owl files in working_dir. Extracts information from all classes in the owl file.
@@ -73,7 +89,11 @@ def _parse_owls(working_dir=os.path.join(os.path.dirname(os.path.realpath(__file
     with open(owl_info_yml, "r") as owl_info_handle:
         owl_info = yaml.safe_load(owl_info_handle)
 
-    owl_files = [os.path.join(working_dir, i) for i in os.listdir(working_dir) if i.endswith(".owl")]
+    owl_files = [
+        os.path.join(working_dir, i)
+        for i in os.listdir(working_dir)
+        if i.endswith(".owl")
+    ]
 
     # Parse owl files
     onto_dict = {}
@@ -102,8 +122,11 @@ def _parse_owls(working_dir=os.path.join(os.path.dirname(os.path.realpath(__file
             except:
                 onto_dict[onto.name][term_id]["label"] = ""
 
-            onto_dict[onto.name][term_id]["ancestors"] = [i.name.replace("_", ":") for i in onto_class.ancestors() if
-                                                          i.name.split("_")[0] == onto.name]
+            onto_dict[onto.name][term_id]["ancestors"] = [
+                i.name.replace("_", ":")
+                for i in onto_class.ancestors()
+                if i.name.split("_")[0] == onto.name
+            ]
 
     with gzip.open(output_json_file, "wt") as output_json:
         json.dump(onto_dict, output_json, indent=2)
@@ -140,14 +163,20 @@ def _parse_gtf(gtf_path, output_file):
                 continue
 
             # Extract features (column 9 of GTF)
-            current_features = {i.strip().split(" ")[0]: i.strip().split(" ")[1] for i in line[8].split(";") if len(i) > 1}
+            current_features = {
+                i.strip().split(" ")[0]: i.strip().split(" ")[1]
+                for i in line[8].split(";")
+                if len(i) > 1
+            }
 
             # Select  features of interest, raise error feature of interest not found
             target_features = [""] * len(features)
             for i in range(len(features)):
                 feature = features[i]
                 if feature in current_features:
-                    current_features[feature] = current_features[feature].replace('"', '')
+                    current_features[feature] = current_features[feature].replace(
+                        '"', ""
+                    )
                     target_features[i] = current_features[feature]
 
             output_to_print += ",".join(target_features) + "\n"
