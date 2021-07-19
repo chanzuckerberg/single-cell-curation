@@ -1,3 +1,5 @@
+scipy==1.4.1
+wheel
 Click
 Cython
 anndata

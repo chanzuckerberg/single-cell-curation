@@ -3,6 +3,8 @@ setup.py
 cellxgene_schema/__init__.py
 cellxgene_schema/cli.py
 cellxgene_schema/ontology.py
+cellxgene_schema/ontology_processing.py
+cellxgene_schema/validate.py
 cellxgene_schema.egg-info/PKG-INFO
 cellxgene_schema.egg-info/SOURCES.txt
 cellxgene_schema.egg-info/dependency_links.txt

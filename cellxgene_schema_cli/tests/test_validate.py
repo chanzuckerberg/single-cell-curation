@@ -9,6 +9,60 @@ SCHEMA_VERSION = "2.0.0"
 FIXTURES_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
+class ExampleData:
+
+    good_obs = pd.DataFrame(
+        [
+            [
+                "CL:0000066", "EFO:0009899", "MONDO:0100096", "NCBITaxon:9606", "PATO:0000383", "UBERON:0002048"
+            ],
+            [
+                "CL:0000192", "EFO:0010183 (sci-plex)", "PATO:0000461", "NCBITaxon:10090", "unknown",
+                "CL:0000192 (cell culture)"
+            ]
+        ],
+        index=["X", "Y"],
+        columns=["cell_type_ontology_term_id", "assay_ontology_term_id", "disease_ontology_term_id",
+                 "organism_ontology_term_id", "sex_ontology_term_id", "tissue_ontology_term_id"]
+    )
+
+    obs_expected = pd.DataFrame(
+        [
+            ["epithelial cell", "10x 3' v2", "COVID-19", "Homo sapiens", "female", "lung"],
+            ["smooth muscle cell", "single cell library construction (sci-plex)", "normal", "Mus musculus", "unknown",
+             "smooth muscle cell (cell culture)"]
+        ],
+        index=["X", "Y"],
+        columns=["cell_type", "assay", "disease", "organism", "sex", "tissue"]
+    )
+
+    bad_obs = pd.DataFrame(
+        [
+            [
+                "CL:NO_TERM", "EFO:NO_TERM", "MONDO:NO_TERM", "NCBITaxon:NO_TERM", "PATO:NO_TERM", "UBERON:NO_TERM"
+            ],
+            [
+                "CL:0000182", "EFO:00212", "MONDO:0324", "NCBITaxon:00324", "PATO:2003", "UBERON:3203"
+            ]
+        ],
+        index=["X", "Y"],
+
+        columns=["cell_type_ontology_term_id", "assay_ontology_term_id", "disease_ontology_term_id",
+                 "organism_ontology_term_id", "sex_ontology_term_id", "tissue_ontology_term_id"]
+    )
+
+    X = pd.DataFrame(
+        [[0] * good_obs.shape[1],
+         [0] * good_obs.shape[1]
+         ],
+        index=["X", "Y"],
+    )
+
+    adata = anndata.AnnData(X=X, obs=good_obs)
+
+    adata_with_labels = anndata.AnnData(X=X, obs=pd.concat([good_obs, obs_expected], axis=1))
+
+
 class TestFieldValidation(unittest.TestCase):
 
     def setUp(self):
@@ -35,7 +89,7 @@ class TestFieldValidation(unittest.TestCase):
                 for ontology in self.schema_def["components"]["obs"]["columns"][i]["curie_constrains"]["ontolgies"]:
                     self.assertTrue(self.ontologyChecker.is_valid_ontology(ontology))
 
-    def test_cell_type_ontology(self):
+    def test_validate_ontology(self):
         column_name = "cell_type_ontology_term_id"
         column_schema = self.schema_def["components"]["obs"]["columns"][column_name]
         curie_constraints = self.schema_def["components"]["obs"]["columns"][column_name]["curie_constraints"]
@@ -77,6 +131,7 @@ class TestColumnValidation(unittest.TestCase):
         errors = validate._validate_column(
             unique.index, "index", "unique_df", schema_def
         )
+
         self.assertFalse(errors)
 
         errors = validate._validate_column(duped.index, "index", "duped_df", schema_def)
@@ -105,36 +160,14 @@ class TestColumnValidation(unittest.TestCase):
         columns_def = validate.get_schema_definition(SCHEMA_VERSION)["components"]["obs"]["columns"]
 
         # Correct example
-        good_df = pd.DataFrame(
-            [
-                [
-                    "CL:0000066", "EFO:0009899", "MONDO:0100096"
-                ],
-                [
-                    "CL:0000192", "EFO:0010183 (sci-plex)", "PATO:0000461"
-                ]
-            ],
-            index=["X", "Y"],
-            columns=["cell_type_ontology_term_id", "assay_ontology_term_id", "disease_ontology_term_id"]
-        )
+        good_df = ExampleData.good_obs
 
         for column in good_df.columns:
             errors = validate._validate_column(good_df[column], column, "obs", columns_def[column],)
             self.assertFalse(errors)
 
         # Bad example CL, one correct, one incorrect
-        bad_df = pd.DataFrame(
-            [
-                [
-                    "CL:NO_TERM",
-                ],
-                [
-                    "CL:0000192"
-                ]
-            ],
-            index=["X", "Y"],
-            columns=["cell_type_ontology_term_id"]
-        )
+        bad_df = ExampleData.bad_obs
 
         for column in bad_df.columns:
             errors = validate._validate_column(bad_df[column], column, "obs", columns_def[column],)
@@ -183,36 +216,9 @@ class TestAddLabelFunctions(unittest.TestCase):
     def setUp(self):
 
         # Set up test data
-        obs = pd.DataFrame(
-            [
-                ["CL:0000066", "EFO:0009899", "PATO:0000461"],
-                ["CL:0000192", "EFO:0010183 (sci-plex)", "MONDO:0100096"]
-             ],
-            index=["X", "Y"],
-            columns=["cell_type_ontology_term_id", "assay_ontology_term_id", "disease_ontology_term_id"]
-        )
-
-        obs_expected = pd.DataFrame(
-            [
-                ["epithelial cell", "10x 3' v2", "normal"],
-                ["smooth muscle cell", "single cell library construction (sci-plex)", "COVID-19"]
-            ],
-            index=["X", "Y"],
-            columns=["cell_type", "assay", "disease"]
-        )
-
-        X = pd.DataFrame(
-            [[0] * obs.shape[1],
-             [0] * obs.shape[1]
-             ],
-            index=["X", "Y"],
-        )
-
-        self.test_adata = anndata.AnnData(X=X, obs=obs)
+        self.test_adata = ExampleData.adata
+        self.test_adata_with_labels = ExampleData.adata_with_labels
         self.schema_def = validate.get_schema_definition(SCHEMA_VERSION)
-
-        self.test_adata_with_labels = self.test_adata.copy()
-        self.test_adata_with_labels.obs = pd.concat([self.test_adata.obs, obs_expected], axis=1)
 
 
     def test_get_dictionary_mapping(self):
