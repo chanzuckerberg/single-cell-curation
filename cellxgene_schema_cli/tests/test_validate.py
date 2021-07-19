@@ -102,10 +102,31 @@ class TestColumnValidation(unittest.TestCase):
 
     def test_ontology_columns(self):
 
+        columns_def = validate.get_schema_definition(SCHEMA_VERSION)["components"]["obs"]["columns"]
+
+        # Correct example
         good_df = pd.DataFrame(
             [
                 [
-                    "CL:0000066",
+                    "CL:0000066", "EFO:0009899", "MONDO:0100096"
+                ],
+                [
+                    "CL:0000192", "EFO:0010183 (sci-plex)", "PATO:0000461"
+                ]
+            ],
+            index=["X", "Y"],
+            columns=["cell_type_ontology_term_id", "assay_ontology_term_id", "disease_ontology_term_id"]
+        )
+
+        for column in good_df.columns:
+            errors = validate._validate_column(good_df[column], column, "obs", columns_def[column],)
+            self.assertFalse(errors)
+
+        # Bad example CL, one correct, one incorrect
+        bad_df = pd.DataFrame(
+            [
+                [
+                    "CL:NO_TERM",
                 ],
                 [
                     "CL:0000192"
@@ -115,23 +136,29 @@ class TestColumnValidation(unittest.TestCase):
             columns=["cell_type_ontology_term_id"]
         )
 
-        bad_df = pd.DataFrame(
-            [
-                [
-                    "EFO:0009899", #Bad term of CL
-                ],
-                [
-                    "NO_TERM"
-                ]
-            ],
-            index=["X", "Y"],
-            columns=["cell_type_ontology_term_id"]
-        )
+        for column in bad_df.columns:
+            errors = validate._validate_column(bad_df[column], column, "obs", columns_def[column],)
+            self.assertTrue(errors)
 
-        columns_def = validate.get_schema_definition(SCHEMA_VERSION)["components"]["obs"]["columns"]
-        for column in good_df.columns:
-            errors = validate._validate_column(good_df[column], column, "obs", columns_def[column],)
-            self.assertFalse(errors)
+        # Bad examples incorrect assay
+        column = "assay_ontology_term_id"
+        bad_df = pd.DataFrame([["CL:0000192"]], index=["X"], columns=[column])
+        errors = validate._validate_column(bad_df[column], column, "obs", columns_def[column],)
+        self.assertTrue(errors)
+
+        bad_df = pd.DataFrame([["EFO:0010183(sci-plex)"]], index=["X"], columns=[column]) # No space before suffix
+        errors = validate._validate_column(bad_df[column], column, "obs", columns_def[column],)
+        self.assertTrue(errors)
+
+        # Bad examples incorrect disease
+        column = "disease_ontology_term_id"
+        bad_df = pd.DataFrame([["CL:0000192"]], index=["X"], columns=[column])
+        errors = validate._validate_column(bad_df[column], column, "obs", columns_def[column],)
+        self.assertTrue(errors)
+
+        bad_df = pd.DataFrame([["PATO:0002632"]], index=["X"], columns=[column]) # No space before suffix
+        errors = validate._validate_column(bad_df[column], column, "obs", columns_def[column],)
+        self.assertTrue(errors)
 
 
 class TestH5adValidation(unittest.TestCase):
@@ -155,97 +182,97 @@ class TestAddLabelFunctions(unittest.TestCase):
 
     def setUp(self):
 
-        # Set up test data with cell_type as example
-        X = pd.DataFrame(
-            [[0],
-             [0]],
-            index=["X", "Y"],
-        )
-
+        # Set up test data
         obs = pd.DataFrame(
-            [["CL:0000066"],
-             ["CL:0000192"]],
+            [
+                ["CL:0000066", "EFO:0009899", "PATO:0000461"],
+                ["CL:0000192", "EFO:0010183 (sci-plex)", "MONDO:0100096"]
+             ],
             index=["X", "Y"],
-            columns=["cell_type_ontology_term_id"]
+            columns=["cell_type_ontology_term_id", "assay_ontology_term_id", "disease_ontology_term_id"]
         )
 
-        self.cell_type_column = pd.Categorical(["epithelial cell", "smooth muscle cell"])
-        self.test_adata = anndata.AnnData(X=X, obs=obs)
-        self.test_component = "obs"
-        self.test_column = "cell_type_ontology_term_id"
-        self.schema_def = {
-            "title": "Corpora schema version 2.0.0",
-            "type": "anndata",
-            "components": {
-                "obs": {
-                    "columns": {
-                        "cell_type_ontology_term_id": {
-                            "type": "curie",
-                            "curie_constraints": {"ontologies": ["CL"]},
-                            "add_labels": {"type": "curie", "to": "cell_type"}
-                        }
-                    }
-                }
-            }
-        }
+        obs_expected = pd.DataFrame(
+            [
+                ["epithelial cell", "10x 3' v2", "normal"],
+                ["smooth muscle cell", "single cell library construction (sci-plex)", "COVID-19"]
+            ],
+            index=["X", "Y"],
+            columns=["cell_type", "assay", "disease"]
+        )
 
-        self.test_column_definition_cell_type = self.schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"]
+        X = pd.DataFrame(
+            [[0] * obs.shape[1],
+             [0] * obs.shape[1]
+             ],
+            index=["X", "Y"],
+        )
+
+        self.test_adata = anndata.AnnData(X=X, obs=obs)
+        self.schema_def = validate.get_schema_definition(SCHEMA_VERSION)
+
         self.test_adata_with_labels = self.test_adata.copy()
-        self.test_adata_with_labels.obs["cell_type"] = self.cell_type_column
+        self.test_adata_with_labels.obs = pd.concat([self.test_adata.obs, obs_expected], axis=1)
+
 
     def test_get_dictionary_mapping(self):
         # Good
         ids = ["CL:0000066", "CL:0000192"]
         labels = ["epithelial cell", "smooth muscle cell"]
-        ontologies = ["CL"]
+        curie_constraints = self.schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"]["curie_constraints"]
         expected_dict = {i: j for i,j in zip(ids, labels)}
-        self.assertEqual(validate._get_mapping_dict_curie(ids, ontologies), expected_dict)
+        self.assertEqual(validate._get_mapping_dict_curie(ids, curie_constraints), expected_dict)
 
         ids = ["EFO:0009899", "EFO:0009922"]
         labels = ["10x 3' v2", "10x 3' v3"]
-        ontologies = ["EFO"]
+        curie_constraints = self.schema_def["components"]["obs"]["columns"]["assay_ontology_term_id"]["curie_constraints"]
         expected_dict = {i: j for i,j in zip(ids, labels)}
-        self.assertEqual(validate._get_mapping_dict_curie(ids, ontologies), expected_dict)
+        self.assertEqual(validate._get_mapping_dict_curie(ids, curie_constraints), expected_dict)
 
         ids = ["MONDO:0100096"]
         labels = ["COVID-19"]
-        ontologies = ["MONDO"]
+        curie_constraints = self.schema_def["components"]["obs"]["columns"]["disease_ontology_term_id"]["curie_constraints"]
         expected_dict = {i: j for i,j in zip(ids, labels)}
-        self.assertEqual(validate._get_mapping_dict_curie(ids, ontologies), expected_dict)
+        self.assertEqual(validate._get_mapping_dict_curie(ids, curie_constraints), expected_dict)
 
-        ids = ["MmusDv:0000062", "HsapDv:0000174"]
-        labels = ["2 month-old stage", "1 month-old human stage"]
-        ontologies = ["MmusDv", "HsapDv"]
-        expected_dict = {i: j for i,j in zip(ids, labels)}
-        self.assertEqual(validate._get_mapping_dict_curie(ids, ontologies), expected_dict)
+        #ids = ["MmusDv:0000062", "HsapDv:0000174"]
+        #labels = ["2 month-old stage", "1 month-old human stage"]
+        #curie_constraints = self.schema_def["components"]["obs"]["columns"]["development_stage_ontology_term_id"]
+        #expected_dict = {i: j for i,j in zip(ids, labels)}
+        #self.assertEqual(validate._get_mapping_dict_curie(ids, curie_constraints), expected_dict)
 
         # Bad
+        curie_constraints = self.schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"]["curie_constraints"]
+
         ids = ["CL:0000066", "CL:0000192asdf"]
-        ontologies = ["UBERON"]
         with self.assertRaises(ValueError):
-            validate._get_mapping_dict_curie(ids, ontologies)
+            validate._get_mapping_dict_curie(ids, curie_constraints)
 
         ids = ["CL:0000066", "CL:0000192", "UBERON:0002048"]
-        ontologies = ["UBERON"]
         with self.assertRaises(ValueError):
-            validate._get_mapping_dict_curie(ids, ontologies)
+            validate._get_mapping_dict_curie(ids, curie_constraints)
 
         ids = ["CL:NO_TERM"]
-        ontologies = ["CL"]
         with self.assertRaises(ValueError):
-            validate._get_mapping_dict_curie(ids, ontologies)
+            validate._get_mapping_dict_curie(ids, curie_constraints)
 
     def test_get_new_labels(self):
 
-        # Test getting a column with labels based on ids
-        expected_column = self.cell_type_column
-        obtained_column = validate._get_labels(self.test_adata, self.test_component, self.test_column, self.test_column_definition_cell_type)
-        for i,j in zip(expected_column.tolist(), obtained_column.tolist()):
-            self.assertEqual(i, j)
+        # Test getting a column with labels based on ids for adata.obs
+        component = "obs"
+        for column, column_definition in self.schema_def["components"]["obs"]["columns"].items():
+            if "add_labels" in column_definition:
+                original_column = self.test_adata_with_labels.obs[column]
+                expected_column = self.test_adata_with_labels.obs[column_definition["add_labels"]["to"]]
+                obtained_column = validate._get_labels(self.test_adata, component, column, column_definition)
+                for i, j in zip(expected_column.tolist(), obtained_column.tolist()):
+                    self.assertEqual(i, j)
 
     def test_get_new_adata(self):
 
         # Test getting a column with labels based on ids
         expected_adata = self.test_adata_with_labels
         obtained_adata = validate._add_labels(self.test_adata, self.schema_def)
+        print(expected_adata)
+        print(obtained_adata)
         self.assertTrue(all(expected_adata.obs == obtained_adata.obs))

@@ -14,3 +14,71 @@ components:
                 add_labels:
                     type: curie
                     to: cell_type
+            assay_ontology_term_id:
+                type: curie
+                curie_constraints:
+                    ontologies:
+                        - EFO
+                    ancestors:
+                        EFO:
+                            - EFO:0002772
+                            - EFO:0010183
+                    suffixes:
+                        EFO:
+                            - " (.+)" #e.g. EFO:0010183 (sci-plex)
+                add_labels:
+                    type: curie
+                    to: assay
+            disease_ontology_term_id:
+                type: curie
+                curie_constraints:
+                    ontologies:
+                        - MONDO
+                        - PATO
+                    allowed_terms:
+                        PATO:
+                            - PATO:0000461
+                add_labels:
+                    type: curie
+                    to: disease
+            organism_ontology_term_id:
+                type: curie
+                curie_constraints:
+                    ontologies:
+                        - NCBITaxon
+                    allowed_terms:
+                        NCBITaxon:
+                            - NCBITaxon:9606
+                            - NCBITaxon:10090
+                add_labels:
+                    type: curie
+                    to: organism
+            sex_ontology_term_id:
+                type: curie
+                curie_constraints:
+                    ontologies:
+                        - PATO
+                    exceptions:
+                        - unknown
+                    allowed_terms:
+                         PATO:
+                             - PATO:0000383
+                             - PATO:0000384
+                             - PATO:0001340
+                add_labels:
+                    type: curie
+                    to: sex
+            tissue_ontology_term_id:
+                type: curie
+                curie_constraints:
+                    ontologies:
+                        - UBERON
+                        - CL
+                    suffixes:
+                        UBERON:
+                            - " (organoid)"
+                        CL:
+                            - " (cell culture)"
+                add_labels:
+                    type: curie
+                    to: tissue

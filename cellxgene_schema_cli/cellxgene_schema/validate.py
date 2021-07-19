@@ -3,34 +3,154 @@ import anndata
 import os
 import yaml
 import pandas as pd
+import re
 from . import ontology
 
 SCHEMA_DEFINITIONS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "schema_definitions")
 ONTOLOGY_CHECKER = ontology.ontologyChecker()
 
-
-def _validate_curie(x, column_name, curie_constraints):
+def _validate_curie_allowed_terms(term_id, column_name, terms):
 
     """
-    Validate a single curie term id based on some constraint, if invalid it will return x other wise none
+    Validate a single curie term id is a valid children of any of allowed terms
 
-    :param str x: the curie term id to validate
-    :param dict curie_constraints: constraints for the curie term to be validated
+    :param str term_id: the curie term id to validate
+    :param str column_name: original column name in adata where the term_id comes from (used for error messages)
+    :param dict{str: list[str]} allowed_terms, keys must be ontology names and values must lists of allowed terms
 
-    :return x if curie term is invalid, otherwise none
-    :rtype [str|none]
+    :return list with error messages, empty if none
+    :rtype list[str|none]
+    """
+
+    errors = []
+    checks = []
+
+    for ontology, allowed_terms in terms.items():
+        if ONTOLOGY_CHECKER.is_valid_term_id(ontology, term_id):
+            checks.append(term_id in allowed_terms)
+
+    if sum(checks) == 0 and len(checks) > 0:
+        all_allowed = list(terms.values())
+        errors.append(f"'{term_id}' in '{column_name}' is not an allowed term of '{all_allowed}'")
+
+    return errors
+
+def _validate_curie_ancestors(term_id, column_name, allowed_ancestors):
+    """
+    Validate a single curie term id is a valid children of any of allowed ancestors
+
+    :param str term_id: the curie term id to validate
+    :param str column_name: original column name in adata where the term_id comes from (used for error messages)
+    :param dict{str: list[str]} allowed_ancestors, keys must be ontology names and values must lists of allowed ancestors
+
+    :return list with error messages, empty if none
+    :rtype list[str|none]
+    """
+
+    checks = []
+    errors = []
+
+    for ontology, ancestors in allowed_ancestors.items():
+        for ancestor in ancestors:
+            if ONTOLOGY_CHECKER.is_valid_term_id(ontology, term_id) & ONTOLOGY_CHECKER.is_valid_term_id(ontology, ancestor):
+                checks.append(ONTOLOGY_CHECKER.is_descendent_of(ontology, term_id, ancestor))
+
+    if sum(checks) == 0 and len(checks) > 0:
+        all_ancestors = list(allowed_ancestors.values())
+        errors.append(f"'{term_id}' in '{column_name}' is not a children term id of '{all_ancestors}'")
+
+    return errors
+
+
+def _validate_curie_ontology(term_id, column_name, allowed_ontologies):
+
+    """
+    Validate a single curie term id belongs to specified ontologies
+
+    :param str term_id: the curie term id to validate
+    :param str column_name: original column name in adata where the term_id comes from (used for error messages)
+    :param list[str] allowed_ontologies: allowed ontologies
+
+    :return list with error messages, empty if none
+    :rtype list[str|none]
+    """
+
+    errors = []
+    checks=[]
+
+    for ontology in allowed_ontologies:
+        checks.append(ONTOLOGY_CHECKER.is_valid_term_id(ontology, term_id))
+
+    if sum(checks) == 0:
+        errors.append(f"'{term_id}' in '{column_name}' is not a valid ontology term id of '{', '.join(allowed_ontologies)}'")
+
+    return errors
+
+def _validate_curie_remove_suffix(term_id, suffix_def):
+
+    """
+    Remove suffix from a term id, if none present return it unmodified
+
+    :param str term_id: the curie term id to validate
+    :param dict{str: list[str], ...} suffix_def: dictionary whose keys are ontologies and values are list of allowed
+    suffixes
+
+    :return the term_id with suffixed stripped
+    :rtype str
+    """
+
+    id_suffix = ""
+
+    for ontology, suffixes in suffix_def.items():
+
+        for suffix in suffixes:
+            suffix = suffix.replace("(", "\(")
+            suffix = suffix.replace(")", "\)")
+            search_results = re.search(r"%s$" % suffix, term_id)
+            if search_results:
+                stripped_term_id = re.sub(r"%s$" % suffix, "", term_id)
+                if ONTOLOGY_CHECKER.is_valid_term_id(ontology, stripped_term_id):
+                    id_suffix = search_results.group(0)
+
+                    return stripped_term_id, id_suffix
+
+    return term_id, id_suffix
+
+def _validate_curie(term_id, column_name, curie_constraints):
+
+    """
+    Validate a single curie term id based on some constraints, if invalid it will return x other wise none
+
+    :param str term_id: the curie term id to validate
+    :param dict curie_constraints: constraints for the curie term to be validated, this part of the schema definition
+
+    :return list with error messages, empty if none
+    :rtype list[str|none]
     """
 
     errors = []
 
-    # Check that term id belongs to allowed ontologies
-    valid_checks=[]
-    allowed_ontologies = curie_constraints['ontologies']
-    for ontology in allowed_ontologies:
-        valid_checks.append(ONTOLOGY_CHECKER.is_valid_term_id(ontology, x))
+    term_id_original = term_id
 
-    if sum(valid_checks) == 0:
-        errors.append(f"'{x}' in '{column_name}' is not a valid ontology term id of '{', '.join(allowed_ontologies)}'")
+    # If there are exceptions and this is one then skip to end
+    if "exceptions" in curie_constraints:
+        if term_id in curie_constraints["exceptions"]:
+            return errors
+
+    # Check if there are any allowed suffixes and remove them if needed
+    if "suffixes" in curie_constraints:
+        term_id, suffix = _validate_curie_remove_suffix(term_id, curie_constraints["suffixes"])
+
+    # Check that term id belongs to allowed ontologies
+    errors.extend(_validate_curie_ontology(term_id, column_name, curie_constraints["ontologies"]))
+
+    # If there are specified ancestors then make sure that this id is a valid child
+    if "ancestors" in curie_constraints:
+        errors.extend(_validate_curie_ancestors(term_id, column_name, curie_constraints["ancestors"]))
+
+    # If there is a set of allowed terms check for it
+    if "allowed_terms" in curie_constraints:
+        errors.extend(_validate_curie_allowed_terms(term_id, column_name, curie_constraints["allowed_terms"]))
 
     return errors
 
@@ -172,14 +292,15 @@ def validate_adata(adata, schema_def):
     errors = deep_check(adata, schema_def)
 
     if errors:
-        print(*errors)
+        print(*errors, sep="\n")
         return False
     else:
         return True
 
-def _get_mapping_dict_curie(ids, allowed_ontologies):
+
+def _get_mapping_dict_curie(ids, curie_constraints):
     """
-    From a list of ids and a list of allowed ontologies, creates a mapping dictionary {id: label, ...}
+    From a list of ids and defined constraints, creates a mapping dictionary {id: label, ...}
 
     :param list[str] ids: Ontology IDs use for mapping
     :param list[str] allowed_ontologies: List of allowed ontologies for conversion
@@ -190,14 +311,31 @@ def _get_mapping_dict_curie(ids, allowed_ontologies):
 
 
     mapping_dict = {}
+    allowed_ontologies = curie_constraints["ontologies"]
 
-    for id in ids:
+    # Remove any suffixes if any
+    # original_ids will have untouched ids which will be used for mapping
+    # id_suffixes will save suffixes if any, these will be used to append to labels
+    # ids will have the ids without suffixes
+    original_ids = ids.copy()
+    id_suffixes = [""] * len(ids)
+
+    if "suffixes" in curie_constraints:
+        for i in range(len(ids)):
+            ids[i], id_suffixes[i] = _validate_curie_remove_suffix(ids[i], curie_constraints["suffixes"])
+
+    for original_id, id, id_suffix in zip(original_ids, ids, id_suffixes):
         for ontology in allowed_ontologies:
             if ONTOLOGY_CHECKER.is_valid_term_id(ontology, id):
-                mapping_dict[id] = ONTOLOGY_CHECKER.get_term_label(ontology, id)
+                mapping_dict[original_id] = ONTOLOGY_CHECKER.get_term_label(ontology, id) + id_suffix
+
+        # If there are exceptions the label should be the same as the id
+        if "exceptions" in curie_constraints:
+            if original_id in curie_constraints["exceptions"]:
+                mapping_dict[original_id] = original_id
 
     # Check that all ids got a mapping. All ids should be found if adata was validated
-    for id in ids:
+    for id in original_ids:
         if id not in mapping_dict:
             raise ValueError(f"Add labels error: Unable to get label for '{id}'")
 
@@ -226,7 +364,7 @@ def _get_labels(adata, component, column, column_definition):
             raise ValueError(f"Schema definition error: 'add_lables' with type 'curie' was found for '{column}' "
                              "but no curie constraints were found for the lables")
 
-        mapping_dict = _get_mapping_dict_curie(ids=ids, allowed_ontologies=column_definition["curie_constraints"]["ontologies"])
+        mapping_dict = _get_mapping_dict_curie(ids=ids, curie_constraints=column_definition["curie_constraints"])
 
     else:
         raise TypeError(f"'{type_labels}' is not supported in 'add-labels' functionality")
@@ -329,9 +467,15 @@ def validate(h5ad_path, add_labels_file=None):
 
     schema_def = get_schema_definition(adata.uns["schema_version"])
 
+    # Perform validation
     is_validation_successful = validate_adata(adata, schema_def)
-    is_add_labels_successful = True
-    if add_labels_file:
-        is_add_labels_successful = write_labels(adata, add_labels_file, schema_def)
 
-    return is_validation_successful & is_add_labels_successful
+    if not is_validation_successful:
+        return is_validation_successful
+    else:
+        # Add labels if indicated
+        is_add_labels_successful = True
+        if add_labels_file:
+            is_add_labels_successful = write_labels(adata, add_labels_file, schema_def)
+
+        return is_validation_successful & is_add_labels_successful
