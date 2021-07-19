@@ -44,9 +44,12 @@ class TestGeneChecker(unittest.TestCase):
 
 
 class TestOntologyChecker(unittest.TestCase):
-    def setUp(self):
-        self.ontologyChecker = ontology.ontologyChecker()
 
+    @classmethod
+    def setUpClass(cls):
+        cls.ontologyChecker = ontology.ontologyChecker()
+
+    def setUp(self):
         self.valid_ontologies = [
             "CL",
             "EFO",
