@@ -1,3 +1,4 @@
+wheel
 Click
 Cython
 anndata
@@ -6,5 +7,3 @@ pandas
 owlready2
 PyYaml
 pytest
-flake8
-black
