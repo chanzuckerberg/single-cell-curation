@@ -20,7 +20,8 @@ class geneChecker:
 
     def __init__(self, species):
         """
-        :param str species: scientific name of a species, currently the only supported species are: "Homo sapiens" and "Mus musculus"
+        :param str species: scientific name of a species, currently the only supported species are: "Homo sapiens"
+        and "Mus musculus"
         """
 
         if species not in self.GENE_FILES:

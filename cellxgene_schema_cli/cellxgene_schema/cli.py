@@ -1,7 +1,5 @@
 import click
 
-from cellxgene_schema import ontology
-
 
 @click.group(
     name="schema",
@@ -10,10 +8,7 @@ from cellxgene_schema import ontology
     context_settings=dict(max_content_width=85, help_option_names=["-h", "--help"]),
 )
 def schema_cli():
-    try:
-        import anndata
-    except ImportError:
-        raise click.ClickException("[cellxgene] cellxgene schema requires anndata")
+    "placeholder"
 
 
 @click.command(

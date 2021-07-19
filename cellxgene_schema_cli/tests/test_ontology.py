@@ -1,5 +1,4 @@
 import unittest
-
 from cellxgene_schema import ontology
 
 
@@ -102,25 +101,25 @@ class TestOntologyChecker(unittest.TestCase):
                 self.ontologyChecker.assert_ontology(i)
 
     def test_valid_term_id(self):
-        for ontology in self.valid_terms:
-            for term_id in self.valid_terms[ontology]:
-                term_label = self.valid_terms[ontology][term_id]
+        for ontology_id in self.valid_terms:
+            for term_id in self.valid_terms[ontology_id]:
+                term_label = self.valid_terms[ontology_id][term_id]
 
                 self.assertTrue(
-                    self.ontologyChecker.is_valid_term_id(ontology, term_id)
+                    self.ontologyChecker.is_valid_term_id(ontology_id, term_id)
                 )
                 self.assertIsNone(
-                    self.ontologyChecker.assert_term_id(ontology, term_id)
+                    self.ontologyChecker.assert_term_id(ontology_id, term_id)
                 )
                 self.assertEqual(
-                    self.ontologyChecker.get_term_label(ontology, term_id), term_label
+                    self.ontologyChecker.get_term_label(ontology_id, term_id), term_label
                 )
 
     def test_invalid_term_ids(self):
-        for ontology in self.invalid_terms:
-            for term_id in self.invalid_terms[ontology]:
+        for ontology_id in self.invalid_terms:
+            for term_id in self.invalid_terms[ontology_id]:
                 self.assertFalse(
-                    self.ontologyChecker.is_valid_term_id(ontology, term_id)
+                    self.ontologyChecker.is_valid_term_id(ontology_id, term_id)
                 )
                 with self.assertRaises(ValueError):
-                    self.ontologyChecker.assert_term_id(ontology, term_id)
+                    self.ontologyChecker.assert_term_id(ontology_id, term_id)

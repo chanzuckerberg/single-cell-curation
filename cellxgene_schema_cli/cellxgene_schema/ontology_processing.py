@@ -119,7 +119,7 @@ def _parse_owls(
             onto_dict[onto.name][term_id] = dict()
             try:
                 onto_dict[onto.name][term_id]["label"] = onto_class.label[0]
-            except:
+            except IndexError:
                 onto_dict[onto.name][term_id]["label"] = ""
 
             onto_dict[onto.name][term_id]["ancestors"] = [
@@ -134,8 +134,9 @@ def _parse_owls(
 
 def _parse_gtf(gtf_path, output_file):
     """
-    Parses a gziped GTF file to get gene and transcript info into a gziped comma-separated file with the following structure,
-    with three columns and no header: 1) gene/transcript id, 2) gene/transcript name, 3) gene/transcript version
+    Parses a gziped GTF file to get gene and transcript info into a gziped comma-separated file with the following
+    structure, with three columns and no header: 1) gene/transcript id, 2) gene/transcript name,
+    3) gene/transcript version
 
     :param str gtf_path: path to gzipped gtf file
     :param str output_json_file: path to output json
