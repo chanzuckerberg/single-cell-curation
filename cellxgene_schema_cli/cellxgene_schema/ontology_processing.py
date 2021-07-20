@@ -7,9 +7,18 @@ import json
 from . import env
 
 
-def _download_owls(owl_info_yml=env.OWL_INFO_YAML, output_dir=env.ONTOLOGY_DIR):
+def _download_owls(
+    owl_info_yml: str = env.OWL_INFO_YAML, output_dir: str = env.ONTOLOGY_DIR
+):
 
-    """Downloads the ontology owl files specified in 'owl_info_yml' into 'output_dir'"""
+    """
+    Downloads the ontology owl files specified in 'owl_info_yml' into 'output_dir'
+
+    :param str owl_info_yml: path to yaml file wit OWL information
+    :param str output_dir: path to writable directory where owl files will be downloaded to
+
+    :rtype None
+    """
 
     with open(owl_info_yml, "r") as owl_info_handle:
         owl_info = yaml.safe_load(owl_info_handle)
@@ -34,9 +43,14 @@ def _download_owls(owl_info_yml=env.OWL_INFO_YAML, output_dir=env.ONTOLOGY_DIR):
             urllib.request.urlretrieve(url, output_file)
 
 
-def _decompress(infile, tofile):
+def _decompress(infile: str, tofile: str):
     """
     Decompresses a gziped file
+
+    :param str infile: path gziped file
+    :param str tofile: path to output decompressed file
+
+    :rtype None
     """
     with open(infile, "rb") as inf, open(tofile, "w", encoding="utf8") as tof:
         decom_str = gzip.decompress(inf.read()).decode("utf-8")
@@ -44,9 +58,9 @@ def _decompress(infile, tofile):
 
 
 def _parse_owls(
-    working_dir=env.ONTOLOGY_DIR,
-    owl_info_yml=env.OWL_INFO_YAML,
-    output_json_file=env.PARSED_ONTOLOGIES_FILE
+    working_dir: str = env.ONTOLOGY_DIR,
+    owl_info_yml: str = env.OWL_INFO_YAML,
+    output_json_file: str = env.PARSED_ONTOLOGIES_FILE,
 ):
 
     """
@@ -71,6 +85,13 @@ def _parse_owls(
             ...
             }
     }
+
+    :param str working_dir: path to folder with owl files
+    :param str owl_info_yml: path to writable directory where owl files will be downloaded to
+    :param str owl_info_yml: path to yaml file wit owl information
+    :param str output_json_file: path to output jsaon file
+
+    :rtype None
     """
 
     with open(owl_info_yml, "r") as owl_info_handle:
@@ -119,7 +140,7 @@ def _parse_owls(
         json.dump(onto_dict, output_json, indent=2)
 
 
-def _parse_gtf(gtf_path, output_file):
+def _parse_gtf(gtf_path: str, output_file: str):
     """
     Parses a gziped GTF file to get gene and transcript info into a gziped comma-separated file with the following
     structure, with three columns and no header: 1) gene/transcript id, 2) gene/transcript name,
@@ -128,8 +149,7 @@ def _parse_gtf(gtf_path, output_file):
     :param str gtf_path: path to gzipped gtf file
     :param str output_json_file: path to output json
 
-    :return: none
-    :rtype: none
+    :rtype: None
     """
 
     output_to_print = ""

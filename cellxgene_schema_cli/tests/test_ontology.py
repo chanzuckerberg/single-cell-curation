@@ -4,29 +4,29 @@ from cellxgene_schema import ontology
 
 class TestGeneChecker(unittest.TestCase):
     def setUp(self):
-        self.valid_species = ["Homo sapiens", "Mus musculus"]
+        self.valid_species = ontology.SupportedOrganisms
         self.invalid_species = ["Caenorhabditis elegans"]
 
         self.valid_genes = {
-            "Homo sapiens": {"ENSG00000141510": "TP53"},
-            "Mus musculus": {"ENSMUSG00000059552": "Trp53"},
+            ontology.SupportedOrganisms.Homo_sapiens: {"ENSG00000141510": "TP53"},
+            ontology.SupportedOrganisms.Mus_musculus: {"ENSMUSG00000059552": "Trp53"},
         }
 
         self.invalid_genes = {
-            "Homo sapiens": ["ENSMUSG00000059552", "GENE"],
-            "Mus musculus": ["ENSG00000141510", "GENE"],
+            ontology.SupportedOrganisms.Homo_sapiens: ["ENSMUSG00000059552", "GENE"],
+            ontology.SupportedOrganisms.Mus_musculus: ["ENSG00000141510", "GENE"],
         }
 
     def test_species_validity(self):
         for species in self.valid_species:
-            self.assertIsInstance(ontology.geneChecker(species), ontology.geneChecker)
+            self.assertIsInstance(ontology.GeneChecker(species), ontology.GeneChecker)
         for species in self.invalid_species:
             with self.assertRaises(ValueError):
-                ontology.geneChecker(species)
+                ontology.GeneChecker(species)
 
     def test_valid_genes(self):
         for species in self.valid_genes:
-            geneChecker = ontology.geneChecker(species)
+            geneChecker = ontology.GeneChecker(species)
             for gene_id in self.valid_genes[species]:
                 gene_label = self.valid_genes[species][gene_id]
 
@@ -35,7 +35,7 @@ class TestGeneChecker(unittest.TestCase):
 
     def test_invalid_genes(self):
         for species in self.invalid_genes:
-            geneChecker = ontology.geneChecker(species)
+            geneChecker = ontology.GeneChecker(species)
             for gene_id in self.invalid_genes[species]:
 
                 self.assertFalse(geneChecker.is_valid_id(gene_id))
@@ -44,10 +44,9 @@ class TestGeneChecker(unittest.TestCase):
 
 
 class TestOntologyChecker(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
-        cls.ontologyChecker = ontology.ontologyChecker()
+        cls.ontologyChecker = ontology.OntologyChecker()
 
     def setUp(self):
         self.valid_ontologies = [
@@ -115,7 +114,8 @@ class TestOntologyChecker(unittest.TestCase):
                     self.ontologyChecker.assert_term_id(ontology_id, term_id)
                 )
                 self.assertEqual(
-                    self.ontologyChecker.get_term_label(ontology_id, term_id), term_label
+                    self.ontologyChecker.get_term_label(ontology_id, term_id),
+                    term_label,
                 )
 
     def test_invalid_term_ids(self):
