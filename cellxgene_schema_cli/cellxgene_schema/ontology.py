@@ -2,20 +2,15 @@
 import os
 import gzip
 import json
+from . import env
 
 
 class geneChecker:
     """Handles checking gene ids, retrieves symbols"""
 
     GENE_FILES = {
-        "Homo sapiens": os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            "ontology_files/genes_homo_sapiens.csv.gz",
-        ),
-        "Mus musculus": os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            "ontology_files/genes_mus_musculus.csv.gz",
-        ),
+        "Homo sapiens": os.path.join(env.ONTOLOGY_DIR, "genes_homo_sapiens.csv.gz"),
+        "Mus musculus": os.path.join(env.ONTOLOGY_DIR, "genes_mus_musculus.csv.gz"),
     }
 
     def __init__(self, species):
@@ -64,10 +59,7 @@ class geneChecker:
 class ontologyChecker:
     """Handles checking ontology term ids, retrieves ontology labels and ancestors"""
 
-    JSON_FILE = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        "ontology_files/all_ontology.json.gz",
-    )
+    JSON_FILE = env.PARSED_ONTOLOGIES_FILE
 
     def __init__(self):
         with gzip.open(self.JSON_FILE, "rt") as json_o:
@@ -137,7 +129,7 @@ class ontologyChecker:
 
     def get_term_ancestors(self, ontology, term_id):
         """
-        Returns the ancestros of an ontology id
+        Returns the ancestors of an ontology id
         """
 
         self.assert_term_id(ontology, term_id)

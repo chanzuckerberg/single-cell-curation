@@ -4,16 +4,10 @@ import urllib.request
 import os
 import gzip
 import json
+from . import env
 
 
-def _dowload_owls(
-    owl_info_yml=os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "ontology_files/owl_info.yml"
-    ),
-    output_dir=os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "ontology_files/"
-    ),
-):
+def _download_owls(owl_info_yml=env.OWL_INFO_YAML, output_dir=env.ONTOLOGY_DIR):
 
     """Downloads the ontology owl files specified in 'owl_info_yml' into 'output_dir'"""
 
@@ -50,16 +44,9 @@ def _decompress(infile, tofile):
 
 
 def _parse_owls(
-    working_dir=os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "ontology_files"
-    ),
-    owl_info_yml=os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "ontology_files/owl_info.yml"
-    ),
-    output_json_file=os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        "ontology_files/all_ontology.json.gz",
-    ),
+    working_dir=env.ONTOLOGY_DIR,
+    owl_info_yml=env.OWL_INFO_YAML,
+    output_json_file=env.PARSED_ONTOLOGIES_FILE
 ):
 
     """
@@ -188,5 +175,5 @@ def _parse_gtf(gtf_path, output_file):
 
 # Download and parse owls upon execution
 if __name__ == "__main__":
-    _dowload_owls()
+    _download_owls()
     _parse_owls()
