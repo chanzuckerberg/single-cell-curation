@@ -183,18 +183,22 @@ def _validate_column(column, column_name, df_name, column_def):
         bad_enums = [v for v in column if v not in column_def["enum"]]
         if bad_enums:
             errors.append(
-                f"Column '{column_name}' in dataframe '{df_name}' contains unpermitted values like "
+                f"Column '{column_name}' in dataframe '{df_name}' contains invalid values like "
                 f"'{bad_enums[0]}'. Values must be one of {column_def['enum']}."
             )
 
     if column_def.get("type") == "curie":
         if "curie_constraints" not in column_def:
             raise ValueError(f"Corrupt schema definition, no 'curie_constraints' were found for '{column_name}'")
-            if "ontologies" not in column_def[curie_constraints]:
-                raise ValueError(f"allowed 'ontolgies' must be specified under 'curie constraints' for '{column_name}'")
+        if "ontologies" not in column_def["curie_constraints"]:
+            raise ValueError(f"allowed 'ontolgies' must be specified under 'curie constraints' for '{column_name}'")
 
         for curie in column.drop_duplicates():
             errors.extend(_validate_curie(curie, column_name, column_def["curie_constraints"]))
+
+    if column_def.get("type") == "bool":
+        if not column.dtype == bool:
+            errors.append(f"Column '{column_name}' in dataframe '{df_name}' must be boolean not {column.dtype.name}")
 
     return errors
 

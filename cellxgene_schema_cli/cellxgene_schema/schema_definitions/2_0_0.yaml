@@ -82,3 +82,5 @@ components:
                 add_labels:
                     type: curie
                     to: tissue
+            is_primary_data:
+                type: bool

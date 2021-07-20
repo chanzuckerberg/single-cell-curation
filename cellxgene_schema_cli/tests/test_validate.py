@@ -14,16 +14,16 @@ class ExampleData:
     good_obs = pd.DataFrame(
         [
             [
-                "CL:0000066", "EFO:0009899", "MONDO:0100096", "NCBITaxon:9606", "PATO:0000383", "UBERON:0002048"
+                "CL:0000066", "EFO:0009899", "MONDO:0100096", "NCBITaxon:9606", "PATO:0000383", "UBERON:0002048", True
             ],
             [
                 "CL:0000192", "EFO:0010183 (sci-plex)", "PATO:0000461", "NCBITaxon:10090", "unknown",
-                "CL:0000192 (cell culture)"
+                "CL:0000192 (cell culture)", False
             ]
         ],
         index=["X", "Y"],
         columns=["cell_type_ontology_term_id", "assay_ontology_term_id", "disease_ontology_term_id",
-                 "organism_ontology_term_id", "sex_ontology_term_id", "tissue_ontology_term_id"]
+                 "organism_ontology_term_id", "sex_ontology_term_id", "tissue_ontology_term_id", "is_primary_data"]
     )
 
     obs_expected = pd.DataFrame(
@@ -39,16 +39,17 @@ class ExampleData:
     bad_obs = pd.DataFrame(
         [
             [
-                "CL:NO_TERM", "EFO:NO_TERM", "MONDO:NO_TERM", "NCBITaxon:NO_TERM", "PATO:NO_TERM", "UBERON:NO_TERM"
+                "CL:NO_TERM", "EFO:NO_TERM", "MONDO:NO_TERM", "NCBITaxon:NO_TERM", "PATO:NO_TERM", "UBERON:NO_TERM",
+                "True"
             ],
             [
-                "CL:0000182", "EFO:00212", "MONDO:0324", "NCBITaxon:00324", "PATO:2003", "UBERON:3203"
+                "CL:0000182", "EFO:00212", "MONDO:0324", "NCBITaxon:00324", "PATO:2003", "UBERON:3203", "False"
             ]
         ],
         index=["X", "Y"],
 
         columns=["cell_type_ontology_term_id", "assay_ontology_term_id", "disease_ontology_term_id",
-                 "organism_ontology_term_id", "sex_ontology_term_id", "tissue_ontology_term_id"]
+                 "organism_ontology_term_id", "sex_ontology_term_id", "tissue_ontology_term_id", "is_primary_data"]
     )
 
     X = pd.DataFrame(
@@ -65,9 +66,10 @@ class ExampleData:
 
 class TestFieldValidation(unittest.TestCase):
 
-    def setUp(self):
-        self.schema_def = validate.get_schema_definition(SCHEMA_VERSION)
-        self.ontologyChecker = ontology.ontologyChecker()
+    @classmethod
+    def setUpClass(cls):
+        cls.schema_def = validate.get_schema_definition(SCHEMA_VERSION)
+        cls.ontologyChecker = ontology.ontologyChecker()
 
     def test_schema_defintion(self):
         """
@@ -166,32 +168,11 @@ class TestColumnValidation(unittest.TestCase):
             errors = validate._validate_column(good_df[column], column, "obs", columns_def[column],)
             self.assertFalse(errors)
 
-        # Bad example CL, one correct, one incorrect
+        # Bad columns, do each individually
         bad_df = ExampleData.bad_obs
-
         for column in bad_df.columns:
             errors = validate._validate_column(bad_df[column], column, "obs", columns_def[column],)
             self.assertTrue(errors)
-
-        # Bad examples incorrect assay
-        column = "assay_ontology_term_id"
-        bad_df = pd.DataFrame([["CL:0000192"]], index=["X"], columns=[column])
-        errors = validate._validate_column(bad_df[column], column, "obs", columns_def[column],)
-        self.assertTrue(errors)
-
-        bad_df = pd.DataFrame([["EFO:0010183(sci-plex)"]], index=["X"], columns=[column]) # No space before suffix
-        errors = validate._validate_column(bad_df[column], column, "obs", columns_def[column],)
-        self.assertTrue(errors)
-
-        # Bad examples incorrect disease
-        column = "disease_ontology_term_id"
-        bad_df = pd.DataFrame([["CL:0000192"]], index=["X"], columns=[column])
-        errors = validate._validate_column(bad_df[column], column, "obs", columns_def[column],)
-        self.assertTrue(errors)
-
-        bad_df = pd.DataFrame([["PATO:0002632"]], index=["X"], columns=[column]) # No space before suffix
-        errors = validate._validate_column(bad_df[column], column, "obs", columns_def[column],)
-        self.assertTrue(errors)
 
 
 class TestH5adValidation(unittest.TestCase):
