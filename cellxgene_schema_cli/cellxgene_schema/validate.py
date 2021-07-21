@@ -4,19 +4,21 @@ import os
 import yaml
 import pandas as pd
 import re
+from typing import List, Dict
 from . import ontology
 
 SCHEMA_DEFINITIONS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "schema_definitions")
 ONTOLOGY_CHECKER = ontology.ontologyChecker()
 
-def _validate_curie_allowed_terms(term_id, column_name, terms):
+
+def _validate_curie_allowed_terms(term_id: str, column_name: str, terms: Dict[str, List[str]]) -> List[str]:
 
     """
     Validate a single curie term id is a valid children of any of allowed terms
 
     :param str term_id: the curie term id to validate
     :param str column_name: original column name in adata where the term_id comes from (used for error messages)
-    :param dict{str: list[str]} allowed_terms, keys must be ontology names and values must lists of allowed terms
+    :param dict{str: list[str]} terms: keys must be ontology names and values must lists of allowed terms
 
     :return list with error messages, empty if none
     :rtype list[str|none]
@@ -35,13 +37,16 @@ def _validate_curie_allowed_terms(term_id, column_name, terms):
 
     return errors
 
-def _validate_curie_ancestors(term_id, column_name, allowed_ancestors):
+
+def _validate_curie_ancestors(term_id: str, column_name: str, allowed_ancestors: Dict[str, List[str]]) -> List[str]:
+
     """
     Validate a single curie term id is a valid children of any of allowed ancestors
 
     :param str term_id: the curie term id to validate
     :param str column_name: original column name in adata where the term_id comes from (used for error messages)
-    :param dict{str: list[str]} allowed_ancestors, keys must be ontology names and values must lists of allowed ancestors
+    :param dict{str: list[str]} allowed_ancestors, keys must be ontology names and values must lists of
+    allowed ancestors
 
     :return list with error messages, empty if none
     :rtype list[str|none]
@@ -62,17 +67,17 @@ def _validate_curie_ancestors(term_id, column_name, allowed_ancestors):
     return errors
 
 
-def _validate_curie_ontology(term_id, column_name, allowed_ontologies):
+def _validate_curie_ontology(term_id: str, column_name: str, allowed_ontologies: List[str]) -> List[str]:
 
     """
     Validate a single curie term id belongs to specified ontologies
 
     :param str term_id: the curie term id to validate
     :param str column_name: original column name in adata where the term_id comes from (used for error messages)
-    :param list[str] allowed_ontologies: allowed ontologies
+    :param List[str] allowed_ontologies: allowed ontologies
 
     :return list with error messages, empty if none
-    :rtype list[str|none]
+    :rtype List[str|none]
     """
 
     errors = []
@@ -86,7 +91,8 @@ def _validate_curie_ontology(term_id, column_name, allowed_ontologies):
 
     return errors
 
-def _validate_curie_remove_suffix(term_id, suffix_def):
+
+def _validate_curie_remove_suffix(term_id: str, suffix_def: dict) -> str:
 
     """
     Remove suffix from a term id, if none present return it unmodified
@@ -116,7 +122,8 @@ def _validate_curie_remove_suffix(term_id, suffix_def):
 
     return term_id, id_suffix
 
-def _validate_curie(term_id, column_name, curie_constraints):
+
+def _validate_curie(term_id: str, column_name: str, curie_constraints: dict) -> List[str]:
 
     """
     Validate a single curie term id based on some constraints, if invalid it will return x other wise none
@@ -155,19 +162,21 @@ def _validate_curie(term_id, column_name, curie_constraints):
     return errors
 
 
-
 def _is_null(v):
+
     """Return True if v is null, for one of the multiple ways a "null" value shows up in an h5ad."""
     return pd.isnull(v) or (hasattr(v, "__len__") and len(v) == 0)
 
 
-def _validate_column(column, column_name, df_name, column_def):
+def _validate_column(column: pd.Categorical, column_name: str, df_name: str, column_def: dict) -> List[str]:
+
     """Given a schema definition and the column of a dataframe, verify that the column satifies the schema
 
-    :param pandas.DataFrame column: Column of a dataframe to validate
+    :param pandas.Categorical column: Column of a dataframe to validate
     :param str column_name: Name of the column in the dataframe
     :param str df_name: Name of the dataframe
-    :param dict column_def: schema definition for this specific column, e.g. schema_def["obs"]["columns"]["cell_type_ontology_term_id"]
+    :param dict column_def: schema definition for this specific column,
+    e.g. schema_def["obs"]["columns"]["cell_type_ontology_term_id"]
 
     :return A list of error messages. If that list is empty, the object passed validation.
     :rtype list
@@ -203,7 +212,7 @@ def _validate_column(column, column_name, df_name, column_def):
     return errors
 
 
-def _validate_dataframe(df, df_name, component_def):
+def _validate_dataframe(df: pd.DataFrame, df_name: str, component_def: dict) -> List[str]:
 
     """Verifies the dataframe follows the schema.
     :param pandas.DataFrame df: Dataframe to validate
@@ -232,10 +241,12 @@ def _validate_dataframe(df, df_name, component_def):
     return errors
 
 
-def deep_check(adata, schema_def):
+def deep_check(adata: anndata.AnnData, schema_def: dict) -> List[str]:
+
     """Perform a "deep" check of the AnnData object using the schema definition.
 
     :param anndata.AnnData adata: AnnData object
+    :param dict schema_def: schema definition read with "get_schema_definition"
 
     :return A list of error messages. If that list is empty, the object passed validation.
     :rtype list
@@ -259,7 +270,8 @@ def deep_check(adata, schema_def):
     return errors
 
 
-def get_schema_definition(version):
+def get_schema_definition(version: str) -> dict:
+
     """
     Look up and read a schema definition based on a version number like "2.0.0".
 
@@ -277,7 +289,7 @@ def get_schema_definition(version):
     return yaml.load(open(path), Loader=yaml.FullLoader)
 
 
-def validate_adata(adata, schema_def):
+def validate_adata(adata: anndata.AnnData, schema_def: dict) -> bool:
 
     """
     Validates adata
@@ -302,7 +314,8 @@ def validate_adata(adata, schema_def):
         return True
 
 
-def _get_mapping_dict_curie(ids, curie_constraints):
+def _get_mapping_dict_curie(ids: List[str], curie_constraints: dict) -> Dict[str, str]:
+
     """
     From a list of ids and defined constraints, creates a mapping dictionary {id: label, ...}
 
@@ -346,16 +359,20 @@ def _get_mapping_dict_curie(ids, curie_constraints):
     return mapping_dict
 
 
-def _get_labels(adata, component, column, column_definition):
+def _get_labels(adata: anndata.AnnData, component: str, column: str, column_definition: dict) -> pd.Categorical:
+
     """
-    Retrieves a new column (pandas categorical) with labels based on the IDs in 'column' and the 'type lables'
+    Retrieves a new column (pandas categorical) with labels based on the IDs in 'column' and the logic in the
+    'column_definition'
 
     :param anndata.AnnData adata: A valid (per cellxgene's schema) adata
-    :param str component: what data frame in adata to work with
+    :param str component: what dataframe in adata to work with
     :param str column: Column in adata with IDs that will be used to retrieve values
-    :param dict column_def: schema definition for this specific column, e.g. schema_def["obs"]["columns"]["cell_type_ontology_term_id"]
+    :param dict column_def: schema definition for this specific column,
+    e.g. schema_def["obs"]["columns"]["cell_type_ontology_term_id"]
 
     :rtype pandas.Categorical
+    :return new pandas column with labels corresponding to input column
     """
 
     type_labels = column_definition["add_labels"]["type"]
@@ -378,7 +395,8 @@ def _get_labels(adata, component, column, column_definition):
     return new_column
 
 
-def _check_column_availability(adata, schema_def):
+def _check_column_availability(adata: anndata.AnnData, schema_def: dict) -> List[str]:
+
     """
     From a valid (per cellxgene's schema) h5ad, it will return a list with error messages if reserved columns
     in adata.obs or adata.var already exist
@@ -386,8 +404,8 @@ def _check_column_availability(adata, schema_def):
     :param anndata.AnnData adata: A valid (per cellxgene's schema) adata
     :param dict schema_def: schema definition read with "get_schema_definition"
 
+    :rtype List[str]
     :return A list with errors, empty if none
-    :rtype List
     """
 
     errors = []
@@ -402,7 +420,7 @@ def _check_column_availability(adata, schema_def):
     return errors
 
 
-def _add_labels(adata, schema_def):
+def _add_labels(adata: anndata.AnnData, schema_def: dict) -> anndata.AnnData:
 
     """
     From a valid (per cellxgene's schema) adata, this function returns a new adata with ontology/gene labels added
@@ -423,7 +441,7 @@ def _add_labels(adata, schema_def):
     return adata
 
 
-def write_labels(adata, add_labels_file, schema_def):
+def write_labels(adata: anndata.AnnData, add_labels_file: str, schema_def: dict):
 
     """
     From a valid (per cellxgene's schema) h5ad, this function writes a new h5ad file with ontology/gene labels added
@@ -452,7 +470,9 @@ def write_labels(adata, add_labels_file, schema_def):
 
     return True
 
-def validate(h5ad_path, add_labels_file=None):
+
+def validate(h5ad_path: str, add_labels_file: str = None):
+
     """
     Entry point for validation.
 
@@ -478,7 +498,7 @@ def validate(h5ad_path, add_labels_file=None):
         return is_validation_successful
     else:
         # Add labels if indicated
-        is_add_labels_successful = True
+        is_add_labels_successful = False
         if add_labels_file:
             is_add_labels_successful = write_labels(adata, add_labels_file, schema_def)
 
