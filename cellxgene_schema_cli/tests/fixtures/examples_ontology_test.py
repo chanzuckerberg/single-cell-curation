@@ -1,17 +1,14 @@
-from cellxgene_schema import ontology
-
 # For GeneChecker
-valid_species = ontology.SupportedOrganisms
 invalid_species = ["Caenorhabditis elegans"]
 
 valid_genes = {
-    ontology.SupportedOrganisms.Homo_sapiens: {"ENSG00000141510": "TP53"},
-    ontology.SupportedOrganisms.Mus_musculus: {"ENSMUSG00000059552": "Trp53"},
+    ontology.SupportedOrganisms.HOMO_SAPIENS: {"ENSG00000141510": "TP53"},
+    ontology.SupportedOrganisms.MUS_MUSCULUS: {"ENSMUSG00000059552": "Trp53"},
 }
 
 invalid_genes = {
-    ontology.SupportedOrganisms.Homo_sapiens: ["ENSMUSG00000059552", "GENE"],
-    ontology.SupportedOrganisms.Mus_musculus: ["ENSG00000141510", "GENE"],
+    ontology.SupportedOrganisms.HOMO_SAPIENS: ["ENSMUSG00000059552", "GENE"],
+    ontology.SupportedOrganisms.MUS_MUSCULUS: ["ENSG00000141510", "GENE"],
 }
 
 # For ontology checker

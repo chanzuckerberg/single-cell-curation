@@ -7,18 +7,18 @@ from . import env
 
 
 class SupportedOrganisms(enum.Enum):
-    Homo_sapiens = 1
-    Mus_musculus = 2
+    HOMO_SAPIENS = "HomoSapiens"
+    MUS_MUSCULUS = "MusMusculus"
 
 
 class GeneChecker:
     """Handles checking gene ids, retrieves symbols"""
 
     GENE_FILES = {
-        SupportedOrganisms.Homo_sapiens: os.path.join(
+        SupportedOrganisms.HOMO_SAPIENS: os.path.join(
             env.ONTOLOGY_DIR, "genes_homo_sapiens.csv.gz"
         ),
-        SupportedOrganisms.Mus_musculus: os.path.join(
+        SupportedOrganisms.MUS_MUSCULUS: os.path.join(
             env.ONTOLOGY_DIR, "genes_mus_musculus.csv.gz"
         ),
     }
