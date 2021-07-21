@@ -1,21 +1,14 @@
 import unittest
 from cellxgene_schema import ontology
+import fixtures.examples_ontology_test as examples
 
 
 class TestGeneChecker(unittest.TestCase):
     def setUp(self):
         self.valid_species = ontology.SupportedOrganisms
-        self.invalid_species = ["Caenorhabditis elegans"]
-
-        self.valid_genes = {
-            ontology.SupportedOrganisms.Homo_sapiens: {"ENSG00000141510": "TP53"},
-            ontology.SupportedOrganisms.Mus_musculus: {"ENSMUSG00000059552": "Trp53"},
-        }
-
-        self.invalid_genes = {
-            ontology.SupportedOrganisms.Homo_sapiens: ["ENSMUSG00000059552", "GENE"],
-            ontology.SupportedOrganisms.Mus_musculus: ["ENSG00000141510", "GENE"],
-        }
+        self.invalid_species = examples.invalid_species
+        self.valid_genes = examples.valid_genes
+        self.invalid_genes = examples.invalid_genes
 
     def test_species_validity(self):
         for species in self.valid_species:
@@ -49,48 +42,10 @@ class TestOntologyChecker(unittest.TestCase):
         cls.ontologyChecker = ontology.OntologyChecker()
 
     def setUp(self):
-        self.valid_ontologies = [
-            "CL",
-            "EFO",
-            "MONDO",
-            "MmusDv",
-            "NCBITaxon",
-            "UBERON",
-            "PATO",
-        ]
-        self.invalid_ontologies = ["NOT_ONTOLOGY", "OOO"]
-
-        self.valid_terms = {
-            "CL": {"CL:0000066": "epithelial cell", "CL:0000192": "smooth muscle cell"},
-            "EFO": {
-                "EFO:0009899": "10x 3' v2",
-                "EFO:0009922": "10x 3' v3",
-                "EFO:0011025": "10x 5' v1",
-                "EFO:0008930": "Smart-seq",
-                "EFO:0008931": "Smart-seq2",
-            },
-            "MONDO": {"MONDO:0100096": "COVID-19"},
-            "MmusDv": {
-                "MmusDv:0000062": "2 month-old stage",
-                "MmusDv:0000003": "Theiler stage 01",
-            },
-            "NCBITaxon": {
-                "NCBITaxon:9606": "Homo sapiens",
-                "NCBITaxon:10090": "Mus musculus",
-            },
-            "UBERON": {"UBERON:0002048": "lung"},
-            "PATO": {"PATO:0000461": "normal"},
-        }
-
-        self.invalid_terms = {
-            "CL": ["EFO:0009899", "NO_TERM"],
-            "EFO": ["UBERON:0002048", "NO_TERM"],
-            "MONDO": ["EFO:0009899", "NO_TERM"],
-            "MmusDv": ["EFO:0009899", "NO_TERM"],
-            "NCBITaxon": ["EFO:0009899", "NO_TERM"],
-            "UBERON": ["EFO:0009899", "NO_TERM"],
-            "PATO": ["EFO:0009899", "NO_TERM"],
-        }
+        self.valid_ontologies = examples.valid_ontologies
+        self.invalid_ontologies = examples.invalid_ontologies
+        self.valid_terms = examples.valid_terms
+        self.invalid_terms = examples.invalid_terms
 
     def test_ontology_validity(self):
         for i in self.valid_ontologies:
