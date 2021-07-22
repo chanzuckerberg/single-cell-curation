@@ -1,3 +1,5 @@
+from cellxgene_schema import ontology
+
 # For GeneChecker
 invalid_species = ["Caenorhabditis elegans"]
 

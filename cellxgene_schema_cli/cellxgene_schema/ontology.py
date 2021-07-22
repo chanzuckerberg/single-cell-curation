@@ -50,20 +50,6 @@ class GeneChecker:
 
         return gene_id in self.gene_dict
 
-    def assert_gene_id(self, gene_id: str):
-        """
-        Raises error if the gene_id is not a valid ENSEBML id
-
-        :param str gene_id: ENSEMBL gene id
-
-        :rtype None
-        """
-
-        if not self.is_valid_id(gene_id):
-            raise ValueError(
-                f"The id '{gene_id}' is not a valid ENSEMBL id for '{self.species}'"
-            )
-
     def get_symbol(self, gene_id) -> str:
         """
         Gets symbol associated to the ENSEBML id
@@ -74,7 +60,10 @@ class GeneChecker:
         :return A gene symbol
         """
 
-        self.assert_gene_id(gene_id)
+        if not self.is_valid_id(gene_id):
+            raise ValueError(
+                f"The id '{gene_id}' is not a valid ENSEMBL id for '{self.species}'"
+            )
 
         return self.gene_dict[gene_id]
 
