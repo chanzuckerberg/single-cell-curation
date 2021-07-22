@@ -10,7 +10,6 @@ class TestGeneChecker(unittest.TestCase):
         self.invalid_species = examples.invalid_species
         self.valid_genes = examples.valid_genes
         self.invalid_genes = examples.invalid_genes
-        cellxgene_schema_cli_v_1_0_0-ontology_and_gene_checkers
 
     def test_species_validity(self):
         for species in self.valid_species:
@@ -42,7 +41,6 @@ class TestOntologyChecker(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.ontologyChecker = ontology.OntologyChecker()
-        cellxgene_schema_cli_v_1_0_0-ontology_and_gene_checkers
 
     def setUp(self):
         self.valid_ontologies = examples.valid_ontologies

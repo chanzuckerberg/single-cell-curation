@@ -8,7 +8,7 @@ from typing import List, Dict
 from . import ontology
 
 SCHEMA_DEFINITIONS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "schema_definitions")
-ONTOLOGY_CHECKER = ontology.ontologyChecker()
+ONTOLOGY_CHECKER = ontology.OntologyChecker()
 
 
 def _validate_curie_allowed_terms(term_id: str, column_name: str, terms: Dict[str, List[str]]) -> List[str]:

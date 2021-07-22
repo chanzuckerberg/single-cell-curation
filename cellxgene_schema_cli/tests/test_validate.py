@@ -69,7 +69,7 @@ class TestFieldValidation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.schema_def = validate.get_schema_definition(SCHEMA_VERSION)
-        cls.ontologyChecker = ontology.ontologyChecker()
+        cls.OntologyChecker = ontology.OntologyChecker()
 
     def test_schema_defintion(self):
         """
@@ -89,7 +89,7 @@ class TestFieldValidation(unittest.TestCase):
 
                 # Check that the allowed ontologies are in the ontology checker
                 for ontology in self.schema_def["components"]["obs"]["columns"][i]["curie_constrains"]["ontolgies"]:
-                    self.assertTrue(self.ontologyChecker.is_valid_ontology(ontology))
+                    self.assertTrue(self.OntologyChecker.is_valid_ontology(ontology))
 
     def test_validate_ontology(self):
         column_name = "cell_type_ontology_term_id"
