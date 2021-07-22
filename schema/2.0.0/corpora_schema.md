@@ -794,6 +794,25 @@ See also `default_embedding` in `uns`.
 </tbody></table>
 <br>
 
+### X_approx_distribution
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>X_approx_distribution</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          <code>str</code>. By default, cellxgene assumes data in X are normally distributed when estimating statistical properties of the data. This field enables the curator to override this assumption and specify the data distribution. The value MUST be <code>"count"</code> (for data whose distributions are best approximated by counting distributions like Poisson, Binomial, or Negative Binomial) or <code>"normal"</code> (for data whose distributions are best approximated by the Gaussian distribution.)
+        </td>
+    </tr>
+</tbody></table>
+<br>
 
 ## Appendix A. Changelog
 
