@@ -5,6 +5,7 @@ cellxgene_schema/cli.py
 cellxgene_schema/ontology.py
 cellxgene_schema/ontology_processing.py
 cellxgene_schema/validate.py
+cellxgene_schema_cli_v_1_0_0-ontology_and_gene_checkers
 cellxgene_schema.egg-info/PKG-INFO
 cellxgene_schema.egg-info/SOURCES.txt
 cellxgene_schema.egg-info/dependency_links.txt

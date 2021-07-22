@@ -4,12 +4,21 @@ import urllib.request
 import os
 import gzip
 import json
+from . import env
 
 
-def _dowload_owls(owl_info_yml=os.path.join(os.path.dirname(os.path.realpath(__file__)), "ontology_files/owl_info.yml"),
-                  output_dir=os.path.join(os.path.dirname(os.path.realpath(__file__)), "ontology_files/")):
+def _download_owls(
+    owl_info_yml: str = env.OWL_INFO_YAML, output_dir: str = env.ONTOLOGY_DIR
+):
 
-    """ Downloads the ontology owl files specified in 'owl_info_yml' into 'output_dir' """
+    """
+    Downloads the ontology owl files specified in 'owl_info_yml' into 'output_dir'
+
+    :param str owl_info_yml: path to yaml file wit OWL information
+    :param str output_dir: path to writable directory where owl files will be downloaded to
+
+    :rtype None
+    """
 
     with open(owl_info_yml, "r") as owl_info_handle:
         owl_info = yaml.safe_load(owl_info_handle)
@@ -34,17 +43,25 @@ def _dowload_owls(owl_info_yml=os.path.join(os.path.dirname(os.path.realpath(__f
             urllib.request.urlretrieve(url, output_file)
 
 
-def _decompress(infile, tofile):
+def _decompress(infile: str, tofile: str):
     """
     Decompresses a gziped file
+
+    :param str infile: path gziped file
+    :param str tofile: path to output decompressed file
+
+    :rtype None
     """
-    with open(infile, 'rb') as inf, open(tofile, 'w', encoding='utf8') as tof:
-        decom_str = gzip.decompress(inf.read()).decode('utf-8')
+    with open(infile, "rb") as inf, open(tofile, "w", encoding="utf8") as tof:
+        decom_str = gzip.decompress(inf.read()).decode("utf-8")
         tof.write(decom_str)
 
-def _parse_owls(working_dir=os.path.join(os.path.dirname(os.path.realpath(__file__)), "ontology_files"),
-                owl_info_yml=os.path.join(os.path.dirname(os.path.realpath(__file__)), "ontology_files/owl_info.yml"),
-                output_json_file=os.path.join(os.path.dirname(os.path.realpath(__file__)), "ontology_files/all_ontology.json.gz")):
+
+def _parse_owls(
+    working_dir: str = env.ONTOLOGY_DIR,
+    owl_info_yml: str = env.OWL_INFO_YAML,
+    output_json_file: str = env.PARSED_ONTOLOGIES_FILE,
+):
 
     """
     Parser all owl files in working_dir. Extracts information from all classes in the owl file.
@@ -68,12 +85,23 @@ def _parse_owls(working_dir=os.path.join(os.path.dirname(os.path.realpath(__file
             ...
             }
     }
+
+    :param str working_dir: path to folder with owl files
+    :param str owl_info_yml: path to writable directory where owl files will be downloaded to
+    :param str owl_info_yml: path to yaml file wit owl information
+    :param str output_json_file: path to output jsaon file
+
+    :rtype None
     """
 
     with open(owl_info_yml, "r") as owl_info_handle:
         owl_info = yaml.safe_load(owl_info_handle)
 
-    owl_files = [os.path.join(working_dir, i) for i in os.listdir(working_dir) if i.endswith(".owl")]
+    owl_files = [
+        os.path.join(working_dir, i)
+        for i in os.listdir(working_dir)
+        if i.endswith(".owl")
+    ]
 
     # Parse owl files
     onto_dict = {}
@@ -99,26 +127,29 @@ def _parse_owls(working_dir=os.path.join(os.path.dirname(os.path.realpath(__file
             onto_dict[onto.name][term_id] = dict()
             try:
                 onto_dict[onto.name][term_id]["label"] = onto_class.label[0]
-            except:
+            except IndexError:
                 onto_dict[onto.name][term_id]["label"] = ""
 
-            onto_dict[onto.name][term_id]["ancestors"] = [i.name.replace("_", ":") for i in onto_class.ancestors() if
-                                                          i.name.split("_")[0] == onto.name]
+            onto_dict[onto.name][term_id]["ancestors"] = [
+                i.name.replace("_", ":")
+                for i in onto_class.ancestors()
+                if i.name.split("_")[0] == onto.name
+            ]
 
     with gzip.open(output_json_file, "wt") as output_json:
         json.dump(onto_dict, output_json, indent=2)
 
 
-def _parse_gtf(gtf_path, output_file):
+def _parse_gtf(gtf_path: str, output_file: str):
     """
-    Parses a gziped GTF file to get gene and transcript info into a gziped comma-separated file with the following structure,
-    with three columns and no header: 1) gene/transcript id, 2) gene/transcript name, 3) gene/transcript version
+    Parses a gziped GTF file to get gene and transcript info into a gziped comma-separated file with the following
+    structure, with three columns and no header: 1) gene/transcript id, 2) gene/transcript name,
+    3) gene/transcript version
 
     :param str gtf_path: path to gzipped gtf file
     :param str output_json_file: path to output json
 
-    :return: none
-    :rtype: none
+    :rtype: None
     """
 
     output_to_print = ""
@@ -140,14 +171,20 @@ def _parse_gtf(gtf_path, output_file):
                 continue
 
             # Extract features (column 9 of GTF)
-            current_features = {i.strip().split(" ")[0]: i.strip().split(" ")[1] for i in line[8].split(";") if len(i) > 1}
+            current_features = {
+                i.strip().split(" ")[0]: i.strip().split(" ")[1]
+                for i in line[8].split(";")
+                if len(i) > 1
+            }
 
             # Select  features of interest, raise error feature of interest not found
             target_features = [""] * len(features)
             for i in range(len(features)):
                 feature = features[i]
                 if feature in current_features:
-                    current_features[feature] = current_features[feature].replace('"', '')
+                    current_features[feature] = current_features[feature].replace(
+                        '"', ""
+                    )
                     target_features[i] = current_features[feature]
 
             output_to_print += ",".join(target_features) + "\n"
@@ -158,5 +195,5 @@ def _parse_gtf(gtf_path, output_file):
 
 # Download and parse owls upon execution
 if __name__ == "__main__":
-    _dowload_owls()
+    _download_owls()
     _parse_owls()
