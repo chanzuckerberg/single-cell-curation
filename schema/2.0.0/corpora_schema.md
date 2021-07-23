@@ -679,7 +679,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>feature_name</td>
+      <td>feature_reference</td>
     </tr>
     <tr>
       <th>Annotator</th>
