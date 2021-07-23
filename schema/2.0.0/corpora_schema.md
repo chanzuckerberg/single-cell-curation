@@ -654,7 +654,7 @@ Curators MUST annotate the following columns in the `var` dataframe:
 
 When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding gene identifier to the `var` dataframe. Curators MUST NOT annotate the following column:
 
-### feature_reference
+### feature_name
 
 <table><tbody>
     <tr>
