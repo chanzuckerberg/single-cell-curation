@@ -151,7 +151,7 @@ The following gene annotation dependencies are *pinned* for this version of the 
 |:--|:--|:--|
 | [ENSEMBL (Human)] | Human reference GRCh38 (GENCODE v32/Ensembl 98)] matching [cellranger 2020-A (July 7, 2020) release] | [gencode.v32.primary_assembly.annotation.gtf] |
 | [ENSEMBL (Mouse)] | Mouse reference mm10 (GENCODE vM23/Ensembl 98) matching [cellranger 2020-A (July 7, 2020) release]| [gencode.vM23.primary_assembly.annotation.gtf] |
-| [ENSEMBL (COVID-19)] | SARS-CoV-2 reference (ENSEBML assembly: ASM985889v3) | [Sars\_cov\_2.ASM985889v3.101.gtf.gz] |
+| [ENSEMBL (COVID-19)] | SARS-CoV-2 reference (ENSEBML assembly: ASM985889v3) | [Sars\_cov\_2.ASM985889v3.101.gtf] |
 
 [ENSEMBL (Human)]: http://www.ensembl.org/Homo_sapiens/Info/Index
 [gencode.v32.primary_assembly.annotation.gtf]: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/gencode.v32.primary_assembly.annotation.gtf.gz
@@ -161,8 +161,8 @@ The following gene annotation dependencies are *pinned* for this version of the 
 
 [cellranger 2020-A (July 7, 2020) release]: https://support.10xgenomics.com/single-cell-gene-expression/software/release-notes/build
 
-[ENSEMBL (COVID-19)]:https://covid-19.ensembl.org/index.html
-[Sars\_cov\_2.ASM985889v3.101.gtf.gz]: https://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz
+[ENSEMBL (COVID-19)]: https://covid-19.ensembl.org/index.html
+[Sars\_cov\_2.ASM985889v3.101.gtf]: https://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz
 
 
 ## `obs` (Cell Metadata)
@@ -306,7 +306,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=month-old&submit=Search+terms"> month-old stages</a><br>(e.g. <a href="http://purl.obolibrary.org/obo/MmusDv_0000062">MmusDv:0000062)</a></td>
             </tr>
           </tbody></table>
-          <br> Otherwise, for all other organisms this MUST be the most accurate child of <code>EFO:0000399.
+          <br> Otherwise, for all other organisms this MUST be the most accurate child of <code>EFO:0000399</code>.
         </td>
     </tr>
 </tbody></table>
