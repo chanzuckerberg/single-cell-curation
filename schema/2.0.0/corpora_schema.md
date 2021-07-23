@@ -145,7 +145,7 @@ The following ontology dependencies are *pinned* for this version of the schema.
 
 cellxgene requires ENSEMBL gene identifiers to ensure that all datasets it stores measure the same features and can therefore be integrated.
 
-The following gene annotation dependencies are *pinned* for this version of the schema. For multi-species experiments, cells from any organism are allowed as long as orthologs from the following species annotations are used.
+The following gene annotation dependencies are *pinned* for this version of the schema. For multi-species experiments, cells from any organism are allowed as long as orthologs from the following organism annotations are used.
 
 | Organism | Required version | Download |
 |:--|:--|:--|
