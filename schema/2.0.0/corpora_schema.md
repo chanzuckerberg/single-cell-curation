@@ -794,12 +794,12 @@ See also `default_embedding` in `uns`.
 </tbody></table>
 <br>
 
-### X_approx_distribution
+### approximate_distribution
 
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>approx_distribution</td>
+      <td>approximate_distribution</td>
     </tr>
     <tr>
       <th>Annotator</th>
@@ -851,6 +851,7 @@ schema v2.0.0 substantially *remodeled* schema v1.1.0:
 
 * uns
   * Added `batch_condition`
+  * Added `approximate_distribution`
   * Replaced `layer_descriptions` with `normalization`
   * Replaced `version` which included `corpora_schema_version` and `corpora_encoding_version` with `schema_version`
   * Deprecated `tags` and `default_field` presentation metadata
