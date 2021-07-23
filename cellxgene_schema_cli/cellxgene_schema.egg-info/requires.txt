@@ -1,4 +1,3 @@
-cellxgene_schema_cli_v_1_0_0-ontology_and_gene_checkers
 wheel
 Click
 Cython
