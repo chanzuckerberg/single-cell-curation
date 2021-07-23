@@ -3,7 +3,6 @@ from cellxgene_schema import ontology
 import fixtures.examples_ontology_test as examples
 
 
-
 class TestGeneChecker(unittest.TestCase):
     def setUp(self):
         self.valid_species = ontology.SupportedOrganisms

@@ -17,6 +17,25 @@ def _is_null(v):
     return pd.isnull(v) or (hasattr(v, "__len__") and len(v) == 0)
 
 
+def _get_schema_definition(version: str) -> dict:
+
+    """
+    Look up and read a schema definition based on a version number like "2.0.0".
+
+    :param str version: Schema version
+
+    :return The schema definition
+    :rtype dict
+    """
+
+    path = os.path.join(env.SCHEMA_DEFINITIONS_DIR, version.replace(".", "_") + ".yaml")
+
+    if not os.path.isfile(path):
+        raise ValueError(f"No definition for version '{version}' found.")
+
+    return yaml.load(open(path), Loader=yaml.FullLoader)
+
+
 def _curie_remove_suffix(term_id: str, suffix_def: dict) -> Tuple[str, str]:
     """
     Remove suffix from a curie term id, if none present return it unmodified
@@ -51,43 +70,16 @@ class Validator:
     """Handle validation of AnnData"""
     schema_definitions_dir = env.SCHEMA_DEFINITIONS_DIR
 
-    def __init__(self, h5ad_path):
-
-        self.h5ad_path = h5ad_path
-
-        # Read anndata
-        try:
-            self.adata = anndata.read_h5ad(h5ad_path, backed="r")
-        except (OSError, TypeError):
-            print(f"Unable to open '{h5ad_path}' with AnnData")
-            sys.exit(1)
-
-        # Read schema definition
-        self._get_schema_definition(self.adata.uns["schema_version"])
-
-        # Set list that will store error messages
-        self.errors = []
+    def __init__(self):
 
         # Set initial state
+        self.errors = []
         self.is_valid = False
+        self.adata = anndata.AnnData()
+        self.schema_def = dict()
+        self.h5ad_path = ""
 
-    def _get_schema_definition(self, version: str) -> dict:
 
-        """
-        Look up and read a schema definition based on a version number like "2.0.0".
-
-        :param str version: Schema version
-
-        :return The schema definition
-        :rtype dict
-        """
-
-        path = os.path.join(self.schema_definitions_dir, version.replace(".", "_") + ".yaml")
-
-        if not os.path.isfile(path):
-            raise ValueError(f"No definition for version '{version}' found.")
-
-        self.schema_def= yaml.load(open(path), Loader=yaml.FullLoader)
 
     def _validate_curie_allowed_terms(self, term_id: str, column_name: str, terms: Dict[str, List[str]]):
 
@@ -269,6 +261,10 @@ class Validator:
         :rtype None
         """
 
+        if "schema_version" not in self.adata.uns_keys():
+            print("AnnData file is missing cellxgene's schema version")
+            return
+
         for component, component_def in self.schema_def["components"].items():
             if component_def["type"] == "dataframe":
                 self._validate_dataframe(component, component_def)
@@ -281,7 +277,20 @@ class Validator:
             else:
                 raise ValueError(f"Unexpected component type '{component['type']}'")
 
-    def validate_adata(self) -> bool:
+    def _read_h5ad(self, h5ad_path: str):
+
+        """Reads h5ad into self.adata"""
+        try:
+            self.adata = anndata.read_h5ad(h5ad_path, backed="r")
+        except (OSError, TypeError):
+            print(f"Unable to open '{h5ad_path}' with AnnData")
+            sys.exit(1)
+
+        # Set schema definition and path to h5ad
+        self.schema_def = _get_schema_definition(self.adata.uns["schema_version"])
+        self.h5ad_path = h5ad_path
+
+    def validate_adata(self, h5ad_path) -> bool:
 
         """
         Validates adata
@@ -290,10 +299,7 @@ class Validator:
         :rtype bool
         """
 
-        if "schema_version" not in self.adata.uns_keys():
-            print("AnnData file is missing cellxgene's schema version")
-            return False
-
+        self._read_h5ad(h5ad_path)
         self._deep_check()
 
         if self.errors:
@@ -480,8 +486,8 @@ def validate(h5ad_path: str, add_labels_file: str = None):
     """
 
     # Perform validation
-    validator = Validator(h5ad_path)
-    validator.validate_adata()
+    validator = Validator()
+    validator.validate_adata(h5ad_path)
 
     # Stop if validation was unsuccessful
     if not validator.is_valid:
