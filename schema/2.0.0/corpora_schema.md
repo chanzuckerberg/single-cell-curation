@@ -654,7 +654,7 @@ Curators MUST annotate the following columns in the `var` dataframe:
 </tbody></table>
 <br>
 
-When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding gene identifier to the `var` dataframe. Curators MUST NOT annotate the following column:
+When a dataset is uploaded, the cellxgene Data Portal MUST infer the organism reference for the corresponding identifier. The Data Portal MUST automatically add both the matching human-readable name and the organism NCBITaxon term to the `var` dataframe. Curators MUST NOT annotate the following columns:
 
 ### feature_name
 
@@ -684,7 +684,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Data Portal</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -833,7 +833,9 @@ schema v2.0.0 substantially *remodeled* schema v1.1.0:
 * General Requirements
   * AnnData is now the canonical data format. The schema outline and descriptions are AnnData-centric.
 
-  * Only Human and Mouse data are accepted by the cellxgene Data Portal. 
+  * Only Human and Mouse gene IDs are accepted by the cellxgene Data Portal.
+
+  * Multi-organism data is accepted as long as orthologous genes from Human or Mouse are used. 
 
   * Policies for reserved names and redundant metadata are documented.
 
@@ -853,7 +855,7 @@ schema v2.0.0 substantially *remodeled* schema v1.1.0:
 
 * var
   * Replaced HGNC **symbols** as `var.index` with ENSEMBL **identifiers** 
-  * Added feature biotype, ENSEMBL id, and ENSEMBL name
+  * Added feature biotype, ENSEMBL id, ENSEMBL name, and feature reference.
 
 * uns
   * Added `batch_condition`
