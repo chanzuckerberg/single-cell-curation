@@ -145,13 +145,13 @@ The following ontology dependencies are *pinned* for this version of the schema.
 
 cellxgene requires ENSEMBL gene identifiers to ensure that all datasets it stores measure the same features and can therefore be integrated.
 
-The following gene annotation dependencies are *pinned* for this version of the schema.
+The following gene annotation dependencies are *pinned* for this version of the schema. **Cells from any organism are allowed as long as orthologs from these annotations are used.**
 
 | Organism | Required version | Download |
 |:--|:--|:--|
 | [ENSEMBL (Human)] | Human reference GRCh38 (GENCODE v32/Ensembl 98)] matching [cellranger 2020-A (July 7, 2020) release] | [gencode.v32.primary_assembly.annotation.gtf] |
 | [ENSEMBL (Mouse)] | Mouse reference mm10 (GENCODE vM23/Ensembl 98) matching [cellranger 2020-A (July 7, 2020) release]| [gencode.vM23.primary_assembly.annotation.gtf] |
-|||
+| [ENSEMBL (COVID-19)] | SARS-CoV-2 reference (ENSEBML assembly: ASM985889v3) | [Sars_cov_2.ASM985889v3.101.gtf.gz] |
 
 [ENSEMBL (Human)]: http://www.ensembl.org/Homo_sapiens/Info/Index
 [gencode.v32.primary_assembly.annotation.gtf]: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/gencode.v32.primary_assembly.annotation.gtf.gz
@@ -160,6 +160,9 @@ The following gene annotation dependencies are *pinned* for this version of the 
 [gencode.vM23.primary_assembly.annotation.gtf]: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M23/gencode.vM23.primary_assembly.annotation.gtf.gz
 
 [cellranger 2020-A (July 7, 2020) release]: https://support.10xgenomics.com/single-cell-gene-expression/software/release-notes/build
+
+[ENSEMBL (COVID-19)]:https://covid-19.ensembl.org/index.html
+[Sars_cov_2.ASM985889v3.101.gtf.gz]:ftp://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz
 
 ## `obs` (Cell Metadata)
 
@@ -256,7 +259,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If unavailable, this MUST be <code>"unknown"</code>.<br><br>If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be the most<br>accurate HsapDv term with the following STRONGLY RECOMMENDED:
+        <td>categorical with <code>str</code> categories. If unavailable, this MUST be <code>"unknown"</code>.<br><br>If <code>organism_ontolology_term_id</code> <b>is not</b> <code>"NCBITaxon:9606"</code> (<i>Homo sapiens</i>) <br> <b>nor</b> <code>"NCBITaxon:10090"</code> (<i>Mus musculus</i>), this MUST be the most accurate child of <code>EFO:0000399</code>. <br><br>If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be the most<br>accurate HsapDv term with the following STRONGLY RECOMMENDED:
           <br><br>
           <table>
           <thead>
@@ -377,7 +380,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be either <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i> or <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i>.
+        <td>categorical with <code>str</code> categories. This MUST be an NCBITaxon term.
         </td>
     </tr>
 </tbody></table>
@@ -651,7 +654,7 @@ Curators MUST annotate the following columns in the `var` dataframe:
 
 When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding gene identifier to the `var` dataframe. Curators MUST NOT annotate the following column:
 
-### feature_ name
+### feature_reference
 
 <table><tbody>
     <tr>
@@ -669,6 +672,26 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
 </tbody></table>
 <br>
+
+### feature_reference
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>feature_name</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Data Portal</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>str</code>. This MUST indicate the reference organism of genes, it MUST be <code>NCBITaxon:9606</code> for <i>Homo sapiens</i>, <code>NCBITaxon:10090</code> for <i>Mus musculus</i>, or <code>NCBITaxon:2697049</code> for  SARS-CoV-2.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
 
 ## `obsm` (Embeddings)
 
