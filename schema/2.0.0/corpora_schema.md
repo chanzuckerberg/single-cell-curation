@@ -151,7 +151,7 @@ The following gene annotation dependencies are *pinned* for this version of the 
 |:--|:--|:--|
 | [ENSEMBL (Human)] | Human reference GRCh38 (GENCODE v32/Ensembl 98)] matching [cellranger 2020-A (July 7, 2020) release] | [gencode.v32.primary_assembly.annotation.gtf] |
 | [ENSEMBL (Mouse)] | Mouse reference mm10 (GENCODE vM23/Ensembl 98) matching [cellranger 2020-A (July 7, 2020) release]| [gencode.vM23.primary_assembly.annotation.gtf] |
-| [ENSEMBL (COVID-19)] | SARS-CoV-2 reference (ENSEBML assembly: ASM985889v3) | ftp://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/f
+| [ENSEMBL (COVID-19)] | SARS-CoV-2 reference (ENSEBML assembly: ASM985889v3) | ftp://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/
 
 [ENSEMBL (Human)]: http://www.ensembl.org/Homo_sapiens/Info/Index
 [gencode.v32.primary_assembly.annotation.gtf]: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/gencode.v32.primary_assembly.annotation.gtf.gz
