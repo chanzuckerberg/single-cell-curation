@@ -162,7 +162,7 @@ The following gene annotation dependencies are *pinned* for this version of the 
 [cellranger 2020-A (July 7, 2020) release]: https://support.10xgenomics.com/single-cell-gene-expression/software/release-notes/build
 
 [ENSEMBL (COVID-19)]:https://covid-19.ensembl.org/index.html
-[Sars\_cov\_2.ASM985889v3.101.gtf.gz]:ftp://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz
+[Sars\_cov\_2.ASM985889v3.101.gtf.gz]: ftp://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz
 
 ## `obs` (Cell Metadata)
 
