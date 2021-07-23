@@ -73,6 +73,13 @@ class TestFieldValidation(unittest.TestCase):
         cls.schema_def = validate._get_schema_definition(SCHEMA_VERSION)
         cls.OntologyChecker = ontology.OntologyChecker()
 
+    def setUp(self):
+        self.validator = validate.Validator()
+        self.validator.adata = ExampleData.adata_empty
+        self.column_name = "cell_type_ontology_term_id"
+        self.column_schema = self.schema_def["components"]["obs"]["columns"][self.column_name]
+        self.curie_constraints = self.schema_def["components"]["obs"]["columns"][self.column_name]["curie_constraints"]
+
     def test_schema_defintion(self):
         """
         Tests that the definition of schema is correct
@@ -93,33 +100,19 @@ class TestFieldValidation(unittest.TestCase):
                 for ontology in self.schema_def["components"]["obs"]["columns"][i]["curie_constrains"]["ontolgies"]:
                     self.assertTrue(self.OntologyChecker.is_valid_ontology(ontology))
 
-    def test_validate_ontology(self):
-        column_name = "cell_type_ontology_term_id"
-        column_schema = self.schema_def["components"]["obs"]["columns"][column_name]
-        curie_constraints = self.schema_def["components"]["obs"]["columns"][column_name]["curie_constraints"]
+    def test_validate_ontology_good(self):
+        self.validator._validate_curie("CL:0000066", self.column_name, self.curie_constraints)
+        self.validator._validate_curie("CL:0000192", self.column_name, self.curie_constraints)
+        self.assertFalse(self.validator.errors)
 
-        self.assertEqual(column_schema["type"], "curie")
-        self.assertEqual(curie_constraints["ontologies"], ["CL"])
+    def test_validate_ontology_wrong_ontology(self):
+        ## Bad curies should be a non-empty list of errors
+        self.validator._validate_curie("EFO:0009899", self.column_name, self.curie_constraints)
+        self.assertTrue(self.validator.errors)
 
-        # Good curies should be an empty list of errors
-        validator = validate.Validator()
-        validator.adata = ExampleData.adata_empty
-        validator._validate_curie("CL:0000066", column_name, curie_constraints)
-        self.assertFalse(validator.errors)
-
-        validator._validate_curie("CL:0000192", column_name, curie_constraints)
-        self.assertFalse(validator.errors)
-
-        # Bad curies should be a non-empty list of errors
-        validator = validate.Validator()
-        validator.adata = ExampleData.adata_empty
-        validator._validate_curie("EFO:0009899", column_name, curie_constraints)
-        self.assertTrue(validator.errors)
-
-        validator = validate.Validator()
-        validator.adata = ExampleData.adata_empty
-        validator._validate_curie("NO_TERM2", column_name, curie_constraints)
-        self.assertTrue(validator.errors)
+    def test_validate_ontology_wrong_term(self):
+        self.validator._validate_curie("NO_TERM2", self.column_name, self.curie_constraints)
+        self.assertTrue(self.validator.errors)
 
 
 #class TestColumnValidation(unittest.TestCase):
