@@ -260,7 +260,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If unavailable, this MUST be <code>"unknown"</code>.<br><br>If <code>organism_ontolology_term_id</code> <b>is not</b> <code>"NCBITaxon:9606"</code> (<i>Homo sapiens</i>) <br> <b>nor</b> <code>"NCBITaxon:10090"</code> (<i>Mus musculus</i>), this MUST be the most accurate child of <code>EFO:0000399</code>. <br><br>If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be the most<br>accurate HsapDv term with the following STRONGLY RECOMMENDED:
+        <td>categorical with <code>str</code> categories. If unavailable, this MUST be <code>"unknown"</code> <br><br>If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be the most<br>accurate HsapDv term with the following STRONGLY RECOMMENDED:
           <br><br>
           <table>
           <thead>
@@ -306,6 +306,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=month-old&submit=Search+terms"> month-old stages</a><br>(e.g. <a href="http://purl.obolibrary.org/obo/MmusDv_0000062">MmusDv:0000062)</a></td>
             </tr>
           </tbody></table>
+          <br> Otherwise, for all other organisms this MUST be the most accurate child of <code>EFO:0000399.
         </td>
     </tr>
 </tbody></table>
@@ -381,7 +382,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be an NCBITaxon term.
+        <td>categorical with <code>str</code> categories. This MUST be a NCBITaxon term.
         </td>
     </tr>
 </tbody></table>
@@ -683,11 +684,11 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Data Portal</td>
+      <td>Curator</td>
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>str</code>. This MUST indicate the reference organism of genes, it MUST be <code>NCBITaxon:9606</code> for <i>Homo sapiens</i>, <code>NCBITaxon:10090</code> for <i>Mus musculus</i>, or <code>NCBITaxon:2697049</code> for  SARS-CoV-2.
+        <td><code>str</code>. This MUST indicate the reference organism of genes and MUST be <code>NCBITaxon:9606</code> for <i>Homo sapiens</i>, <code>NCBITaxon:10090</code> for <i>Mus musculus</i>, or <code>NCBITaxon:2697049</code> for  SARS-CoV-2.
         </td>
     </tr>
 </tbody></table>
