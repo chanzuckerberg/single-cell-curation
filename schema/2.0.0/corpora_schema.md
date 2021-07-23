@@ -37,7 +37,7 @@ This document is organized by:
 
 * **AnnData** - The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `obsm`, and `uns` attributes are described below.
 
-* **Organisms**. Data MUST be either Human or Mouse data. No other organisms are accepted by the cellxgene Data Portal. 
+* **Organisms**. Genes MUST be either from Human or Mouse. Multi-organism data is accepted as long as Human or Mouse orthologs are used.
 
 * **Reserved Names**. The names of the metadata keys specified by the cellxgene schema are reserved and MUST be unique. For example, duplicate `"feature_biotype"` keys in AnnData `var` are not allowed.
 
@@ -344,7 +344,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be either a HANCESTRO term or <code>"unknown"</code> if unavailable. <br><br> If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i>, this MUST be <code>"na"</code>.
+        <td>categorical with <code>str</code> categories. If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be either a HANCESTRO term or <code>"unknown"</code> if unavailable. <br><br>Otherwise this MUST be <code>"na"</code>.
         </td>
     </tr>
 </tbody></table>
