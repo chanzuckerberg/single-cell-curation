@@ -37,11 +37,11 @@ This document is organized by:
 
 * **AnnData** - The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `obsm`, and `uns` attributes are described below.
 
-* **Organisms**. Data MUST be either Human or Mouse data. No other organisms are accepted by the cellxgene Data Portal. 
+* **Organisms**. Data MUST be either Human or Mouse data. No other organisms are accepted by the cellxgene Data Portal.
 
 * **Reserved Names**. The names of the metadata keys specified by the cellxgene schema are reserved and MUST be unique. For example, duplicate `"feature_biotype"` keys in AnnData `var` are not allowed.
 
-* **Redundant Metadata**. It is STRONGLY RECOMMENDED to avoid multiple metadata fields containing identical or similar information. 
+* **Redundant Metadata**. It is STRONGLY RECOMMENDED to avoid multiple metadata fields containing identical or similar information.
 
 *   **No PII**. Curators agree to this requirement as part of the data submission policy.
     However, it is not strictly enforced in our validation tooling because it is difficult for software to predict what is and is not PII.
@@ -83,7 +83,7 @@ cellxgene requires ontology terms to enable search, comparison, and integration 
 Ontology terms for cell metadata MUST use [OBO-format identifiers](http://www.obofoundry.org/id-policy.html), meaning a CURIE (prefixed identifier) of the form **Ontology:Identifier**.
 For example, [EFO:0000001](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0000001) is a term in the Experimental Factor Ontology (EFO).
 
-When no appropriate ontology value is available, then the most accurate term MUST be used. 
+When no appropriate ontology value is available, then the most accurate term MUST be used.
 
 For example if `cell_type_ontology_term_id` describes a relay interneuron, but the most specific available term in the CL ontology is [CL:0000099](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000099) for *interneuron*, then the interneuron term can be used to fulfill this requirement and ensures that users searching for "neuron" are able to find these data. If no appropriate high-level term can be found or the cell type is unknown, then the most accurate term is [CL:0000003](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000003) for *native cell*.
 
@@ -237,7 +237,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be a CL term. 
+        <td>categorical with <code>str</code> categories. This MUST be a CL term.
         </td>
     </tr>
 </tbody></table>
@@ -501,7 +501,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if set in <code>development_stage_ontology_term_id</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>development_stage_ontology_term_id</code>. 
+        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if set in <code>development_stage_ontology_term_id</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>development_stage_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -520,7 +520,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>disease_ontology_term_id</code>. 
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>disease_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -539,7 +539,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code> or <code>"unknown"</code> if set in <code>ethnicity_ontology_term_id</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>ethnicity_ontology_term_id</code>. 
+        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code> or <code>"unknown"</code> if set in <code>ethnicity_ontology_term_id</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>ethnicity_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -558,7 +558,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>organism_ontology_term_id</code>. 
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>organism_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -607,7 +607,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
 
 `var` is a [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html).
 
-`var.index` MUST contain unique ENSEMBL gene identifiers for features. 
+`var.index` MUST contain unique ENSEMBL gene identifiers for features.
 
 Curators MUST annotate the following columns in the `var` dataframe:
 
@@ -624,7 +624,7 @@ Curators MUST annotate the following columns in the `var` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>This MUST be <code>"gene"</code>.  
+        <td>This MUST be <code>"gene"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -643,7 +643,7 @@ Curators MUST annotate the following columns in the `var` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>str</code>. This MUST be an ENSEMBL term from the gene annotation corresponding to the organism for the gene.  
+        <td><code>str</code>. This MUST be an ENSEMBL term from the gene annotation corresponding to the organism for the gene.
         </td>
     </tr>
 </tbody></table>
@@ -664,7 +664,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>str</code>. This MUST be the human-readable ENSEMBL gene name assigned to the <code>feature_id</code>.  
+        <td><code>str</code>. This MUST be the human-readable ENSEMBL gene name assigned to the <code>feature_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -692,12 +692,12 @@ See also `default_embedding` in `uns`.
 
 `uns` is a ordered dictionary with a `str` key. Curators MUST annotate the following keys and values in `uns`:
 
-### normalization
+### X_normalization
 
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>normalization</td>
+      <td>X_normalization</td>
     </tr>
     <tr>
       <th>Annotator</th>
@@ -794,12 +794,12 @@ See also `default_embedding` in `uns`.
 </tbody></table>
 <br>
 
-### approximate_distribution
+### X_approximate_distribution
 
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>approximate_distribution</td>
+      <td>X_approximate_distribution</td>
     </tr>
     <tr>
       <th>Annotator</th>
@@ -808,7 +808,7 @@ See also `default_embedding` in `uns`.
     <tr>
       <th>Value</th>
         <td>
-          <code>str</code>. When calculating statistical properties of the data in X, cellxgene assumes that the values of each feature in X are approximately normally distributed. This may not be correct in all cases permitted by the schema, for example, when "raw" count data are stored in X. This field enables the curator to override this assumption and specify the data distribution explicitly. The value MUST be <code>"count"</code> (for data whose distributions are best approximated by counting distributions like Poisson, Binomial, or Negative Binomial) or <code>"normal"</code> (for data whose distributions are best approximated by the Gaussian distribution.)
+          <code>str</code>. cellxgene runs a heuristic to detect the approximate distribution of the data in X so that it can accurately calculate statistical properties of the data. This field enables the curator to override this heuristic and specify the data distribution explicitly. The value MUST be <code>"count"</code> (for data whose distributions are best approximated by counting distributions like Poisson, Binomial, or Negative Binomial) or <code>"normal"</code> (for data whose distributions are best approximated by the Gaussian distribution.)
         </td>
     </tr>
 </tbody></table>
@@ -827,7 +827,7 @@ schema v2.0.0 substantially *remodeled* schema v1.1.0:
 * General Requirements
   * AnnData is now the canonical data format. The schema outline and descriptions are AnnData-centric.
 
-  * Only Human and Mouse data are accepted by the cellxgene Data Portal. 
+  * Only Human and Mouse data are accepted by the cellxgene Data Portal.
 
   * Policies for reserved names and redundant metadata are documented.
 
@@ -846,13 +846,13 @@ schema v2.0.0 substantially *remodeled* schema v1.1.0:
   * Added `is_primary_data`
 
 * var
-  * Replaced HGNC **symbols** as `var.index` with ENSEMBL **identifiers** 
+  * Replaced HGNC **symbols** as `var.index` with ENSEMBL **identifiers**
   * Added feature biotype, ENSEMBL id, and ENSEMBL name
 
 * uns
   * Added `batch_condition`
-  * Added `approximate_distribution`
-  * Replaced `layer_descriptions` with `normalization`
+  * Added `X_approximate_distribution`
+  * Replaced `layer_descriptions` with `X_normalization`
   * Replaced `version` which included `corpora_schema_version` and `corpora_encoding_version` with `schema_version`
   * Deprecated `tags` and `default_field` presentation metadata
   * Removed <code><i>obs_column</i>_colors</code>
