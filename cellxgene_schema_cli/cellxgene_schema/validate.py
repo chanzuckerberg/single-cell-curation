@@ -4,7 +4,7 @@ import os
 import yaml
 import pandas as pd
 import re
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 from . import ontology
 from . import env
 
@@ -66,6 +66,52 @@ def _curie_remove_suffix(term_id: str, suffix_def: dict) -> Tuple[str, str]:
     return term_id, id_suffix
 
 
+def _get_mapping_dict_curie(ids: List[str], curie_constraints: dict) -> Dict[str, str]:
+
+    """
+    From defined constraints it creates a mapping dictionary of ontology IDs and labels. Used internally
+    by LabelWriter class
+
+    :param list[str] ids: Ontology IDs use for mapping
+    :param list[str] curie_constraints: curie constraints e.g. schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"]["curie_"]
+
+    :return a mapping dictionary: {id: label, ...}
+    :rtype dict
+    """
+
+    mapping_dict = {}
+    allowed_ontologies = curie_constraints["ontologies"]
+
+    # Remove any suffixes if any
+    # original_ids will have untouched ids which will be used for mapping
+    # id_suffixes will save suffixes if any, these will be used to append to labels
+    # ids will have the ids without suffixes
+    original_ids = ids.copy()
+    id_suffixes = [""] * len(ids)
+
+    if "suffixes" in curie_constraints:
+        for i in range(len(ids)):
+            ids[i], id_suffixes[i] = _curie_remove_suffix(ids[i], curie_constraints["suffixes"])
+
+    for original_id, id, id_suffix in zip(original_ids, ids, id_suffixes):
+        for ontology in allowed_ontologies:
+            if ONTOLOGY_CHECKER.is_valid_term_id(ontology, id):
+                mapping_dict[original_id] = ONTOLOGY_CHECKER.get_term_label(ontology, id) + id_suffix
+
+        # If there are exceptions the label should be the same as the id
+        if "exceptions" in curie_constraints:
+            if original_id in curie_constraints["exceptions"]:
+                mapping_dict[original_id] = original_id
+
+    # Check that all ids got a mapping. All ids should be found if adata was validated
+    for id in original_ids:
+        if id not in mapping_dict:
+            raise ValueError(f"Add labels error: Unable to get label for '{id}'")
+
+    return mapping_dict
+
+
+
 class Validator:
     """Handle validation of AnnData"""
     schema_definitions_dir = env.SCHEMA_DEFINITIONS_DIR
@@ -78,7 +124,6 @@ class Validator:
         self.adata = anndata.AnnData()
         self.schema_def = dict()
         self.h5ad_path = ""
-
 
 
     def _validate_curie_allowed_terms(self, term_id: str, column_name: str, terms: Dict[str, List[str]]):
@@ -187,7 +232,7 @@ class Validator:
         if "allowed_terms" in curie_constraints:
             self._validate_curie_allowed_terms(term_id, column_name, curie_constraints["allowed_terms"])
 
-    def _validate_column(self, column: pd.Categorical, column_name: str, df_name: str, column_def: dict):
+    def _validate_column(self, column: Union[pd.Categorical, pd.Index] , column_name: str, df_name: str, column_def: dict):
 
         """
         Given a schema definition and the column of a dataframe, verify that the column satisfies the schema.
@@ -279,27 +324,52 @@ class Validator:
 
     def _read_h5ad(self, h5ad_path: str):
 
-        """Reads h5ad into self.adata"""
+        """
+        Reads h5ad into self.adata
+        :params str h5ad_path: path to h5ad to read
+
+        :rtype None
+        """
         try:
             self.adata = anndata.read_h5ad(h5ad_path, backed="r")
         except (OSError, TypeError):
             print(f"Unable to open '{h5ad_path}' with AnnData")
             sys.exit(1)
 
-        # Set schema definition and path to h5ad
-        self.schema_def = _get_schema_definition(self.adata.uns["schema_version"])
         self.h5ad_path = h5ad_path
 
-    def validate_adata(self, h5ad_path) -> bool:
+    def _set_schema_def(self):
+        """
+        Sets schema dictionary from using information in adata
+        rtype: None
+        """
+
+        if "schema_version" not in self.adata.uns:
+            raise ValueError (f"adata has no schema definition in 'adata.uns'")
+
+        self.schema_def = _get_schema_definition(self.adata.uns["schema_version"])
+
+    def validate_adata(self, h5ad_path: str = None) -> bool:
 
         """
         Validates adata
+
+        :params str h5ad_path: path to h5ad to validate, if None it will try to validate
+        from self.adata
 
         :return True if successful validation, False otherwise
         :rtype bool
         """
 
-        self._read_h5ad(h5ad_path)
+        # Re-start errors in case a new h5ad is being validated
+        self.errors=[]
+
+        if h5ad_path:
+            self._read_h5ad(h5ad_path)
+
+        # Fetches schema def from anndata
+        self._set_schema_def()
+
         self._deep_check()
 
         if self.errors:
@@ -329,8 +399,7 @@ class LabelWriter:
             raise ValueError("AnnData object is not valid or hasn't been run through validation. " 
                              "Validate AnnData first before attempting to write labels")
 
-        # Read adata not in "full" mode (not read-only)
-        self.adata = anndata.read_h5ad(validator.h5ad_path)
+        self.adata = validator.adata.copy()
 
         self.schema_def = validator.schema_def
         self.errors = []
@@ -426,51 +495,6 @@ class LabelWriter:
         # Write file
         self.adata.write_h5ad(add_labels_file, compression="gzip")
         self.was_writing_successful = True
-
-
-def _get_mapping_dict_curie(ids: List[str], curie_constraints: dict) -> Dict[str, str]:
-
-    """
-    From defined constraints it creates a mapping dictionary of ontology IDs and labels. Used internally
-    by LabelWriter class
-
-    :param list[str] ids: Ontology IDs use for mapping
-    :param list[str] curie_constraints: curie constraints e.g. schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"]["curie_"]
-
-    :return a mapping dictionary: {id: label, ...}
-    :rtype dict
-    """
-
-    mapping_dict = {}
-    allowed_ontologies = curie_constraints["ontologies"]
-
-    # Remove any suffixes if any
-    # original_ids will have untouched ids which will be used for mapping
-    # id_suffixes will save suffixes if any, these will be used to append to labels
-    # ids will have the ids without suffixes
-    original_ids = ids.copy()
-    id_suffixes = [""] * len(ids)
-
-    if "suffixes" in curie_constraints:
-        for i in range(len(ids)):
-            ids[i], id_suffixes[i] = _curie_remove_suffix(ids[i], curie_constraints["suffixes"])
-
-    for original_id, id, id_suffix in zip(original_ids, ids, id_suffixes):
-        for ontology in allowed_ontologies:
-            if ONTOLOGY_CHECKER.is_valid_term_id(ontology, id):
-                mapping_dict[original_id] = ONTOLOGY_CHECKER.get_term_label(ontology, id) + id_suffix
-
-        # If there are exceptions the label should be the same as the id
-        if "exceptions" in curie_constraints:
-            if original_id in curie_constraints["exceptions"]:
-                mapping_dict[original_id] = original_id
-
-    # Check that all ids got a mapping. All ids should be found if adata was validated
-    for id in original_ids:
-        if id not in mapping_dict:
-            raise ValueError(f"Add labels error: Unable to get label for '{id}'")
-
-    return mapping_dict
 
 
 def validate(h5ad_path: str, add_labels_file: str = None):
