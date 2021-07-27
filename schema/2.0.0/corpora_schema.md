@@ -37,7 +37,7 @@ This document is organized by:
 
 * **AnnData** - The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `obsm`, and `uns` attributes are described below.
 
-* **Organisms**. Genes MUST be either from Human or Mouse. Multi-organism data is accepted as long as Human or Mouse orthologs are used.
+* **Organisms**. Data MUST be from an organism defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2 for Human cells, orthologous genes from the pinned Human and Mouse gene annotations are REQUIRED.
 
 * **Reserved Names**. The names of the metadata keys specified by the cellxgene schema are reserved and MUST be unique. For example, duplicate `"feature_biotype"` keys in AnnData `var` are not allowed.
 
@@ -143,15 +143,16 @@ The following ontology dependencies are *pinned* for this version of the schema.
 
 ### Required Gene Annotations
 
-cellxgene requires ENSEMBL gene identifiers to ensure that all datasets it stores measure the same features and can therefore be integrated.
+cellxgene requires ENSEMBL identifiers for genes and ERCC identifiers for spike-ins to ensure that all datasets it stores measure the same features and can therefore be integrated.
 
 The following gene annotation dependencies are *pinned* for this version of the schema. For multi-organism experiments, cells from any organism are allowed as long as orthologs from the following organism annotations are used.
 
-| Organism | Required version | Download |
+| Source | Required version | Download |
 |:--|:--|:--|
 | [ENSEMBL (Human)] | Human reference GRCh38 (GENCODE v32/Ensembl 98)] matching [cellranger 2020-A (July 7, 2020) release] | [gencode.v32.primary_assembly.annotation.gtf] |
 | [ENSEMBL (Mouse)] | Mouse reference mm10 (GENCODE vM23/Ensembl 98) matching [cellranger 2020-A (July 7, 2020) release]| [gencode.vM23.primary_assembly.annotation.gtf] |
 | [ENSEMBL (COVID-19)] | SARS-CoV-2 reference (ENSEMBL assembly: ASM985889v3) | [Sars\_cov\_2.ASM985889v3.101.gtf] |
+| [ThermoFisher ERCC spike-Ins] | ThermoFisher ERCC RNA Spike-In Control Mixes (Cat # 4456740, 4456739) | [cms_095047.txt] |
 
 [ENSEMBL (Human)]: http://www.ensembl.org/Homo_sapiens/Info/Index
 [gencode.v32.primary_assembly.annotation.gtf]: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/gencode.v32.primary_assembly.annotation.gtf.gz
@@ -163,6 +164,9 @@ The following gene annotation dependencies are *pinned* for this version of the 
 
 [ENSEMBL (COVID-19)]: https://covid-19.ensembl.org/index.html
 [Sars\_cov\_2.ASM985889v3.101.gtf]: https://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz
+
+[ThermoFisher ERCC spike-Ins]: https://www.thermofisher.com/order/catalog/product/4456740#/4456740
+[cms_095047.txt]: https://assets.thermofisher.com/TFS-Assets/LSG/manuals/cms_095047.txt
 
 
 ## `obs` (Cell Metadata)
@@ -629,7 +633,7 @@ Curators MUST annotate the following columns in the `var` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>This MUST be <code>"gene"</code>.  
+        <td>This MUST be <code>"gene"</code> or <code>"spike-in"</code>.  
         </td>
     </tr>
 </tbody></table>
@@ -648,7 +652,7 @@ Curators MUST annotate the following columns in the `var` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>str</code>. This MUST be an ENSEMBL term from the gene annotation corresponding to the organism for the gene.  
+        <td><code>str</code>. This MUST be an ENSEMBL term from the gene annotation corresponding to the organism for the gene, or an ERCC spike-in identifier.
         </td>
     </tr>
 </tbody></table>
@@ -856,6 +860,7 @@ schema v2.0.0 substantially *remodeled* schema v1.1.0:
 * var
   * Replaced HGNC **symbols** as `var.index` with ENSEMBL **identifiers** 
   * Added feature biotype, ENSEMBL id, ENSEMBL name, and feature reference.
+  * Added spike-ins IDs in var.
 
 * uns
   * Added `batch_condition`
