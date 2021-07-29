@@ -41,7 +41,7 @@ This document is organized by:
 
 * **Reserved Names**. The names of the metadata keys specified by the cellxgene schema are reserved and MUST be unique. For example, duplicate `"feature_biotype"` keys in AnnData `var` are not allowed.
 
-* **Redundant Metadata**. It is STRONGLY RECOMMENDED to avoid multiple metadata fields containing identical or similar information. 
+* **Redundant Metadata**. It is STRONGLY RECOMMENDED to avoid multiple metadata fields containing identical or similar information.
 
 *   **No PII**. Curators agree to this requirement as part of the data submission policy.
     However, it is not strictly enforced in our validation tooling because it is difficult for software to predict what is and is not PII.
@@ -83,7 +83,7 @@ cellxgene requires ontology terms to enable search, comparison, and integration 
 Ontology terms for cell metadata MUST use [OBO-format identifiers](http://www.obofoundry.org/id-policy.html), meaning a CURIE (prefixed identifier) of the form **Ontology:Identifier**.
 For example, [EFO:0000001](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0000001) is a term in the Experimental Factor Ontology (EFO).
 
-When no appropriate ontology value is available, then the most accurate term MUST be used. 
+When no appropriate ontology value is available, then the most accurate term MUST be used.
 
 For example if `cell_type_ontology_term_id` describes a relay interneuron, but the most specific available term in the CL ontology is [CL:0000099](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000099) for *interneuron*, then the interneuron term can be used to fulfill this requirement and ensures that users searching for "neuron" are able to find these data. If no appropriate high-level term can be found or the cell type is unknown, then the most accurate term is [CL:0000003](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000003) for *native cell*.
 
@@ -247,7 +247,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be a CL term. 
+        <td>categorical with <code>str</code> categories. This MUST be a CL term.
         </td>
     </tr>
 </tbody></table>
@@ -512,7 +512,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if set in <code>development_stage_ontology_term_id</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>development_stage_ontology_term_id</code>. 
+        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if set in <code>development_stage_ontology_term_id</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>development_stage_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -531,7 +531,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>disease_ontology_term_id</code>. 
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>disease_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -550,7 +550,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code> or <code>"unknown"</code> if set in <code>ethnicity_ontology_term_id</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>ethnicity_ontology_term_id</code>. 
+        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code> or <code>"unknown"</code> if set in <code>ethnicity_ontology_term_id</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>ethnicity_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -569,7 +569,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>organism_ontology_term_id</code>. 
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>organism_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -618,7 +618,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
 
 `var` is a [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html).
 
-`var.index` MUST contain unique ENSEMBL gene identifiers for features. 
+`var.index` MUST contain unique ENSEMBL gene identifiers for features.
 
 Curators MUST annotate the following columns in the `var` dataframe:
 
@@ -655,6 +655,7 @@ Curators MUST annotate the following columns in the `var` dataframe:
     <tr>
       <th>Value</th>
         <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be an ENSEMBL term. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be an ERCC Spike-In identifier. </td>
+
     </tr>
 </tbody></table>
 <br>
@@ -722,12 +723,12 @@ See also `default_embedding` in `uns`.
 
 `uns` is a ordered dictionary with a `str` key. Curators MUST annotate the following keys and values in `uns`:
 
-### normalization
+### X_normalization
 
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>normalization</td>
+      <td>X_normalization</td>
     </tr>
     <tr>
       <th>Annotator</th>
@@ -824,6 +825,25 @@ See also `default_embedding` in `uns`.
 </tbody></table>
 <br>
 
+### X_approximate_distribution
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>X_approximate_distribution</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          <code>str</code>. cellxgene runs a heuristic to detect the approximate distribution of the data in X so that it can accurately calculate statistical properties of the data. This field enables the curator to override this heuristic and specify the data distribution explicitly. The value MUST be <code>"count"</code> (for data whose distributions are best approximated by counting distributions like Poisson, Binomial, or Negative Binomial) or <code>"normal"</code> (for data whose distributions are best approximated by the Gaussian distribution.)
+        </td>
+    </tr>
+</tbody></table>
+<br>
 
 ## Appendix A. Changelog
 
@@ -863,9 +883,11 @@ schema v2.0.0 substantially *remodeled* schema v1.1.0:
   * Added feature biotype, ENSEMBL id, ENSEMBL name, and feature reference.
   * Added spike-ins IDs in var.
 
+
 * uns
   * Added `batch_condition`
-  * Replaced `layer_descriptions` with `normalization`
+  * Added `X_approximate_distribution`
+  * Replaced `layer_descriptions` with `X_normalization`
   * Replaced `version` which included `corpora_schema_version` and `corpora_encoding_version` with `schema_version`
   * Deprecated `tags` and `default_field` presentation metadata
   * Removed <code><i>obs_column</i>_colors</code>
