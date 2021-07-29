@@ -85,53 +85,6 @@ class OntologyChecker:
 
         return list(self.ontology_dict.keys())
 
-    def get_info(self, term_id: str, mode: str = "all") -> Union[dict, str, Set[str]]:
-
-        """
-        Returns information from an ontology term id based on "mode"
-
-        :param str term_id: the ontology term id
-        :param str mode: the kind of information to retrieve: all|label|ancestors
-
-        rtype Union[dict, str, Set[str]]:
-        return: If mode is "all" retrieve dictionary with all info for the term id, if mode is "label" returns the label
-        associated to term id, if mode is "ancestors" returns the ids for the ancestors associated to term_id
-        """
-
-        onto_and_term = term_id.split(":")
-        ontology = onto_and_term[0]
-
-        if len(onto_and_term) != 2:
-            raise ValueError(
-                f"'{term_id}' term id's format is invalid, it must be of the from 'Ontology:Id'"
-            )
-
-        if mode == "all":
-            return self.get_term_dict(ontology, term_id)
-        elif mode == "label":
-            return self.get_term_label(ontology, term_id)
-        elif mode == "ancestors":
-            return self.get_term_ancestors(ontology, term_id)
-        else:
-            raise ValueError(f"{mode} is not a supported type")
-
-    def print_info(self, term_id: str, mode: str = "all"):
-        """
-        Prints information from an ontology term id based on "mode". If mode is "all" print all info for the term id,
-        if mode is "label" prints the label associated to term id, if mode is "ancestors" print the ids for the
-        ancestors associated to term_id.
-
-        :param str term_id: the ontology term id
-        :param str mode: the kind of information to retrieve: all|label|ancestors
-
-        :rtype None
-        """
-
-        if mode == "all":
-            print(json.dumps(self.get_info(term_id, mode), indent=4))
-        else:
-            print(self.get_info(term_id, mode))
-
     def get_term_dict(self, ontology: str, term_id: str) -> dict:
         """
         Returns a dictionary with all the information from a given ontology and term_id

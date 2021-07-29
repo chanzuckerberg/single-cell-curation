@@ -4,7 +4,9 @@ import urllib.request
 import os
 import gzip
 import json
-from . import env
+import sys
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../cellxgene_schema"))
+import env
 
 
 def _download_owls(
@@ -130,14 +132,25 @@ def _parse_owls(
             except IndexError:
                 onto_dict[onto.name][term_id]["label"] = ""
 
-            onto_dict[onto.name][term_id]["ancestors"] = [
-                i.name.replace("_", ":")
-                for i in onto_class.ancestors()
-                if i.name.split("_")[0] == onto.name
-            ]
+            onto_dict[onto.name][term_id]["ancestors"] = _get_ancestors(onto_class, onto.name)
 
     with gzip.open(output_json_file, "wt") as output_json:
         json.dump(onto_dict, output_json, indent=2)
+
+
+def _get_ancestors(onto_class: owlready2.entity.ThingClass, ontololgy_name: str):
+    """
+    Returns a list of ancestors ids of the given onto class, only returns those belonging to ontology_name,
+    it will format the id from the form CL_xxxx to CL:xxxx
+
+    :param owlready2.entity.ThingClass onto_class: the class for which ancestors will be retrieved
+    :param str ontololgy_name: only ancestors from this ontology will be kept
+    """
+    return [
+        i.name.replace("_", ":")
+        for i in onto_class.ancestors()
+        if i.name.split("_")[0] == ontololgy_name
+    ]
 
 
 def _parse_gtf(gtf_path: str, output_file: str):
