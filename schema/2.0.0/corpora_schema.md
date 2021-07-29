@@ -37,7 +37,7 @@ This document is organized by:
 
 * **AnnData** - The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `obsm`, and `uns` attributes are described below.
 
-* **Organisms**. Data MUST be either Human or Mouse data. No other organisms are accepted by the cellxgene Data Portal.
+* **Organisms**. Data MUST be from an organism defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the pinned Human and Mouse gene annotations.
 
 * **Reserved Names**. The names of the metadata keys specified by the cellxgene schema are reserved and MUST be unique. For example, duplicate `"feature_biotype"` keys in AnnData `var` are not allowed.
 
@@ -143,15 +143,18 @@ The following ontology dependencies are *pinned* for this version of the schema.
 
 ### Required Gene Annotations
 
-cellxgene requires ENSEMBL gene identifiers to ensure that all datasets it stores measure the same features and can therefore be integrated.
+cellxgene requires ENSEMBL identifiers for genes and External RNA Controls Consortium (ERCC) identifiers for [RNA Spike-In Control Mixes] to ensure  that all datasets it stores measure the same features and can therefore be integrated.
 
-The following gene annotation dependencies are *pinned* for this version of the schema.
+The following gene annotation dependencies are *pinned* for this version of the schema. For multi-organism experiments, cells from any organism are allowed as long as orthologs from the following organism annotations are used.
 
-| Organism | Required version | Download |
+| Source | Required version | Download |
 |:--|:--|:--|
 | [ENSEMBL (Human)] | Human reference GRCh38 (GENCODE v32/Ensembl 98)] matching [cellranger 2020-A (July 7, 2020) release] | [gencode.v32.primary_assembly.annotation.gtf] |
 | [ENSEMBL (Mouse)] | Mouse reference mm10 (GENCODE vM23/Ensembl 98) matching [cellranger 2020-A (July 7, 2020) release]| [gencode.vM23.primary_assembly.annotation.gtf] |
-|||
+| [ENSEMBL (COVID-19)] | SARS-CoV-2 reference (ENSEMBL assembly: ASM985889v3) | [Sars\_cov\_2.ASM985889v3.101.gtf] |
+| [ThermoFisher ERCC Spike-Ins] | ThermoFisher ERCC RNA Spike-In Control Mixes (Cat # 4456740, 4456739) | [cms_095047.txt] |
+
+[RNA Spike-In Control Mixes]: https://www.thermofisher.com/document-connect/document-connect.html?url=https%3A%2F%2Fassets.thermofisher.com%2FTFS-Assets%2FLSG%2Fmanuals%2Fcms_086340.pdf&title=VXNlciBHdWlkZTogRVJDQyBSTkEgU3Bpa2UtSW4gQ29udHJvbCBNaXhlcyAoRW5nbGlzaCAp
 
 [ENSEMBL (Human)]: http://www.ensembl.org/Homo_sapiens/Info/Index
 [gencode.v32.primary_assembly.annotation.gtf]: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/gencode.v32.primary_assembly.annotation.gtf.gz
@@ -160,6 +163,13 @@ The following gene annotation dependencies are *pinned* for this version of the 
 [gencode.vM23.primary_assembly.annotation.gtf]: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M23/gencode.vM23.primary_assembly.annotation.gtf.gz
 
 [cellranger 2020-A (July 7, 2020) release]: https://support.10xgenomics.com/single-cell-gene-expression/software/release-notes/build
+
+[ENSEMBL (COVID-19)]: https://covid-19.ensembl.org/index.html
+[Sars\_cov\_2.ASM985889v3.101.gtf]: https://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz
+
+[ThermoFisher ERCC Spike-Ins]: https://www.thermofisher.com/order/catalog/product/4456740#/4456740
+[cms_095047.txt]: https://assets.thermofisher.com/TFS-Assets/LSG/manuals/cms_095047.txt
+
 
 ## `obs` (Cell Metadata)
 
@@ -256,7 +266,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If unavailable, this MUST be <code>"unknown"</code>.<br><br>If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be the most<br>accurate HsapDv term with the following STRONGLY RECOMMENDED:
+        <td>categorical with <code>str</code> categories. If unavailable, this MUST be <code>"unknown"</code> <br><br>If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be the most<br>accurate HsapDv term with the following STRONGLY RECOMMENDED:
           <br><br>
           <table>
           <thead>
@@ -302,6 +312,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=month-old&submit=Search+terms"> month-old stages</a><br>(e.g. <a href="http://purl.obolibrary.org/obo/MmusDv_0000062">MmusDv:0000062)</a></td>
             </tr>
           </tbody></table>
+          <br> Otherwise, for all other organisms this MUST be the most accurate child of <code>EFO:0000399</code>.
         </td>
     </tr>
 </tbody></table>
@@ -339,7 +350,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be either a HANCESTRO term or <code>"unknown"</code> if unavailable. <br><br> If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i>, this MUST be <code>"na"</code>.
+        <td>categorical with <code>str</code> categories. If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be either a HANCESTRO term or <code>"unknown"</code> if unavailable. <br><br>Otherwise this MUST be <code>"na"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -377,7 +388,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be either <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i> or <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i>.
+        <td>categorical with <code>str</code> categories. This MUST be a NCBITaxon term.
         </td>
     </tr>
 </tbody></table>
@@ -624,7 +635,7 @@ Curators MUST annotate the following columns in the `var` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>This MUST be <code>"gene"</code>.
+        <td>This MUST be <code>"gene"</code> or <code>"spike-in"</code>.  
         </td>
     </tr>
 </tbody></table>
@@ -643,15 +654,15 @@ Curators MUST annotate the following columns in the `var` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>str</code>. This MUST be an ENSEMBL term from the gene annotation corresponding to the organism for the gene.
-        </td>
+        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be an ENSEMBL term. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be an ERCC Spike-In identifier. </td>
+
     </tr>
 </tbody></table>
 <br>
 
-When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding gene identifier to the `var` dataframe. Curators MUST NOT annotate the following column:
+When a dataset is uploaded, the cellxgene Data Portal MUST infer the organism reference for the corresponding identifier. The Data Portal MUST automatically add both the matching human-readable name and the organism NCBITaxon term to the `var` dataframe. Curators MUST NOT annotate the following columns:
 
-### feature_ name
+### feature_name
 
 <table><tbody>
     <tr>
@@ -664,11 +675,31 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>str</code>. This MUST be the human-readable ENSEMBL gene name assigned to the <code>feature_id</code>.
+        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this this MUST be the human-readable ENSEMBL gene name assigned to the <code>feature_id</code>. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST the ERCC Spike-In identifier appended with <code>" spike-in control"</code>.
         </td>
     </tr>
 </tbody></table>
 <br>
+
+### feature_reference
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>feature_reference</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Data Portal</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>str</code>. This MUST indicate the reference organism of features and MUST be <code>NCBITaxon:9606</code> for <i>Homo sapiens</i>, <code>NCBITaxon:10090</code> for <i>Mus musculus</i>, <code>NCBITaxon:2697049</code> for  SARS-CoV-2, or <code>NCBITaxon:32630</code> for  ERCC Spike-Ins
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
 
 ## `obsm` (Embeddings)
 
@@ -827,7 +858,9 @@ schema v2.0.0 substantially *remodeled* schema v1.1.0:
 * General Requirements
   * AnnData is now the canonical data format. The schema outline and descriptions are AnnData-centric.
 
-  * Only Human and Mouse data are accepted by the cellxgene Data Portal.
+  * Only Human and Mouse gene IDs are accepted by the cellxgene Data Portal.
+
+  * Multi-organism data is accepted as long as orthologous genes from Human or Mouse are used. 
 
   * Policies for reserved names and redundant metadata are documented.
 
@@ -846,8 +879,10 @@ schema v2.0.0 substantially *remodeled* schema v1.1.0:
   * Added `is_primary_data`
 
 * var
-  * Replaced HGNC **symbols** as `var.index` with ENSEMBL **identifiers**
-  * Added feature biotype, ENSEMBL id, and ENSEMBL name
+  * Replaced HGNC **symbols** as `var.index` with ENSEMBL **identifiers** 
+  * Added feature biotype, ENSEMBL id, ENSEMBL name, and feature reference.
+  * Added spike-ins IDs in var.
+
 
 * uns
   * Added `batch_condition`
