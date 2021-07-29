@@ -749,26 +749,6 @@ See also `default_embedding` in `uns`.
 
 `uns` is a ordered dictionary with a `str` key. Curators MUST annotate the following keys and values in `uns`:
 
-### X_normalization
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>X_normalization</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Curator</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>
-          <code>str</code>. This SHOULD describe the method used to normalize the data stored in AnnData <code>X</code>. If data in <code>X</code> are raw, this SHOULD be <code>"none"</code>.
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
 ### schema_version
 
 <table><tbody>
@@ -804,6 +784,26 @@ See also `default_embedding` in `uns`.
       <th>Value</th>
         <td>
           <code>str</code>. This text describes and differentiates the dataset from other datasets in the same collection. It is displayed on a page in the cellxgene Data Portal that also has the collection name. To illustrate, the first dataset name in the <a href="https://cellxgene.cziscience.com/collections/b52eb423-5d0d-4645-b217-e1c6d38b2e72">Cells of the adult human heart collection</a> is "All — Cells of the adult human heart".<br><br>It is STRONGLY RECOMMENDED that each dataset <code>title</code> in a collection is unique and does not depend on other metadata such as a different  <code>assay</code> to disambiguate it from other datasets in the collection.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### X_normalization
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>X_normalization</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          <code>str</code>. This SHOULD describe the method used to normalize the data stored in AnnData <code>X</code>. If data in <code>X</code> are raw, this SHOULD be <code>"none"</code>.
         </td>
     </tr>
 </tbody></table>
