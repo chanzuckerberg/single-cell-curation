@@ -350,7 +350,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be either a HANCESTRO term or <code>"unknown"</code> if unavailable. <br><br>Otherwise, for all other organisms, this MUST be <code>"na"</code>.
+        <td>categorical with <code>str</code> categories. If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be either a HANCESTRO term or <code>"unknown"</code> if unavailable. <br><br>Otherwise, for all other organisms this MUST be <code>"na"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -659,7 +659,7 @@ Curators MUST annotate the following columns in the `var` dataframe:
 </tbody></table>
 <br>
 
-When a dataset is uploaded, cellxgene Data Portal MUST automatically add both the matching human-readable name and the organism NCBITaxon term to the `var` dataframe. Curators MUST NOT annotate the following columns:
+When a dataset is uploaded, cellxgene Data Portal MUST automatically add the matching human-readable name for a feature identifier and the inferred NCBITaxon term for the reference organism  to the `var` dataframe. Curators MUST NOT annotate the following columns:
 
 ### feature_name
 
