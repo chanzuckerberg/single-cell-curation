@@ -57,7 +57,29 @@ def _parse_gtf(gtf_path: str, output_file: str):
     with gzip.open(output_file, "wt") as output:
         output.write(output_to_print)
 
+def _process_ercc(ercc_path: str, output_file: str):
+    """
+    process the ERCC download, keeps only first column with no header
+
+    :param str gtf_path: path to ercch download from thermo fisher
+    :param str output_json_file: path to output file
+    """
+
+    output_to_print = ""
+    with open(ercc_path, "r") as ercc:
+        lines = ercc.readlines()[1:]
+        for line in lines:
+            ercc_id = line.rstrip().split("\t")[0]
+            output_to_print += ",".join([ercc_id, ercc_id + " spike-in control", "1"]) + "\n"
+
+    with gzip.open(output_file, "wt") as output:
+        output.write(output_to_print)
+
+
+
 
 if __name__ == "__main__":
-    _parse_gtf("./mus_musculus.gtf", os.path.join(env.ONTOLOGY_DIR, "genes_mus_musculus.csv.gz"))
+    _parse_gtf("./mus_musculus.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_mus_musculus.csv.gz"))
     _parse_gtf("./homo_sapiens.gtf", os.path.join(env.ONTOLOGY_DIR, "genes_homo_sapiens.csv.gz"))
+    _parse_gtf("./sars_cov_2.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_sars_cov_2.csv.gz"))
+    _process_ercc("./ercc.txt", os.path.join(env.ONTOLOGY_DIR, "genes_ercc.csv.gz"))

@@ -24,9 +24,6 @@ MmusDv:
     2016-07-06 (0.1): https://github.com/obophenotype/developmental-stage-ontologies/raw/0.1/src/mmusdv/mmusdv.owl
 NCBITaxon:
   latest: 2021-06-10
-  only:
-    - NCBITaxon:9606
-    - NCBITaxon:10090
   urls:
     2021-06-10: https://github.com/obophenotype/ncbitaxon/releases/download/v2021-06-10/ncbitaxon.owl.gz
 UBERON:

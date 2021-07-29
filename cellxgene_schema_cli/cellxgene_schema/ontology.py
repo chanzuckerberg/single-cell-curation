@@ -9,6 +9,8 @@ from . import env
 class SupportedOrganisms(enum.Enum):
     HOMO_SAPIENS = "HomoSapiens"
     MUS_MUSCULUS = "MusMusculus"
+    SARS_COV_2 = "SarsCov2"
+    ERCC = "Ercc"
 
 
 class GeneChecker:
@@ -21,6 +23,14 @@ class GeneChecker:
         SupportedOrganisms.MUS_MUSCULUS: os.path.join(
             env.ONTOLOGY_DIR, "genes_mus_musculus.csv.gz"
         ),
+
+        SupportedOrganisms.SARS_COV_2: os.path.join(
+            env.ONTOLOGY_DIR, "genes_sars_cov_2.csv.gz"
+        ),
+
+        SupportedOrganisms.ERCC: os.path.join(
+            env.ONTOLOGY_DIR, "genes_ercc.csv.gz"
+        )
     }
 
     def __init__(self, species: SupportedOrganisms):
