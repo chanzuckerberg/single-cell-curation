@@ -1,81 +1,21 @@
 import unittest
 import pandas as pd
 import os
-import anndata
 from cellxgene_schema import ontology
 from cellxgene_schema import validate
-
-SCHEMA_VERSION = "2.0.0"
-FIXTURES_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
-
-
-class ExampleData:
-
-    good_obs = pd.DataFrame(
-        [
-            [
-                "CL:0000066", "EFO:0009899", "MONDO:0100096", "NCBITaxon:9606", "PATO:0000383", "UBERON:0002048", True
-            ],
-            [
-                "CL:0000192", "EFO:0010183 (sci-plex)", "PATO:0000461", "NCBITaxon:10090", "unknown",
-                "CL:0000192 (cell culture)", False
-            ]
-        ],
-        index=["X", "Y"],
-        columns=["cell_type_ontology_term_id", "assay_ontology_term_id", "disease_ontology_term_id",
-                 "organism_ontology_term_id", "sex_ontology_term_id", "tissue_ontology_term_id", "is_primary_data"]
-    )
-
-    obs_expected = pd.DataFrame(
-        [
-            ["epithelial cell", "10x 3' v2", "COVID-19", "Homo sapiens", "female", "lung"],
-            ["smooth muscle cell", "single cell library construction (sci-plex)", "normal", "Mus musculus", "unknown",
-             "smooth muscle cell (cell culture)"]
-        ],
-        index=["X", "Y"],
-        columns=["cell_type", "assay", "disease", "organism", "sex", "tissue"]
-    )
-
-    bad_obs = pd.DataFrame(
-        [
-            [
-                "CL:NO_TERM", "EFO:NO_TERM", "MONDO:NO_TERM", "NCBITaxon:NO_TERM", "PATO:NO_TERM", "UBERON:NO_TERM",
-                "True"
-            ],
-            [
-                "CL:0000182", "EFO:00212", "MONDO:0324", "NCBITaxon:00324", "PATO:2003", "UBERON:3203", "False"
-            ]
-        ],
-        index=["X", "Y"],
-
-        columns=["cell_type_ontology_term_id", "assay_ontology_term_id", "disease_ontology_term_id",
-                 "organism_ontology_term_id", "sex_ontology_term_id", "tissue_ontology_term_id", "is_primary_data"]
-    )
-
-    good_uns = {"schema_version": SCHEMA_VERSION}
-
-    X = pd.DataFrame(
-        [[0] * good_obs.shape[1],
-         [0] * good_obs.shape[1]
-         ],
-        index=["X", "Y"],
-    )
-
-    adata = anndata.AnnData(X=X, obs=good_obs, uns=good_uns)
-    adata_with_labels = anndata.AnnData(X=X, obs=pd.concat([good_obs, obs_expected], axis=1), uns=good_uns)
-    adata_empty = anndata.AnnData(X=X, uns=good_uns)
+import fixtures.examples_validate as examples
 
 
 class TestFieldValidation(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.schema_def = validate._get_schema_definition(SCHEMA_VERSION)
+        cls.schema_def = validate._get_schema_definition(examples.SCHEMA_VERSION)
         cls.OntologyChecker = ontology.OntologyChecker()
 
     def setUp(self):
         self.validator = validate.Validator()
-        self.validator.adata = ExampleData.adata_empty
+        self.validator.adata = examples.adata_empty
         self.column_name = "cell_type_ontology_term_id"
         self.column_schema = self.schema_def["components"]["obs"]["columns"][self.column_name]
         self.curie_constraints = self.schema_def["components"]["obs"]["columns"][self.column_name]["curie_constraints"]
@@ -118,7 +58,7 @@ class TestColumnValidation(unittest.TestCase):
 
     def setUp(self):
         self.validator = validate.Validator()
-        self.validator.adata = ExampleData.adata_empty
+        self.validator.adata = examples.adata_empty
 
         self.unique = pd.DataFrame(
             [["abc", "def"], ["ghi", "jkl"], ["mnop", "qrs"]],
@@ -158,31 +98,34 @@ class TestColumnValidation(unittest.TestCase):
         self.validator._validate_column(self.duped["col1"], "col1", "duped_df", self.column_def_uniq)
         self.assertTrue(self.validator.errors)
 
-
     def test_ontology_columns(self):
 
-        columns_def = validate._get_schema_definition(SCHEMA_VERSION)["components"]["obs"]["columns"]
+        columns_def = validate._get_schema_definition(examples.SCHEMA_VERSION)["components"]["obs"]["columns"]
 
-        # Correct example
-        good_df = ExampleData.good_obs
+        # Correct example. This only tests the column validation process and therefore the tests exludes does columns
+        # that have dependencies with other columns and need the entire dataframe for validation
+        good_df = examples.good_obs
 
         for column in good_df.columns:
-            self.validator.errors = [] # Reset errors
-            self.validator._validate_column(good_df[column], column, "obs", columns_def[column],)
-            self.assertFalse(self.validator.errors)
+            if "dependencies" not in columns_def[column]:
+                self.validator.errors = [] # Reset errors
+                self.validator._validate_column(good_df[column], column, "obs", columns_def[column])
+                self.assertFalse(self.validator.errors)
 
         # Bad columns, do each individually
-        bad_df = ExampleData.bad_obs
+        bad_df = examples.bad_obs
         for column in bad_df.columns:
-            self.validator.errors = [] # Reset errors
-            self.validator._validate_column(bad_df[column], column, "obs", columns_def[column],)
-            self.assertTrue(self.validator.errors)
+            if "dependencies" not in columns_def[column]:
+                self.validator.errors = [] # Reset errors
+                self.validator._validate_column(bad_df[column], column, "obs", columns_def[column])
+                self.assertTrue(self.validator.errors)
+
 
 class TestH5adValidation(unittest.TestCase):
 
     def test_validate(self):
 
-        h5ad_dir = os.path.join(FIXTURES_ROOT, "h5ads" )
+        h5ad_dir = os.path.join(examples.FIXTURES_ROOT, "h5ads" )
         h5ad_valid = os.path.join(h5ad_dir, "example_valid.h5ad")
 
         validator = validate.Validator()
@@ -203,9 +146,9 @@ class TestAddLabelFunctions(unittest.TestCase):
     def setUp(self):
 
         # Set up test data
-        self.test_adata = ExampleData.adata
-        self.test_adata_with_labels = ExampleData.adata_with_labels
-        self.schema_def = validate._get_schema_definition(SCHEMA_VERSION)
+        self.test_adata = examples.adata
+        self.test_adata_with_labels = examples.adata_with_labels
+        self.schema_def = validate._get_schema_definition(examples.SCHEMA_VERSION)
 
         validator = validate.Validator()
         validator.adata = self.test_adata

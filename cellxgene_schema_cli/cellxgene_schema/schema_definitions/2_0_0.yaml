@@ -82,5 +82,54 @@ components:
                 add_labels:
                     type: curie
                     to: tissue
+            ethnicity_ontology_term_id:
+                type: curie
+                dependencies:
+                    -
+                        rule: "organism_ontology_term_id == 'NCBITaxon:9606'"
+                        type: curie
+                        curie_constraints:
+                            ontologies:
+                                - HANCESTRO
+                            exceptions:
+                                - unknown
+                curie_constraints:
+                    ontologies:
+                        - NA
+                    exceptions:
+                        - na
+                add_labels:
+                    type: curie
+                    to: ethnicity
+            development_stage_ontology_term_id:
+                type: curie
+                dependencies:
+                    -
+                        rule: "organism_ontology_term_id == 'NCBITaxon:9606'"
+                        type: curie
+                        curie_constraints:
+                            ontologies:
+                                - HsapDv
+                            exceptions:
+                                - unknown
+                    -
+                        rule: "organism_ontology_term_id == 'NCBITaxon:10090'"
+                        type: curie
+                        curie_constraints:
+                            ontologies:
+                                - MmusDv
+                            exceptions:
+                                - unknown
+                curie_constraints:
+                    ontologies:
+                        - EFO
+                    ancestors:
+                        EFO:
+                            - EFO:0000399
+                    exceptions:
+                        - unknown
+                add_labels:
+                    type: curie
+                    to: development_stage
             is_primary_data:
                 type: bool

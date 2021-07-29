@@ -66,6 +66,8 @@ def _curie_remove_suffix(term_id: str, suffix_def: dict) -> Tuple[str, str]:
     return term_id, id_suffix
 
 
+
+
 def _get_mapping_dict_curie(ids: List[str], curie_constraints: dict) -> Dict[str, str]:
 
     """
@@ -94,14 +96,17 @@ def _get_mapping_dict_curie(ids: List[str], curie_constraints: dict) -> Dict[str
             ids[i], id_suffixes[i] = _curie_remove_suffix(ids[i], curie_constraints["suffixes"])
 
     for original_id, id, id_suffix in zip(original_ids, ids, id_suffixes):
-        for ontology in allowed_ontologies:
-            if ONTOLOGY_CHECKER.is_valid_term_id(ontology, id):
-                mapping_dict[original_id] = ONTOLOGY_CHECKER.get_term_label(ontology, id) + id_suffix
-
         # If there are exceptions the label should be the same as the id
         if "exceptions" in curie_constraints:
             if original_id in curie_constraints["exceptions"]:
                 mapping_dict[original_id] = original_id
+                continue
+
+        for ontology in allowed_ontologies:
+            if ontology == "NA":
+                continue
+            if ONTOLOGY_CHECKER.is_valid_term_id(ontology, id):
+                mapping_dict[original_id] = ONTOLOGY_CHECKER.get_term_label(ontology, id) + id_suffix
 
     # Check that all ids got a mapping. All ids should be found if adata was validated
     for id in original_ids:
@@ -113,7 +118,7 @@ def _get_mapping_dict_curie(ids: List[str], curie_constraints: dict) -> Dict[str
 
 
 class Validator:
-    """Handle validation of AnnData"""
+    """Handles validation of AnnData"""
     schema_definitions_dir = env.SCHEMA_DEFINITIONS_DIR
 
     def __init__(self):
@@ -125,6 +130,62 @@ class Validator:
         self.schema_def = dict()
         self.h5ad_path = ""
 
+    def _read_h5ad(self, h5ad_path: str):
+
+        """
+        Reads h5ad into self.adata
+        :params str h5ad_path: path to h5ad to read
+
+        :rtype None
+        """
+        try:
+            self.adata = anndata.read_h5ad(h5ad_path, backed="r")
+        except (OSError, TypeError):
+            print(f"Unable to open '{h5ad_path}' with AnnData")
+            sys.exit(1)
+
+        self.h5ad_path = h5ad_path
+
+    def _set_schema_def(self):
+        """
+        Sets schema dictionary from using information in adata
+        rtype: None
+        """
+
+        if "schema_version" not in self.adata.uns:
+            raise ValueError (f"adata has no schema definition in 'adata.uns'")
+
+        self.schema_def = _get_schema_definition(self.adata.uns["schema_version"])
+
+
+    def _get_component_def(self, component: str) -> dict:
+        """
+        Gets the definition of an individual component in the schema (e.g. obs)
+
+        :param component: the component name
+
+        :rtype dict
+        """
+
+        if self.schema_def:
+            return self.schema_def["components"][component]
+        else:
+            raise RuntimeError("Schema has not been set in this instance class")
+
+    def _get_column_def(self, component: str, column_name: str) -> dict:
+        """
+        Gets the definition of a column from a component in the schema (e.g. obs)
+
+        :param component: the component name
+        :param column_name str: the column name
+
+        :rtype dict
+        """
+
+        if column_name == "index":
+            return self._get_component_def(component)["index"]
+        else:
+            return self._get_component_def(component)["columns"][column_name]
 
     def _validate_curie_allowed_terms(self, term_id: str, column_name: str, terms: Dict[str, List[str]]):
 
@@ -170,7 +231,7 @@ class Validator:
                                                                                                             ancestor):
                     checks.append(ONTOLOGY_CHECKER.is_descendent_of(ontology, term_id, ancestor))
 
-        if sum(checks) == 0 and len(checks) > 0:
+        if True not in checks:
             all_ancestors = list(allowed_ancestors.values())
             self.errors.append(f"'{term_id}' in '{column_name}' is not a children term id of '{all_ancestors}'")
 
@@ -197,7 +258,6 @@ class Validator:
                 f"'{term_id}' in '{column_name}' is not a valid ontology term id of '{', '.join(allowed_ontologies)}'"
             )
 
-
     def _validate_curie(self, term_id: str, column_name: str, curie_constraints: dict):
 
         """
@@ -215,7 +275,15 @@ class Validator:
         # If there are exceptions and this is one then skip to end
         if "exceptions" in curie_constraints:
             if term_id in curie_constraints["exceptions"]:
-                return None
+                return
+
+        # If NA is found in allowed ontologies, it means only exceptions should be found. If no exceptions were found
+        # then return error
+        if curie_constraints["ontologies"] == ["NA"]:
+            self.errors.append(
+                f"'{term_id}' in '{column_name}' is not a valid value of '{column_name}'"
+                )
+            return
 
         # Check if there are any allowed suffixes and remove them if needed
         if "suffixes" in curie_constraints:
@@ -232,13 +300,13 @@ class Validator:
         if "allowed_terms" in curie_constraints:
             self._validate_curie_allowed_terms(term_id, column_name, curie_constraints["allowed_terms"])
 
-    def _validate_column(self, column: Union[pd.Categorical, pd.Index] , column_name: str, df_name: str, column_def: dict):
+    def _validate_column(self, column: pd.Series, column_name: str, df_name: str, column_def: dict):
 
         """
         Given a schema definition and the column of a dataframe, verify that the column satisfies the schema.
         If there are any errors, it adds them to self.errors
 
-        :param pandas.Categorical column: Column of a dataframe to validate
+        :param pandas.Series column: Column of a dataframe to validate
         :param str column_name: Name of the column in the dataframe
         :param str df_name: Name of the dataframe
         :param dict column_def: schema definition for this specific column,
@@ -271,10 +339,41 @@ class Validator:
             if "ontologies" not in column_def["curie_constraints"]:
                 raise ValueError(f"allowed 'ontolgies' must be specified under 'curie constraints' for '{column_name}'")
 
-            for curie in column.drop_duplicates():
-                self._validate_curie(curie, column_name, column_def["curie_constraints"])
+            for term_id in column.drop_duplicates():
+                self._validate_curie(term_id, column_name, column_def["curie_constraints"])
 
-    def _validate_dataframe(self, df_name: str, component_def: dict):
+    def _validate_column_dependencies(self, df: pd.DataFrame, df_name: str, column_name: str,
+                                      dependencies: List[dict]) -> pd.Series:
+
+        """
+        Validates subset of columns based on dependecies, for instance development_stage_ontology_term_id has
+        dependencies with organism_ontology_term_id -- the allowed values depend on whether organism is human, mouse
+        or something else.
+
+        After performing all validations, it will return the column that has been stripped of the already validated
+        fields -- this has to still be validated.
+
+        :param pd.DataFrame df: pandas dataframe containing the column to be validated
+        :param str df_name: the name of dataframe in the adata object, e.g. "obs"
+        :param str column_name: the name of the column to be validated
+        :param list dependencies: a list of dependecy definitions, which is a list of column definitions with a "rule"
+        """
+
+        all_rules = []
+
+        for dependency_def in dependencies:
+            column = getattr(df.query(dependency_def["rule"]), column_name)
+            all_rules.append(dependency_def["rule"])
+
+            self._validate_column(column, column_name, df_name, dependency_def)
+
+        # Set column with the data that's left
+        all_rules = " | ".join(all_rules)
+        column = getattr(df.query("not (" + all_rules + " )"), column_name)
+
+        return column
+
+    def _validate_dataframe(self, df_name: str):
 
         """
         Verifies the dataframe follows the schema. Adds errors to self.errors if any
@@ -287,16 +386,25 @@ class Validator:
 
         df = getattr(self.adata, df_name)
 
-        if "index" in component_def:
-            self._validate_column(df.index, "index", df_name, component_def["index"])
+        if "index" in self._get_component_def(df_name):
+            self._validate_column(df.index, "index", df_name, self._get_column_def(df_name, "index"))
 
-        for column in component_def.get("columns", []):
-            if column not in df.columns:
-                self.errors.append(f"Dataframe '{df_name}' is missing column '{column}'.")
-            else:
-                self._validate_column(
-                    df[column], column, df_name, component_def["columns"][column]
-                )
+        for column_name in self._get_component_def(df_name)["columns"].keys():
+
+            if column_name not in df.columns:
+                self.errors.append(f"Dataframe '{df_name}' is missing column '{column_name}'.")
+                continue
+
+            column_def = self._get_column_def(df_name, column_name)
+            column = getattr(df, column_name)
+
+            # First check if there are dependencies with other columns and wokr with a subset of the data if so
+            if "dependencies" in column_def:
+                column = self._validate_column_dependencies(df, df_name, column_name, column_def["dependencies"])
+
+            # If after validating dependencies there's still values in the column, validate them.
+            if len(column) > 0:
+                self._validate_column(column, column_name, df_name, column_def)
 
     def _deep_check(self):
 
@@ -306,13 +414,9 @@ class Validator:
         :rtype None
         """
 
-        if "schema_version" not in self.adata.uns_keys():
-            print("AnnData file is missing cellxgene's schema version")
-            return
-
         for component, component_def in self.schema_def["components"].items():
             if component_def["type"] == "dataframe":
-                self._validate_dataframe(component, component_def)
+                self._validate_dataframe(component)
             elif component_def["type"] == "dict":
                 # Placeholder
                 self.errors.extend(
@@ -321,33 +425,6 @@ class Validator:
                 )
             else:
                 raise ValueError(f"Unexpected component type '{component['type']}'")
-
-    def _read_h5ad(self, h5ad_path: str):
-
-        """
-        Reads h5ad into self.adata
-        :params str h5ad_path: path to h5ad to read
-
-        :rtype None
-        """
-        try:
-            self.adata = anndata.read_h5ad(h5ad_path, backed="r")
-        except (OSError, TypeError):
-            print(f"Unable to open '{h5ad_path}' with AnnData")
-            sys.exit(1)
-
-        self.h5ad_path = h5ad_path
-
-    def _set_schema_def(self):
-        """
-        Sets schema dictionary from using information in adata
-        rtype: None
-        """
-
-        if "schema_version" not in self.adata.uns:
-            raise ValueError (f"adata has no schema definition in 'adata.uns'")
-
-        self.schema_def = _get_schema_definition(self.adata.uns["schema_version"])
 
     def validate_adata(self, h5ad_path: str = None) -> bool:
 
@@ -367,7 +444,7 @@ class Validator:
         if h5ad_path:
             self._read_h5ad(h5ad_path)
 
-        # Fetches schema def from anndata
+        # Fetches schema def from anndata if schema version is not found in AnnData, this fails
         self._set_schema_def()
 
         self._deep_check()
@@ -399,11 +476,70 @@ class LabelWriter:
             raise ValueError("AnnData object is not valid or hasn't been run through validation. " 
                              "Validate AnnData first before attempting to write labels")
 
-        self.adata = validator.adata.copy()
+        self.adata = validator.adata.to_memory()
 
         self.schema_def = validator.schema_def
         self.errors = []
         self.was_writing_successful = False
+
+    def _merge_dicts(self, dict1: dict, dict2: dict) -> dict:
+
+        """
+        Recursively merges two dicts, designed to be used to flatten a column definition.
+
+        :params dict dict1: first dict
+        :params dict dict2: second dict
+
+        :rtype dict
+        :return the merged dict
+        """
+
+        merged_dict = dict1.copy()
+
+        for key, value_2 in dict2.items():
+
+            if key == "rule":
+                continue
+
+            if key not in dict1:
+                merged_dict[key] = value_2
+            else:
+                value_1 = dict1[key]
+
+                if not type(value_1)  == type(value_2):
+                    raise ValueError(f"Inconsistent types, impossible to merge")
+
+                if isinstance(value_2, str):
+                    if not value_2 == value_1:
+                        raise ValueError(f"Strings types in dependencies cannot be different, {value_1} and {value_2}")
+                elif isinstance(value_2, list):
+                    merged_dict[key] = list(set(value_1 + value_2))
+                elif isinstance(value_2, dict):
+                    merged_dict[key] = self._merge_dicts(value_1, value_2)
+                else:
+                    raise ValueError(f"merging {type(value_2)} is not implemented")
+
+        return merged_dict
+
+    def _flatten_column_def_with_dependencies(self, column_def: dict) -> dict:
+
+        """
+        Flattens a column definition  that has dependencies, it essentially concatenates all the definitions of the
+        dependencies into the on definition
+
+        :params dict column_def: the column definition that has dependencies in it
+
+        :rtype dict
+        :return the flatten column definition
+        """
+
+        flatten = column_def.copy()
+        del flatten["dependencies"]
+
+        for dep in column_def["dependencies"]:
+            flatten = self._merge_dicts(flatten, dep)
+
+        return flatten
 
     def _get_labels(self, component: str, column: str, column_definition: dict) -> pd.Categorical:
 
@@ -413,7 +549,6 @@ class LabelWriter:
 
         :param str component: what dataframe in self.adata to work with
         :param str column: Column in self.adata with IDs that will be used to retrieve values
-        :param dict column_def: schema definition for this specific column,
         e.g. schema_def["obs"]["columns"]["cell_type_ontology_term_id"]
 
         :rtype pandas.Categorical
@@ -449,6 +584,10 @@ class LabelWriter:
         # First adata.obs
         for column, column_def in self.schema_def["components"]["obs"]["columns"].items():
             if "add_labels" in column_def:
+
+                if "dependencies" in column_def:
+                    column_def = self._flatten_column_def_with_dependencies(column_def)
+
                 new_column = self._get_labels("obs", column, column_def)
                 self.adata.obs[column_def["add_labels"]["to"]] = new_column
 
