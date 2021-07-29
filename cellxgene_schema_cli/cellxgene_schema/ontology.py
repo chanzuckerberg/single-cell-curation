@@ -2,7 +2,7 @@ import os
 import gzip
 import json
 import enum
-from typing import Union, List, Set
+from typing import List, Set
 from . import env
 
 
@@ -23,14 +23,10 @@ class GeneChecker:
         SupportedOrganisms.MUS_MUSCULUS: os.path.join(
             env.ONTOLOGY_DIR, "genes_mus_musculus.csv.gz"
         ),
-
         SupportedOrganisms.SARS_COV_2: os.path.join(
             env.ONTOLOGY_DIR, "genes_sars_cov_2.csv.gz"
         ),
-
-        SupportedOrganisms.ERCC: os.path.join(
-            env.ONTOLOGY_DIR, "genes_ercc.csv.gz"
-        )
+        SupportedOrganisms.ERCC: os.path.join(env.ONTOLOGY_DIR, "genes_ercc.csv.gz"),
     }
 
     def __init__(self, species: SupportedOrganisms):
