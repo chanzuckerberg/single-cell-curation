@@ -693,7 +693,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST infer the organism re
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>str</code>. This MUST indicate the reference organism of genes and MUST be <code>NCBITaxon:9606</code> for <i>Homo sapiens</i>, <code>NCBITaxon:10090</code> for <i>Mus musculus</i>, or <code>NCBITaxon:2697049</code> for  SARS-CoV-2.
+        <td><code>str</code>. This MUST indicate the reference organism of features and MUST be <code>NCBITaxon:9606</code> for <i>Homo sapiens</i>, <code>NCBITaxon:10090</code> for <i>Mus musculus</i>, <code>NCBITaxon:2697049</code> for  SARS-CoV-2, or <code>NCBITaxon:32630</code> for  ERCC Spike-Ins
         </td>
     </tr>
 </tbody></table>
