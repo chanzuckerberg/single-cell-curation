@@ -1,13 +1,11 @@
 import unittest
 import pandas as pd
-import os
 from cellxgene_schema import ontology
 from cellxgene_schema import validate
 import fixtures.examples_validate as examples
 
 
 class TestFieldValidation(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.schema_def = validate._get_schema_definition(examples.SCHEMA_VERSION)
@@ -17,8 +15,12 @@ class TestFieldValidation(unittest.TestCase):
         self.validator = validate.Validator()
         self.validator.adata = examples.adata_empty
         self.column_name = "cell_type_ontology_term_id"
-        self.column_schema = self.schema_def["components"]["obs"]["columns"][self.column_name]
-        self.curie_constraints = self.schema_def["components"]["obs"]["columns"][self.column_name]["curie_constraints"]
+        self.column_schema = self.schema_def["components"]["obs"]["columns"][
+            self.column_name
+        ]
+        self.curie_constraints = self.schema_def["components"]["obs"]["columns"][
+            self.column_name
+        ]["curie_constraints"]
 
     def test_schema_defintion(self):
         """
@@ -31,31 +33,52 @@ class TestFieldValidation(unittest.TestCase):
 
         # Check that any columns in obs that are "curie" have "curie_constraints" and "ontologies" under the constraints
         for i in self.schema_def["components"]["obs"]["columns"]:
-            self.assertTrue("type" in self.schema_def["components"]["obs"]["columns"][i])
+            self.assertTrue(
+                "type" in self.schema_def["components"]["obs"]["columns"][i]
+            )
             if i == "curie":
-                self.assertIsInstance(self.schema_def["components"]["obs"]["columns"][i]["curie_constrains"], dict)
-                self.assertIsInstance(self.schema_def["components"]["obs"]["columns"][i]["curie_constrains"]["ontolgies"], list)
+                self.assertIsInstance(
+                    self.schema_def["components"]["obs"]["columns"][i][
+                        "curie_constrains"
+                    ],
+                    dict,
+                )
+                self.assertIsInstance(
+                    self.schema_def["components"]["obs"]["columns"][i][
+                        "curie_constrains"
+                    ]["ontolgies"],
+                    list,
+                )
 
                 # Check that the allowed ontologies are in the ontology checker
-                for ontology in self.schema_def["components"]["obs"]["columns"][i]["curie_constrains"]["ontolgies"]:
-                    self.assertTrue(self.OntologyChecker.is_valid_ontology(ontology))
+                for ontology_name in self.schema_def["components"]["obs"]["columns"][i][
+                    "curie_constrains"
+                ]["ontolgies"]:
+                    self.assertTrue(self.OntologyChecker.is_valid_ontology(ontology_name))
 
     def test_validate_ontology_good(self):
-        self.validator._validate_curie("CL:0000066", self.column_name, self.curie_constraints)
-        self.validator._validate_curie("CL:0000192", self.column_name, self.curie_constraints)
+        self.validator._validate_curie(
+            "CL:0000066", self.column_name, self.curie_constraints
+        )
+        self.validator._validate_curie(
+            "CL:0000192", self.column_name, self.curie_constraints
+        )
         self.assertFalse(self.validator.errors)
 
     def test_validate_ontology_wrong_ontology(self):
-        self.validator._validate_curie("EFO:0009899", self.column_name, self.curie_constraints)
+        self.validator._validate_curie(
+            "EFO:0009899", self.column_name, self.curie_constraints
+        )
         self.assertTrue(self.validator.errors)
 
     def test_validate_ontology_wrong_term(self):
-        self.validator._validate_curie("NO_TERM2", self.column_name, self.curie_constraints)
+        self.validator._validate_curie(
+            "NO_TERM2", self.column_name, self.curie_constraints
+        )
         self.assertTrue(self.validator.errors)
 
 
 class TestColumnValidation(unittest.TestCase):
-
     def setUp(self):
         self.validator = validate.Validator()
         self.validator.adata = examples.adata_empty
@@ -77,30 +100,42 @@ class TestColumnValidation(unittest.TestCase):
 
     def test_validate_unique_good(self):
 
-        self.validator._validate_column(self.unique.index, "index", "unique_df", self.column_def_uniq)
+        self.validator._validate_column(
+            self.unique.index, "index", "unique_df", self.column_def_uniq
+        )
         self.assertFalse(self.validator.errors)
 
-        self.validator._validate_column(self.unique["col1"], "col1", "unique_df", self.column_def_uniq)
+        self.validator._validate_column(
+            self.unique["col1"], "col1", "unique_df", self.column_def_uniq
+        )
         self.assertFalse(self.validator.errors)
 
     def test_validate_unique_valid_duped(self):
 
-        self.validator._validate_column(self.duped["col1"], "col1", "duped_df", self.column_def_not_uniq)
+        self.validator._validate_column(
+            self.duped["col1"], "col1", "duped_df", self.column_def_not_uniq
+        )
         self.assertFalse(self.validator.errors)
 
     def test_validate_unique_invalid_duped(self):
 
-        self.validator._validate_column(self.duped.index, "index", "duped_df", self.column_def_uniq)
+        self.validator._validate_column(
+            self.duped.index, "index", "duped_df", self.column_def_uniq
+        )
         self.assertTrue(self.validator.errors)
 
     def test_validate_unique_invalid_duped2(self):
 
-        self.validator._validate_column(self.duped["col1"], "col1", "duped_df", self.column_def_uniq)
+        self.validator._validate_column(
+            self.duped["col1"], "col1", "duped_df", self.column_def_uniq
+        )
         self.assertTrue(self.validator.errors)
 
     def test_ontology_columns(self):
 
-        columns_def = validate._get_schema_definition(examples.SCHEMA_VERSION)["components"]["obs"]["columns"]
+        columns_def = validate._get_schema_definition(examples.SCHEMA_VERSION)[
+            "components"
+        ]["obs"]["columns"]
 
         # Correct example. This only tests the column validation process and therefore the tests exludes does columns
         # that have dependencies with other columns and need the entire dataframe for validation
@@ -108,41 +143,40 @@ class TestColumnValidation(unittest.TestCase):
 
         for column in good_df.columns:
             if "dependencies" not in columns_def[column]:
-                self.validator.errors = [] # Reset errors
-                self.validator._validate_column(good_df[column], column, "obs", columns_def[column])
+                self.validator.errors = []  # Reset errors
+                self.validator._validate_column(
+                    good_df[column], column, "obs", columns_def[column]
+                )
                 self.assertFalse(self.validator.errors)
 
         # Bad columns, do each individually
         bad_df = examples.bad_obs
         for column in bad_df.columns:
             if "dependencies" not in columns_def[column]:
-                self.validator.errors = [] # Reset errors
-                self.validator._validate_column(bad_df[column], column, "obs", columns_def[column])
+                self.validator.errors = []  # Reset errors
+                self.validator._validate_column(
+                    bad_df[column], column, "obs", columns_def[column]
+                )
                 self.assertTrue(self.validator.errors)
 
 
 class TestH5adValidation(unittest.TestCase):
+    def setUp(self):
+        self.h5ad_valid = examples.h5ad_valid
+        self.invalid_files = examples.h5ad_invalid
+        self.validator = validate.Validator()
 
     def test_validate(self):
 
-        h5ad_dir = os.path.join(examples.FIXTURES_ROOT, "h5ads" )
-        h5ad_valid = os.path.join(h5ad_dir, "example_valid.h5ad")
+        # Valid h5ad
+        self.assertTrue(self.validator.validate_adata(self.h5ad_valid))
 
-        validator = validate.Validator()
-
-        # Good
-        self.assertTrue(validator.validate_adata(h5ad_valid))
-
-        # Test all bad cases
-        invalid_files = ["example_invalid_CL.h5ad", "example_invalid_assay.h5ad", "example_invalid_disease.h5ad",
-                         "example_invalid_organism.h5ad", "example_invalid_primary_data.h5ad",
-                         "example_invalid_sex.h5ad", "example_invalid_tissue.h5ad"]
-        for i in invalid_files:
-            self.assertFalse(validator.validate_adata(os.path.join(h5ad_dir, i)))
+        # Invalid h5ads
+        for i in self.invalid_files:
+            self.assertFalse(self.validator.validate_adata(i))
 
 
 class TestAddLabelFunctions(unittest.TestCase):
-
     def setUp(self):
 
         # Set up test data
@@ -160,30 +194,44 @@ class TestAddLabelFunctions(unittest.TestCase):
         # Good
         ids = ["CL:0000066", "CL:0000192"]
         labels = ["epithelial cell", "smooth muscle cell"]
-        curie_constraints = self.schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"]["curie_constraints"]
-        expected_dict = {i: j for i,j in zip(ids, labels)}
-        self.assertEqual(validate._get_mapping_dict_curie(ids, curie_constraints), expected_dict)
+        curie_constraints = self.schema_def["components"]["obs"]["columns"][
+            "cell_type_ontology_term_id"
+        ]["curie_constraints"]
+        expected_dict = {i: j for i, j in zip(ids, labels)}
+        self.assertEqual(
+            validate._get_mapping_dict_curie(ids, curie_constraints), expected_dict
+        )
 
         ids = ["EFO:0009899", "EFO:0009922"]
         labels = ["10x 3' v2", "10x 3' v3"]
-        curie_constraints = self.schema_def["components"]["obs"]["columns"]["assay_ontology_term_id"]["curie_constraints"]
-        expected_dict = {i: j for i,j in zip(ids, labels)}
-        self.assertEqual(validate._get_mapping_dict_curie(ids, curie_constraints), expected_dict)
+        curie_constraints = self.schema_def["components"]["obs"]["columns"][
+            "assay_ontology_term_id"
+        ]["curie_constraints"]
+        expected_dict = {i: j for i, j in zip(ids, labels)}
+        self.assertEqual(
+            validate._get_mapping_dict_curie(ids, curie_constraints), expected_dict
+        )
 
         ids = ["MONDO:0100096"]
         labels = ["COVID-19"]
-        curie_constraints = self.schema_def["components"]["obs"]["columns"]["disease_ontology_term_id"]["curie_constraints"]
-        expected_dict = {i: j for i,j in zip(ids, labels)}
-        self.assertEqual(validate._get_mapping_dict_curie(ids, curie_constraints), expected_dict)
+        curie_constraints = self.schema_def["components"]["obs"]["columns"][
+            "disease_ontology_term_id"
+        ]["curie_constraints"]
+        expected_dict = {i: j for i, j in zip(ids, labels)}
+        self.assertEqual(
+            validate._get_mapping_dict_curie(ids, curie_constraints), expected_dict
+        )
 
-        #ids = ["MmusDv:0000062", "HsapDv:0000174"]
-        #labels = ["2 month-old stage", "1 month-old human stage"]
-        #curie_constraints = self.schema_def["components"]["obs"]["columns"]["development_stage_ontology_term_id"]
-        #expected_dict = {i: j for i,j in zip(ids, labels)}
-        #self.assertEqual(validate._get_mapping_dict_curie(ids, curie_constraints), expected_dict)
+        # ids = ["MmusDv:0000062", "HsapDv:0000174"]
+        # labels = ["2 month-old stage", "1 month-old human stage"]
+        # curie_constraints = self.schema_def["components"]["obs"]["columns"]["development_stage_ontology_term_id"]
+        # expected_dict = {i: j for i,j in zip(ids, labels)}
+        # self.assertEqual(validate._get_mapping_dict_curie(ids, curie_constraints), expected_dict)
 
         # Bad
-        curie_constraints = self.schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"]["curie_constraints"]
+        curie_constraints = self.schema_def["components"]["obs"]["columns"][
+            "cell_type_ontology_term_id"
+        ]["curie_constraints"]
 
         ids = ["CL:0000066", "CL:0000192_FOO"]
         with self.assertRaises(ValueError):
@@ -201,10 +249,16 @@ class TestAddLabelFunctions(unittest.TestCase):
 
         # Test getting a column with labels based on ids for adata.obs
         component = "obs"
-        for column, column_definition in self.schema_def["components"]["obs"]["columns"].items():
+        for column, column_definition in self.schema_def["components"]["obs"][
+            "columns"
+        ].items():
             if "add_labels" in column_definition:
-                expected_column = self.test_adata_with_labels.obs[column_definition["add_labels"]["to"]]
-                obtained_column = self.writer._get_labels(component, column, column_definition)
+                expected_column = self.test_adata_with_labels.obs[
+                    column_definition["add_labels"]["to"]
+                ]
+                obtained_column = self.writer._get_labels(
+                    component, column, column_definition
+                )
                 for i, j in zip(expected_column.tolist(), obtained_column.tolist()):
                     self.assertEqual(i, j)
 

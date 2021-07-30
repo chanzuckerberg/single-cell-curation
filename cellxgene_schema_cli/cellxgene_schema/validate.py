@@ -53,8 +53,8 @@ def _curie_remove_suffix(term_id: str, suffix_def: dict) -> Tuple[str, str]:
     for ontology_name, suffixes in suffix_def.items():
 
         for suffix in suffixes:
-            suffix = suffix.replace("(", "\(")
-            suffix = suffix.replace(")", "\)")
+            suffix = suffix.replace("(", r"\(")
+            suffix = suffix.replace(")", r"\)")
             search_results = re.search(r"%s$" % suffix, term_id)
             if search_results:
                 stripped_term_id = re.sub(r"%s$" % suffix, "", term_id)
@@ -66,8 +66,6 @@ def _curie_remove_suffix(term_id: str, suffix_def: dict) -> Tuple[str, str]:
     return term_id, id_suffix
 
 
-
-
 def _get_mapping_dict_curie(ids: List[str], curie_constraints: dict) -> Dict[str, str]:
 
     """
@@ -75,7 +73,8 @@ def _get_mapping_dict_curie(ids: List[str], curie_constraints: dict) -> Dict[str
     by LabelWriter class
 
     :param list[str] ids: Ontology IDs use for mapping
-    :param list[str] curie_constraints: curie constraints e.g. schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"]["curie_"]
+    :param list[str] curie_constraints: curie constraints e.g.
+    schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"]["curie_"]
 
     :return a mapping dictionary: {id: label, ...}
     :rtype dict
@@ -93,7 +92,9 @@ def _get_mapping_dict_curie(ids: List[str], curie_constraints: dict) -> Dict[str
 
     if "suffixes" in curie_constraints:
         for i in range(len(ids)):
-            ids[i], id_suffixes[i] = _curie_remove_suffix(ids[i], curie_constraints["suffixes"])
+            ids[i], id_suffixes[i] = _curie_remove_suffix(
+                ids[i], curie_constraints["suffixes"]
+            )
 
     for original_id, id, id_suffix in zip(original_ids, ids, id_suffixes):
         # If there are exceptions the label should be the same as the id
@@ -102,11 +103,13 @@ def _get_mapping_dict_curie(ids: List[str], curie_constraints: dict) -> Dict[str
                 mapping_dict[original_id] = original_id
                 continue
 
-        for ontology in allowed_ontologies:
-            if ontology == "NA":
+        for ontology_name in allowed_ontologies:
+            if ontology_name == "NA":
                 continue
-            if ONTOLOGY_CHECKER.is_valid_term_id(ontology, id):
-                mapping_dict[original_id] = ONTOLOGY_CHECKER.get_term_label(ontology, id) + id_suffix
+            if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, id):
+                mapping_dict[original_id] = (
+                    ONTOLOGY_CHECKER.get_term_label(ontology_name, id) + id_suffix
+                )
 
     # Check that all ids got a mapping. All ids should be found if adata was validated
     for id in original_ids:
@@ -116,9 +119,9 @@ def _get_mapping_dict_curie(ids: List[str], curie_constraints: dict) -> Dict[str
     return mapping_dict
 
 
-
 class Validator:
     """Handles validation of AnnData"""
+
     schema_definitions_dir = env.SCHEMA_DEFINITIONS_DIR
 
     def __init__(self):
@@ -130,11 +133,11 @@ class Validator:
         self.schema_def = dict()
         self.h5ad_path = ""
 
-    def _read_h5ad(self, h5ad_path: str):
+    def _read_h5ad(self, h5ad_path: Union[str, bytes, os.PathLike]):
 
         """
         Reads h5ad into self.adata
-        :params str h5ad_path: path to h5ad to read
+        :params Union[str, bytes, os.PathLike] h5ad_path: path to h5ad to read
 
         :rtype None
         """
@@ -153,10 +156,9 @@ class Validator:
         """
 
         if "schema_version" not in self.adata.uns:
-            raise ValueError (f"adata has no schema definition in 'adata.uns'")
+            raise ValueError("adata has no schema definition in 'adata.uns'")
 
         self.schema_def = _get_schema_definition(self.adata.uns["schema_version"])
-
 
     def _get_component_def(self, component: str) -> dict:
         """
@@ -177,7 +179,7 @@ class Validator:
         Gets the definition of a column from a component in the schema (e.g. obs)
 
         :param component: the component name
-        :param column_name str: the column name
+        :param str column_name: the column name
 
         :rtype dict
         """
@@ -187,7 +189,9 @@ class Validator:
         else:
             return self._get_component_def(component)["columns"][column_name]
 
-    def _validate_curie_allowed_terms(self, term_id: str, column_name: str, terms: Dict[str, List[str]]):
+    def _validate_curie_allowed_terms(
+        self, term_id: str, column_name: str, terms: Dict[str, List[str]]
+    ):
 
         """
         Validate a single curie term id is a valid children of any of allowed terms
@@ -201,15 +205,19 @@ class Validator:
         """
 
         checks = []
-        for ontology, allowed_terms in terms.items():
-            if ONTOLOGY_CHECKER.is_valid_term_id(ontology, term_id):
+        for ontology_name, allowed_terms in terms.items():
+            if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id):
                 checks.append(term_id in allowed_terms)
 
         if sum(checks) == 0 and len(checks) > 0:
             all_allowed = list(terms.values())
-            self.errors.append(f"'{term_id}' in '{column_name}' is not an allowed term of '{all_allowed}'")
+            self.errors.append(
+                f"'{term_id}' in '{column_name}' is not an allowed term of '{all_allowed}'"
+            )
 
-    def _validate_curie_ancestors(self, term_id: str, column_name: str, allowed_ancestors: Dict[str, List[str]]):
+    def _validate_curie_ancestors(
+        self, term_id: str, column_name: str, allowed_ancestors: Dict[str, List[str]]
+    ):
 
         """
         Validate a single curie term id is a valid children of any of allowed ancestors
@@ -225,17 +233,24 @@ class Validator:
 
         checks = []
 
-        for ontology, ancestors in allowed_ancestors.items():
+        for ontology_name, ancestors in allowed_ancestors.items():
             for ancestor in ancestors:
-                if ONTOLOGY_CHECKER.is_valid_term_id(ontology, term_id) & ONTOLOGY_CHECKER.is_valid_term_id(ontology,
-                                                                                                            ancestor):
-                    checks.append(ONTOLOGY_CHECKER.is_descendent_of(ontology, term_id, ancestor))
+                if ONTOLOGY_CHECKER.is_valid_term_id(
+                    ontology_name, term_id
+                ) & ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, ancestor):
+                    checks.append(
+                        ONTOLOGY_CHECKER.is_descendent_of(ontology_name, term_id, ancestor)
+                    )
 
         if True not in checks:
             all_ancestors = list(allowed_ancestors.values())
-            self.errors.append(f"'{term_id}' in '{column_name}' is not a children term id of '{all_ancestors}'")
+            self.errors.append(
+                f"'{term_id}' in '{column_name}' is not a children term id of '{all_ancestors}'"
+            )
 
-    def _validate_curie_ontology(self, term_id: str, column_name: str, allowed_ontologies: List[str]):
+    def _validate_curie_ontology(
+        self, term_id: str, column_name: str, allowed_ontologies: List[str]
+    ):
 
         """
         Validate a single curie term id belongs to specified ontologies
@@ -250,8 +265,8 @@ class Validator:
 
         checks = []
 
-        for ontology in allowed_ontologies:
-            checks.append(ONTOLOGY_CHECKER.is_valid_term_id(ontology, term_id))
+        for ontology_name in allowed_ontologies:
+            checks.append(ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id))
 
         if sum(checks) == 0:
             self.errors.append(
@@ -282,25 +297,35 @@ class Validator:
         if curie_constraints["ontologies"] == ["NA"]:
             self.errors.append(
                 f"'{term_id}' in '{column_name}' is not a valid value of '{column_name}'"
-                )
+            )
             return
 
         # Check if there are any allowed suffixes and remove them if needed
         if "suffixes" in curie_constraints:
-            term_id, suffix = _curie_remove_suffix(term_id, curie_constraints["suffixes"])
+            term_id, suffix = _curie_remove_suffix(
+                term_id, curie_constraints["suffixes"]
+            )
 
         # Check that term id belongs to allowed ontologies
-        self._validate_curie_ontology(term_id, column_name, curie_constraints["ontologies"])
+        self._validate_curie_ontology(
+            term_id, column_name, curie_constraints["ontologies"]
+        )
 
         # If there are specified ancestors then make sure that this id is a valid child
         if "ancestors" in curie_constraints:
-            self._validate_curie_ancestors(term_id, column_name, curie_constraints["ancestors"])
+            self._validate_curie_ancestors(
+                term_id, column_name, curie_constraints["ancestors"]
+            )
 
         # If there is a set of allowed terms check for it
         if "allowed_terms" in curie_constraints:
-            self._validate_curie_allowed_terms(term_id, column_name, curie_constraints["allowed_terms"])
+            self._validate_curie_allowed_terms(
+                term_id, column_name, curie_constraints["allowed_terms"]
+            )
 
-    def _validate_column(self, column: pd.Series, column_name: str, df_name: str, column_def: dict):
+    def _validate_column(
+        self, column: pd.Series, column_name: str, df_name: str, column_def: dict
+    ):
 
         """
         Given a schema definition and the column of a dataframe, verify that the column satisfies the schema.
@@ -318,7 +343,9 @@ class Validator:
 
         if column_def.get("unique"):
             if column.nunique() != len(column):
-                self.errors.append(f"Column '{column_name}' in dataframe '{df_name}' is not unique.")
+                self.errors.append(
+                    f"Column '{column_name}' in dataframe '{df_name}' is not unique."
+                )
 
         if "enum" in column_def:
             bad_enums = [v for v in column if v not in column_def["enum"]]
@@ -331,19 +358,27 @@ class Validator:
         if column_def.get("type") == "bool":
             if not column.dtype == bool:
                 self.errors.append(
-                    f"Column '{column_name}' in dataframe '{df_name}' must be boolean not {column.dtype.name}")
+                    f"Column '{column_name}' in dataframe '{df_name}' must be boolean not {column.dtype.name}"
+                )
 
         if column_def.get("type") == "curie":
             if "curie_constraints" not in column_def:
-                raise ValueError(f"Corrupt schema definition, no 'curie_constraints' were found for '{column_name}'")
+                raise ValueError(
+                    f"Corrupt schema definition, no 'curie_constraints' were found for '{column_name}'"
+                )
             if "ontologies" not in column_def["curie_constraints"]:
-                raise ValueError(f"allowed 'ontolgies' must be specified under 'curie constraints' for '{column_name}'")
+                raise ValueError(
+                    f"allowed 'ontolgies' must be specified under 'curie constraints' for '{column_name}'"
+                )
 
             for term_id in column.drop_duplicates():
-                self._validate_curie(term_id, column_name, column_def["curie_constraints"])
+                self._validate_curie(
+                    term_id, column_name, column_def["curie_constraints"]
+                )
 
-    def _validate_column_dependencies(self, df: pd.DataFrame, df_name: str, column_name: str,
-                                      dependencies: List[dict]) -> pd.Series:
+    def _validate_column_dependencies(
+        self, df: pd.DataFrame, df_name: str, column_name: str, dependencies: List[dict]
+    ) -> pd.Series:
 
         """
         Validates subset of columns based on dependecies, for instance development_stage_ontology_term_id has
@@ -379,7 +414,6 @@ class Validator:
         Verifies the dataframe follows the schema. Adds errors to self.errors if any
 
         :param str df_name: Name of dataframe in the adata (e.g. "obs")
-        :param dict component_def: component definition for this dataframe (from schema definition); e.g. schema_defintion["obs"]
 
         :rtype None
         """
@@ -387,12 +421,16 @@ class Validator:
         df = getattr(self.adata, df_name)
 
         if "index" in self._get_component_def(df_name):
-            self._validate_column(df.index, "index", df_name, self._get_column_def(df_name, "index"))
+            self._validate_column(
+                df.index, "index", df_name, self._get_column_def(df_name, "index")
+            )
 
         for column_name in self._get_component_def(df_name)["columns"].keys():
 
             if column_name not in df.columns:
-                self.errors.append(f"Dataframe '{df_name}' is missing column '{column_name}'.")
+                self.errors.append(
+                    f"Dataframe '{df_name}' is missing column '{column_name}'."
+                )
                 continue
 
             column_def = self._get_column_def(df_name, column_name)
@@ -400,7 +438,9 @@ class Validator:
 
             # First check if there are dependencies with other columns and wokr with a subset of the data if so
             if "dependencies" in column_def:
-                column = self._validate_column_dependencies(df, df_name, column_name, column_def["dependencies"])
+                column = self._validate_column_dependencies(
+                    df, df_name, column_name, column_def["dependencies"]
+                )
 
             # If after validating dependencies there's still values in the column, validate them.
             if len(column) > 0:
@@ -426,12 +466,12 @@ class Validator:
             else:
                 raise ValueError(f"Unexpected component type '{component['type']}'")
 
-    def validate_adata(self, h5ad_path: str = None) -> bool:
+    def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None) -> bool:
 
         """
         Validates adata
 
-        :params str h5ad_path: path to h5ad to validate, if None it will try to validate
+        :params Union[str, bytes, os.PathLike] h5ad_path: path to h5ad to validate, if None it will try to validate
         from self.adata
 
         :return True if successful validation, False otherwise
@@ -439,7 +479,7 @@ class Validator:
         """
 
         # Re-start errors in case a new h5ad is being validated
-        self.errors=[]
+        self.errors = []
 
         if h5ad_path:
             self._read_h5ad(h5ad_path)
@@ -473,10 +513,15 @@ class LabelWriter:
         """
 
         if not validator.is_valid:
-            raise ValueError("AnnData object is not valid or hasn't been run through validation. " 
-                             "Validate AnnData first before attempting to write labels")
+            raise ValueError(
+                "AnnData object is not valid or hasn't been run through validation. "
+                "Validate AnnData first before attempting to write labels"
+            )
 
-        self.adata = validator.adata.to_memory()
+        if validator.adata.isbacked:
+            self.adata = validator.adata.to_memory()
+        else:
+            self.adata = validator.adata.copy()
 
         self.schema_def = validator.schema_def
         self.errors = []
@@ -506,12 +551,14 @@ class LabelWriter:
             else:
                 value_1 = dict1[key]
 
-                if not type(value_1)  == type(value_2):
-                    raise ValueError(f"Inconsistent types, impossible to merge")
+                if not type(value_1) == type(value_2):
+                    raise ValueError("Inconsistent types, impossible to merge")
 
                 if isinstance(value_2, str):
                     if not value_2 == value_1:
-                        raise ValueError(f"Strings types in dependencies cannot be different, {value_1} and {value_2}")
+                        raise ValueError(
+                            f"Strings types in dependencies cannot be different, {value_1} and {value_2}"
+                        )
                 elif isinstance(value_2, list):
                     merged_dict[key] = list(set(value_1 + value_2))
                 elif isinstance(value_2, dict):
@@ -533,6 +580,10 @@ class LabelWriter:
         :return the flatten column definition
         """
 
+        # Do nothing if ther are no dependencies
+        if "dependencies" not in column_def:
+            return column_def
+
         flatten = column_def.copy()
         del flatten["dependencies"]
 
@@ -541,7 +592,9 @@ class LabelWriter:
 
         return flatten
 
-    def _get_labels(self, component: str, column: str, column_definition: dict) -> pd.Categorical:
+    def _get_labels(
+        self, component: str, column: str, column_definition: dict
+    ) -> pd.Categorical:
 
         """
         Retrieves a new column (pandas categorical) with labels based on the IDs in 'column' and the logic in the
@@ -555,22 +608,36 @@ class LabelWriter:
         :return new pandas column with labels corresponding to input column
         """
 
+        # Set variables for readability
         type_labels = column_definition["add_labels"]["type"]
         current_df = getattr(self.adata, component)
         ids = getattr(current_df, column).drop_duplicates().tolist()
 
+        # Flatten column definition (will do so if there are dependencies in the definition
+        column_definition = self._flatten_column_def_with_dependencies(
+            column_definition
+        )
+
         if type_labels == "curie":
 
             if "curie_constraints" not in column_definition:
-                raise ValueError(f"Schema definition error: 'add_lables' with type 'curie' was found for '{column}' "
-                                 "but no curie constraints were found for the lables")
+                raise ValueError(
+                    f"Schema definition error: 'add_lables' with type 'curie' was found for '{column}' "
+                    "but no curie constraints were found for the lables"
+                )
 
-            mapping_dict = _get_mapping_dict_curie(ids=ids, curie_constraints=column_definition["curie_constraints"])
+            mapping_dict = _get_mapping_dict_curie(
+                ids=ids, curie_constraints=column_definition["curie_constraints"]
+            )
 
         else:
-            raise TypeError(f"'{type_labels}' is not supported in 'add-labels' functionality")
+            raise TypeError(
+                f"'{type_labels}' is not supported in 'add-labels' functionality"
+            )
 
-        new_column = getattr(current_df, column).copy().replace(mapping_dict).astype("category")
+        new_column = (
+            getattr(current_df, column).copy().replace(mapping_dict).astype("category")
+        )
 
         return new_column
 
@@ -582,12 +649,10 @@ class LabelWriter:
         """
 
         # First adata.obs
-        for column, column_def in self.schema_def["components"]["obs"]["columns"].items():
+        for column, column_def in self.schema_def["components"]["obs"][
+            "columns"
+        ].items():
             if "add_labels" in column_def:
-
-                if "dependencies" in column_def:
-                    column_def = self._flatten_column_def_with_dependencies(column_def)
-
                 new_column = self._get_labels("obs", column, column_def)
                 self.adata.obs[column_def["add_labels"]["to"]] = new_column
 
@@ -603,12 +668,16 @@ class LabelWriter:
         """
 
         for component in ["obs"]:
-            for column, columns_def in self.schema_def["components"]["obs"]["columns"].items():
+            for column, columns_def in self.schema_def["components"]["obs"][
+                "columns"
+            ].items():
                 if "add_labels" in columns_def:
                     reserved_name = columns_def["add_labels"]["to"]
                     if reserved_name in getattr(self.adata, component):
-                        self.errors.append(f"Add labels error: Column '{reserved_name}' is a reserved column name " 
-                                           "of 'obs'. Remove it from h5ad and try again.")
+                        self.errors.append(
+                            f"Add labels error: Column '{reserved_name}' is a reserved column name "
+                            "of 'obs'. Remove it from h5ad and try again."
+                        )
 
     def write_labels(self, add_labels_file: str):
 
@@ -636,12 +705,12 @@ class LabelWriter:
         self.was_writing_successful = True
 
 
-def validate(h5ad_path: str, add_labels_file: str = None):
+def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = None):
 
     """
     Entry point for validation.
 
-    :param str h5ad_path: Path to h5ad file to validate
+    :param Union[str, bytes, os.PathLike] h5ad_path: Path to h5ad file to validate
     :param str add_labels_file: Path to new h5ad file with ontology/gene labels added
 
     :return True if successful validation, False otherwise
