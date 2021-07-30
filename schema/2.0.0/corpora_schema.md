@@ -706,7 +706,7 @@ When a dataset is uploaded, cellxgene Data Portal MUST automatically add the mat
           <tbody>
             <tr>
               <td><i>Homo sapiens</i></td>
-              <td><code>"NCBITaxon:9606
+              <td><code>"NCBITaxon:9606"
               </code></td>
             </tr>
             <tr>
