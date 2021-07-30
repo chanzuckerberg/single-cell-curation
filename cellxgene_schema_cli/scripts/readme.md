@@ -56,36 +56,40 @@ To update these gene references, a developer has to:
 
 ### 1. Download gene reference files
 
-#### 10X GTFs
-
-The reference GTF files are obtained from the 10X reference data. To get the GTF files, from this directory (`cellxgene_schema_cli/scripts`) 
-the following script has to be called:
+The reference GTF files for mouse and human are obtained from the 10X reference data. The GTF file for sars‑CoV‑2 is obtained from ENSEMBL. The ERCC IDs are obtained from ThermoFisher.
+To download all these files, from this directory (`cellxgene_schema_cli/scripts`) the following script has to be called:
 
 ```bash
-bash gtf_download.sh
+bash gene_download.sh
 ```
 
 This script will:
 
-1. Download the reference 10X data for both mouse and human.
-2. Uncompress the data.
-3. Copy the gtf file to to this directory.
-4. Remove all the other data.
+1. Download the reference gene files.
+2. For 10X data, uncompress it, get the GTF files and remove the rest.
+3. At the end the following files will be in this folder:
 
-If GTF versions need to be updated then `gtf_download.sh` has to be changed accordingly.
+    - `mus_musculus.gtf.gz`
+    - `homo_sapiens.gtf.gz`
+    - `sars_cov_2.gtf.gz`
+    - `ercc.txt`
+
+If reference gene versions need to be updated then `gtf_download.sh` has to be changed accordingly.
 
 ### 2. Parse reference files
 
 From this directory (`cellxgene_schema_cli/scripts`) the following script has to be called:
 
 ```bash
-python3 ./gtf_processing.py
+python3 ./gene_processing.py
 ```
 
 This will:
 
-1. Parse the downloaded GTF file (in this directory).
+1. Parse the downloaded reference files 
 2. Write the parsed versions on `cellxgene_schema_cli/cellxgene_schema/ontology_files/` into:
 
     - `gene_homo_sapiens.csv.gz`
     - `gene_mus_musculus.csv.gz`
+    - `sars_cov_2.csv.gz`
+    - `ercc.csv.gz`

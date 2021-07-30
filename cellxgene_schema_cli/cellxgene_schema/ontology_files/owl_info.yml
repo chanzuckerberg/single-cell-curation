@@ -31,6 +31,6 @@ UBERON:
   urls:
     2021-02-12: https://github.com/obophenotype/uberon/raw/v2021-02-12/uberon.owl
 PATO:
-  latest: 2021-02-12
+  latest: 2020-06-15
   urls:
-    2021-02-12: https://github.com/pato-ontology/pato/raw/v2020-06-15/pato.owl
+    2020-06-15: https://github.com/pato-ontology/pato/raw/v2020-06-15/pato.owl
