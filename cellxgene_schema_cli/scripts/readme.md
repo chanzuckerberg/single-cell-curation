@@ -51,6 +51,8 @@ The following gene references are currently stored (to see specific versions ref
 
 1. Humnan `genes_homo_sapines.csv.gz`
 2. Mouse `genes_mus_musculus_sapines.csv.gz`
+3. sars‑CoV‑2 `genes_sars_cov_2.csv.gz`
+4. ERCC Spike-Ins `genes_ercc.csv.gz`
 
 To update these gene references, a developer has to:
 
@@ -89,7 +91,7 @@ This will:
 1. Parse the downloaded reference files 
 2. Write the parsed versions on `cellxgene_schema_cli/cellxgene_schema/ontology_files/` into:
 
-    - `gene_homo_sapiens.csv.gz`
-    - `gene_mus_musculus.csv.gz`
-    - `sars_cov_2.csv.gz`
-    - `ercc.csv.gz`
+    - `genes_homo_sapiens.csv.gz`
+    - `genes_mus_musculus.csv.gz`
+    - `genes_sars_cov_2.csv.gz`
+    - `genes_ercc.csv.gz`
