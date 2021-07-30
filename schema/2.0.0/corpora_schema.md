@@ -694,7 +694,7 @@ When a dataset is uploaded, cellxgene Data Portal MUST automatically add the mat
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>str</code>. This MUST be the reference organism for features:
+        <td><code>str</code>. This MUST be the reference organism for a feature:
           <br><br>
           <table>
           <thead>
