@@ -3,6 +3,7 @@ import anndata
 import os
 import yaml
 import pandas as pd
+from numpy import ndarray
 import re
 from typing import List, Dict, Tuple, Union
 from . import ontology
@@ -239,7 +240,9 @@ class Validator:
                     ontology_name, term_id
                 ) & ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, ancestor):
                     checks.append(
-                        ONTOLOGY_CHECKER.is_descendent_of(ontology_name, term_id, ancestor)
+                        ONTOLOGY_CHECKER.is_descendent_of(
+                            ontology_name, term_id, ancestor
+                        )
                     )
 
         if True not in checks:
@@ -408,6 +411,80 @@ class Validator:
 
         return column
 
+    def _validate_list(
+        self, list_name: str, current_list: List[str], element_type: str
+    ):
+
+        """
+        Validates the elements of a list based on the type definition. Adds errors to self.errors if any
+
+        :param str list_name: name of list to use for error messages (if any)
+        :param str current_list: the list to be validated
+        :param str element_type: type to be validated
+
+        :rtype None
+        """
+
+        for i in current_list:
+
+            if element_type == "match_obs_columns":
+                if i not in self.adata.obs.columns:
+                    self.errors.append(
+                        f"Value '{i}' of list '{list_name}' is not a column in 'adata.obs'"
+                    )
+
+    def _validate_dict(self, dictionary: dict, dict_name: str, dict_def: dict):
+
+        """
+        Verifies the dictionary follows the schema. Adds errors to self.errors if any
+
+        :param str dictionary: The dictionary to validate
+        :param str dict_name: Name of dictionary in the adata (e.g. "uns")
+        :param str dict_def: The schema definition for this specific dictionary
+
+        :rtype None
+        """
+
+        for key, value_def in dict_def["keys"].items():
+
+            if key not in dictionary:
+                if "required" in value_def:
+                    self.errors.append(f"'{key}' in '{dict_name}' is not present")
+                continue
+
+            value = dictionary[key]
+
+            if value_def["type"] == "string":
+                if not isinstance(value, str):
+                    self.errors.append(
+                        f"'{value}' in '{dict_name}['{key}']' is not valid, it must be a string."
+                    )
+                    continue
+
+                if "enum" in value_def:
+                    if value not in value_def["enum"]:
+                        self.errors.append(
+                            f"'{value}' in '{dict_name}['{key}']' is not valid. "
+                            f"Allowed terms: {value_def['enum']}."
+                        )
+
+            if value_def["type"] == "match_obsm_keys":
+                if value not in self.adata.obsm:
+                    self.errors.append(
+                        f"'{value}' in '{dict_name}['{key}']' is not valid, "
+                        f"it must be a key of 'adata.obsm'."
+                    )
+
+            if value_def["type"] == "list":
+                if not (isinstance(value, list) or isinstance(value, ndarray)):
+                    self.errors.append(
+                        f"'{value}' in '{dict_name}['{key}']' is not valid, "
+                        f"it must be a list or numpy array"
+                    )
+                    continue
+
+                self._validate_list(key, value, value_def["element_type"])
+
     def _validate_dataframe(self, df_name: str):
 
         """
@@ -458,11 +535,8 @@ class Validator:
             if component_def["type"] == "dataframe":
                 self._validate_dataframe(component)
             elif component_def["type"] == "dict":
-                # Placeholder
-                self.errors.extend(
-                    ""
-                    # _validate_dict(getattr(adata, component), component, component_def)
-                )
+                dictionary = getattr(self.adata, component)
+                self._validate_dict(dictionary, component, component_def)
             else:
                 raise ValueError(f"Unexpected component type '{component['type']}'")
 

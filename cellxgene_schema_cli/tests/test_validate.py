@@ -54,7 +54,9 @@ class TestFieldValidation(unittest.TestCase):
                 for ontology_name in self.schema_def["components"]["obs"]["columns"][i][
                     "curie_constrains"
                 ]["ontolgies"]:
-                    self.assertTrue(self.OntologyChecker.is_valid_ontology(ontology_name))
+                    self.assertTrue(
+                        self.OntologyChecker.is_valid_ontology(ontology_name)
+                    )
 
     def test_validate_ontology_good(self):
         self.validator._validate_curie(
@@ -76,6 +78,38 @@ class TestFieldValidation(unittest.TestCase):
             "NO_TERM2", self.column_name, self.curie_constraints
         )
         self.assertTrue(self.validator.errors)
+
+
+class TestDictionaryValidation(unittest.TestCase):
+    def setUp(self):
+        self.validator = validate.Validator()
+        self.validator.adata = examples.adata
+        self.schema_def = validate._get_schema_definition(examples.SCHEMA_VERSION)
+        self.good_uns = examples.good_uns
+        self.bad_uns = examples.bad_uns
+
+    def test_validate_good_uns(self):
+        self.validator._validate_dict(
+            self.good_uns, "uns", self.schema_def["components"]["uns"]
+        )
+        self.assertFalse(self.validator.errors)
+
+    def test_validate_bad_uns(self):
+
+        # Do one key at a time but skip schema_version as that's not checked here
+        for key, value in self.bad_uns.items():
+
+            if key == "schema_version":
+                continue
+
+            current_dict = self.good_uns.copy()
+            current_dict[key] = value
+
+            self.validator.errors = []
+            self.validator._validate_dict(
+                current_dict, "uns", self.schema_def["components"]["uns"]
+            )
+            self.assertTrue(self.validator.errors)
 
 
 class TestColumnValidation(unittest.TestCase):

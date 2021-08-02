@@ -1,6 +1,29 @@
 title: Corpora schema version 2.0.0
 type: anndata
 components:
+    uns:
+        type: dict
+        keys:
+            schema_version:
+                type: string
+                required: null
+            title:
+                type: string
+                required: null
+            batch_condition:
+                type: list
+                element_type: match_obs_columns
+            default_embedding:
+                type: match_obsm_keys
+            X_normalization:
+                type: string
+                required: null
+            X_approximate_distribution:
+                type: string
+                required: null
+                enum:
+                    - count
+                    - normal
     obs:
         type: dataframe
         index:

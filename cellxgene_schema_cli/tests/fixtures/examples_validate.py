@@ -1,11 +1,12 @@
 import pandas as pd
+import numpy
 import anndata
 import os
 
 SCHEMA_VERSION = "2.0.0"
 FIXTURES_ROOT = os.path.join(os.path.dirname(__file__))
 
-# Pre-made examples
+# Pre-made example files
 h5ad_dir = os.path.join(FIXTURES_ROOT, "h5ads")
 h5ad_valid = os.path.join(h5ad_dir, "example_valid.h5ad")
 h5ad_invalid = [
@@ -18,6 +19,7 @@ h5ad_invalid = [
     "example_invalid_tissue.h5ad",
     "example_invalid_ethnicity.h5ad",
     "example_invalid_development_stage.h5ad",
+    "example_invalid_uns.h5ad",
 ]
 h5ad_invalid = [os.path.join(h5ad_dir, i) for i in h5ad_invalid]
 
@@ -130,15 +132,33 @@ bad_obs = pd.DataFrame(
     ],
 )
 
-good_uns = {"schema_version": SCHEMA_VERSION}
+good_uns = {
+    "schema_version": SCHEMA_VERSION,
+    "title": "A title",
+    "default_embedding": "X_umap",
+    "X_normalization": "CPM",
+    "X_approximate_distribution": "normal",
+    "batch_condition": ["is_primary_data"],
+}
+
+bad_uns = {
+    "schema_version": "2.0.0",
+    "title": 1,
+    "default_embedding": "X_PCA_1",
+    "X_normalization": 1,
+    "X_approximate_distribution": "CPM",
+    "batch_condition": ["batchD", "batchE"],
+}
 
 X = pd.DataFrame(
     [[0] * good_obs.shape[1], [0] * good_obs.shape[1]],
     index=["X", "Y"],
 )
 
-adata = anndata.AnnData(X=X, obs=good_obs, uns=good_uns)
+good_obsm = {"X_umap": numpy.zeros([X.shape[0], 2])}
+
+adata = anndata.AnnData(X=X, obs=good_obs, uns=good_uns, obsm=good_obsm)
 adata_with_labels = anndata.AnnData(
-    X=X, obs=pd.concat([good_obs, obs_expected], axis=1), uns=good_uns
+    X=X, obs=pd.concat([good_obs, obs_expected], axis=1), uns=good_uns, obsm=good_obsm
 )
-adata_empty = anndata.AnnData(X=X, uns=good_uns)
+adata_empty = anndata.AnnData(X=X, uns=good_uns, obsm=good_obsm)
