@@ -825,7 +825,7 @@ See also `default_embedding` in `uns`.
     <tr>
       <th>Value</th>
         <td>
-          <code>str</code> or <code>list[str]</code>. <code>str</code> values MUST refer to cell metadata keys in <code>obs</code>. Together, these keys define the <i>batches</i> that a normalization or integration algorithm should be aware of. For example if <code>"patient"</code> and <code>"seqBatch"</code> are keys of vectors of cell metadata, either <code>"patient"</code>, <code>"seqBatch"</code>, or <code>["patient", "seqBatch"]</code> are valid values.
+          <code>list[str]</code>. <code>str</code> values MUST refer to cell metadata keys in <code>obs</code>. Together, these keys define the <i>batches</i> that a normalization or integration algorithm should be aware of. For example if <code>"patient"</code> and <code>"seqBatch"</code> are keys of vectors of cell metadata, either <code>["patient"]</code>, <code>["seqBatch"]</code>, or <code>["patient", "seqBatch"]</code> are valid values.
         </td>
     </tr>
 </tbody></table>
