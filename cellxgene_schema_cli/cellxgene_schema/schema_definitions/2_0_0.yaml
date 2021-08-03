@@ -1,6 +1,9 @@
 title: Corpora schema version 2.0.0
 type: anndata
+sparsity: 0.5
 components:
+    obsm:
+        type: embedding_dict
     uns:
         type: dict
         keys:

@@ -2,6 +2,7 @@ import unittest
 import pandas as pd
 from cellxgene_schema import ontology
 from cellxgene_schema import validate
+from numpy import delete
 import fixtures.examples_validate as examples
 
 
@@ -80,7 +81,40 @@ class TestFieldValidation(unittest.TestCase):
         self.assertTrue(self.validator.errors)
 
 
-class TestDictionaryValidation(unittest.TestCase):
+class TestObsmValidation(unittest.TestCase):
+
+    def setUp(self):
+        self.validator = validate.Validator()
+        self.validator.adata = examples.adata.copy()
+        self.schema_def = validate._get_schema_definition(examples.SCHEMA_VERSION)
+        self.good_uns = examples.good_uns
+
+    def test_validate_good_obsm(self):
+        self.validator._validate_embedding_dict()
+        self.assertFalse(self.validator.errors)
+
+    def test_validate_bad_obsm(self):
+
+        # Wrong dimension, delete one column
+        key = list(self.validator.adata.obsm.keys())[0]
+        self.validator.adata.obsm[key] = delete(self.validator.adata.obsm[key], 0, axis=1)
+
+        self.validator._validate_embedding_dict()
+        self.assertTrue(self.validator.errors)
+
+    def test_validate_bad_obsm_2(self):
+
+        # Wrong type
+        key = list(self.validator.adata.obsm.keys())[0]
+        self.validator.adata.obsm[key] = pd.DataFrame(self.validator.adata.obsm[key],
+                                                      index = self.validator.adata.obs_names)
+
+        self.validator._validate_embedding_dict()
+        self.assertTrue(self.validator.errors)
+
+
+class TestUnsValidation(unittest.TestCase):
+
     def setUp(self):
         self.validator = validate.Validator()
         self.validator.adata = examples.adata

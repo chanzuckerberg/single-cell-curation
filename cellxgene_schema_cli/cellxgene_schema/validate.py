@@ -4,6 +4,9 @@ import os
 import yaml
 import pandas as pd
 from numpy import ndarray
+from numpy import count_nonzero
+from numpy import cumprod
+from scipy import sparse
 import re
 from typing import List, Dict, Tuple, Union
 from . import ontology
@@ -129,6 +132,7 @@ class Validator:
 
         # Set initial state
         self.errors = []
+        self.warnings = []
         self.is_valid = False
         self.adata = anndata.AnnData()
         self.schema_def = dict()
@@ -523,6 +527,67 @@ class Validator:
             if len(column) > 0:
                 self._validate_column(column, column_name, df_name, column_def)
 
+    def _validate_sparsity(self):
+
+        """
+        calculates sparsity of x and raw.x, if bigger than indicated in the schema and not a scipy sparse matrix, then
+        adds to warnings
+
+        :rtype none
+        """
+
+        max_sparsity = self.schema_def["sparsity"]
+
+        to_validate = [self.adata.X]
+        to_validate_name = ["X"]
+
+        # check if there's raw data
+        if self.adata.raw:
+            to_validate.append(self.adata.raw.X)
+            to_validate_name.append("raw")
+
+        # check if there's other expression matrices under layers
+        if self.adata.layers:
+            for key, value in self.adata.layers.items():
+                to_validate.append(value)
+                to_validate_name.append(f"layers['{key}']")
+
+        # Check sparsity
+        for x, x_name in zip(to_validate, to_validate_name):
+            if not isinstance(x, sparse.csr_matrix):
+                sparsity = 1 - count_nonzero(x) / float(cumprod(x.shape)[-1])
+                print(sparsity)
+                if sparsity > max_sparsity:
+                    self.warnings.append(f"Sparsity of '{x_name}' is {sparsity} which is greater than {max_sparsity}, "
+                                         f"and it is not a 'scipy.sparse.csr_matrix'. It is STRONGLY RECOMMENDED "
+                                         f"to use this type of matrix for the given sparsity.")
+
+    def _validate_embedding_dict(self):
+
+        """
+        Validates the embedding dictionary -- it checks that all values of adata.obms are numpy arrays with the correct
+        dimension. Adds errors to self.errors if any.
+
+        :rtype none
+        """
+
+        if not self.adata.obsm:
+            self.errors.append("No embeddings found in 'adata.obsm'")
+            return
+
+        for key, value in self.adata.obsm.items():
+
+            if not isinstance(value, ndarray):
+                self.errors.append(f"All embeddings have to be of 'numpy.ndarray' type, "
+                                   f"'adata.obsm['{key}']' is {type(value)}')")
+                continue
+
+            # obsm
+            if value.shape[0] != self.adata.n_obs or value.shape[1] < 2:
+                self.errors.append(f"All embeddings must have as many rows as cells, and at least two columns."
+                                   f"'adata.obsm['{key}']' has shape of '{value.shape}'")
+        return
+
     def _deep_check(self):
 
         """
@@ -531,12 +596,18 @@ class Validator:
         :rtype None
         """
 
+        # Checks sparsity
+        self._validate_sparsity()
+
+        # Checks each component
         for component, component_def in self.schema_def["components"].items():
             if component_def["type"] == "dataframe":
                 self._validate_dataframe(component)
             elif component_def["type"] == "dict":
                 dictionary = getattr(self.adata, component)
                 self._validate_dict(dictionary, component, component_def)
+            elif component_def["type"] == "embedding_dict":
+                self._validate_embedding_dict()
             else:
                 raise ValueError(f"Unexpected component type '{component['type']}'")
 
@@ -563,7 +634,14 @@ class Validator:
 
         self._deep_check()
 
+        # Print warnings if any
+        if self.warnings:
+            self.warnings = ["WARNING: " + i for i in self.warnings]
+            print(*self.warnings, sep="\n")
+
+        # Print errors if any
         if self.errors:
+            self.errors = ["ERROR: " + i for i in self.errors]
             print(*self.errors, sep="\n")
             self.is_valid = False
         else:
