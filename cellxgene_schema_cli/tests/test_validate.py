@@ -2,8 +2,9 @@ import unittest
 import pandas as pd
 from cellxgene_schema import ontology
 from cellxgene_schema import validate
-from numpy import delete
+import numpy
 import fixtures.examples_validate as examples
+from scipy import sparse
 
 
 class TestFieldValidation(unittest.TestCase):
@@ -81,6 +82,32 @@ class TestFieldValidation(unittest.TestCase):
         self.assertTrue(self.validator.errors)
 
 
+class TestSparsity(unittest.TestCase):
+
+    def setUp(self):
+        self.validator = validate.Validator()
+        self.validator.adata = examples.adata.copy()
+        self.validator._set_schema_def()
+
+    def test_sparsity(self):
+
+        # If a matrix is sparse and not a sparse csr matrix there should be a warning
+        self.validator.adata.X = numpy.zeros(self.validator.adata.X.shape)
+        self.validator._validate_sparsity()
+        self.assertTrue(self.validator.warnings)
+
+        self.validator.warnings = []
+        self.validator.adata.X = sparse.csc_matrix(self.validator.adata.X)
+        self.validator._validate_sparsity()
+        self.assertTrue(self.validator.warnings)
+
+        # Correct sparsity
+        self.validator.warnings = []
+        self.validator.adata.X = sparse.csr_matrix(self.validator.adata.X)
+        self.validator._validate_sparsity()
+        self.assertFalse(self.validator.warnings)
+
+
 class TestObsmValidation(unittest.TestCase):
 
     def setUp(self):
@@ -97,7 +124,7 @@ class TestObsmValidation(unittest.TestCase):
 
         # Wrong dimension, delete one column
         key = list(self.validator.adata.obsm.keys())[0]
-        self.validator.adata.obsm[key] = delete(self.validator.adata.obsm[key], 0, axis=1)
+        self.validator.adata.obsm[key] = numpy.delete(self.validator.adata.obsm[key], 0, axis=1)
 
         self.validator._validate_embedding_dict()
         self.assertTrue(self.validator.errors)

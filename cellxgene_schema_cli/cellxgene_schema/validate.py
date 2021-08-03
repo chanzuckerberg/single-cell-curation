@@ -147,7 +147,9 @@ class Validator:
         :rtype None
         """
         try:
-            self.adata = anndata.read_h5ad(h5ad_path, backed="r")
+            # H5AD has to be loaded in memory mode. If not the types of X are not properly retrieved by anndata
+            # see https://github.com/theislab/anndata/issues/326#issuecomment-892203924
+            self.adata = anndata.read_h5ad(h5ad_path, backed=None)
         except (OSError, TypeError):
             print(f"Unable to open '{h5ad_path}' with AnnData")
             sys.exit(1)
@@ -555,8 +557,16 @@ class Validator:
         # Check sparsity
         for x, x_name in zip(to_validate, to_validate_name):
             if not isinstance(x, sparse.csr_matrix):
-                sparsity = 1 - count_nonzero(x) / float(cumprod(x.shape)[-1])
-                print(sparsity)
+
+                if isinstance(x, sparse.csc_matrix):
+                    sparsity = 1 - x.count_nonzero() / float(cumprod(x.shape)[-1])
+                elif isinstance(x, ndarray):
+                    sparsity = 1 - count_nonzero(x) / float(cumprod(x.shape)[-1])
+                else:
+                    self.warnings.append(f"{x_name} matrix is of type {type(x)}, sparsity calculation hasn't been "
+                                         f"implemented")
+                    continue
+
                 if sparsity > max_sparsity:
                     self.warnings.append(f"Sparsity of '{x_name}' is {sparsity} which is greater than {max_sparsity}, "
                                          f"and it is not a 'scipy.sparse.csr_matrix'. It is STRONGLY RECOMMENDED "
@@ -595,6 +605,10 @@ class Validator:
 
         :rtype None
         """
+
+        # Checks that adata is fully loaded
+        if self.adata.isbacked:
+            raise RuntimeError("adata is loaded in backed mode, validation requires anndata to be loaded in memory")
 
         # Checks sparsity
         self._validate_sparsity()

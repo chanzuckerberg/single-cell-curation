@@ -23,6 +23,7 @@ h5ad_invalid = [
 ]
 h5ad_invalid = [os.path.join(h5ad_dir, i) for i in h5ad_invalid]
 
+
 # Manual minimal examples
 good_obs = pd.DataFrame(
     [
