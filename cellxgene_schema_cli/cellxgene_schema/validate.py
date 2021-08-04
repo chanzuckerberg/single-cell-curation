@@ -40,6 +40,28 @@ def _get_schema_definition(version: str) -> dict:
     return yaml.load(open(path), Loader=yaml.FullLoader)
 
 
+def _get_organism_from_feature_id (feature_id: str) -> Union[ontology.SupportedOrganisms, None]:
+
+    """
+    Infers the organism of a feature id based on the prefix of a feature id, e.g. ENSG means Homo sapiens
+
+    :param str feature_id: the feature id
+
+    :rtype Union[ontology.SypportedOrganisms, None]
+    :return: the organism the feature id is from
+    """
+
+    if feature_id.startswith("ENSG") or feature_id.startswith("ENST"):
+        return ontology.SupportedOrganisms.HOMO_SAPIENS
+    elif feature_id.startswith("ENSMUS"):
+        return ontology.SupportedOrganisms.MUS_MUSCULUS
+    elif feature_id.startswith("ENSSAS"):
+        return ontology.SupportedOrganisms.HOMO_SAPIENS
+    elif feature_id.startswith("ERCC"):
+        return ontology.SupportedOrganisms.ERCC
+    else:
+        return None
+
 def _curie_remove_suffix(term_id: str, suffix_def: dict) -> Tuple[str, str]:
     """
     Remove suffix from a curie term id, if none present return it unmodified
@@ -70,57 +92,6 @@ def _curie_remove_suffix(term_id: str, suffix_def: dict) -> Tuple[str, str]:
     return term_id, id_suffix
 
 
-def _get_mapping_dict_curie(ids: List[str], curie_constraints: dict) -> Dict[str, str]:
-
-    """
-    From defined constraints it creates a mapping dictionary of ontology IDs and labels. Used internally
-    by LabelWriter class
-
-    :param list[str] ids: Ontology IDs use for mapping
-    :param list[str] curie_constraints: curie constraints e.g.
-    schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"]["curie_"]
-
-    :return a mapping dictionary: {id: label, ...}
-    :rtype dict
-    """
-
-    mapping_dict = {}
-    allowed_ontologies = curie_constraints["ontologies"]
-
-    # Remove any suffixes if any
-    # original_ids will have untouched ids which will be used for mapping
-    # id_suffixes will save suffixes if any, these will be used to append to labels
-    # ids will have the ids without suffixes
-    original_ids = ids.copy()
-    id_suffixes = [""] * len(ids)
-
-    if "suffixes" in curie_constraints:
-        for i in range(len(ids)):
-            ids[i], id_suffixes[i] = _curie_remove_suffix(
-                ids[i], curie_constraints["suffixes"]
-            )
-
-    for original_id, id, id_suffix in zip(original_ids, ids, id_suffixes):
-        # If there are exceptions the label should be the same as the id
-        if "exceptions" in curie_constraints:
-            if original_id in curie_constraints["exceptions"]:
-                mapping_dict[original_id] = original_id
-                continue
-
-        for ontology_name in allowed_ontologies:
-            if ontology_name == "NA":
-                continue
-            if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, id):
-                mapping_dict[original_id] = (
-                    ONTOLOGY_CHECKER.get_term_label(ontology_name, id) + id_suffix
-                )
-
-    # Check that all ids got a mapping. All ids should be found if adata was validated
-    for id in original_ids:
-        if id not in mapping_dict:
-            raise ValueError(f"Add labels error: Unable to get label for '{id}'")
-
-    return mapping_dict
 
 
 class Validator:
@@ -137,6 +108,9 @@ class Validator:
         self.adata = anndata.AnnData()
         self.schema_def = dict()
         self.h5ad_path = ""
+        self.invalid_feature_ids = []
+        self.gene_checkers = dict() # Values will be instances of ontology.GeneChecker,
+                                    # keys will be one of ontology.SupportedOrganisms
 
     def _read_h5ad(self, h5ad_path: Union[str, bytes, os.PathLike]):
 
@@ -332,6 +306,32 @@ class Validator:
                 term_id, column_name, curie_constraints["allowed_terms"]
             )
 
+    def _validate_feature_id(self, feature_id: str):
+
+        """
+        Validates a feature id, i.e. checks that it's present in the reference
+        If there are any errors, it adds them to self.errors and adds it to the list of invalid features
+
+        :param str feature_id: the feature id to be validated
+
+        :rtype none
+        """
+
+        organism = _get_organism_from_feature_id(feature_id)
+
+        if not organism:
+            self.errors.append(f"Could not infer organism from '{feature_id}', make sure it is a valid ID")
+            return
+
+        if organism not in self.gene_checkers:
+            self.gene_checkers[organism] = ontology.GeneChecker(organism)
+
+        if not self.gene_checkers[organism].is_valid_id(feature_id):
+            self.invalid_feature_ids.append(feature_id)
+            self.errors.append(f"'{feature_id}' is not a valid feature ID")
+
+        return
+
     def _validate_column(
         self, column: pd.Series, column_name: str, df_name: str, column_def: dict
     ):
@@ -346,8 +346,7 @@ class Validator:
         :param dict column_def: schema definition for this specific column,
         e.g. schema_def["obs"]["columns"]["cell_type_ontology_term_id"]
 
-        :return A list of error messages. If that list is empty, the object passed validation.
-        :rtype list
+        :rtype None
         """
 
         if column_def.get("unique"):
@@ -356,19 +355,29 @@ class Validator:
                     f"Column '{column_name}' in dataframe '{df_name}' is not unique."
                 )
 
-        if "enum" in column_def:
-            bad_enums = [v for v in column if v not in column_def["enum"]]
-            if bad_enums:
-                self.errors.append(
-                    f"Column '{column_name}' in dataframe '{df_name}' contains invalid values like "
-                    f"'{bad_enums[0]}'. Values must be one of {column_def['enum']}."
-                )
-
         if column_def.get("type") == "bool":
             if not column.dtype == bool:
                 self.errors.append(
                     f"Column '{column_name}' in dataframe '{df_name}' must be boolean not {column.dtype.name}"
                 )
+
+        if column_def.get("type") == "categorical":
+            if not column.dtype.name == "category":
+                self.errors.append(
+                    f"Column '{column_name}' in dataframe '{df_name}' must be categorical not {column.dtype.name}"
+                )
+
+        if "enum" in column_def:
+            bad_enums = [v for v in column.drop_duplicates() if v not in column_def["enum"]]
+            if bad_enums:
+                self.errors.append(
+                    f"Column '{column_name}' in dataframe '{df_name}' contains invalid values "
+                    f"'{bad_enums}'. Values must be one of {column_def['enum']}."
+                )
+
+        if column_def.get("type") == "feature_id":
+            for feature_id in column:
+                self._validate_feature_id(feature_id)
 
         if column_def.get("type") == "curie":
             if "curie_constraints" not in column_def:
@@ -505,7 +514,7 @@ class Validator:
 
         if "index" in self._get_component_def(df_name):
             self._validate_column(
-                df.index, "index", df_name, self._get_column_def(df_name, "index")
+                pd.Series(df.index), "index", df_name, self._get_column_def(df_name, "index")
             )
 
         for column_name in self._get_component_def(df_name)["columns"].keys():
@@ -689,6 +698,7 @@ class LabelWriter:
         else:
             self.adata = validator.adata.copy()
 
+        self.validator = validator
         self.schema_def = validator.schema_def
         self.errors = []
         self.was_writing_successful = False
@@ -758,6 +768,77 @@ class LabelWriter:
 
         return flatten
 
+    def _get_mapping_dict_curie(self, ids: List[str], curie_constraints: dict) -> Dict[str, str]:
+
+        """
+        From defined constraints it creates a mapping dictionary of ontology IDs and labels.
+
+        :param list[str] ids: Ontology IDs use for mapping
+        :param list[str] curie_constraints: curie constraints e.g.
+        schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"]["curie_"]
+
+        :return a mapping dictionary: {id: label, ...}
+        :rtype dict
+        """
+
+        mapping_dict = {}
+        allowed_ontologies = curie_constraints["ontologies"]
+
+        # Remove any suffixes if any
+        # original_ids will have untouched ids which will be used for mapping
+        # id_suffixes will save suffixes if any, these will be used to append to labels
+        # ids will have the ids without suffixes
+        original_ids = ids.copy()
+        id_suffixes = [""] * len(ids)
+
+        if "suffixes" in curie_constraints:
+            for i in range(len(ids)):
+                ids[i], id_suffixes[i] = _curie_remove_suffix(
+                    ids[i], curie_constraints["suffixes"]
+                )
+
+        for original_id, id, id_suffix in zip(original_ids, ids, id_suffixes):
+            # If there are exceptions the label should be the same as the id
+            if "exceptions" in curie_constraints:
+                if original_id in curie_constraints["exceptions"]:
+                    mapping_dict[original_id] = original_id
+                    continue
+
+            for ontology_name in allowed_ontologies:
+                if ontology_name == "NA":
+                    continue
+                if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, id):
+                    mapping_dict[original_id] = (
+                            ONTOLOGY_CHECKER.get_term_label(ontology_name, id) + id_suffix
+                    )
+
+        # Check that all ids got a mapping. All ids should be found if adata was validated
+        for id in original_ids:
+            if id not in mapping_dict:
+                raise ValueError(f"Add labels error: Unable to get label for '{id}'")
+
+        return mapping_dict
+
+    def _get_mapping_dict_features(self, ids: List[str]) -> Dict[str, str]:
+
+        """
+        Creates a mapping dictionary of gene/feature IDs and labels.
+
+        :param list[str] ids: Gene/feature IDs use for mapping
+
+        :return a mapping dictionary: {id: label, ...}
+        :rtype dict
+        """
+
+        mapping_dict = {}
+
+        for i in ids:
+            organism = _get_organism_from_feature_id(i)
+            print(self.validator.gene_checkers[organism].get_symbol(i))
+            mapping_dict[i] = self.validator.gene_checkers[organism].get_symbol(i)
+
+        return mapping_dict
+
     def _get_labels(
         self, component: str, column: str, column_definition: dict
     ) -> pd.Categorical:
@@ -768,6 +849,7 @@ class LabelWriter:
 
         :param str component: what dataframe in self.adata to work with
         :param str column: Column in self.adata with IDs that will be used to retrieve values
+        :param dict column_definition: schema definition of the column
         e.g. schema_def["obs"]["columns"]["cell_type_ontology_term_id"]
 
         :rtype pandas.Categorical
@@ -777,6 +859,12 @@ class LabelWriter:
         # Set variables for readability
         type_labels = column_definition["add_labels"]["type"]
         current_df = getattr(self.adata, component)
+
+        if column == "index":
+            original_column = pd.Series(current_df.index)
+        else:
+            original_column = getattr(current_df, column)
+
         ids = getattr(current_df, column).drop_duplicates().tolist()
 
         # Flatten column definition (will do so if there are dependencies in the definition
@@ -792,9 +880,10 @@ class LabelWriter:
                     "but no curie constraints were found for the lables"
                 )
 
-            mapping_dict = _get_mapping_dict_curie(
-                ids=ids, curie_constraints=column_definition["curie_constraints"]
-            )
+            mapping_dict = self._get_mapping_dict_curie(ids, column_definition["curie_constraints"])
+
+        elif type_labels == "feature_id":
+            mapping_dict = self._get_mapping_dict_features(ids=ids)
 
         else:
             raise TypeError(
@@ -802,10 +891,30 @@ class LabelWriter:
             )
 
         new_column = (
-            getattr(current_df, column).copy().replace(mapping_dict).astype("category")
+            original_column.copy().replace(mapping_dict).astype("category")
         )
 
         return new_column
+
+    def _add_column(self, component: str, column: str, column_definition: dict):
+
+        """
+        Adds a new column (pandas categorical) to a component of adata with labels based on the IDs
+        in 'column' and the logic in the 'column_def'
+
+        :param str component: what dataframe in self.adata to work with
+        :param str column: Column in self.adata with IDs that will be used to retrieve values
+        :param dict column_definition: schema definition of the column
+        e.g. schema_def["obs"]["columns"]["cell_type_ontology_term_id"]
+
+        :rtype None
+        """
+
+        new_column = self._get_labels(component, column, column_definition)
+
+        # The sintax below is a programtic way to access obs and var in adata:
+        # adata.__dict__["_obs"] is adata.obs
+        self.adata.__dict__["_" + component][column_definition["add_labels"]["to"]] = new_column
 
     def _add_labels(self):
 
@@ -814,15 +923,18 @@ class LabelWriter:
         to adata.obs and adata.var respectively
         """
 
-        # First adata.obs
-        for column, column_def in self.schema_def["components"]["obs"][
-            "columns"
-        ].items():
-            if "add_labels" in column_def:
-                new_column = self._get_labels("obs", column, column_def)
-                self.adata.obs[column_def["add_labels"]["to"]] = new_column
+        for component in ["obs", "var"]:
 
-        # Second adata.var
+            # Doing it for columns
+            for column, column_def in self.schema_def["components"][component]["columns"].items():
+
+                if "add_labels" in column_def:
+                    self._add_column(component, column, column_def)
+
+            # Doing it for index
+            index_def = self.schema_def["components"][component]["index"]
+            if "add_labels" in index_def:
+                self._add_column(component, "index", index_def)
 
     def _check_column_availability(self):
 

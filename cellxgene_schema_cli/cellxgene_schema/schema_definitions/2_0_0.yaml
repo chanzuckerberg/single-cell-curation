@@ -27,6 +27,25 @@ components:
                 enum:
                     - count
                     - normal
+    var:
+        type: dataframe
+        index:
+            unique: true
+            type: feature_id
+            add_labels:
+                type: feature_id
+                to: feature_name
+        columns:
+            feature_biotype:
+                type: categorical
+                enum:
+                    - "gene"
+                dependencies:
+                    -
+                        rule: "index.str.startswith('ERCC')"
+                        type: categorical
+                        enum:
+                            - "spike-in"
     obs:
         type: dataframe
         index:
