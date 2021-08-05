@@ -151,14 +151,47 @@ bad_uns = {
     "batch_condition": ["batchD", "batchE"],
 }
 
-X = pd.DataFrame(
-    [[0] * good_obs.shape[1], [0] * good_obs.shape[1]],
-    index=["X", "Y"],
+good_var = pd.DataFrame(
+    [
+        ["spike-in"],
+        ["gene"],
+        ["gene"],
+        ["gene"],
+    ],
+    index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"],
+    columns=["feature_biotype"]
 )
+good_var = good_var.astype("category")
+
+bad_var = pd.DataFrame(
+    [
+        ["gene"], #should be spike in
+        ["spike-in"], #should be gene
+        ["other"], # incorrect
+        ["gene"],
+    ],
+    index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "NO_GENE"],
+    columns=["feature_biotype"]
+)
+good_var = good_var.astype("category")
+
+var_expected = pd.DataFrame(
+    [
+        ["spike-in", "ERCC-00002 spike-in control", "NCBITaxon:32630"],
+        ["gene", "MACF1", "NCBITaxon:9606"],
+        ["gene", "Trp53", "NCBITaxon:10090"],
+        ["gene", "S", "NCBITaxon:2697049"],
+    ],
+    index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"],
+    columns=["feature_biotype", "feature_name", "feature_reference"]
+)
+var_expected = var_expected.astype("category")
+
+X = numpy.zeros([good_obs.shape[0],  good_var.shape[0]])
 
 good_obsm = {"X_umap": numpy.zeros([X.shape[0], 2])}
 
-adata = anndata.AnnData(X=X, obs=good_obs, uns=good_uns, obsm=good_obsm)
+adata = anndata.AnnData(X=X, obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var)
 adata_with_labels = anndata.AnnData(
     X=X, obs=pd.concat([good_obs, obs_expected], axis=1), uns=good_uns, obsm=good_obsm
 )

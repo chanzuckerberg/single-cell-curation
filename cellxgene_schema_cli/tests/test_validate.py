@@ -177,6 +177,11 @@ class TestColumnValidation(unittest.TestCase):
     def setUp(self):
         self.validator = validate.Validator()
         self.validator.adata = examples.adata_empty
+        self.good_var = examples.good_var
+        self.good_obs = examples.good_obs
+        self.bad_var = examples.bad_var
+        self.bad_obs = examples.bad_obs
+        self.schema_def = validate._get_schema_definition(examples.SCHEMA_VERSION)
 
         self.unique = pd.DataFrame(
             [["abc", "def"], ["ghi", "jkl"], ["mnop", "qrs"]],
@@ -228,31 +233,35 @@ class TestColumnValidation(unittest.TestCase):
 
     def test_ontology_columns(self):
 
-        columns_def = validate._get_schema_definition(examples.SCHEMA_VERSION)[
-            "components"
-        ]["obs"]["columns"]
 
-        # Correct example. This only tests the column validation process and therefore the tests exludes does columns
+        # Correct example. This only tests the column validation process and therefore the tests excludes those columns
         # that have dependencies with other columns and need the entire dataframe for validation
-        good_df = examples.good_obs
+        dfs = [self.good_var, self.good_obs]
+        components = ["var", "obs"]
 
-        for column in good_df.columns:
-            if "dependencies" not in columns_def[column]:
-                self.validator.errors = []  # Reset errors
-                self.validator._validate_column(
-                    good_df[column], column, "obs", columns_def[column]
-                )
-                self.assertFalse(self.validator.errors)
+        for good_df, component in zip(dfs, components):
+            for column in good_df.columns:
+                columns_def = self.schema_def["components"][component]["columns"]
+                if "dependencies" not in columns_def[column]:
+                    self.validator.errors = []  # Reset errors
+                    self.validator._validate_column(
+                        good_df[column], column, "obs", columns_def[column]
+                    )
+                    self.assertFalse(self.validator.errors)
 
         # Bad columns, do each individually
-        bad_df = examples.bad_obs
-        for column in bad_df.columns:
-            if "dependencies" not in columns_def[column]:
-                self.validator.errors = []  # Reset errors
-                self.validator._validate_column(
-                    bad_df[column], column, "obs", columns_def[column]
-                )
-                self.assertTrue(self.validator.errors)
+        dfs = [self.bad_var, self.bad_obs]
+        components = ["var", "obs"]
+        for bad_df, component in zip(dfs, components):
+            for column in bad_df.columns:
+                columns_def = self.schema_def["components"][component]["columns"]
+                if "dependencies" not in columns_def[column]:
+                    self.validator.errors = []  # Reset errors
+                    self.validator._validate_column(
+                        bad_df[column], column, "obs", columns_def[column]
+                    )
+                    self.assertTrue(self.validator.errors)
+
 
 
 class TestH5adValidation(unittest.TestCase):
@@ -284,7 +293,39 @@ class TestAddLabelFunctions(unittest.TestCase):
         validator.validate_adata()
         self.writer = validate.LabelWriter(validator)
 
-    def test_get_dictionary_mapping(self):
+    def test_get_dictionary_mapping_feature_id(self):
+
+        # Good
+        ids = ["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"]
+        labels = ["ERCC-00002 spike-in control", "MACF1", "Trp53", "S"]
+        expected_dict = {i: j for i, j in zip(ids, labels)}
+        self.assertEqual(
+            self.writer._get_mapping_dict_feature_id(ids), expected_dict
+        )
+
+        # Bad
+        ids = ["NO_GENE"]
+        expected_dict = {i: j for i, j in zip(ids, labels)}
+        with self.assertRaises(KeyError):
+            self.writer._get_mapping_dict_feature_id(ids)
+
+    def test_get_dictionary_mapping_feature_reference(self):
+
+        # Good
+        ids = ["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"]
+        labels = ["NCBITaxon:32630", "NCBITaxon:9606", "NCBITaxon:10090", "NCBITaxon:2697049"]
+        expected_dict = {i: j for i, j in zip(ids, labels)}
+        self.assertEqual(
+            self.writer._get_mapping_dict_feature_reference(ids), expected_dict
+        )
+
+        # Bad
+        ids = ["NO_GENE"]
+        expected_dict = {i: j for i, j in zip(ids, labels)}
+        with self.assertRaises(KeyError):
+            self.writer._get_mapping_dict_feature_id(ids)
+
+    def test_get_dictionary_mapping_curie(self):
 
         # Good
         ids = ["CL:0000066", "CL:0000192"]
@@ -294,7 +335,7 @@ class TestAddLabelFunctions(unittest.TestCase):
         ]["curie_constraints"]
         expected_dict = {i: j for i, j in zip(ids, labels)}
         self.assertEqual(
-            validate._get_mapping_dict_curie(ids, curie_constraints), expected_dict
+            self.writer._get_mapping_dict_curie(ids, curie_constraints), expected_dict
         )
 
         ids = ["EFO:0009899", "EFO:0009922"]
@@ -304,7 +345,7 @@ class TestAddLabelFunctions(unittest.TestCase):
         ]["curie_constraints"]
         expected_dict = {i: j for i, j in zip(ids, labels)}
         self.assertEqual(
-            validate._get_mapping_dict_curie(ids, curie_constraints), expected_dict
+            self.writer._get_mapping_dict_curie(ids, curie_constraints), expected_dict
         )
 
         ids = ["MONDO:0100096"]
@@ -314,14 +355,8 @@ class TestAddLabelFunctions(unittest.TestCase):
         ]["curie_constraints"]
         expected_dict = {i: j for i, j in zip(ids, labels)}
         self.assertEqual(
-            validate._get_mapping_dict_curie(ids, curie_constraints), expected_dict
+            self.writer._get_mapping_dict_curie(ids, curie_constraints), expected_dict
         )
-
-        # ids = ["MmusDv:0000062", "HsapDv:0000174"]
-        # labels = ["2 month-old stage", "1 month-old human stage"]
-        # curie_constraints = self.schema_def["components"]["obs"]["columns"]["development_stage_ontology_term_id"]
-        # expected_dict = {i: j for i,j in zip(ids, labels)}
-        # self.assertEqual(validate._get_mapping_dict_curie(ids, curie_constraints), expected_dict)
 
         # Bad
         curie_constraints = self.schema_def["components"]["obs"]["columns"][
@@ -330,32 +365,31 @@ class TestAddLabelFunctions(unittest.TestCase):
 
         ids = ["CL:0000066", "CL:0000192_FOO"]
         with self.assertRaises(ValueError):
-            validate._get_mapping_dict_curie(ids, curie_constraints)
+            self.writer._get_mapping_dict_curie(ids, curie_constraints)
 
         ids = ["CL:0000066", "CL:0000192", "UBERON:0002048"]
         with self.assertRaises(ValueError):
-            validate._get_mapping_dict_curie(ids, curie_constraints)
+            self.writer._get_mapping_dict_curie(ids, curie_constraints)
 
         ids = ["CL:NO_TERM"]
         with self.assertRaises(ValueError):
-            validate._get_mapping_dict_curie(ids, curie_constraints)
+            self.writer._get_mapping_dict_curie(ids, curie_constraints)
 
     def test_get_new_labels(self):
 
         # Test getting a column with labels based on ids for adata.obs
-        component = "obs"
-        for column, column_definition in self.schema_def["components"]["obs"][
-            "columns"
-        ].items():
-            if "add_labels" in column_definition:
-                expected_column = self.test_adata_with_labels.obs[
-                    column_definition["add_labels"]["to"]
-                ]
-                obtained_column = self.writer._get_labels(
-                    component, column, column_definition
-                )
-                for i, j in zip(expected_column.tolist(), obtained_column.tolist()):
-                    self.assertEqual(i, j)
+        for component in ["obs", "var"]:
+            for column, column_definition in self.schema_def["components"][component][
+                "columns"
+            ].items():
+                if "add_labels" in column_definition:
+                    for label_def in column_definition["add_labels"]:
+                        expected_column = self.test_adata_with_labels.obs[label_def["to"]]
+                        obtained_column = self.writer._get_labels(
+                            component, column, column_definition, label_def["type"]
+                        )
+                        for i, j in zip(expected_column.tolist(), obtained_column.tolist()):
+                            self.assertEqual(i, j)
 
     def test_get_new_adata(self):
 

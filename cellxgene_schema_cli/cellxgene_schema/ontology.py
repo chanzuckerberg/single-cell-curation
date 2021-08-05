@@ -7,10 +7,10 @@ from . import env
 
 
 class SupportedOrganisms(enum.Enum):
-    HOMO_SAPIENS = "HomoSapiens"
-    MUS_MUSCULUS = "MusMusculus"
-    SARS_COV_2 = "SarsCov2"
-    ERCC = "Ercc"
+    HOMO_SAPIENS = "NCBITaxon:9606"
+    MUS_MUSCULUS = "NCBITaxon:10090"
+    SARS_COV_2 = "NCBITaxon:2697049"
+    ERCC = "NCBITaxon:32630"
 
 
 class GeneChecker:

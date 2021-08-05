@@ -56,7 +56,7 @@ def _get_organism_from_feature_id (feature_id: str) -> Union[ontology.SupportedO
     elif feature_id.startswith("ENSMUS"):
         return ontology.SupportedOrganisms.MUS_MUSCULUS
     elif feature_id.startswith("ENSSAS"):
-        return ontology.SupportedOrganisms.HOMO_SAPIENS
+        return ontology.SupportedOrganisms.SARS_COV_2
     elif feature_id.startswith("ERCC"):
         return ontology.SupportedOrganisms.ERCC
     else:
@@ -819,7 +819,7 @@ class LabelWriter:
 
         return mapping_dict
 
-    def _get_mapping_dict_features(self, ids: List[str]) -> Dict[str, str]:
+    def _get_mapping_dict_feature_id(self, ids: List[str]) -> Dict[str, str]:
 
         """
         Creates a mapping dictionary of gene/feature IDs and labels.
@@ -834,13 +834,31 @@ class LabelWriter:
 
         for i in ids:
             organism = _get_organism_from_feature_id(i)
-            print(self.validator.gene_checkers[organism].get_symbol(i))
             mapping_dict[i] = self.validator.gene_checkers[organism].get_symbol(i)
 
         return mapping_dict
 
+    def _get_mapping_dict_feature_reference(self, ids: List[str]) -> Dict[str, str]:
+
+        """
+        Creates a mapping dictionary of gene/feature IDs and NCBITaxon curies
+
+        :param list[str] ids: Gene/feature IDs use for mapping
+
+        :return a mapping dictionary: {id: label, ...}
+        :rtype dict
+        """
+
+        mapping_dict = {}
+
+        for i in ids:
+            organism = _get_organism_from_feature_id(i)
+            mapping_dict[i] = organism.value
+
+        return mapping_dict
+
     def _get_labels(
-        self, component: str, column: str, column_definition: dict
+        self, component: str, column: str, column_definition: dict, label_type: dict,
     ) -> pd.Categorical:
 
         """
@@ -851,17 +869,18 @@ class LabelWriter:
         :param str column: Column in self.adata with IDs that will be used to retrieve values
         :param dict column_definition: schema definition of the column
         e.g. schema_def["obs"]["columns"]["cell_type_ontology_term_id"]
+        :param dict label_type: the type of label
 
         :rtype pandas.Categorical
         :return new pandas column with labels corresponding to input column
         """
 
         # Set variables for readability
-        type_labels = column_definition["add_labels"]["type"]
         current_df = getattr(self.adata, component)
 
         if column == "index":
             original_column = pd.Series(current_df.index)
+            original_column.index = current_df.index
         else:
             original_column = getattr(current_df, column)
 
@@ -872,7 +891,7 @@ class LabelWriter:
             column_definition
         )
 
-        if type_labels == "curie":
+        if label_type == "curie":
 
             if "curie_constraints" not in column_definition:
                 raise ValueError(
@@ -882,12 +901,15 @@ class LabelWriter:
 
             mapping_dict = self._get_mapping_dict_curie(ids, column_definition["curie_constraints"])
 
-        elif type_labels == "feature_id":
-            mapping_dict = self._get_mapping_dict_features(ids=ids)
+        elif label_type == "feature_id":
+            mapping_dict = self._get_mapping_dict_feature_id(ids=ids)
+
+        elif label_type == "feature_reference":
+            mapping_dict = self._get_mapping_dict_feature_reference(ids=ids)
 
         else:
             raise TypeError(
-                f"'{type_labels}' is not supported in 'add-labels' functionality"
+                f"'{label_type}' is not supported in 'add-labels' functionality"
             )
 
         new_column = (
@@ -910,11 +932,14 @@ class LabelWriter:
         :rtype None
         """
 
-        new_column = self._get_labels(component, column, column_definition)
+        for label_def in column_definition["add_labels"]:
 
-        # The sintax below is a programtic way to access obs and var in adata:
-        # adata.__dict__["_obs"] is adata.obs
-        self.adata.__dict__["_" + component][column_definition["add_labels"]["to"]] = new_column
+            new_column = self._get_labels(component, column, column_definition, label_def["type"])
+            new_column_name = label_def["to"]
+
+            # The sintax below is a programtic way to access obs and var in adata:
+            # adata.__dict__["_obs"] is adata.obs
+            self.adata.__dict__["_" + component][new_column_name] = new_column
 
     def _add_labels(self):
 
@@ -949,13 +974,17 @@ class LabelWriter:
             for column, columns_def in self.schema_def["components"]["obs"][
                 "columns"
             ].items():
+
                 if "add_labels" in columns_def:
-                    reserved_name = columns_def["add_labels"]["to"]
-                    if reserved_name in getattr(self.adata, component):
-                        self.errors.append(
-                            f"Add labels error: Column '{reserved_name}' is a reserved column name "
-                            "of 'obs'. Remove it from h5ad and try again."
-                        )
+
+                    for label_def in columns_def["add_labels"]:
+                        reserved_name = label_def["to"]
+
+                        if reserved_name in getattr(self.adata, component):
+                            self.errors.append(
+                                f"Add labels error: Column '{reserved_name}' is a reserved column name "
+                                "of 'obs'. Remove it from h5ad and try again."
+                            )
 
     def write_labels(self, add_labels_file: str):
 

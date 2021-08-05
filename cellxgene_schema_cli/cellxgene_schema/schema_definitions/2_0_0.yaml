@@ -33,8 +33,12 @@ components:
             unique: true
             type: feature_id
             add_labels:
-                type: feature_id
-                to: feature_name
+                -
+                    type: feature_id
+                    to: feature_name
+                -
+                    type: feature_reference
+                    to: feature_reference
         columns:
             feature_biotype:
                 type: categorical
@@ -57,8 +61,9 @@ components:
                     ontologies:
                         - CL
                 add_labels:
-                    type: curie
-                    to: cell_type
+                    -
+                        type: curie
+                        to: cell_type
             assay_ontology_term_id:
                 type: curie
                 curie_constraints:
@@ -72,8 +77,9 @@ components:
                         EFO:
                             - " (.+)" #e.g. EFO:0010183 (sci-plex)
                 add_labels:
-                    type: curie
-                    to: assay
+                    -
+                        type: curie
+                        to: assay
             disease_ontology_term_id:
                 type: curie
                 curie_constraints:
@@ -84,16 +90,18 @@ components:
                         PATO:
                             - PATO:0000461
                 add_labels:
-                    type: curie
-                    to: disease
+                    -
+                        type: curie
+                        to: disease
             organism_ontology_term_id:
                 type: curie
                 curie_constraints:
                     ontologies:
                         - NCBITaxon
                 add_labels:
-                    type: curie
-                    to: organism
+                    -
+                        type: curie
+                        to: organism
             sex_ontology_term_id:
                 type: curie
                 curie_constraints:
@@ -107,8 +115,9 @@ components:
                              - PATO:0000384
                              - PATO:0001340
                 add_labels:
-                    type: curie
-                    to: sex
+                    -
+                        type: curie
+                        to: sex
             tissue_ontology_term_id:
                 type: curie
                 curie_constraints:
@@ -121,8 +130,9 @@ components:
                         CL:
                             - " (cell culture)"
                 add_labels:
-                    type: curie
-                    to: tissue
+                    -
+                        type: curie
+                        to: tissue
             ethnicity_ontology_term_id:
                 type: curie
                 dependencies:
@@ -140,8 +150,9 @@ components:
                     exceptions:
                         - na
                 add_labels:
-                    type: curie
-                    to: ethnicity
+                    -
+                        type: curie
+                        to: ethnicity
             development_stage_ontology_term_id:
                 type: curie
                 dependencies:
@@ -170,7 +181,8 @@ components:
                     exceptions:
                         - unknown
                 add_labels:
-                    type: curie
-                    to: development_stage
+                    -
+                        type: curie
+                        to: development_stage
             is_primary_data:
                 type: bool
