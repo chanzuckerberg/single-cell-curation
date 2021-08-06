@@ -188,11 +188,18 @@ var_expected = pd.DataFrame(
 var_expected = var_expected.astype("category")
 
 X = numpy.zeros([good_obs.shape[0],  good_var.shape[0]])
+non_raw_X = X.copy()
+non_raw_X[0,0] = 1.5
 
 good_obsm = {"X_umap": numpy.zeros([X.shape[0], 2])}
 
 adata = anndata.AnnData(X=X, obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var)
-adata_with_labels = anndata.AnnData(
-    X=X, obs=pd.concat([good_obs, obs_expected], axis=1), uns=good_uns, obsm=good_obsm
-)
 adata_empty = anndata.AnnData(X=X, uns=good_uns, obsm=good_obsm)
+adata_non_raw = anndata.AnnData(X=non_raw_X, obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var)
+adata_with_labels = anndata.AnnData(
+    X=X,
+    obs=pd.concat([good_obs, obs_expected], axis=1),
+    var=pd.concat([good_var, var_expected], axis=1),
+    uns=good_uns,
+    obsm=good_obsm
+)

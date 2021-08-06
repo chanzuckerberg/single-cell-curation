@@ -5,10 +5,13 @@ import yaml
 import pandas as pd
 from numpy import ndarray
 from numpy import count_nonzero
+from numpy import nonzero
 from numpy import cumprod
+from numpy import isnan
+from numpy import nditer
 from scipy import sparse
 import re
-from typing import List, Dict, Tuple, Union
+from typing import List, Dict, Tuple, Union, Optional
 from . import ontology
 from . import env
 
@@ -567,7 +570,7 @@ class Validator:
         for x, x_name in zip(to_validate, to_validate_name):
             if not isinstance(x, sparse.csr_matrix):
 
-                if isinstance(x, sparse.csc_matrix):
+                if isinstance(x, sparse.csc_matrix) or isinstance(x, sparse.coo_matrix):
                     sparsity = 1 - x.count_nonzero() / float(cumprod(x.shape)[-1])
                 elif isinstance(x, ndarray):
                     sparsity = 1 - count_nonzero(x) / float(cumprod(x.shape)[-1])
@@ -607,6 +610,114 @@ class Validator:
                                    f"'adata.obsm['{key}']' has shape of '{value.shape}'")
         return
 
+    def _are_children_of(self, component: str, column: str, ontology_name: str, ancestors: List[str]) -> bool:
+
+        curies = getattr(getattr(self.adata, component), column)
+        curies = curies.drop_duplicates()
+
+        for curie in curies:
+            if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, curie):
+                curie_ancestors = ONTOLOGY_CHECKER.get_term_ancestors(ontology_name, curie)
+                if bool(set(curie_ancestors) & set(ancestors)):
+                    return True
+
+        return False
+
+    def _get_raw_x(self) -> Union[ndarray, sparse.csc_matrix, sparse.csr_matrix]:
+
+        """
+        gets raw x (best guess, i.e. not guarantee it's actually raw)
+        """
+
+        if self.adata.raw:
+            return self.adata.raw.X
+        else:
+            return self.adata.X
+
+    def _get_raw_x_loc(self) -> str:
+
+        """
+        gets raw x location (best guess, i.e. not guarantee it's actually raw)
+        """
+
+        if self.adata.raw:
+            return "raw.X"
+        else:
+            return "X"
+
+    def _is_raw(self, n_values_to_check: int = 5000) -> bool:
+
+        """
+
+        Checks if the first non-zero "n_values_to_check" in the best guess for
+        the raw matrix (adata.X or adata.raw.X) are integers. Returns False if at least one value is not an integer,
+        True otherwise.
+
+        :param int n_values_to_check: total values to check
+
+        :rtype boo
+        :return False if at least one value is not an integer, True otherwise
+        """
+
+        # Get potential raw_X
+        raw_loc = self._get_raw_x_loc()
+        if raw_loc == "raw.X":
+            x = self.adata.raw.X
+        else:
+            x = self.adata.X
+
+        # Get array without zeros
+        if isinstance(x, ndarray):
+            non_zeroes_index = nonzero(x)
+        else:
+            non_zeroes_index = x.nonzero()
+
+        x_non_zeroes = x[non_zeroes_index]
+
+        # If a single value is not an int then return False
+        if x_non_zeroes.size > 0:
+            for i in nditer(x_non_zeroes):
+
+                if isnan(i):
+                    continue
+
+                n_values_to_check -= 1
+                if n_values_to_check < 1:
+                    break
+
+                if i % int(i) != 0:
+                    return False
+
+        return True
+
+    def _validate_raw(self):
+
+        """
+        Validates raw only if the rules in the schema definition are fulfilled. The validation entails checking that
+        there's an expression matrix containing raw (integer) values, first in adata.raw.X and then adata.X if the
+        former does not exist. Adds errors to self.errors if any
+
+        :rtype None
+        """
+
+        # Asses if we actually need to perform validation of raw based on the rules
+        checks = []
+        for component, component_rules in self.schema_def["raw"].items():
+            for column, column_rules in component_rules.items():
+                for rule, rule_def in column_rules.items():
+                    if rule == "not_children_of":
+                        for ontology_name, ancestors in rule_def.items():
+                            checks.append(not self._are_children_of(component, column, ontology_name, ancestors))
+                    else:
+                        raise ValueError(f"'{rule}' rule in raw definition of the schema is not implemented ")
+
+        # If all checks passed then proceed with validation
+        if all(checks):
+            if not self._is_raw():
+                raw_X_loc = self._get_raw_x_loc()
+                self.errors.append(f"Matrix '{raw_X_loc}' seems to be the raw matrix but not all of "
+                                   f"its values are integers.")
+
     def _deep_check(self):
 
         """
@@ -633,6 +744,11 @@ class Validator:
                 self._validate_embedding_dict()
             else:
                 raise ValueError(f"Unexpected component type '{component['type']}'")
+
+        # Checks for raw only if there are no errors, because it depends on the
+        # existence of adata.obs["assay_ontology_term_id"]
+        if not self.errors and "raw" in self.schema_def:
+            self._validate_raw()
 
     def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None) -> bool:
 
@@ -838,7 +954,7 @@ class LabelWriter:
 
         return mapping_dict
 
-    def _get_mapping_dict_feature_reference(self, ids: List[str]) -> Dict[str, str]:
+    def _get_mapping_dict_feature_reference(self, ids: List[str]) -> Dict[str, Optional[ontology.SupportedOrganisms]]:
 
         """
         Creates a mapping dictionary of gene/feature IDs and NCBITaxon curies

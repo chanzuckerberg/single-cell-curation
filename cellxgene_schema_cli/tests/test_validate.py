@@ -82,12 +82,21 @@ class TestFieldValidation(unittest.TestCase):
         self.assertTrue(self.validator.errors)
 
 
-class TestSparsity(unittest.TestCase):
+class TestMatrix(unittest.TestCase):
 
     def setUp(self):
         self.validator = validate.Validator()
         self.validator.adata = examples.adata.copy()
         self.validator._set_schema_def()
+
+    def test_bad_raw(self):
+        self.validator.adata = examples.adata_non_raw.copy()
+        self.validator._validate_raw()
+        self.assertTrue(self.validator.errors)
+
+    def test_good_raw(self):
+        self.validator._validate_raw()
+        self.assertFalse(self.validator.errors)
 
     def test_sparsity(self):
 
@@ -232,7 +241,6 @@ class TestColumnValidation(unittest.TestCase):
         self.assertTrue(self.validator.errors)
 
     def test_ontology_columns(self):
-
 
         # Correct example. This only tests the column validation process and therefore the tests excludes those columns
         # that have dependencies with other columns and need the entire dataframe for validation
