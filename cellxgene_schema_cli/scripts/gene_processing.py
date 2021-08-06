@@ -36,11 +36,7 @@ def _parse_gtf(gtf_path: str, output_file: str):
                 continue
 
             # Extract features (column 9 of GTF)
-            current_features = {
-                i.strip().split(" ")[0]: i.strip().split(" ")[1]
-                for i in line[8].split(";")
-                if len(i) > 1
-            }
+            current_features = _get_features(line)
 
             # Select  features of interest, raise error feature of interest not found
             target_features = [""] * len(features)
@@ -56,6 +52,35 @@ def _parse_gtf(gtf_path: str, output_file: str):
 
     with gzip.open(output_file, "wt") as output:
         output.write(output_to_print)
+
+
+def _get_features(gtf_line: str) -> dict:
+
+    """
+    Parses the features found in column 8 of GTF, returns a dict with keys as feature names and values as the feature
+    values
+
+    :param str gtf_line: a line from a GTF file
+    """
+
+    return_features = {}
+
+    for feature in gtf_line[8].split(";"):
+        if len(feature) > 1:
+            feature = feature.strip().split(" ")
+            feature_name = feature[0]
+            feature_value = feature[1]
+            return_features[feature_name] = feature_value
+
+    return return_features
+
+
+# Extract features (column 9 of GTF)
+current_features = {
+    i.strip().split(" ")[0]: i.strip().split(" ")[1]
+    for i in line[8].split(";")
+    if len(i) > 1
+}
 
 def _process_ercc(ercc_path: str, output_file: str):
     """
@@ -79,7 +104,7 @@ def _process_ercc(ercc_path: str, output_file: str):
 
 
 if __name__ == "__main__":
-    _parse_gtf("./mus_musculus.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_mus_musculus.csv.gz"))
-    _parse_gtf("./homo_sapiens.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_homo_sapiens.csv.gz"))
-    _parse_gtf("./sars_cov_2.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_sars_cov_2.csv.gz"))
-    _process_ercc("./ercc.txt", os.path.join(env.ONTOLOGY_DIR, "genes_ercc.csv.gz"))
+    _parse_gtf("./temp/mus_musculus.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_mus_musculus.csv.gz"))
+    _parse_gtf("./temp/homo_sapiens.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_homo_sapiens.csv.gz"))
+    _parse_gtf("./temp/sars_cov_2.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_sars_cov_2.csv.gz"))
+    _process_ercc("./temp/ercc.txt", os.path.join(env.ONTOLOGY_DIR, "genes_ercc.csv.gz"))
