@@ -75,13 +75,6 @@ def _get_features(gtf_line: str) -> dict:
     return return_features
 
 
-# Extract features (column 9 of GTF)
-current_features = {
-    i.strip().split(" ")[0]: i.strip().split(" ")[1]
-    for i in line[8].split(";")
-    if len(i) > 1
-}
-
 def _process_ercc(ercc_path: str, output_file: str):
     """
     process the ERCC download, keeps only first column with no header

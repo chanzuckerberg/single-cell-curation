@@ -1,5 +1,5 @@
 .PHONY: update-references
-update-references: download-ontologies gene_processing clean
+update-references: download-ontologies gene-processing clean
 
 .PHONY: download-ontologies
 download-ontologies:
@@ -12,21 +12,20 @@ gene-processing: download-gtf-10x-human download-gtf-10x-mouse download-gtf-covi
 .PHONY: download-gtf-10x-human
 download-gtf-10x-human:
 	$(eval url="https://cf.10xgenomics.com/supp/cell-exp/refdata-gex-GRCh38-2020-A.tar.gz")
-	$(eval base_dir="./temp/refdata-gex-GRCh38-2020-A")
-	$(eval output_file="./temp/homo_sapiens.gtf.gz")
+	$(eval base_dir="refdata-gex-GRCh38-2020-A")
+	$(eval output_file="homo_sapiens.gtf.gz")
 	$(MAKE) url=$(url) base_dir=$(base_dir) output_file=$(output_file) download-gtf-10x
 
 .PHONY: download-gtf-10x-mouse
 download-gtf-10x-mouse:
 	$(eval url="https://cf.10xgenomics.com/supp/cell-exp/refdata-gex-mm10-2020-A.tar.gz")
-	$(eval base_dir="./temp/refdata-gex-mm10-2020-A")
-	$(eval output_file="./temp/mus_musculus.gtf.gz")
+	$(eval base_dir="refdata-gex-mm10-2020-A")
+	$(eval output_file="mus_musculus.gtf.gz")
 	$(MAKE) url=$(url) base_dir=$(base_dir) output_file=$(output_file) download-gtf-10x
 
 .PHONY: download-gtf-10x
 download-gtf-10x:
 	mkdir -p temp
-	cd temp
 
 	## Download data and copies data
 	curl -o temp/10Xdata.tar.gz ${url}
