@@ -100,15 +100,15 @@ def _parse_owls(
         owl_info = yaml.safe_load(owl_info_handle)
 
     owl_files = [
-        os.path.join(working_dir, i)
-        for i in os.listdir(working_dir)
-        if i.endswith(".owl")
+        os.path.join(working_dir, this_file)
+        for this_file in os.listdir(working_dir)
+        if this_file.endswith(".owl")
     ]
 
     # Parse owl files
     onto_dict = {}
-    for i in owl_files:
-        onto = owlready2.get_ontology(i).load()
+    for owl_file in owl_files:
+        onto = owlready2.get_ontology(owl_file).load()
         onto_dict[onto.name] = {}
 
         print(f"Processing {onto.name}")
@@ -149,11 +149,14 @@ def _get_ancestors(onto_class: owlready2.entity.ThingClass, ontololgy_name: str)
     :param owlready2.entity.ThingClass onto_class: the class for which ancestors will be retrieved
     :param str ontololgy_name: only ancestors from this ontology will be kept
     """
-    return [
-        i.name.replace("_", ":")
-        for i in onto_class.ancestors()
-        if i.name.split("_")[0] == ontololgy_name
-    ]
+
+    ancestors = []
+
+    for ancestor in onto_class.ancestors():
+        if ancestor.name.split("_")[0] == ontololgy_name:
+            ancestors.append(ancestor.name.replace("_", ":"))
+
+    return ancestors
 
 
 # Download and parse owls upon execution
