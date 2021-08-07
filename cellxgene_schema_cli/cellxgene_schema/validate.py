@@ -718,6 +718,31 @@ class Validator:
                 self.errors.append(f"Matrix '{raw_X_loc}' seems to be the raw matrix but not all of "
                                    f"its values are integers.")
 
+    def _check_column_availability(self):
+
+        """
+        This method will add error messages to self.errors if reserved columns in self.adata.obs or
+        self.adata.var already exist
+
+        :rtype none
+        """
+
+        for component in ["obs", "var"]:
+            for column, columns_def in self.schema_def["components"][component][
+                "columns"
+            ].items():
+
+                if "add_labels" in columns_def:
+
+                    for label_def in columns_def["add_labels"]:
+                        reserved_name = label_def["to"]
+
+                        if reserved_name in getattr(self.adata, component):
+                            self.errors.append(
+                                f"Add labels error: Column '{reserved_name}' is a reserved column name "
+                                "of 'obs'. Remove it from h5ad and try again."
+                            )
+
     def _deep_check(self):
 
         """
@@ -729,6 +754,9 @@ class Validator:
         # Checks that adata is fully loaded
         if self.adata.isbacked:
             raise RuntimeError("adata is loaded in backed mode, validation requires anndata to be loaded in memory")
+
+        # Checks that reserved columns are not used
+        self._check_column_availability()
 
         # Checks sparsity
         self._validate_sparsity()
@@ -1077,31 +1105,6 @@ class LabelWriter:
             if "add_labels" in index_def:
                 self._add_column(component, "index", index_def)
 
-    def _check_column_availability(self):
-
-        """
-        This method will add error messages to self.errors if reserved columns in self.adata.obs or
-        self.adata.var already exist
-
-        :rtype none
-        """
-
-        for component in ["obs"]:
-            for column, columns_def in self.schema_def["components"]["obs"][
-                "columns"
-            ].items():
-
-                if "add_labels" in columns_def:
-
-                    for label_def in columns_def["add_labels"]:
-                        reserved_name = label_def["to"]
-
-                        if reserved_name in getattr(self.adata, component):
-                            self.errors.append(
-                                f"Add labels error: Column '{reserved_name}' is a reserved column name "
-                                "of 'obs'. Remove it from h5ad and try again."
-                            )
-
     def write_labels(self, add_labels_file: str):
 
         """
@@ -1112,13 +1115,6 @@ class LabelWriter:
 
         :rtype None
         """
-
-        # First check that columns to be created don't exist. Terminate process if errors found
-        self._check_column_availability()
-        if self.errors:
-            print(*self.errors, sep="\n")
-            self.was_writing_successful = False
-            return
 
         # Add labels in obs
         self._add_labels()
