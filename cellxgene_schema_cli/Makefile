@@ -33,7 +33,8 @@ download-gtf-10x:
 
 	## Rename base dir because it changes from human to mouse
 	mv temp/${base_dir} temp/10Xdata
-	cp temp/10Xdata/genes/genes.gtf temp/${output_file}
+	gzip temp/10Xdata/genes/genes.gtf
+	cp temp/10Xdata/genes/genes.gtf.gz temp/${output_file}
 	rm -r temp/10Xdata
 
 .PHONY: download-gtf-covid19

@@ -94,8 +94,6 @@ def _process_ercc(ercc_path: str, output_file: str):
         output.write(output_to_print)
 
 
-
-
 if __name__ == "__main__":
     _parse_gtf("./temp/mus_musculus.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_mus_musculus.csv.gz"))
     _parse_gtf("./temp/homo_sapiens.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_homo_sapiens.csv.gz"))
