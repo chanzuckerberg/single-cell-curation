@@ -392,7 +392,7 @@ class TestAddLabelFunctions(unittest.TestCase):
             ].items():
                 if "add_labels" in column_definition:
                     for label_def in column_definition["add_labels"]:
-                        expected_column = self.test_adata_with_labels.obs[label_def["to"]]
+                        expected_column = self.test_adata_with_labels.obs[label_def["to_column"]]
                         obtained_column = self.writer._get_labels(
                             component, column, column_definition, label_def["type"]
                         )

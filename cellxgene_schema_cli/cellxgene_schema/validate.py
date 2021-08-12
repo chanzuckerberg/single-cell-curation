@@ -735,7 +735,7 @@ class Validator:
                 if "add_labels" in columns_def:
 
                     for label_def in columns_def["add_labels"]:
-                        reserved_name = label_def["to"]
+                        reserved_name = label_def["to_column"]
 
                         if reserved_name in getattr(self.adata, component):
                             self.errors.append(
@@ -1079,7 +1079,7 @@ class LabelWriter:
         for label_def in column_definition["add_labels"]:
 
             new_column = self._get_labels(component, column, column_definition, label_def["type"])
-            new_column_name = label_def["to"]
+            new_column_name = label_def["to_column"]
 
             # The sintax below is a programtic way to access obs and var in adata:
             # adata.__dict__["_obs"] is adata.obs
@@ -1120,8 +1120,18 @@ class LabelWriter:
         self._add_labels()
 
         # Write file
-        self.adata.write_h5ad(add_labels_file, compression="gzip")
-        self.was_writing_successful = True
+        try:
+            self.adata.write_h5ad(add_labels_file, compression="gzip")
+        except Exception as e:
+            self.errors.append(f"Writing h5ad was unsuccessful, got exception '{e}'")
+
+        # Print errors if any
+        if self.errors:
+            self.errors = ["ERROR: " + i for i in self.errors]
+            print(*self.errors, sep="\n")
+            self.was_writing_successful = False
+        else:
+            self.was_writing_successful = True
 
 
 def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = None):
