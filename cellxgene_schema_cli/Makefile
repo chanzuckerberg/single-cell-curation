@@ -51,4 +51,4 @@ download-gtf-ercc:
 
 .PHONY: clean
 clean:
-	rm -r temp
+	rm -rf temp

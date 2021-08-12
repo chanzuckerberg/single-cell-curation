@@ -99,11 +99,10 @@ def _parse_owls(
     with open(owl_info_yml, "r") as owl_info_handle:
         owl_info = yaml.safe_load(owl_info_handle)
 
-    owl_files = [
-        os.path.join(working_dir, this_file)
-        for this_file in os.listdir(working_dir)
-        if this_file.endswith(".owl")
-    ]
+    owl_files = []
+    for owl_file in os.listdir(working_dir):
+        if owl_file.endswith(".owl"):
+            owl_files.append(os.path.join(working_dir, owl_file))
 
     # Parse owl files
     onto_dict = {}
