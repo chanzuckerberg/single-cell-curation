@@ -24,18 +24,28 @@ def _is_null(v):
     return pd.isnull(v) or (hasattr(v, "__len__") and len(v) == 0)
 
 
+def _get_schema_file_path(version: str) -> str:
+
+    """
+    Given a schema version, returns the potential path for the corresponding yaml file of its definition
+    :param str version: Schema version
+    :return Path to yaml files
+    :rtype str
+    """
+
+    return os.path.join(env.SCHEMA_DEFINITIONS_DIR, version.replace(".", "_") + ".yaml")
+
+
 def _get_schema_definition(version: str) -> dict:
 
     """
     Look up and read a schema definition based on a version number like "2.0.0".
-
     :param str version: Schema version
-
     :return The schema definition
     :rtype dict
     """
 
-    path = os.path.join(env.SCHEMA_DEFINITIONS_DIR, version.replace(".", "_") + ".yaml")
+    path = _get_schema_file_path(version)
 
     if not os.path.isfile(path):
         raise ValueError(f"No definition for version '{version}' found.")
@@ -95,8 +105,6 @@ def _curie_remove_suffix(term_id: str, suffix_def: dict) -> Tuple[str, str]:
     return term_id, id_suffix
 
 
-
-
 class Validator:
     """Handles validation of AnnData"""
 
@@ -135,14 +143,22 @@ class Validator:
 
     def _set_schema_def(self):
         """
-        Sets schema dictionary from using information in adata
-        rtype: None
+        Sets schema dictionary from using information in adata. If there are any errors, it adds them to self.errors
         """
 
+        # Check if schema version slot is present
         if "schema_version" not in self.adata.uns:
-            raise ValueError("adata has no schema definition in 'adata.uns'")
+            self.errors.append("adata has no schema definition in 'adata.uns'. Validation cannot be performed.")
+        else:
 
-        self.schema_def = _get_schema_definition(self.adata.uns["schema_version"])
+            # Check if schema version is supported
+            version = self.adata.uns["schema_version"]
+            path = _get_schema_file_path(version)
+
+            if not os.path.isfile(path):
+                self.errors.append(f"Schema version '{version}' is not supported. Validation cannot be performed.")
+            else:
+                self.schema_def = _get_schema_definition(version)
 
     def _get_component_def(self, component: str) -> dict:
         """
@@ -799,7 +815,8 @@ class Validator:
         # Fetches schema def from anndata if schema version is not found in AnnData, this fails
         self._set_schema_def()
 
-        self._deep_check()
+        if not self.errors:
+            self._deep_check()
 
         # Print warnings if any
         if self.warnings:

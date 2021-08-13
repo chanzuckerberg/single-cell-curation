@@ -34,7 +34,6 @@ components:
                 required: null
             X_approximate_distribution:
                 type: string
-                required: null
                 enum:
                     - count
                     - normal
