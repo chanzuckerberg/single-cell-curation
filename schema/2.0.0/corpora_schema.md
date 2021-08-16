@@ -312,7 +312,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=month-old&submit=Search+terms"> month-old stages</a><br>(e.g. <a href="http://purl.obolibrary.org/obo/MmusDv_0000062">MmusDv:0000062)</a></td>
             </tr>
           </tbody></table>
-          <br> Otherwise, for all other organisms this MUST be the most accurate child of <a href="http://www.ebi.ac.uk/efo/EFO_0000399"<code>EFO:0000399</code></a> for <i>development_stage</i>.
+          <br> Otherwise, for all other organisms this MUST be the most accurate child of <a href="http://purl.obolibrary.org/obo/UBERON_0000105"<code>UBERON:0000105</code></a> for <i>life cycle stage</i>, excluding <a href="http://purl.obolibrary.org/obo/UBERON_0000071"<code>UBERON:0000071</code></a> for <i>death stage</i>.
         </td>
     </tr>
 </tbody></table>
