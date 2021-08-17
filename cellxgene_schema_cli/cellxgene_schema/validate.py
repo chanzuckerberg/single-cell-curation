@@ -75,6 +75,7 @@ def _get_organism_from_feature_id (feature_id: str) -> Union[ontology.SupportedO
     else:
         return None
 
+
 def _curie_remove_suffix(term_id: str, suffix_def: dict) -> Tuple[str, str]:
     """
     Remove suffix from a curie term id, if none present return it unmodified

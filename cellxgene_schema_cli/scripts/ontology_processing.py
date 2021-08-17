@@ -108,10 +108,14 @@ def _parse_owls(
     # Parse owl files
     onto_dict = {}
     for owl_file in owl_files:
-        onto = owlready2.get_ontology(owl_file).load()
+
+        world = owlready2.World()
+        onto = world.get_ontology(owl_file)
+        onto.load()
         onto_dict[onto.name] = {}
 
         print(f"Processing {onto.name}")
+
         for onto_class in onto.classes():
 
             term_id = onto_class.name.replace("_", ":")
@@ -126,16 +130,30 @@ def _parse_owls(
                     if term_id not in owl_info[onto.name]["only"]:
                         continue
 
+            # Gets label
             onto_dict[onto.name][term_id] = dict()
             try:
                 onto_dict[onto.name][term_id]["label"] = onto_class.label[0]
             except IndexError:
                 onto_dict[onto.name][term_id]["label"] = ""
 
+            # Gets ancestors
+            ancestors = _get_ancestors(onto_class, onto.name)
+
+            # If "children_of" specified in owl info then skip the current term if it is
+            # not a children of those indicated.
+            if onto.name in owl_info:
+                if "children_of" in owl_info[onto.name]:
+                    if not list(set(ancestors) &
+                                set(owl_info[onto.name]["children_of"])):
+                        onto_dict[onto.name].pop(term_id)
+                        continue
+
+            # only add the ancestors if it's not NCBITaxon, as this saves a lot of disk space
             if onto.name == "NCBITaxon":
                 onto_dict[onto.name][term_id]["ancestors"] = []
             else:
-                onto_dict[onto.name][term_id]["ancestors"] = _get_ancestors(onto_class, onto.name)
+                onto_dict[onto.name][term_id]["ancestors"] = ancestors
 
     with gzip.open(output_json_file, "wt") as output_json:
         json.dump(onto_dict, output_json, indent=2)
