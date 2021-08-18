@@ -296,6 +296,14 @@ class Validator:
             if term_id in curie_constraints["exceptions"]:
                 return
 
+        # If there are forbidden terms
+        if "forbidden" in curie_constraints:
+            if term_id in curie_constraints["forbidden"]:
+                self.errors.append(
+                    f"'{term_id}' in '{column_name}' is not allowed'"
+                )
+                return
+
         # If NA is found in allowed ontologies, it means only exceptions should be found. If no exceptions were found
         # then return error
         if curie_constraints["ontologies"] == ["NA"]:

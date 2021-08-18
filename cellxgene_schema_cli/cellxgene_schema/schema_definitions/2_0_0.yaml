@@ -192,12 +192,14 @@ components:
                 # If organism is not humnan nor mouse
                 curie_constraints:
                     ontologies:
-                        - EFO
+                        - UBERON
                     ancestors:
-                        EFO:
-                            - EFO:0000399
+                        UBERON:
+                            - UBERON:0000105
                     exceptions:
                         - unknown
+                    forbidden:
+                        - UBERON:0000071
                 add_labels:
                     -
                         type: curie
