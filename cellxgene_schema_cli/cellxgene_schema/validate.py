@@ -121,6 +121,7 @@ class Validator:
         self.schema_def = dict()
         self.h5ad_path = ""
         self.invalid_feature_ids = []
+        self._raw_layer_exists = None
         self.gene_checkers = dict() # Values will be instances of ontology.GeneChecker,
                                     # keys will be one of ontology.SupportedOrganisms
 
@@ -468,6 +469,70 @@ class Validator:
                         f"Value '{i}' of list '{list_name}' is not a column in 'adata.obs'"
                     )
 
+    def _validate_str_in_dict(self, value, dict_name: str, key: str):
+
+        """
+        Validates that a value from a dictionary is a string. Adds errors to self.errors if any
+
+        :param str value: The dictionary to validate
+        :param str dict_name: Name of dictionary in the adata (e.g. "uns")
+        :param str key: The key in the dictionary
+
+        :rtype bool
+        :return True if passed, False otherwise
+        """
+
+        if not isinstance(value, str):
+            self.errors.append(
+                f"'{value}' in '{dict_name}['{key}']' is not valid, it must be a string."
+            )
+
+            return False
+
+        return True
+
+    def _validate_enum_in_dict(self, value, enum: List[str], dict_name: str, key: str):
+
+        """
+        Validates that a value from a dictionary is part of a list. Adds errors to self.errors if any
+
+        :param str value: The dictionary to validate
+        :param List[str] enum: The allowed values
+        :param str dict_name: Name of dictionary in the adata (e.g. "uns")
+        :param str key: The key in the dictionary
+
+        :rtype  None
+        """
+
+        if value not in enum:
+            self.errors.append(
+                f"'{value}' in '{dict_name}['{key}']' is not valid. "
+                f"Allowed terms: {enum}."
+            )
+
+    def _validate_X_normalization(self, value):
+
+        """
+        Verifies the adata.uns["X_normalization"] folllows the schema. Adds errors to self.errors if any
+
+        :param value: value in adata.uns["X_normalization"]
+
+        :rtype None
+        """
+
+        if self._validate_str_in_dict(value, "uns", "X_normalization"):
+
+            # If value is "none" then there must NOT be a raw layer
+            if value == "none":
+
+                if self._get_raw_x_loc() == "raw.X":
+                    self.errors.append(f"uns['X_normalization'] is 'none' but 'raw.X' is present. Please indicate "
+                                       f"the normalization used for 'X'.")
+
+                if self._get_raw_x_loc() == "raw.X" and not self._is_raw():
+                    self.warnings.append(f"uns['X_normalization'] is 'none' but X' seems to have mostly "
+                                         f"raw values (integers).")
+
     def _validate_dict(self, dictionary: dict, dict_name: str, dict_def: dict):
 
         """
@@ -490,18 +555,14 @@ class Validator:
             value = dictionary[key]
 
             if value_def["type"] == "string":
-                if not isinstance(value, str):
-                    self.errors.append(
-                        f"'{value}' in '{dict_name}['{key}']' is not valid, it must be a string."
-                    )
+                if not self._validate_str_in_dict(value, dict_name, key):
                     continue
 
                 if "enum" in value_def:
-                    if value not in value_def["enum"]:
-                        self.errors.append(
-                            f"'{value}' in '{dict_name}['{key}']' is not valid. "
-                            f"Allowed terms: {value_def['enum']}."
-                        )
+                    self._validate_enum_in_dict(value, value_def["enum"], dict_name, key)
+
+            if value_def["type"] == "X_normalization":
+                self._validate_X_normalization(value)
 
             if value_def["type"] == "match_obsm_keys":
                 if value not in self.adata.obsm:
@@ -605,7 +666,7 @@ class Validator:
 
         """
         Validates the embedding dictionary -- it checks that all values of adata.obms are numpy arrays with the correct
-        dimension. Adds errors to self.errors if any.
+        dimension. Adds errors to self.errors if any. Checks that the keys start with "X_"
 
         :rtype none
         """
@@ -614,6 +675,7 @@ class Validator:
             self.errors.append("No embeddings found in 'adata.obsm'")
             return
 
+        obsm_with_x_prefix = 0
         for key, value in self.adata.obsm.items():
 
             if not isinstance(value, ndarray):
@@ -621,11 +683,20 @@ class Validator:
                                    f"'adata.obsm['{key}']' is {type(value)}')")
                 continue
 
-            # obsm
-            if value.shape[0] != self.adata.n_obs or value.shape[1] < 2:
-                self.errors.append(f"All embeddings must have as many rows as cells, and at least two columns."
-                                   f"'adata.obsm['{key}']' has shape of '{value.shape}'")
-        return
+            # Embeddings to be shown in cellxgene explorer
+            if key.startswith("X_"):
+                obsm_with_x_prefix += 1
+
+                if len(value.shape) < 2:
+                    self.errors.append(f"All embeddings must have as many rows as cells, and at least two columns."
+                                       f"'adata.obsm['{key}']' has shape of '{value.shape}'")
+                else:
+                    if value.shape[0] != self.adata.n_obs or value.shape[1] < 2:
+                        self.errors.append(f"All embeddings must have as many rows as cells, and at least two columns."
+                                           f"'adata.obsm['{key}']' has shape of '{value.shape}'")
+
+        if obsm_with_x_prefix == 0:
+            self.errors.append(f"At least one embedding in 'obsm' has to have a key with an 'X_' prefix.")
 
     def _are_children_of(self, component: str, column: str, ontology_name: str, ancestors: List[str]) -> bool:
 
@@ -662,7 +733,7 @@ class Validator:
         else:
             return "X"
 
-    def _is_raw(self, n_values_to_check: int = 5000) -> bool:
+    def _is_raw(self, n_values_to_check: int = 5000, force: bool = False) -> bool:
 
         """
 
@@ -670,42 +741,54 @@ class Validator:
         the raw matrix (adata.X or adata.raw.X) are integers. Returns False if at least one value is not an integer,
         True otherwise.
 
+        Since this process is memory intensive, it will return a cache value if this function has been called before.
+        If calculation needs to be repeated use `force = True`
+
         :param int n_values_to_check: total values to check
 
-        :rtype boo
+        :rtype bool
         :return False if at least one value is not an integer, True otherwise
         """
 
-        # Get potential raw_X
-        raw_loc = self._get_raw_x_loc()
-        if raw_loc == "raw.X":
-            x = self.adata.raw.X
-        else:
-            x = self.adata.X
+        if force:
+            self._raw_layer_exists = None
 
-        # Get array without zeros
-        if isinstance(x, ndarray):
-            non_zeroes_index = nonzero(x)
-        else:
-            non_zeroes_index = x.nonzero()
+        if self._raw_layer_exists is None:
 
-        x_non_zeroes = x[non_zeroes_index]
+            # Get potential raw_X
+            raw_loc = self._get_raw_x_loc()
+            if raw_loc == "raw.X":
+                x = self.adata.raw.X
+            else:
+                x = self.adata.X
 
-        # If a single value is not an int then return False
-        if x_non_zeroes.size > 0:
-            for i in nditer(x_non_zeroes):
+            # Get array without zeros
+            if isinstance(x, ndarray):
+                non_zeroes_index = nonzero(x)
+            else:
+                non_zeroes_index = x.nonzero()
 
-                if isnan(i):
-                    continue
+            x_non_zeroes = x[non_zeroes_index]
 
-                n_values_to_check -= 1
-                if n_values_to_check < 1:
-                    break
+            # If all values are zeros then is raw, otherwise if a single value is not an int then return is not raw
+            if x_non_zeroes.size < 1:
+                self._raw_layer_exists = True
+            else:
+                for i in nditer(x_non_zeroes):
 
-                if i % int(i) != 0:
-                    return False
+                    if isnan(i):
+                        continue
 
-        return True
+                    n_values_to_check -= 1
+                    if n_values_to_check < 1:
+                        break
+
+                    if i % int(i) != 0:
+                        self._raw_layer_exists = False
+                    else:
+                        self._raw_layer_exists = True
+
+        return self._raw_layer_exists
 
     def _validate_raw(self):
 

@@ -30,7 +30,7 @@ components:
             default_embedding:
                 type: match_obsm_keys
             X_normalization:
-                type: string
+                type: X_normalization # Special type to handle "none"
                 required: null
             X_approximate_distribution:
                 type: string
