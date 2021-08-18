@@ -89,6 +89,8 @@ For example if `cell_type_ontology_term_id` describes a relay interneuron, but t
 
 Users will still be able to access more specific cell type annotations that have been submitted with the dataset (but aren't required by the schema).
 
+Terms documented as obsolete in an ontology MUST NOT be used. For example, [EFO:0009310](http://www.ebi.ac.uk/efo/EFO_0009310) for *obsolete_10x v2* was marked as obsolete in EFO version 3.31.0 and replaced by [EFO:0009899](http://www.ebi.ac.uk/efo/EFO_0009899) for *10x 3' v2*.
+
 ### Required Ontologies
 
 The following ontology dependencies are *pinned* for this version of the schema.
