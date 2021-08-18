@@ -388,7 +388,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be a a child of <code>NCBITaxon:33208</code>.
+        <td>categorical with <code>str</code> categories. This MUST be a child of <code>NCBITaxon:33208</code>.
         </td>
     </tr>
 </tbody></table>
