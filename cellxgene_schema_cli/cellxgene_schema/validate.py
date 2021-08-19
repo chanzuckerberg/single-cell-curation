@@ -573,6 +573,10 @@ class Validator:
                 self._validate_X_normalization(value)
 
             if value_def["type"] == "match_obsm_keys":
+
+                if not self._validate_str_in_dict(value, dict_name, key):
+                    continue
+
                 if value not in self.adata.obsm:
                     self.errors.append(
                         f"'{value}' in '{dict_name}['{key}']' is not valid, "
@@ -826,30 +830,54 @@ class Validator:
                 self.errors.append(f"Matrix '{raw_X_loc}' seems to be the raw matrix but not all of "
                                    f"its values are integers.")
 
+    def _check_single_column_availability(self, component:str , add_labels_def: List[dict]):
+
+        """
+        This method checks a single reserved column in adata.obs or adata.var and adds a message to self.error if
+        it already exists
+
+        :param str component: the name of the component that's been checked.
+        :param List[dict] add_labels_def: the "add_labels" definition, contains the information of
+        the reserved column(s)
+
+        :rtype none
+        """
+
+        for label_def in add_labels_def:
+            reserved_name = label_def["to_column"]
+
+            if reserved_name in getattr(self.adata, component):
+                self.errors.append(
+                    f"Add labels error: Column '{reserved_name}' is a reserved column name "
+                    f"of '{component}'. Remove it from h5ad and try again."
+                )
+
     def _check_column_availability(self):
 
         """
-        This method will add error messages to self.errors if reserved columns in self.adata.obs or
+        This method will check for columns that are reserved in self.adata.obs or
         self.adata.var already exist
 
         :rtype none
         """
 
         for component in ["obs", "var"]:
+
+            # Do it for columns that map to columns
             for column, columns_def in self.schema_def["components"][component][
                 "columns"
             ].items():
 
                 if "add_labels" in columns_def:
+                    self._check_single_column_availability(component, columns_def["add_labels"])
 
-                    for label_def in columns_def["add_labels"]:
-                        reserved_name = label_def["to_column"]
+            # Do it for index that map to columns
+            if "index" in self.schema_def["components"][component]:
 
-                        if reserved_name in getattr(self.adata, component):
-                            self.errors.append(
-                                f"Add labels error: Column '{reserved_name}' is a reserved column name "
-                                "of 'obs'. Remove it from h5ad and try again."
-                            )
+                index_def =  self.schema_def["components"][component]["index"]
+                if "add_labels" in index_def:
+                    self._check_single_column_availability(component, index_def["add_labels"])
+
 
     def _deep_check(self):
 
