@@ -37,7 +37,7 @@ This document is organized by:
 
 * **AnnData** - The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `obsm`, and `uns` attributes are described below.
 
-* **Organisms**. Data MUST be from an organism defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the pinned Human and Mouse gene annotations.
+* **Organisms**. Data MUST be from a Metazoan organism or SARS-COV-2 and defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the pinned Human and Mouse gene annotations.
 
 * **Reserved Names**. The names of the metadata keys specified by the cellxgene schema are reserved and MUST be unique. For example, duplicate `"feature_biotype"` keys in AnnData `var` are not allowed.
 
@@ -147,7 +147,7 @@ The following ontology dependencies are *pinned* for this version of the schema.
 
 cellxgene requires ENSEMBL identifiers for genes and [External RNA Controls Consortium (ERCC)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4978944/) identifiers for [RNA Spike-In Control Mixes] to ensure that all datasets it stores measure the same features and can therefore be integrated.
 
-The following gene annotation dependencies are *pinned* for this version of the schema. For multi-organism experiments, cells from any organism are allowed as long as orthologs from the following organism annotations are used.
+The following gene annotation dependencies are *pinned* for this version of the schema. For multi-organism experiments, cells from any Metazoan organism are allowed as long as orthologs from the following organism annotations are used.
 
 | Source | Required version | Download |
 |:--|:--|:--|
@@ -390,7 +390,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be a NCBITaxon term.
+        <td>categorical with <code>str</code> categories. This MUST be a child of <a href="http://purl.obolibrary.org/obo/NCBITaxon_33208"<code>NCBITaxon:33208</code></a> for <i>Metazoa</i>.
         </td>
     </tr>
 </tbody></table>
@@ -886,7 +886,7 @@ schema v2.0.0 substantially *remodeled* schema v1.1.0:
 * General Requirements
   * AnnData is now the canonical data format. The schema outline and descriptions are AnnData-centric.
 
-  * Multi-organism data is accepted by the cellxgene Data Portal. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the Human and Mouse gene annotations. 
+  * Metazoan multi-organism data is accepted by the cellxgene Data Portal. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the Human and Mouse gene annotations. 
 
   * Policies for reserved names and redundant metadata are documented.
 
