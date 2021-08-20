@@ -30,7 +30,7 @@ This document is organized by:
 * [General requirements](#general-requirements)
 * [`X` (Matrix layers)](#x-matrix-layers), which describe the data required for different assays
 * [`obs` (Cell metadata)](#obs-cell-metadata), which describe each cell in the dataset
-* [`var`/`raw.var` (Gene metadata)](#var-gene-metadata), which describe each gene in the dataset
+* [`var` and `raw.var` (Gene metadata)](#var-and-rawvar-gene-metadata), which describe each gene in the dataset
 * [`obsm` (Embeddings)](#obsm-embeddings), which describe each embedding in the dataset
 * [`uns` (Dataset metadata)](#uns-dataset-metadata), which describe the dataset as a whole
 
@@ -906,7 +906,7 @@ schema v2.0.0 substantially *remodeled* schema v1.1.0:
 * var
   * Replaced HGNC gene **symbols** as `var.index` with ENSEMBL or ERCC spike-in **identifiers** 
   * Added `feature_id`, `feature_name`, and `feature_reference`
-  * Added requirements for `raw.var` which should be identical to `var`
+  * Added requirements for `raw.var` which must be identical to `var`
 
 * uns
   * Added `batch_condition`
