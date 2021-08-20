@@ -3,6 +3,7 @@ import anndata
 import os
 import yaml
 import pandas as pd
+from pandas.core.computation.ops import UndefinedVariableError
 from numpy import ndarray
 from numpy import count_nonzero
 from numpy import nonzero
@@ -444,7 +445,13 @@ class Validator:
         all_rules = []
 
         for dependency_def in dependencies:
-            column = getattr(df.query(dependency_def["rule"]), column_name)
+            try:
+                column = getattr(df.query(dependency_def["rule"]), column_name)
+            except UndefinedVariableError:
+                self.errors.append(f"Checking values with dependencies failed for adata.{df_name}['{column_name}'], "
+                                   f"this is likely due to missing dependent column in adata.{df_name}")
+                return pd.Series()
+
             all_rules.append(dependency_def["rule"])
 
             self._validate_column(column, column_name, df_name, dependency_def)
