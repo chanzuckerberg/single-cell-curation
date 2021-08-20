@@ -25,6 +25,28 @@ def _is_null(v):
     return pd.isnull(v) or (hasattr(v, "__len__") and len(v) == 0)
 
 
+
+def _getattr_anndata(adata: anndata.AnnData, attr: str=None):
+
+    """
+    same as getattr but handles the special case of "raw.var" for an anndata.Anddata object
+
+    :param anndata.AnnData adata: the anndata.AnnData object from which to extract an attribute
+    :param str attr: name of the attribute to extract
+
+    :return the attribute or none if it does not exist
+    """
+
+
+    if attr == "raw.var":
+        if adata.raw:
+            return getattr(getattr(adata, "raw"), "var")
+        else:
+            return None
+    else:
+        return getattr(adata, attr)
+
+
 def _get_schema_file_path(version: str) -> str:
 
     """
@@ -336,13 +358,14 @@ class Validator:
                 term_id, column_name, curie_constraints["allowed_terms"]
             )
 
-    def _validate_feature_id(self, feature_id: str):
+    def _validate_feature_id(self, feature_id: str, df_name:str):
 
         """
         Validates a feature id, i.e. checks that it's present in the reference
         If there are any errors, it adds them to self.errors and adds it to the list of invalid features
 
         :param str feature_id: the feature id to be validated
+        :param str df_name: name of dataframe the feauter id comes from (var or raw.var)
 
         :rtype none
         """
@@ -350,7 +373,8 @@ class Validator:
         organism = _get_organism_from_feature_id(feature_id)
 
         if not organism:
-            self.errors.append(f"Could not infer organism from '{feature_id}', make sure it is a valid ID")
+            self.errors.append(f"Could not infer organism from feature ID '{feature_id}' in '{df_name}', "
+                               f"make sure it is a valid ID")
             return
 
         if organism not in self.gene_checkers:
@@ -358,7 +382,7 @@ class Validator:
 
         if not self.gene_checkers[organism].is_valid_id(feature_id):
             self.invalid_feature_ids.append(feature_id)
-            self.errors.append(f"'{feature_id}' is not a valid feature ID")
+            self.errors.append(f"'{feature_id}' is not a valid feature ID in '{df_name}'")
 
         return
 
@@ -407,7 +431,7 @@ class Validator:
 
         if column_def.get("type") == "feature_id":
             for feature_id in column:
-                self._validate_feature_id(feature_id)
+                self._validate_feature_id(feature_id, df_name)
 
         if column_def.get("type") == "curie":
             if "curie_constraints" not in column_def:
@@ -545,7 +569,12 @@ class Validator:
                                        f"the normalization used for 'X'.")
 
                 if self._get_raw_x_loc() == "raw.X" and not self._is_raw():
-                    self.warnings.append(f"uns['X_normalization'] is 'none' but X' seems to have mostly "
+                    self.warnings.append(f"uns['X_normalization'] is 'none' but 'raw.X' doesnt appear to have "
+                                         f"raw counts (integers)")
+
+            else:
+                if self._get_raw_x_loc() == "X" and self._is_raw():
+                    self.warnings.append(f"uns['X_normalization'] is '{value}' but 'X' seems to have mostly "
                                          f"raw values (integers).")
 
     def _validate_dict(self, dictionary: dict, dict_name: str, dict_def: dict):
@@ -610,7 +639,7 @@ class Validator:
         :rtype None
         """
 
-        df = getattr(self.adata, df_name)
+        df = _getattr_anndata(self.adata, df_name)
 
         if "index" in self._get_component_def(df_name):
             self._validate_column(
@@ -755,9 +784,9 @@ class Validator:
     def _is_raw(self, n_values_to_check: int = 5000, force: bool = False) -> bool:
 
         """
+        Checks if the first non-zero "n_values_to_check" in the best guess for the raw matrix (adata.X or adata.raw.X)
+        are integers. Returns False if at least one value is not an integer,
 
-        Checks if the first non-zero "n_values_to_check" in the best guess for
-        the raw matrix (adata.X or adata.raw.X) are integers. Returns False if at least one value is not an integer,
         True otherwise.
 
         Since this process is memory intensive, it will return a cache value if this function has been called before.
@@ -853,7 +882,7 @@ class Validator:
         for label_def in add_labels_def:
             reserved_name = label_def["to_column"]
 
-            if reserved_name in getattr(self.adata, component):
+            if reserved_name in _getattr_anndata(self.adata, component):
                 self.errors.append(
                     f"Add labels error: Column '{reserved_name}' is a reserved column name "
                     f"of '{component}'. Remove it from h5ad and try again."
@@ -868,20 +897,26 @@ class Validator:
         :rtype none
         """
 
-        for component in ["obs", "var"]:
+        for component, component_def in self.schema_def["components"].items():
+
+            # If not a dataframe we don't need to check for columns
+            if component_def["type"] != "dataframe":
+                continue
+
+            # Skip if component does not exist
+            if _getattr_anndata(self.adata, component) is None:
+                continue
 
             # Do it for columns that map to columns
-            for column, columns_def in self.schema_def["components"][component][
-                "columns"
-            ].items():
+            for column, columns_def in component_def["columns"].items():
 
                 if "add_labels" in columns_def:
                     self._check_single_column_availability(component, columns_def["add_labels"])
 
             # Do it for index that map to columns
-            if "index" in self.schema_def["components"][component]:
+            if "index" in component_def:
 
-                index_def =  self.schema_def["components"][component]["index"]
+                index_def =  component_def["index"]
                 if "add_labels" in index_def:
                     self._check_single_column_availability(component, index_def["add_labels"])
 
@@ -906,6 +941,13 @@ class Validator:
 
         # Checks each component
         for component, component_def in self.schema_def["components"].items():
+
+            # Skip if component does not exist: only useful for adata.raw.var
+            if _getattr_anndata(self.adata, component) is None:
+                if "required" in component_def:
+                    self.errors.append(f"'{component}' is missing from adata and it's required")
+                continue
+
             if component_def["type"] == "dataframe":
                 self._validate_dataframe(component)
             elif component_def["type"] == "dict":
@@ -1164,7 +1206,7 @@ class LabelWriter:
         """
 
         # Set variables for readability
-        current_df = getattr(self.adata, component)
+        current_df = _getattr_anndata(self.adata, component)
 
         if column == "index":
             original_column = pd.Series(current_df.index)

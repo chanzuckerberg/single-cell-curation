@@ -14,8 +14,10 @@ raw:
 components:
     obsm:
         type: embedding_dict
+        required: null # Means it's required
     uns:
         type: dict
+        required: null # Means it's required
         keys:
             schema_version:
                 type: string
@@ -38,6 +40,33 @@ components:
                     - count
                     - normal
     var:
+        type: dataframe
+        required: null # Means it's required
+        index:
+            unique: true
+            type: feature_id
+            # Using IDs add two columns: feature_id, and feature_reference
+            add_labels:
+                -
+                    type: feature_id
+                    to_column: feature_name
+                -
+                    type: feature_reference
+                    to_column: feature_reference
+        # All columns are required
+        columns:
+            feature_biotype:
+                type: categorical
+                enum:
+                    - "gene"
+                dependencies:
+                    -
+                        # If feature id start with ERCC then only allowed for "spike-in"
+                        rule: "index.str.startswith('ERCC')"
+                        type: categorical
+                        enum:
+                            - "spike-in"
+    raw.var:
         type: dataframe
         index:
             unique: true
@@ -65,6 +94,7 @@ components:
                             - "spike-in"
     obs:
         type: dataframe
+        required: null # Means it's required
         index:
             unique: true
         columns:
