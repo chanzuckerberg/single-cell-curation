@@ -26,16 +26,17 @@ This schema supports multiple assay types. Each assay takes the form of one or m
 The schema additionally describes how the dataset, genes, and cells are annotated to describe the biological and technical characteristics of the data.
 
 This document is organized by:
+
 * [General requirements](#general-requirements)
 * [`X` (Matrix layers)](#x-matrix-layers), which describe the data required for different assays
 * [`obs` (Cell metadata)](#obs-cell-metadata), which describe each cell in the dataset
-* [`var` (Gene metadata)](#var-gene-metadata), which describe each gene in the dataset
+* [`var`/`raw.var` (Gene metadata)](#var-gene-metadata), which describe each gene in the dataset
 * [`obsm` (Embeddings)](#obsm-embeddings), which describe each embedding in the dataset
 * [`uns` (Dataset metadata)](#uns-dataset-metadata), which describe the dataset as a whole
 
 ## General Requirements
 
-* **AnnData** - The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `obsm`, and `uns` attributes are described below.
+* **AnnData** - The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `raw.var`, `obsm`, and `uns` attributes are described below.
 
 * **Organisms**. Data MUST be from an organism defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the pinned Human and Mouse gene annotations.
 
@@ -614,13 +615,13 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
 </tbody></table>
 <br>
 
-## `var` (Gene Metadata)
+## `var` and `raw.var` (Gene Metadata)
 
-`var` is a [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html).
+`var` and `raw.var` are both of type [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html).
 
-`var.index` MUST contain unique identifiers for features.
+`var.index` MUST contain unique identifiers for features. `raw.var.index` MUST be identical to `var.index`
 
-Curators MUST annotate the following columns in the `var` dataframe:
+Curators MUST annotate the following columns in the `var` and `raw.var` dataframes:
 
 ### feature_biotype
 
@@ -646,7 +647,7 @@ Curators MUST annotate the following columns in the `var` dataframe:
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>feature_id <code>(var.index)</code></td>
+      <td>feature_id (<code>var.index</code>/<code>raw.var.index</code>)</td>
     </tr>
     <tr>
       <th>Annotator</th>
@@ -659,7 +660,7 @@ Curators MUST annotate the following columns in the `var` dataframe:
 </tbody></table>
 <br>
 
-When a dataset is uploaded, cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding feature identifier and the inferred NCBITaxon term for the reference organism  to the `var` dataframe. Curators MUST NOT annotate the following columns:
+When a dataset is uploaded, cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding feature identifier and the inferred NCBITaxon term for the reference organism  to the `var` and `raw.var` dataframes. Curators MUST NOT annotate the following columns:
 
 ### feature_name
 
@@ -905,6 +906,7 @@ schema v2.0.0 substantially *remodeled* schema v1.1.0:
 * var
   * Replaced HGNC gene **symbols** as `var.index` with ENSEMBL or ERCC spike-in **identifiers** 
   * Added `feature_id`, `feature_name`, and `feature_reference`
+  * Added requirements for `raw.var` which should be identical to `var`
 
 * uns
   * Added `batch_condition`
