@@ -25,7 +25,6 @@ def _is_null(v):
     return pd.isnull(v) or (hasattr(v, "__len__") and len(v) == 0)
 
 
-
 def _getattr_anndata(adata: anndata.AnnData, attr: str=None):
 
     """
@@ -838,17 +837,45 @@ class Validator:
 
         return self._raw_layer_exists
 
+    def _validate_x_raw_x_dimensions(self):
+
+        """
+        Validates that X and raw.X have the same shape. Adds errors to self.errors if any.
+        """
+
+        if self._get_raw_x_loc() == "raw.X":
+            if self.adata.n_vars != self.adata.raw.n_vars:
+                self.errors.append(f"Number of genes in X ({self.adata.n_vars}) is different "
+                                   f"than raw.X ({self.adata.raw.n_vars})")
+            else:
+                if not (self.adata.var_names != self.adata.raw.var_names).all():
+                    self.errors.append("Genes in X and raw.X are different")
+            if self.adata.n_obs != self.adata.raw.n_obs:
+                self.errors.append(f"Number of cells in X ({self.adata.n_obs}) is different "
+                                   f"than raw.X ({self.adata.raw.n_obs})")
+            else:
+                if not (self.adata.obs_names == self.adata.raw.obs_names).all():
+                    self.errors.append("Cells in X and raw.X are different")
+
     def _validate_raw(self):
 
         """
-        Validates raw only if the rules in the schema definition are fulfilled. The validation entails checking that
-        there's an expression matrix containing raw (integer) values, first in adata.raw.X and then adata.X if the
-        former does not exist. Adds errors to self.errors if any
+        Validates raw only if the rules in the schema definition are fulfilled and that X and raw.X have the same shape
+        The validation entails checking that:
+         1. X and raw.X have the same column and and raw indeces
+         2. there's an expression matrix containing raw (integer) values, first in adata.raw.X and then adata.X if
+         the former does not exist.
+
+        Adds errors to self.errors if any.
 
         :rtype None
         """
 
-        # Asses if we actually need to perform validation of raw based on the rules
+        # Check that raw and raw.X have the same shape
+        self._validate_x_raw_x_dimensions()
+
+        # Asses if we actually need to perform validation of raw based on the rules in the schema
+        # As of now, this means that we only do validation of raw if it's RNA data
         checks = []
         for component, component_rules in self.schema_def["raw"].items():
             for column, column_rules in component_rules.items():
@@ -859,6 +886,7 @@ class Validator:
                     else:
                         raise ValueError(f"'{rule}' rule in raw definition of the schema is not implemented ")
 
+
         # If all checks passed then proceed with validation
         if all(checks):
             if not self._is_raw():
@@ -866,7 +894,7 @@ class Validator:
                 self.errors.append(f"Matrix '{raw_X_loc}' seems to be the raw matrix but not all of "
                                    f"its values are integers.")
 
-    def _check_single_column_availability(self, component:str , add_labels_def: List[dict]):
+    def _check_single_column_availability(self, component: str , add_labels_def: List[dict]):
 
         """
         This method checks a single reserved column in adata.obs or adata.var and adds a message to self.error if
