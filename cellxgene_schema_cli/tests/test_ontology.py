@@ -2,6 +2,8 @@ import unittest
 from cellxgene_schema import ontology
 import fixtures.examples_ontology_test as examples
 
+# Tests for internal functions of the OntologyChecker and GeneChecker classes
+
 
 class TestGeneChecker(unittest.TestCase):
     def setUp(self):

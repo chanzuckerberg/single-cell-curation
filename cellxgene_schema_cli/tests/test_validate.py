@@ -1,10 +1,9 @@
 import unittest
-import pandas as pd
 from cellxgene_schema import ontology
 from cellxgene_schema import validate
-import numpy
 import fixtures.examples_validate as examples
-from scipy import sparse
+
+# Tests for internal functions of the Validator and LabelWriter classes.
 
 
 class TestFieldValidation(unittest.TestCase):
@@ -25,8 +24,9 @@ class TestFieldValidation(unittest.TestCase):
         ]["curie_constraints"]
 
     def test_schema_defintion(self):
+
         """
-        Tests that the definition of schema is correct
+        Tests that the definition of schema is well-defined
         """
 
         self.assertIsInstance(self.schema_def["components"], dict)
@@ -80,197 +80,6 @@ class TestFieldValidation(unittest.TestCase):
             "NO_TERM2", self.column_name, self.curie_constraints
         )
         self.assertTrue(self.validator.errors)
-
-
-class TestMatrix(unittest.TestCase):
-
-    def setUp(self):
-        self.validator = validate.Validator()
-        self.validator.adata = examples.adata.copy()
-        self.validator._set_schema_def()
-
-    def test_bad_raw(self):
-        self.validator.adata = examples.adata_non_raw.copy()
-        self.validator._validate_raw()
-        self.assertTrue(self.validator.errors)
-
-    def test_good_raw(self):
-        self.validator._validate_raw()
-        self.assertFalse(self.validator.errors)
-
-    def test_sparsity(self):
-
-        # If a matrix is sparse and not a sparse csr matrix there should be a warning
-        self.validator.adata.X = numpy.zeros(self.validator.adata.X.shape)
-        self.validator._validate_sparsity()
-        self.assertTrue(self.validator.warnings)
-
-        self.validator.warnings = []
-        self.validator.adata.X = sparse.csc_matrix(self.validator.adata.X)
-        self.validator._validate_sparsity()
-        self.assertTrue(self.validator.warnings)
-
-        # Correct sparsity
-        self.validator.warnings = []
-        self.validator.adata.X = sparse.csr_matrix(self.validator.adata.X)
-        self.validator._validate_sparsity()
-        self.assertFalse(self.validator.warnings)
-
-
-class TestObsmValidation(unittest.TestCase):
-
-    def setUp(self):
-        self.validator = validate.Validator()
-        self.validator.adata = examples.adata.copy()
-        self.schema_def = validate._get_schema_definition(examples.SCHEMA_VERSION)
-        self.good_uns = examples.good_uns
-
-    def test_validate_good_obsm(self):
-        self.validator._validate_embedding_dict()
-        self.assertFalse(self.validator.errors)
-
-    def test_validate_bad_obsm(self):
-
-        # Wrong dimension, delete one column
-        key = list(self.validator.adata.obsm.keys())[0]
-        self.validator.adata.obsm[key] = numpy.delete(self.validator.adata.obsm[key], 0, axis=1)
-
-        self.validator._validate_embedding_dict()
-        self.assertTrue(self.validator.errors)
-
-    def test_validate_bad_obsm_2(self):
-
-        # Wrong type
-        key = list(self.validator.adata.obsm.keys())[0]
-        self.validator.adata.obsm[key] = pd.DataFrame(self.validator.adata.obsm[key],
-                                                      index = self.validator.adata.obs_names)
-
-        self.validator._validate_embedding_dict()
-        self.assertTrue(self.validator.errors)
-
-
-class TestUnsValidation(unittest.TestCase):
-
-    def setUp(self):
-        self.validator = validate.Validator()
-        self.validator.adata = examples.adata
-        self.schema_def = validate._get_schema_definition(examples.SCHEMA_VERSION)
-        self.good_uns = examples.good_uns
-        self.bad_uns = examples.bad_uns
-
-    def test_validate_good_uns(self):
-        self.validator._validate_dict(
-            self.good_uns, "uns", self.schema_def["components"]["uns"]
-        )
-        self.assertFalse(self.validator.errors)
-
-    def test_validate_bad_uns(self):
-
-        # Do one key at a time but skip schema_version as that's not checked here
-        for key, value in self.bad_uns.items():
-
-            if key == "schema_version":
-                continue
-
-            current_dict = self.good_uns.copy()
-            current_dict[key] = value
-
-            self.validator.errors = []
-            self.validator._validate_dict(
-                current_dict, "uns", self.schema_def["components"]["uns"]
-            )
-            self.assertTrue(self.validator.errors)
-
-
-class TestColumnValidation(unittest.TestCase):
-    def setUp(self):
-        self.validator = validate.Validator()
-        self.validator.adata = examples.adata_empty
-        self.good_var = examples.good_var
-        self.good_obs = examples.good_obs
-        self.bad_var = examples.bad_var
-        self.bad_obs = examples.bad_obs
-        self.schema_def = validate._get_schema_definition(examples.SCHEMA_VERSION)
-
-        self.unique = pd.DataFrame(
-            [["abc", "def"], ["ghi", "jkl"], ["mnop", "qrs"]],
-            index=["X", "Y", "Z"],
-            columns=["col1", "col2"],
-        )
-
-        self.duped = pd.DataFrame(
-            [["abc", "def"], ["ghi", "qrs"], ["abc", "qrs"]],
-            index=["X", "Y", "X"],
-            columns=["col1", "col2"],
-        )
-
-        self.column_def_uniq = {"unique": True}
-        self.column_def_not_uniq = {"unique": False}
-
-    def test_validate_unique_good(self):
-
-        self.validator._validate_column(
-            self.unique.index, "index", "unique_df", self.column_def_uniq
-        )
-        self.assertFalse(self.validator.errors)
-
-        self.validator._validate_column(
-            self.unique["col1"], "col1", "unique_df", self.column_def_uniq
-        )
-        self.assertFalse(self.validator.errors)
-
-    def test_validate_unique_valid_duped(self):
-
-        self.validator._validate_column(
-            self.duped["col1"], "col1", "duped_df", self.column_def_not_uniq
-        )
-        self.assertFalse(self.validator.errors)
-
-    def test_validate_unique_invalid_duped(self):
-
-        self.validator._validate_column(
-            self.duped.index, "index", "duped_df", self.column_def_uniq
-        )
-        self.assertTrue(self.validator.errors)
-
-    def test_validate_unique_invalid_duped2(self):
-
-        self.validator._validate_column(
-            self.duped["col1"], "col1", "duped_df", self.column_def_uniq
-        )
-        self.assertTrue(self.validator.errors)
-
-    def test_ontology_columns(self):
-
-        # Correct example. This only tests the column validation process and therefore the tests excludes those columns
-        # that have dependencies with other columns and need the entire dataframe for validation
-        dfs = [self.good_var, self.good_obs]
-        components = ["var", "obs"]
-
-        for good_df, component in zip(dfs, components):
-            for column in good_df.columns:
-                columns_def = self.schema_def["components"][component]["columns"]
-                if "dependencies" not in columns_def[column]:
-                    self.validator.errors = []  # Reset errors
-                    self.validator._validate_column(
-                        good_df[column], column, "obs", columns_def[column]
-                    )
-                    self.assertFalse(self.validator.errors)
-
-        # Bad columns, do each individually
-        dfs = [self.bad_var, self.bad_obs]
-        components = ["var", "obs"]
-        for bad_df, component in zip(dfs, components):
-            for column in bad_df.columns:
-                columns_def = self.schema_def["components"][component]["columns"]
-                if "dependencies" not in columns_def[column]:
-                    self.validator.errors = []  # Reset errors
-                    self.validator._validate_column(
-                        bad_df[column], column, "obs", columns_def[column]
-                    )
-                    self.assertTrue(self.validator.errors)
-
-
 
 class TestH5adValidation(unittest.TestCase):
     def setUp(self):
@@ -382,22 +191,6 @@ class TestAddLabelFunctions(unittest.TestCase):
         ids = ["CL:NO_TERM"]
         with self.assertRaises(ValueError):
             self.writer._get_mapping_dict_curie(ids, curie_constraints)
-
-    def test_get_new_labels(self):
-
-        # Test getting a column with labels based on ids for adata.obs
-        for component in ["obs", "var"]:
-            for column, column_definition in self.schema_def["components"][component][
-                "columns"
-            ].items():
-                if "add_labels" in column_definition:
-                    for label_def in column_definition["add_labels"]:
-                        expected_column = self.test_adata_with_labels.obs[label_def["to_column"]]
-                        obtained_column = self.writer._get_labels(
-                            component, column, column_definition, label_def["type"]
-                        )
-                        for i, j in zip(expected_column.tolist(), obtained_column.tolist()):
-                            self.assertEqual(i, j)
 
     def test_get_new_adata(self):
 

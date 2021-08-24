@@ -411,7 +411,7 @@ class Validator:
         if column_def.get("type") == "bool":
             if not column.dtype == bool:
                 self.errors.append(
-                    f"Column '{column_name}' in dataframe '{df_name}' must be boolean not {column.dtype.name}"
+                    f"Column '{column_name}' in dataframe '{df_name}' must be boolean not '{column.dtype.name}'"
                 )
 
         if column_def.get("type") == "categorical":
@@ -675,7 +675,7 @@ class Validator:
         :rtype none
         """
 
-        max_sparsity = self.schema_def["sparsity"]
+        max_sparsity = float(self.schema_def["sparsity"])
 
         to_validate = [self.adata.X]
         to_validate_name = ["X"]
@@ -848,7 +848,7 @@ class Validator:
                 self.errors.append(f"Number of genes in X ({self.adata.n_vars}) is different "
                                    f"than raw.X ({self.adata.raw.n_vars})")
             else:
-                if not (self.adata.var_names != self.adata.raw.var_names).all():
+                if not (self.adata.var_names == self.adata.raw.var_names).all():
                     self.errors.append("Genes in X and raw.X are different")
             if self.adata.n_obs != self.adata.raw.n_obs:
                 self.errors.append(f"Number of cells in X ({self.adata.n_obs}) is different "
@@ -889,10 +889,21 @@ class Validator:
 
         # If all checks passed then proceed with validation
         if all(checks):
+
+            # If there isn't raw data raise an error
             if not self._is_raw():
                 raw_X_loc = self._get_raw_x_loc()
                 self.errors.append(f"Matrix '{raw_X_loc}' seems to be the raw matrix but not all of "
                                    f"its values are integers.")
+
+            # If raw data is in X but X_normalization is NOT none raise an error
+            normalization = self.adata.uns["X_normalization"]
+            if self._is_raw() and \
+                    self._get_raw_x_loc() == "X" and \
+                    normalization != "none":
+
+                self.errors.append(f"uns['X_normalization'] is '{normalization}' but raw data seems to be in X, "
+                                   f"if X is raw then uns['X_normalization'] MUST be 'none'.")
 
     def _check_single_column_availability(self, component: str , add_labels_def: List[dict]):
 
@@ -987,7 +998,7 @@ class Validator:
                 raise ValueError(f"Unexpected component type '{component['type']}'")
 
         # Checks for raw only if there are no errors, because it depends on the
-        # existence of adata.obs["assay_ontology_term_id"]
+        # existence of adata.obs["assay_ontology_term_id"] and adata.obs["X_normalization"]
         if not self.errors and "raw" in self.schema_def:
             self._validate_raw()
 
