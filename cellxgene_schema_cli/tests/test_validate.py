@@ -81,6 +81,7 @@ class TestFieldValidation(unittest.TestCase):
         )
         self.assertTrue(self.validator.errors)
 
+
 class TestH5adValidation(unittest.TestCase):
     def setUp(self):
         self.h5ad_valid = examples.h5ad_valid
@@ -113,12 +114,15 @@ class TestAddLabelFunctions(unittest.TestCase):
     def test_get_dictionary_mapping_feature_id(self):
 
         # Good
-        ids = ["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"]
+        ids = [
+            "ERCC-00002",
+            "ENSG00000127603",
+            "ENSMUSG00000059552",
+            "ENSSASG00005000004",
+        ]
         labels = ["ERCC-00002 spike-in control", "MACF1", "Trp53", "S"]
         expected_dict = {i: j for i, j in zip(ids, labels)}
-        self.assertEqual(
-            self.writer._get_mapping_dict_feature_id(ids), expected_dict
-        )
+        self.assertEqual(self.writer._get_mapping_dict_feature_id(ids), expected_dict)
 
         # Bad
         ids = ["NO_GENE"]
@@ -129,8 +133,18 @@ class TestAddLabelFunctions(unittest.TestCase):
     def test_get_dictionary_mapping_feature_reference(self):
 
         # Good
-        ids = ["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"]
-        labels = ["NCBITaxon:32630", "NCBITaxon:9606", "NCBITaxon:10090", "NCBITaxon:2697049"]
+        ids = [
+            "ERCC-00002",
+            "ENSG00000127603",
+            "ENSMUSG00000059552",
+            "ENSSASG00005000004",
+        ]
+        labels = [
+            "NCBITaxon:32630",
+            "NCBITaxon:9606",
+            "NCBITaxon:10090",
+            "NCBITaxon:2697049",
+        ]
         expected_dict = {i: j for i, j in zip(ids, labels)}
         self.assertEqual(
             self.writer._get_mapping_dict_feature_reference(ids), expected_dict

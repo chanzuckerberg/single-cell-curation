@@ -25,7 +25,7 @@ def _is_null(v):
     return pd.isnull(v) or (hasattr(v, "__len__") and len(v) == 0)
 
 
-def _getattr_anndata(adata: anndata.AnnData, attr: str=None):
+def _getattr_anndata(adata: anndata.AnnData, attr: str = None):
 
     """
     same as getattr but handles the special case of "raw.var" for an anndata.Anddata object
@@ -35,7 +35,6 @@ def _getattr_anndata(adata: anndata.AnnData, attr: str=None):
 
     :return the attribute or none if it does not exist
     """
-
 
     if attr == "raw.var":
         if adata.raw:
@@ -75,7 +74,9 @@ def _get_schema_definition(version: str) -> dict:
     return yaml.load(open(path), Loader=yaml.FullLoader)
 
 
-def _get_organism_from_feature_id (feature_id: str) -> Union[ontology.SupportedOrganisms, None]:
+def _get_organism_from_feature_id(
+    feature_id: str,
+) -> Union[ontology.SupportedOrganisms, None]:
 
     """
     Infers the organism of a feature id based on the prefix of a feature id, e.g. ENSG means Homo sapiens
@@ -144,8 +145,10 @@ class Validator:
         self.h5ad_path = ""
         self.invalid_feature_ids = []
         self._raw_layer_exists = None
-        self.gene_checkers = dict() # Values will be instances of ontology.GeneChecker,
-                                    # keys will be one of ontology.SupportedOrganisms
+
+        # Values will be instances of ontology.GeneChecker,
+        # keys will be one of ontology.SupportedOrganisms
+        self.gene_checkers = dict()
 
     def _read_h5ad(self, h5ad_path: Union[str, bytes, os.PathLike]):
 
@@ -172,7 +175,9 @@ class Validator:
 
         # Check if schema version slot is present
         if "schema_version" not in self.adata.uns:
-            self.errors.append("adata has no schema definition in 'adata.uns'. Validation cannot be performed.")
+            self.errors.append(
+                "adata has no schema definition in 'adata.uns'. Validation cannot be performed."
+            )
         else:
 
             # Check if schema version is supported
@@ -180,7 +185,9 @@ class Validator:
             path = _get_schema_file_path(version)
 
             if not os.path.isfile(path):
-                self.errors.append(f"Schema version '{version}' is not supported. Validation cannot be performed.")
+                self.errors.append(
+                    f"Schema version '{version}' is not supported. Validation cannot be performed."
+                )
             else:
                 self.schema_def = _get_schema_definition(version)
 
@@ -321,9 +328,7 @@ class Validator:
         # If there are forbidden terms
         if "forbidden" in curie_constraints:
             if term_id in curie_constraints["forbidden"]:
-                self.errors.append(
-                    f"'{term_id}' in '{column_name}' is not allowed'"
-                )
+                self.errors.append(f"'{term_id}' in '{column_name}' is not allowed'")
                 return
 
         # If NA is found in allowed ontologies, it means only exceptions should be found. If no exceptions were found
@@ -357,7 +362,7 @@ class Validator:
                 term_id, column_name, curie_constraints["allowed_terms"]
             )
 
-    def _validate_feature_id(self, feature_id: str, df_name:str):
+    def _validate_feature_id(self, feature_id: str, df_name: str):
 
         """
         Validates a feature id, i.e. checks that it's present in the reference
@@ -372,8 +377,10 @@ class Validator:
         organism = _get_organism_from_feature_id(feature_id)
 
         if not organism:
-            self.errors.append(f"Could not infer organism from feature ID '{feature_id}' in '{df_name}', "
-                               f"make sure it is a valid ID")
+            self.errors.append(
+                f"Could not infer organism from feature ID '{feature_id}' in '{df_name}', "
+                f"make sure it is a valid ID"
+            )
             return
 
         if organism not in self.gene_checkers:
@@ -381,7 +388,9 @@ class Validator:
 
         if not self.gene_checkers[organism].is_valid_id(feature_id):
             self.invalid_feature_ids.append(feature_id)
-            self.errors.append(f"'{feature_id}' is not a valid feature ID in '{df_name}'")
+            self.errors.append(
+                f"'{feature_id}' is not a valid feature ID in '{df_name}'"
+            )
 
         return
 
@@ -421,7 +430,9 @@ class Validator:
                 )
 
         if "enum" in column_def:
-            bad_enums = [v for v in column.drop_duplicates() if v not in column_def["enum"]]
+            bad_enums = [
+                v for v in column.drop_duplicates() if v not in column_def["enum"]
+            ]
             if bad_enums:
                 self.errors.append(
                     f"Column '{column_name}' in dataframe '{df_name}' contains invalid values "
@@ -471,8 +482,10 @@ class Validator:
             try:
                 column = getattr(df.query(dependency_def["rule"]), column_name)
             except UndefinedVariableError:
-                self.errors.append(f"Checking values with dependencies failed for adata.{df_name}['{column_name}'], "
-                                   f"this is likely due to missing dependent column in adata.{df_name}")
+                self.errors.append(
+                    f"Checking values with dependencies failed for adata.{df_name}['{column_name}'], "
+                    f"this is likely due to missing dependent column in adata.{df_name}"
+                )
                 return pd.Series()
 
             all_rules.append(dependency_def["rule"])
@@ -564,17 +577,23 @@ class Validator:
             if value == "none":
 
                 if self._get_raw_x_loc() == "raw.X":
-                    self.errors.append(f"uns['X_normalization'] is 'none' but 'raw.X' is present. Please indicate "
-                                       f"the normalization used for 'X'.")
+                    self.errors.append(
+                        "uns['X_normalization'] is 'none' but 'raw.X' is present. Please indicate "
+                        "the normalization used for 'X'."
+                    )
 
                 if self._get_raw_x_loc() == "raw.X" and not self._is_raw():
-                    self.warnings.append(f"uns['X_normalization'] is 'none' but 'raw.X' doesnt appear to have "
-                                         f"raw counts (integers)")
+                    self.warnings.append(
+                        "uns['X_normalization'] is 'none' but 'raw.X' doesnt appear to have "
+                        "raw counts (integers)"
+                    )
 
             else:
                 if self._get_raw_x_loc() == "X" and self._is_raw():
-                    self.warnings.append(f"uns['X_normalization'] is '{value}' but 'X' seems to have mostly "
-                                         f"raw values (integers).")
+                    self.warnings.append(
+                        f"uns['X_normalization'] is '{value}' but 'X' seems to have mostly "
+                        f"raw values (integers)."
+                    )
 
     def _validate_dict(self, dictionary: dict, dict_name: str, dict_def: dict):
 
@@ -602,7 +621,9 @@ class Validator:
                     continue
 
                 if "enum" in value_def:
-                    self._validate_enum_in_dict(value, value_def["enum"], dict_name, key)
+                    self._validate_enum_in_dict(
+                        value, value_def["enum"], dict_name, key
+                    )
 
             if value_def["type"] == "X_normalization":
                 self._validate_X_normalization(value)
@@ -642,7 +663,10 @@ class Validator:
 
         if "index" in self._get_component_def(df_name):
             self._validate_column(
-                pd.Series(df.index), "index", df_name, self._get_column_def(df_name, "index")
+                pd.Series(df.index),
+                "index",
+                df_name,
+                self._get_column_def(df_name, "index"),
             )
 
         for column_name in self._get_component_def(df_name)["columns"].keys():
@@ -700,14 +724,18 @@ class Validator:
                 elif isinstance(x, ndarray):
                     sparsity = 1 - count_nonzero(x) / float(cumprod(x.shape)[-1])
                 else:
-                    self.warnings.append(f"{x_name} matrix is of type {type(x)}, sparsity calculation hasn't been "
-                                         f"implemented")
+                    self.warnings.append(
+                        f"{x_name} matrix is of type {type(x)}, sparsity calculation hasn't been "
+                        f"implemented"
+                    )
                     continue
 
                 if sparsity > max_sparsity:
-                    self.warnings.append(f"Sparsity of '{x_name}' is {sparsity} which is greater than {max_sparsity}, "
-                                         f"and it is not a 'scipy.sparse.csr_matrix'. It is STRONGLY RECOMMENDED "
-                                         f"to use this type of matrix for the given sparsity.")
+                    self.warnings.append(
+                        f"Sparsity of '{x_name}' is {sparsity} which is greater than {max_sparsity}, "
+                        f"and it is not a 'scipy.sparse.csr_matrix'. It is STRONGLY RECOMMENDED "
+                        f"to use this type of matrix for the given sparsity."
+                    )
 
     def _validate_embedding_dict(self):
 
@@ -726,8 +754,10 @@ class Validator:
         for key, value in self.adata.obsm.items():
 
             if not isinstance(value, ndarray):
-                self.errors.append(f"All embeddings have to be of 'numpy.ndarray' type, "
-                                   f"'adata.obsm['{key}']' is {type(value)}')")
+                self.errors.append(
+                    f"All embeddings have to be of 'numpy.ndarray' type, "
+                    f"'adata.obsm['{key}']' is {type(value)}')"
+                )
                 continue
 
             # Embeddings to be shown in cellxgene explorer
@@ -735,24 +765,34 @@ class Validator:
                 obsm_with_x_prefix += 1
 
                 if len(value.shape) < 2:
-                    self.errors.append(f"All embeddings must have as many rows as cells, and at least two columns."
-                                       f"'adata.obsm['{key}']' has shape of '{value.shape}'")
+                    self.errors.append(
+                        f"All embeddings must have as many rows as cells, and at least two columns."
+                        f"'adata.obsm['{key}']' has shape of '{value.shape}'"
+                    )
                 else:
                     if value.shape[0] != self.adata.n_obs or value.shape[1] < 2:
-                        self.errors.append(f"All embeddings must have as many rows as cells, and at least two columns."
-                                           f"'adata.obsm['{key}']' has shape of '{value.shape}'")
+                        self.errors.append(
+                            f"All embeddings must have as many rows as cells, and at least two columns."
+                            f"'adata.obsm['{key}']' has shape of '{value.shape}'"
+                        )
 
         if obsm_with_x_prefix == 0:
-            self.errors.append(f"At least one embedding in 'obsm' has to have a key with an 'X_' prefix.")
+            self.errors.append(
+                "At least one embedding in 'obsm' has to have a key with an 'X_' prefix."
+            )
 
-    def _are_children_of(self, component: str, column: str, ontology_name: str, ancestors: List[str]) -> bool:
+    def _are_children_of(
+        self, component: str, column: str, ontology_name: str, ancestors: List[str]
+    ) -> bool:
 
         curies = getattr(getattr(self.adata, component), column)
         curies = curies.drop_duplicates()
 
         for curie in curies:
             if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, curie):
-                curie_ancestors = ONTOLOGY_CHECKER.get_term_ancestors(ontology_name, curie)
+                curie_ancestors = ONTOLOGY_CHECKER.get_term_ancestors(
+                    ontology_name, curie
+                )
                 if bool(set(curie_ancestors) & set(ancestors)):
                     return True
 
@@ -845,14 +885,18 @@ class Validator:
 
         if self._get_raw_x_loc() == "raw.X":
             if self.adata.n_vars != self.adata.raw.n_vars:
-                self.errors.append(f"Number of genes in X ({self.adata.n_vars}) is different "
-                                   f"than raw.X ({self.adata.raw.n_vars})")
+                self.errors.append(
+                    f"Number of genes in X ({self.adata.n_vars}) is different "
+                    f"than raw.X ({self.adata.raw.n_vars})"
+                )
             else:
                 if not (self.adata.var_names == self.adata.raw.var_names).all():
                     self.errors.append("Genes in X and raw.X are different")
             if self.adata.n_obs != self.adata.raw.n_obs:
-                self.errors.append(f"Number of cells in X ({self.adata.n_obs}) is different "
-                                   f"than raw.X ({self.adata.raw.n_obs})")
+                self.errors.append(
+                    f"Number of cells in X ({self.adata.n_obs}) is different "
+                    f"than raw.X ({self.adata.raw.n_obs})"
+                )
             else:
                 if not (self.adata.obs_names == self.adata.raw.obs_names).all():
                     self.errors.append("Cells in X and raw.X are different")
@@ -882,10 +926,15 @@ class Validator:
                 for rule, rule_def in column_rules.items():
                     if rule == "not_children_of":
                         for ontology_name, ancestors in rule_def.items():
-                            checks.append(not self._are_children_of(component, column, ontology_name, ancestors))
+                            checks.append(
+                                not self._are_children_of(
+                                    component, column, ontology_name, ancestors
+                                )
+                            )
                     else:
-                        raise ValueError(f"'{rule}' rule in raw definition of the schema is not implemented ")
-
+                        raise ValueError(
+                            f"'{rule}' rule in raw definition of the schema is not implemented "
+                        )
 
         # If all checks passed then proceed with validation
         if all(checks):
@@ -893,19 +942,27 @@ class Validator:
             # If there isn't raw data raise an error
             if not self._is_raw():
                 raw_X_loc = self._get_raw_x_loc()
-                self.errors.append(f"Matrix '{raw_X_loc}' seems to be the raw matrix but not all of "
-                                   f"its values are integers.")
+                self.errors.append(
+                    f"Matrix '{raw_X_loc}' seems to be the raw matrix but not all of "
+                    f"its values are integers."
+                )
 
             # If raw data is in X but X_normalization is NOT none raise an error
             normalization = self.adata.uns["X_normalization"]
-            if self._is_raw() and \
-                    self._get_raw_x_loc() == "X" and \
-                    normalization != "none":
+            if (
+                self._is_raw()
+                and self._get_raw_x_loc() == "X"
+                and normalization != "none"
+            ):
 
-                self.errors.append(f"uns['X_normalization'] is '{normalization}' but raw data seems to be in X, "
-                                   f"if X is raw then uns['X_normalization'] MUST be 'none'.")
+                self.errors.append(
+                    f"uns['X_normalization'] is '{normalization}' but raw data seems to be in X, "
+                    f"if X is raw then uns['X_normalization'] MUST be 'none'."
+                )
 
-    def _check_single_column_availability(self, component: str , add_labels_def: List[dict]):
+    def _check_single_column_availability(
+        self, component: str, add_labels_def: List[dict]
+    ):
 
         """
         This method checks a single reserved column in adata.obs or adata.var and adds a message to self.error if
@@ -950,15 +1007,18 @@ class Validator:
             for column, columns_def in component_def["columns"].items():
 
                 if "add_labels" in columns_def:
-                    self._check_single_column_availability(component, columns_def["add_labels"])
+                    self._check_single_column_availability(
+                        component, columns_def["add_labels"]
+                    )
 
             # Do it for index that map to columns
             if "index" in component_def:
 
-                index_def =  component_def["index"]
+                index_def = component_def["index"]
                 if "add_labels" in index_def:
-                    self._check_single_column_availability(component, index_def["add_labels"])
-
+                    self._check_single_column_availability(
+                        component, index_def["add_labels"]
+                    )
 
     def _deep_check(self):
 
@@ -970,7 +1030,9 @@ class Validator:
 
         # Checks that adata is fully loaded
         if self.adata.isbacked:
-            raise RuntimeError("adata is loaded in backed mode, validation requires anndata to be loaded in memory")
+            raise RuntimeError(
+                "adata is loaded in backed mode, validation requires anndata to be loaded in memory"
+            )
 
         # Checks that reserved columns are not used
         self._check_column_availability()
@@ -984,7 +1046,9 @@ class Validator:
             # Skip if component does not exist: only useful for adata.raw.var
             if _getattr_anndata(self.adata, component) is None:
                 if "required" in component_def:
-                    self.errors.append(f"'{component}' is missing from adata and it's required")
+                    self.errors.append(
+                        f"'{component}' is missing from adata and it's required"
+                    )
                 continue
 
             if component_def["type"] == "dataframe":
@@ -1137,7 +1201,9 @@ class LabelWriter:
 
         return flatten
 
-    def _get_mapping_dict_curie(self, ids: List[str], curie_constraints: dict) -> Dict[str, str]:
+    def _get_mapping_dict_curie(
+        self, ids: List[str], curie_constraints: dict
+    ) -> Dict[str, str]:
 
         """
         From defined constraints it creates a mapping dictionary of ontology IDs and labels.
@@ -1178,7 +1244,7 @@ class LabelWriter:
                     continue
                 if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, id):
                     mapping_dict[original_id] = (
-                            ONTOLOGY_CHECKER.get_term_label(ontology_name, id) + id_suffix
+                        ONTOLOGY_CHECKER.get_term_label(ontology_name, id) + id_suffix
                     )
 
         # Check that all ids got a mapping. All ids should be found if adata was validated
@@ -1207,7 +1273,9 @@ class LabelWriter:
 
         return mapping_dict
 
-    def _get_mapping_dict_feature_reference(self, ids: List[str]) -> Dict[str, Optional[ontology.SupportedOrganisms]]:
+    def _get_mapping_dict_feature_reference(
+        self, ids: List[str]
+    ) -> Dict[str, Optional[ontology.SupportedOrganisms]]:
 
         """
         Creates a mapping dictionary of gene/feature IDs and NCBITaxon curies
@@ -1227,7 +1295,11 @@ class LabelWriter:
         return mapping_dict
 
     def _get_labels(
-        self, component: str, column: str, column_definition: dict, label_type: dict,
+        self,
+        component: str,
+        column: str,
+        column_definition: dict,
+        label_type: dict,
     ) -> pd.Categorical:
 
         """
@@ -1268,7 +1340,9 @@ class LabelWriter:
                     "but no curie constraints were found for the lables"
                 )
 
-            mapping_dict = self._get_mapping_dict_curie(ids, column_definition["curie_constraints"])
+            mapping_dict = self._get_mapping_dict_curie(
+                ids, column_definition["curie_constraints"]
+            )
 
         elif label_type == "feature_id":
             mapping_dict = self._get_mapping_dict_feature_id(ids=ids)
@@ -1281,9 +1355,7 @@ class LabelWriter:
                 f"'{label_type}' is not supported in 'add-labels' functionality"
             )
 
-        new_column = (
-            original_column.copy().replace(mapping_dict).astype("category")
-        )
+        new_column = original_column.copy().replace(mapping_dict).astype("category")
 
         return new_column
 
@@ -1303,7 +1375,9 @@ class LabelWriter:
 
         for label_def in column_definition["add_labels"]:
 
-            new_column = self._get_labels(component, column, column_definition, label_def["type"])
+            new_column = self._get_labels(
+                component, column, column_definition, label_def["type"]
+            )
             new_column_name = label_def["to_column"]
 
             # The sintax below is a programtic way to access obs and var in adata:
@@ -1320,7 +1394,9 @@ class LabelWriter:
         for component in ["obs", "var"]:
 
             # Doing it for columns
-            for column, column_def in self.schema_def["components"][component]["columns"].items():
+            for column, column_def in self.schema_def["components"][component][
+                "columns"
+            ].items():
 
                 if "add_labels" in column_def:
                     self._add_column(component, column, column_def)

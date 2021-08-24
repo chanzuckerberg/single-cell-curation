@@ -1,15 +1,16 @@
+# flake8: noqa
 import pandas as pd
 import numpy
 import anndata
 import os
 from scipy import sparse
 
-#-----------------------------------------------------------------#
+# -----------------------------------------------------------------#
 # General example information
 SCHEMA_VERSION = "2.0.0"
 FIXTURES_ROOT = os.path.join(os.path.dirname(__file__))
 
-#-----------------------------------------------------------------#
+# -----------------------------------------------------------------#
 # Pre-made example files
 h5ad_dir = os.path.join(FIXTURES_ROOT, "h5ads")
 h5ad_valid = os.path.join(h5ad_dir, "example_valid.h5ad")
@@ -28,7 +29,7 @@ h5ad_invalid = [
 h5ad_invalid = [os.path.join(h5ad_dir, i) for i in h5ad_invalid]
 
 
-#-----------------------------------------------------------------#
+# -----------------------------------------------------------------#
 # Manually creating minimal anndata objects.
 #
 # This process entails:
@@ -165,7 +166,7 @@ good_var = pd.DataFrame(
         ["gene"],
     ],
     index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"],
-    columns=["feature_biotype"]
+    columns=["feature_biotype"],
 )
 good_var = good_var.astype("category")
 
@@ -179,20 +180,20 @@ var_expected = pd.DataFrame(
         ["gene", "S", "NCBITaxon:2697049"],
     ],
     index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"],
-    columns=["feature_biotype", "feature_name", "feature_reference"]
+    columns=["feature_biotype", "feature_name", "feature_reference"],
 )
 var_expected = var_expected.astype("category")
 
 # invalid var, all fields are designed to fail
 bad_var = pd.DataFrame(
     [
-        ["gene"], #should be spike in
-        ["spike-in"], #should be gene
-        ["other"], # incorrect
+        ["gene"],  # should be spike in
+        ["spike-in"],  # should be gene
+        ["other"],  # incorrect
         ["gene"],
     ],
     index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "NO_GENE"],
-    columns=["feature_biotype"]
+    columns=["feature_biotype"],
 )
 bad_var = bad_var.astype("category")
 
@@ -220,9 +221,9 @@ bad_uns = {
 # ---
 # 4. Creating expression matrix,
 # X has integer values and non_raw_X has real values
-X = numpy.zeros([good_obs.shape[0],  good_var.shape[0]])
+X = numpy.zeros([good_obs.shape[0], good_var.shape[0]])
 non_raw_X = X.copy()
-non_raw_X[0,0] = 1.5
+non_raw_X[0, 0] = 1.5
 
 # ---
 # 5.Creating valid obsm
@@ -234,13 +235,21 @@ good_obsm = {"X_umap": numpy.zeros([X.shape[0], 2])}
 #   the unittests
 
 # Valid anndata
-adata = anndata.AnnData(X=sparse.csr_matrix(X), obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var)
+adata = anndata.AnnData(
+    X=sparse.csr_matrix(X), obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var
+)
 
 # Anndata with no obs nor var
 adata_empty = anndata.AnnData(X=sparse.csr_matrix(X), uns=good_uns, obsm=good_obsm)
 
 # Anndata with a expression matrix that is not raw
-adata_non_raw = anndata.AnnData(X=sparse.csr_matrix(non_raw_X), obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var)
+adata_non_raw = anndata.AnnData(
+    X=sparse.csr_matrix(non_raw_X),
+    obs=good_obs,
+    uns=good_uns,
+    obsm=good_obsm,
+    var=good_var,
+)
 
 # Expected anndata with labels that the validator must write in obs and var
 adata_with_labels = anndata.AnnData(
@@ -248,5 +257,5 @@ adata_with_labels = anndata.AnnData(
     obs=pd.concat([good_obs, obs_expected], axis=1),
     var=pd.concat([good_var, var_expected], axis=1),
     uns=good_uns,
-    obsm=good_obsm
+    obsm=good_obsm,
 )
