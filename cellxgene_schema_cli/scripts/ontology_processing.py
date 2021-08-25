@@ -171,6 +171,8 @@ def _get_ancestors(onto_class: owlready2.entity.ThingClass, ontololgy_name: str)
     ancestors = []
 
     for ancestor in onto_class.ancestors():
+        if onto_class.name == ancestor.name:
+            continue
         if ancestor.name.split("_")[0] == ontololgy_name:
             ancestors.append(ancestor.name.replace("_", ":"))
 
