@@ -66,7 +66,7 @@ visualization in cellxgene Explorer be included. So that cellxgene's data can be
 *   Because it is impractical to retain all barcodes in raw and final matrices, any cell filtering MUST be applied to both.
     By contrast, those wishing to reuse datasets require access to raw gene expression values, so genes SHOULD NOT be filtered from either dataset.
     Summarizing, any cell barcodes that are removed from the data MUST be filtered from both raw and final matrices and genes SHOULD NOT be filtered from the raw matrix.
-*   Any genes that publishers wish to filter from the final matrix MAY have their values replaced by zeroes and MUST be flagged in the column [`feature_is_filtered`](#feature_is_filtered) of [`var`](#var-and-rawvar-gene-metadata), which will mask them from exploration.
+*   Any genes that publishers wish to filter from the final matrix MAY have their values replaced by zeros and MUST be flagged in the column [`feature_is_filtered`](#feature_is_filtered) of [`var`](#var-and-rawvar-gene-metadata), which will mask them from exploration.
 *   Additional layers provided at author discretion MAY be stored using author-selected keys, but MUST have the same cells and genes as other layers. It is STRONGLY RECOMMENDED that these layers have names that accurately summarize what the numbers in the layer represent (e.g. `"counts_per_million"`, `"SCTransform_normalized"`, or `"RNA_velocity_unspliced"`).
 
 The following table describes the matrix data and layers requirements that are **assay-specific**. If an entry in the table is empty, the cellxgene schema does not have any other requirements on data in those layers beyond the ones listed above.
