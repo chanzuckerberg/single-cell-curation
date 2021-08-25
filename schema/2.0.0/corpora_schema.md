@@ -621,7 +621,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
 
 `var` and `raw.var` are both of type [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html).
 
-`var.index` MUST contain unique identifiers for features. `raw.var.index` MUST be identical to `var.index`
+`var.index` MUST contain unique identifiers for features. `raw.var.index` MUST be identical to `var.index`.
 
 Curators MUST annotate the following columns in the `var` and `raw.var` dataframes:
 
@@ -677,7 +677,7 @@ Curators MUST annotate the following column only in the `var` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>bool</code>. This MUST be <code>True</code> if the feature was filtered out in the final matrix (<code>X</code>) but it is present in the raw matrix (<code>raw.X</code>), <code>False</code> if not. When <code>True</code>, the value for all cells of the given feature in the final matrix MUST be <code>0</code>. </td>
+        <td><code>bool</code>. This MUST be <code>True</code> if the feature was filtered out in the final matrix (<code>X</code>) but is present in the raw matrix (<code>raw.X</code>). The value for all cells of the given feature in the final matrix MUST be <code>0</code>.  <br><br>Otherwise, this MUST be <code>False</code>. </td>
     </tr>
 </tbody></table>
 <br>
