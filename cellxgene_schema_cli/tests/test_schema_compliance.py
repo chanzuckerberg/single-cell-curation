@@ -167,8 +167,8 @@ class TestObs(unittest.TestCase):
             [
                 "ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is a deprecated term id of 'EFO'",
                 "ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is not a children term id "
-                "of '[['EFO:0002772', 'EFO:0010183']]'"
-            ]
+                "of '[['EFO:0002772', 'EFO:0010183']]'",
+            ],
         )
 
     def test_assay_ontology_term_id(self):
@@ -568,6 +568,44 @@ class TestUns(unittest.TestCase):
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors, ["ERROR: 'X_normalization' in 'uns' is not present"]
+        )
+
+    def test_leading_trailing_double_spaces_in_strings(self):
+
+        """
+        The following sequences MUST NOT appear in str types documented in the schema:
+            Leading control or space separators - ”     This is an example”
+            Trailing control or space separators - “This is an example     ”
+            Multiple (internal) control or space separators - "This     is an example"
+        """
+
+        self.validator.adata.uns["title"] = " There is a leading space"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: ' There is a leading space' in 'uns['title']' is not valid, it contains leading spaces."
+            ],
+        )
+
+        self.validator.adata.uns["title"] = "There is a trailing space "
+        self.validator.errors = []
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: 'There is a trailing space ' in 'uns['title']' is not valid, it contains trailing spaces."
+            ],
+        )
+
+        self.validator.adata.uns["title"] = "There are   double   spaces"
+        self.validator.errors = []
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: 'There are   double   spaces' in 'uns['title']' is not valid, it contains double spaces."
+            ],
         )
 
     def test_schema_version(self):

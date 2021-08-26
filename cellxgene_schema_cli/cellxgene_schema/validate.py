@@ -247,7 +247,11 @@ class Validator:
             )
 
     def _validate_curie_ancestors(
-        self, term_id: str, column_name: str, allowed_ancestors: Dict[str, List[str]], inclusive: bool
+        self,
+        term_id: str,
+        column_name: str,
+        allowed_ancestors: Dict[str, List[str]],
+        inclusive: bool,
     ):
 
         """
@@ -271,10 +275,16 @@ class Validator:
                 if inclusive and term_id == ancestor:
                     checks.append(True)
 
-                is_valid_term_id = ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id)
-                is_valid_ancestor_id = ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, ancestor)
+                is_valid_term_id = ONTOLOGY_CHECKER.is_valid_term_id(
+                    ontology_name, term_id
+                )
+                is_valid_ancestor_id = ONTOLOGY_CHECKER.is_valid_term_id(
+                    ontology_name, ancestor
+                )
                 if is_valid_term_id & is_valid_ancestor_id:
-                    is_child = ONTOLOGY_CHECKER.is_descendent_of(ontology_name, term_id, ancestor)
+                    is_child = ONTOLOGY_CHECKER.is_descendent_of(
+                        ontology_name, term_id, ancestor
+                    )
                     checks.append(is_child)
 
         if True not in checks:
@@ -540,7 +550,8 @@ class Validator:
     def _validate_str_in_dict(self, value, dict_name: str, key: str):
 
         """
-        Validates that a value from a dictionary is a string. Adds errors to self.errors if any
+        Validates that a value from a dictionary is a string and it does not have leading, trailing or double spaces.
+        Adds errors to self.errors if any
 
         :param str value: The dictionary to validate
         :param str dict_name: Name of dictionary in the adata (e.g. "uns")
@@ -550,14 +561,38 @@ class Validator:
         :return True if passed, False otherwise
         """
 
+        is_valid = True
+
         if not isinstance(value, str):
             self.errors.append(
                 f"'{value}' in '{dict_name}['{key}']' is not valid, it must be a string."
             )
 
-            return False
+            is_valid = False
+        else:
 
-        return True
+            if value != value.rstrip():
+                self.errors.append(
+                    f"'{value}' in '{dict_name}['{key}']' is not valid, it contains trailing spaces."
+                )
+
+                is_valid = False
+
+            if value != value.lstrip():
+                self.errors.append(
+                    f"'{value}' in '{dict_name}['{key}']' is not valid, it contains leading spaces."
+                )
+
+                is_valid = False
+
+            if value.strip() != " ".join(value.split()):
+                self.errors.append(
+                    f"'{value}' in '{dict_name}['{key}']' is not valid, it contains double spaces."
+                )
+
+                is_valid = False
+
+        return is_valid
 
     def _validate_enum_in_dict(self, value, enum: List[str], dict_name: str, key: str):
 
