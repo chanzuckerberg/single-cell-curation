@@ -247,7 +247,7 @@ class Validator:
             )
 
     def _validate_curie_ancestors(
-        self, term_id: str, column_name: str, allowed_ancestors: Dict[str, List[str]]
+        self, term_id: str, column_name: str, allowed_ancestors: Dict[str, List[str]], inclusive: bool
     ):
 
         """
@@ -256,7 +256,8 @@ class Validator:
 
         :param str term_id: the curie term id to validate
         :param str column_name: original column name in adata where the term_id comes from (used for error messages)
-        :param dict{str: list[str]} allowed_ancestors, keys must be ontology names and values must lists of
+        :param dict{str: list[str]} allowed_ancestors: keys must be ontology names and values must lists of
+        :param bool inclusive:  if True then the ancestors themselves are allowed
         allowed ancestors
 
         :rtype None
@@ -266,14 +267,15 @@ class Validator:
 
         for ontology_name, ancestors in allowed_ancestors.items():
             for ancestor in ancestors:
-                if ONTOLOGY_CHECKER.is_valid_term_id(
-                    ontology_name, term_id
-                ) & ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, ancestor):
-                    checks.append(
-                        ONTOLOGY_CHECKER.is_descendent_of(
-                            ontology_name, term_id, ancestor
-                        )
-                    )
+
+                if inclusive and term_id == ancestor:
+                    checks.append(True)
+
+                is_valid_term_id = ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id)
+                is_valid_ancestor_id = ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, ancestor)
+                if is_valid_term_id & is_valid_ancestor_id:
+                    is_child = ONTOLOGY_CHECKER.is_descendent_of(ontology_name, term_id, ancestor)
+                    checks.append(is_child)
 
         if True not in checks:
             all_ancestors = list(allowed_ancestors.values())
@@ -286,7 +288,8 @@ class Validator:
     ):
 
         """
-        Validate a single curie term id belongs to specified ontologies
+        Validate a single curie term id belongs to specified ontologies. If it does belong to an allowed ontology
+        verifies that it is not deprecated (obsolete).
         If there are any errors, it adds them to self.errors
 
         :param str term_id: the curie term id to validate
@@ -299,7 +302,15 @@ class Validator:
         checks = []
 
         for ontology_name in allowed_ontologies:
-            checks.append(ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id))
+
+            is_valid = ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id)
+            checks.append(is_valid)
+
+            if is_valid:
+                if ONTOLOGY_CHECKER.is_term_id_deprecated(ontology_name, term_id):
+                    self.errors.append(
+                        f"'{term_id}' in '{column_name}' is a deprecated term id of '{ontology_name}'"
+                    )
 
         if sum(checks) == 0:
             self.errors.append(
@@ -353,7 +364,13 @@ class Validator:
         # If there are specified ancestors then make sure that this id is a valid child
         if "ancestors" in curie_constraints:
             self._validate_curie_ancestors(
-                term_id, column_name, curie_constraints["ancestors"]
+                term_id, column_name, curie_constraints["ancestors"], False
+            )
+
+        # Ancestors themselves are allowed
+        if "ancestors_inclusive" in curie_constraints:
+            self._validate_curie_ancestors(
+                term_id, column_name, curie_constraints["ancestors_inclusive"], True
             )
 
         # If there is a set of allowed terms check for it

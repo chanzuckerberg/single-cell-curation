@@ -145,6 +145,21 @@ class OntologyChecker:
 
         return ontology in self.ontology_dict
 
+    def is_term_id_deprecated(self, ontology: str, term_id: str) -> bool:
+        """
+        Returns True if the id has been deprecated (obsolete) in the ontology
+
+        :param str ontology: the ontology id
+        :param str term_id: the ontology term id
+
+        :rtype bool
+        :return True if id has been deprecated
+        """
+
+        self.assert_term_id(ontology, term_id)
+
+        return self.ontology_dict[ontology][term_id]["deprecated"]
+
     def is_valid_term_id(self, ontology: str, term_id: str) -> bool:
         """
         Returns True if term_id is a valid id  from ontology

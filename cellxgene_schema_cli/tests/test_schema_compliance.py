@@ -152,6 +152,25 @@ class TestObs(unittest.TestCase):
             ],
         )
 
+    def test_obsolete_term_id(self):
+        """
+        Terms documented as obsolete in an ontology MUST NOT be used. For example, EFO:0009310
+        for obsolete_10x v2 was marked as obsolete in EFO version 3.31.0 and replaced by
+        EFO:0009899 for 10x 3' v2.
+        """
+
+        # Not a valid term
+        self.validator.adata.obs["assay_ontology_term_id"][0] = "EFO:0009310"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is a deprecated term id of 'EFO'",
+                "ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is not a children term id "
+                "of '[['EFO:0002772', 'EFO:0010183']]'"
+            ]
+        )
+
     def test_assay_ontology_term_id(self):
 
         """

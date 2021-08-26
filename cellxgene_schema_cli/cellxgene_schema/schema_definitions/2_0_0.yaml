@@ -112,7 +112,7 @@ components:
                 curie_constraints:
                     ontologies:
                         - EFO
-                    ancestors:
+                    ancestors_inclusive: # "_inclusive" means that these terms themselves are a allowed
                         EFO:
                             - EFO:0002772
                             - EFO:0010183
