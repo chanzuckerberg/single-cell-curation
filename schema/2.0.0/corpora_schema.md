@@ -662,9 +662,9 @@ Curators MUST annotate the following columns in the `var` and `raw.var` datafram
 </tbody></table>
 <br>
 
-Curators MUST annotate the following column only in the `var` dataframe:
+Curators MUST annotate the following column only in the `var` dataframe. This column MUST NOT be present in `raw.var`:
 
-### feature\_is_filtered
+### feature_is_filtered
 
 <table><tbody>
     <tr>
