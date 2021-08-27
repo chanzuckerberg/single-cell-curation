@@ -66,8 +66,12 @@ components:
                         type: categorical
                         enum:
                             - "spike-in"
+            feature_is_filtered:
+                type: feature_is_filtered
     raw.var:
         type: dataframe
+        forbidden_columns: # These columns must not be present in the dataframe
+            - feature_is_filtered
         index:
             unique: true
             type: feature_id

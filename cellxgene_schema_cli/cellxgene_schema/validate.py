@@ -421,6 +421,51 @@ class Validator:
 
         return
 
+    def _validate_column_feature_is_filtered(
+        self, column: pd.Series, column_name: str, df_name: str
+    ):
+
+        """
+        Validates the "is_feature_filtered" in adata.var. This column must be bool, and for genes that are set to
+        True, their expression values in X must be 0.
+        If there are any errors, it adds them to self.errors.
+
+        :rtype none
+        """
+
+        if not column.dtype == bool:
+            self.errors.append(
+                f"Column '{column_name}' in dataframe '{df_name}' must be boolean not '{column.dtype.name}'"
+            )
+
+        if sum(column) > 0:
+
+            n_nonzero = 0
+
+            if (
+                isinstance(self.adata.X, sparse.csc_matrix)
+                or isinstance(self.adata.X, sparse.csr_matrix)
+                or isinstance(self.adata.X, sparse.coo_matrix)
+            ):
+
+                n_nonzero = self.adata.X[:, column].count_nonzero()
+
+            elif isinstance(self.adata.X, ndarray):
+                n_nonzero = count_nonzero(self.adata.X[:, column])
+
+            else:
+                self.errors.append(
+                    f"X matrix is of type {type(self.adata.X)}, validation of 'feature_is_filtered' "
+                    f"cannot be completed."
+                )
+
+            if n_nonzero > 0:
+                self.errors.append(
+                    f"Some features are 'True' in '{column_name}' of dataframe '{df_name}', but there are "
+                    f"{n_nonzero} non-zero values in the corresponding columns of the matrix 'X'. All values for "
+                    f"these features must be 0."
+                )
+
     def _validate_column(
         self, column: pd.Series, column_name: str, df_name: str, column_def: dict
     ):
@@ -455,6 +500,9 @@ class Validator:
                 self.errors.append(
                     f"Column '{column_name}' in dataframe '{df_name}' must be categorical not {column.dtype.name}"
                 )
+
+        if column_def.get("type") == "feature_is_filtered":
+            self._validate_column_feature_is_filtered(column, column_name, df_name)
 
         if "enum" in column_def:
             bad_enums = [
@@ -732,7 +780,7 @@ class Validator:
             column_def = self._get_column_def(df_name, column_name)
             column = getattr(df, column_name)
 
-            # First check if there are dependencies with other columns and wokr with a subset of the data if so
+            # First check if there are dependencies with other columns and work with a subset of the data if so
             if "dependencies" in column_def:
                 column = self._validate_column_dependencies(
                     df, df_name, column_name, column_def["dependencies"]
@@ -837,6 +885,21 @@ class Validator:
         self, component: str, column: str, ontology_name: str, ancestors: List[str]
     ) -> bool:
 
+        """
+        Checks if elements in the specified column of the component (e.g. 'assay_ontology_term_id' of 'adata.obs') are
+        children of the given ancestors.
+
+        Ancestors checks are inclusive, meaning that a value it's its own ancestor as well.
+
+        :param str component: the name of the component that's been checked.
+        :param str column: Column in the component to check
+        :param str ontology_name: Name of the ontology (e.g. "EFO")
+        :param List[str] ancestors: List of ancestors
+
+        :rtype bool
+        :return True if any value in column is children of any ancestor.
+        """
+
         curies = getattr(getattr(self.adata, component), column)
         curies = curies.drop_duplicates()
 
@@ -845,7 +908,8 @@ class Validator:
                 curie_ancestors = ONTOLOGY_CHECKER.get_term_ancestors(
                     ontology_name, curie
                 )
-                if bool(set(curie_ancestors) & set(ancestors)):
+                curie_ancestors.add(curie)
+                if bool(curie_ancestors & set(ancestors)):
                     return True
 
         return False
@@ -913,6 +977,7 @@ class Validator:
             if x_non_zeroes.size < 1:
                 self._raw_layer_exists = True
             else:
+                self._raw_layer_exists = True
                 for i in nditer(x_non_zeroes):
 
                     if isnan(i):
@@ -924,8 +989,6 @@ class Validator:
 
                     if i % int(i) != 0:
                         self._raw_layer_exists = False
-                    else:
-                        self._raw_layer_exists = True
 
         return self._raw_layer_exists
 
@@ -1054,6 +1117,14 @@ class Validator:
             # Skip if component does not exist
             if _getattr_anndata(self.adata, component) is None:
                 continue
+
+            # Do it for columns that are forbidden
+            if "forbidden_columns" in component_def:
+                for column in component_def["forbidden_columns"]:
+                    if column in _getattr_anndata(self.adata, component):
+                        self.errors.append(
+                            f"Column '{column}' must not be present in '{component}'"
+                        )
 
             # Do it for columns that map to columns
             for column, columns_def in component_def["columns"].items():

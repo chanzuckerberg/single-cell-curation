@@ -26,6 +26,7 @@ class TestExpressionMatrix(unittest.TestCase):
 
         # Creates a raw layer
         self.validator.adata.raw = self.validator.adata
+        self.validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
         self.validator.adata.X = examples.adata_non_raw.X.copy()
         self.validator.adata.uns["X_normalization"] = "CPM"
 
@@ -62,6 +63,7 @@ class TestExpressionMatrix(unittest.TestCase):
         Except for ATAC-seq and methylation data, raw data is REQUIRED
         """
 
+        # RNA - raw layer required
         self.validator.adata.uns["X_normalization"] = "CPM"
         self.validator.validate_adata()
         self.assertEqual(
@@ -72,6 +74,12 @@ class TestExpressionMatrix(unittest.TestCase):
                 "MUST be 'none'."
             ],
         )
+
+        # ATAC - raw layer not required
+        self.validator.adata.obs["assay_ontology_term_id"] = "EFO:0010891"
+        self.validator.validate_adata()
+        print("HOLAaaa", self.validator.errors)
+        self.assertEqual(self.validator.errors, [])
 
 
 class TestValidAnndata(unittest.TestCase):
@@ -469,6 +477,69 @@ class TestVar(unittest.TestCase):
         self.assertEqual(
             self.validator.errors,
             ["ERROR: Column 'index' in dataframe 'var' is not unique."],
+        )
+
+    def test_column_presence(self):
+        """
+        var is a pandas.DataFrame. Curators MUST annotate the following columns in the obs dataframe.
+        """
+
+        columns = [
+            "feature_is_filtered",
+        ]
+
+        for column in columns:
+            self.validator.errors = []
+            self.validator.adata = examples.adata.copy()
+
+            self.validator.adata.var.drop(column, axis=1, inplace=True)
+
+            self.validator.validate_adata()
+            self.assertEqual(
+                self.validator.errors,
+                [f"ERROR: Dataframe 'var' is missing " f"column '{column}'."],
+            )
+
+    def test_feature_is_filtered(self):
+
+        """
+        feature_is_filtered bool. This MUST be True if the feature was filtered out in the final matrix (X)
+        but is present in the raw matrix (raw.X). The value for all cells of the given feature in the
+        final matrix MUST be 0.
+
+        Otherwise, this MUST be False.
+        """
+
+        # Duplicate 1st row in var and assigned to 2nd
+        self.validator.adata.var["feature_is_filtered"][0] = True
+        for i in range(self.validator.adata.X.shape[0]):
+            self.validator.adata.X[i, 0] = 0
+        self.validator.adata.X[0, 0] = 1
+
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Some features are 'True' in 'feature_is_filtered' of dataframe 'var', "
+                "but there are 1 non-zero values in the corresponding columns of the matrix 'X'. "
+                "All values for these features must be 0."
+            ],
+        )
+
+    def test_columns_not_in_raw_var(self):
+
+        """
+        Curators MUST annotate the following column only in the var dataframe.
+        This column MUST NOT be present in raw.var:
+            feature_is_filtered
+        """
+
+        self.validator.adata.raw = self.validator.adata
+        self.validator.adata.uns["X_normalization"] = "CPM"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: Column 'feature_is_filtered' must not be present in 'raw.var'"],
         )
 
     def test_feature_id(self):

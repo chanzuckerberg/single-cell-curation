@@ -160,42 +160,48 @@ bad_obs = pd.DataFrame(
 # Valid var per schema
 good_var = pd.DataFrame(
     [
-        ["spike-in"],
-        ["gene"],
-        ["gene"],
-        ["gene"],
+        ["spike-in", False],
+        ["gene", False],
+        ["gene", False],
+        ["gene", False],
     ],
     index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"],
-    columns=["feature_biotype"],
+    columns=["feature_biotype", "feature_is_filtered"],
 )
-good_var = good_var.astype("category")
+good_var.loc[:, ["feature_biotype"]] = good_var.astype("category")
 
 # Expected var, this is what the obs above should look like after adding the necessary columns with the validator,
 # these columns are defined in the schema
 var_expected = pd.DataFrame(
     [
-        ["spike-in", "ERCC-00002 spike-in control", "NCBITaxon:32630"],
-        ["gene", "MACF1", "NCBITaxon:9606"],
-        ["gene", "Trp53", "NCBITaxon:10090"],
-        ["gene", "S", "NCBITaxon:2697049"],
+        ["spike-in", False, "ERCC-00002 spike-in control", "NCBITaxon:32630"],
+        ["gene", False, "MACF1", "NCBITaxon:9606"],
+        ["gene", False, "Trp53", "NCBITaxon:10090"],
+        ["gene", False, "S", "NCBITaxon:2697049"],
     ],
     index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"],
-    columns=["feature_biotype", "feature_name", "feature_reference"],
+    columns=[
+        "feature_biotype",
+        "feature_is_filtered",
+        "feature_name",
+        "feature_reference",
+    ],
 )
-var_expected = var_expected.astype("category")
+var_expected.loc[:, ["feature_biotype"]] = var_expected.astype("category")
 
 # invalid var, all fields are designed to fail
 bad_var = pd.DataFrame(
     [
-        ["gene"],  # should be spike in
-        ["spike-in"],  # should be gene
-        ["other"],  # incorrect
-        ["gene"],
+        ["gene", "False"],  # should be spike in
+        ["spike-in", "False"],  # should be gene
+        ["other", "False"],  # incorrect
+        ["gene", "False"],
     ],
     index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "NO_GENE"],
-    columns=["feature_biotype"],
+    columns=["feature_biotype", "feature_is_filtered"],
 )
-bad_var = bad_var.astype("category")
+bad_var.loc[:, ["feature_biotype"]] = bad_var.astype("category")
+
 
 # ---
 # 3. Creating individual uns components: valid and invalid
