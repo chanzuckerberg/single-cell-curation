@@ -98,7 +98,7 @@ The following ontology dependencies are *pinned* for this version of the schema.
 
 | Ontology | OBO Prefix | Required version |
 |:--|:--|:--|
-| [Cell Ontology] | CL | [cl.owl] : [2021-06-21]|
+| [Cell Ontology] | CL | [cl.owl] : [2021-08-10]|
 | [Experimental Factor Ontology] | EFO | [efo.owl] : [2021-06-15 EFO 3.31.0]
 | [Human Ancestry Ontology] | HANCESTRO |[hancestro.owl] : [2021-01-04 (2.5)] |
 | [Human Developmental Stages] |  HsapDv | [hsapdv.owl] : [2016-07-06 (0.1)] |
@@ -110,8 +110,8 @@ The following ontology dependencies are *pinned* for this version of the schema.
 | | | |
 
 [Cell Ontology]: http://obofoundry.org/ontology/cl.html
-[2021-06-21]: https://github.com/obophenotype/cell-ontology/releases/tag/v2021-06-21
-[cl.owl]: https://github.com/obophenotype/cell-ontology/blob/v2021-06-21/cl.owl
+[2021-08-10]: https://github.com/obophenotype/cell-ontology/releases/tag/v2021-08-10
+[cl.owl]: https://github.com/obophenotype/cell-ontology/blob/v2021-08-10/cl.owl
 
 [Experimental Factor Ontology]: http://www.ebi.ac.uk/efo
 [2021-06-15 EFO 3.31.0]: https://github.com/EBISPOT/efo/releases/tag/v3.31.0
