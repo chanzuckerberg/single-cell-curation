@@ -98,24 +98,24 @@ The following ontology dependencies are *pinned* for this version of the schema.
 
 | Ontology | OBO Prefix | Required version |
 |:--|:--|:--|
-| [Cell Ontology] | CL | [cl.owl] : [2021-06-21]|
-| [Experimental Factor Ontology] | EFO | [efo.owl] : [2021-06-15 EFO 3.31.0]
+| [Cell Ontology] | CL | [cl.owl] : [2021-08-10]|
+| [Experimental Factor Ontology] | EFO | [efo.owl] : [2021-08-16 EFO 3.33.0]
 | [Human Ancestry Ontology] | HANCESTRO |[hancestro.owl] : [2021-01-04 (2.5)] |
 | [Human Developmental Stages] |  HsapDv | [hsapdv.owl] : [2016-07-06 (0.1)] |
-| [Mondo Disease Ontology] | MONDO |[mondo.owl] : [2021-06-01] |
+| [Mondo Disease Ontology] | MONDO |[mondo.owl] : [2021-08-11] |
 | [Mouse Developmental Stages]| MmusDv |  [mmusdv.owl] : [2016-07-06 (0.1)] |
 | [NCBI organismal classification] |  NCBITaxon | [ncbitaxon.owl] : [2021-06-10] |
-| [Phenotype And Trait Ontology] | PATO | [pato.owl] : [2021-06-15] |  |
-| [Uberon multi-species anatomy ontology] |  UBERON | [uberon.owl] : [2021-02-12] |
+| [Phenotype And Trait Ontology] | PATO | [pato.owl] : [2021-08-06] |  |
+| [Uberon multi-species anatomy ontology] |  UBERON | [uberon.owl] : [2021-07-27] |
 | | | |
 
 [Cell Ontology]: http://obofoundry.org/ontology/cl.html
-[2021-06-21]: https://github.com/obophenotype/cell-ontology/releases/tag/v2021-06-21
-[cl.owl]: https://github.com/obophenotype/cell-ontology/blob/v2021-06-21/cl.owl
+[2021-08-10]: https://github.com/obophenotype/cell-ontology/releases/tag/v2021-08-10
+[cl.owl]: https://github.com/obophenotype/cell-ontology/blob/v2021-08-10/cl.owl
 
 [Experimental Factor Ontology]: http://www.ebi.ac.uk/efo
-[2021-06-15 EFO 3.31.0]: https://github.com/EBISPOT/efo/releases/tag/v3.31.0
-[efo.owl]: https://github.com/EBISPOT/efo/releases/download/v3.31.0/efo.owl
+[2021-08-16 EFO 3.33.0]: https://github.com/EBISPOT/efo/releases/tag/v3.33.0
+[efo.owl]: https://github.com/EBISPOT/efo/releases/download/v3.33.0/efo.owl
 
 [Human Ancestry Ontology]: http://www.obofoundry.org/ontology/hancestro.html
 [2021-01-04 (2.5)]: https://github.com/EBISPOT/ancestro/releases/tag/2.5
@@ -126,8 +126,8 @@ The following ontology dependencies are *pinned* for this version of the schema.
 [2016-07-06 (0.1)]: https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/0.1
 
 [Mondo Disease Ontology]: http://obofoundry.org/ontology/mondo.html
-[2021-06-01]: https://github.com/monarch-initiative/mondo/releases/tag/v2021-06-01
-[mondo.owl]: https://github.com/monarch-initiative/mondo/releases/download/v2021-06-01/mondo.owl
+[2021-08-11]: https://github.com/monarch-initiative/mondo/releases/tag/v2021-08-11
+[mondo.owl]: https://github.com/monarch-initiative/mondo/releases/download/v2021-08-11/mondo.owl
 
 [Mouse Developmental Stages]: http://obofoundry.org/ontology/mmusdv.html
 [mmusdv.owl]: https://github.com/obophenotype/developmental-stage-ontologies/blob/0.1/src/mmusdv/mmusdv.owl
@@ -137,12 +137,12 @@ The following ontology dependencies are *pinned* for this version of the schema.
 [ncbitaxon.owl]: https://github.com/obophenotype/ncbitaxon/releases/download/v2021-06-10/ncbitaxon.owl.gz
 
 [Phenotype And Trait Ontology]: http://www.obofoundry.org/ontology/pato.html
-[2021-06-15]: https://github.com/pato-ontology/pato/releases/tag/v2020-06-15
-[pato.owl]: https://github.com/pato-ontology/pato/blob/v2020-06-15/pato.owl
+[2021-08-06]: https://github.com/pato-ontology/pato/releases/tag/v2021-08-06
+[pato.owl]: https://github.com/pato-ontology/pato/blob/v2021-08-06/pato.owl
 
 [Uberon multi-species anatomy ontology]: http://www.obofoundry.org/ontology/uberon.html
-[2021-02-12]: https://github.com/obophenotype/uberon/releases/tag/v2021-02-12
-[uberon.owl]: https://github.com/obophenotype/uberon/blob/v2021-02-12/uberon.owl
+[2021-07-27]: https://github.com/obophenotype/uberon/releases/tag/v2021-07-27
+[uberon.owl]: https://github.com/obophenotype/uberon/blob/v2021-07-27/uberon.owl
 
 ### Required Gene Annotations
 
