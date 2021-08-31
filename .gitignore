@@ -5,6 +5,9 @@
 __pycache__
 *.DS_Store*
 
+# enviroments
+venv/
+
 # sc matrices
 *.RDS
 *.h5ad
