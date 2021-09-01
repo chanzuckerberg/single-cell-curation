@@ -9,7 +9,7 @@ For information/issues about cellxgene and its portal please refer to:
 
 ## Installation
 
-The central tool provided here is a CLI for augmenting datasets with the [cellxgene schema](docs/corpora_schema.md) so they can be hosted at [cellxgene's portal](https://cellxgene.cziscience.com/). 
+The central tool provided here is a CLI for augmenting datasets with the [cellxgene schema](cellxgene_schema_cli/cellxgene_schema/schema_definitions/2_0_0.yaml) so they can be hosted at [cellxgene's portal](https://cellxgene.cziscience.com/). 
 
 It is available through pip:
 
@@ -17,7 +17,7 @@ It is available through pip:
 pip install cellxgene-schema
 ```
 
-It can also e installed from the source by cloning this repository and running:
+It can also be installed from the source by cloning this repository and running:
 
 ```
 make install 
