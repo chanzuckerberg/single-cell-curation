@@ -429,7 +429,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
    <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the term that best describes the tissue that this cell was derived from, depending on the type of biological sample:
+        <td>categorical with <code>str</code> categories. This MUST be the UBERON or CL term that best describes the tissue that this cell was derived from, depending on the type of biological sample:
           <br><br>
           <table>
           <thead>
@@ -441,7 +441,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <tbody>
             <tr>
               <td>Tissue</td>
-              <td>MUST be an UBERON term<br>(e.g. <a href="http://purl.obolibrary.org/obo/UBERON_0008930"><code>"UBERON:0008930"</code></a> for a <i>sematosensory cortex</i> tissue sample)</td>
+              <td>STRONGLY RECOMMENDED to be an UBERON term<br>(e.g. <a href="http://purl.obolibrary.org/obo/UBERON_0008930"><code>"UBERON:0008930"</code></a> for a <i>sematosensory cortex</i> tissue sample)</td>
             </tr>
             <tr>
               <td>Cell Culture</td>
