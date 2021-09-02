@@ -14,29 +14,19 @@ FIXTURES_ROOT = os.path.join(os.path.dirname(__file__))
 # Pre-made example files
 h5ad_dir = os.path.join(FIXTURES_ROOT, "h5ads")
 h5ad_valid = os.path.join(h5ad_dir, "example_valid.h5ad")
-h5ad_invalid = [
-    "example_invalid_CL.h5ad",
-    "example_invalid_assay.h5ad",
-    "example_invalid_disease.h5ad",
-    "example_invalid_organism.h5ad",
-    "example_invalid_primary_data.h5ad",
-    "example_invalid_sex.h5ad",
-    "example_invalid_tissue.h5ad",
-    "example_invalid_ethnicity.h5ad",
-    "example_invalid_development_stage.h5ad",
-    "example_invalid_uns.h5ad",
-]
-h5ad_invalid = [os.path.join(h5ad_dir, i) for i in h5ad_invalid]
-
+h5ad_invalid = os.path.join(h5ad_dir, "example_invalid_CL.h5ad")
 
 # -----------------------------------------------------------------#
 # Manually creating minimal anndata objects.
 #
+# The valid objects mentioned below contain all valid cases covered in the schema, including multiple examples for
+# fields that allow multiple valid options.
+#
 # This process entails:
-# 1. Creating individual obs components: valid, invalid, and with labels (extra columns that are supposed
+# 1. Creating individual obs components: one valid dataframe, and one with labels (extra columns that are supposed
 #   to be added by validator)
-# 2. Creating individual var components: valid, invalid, and with labels
-# 3. Creating individual uns components: valid and invalid
+# 2. Creating individual var components: valid, and one with labels
+# 3. Creating individual uns valid component
 # 4. Creating expression matrices
 # 5. Creating valid obsm
 # 6. Putting all the components created in the previous steps into minimal anndata that used for testing in
@@ -120,42 +110,8 @@ obs_expected = pd.DataFrame(
     ],
 )
 
-# invalid obs, all fields are designed to fail
-bad_obs = pd.DataFrame(
-    [
-        [
-            "CL:NO_TERM",
-            "EFO:NO_TERM",
-            "MONDO:NO_TERM",
-            "NCBITaxon:NO_TERM",
-            "PATO:NO_TERM",
-            "UBERON:NO_TERM",
-            "True",
-        ],
-        [
-            "CL:0000182",
-            "EFO:00212",
-            "MONDO:0324",
-            "NCBITaxon:00324",
-            "PATO:2003",
-            "UBERON:3203",
-            "False",
-        ],
-    ],
-    index=["X", "Y"],
-    columns=[
-        "cell_type_ontology_term_id",
-        "assay_ontology_term_id",
-        "disease_ontology_term_id",
-        "organism_ontology_term_id",
-        "sex_ontology_term_id",
-        "tissue_ontology_term_id",
-        "is_primary_data",
-    ],
-)
-
 # ---
-# 2. Creating individual var components: valid, invalid, and with labels
+# 2. Creating individual var components: valid object and valid object and with labels
 
 # Valid var per schema
 good_var = pd.DataFrame(
@@ -174,7 +130,7 @@ good_var.loc[:, ["feature_biotype"]] = good_var.astype("category")
 # these columns are defined in the schema
 var_expected = pd.DataFrame(
     [
-        ["spike-in", False, "ERCC-00002 spike-in control", "NCBITaxon:32630"],
+        ["spike-in", False, "ERCC-00002 (spike-in control)", "NCBITaxon:32630"],
         ["gene", False, "MACF1", "NCBITaxon:9606"],
         ["gene", False, "Trp53", "NCBITaxon:10090"],
         ["gene", False, "S", "NCBITaxon:2697049"],
@@ -189,46 +145,22 @@ var_expected = pd.DataFrame(
 )
 var_expected.loc[:, ["feature_biotype"]] = var_expected.astype("category")
 
-# invalid var, all fields are designed to fail
-bad_var = pd.DataFrame(
-    [
-        ["gene", "False"],  # should be spike in
-        ["spike-in", "False"],  # should be gene
-        ["other", "False"],  # incorrect
-        ["gene", "False"],
-    ],
-    index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "NO_GENE"],
-    columns=["feature_biotype", "feature_is_filtered"],
-)
-bad_var.loc[:, ["feature_biotype"]] = bad_var.astype("category")
-
-
 # ---
-# 3. Creating individual uns components: valid and invalid
+# 3. Creating individual uns component
 good_uns = {
     "schema_version": SCHEMA_VERSION,
     "title": "A title",
     "default_embedding": "X_umap",
-    "X_normalization": "none",
+    "X_normalization": "CPM",
     "X_approximate_distribution": "normal",
     "batch_condition": ["is_primary_data"],
 }
-
-bad_uns = {
-    "schema_version": "2.0.0",
-    "title": 1,
-    "default_embedding": "X_PCA_1",
-    "X_normalization": 1,
-    "X_approximate_distribution": "CPM",
-    "batch_condition": ["batchD", "batchE"],
-}
-
 
 # ---
 # 4. Creating expression matrix,
 # X has integer values and non_raw_X has real values
 X = numpy.zeros([good_obs.shape[0], good_var.shape[0]])
-non_raw_X = X.copy()
+non_raw_X = sparse.csr_matrix(X.copy())
 non_raw_X[0, 0] = 1.5
 
 # ---
@@ -244,9 +176,12 @@ good_obsm = {"X_umap": numpy.zeros([X.shape[0], 2])}
 adata = anndata.AnnData(
     X=sparse.csr_matrix(X), obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var
 )
+adata.raw = adata
+adata.X = non_raw_X
+adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
 
 # Anndata with no obs nor var
-adata_empty = anndata.AnnData(X=sparse.csr_matrix(X), uns=good_uns, obsm=good_obsm)
+adata_minimal = anndata.AnnData(X=sparse.csr_matrix(X), uns=good_uns, obsm=good_obsm)
 
 # Anndata with a expression matrix that is not raw
 adata_non_raw = anndata.AnnData(

@@ -2,7 +2,7 @@ import os
 import gzip
 import json
 import enum
-from typing import List, Set
+from typing import List, Set, Union
 from . import env
 
 
@@ -11,6 +11,31 @@ class SupportedOrganisms(enum.Enum):
     MUS_MUSCULUS = "NCBITaxon:10090"
     SARS_COV_2 = "NCBITaxon:2697049"
     ERCC = "NCBITaxon:32630"
+
+
+def get_organism_from_feature_id(
+        feature_id: str,
+) -> Union[SupportedOrganisms, None]:
+
+    """
+    Infers the organism of a feature id based on the prefix of a feature id, e.g. ENSG means Homo sapiens
+
+    :param str feature_id: the feature id
+
+    :rtype Union[ontology.SypportedOrganisms, None]
+    :return: the organism the feature id is from
+    """
+
+    if feature_id.startswith("ENSG") or feature_id.startswith("ENST"):
+        return SupportedOrganisms.HOMO_SAPIENS
+    elif feature_id.startswith("ENSMUS"):
+        return SupportedOrganisms.MUS_MUSCULUS
+    elif feature_id.startswith("ENSSAS"):
+        return SupportedOrganisms.SARS_COV_2
+    elif feature_id.startswith("ERCC"):
+        return SupportedOrganisms.ERCC
+    else:
+        return None
 
 
 class GeneChecker:

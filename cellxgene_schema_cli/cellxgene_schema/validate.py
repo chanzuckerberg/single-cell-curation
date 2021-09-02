@@ -1,34 +1,27 @@
+import re
 import sys
 import anndata
 import os
-import yaml
 import pandas as pd
 from pandas.core.computation.ops import UndefinedVariableError
 from numpy import ndarray
 from numpy import count_nonzero
-from numpy import nonzero
 from numpy import cumprod
 from numpy import isnan
 from numpy import nditer
 from scipy import sparse
-import re
-from typing import List, Dict, Tuple, Union, Optional
+from typing import List, Dict, Union, Optional, Tuple
 from . import ontology
+from . import schema
 from . import env
 
 ONTOLOGY_CHECKER = ontology.OntologyChecker()
 
 
-def _is_null(v):
-
-    """Return True if v is null, for one of the multiple ways a "null" value shows up in an h5ad."""
-    return pd.isnull(v) or (hasattr(v, "__len__") and len(v) == 0)
-
-
 def _getattr_anndata(adata: anndata.AnnData, attr: str = None):
 
     """
-    same as getattr but handles the special case of "raw.var" for an anndata.Anddata object
+    same as getattr but handles the special case of "raw.var" for an anndata.AndData object
 
     :param anndata.AnnData adata: the anndata.AnnData object from which to extract an attribute
     :param str attr: name of the attribute to extract
@@ -43,60 +36,6 @@ def _getattr_anndata(adata: anndata.AnnData, attr: str = None):
             return None
     else:
         return getattr(adata, attr)
-
-
-def _get_schema_file_path(version: str) -> str:
-
-    """
-    Given a schema version, returns the potential path for the corresponding yaml file of its definition
-    :param str version: Schema version
-    :return Path to yaml files
-    :rtype str
-    """
-
-    return os.path.join(env.SCHEMA_DEFINITIONS_DIR, version.replace(".", "_") + ".yaml")
-
-
-def _get_schema_definition(version: str) -> dict:
-
-    """
-    Look up and read a schema definition based on a version number like "2.0.0".
-    :param str version: Schema version
-    :return The schema definition
-    :rtype dict
-    """
-
-    path = _get_schema_file_path(version)
-
-    if not os.path.isfile(path):
-        raise ValueError(f"No definition for version '{version}' found.")
-
-    return yaml.load(open(path), Loader=yaml.FullLoader)
-
-
-def _get_organism_from_feature_id(
-    feature_id: str,
-) -> Union[ontology.SupportedOrganisms, None]:
-
-    """
-    Infers the organism of a feature id based on the prefix of a feature id, e.g. ENSG means Homo sapiens
-
-    :param str feature_id: the feature id
-
-    :rtype Union[ontology.SypportedOrganisms, None]
-    :return: the organism the feature id is from
-    """
-
-    if feature_id.startswith("ENSG") or feature_id.startswith("ENST"):
-        return ontology.SupportedOrganisms.HOMO_SAPIENS
-    elif feature_id.startswith("ENSMUS"):
-        return ontology.SupportedOrganisms.MUS_MUSCULUS
-    elif feature_id.startswith("ENSSAS"):
-        return ontology.SupportedOrganisms.SARS_COV_2
-    elif feature_id.startswith("ERCC"):
-        return ontology.SupportedOrganisms.ERCC
-    else:
-        return None
 
 
 def _curie_remove_suffix(term_id: str, suffix_def: dict) -> Tuple[str, str]:
@@ -182,14 +121,16 @@ class Validator:
 
             # Check if schema version is supported
             version = self.adata.uns["schema_version"]
-            path = _get_schema_file_path(version)
+            path = schema.get_schema_file_path(version)
 
             if not os.path.isfile(path):
+                supported_versions = schema.get_schema_versions_supported()
                 self.errors.append(
-                    f"Schema version '{version}' is not supported. Validation cannot be performed."
+                    f"Schema version '{version}' is not supported. Current supported versions: '{supported_versions}'. "
+                    f"Validation cannot be performed."
                 )
             else:
-                self.schema_def = _get_schema_definition(version)
+                self.schema_def = schema.get_schema_definition(version)
 
     def _get_component_def(self, component: str) -> dict:
         """
@@ -243,7 +184,7 @@ class Validator:
         if sum(checks) == 0 and len(checks) > 0:
             all_allowed = list(terms.values())
             self.errors.append(
-                f"'{term_id}' in '{column_name}' is not an allowed term of '{all_allowed}'"
+                f"'{term_id}' in '{column_name}' is not an allowed term: '{all_allowed}'"
             )
 
     def _validate_curie_ancestors(
@@ -290,7 +231,7 @@ class Validator:
         if True not in checks:
             all_ancestors = list(allowed_ancestors.values())
             self.errors.append(
-                f"'{term_id}' in '{column_name}' is not a children term id of '{all_ancestors}'"
+                f"'{term_id}' in '{column_name}' is not a child term id of '{all_ancestors}'"
             )
 
     def _validate_curie_ontology(
@@ -401,7 +342,7 @@ class Validator:
         :rtype none
         """
 
-        organism = _get_organism_from_feature_id(feature_id)
+        organism = ontology.get_organism_from_feature_id(feature_id)
 
         if not organism:
             self.errors.append(
@@ -435,7 +376,7 @@ class Validator:
 
         if not column.dtype == bool:
             self.errors.append(
-                f"Column '{column_name}' in dataframe '{df_name}' must be boolean not '{column.dtype.name}'"
+                f"Column '{column_name}' in dataframe '{df_name}' must be boolean, not '{column.dtype.name}'"
             )
 
         if sum(column) > 0:
@@ -492,13 +433,13 @@ class Validator:
         if column_def.get("type") == "bool":
             if not column.dtype == bool:
                 self.errors.append(
-                    f"Column '{column_name}' in dataframe '{df_name}' must be boolean not '{column.dtype.name}'"
+                    f"Column '{column_name}' in dataframe '{df_name}' must be boolean, not '{column.dtype.name}'"
                 )
 
         if column_def.get("type") == "categorical":
             if not column.dtype.name == "category":
                 self.errors.append(
-                    f"Column '{column_name}' in dataframe '{df_name}' must be categorical not {column.dtype.name}"
+                    f"Column '{column_name}' in dataframe '{df_name}' must be categorical, not {column.dtype.name}"
                 )
 
         if column_def.get("type") == "feature_is_filtered":
@@ -515,6 +456,8 @@ class Validator:
                 )
 
         if column_def.get("type") == "feature_id":
+
+            # Validates each id
             for feature_id in column:
                 self._validate_feature_id(feature_id, df_name)
 
@@ -525,7 +468,7 @@ class Validator:
                 )
             if "ontologies" not in column_def["curie_constraints"]:
                 raise ValueError(
-                    f"allowed 'ontolgies' must be specified under 'curie constraints' for '{column_name}'"
+                    f"allowed 'ontologies' must be specified under 'curie constraints' for '{column_name}'"
                 )
 
             for term_id in column.drop_duplicates():
@@ -684,7 +627,13 @@ class Validator:
 
                 if self._get_raw_x_loc() == "raw.X" and not self._is_raw():
                     self.warnings.append(
-                        "uns['X_normalization'] is 'none' but 'raw.X' doesnt appear to have "
+                        "uns['X_normalization'] is 'none' but 'raw.X' doesn't appear to have "
+                        "raw counts (integers)"
+                    )
+
+                if self._get_raw_x_loc() == "X" and not self._is_raw():
+                    self.warnings.append(
+                        "uns['X_normalization'] is 'none', there is no 'raw.X' and 'X' doesn't appear to have "
                         "raw counts (integers)"
                     )
 
@@ -761,6 +710,7 @@ class Validator:
 
         df = _getattr_anndata(self.adata, df_name)
 
+        # Validate index if needed
         if "index" in self._get_component_def(df_name):
             self._validate_column(
                 pd.Series(df.index),
@@ -769,6 +719,7 @@ class Validator:
                 self._get_column_def(df_name, "index"),
             )
 
+        # Validate columns
         for column_name in self._get_component_def(df_name)["columns"].keys():
 
             if column_name not in df.columns:
@@ -889,7 +840,7 @@ class Validator:
         Checks if elements in the specified column of the component (e.g. 'assay_ontology_term_id' of 'adata.obs') are
         children of the given ancestors.
 
-        Ancestors checks are inclusive, meaning that a value it's its own ancestor as well.
+        Ancestors checks are inclusive, meaning that a value is its own ancestor as well.
 
         :param str component: the name of the component that's been checked.
         :param str column: Column in the component to check
@@ -936,10 +887,10 @@ class Validator:
         else:
             return "X"
 
-    def _is_raw(self, n_values_to_check: int = 5000, force: bool = False) -> bool:
+    def _is_raw(self, max_values_to_check: int = 5000, force: bool = False) -> bool:
 
         """
-        Checks if the first non-zero "n_values_to_check" in the best guess for the raw matrix (adata.X or adata.raw.X)
+        Checks if the first non-zero "max_values_to_check" in the best guess for the raw matrix (adata.X or adata.raw.X)
         are integers. Returns False if at least one value is not an integer,
 
         True otherwise.
@@ -947,7 +898,7 @@ class Validator:
         Since this process is memory intensive, it will return a cache value if this function has been called before.
         If calculation needs to be repeated use `force = True`
 
-        :param int n_values_to_check: total values to check
+        :param int max_values_to_check: total values to check, default set to 5000 due to performance concerns.
 
         :rtype bool
         :return False if at least one value is not an integer, True otherwise
@@ -966,10 +917,7 @@ class Validator:
                 x = self.adata.X
 
             # Get array without zeros
-            if isinstance(x, ndarray):
-                non_zeroes_index = nonzero(x)
-            else:
-                non_zeroes_index = x.nonzero()
+            non_zeroes_index = x.nonzero()
 
             x_non_zeroes = x[non_zeroes_index]
 
@@ -983,12 +931,13 @@ class Validator:
                     if isnan(i):
                         continue
 
-                    n_values_to_check -= 1
-                    if n_values_to_check < 1:
+                    max_values_to_check -= 1
+                    if max_values_to_check < 1:
                         break
 
-                    if i % int(i) != 0:
+                    if i % 1 != 0:
                         self._raw_layer_exists = False
+                        break
 
         return self._raw_layer_exists
 
@@ -1005,8 +954,8 @@ class Validator:
                     f"than raw.X ({self.adata.raw.n_vars})"
                 )
             else:
-                if not (self.adata.var_names == self.adata.raw.var_names).all():
-                    self.errors.append("Genes in X and raw.X are different")
+                if not (self.adata.var.index == self.adata.raw.var.index).all():
+                    self.errors.append("Index of 'raw.var' is not identical to index of 'var'")
             if self.adata.n_obs != self.adata.raw.n_obs:
                 self.errors.append(
                     f"Number of cells in X ({self.adata.n_obs}) is different "
@@ -1054,16 +1003,20 @@ class Validator:
         # If all checks passed then proceed with validation
         if all(checks):
 
-            # If there isn't raw data raise an error
-            if not self._is_raw():
-                raw_X_loc = self._get_raw_x_loc()
+            normalization = self.adata.uns["X_normalization"]
+
+            # If raw data is missing: no "raw.X", and "X_normalization" is not "none"
+            if (
+                    not self._is_raw()
+                    and self._get_raw_x_loc() == "X"
+                    and normalization != "none"
+            ):
+
                 self.errors.append(
-                    f"Matrix '{raw_X_loc}' seems to be the raw matrix but not all of "
-                    f"its values are integers."
+                    f"Raw data is missing: there is no 'raw.X' and 'X_normalization' is not 'none'"
                 )
 
             # If raw data is in X but X_normalization is NOT none raise an error
-            normalization = self.adata.uns["X_normalization"]
             if (
                 self._is_raw()
                 and self._get_raw_x_loc() == "X"
@@ -1073,6 +1026,19 @@ class Validator:
                 self.errors.append(
                     f"uns['X_normalization'] is '{normalization}' but raw data seems to be in X, "
                     f"if X is raw then uns['X_normalization'] MUST be 'none'."
+                )
+
+            # If raw data is in X and there is nothing in raw.X (i.e. normalized values are not provided), then
+            # add a warning because normalized data for RNA data is STRONGLY RECOMMENDED
+            if (
+                    self._is_raw()
+                    and self._get_raw_x_loc() == "X"
+                    and normalization == "none"
+            ):
+
+                self.warnings.append(
+                    f"Only raw data was found, i.e. there is no 'raw.X' and 'uns['X_normalization']' is 'none'. "
+                    f"It is STRONGLY RECOMMENDED that 'final' (normalized) data is provided."
                 )
 
     def _check_single_column_availability(
@@ -1229,7 +1195,7 @@ class Validator:
         return self.is_valid
 
 
-class LabelWriter:
+class H5adLabelAppender:
     """
     From valid h5ad, handles writing a new h5ad file with ontology/gene labels added
     to adata.obs and adata.var respectively as indicated in the schema definition
@@ -1391,7 +1357,7 @@ class LabelWriter:
         mapping_dict = {}
 
         for i in ids:
-            organism = _get_organism_from_feature_id(i)
+            organism = ontology.get_organism_from_feature_id(i)
             mapping_dict[i] = self.validator.gene_checkers[organism].get_symbol(i)
 
         return mapping_dict
@@ -1412,7 +1378,7 @@ class LabelWriter:
         mapping_dict = {}
 
         for i in ids:
-            organism = _get_organism_from_feature_id(i)
+            organism = ontology.get_organism_from_feature_id(i)
             mapping_dict[i] = organism.value
 
         return mapping_dict
@@ -1578,11 +1544,11 @@ def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = N
     if not validator.is_valid:
         return False
 
-    success = False
     if add_labels_file:
-        writer = LabelWriter(validator)
+        writer = H5adLabelAppender(validator)
         writer.write_labels(add_labels_file)
 
-        success = validator.is_valid & writer.was_writing_successful
+        return validator.is_valid & writer.was_writing_successful
 
-    return success
+    return True
+

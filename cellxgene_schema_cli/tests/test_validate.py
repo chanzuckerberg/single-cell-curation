@@ -1,6 +1,8 @@
 import unittest
+
 from cellxgene_schema import ontology
 from cellxgene_schema import validate
+from cellxgene_schema import schema
 import fixtures.examples_validate as examples
 
 # Tests for internal functions of the Validator and LabelWriter classes.
@@ -9,12 +11,12 @@ import fixtures.examples_validate as examples
 class TestFieldValidation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.schema_def = validate._get_schema_definition(examples.SCHEMA_VERSION)
+        cls.schema_def = schema.get_schema_definition(examples.SCHEMA_VERSION)
         cls.OntologyChecker = ontology.OntologyChecker()
 
     def setUp(self):
         self.validator = validate.Validator()
-        self.validator.adata = examples.adata_empty
+        self.validator.adata = examples.adata_minimal
         self.column_name = "cell_type_ontology_term_id"
         self.column_schema = self.schema_def["components"]["obs"]["columns"][
             self.column_name
@@ -23,7 +25,7 @@ class TestFieldValidation(unittest.TestCase):
             self.column_name
         ]["curie_constraints"]
 
-    def test_schema_defintion(self):
+    def test_schema_definition(self):
 
         """
         Tests that the definition of schema is well-defined
@@ -82,34 +84,18 @@ class TestFieldValidation(unittest.TestCase):
         self.assertTrue(self.validator.errors)
 
 
-class TestH5adValidation(unittest.TestCase):
-    def setUp(self):
-        self.h5ad_valid = examples.h5ad_valid
-        self.invalid_files = examples.h5ad_invalid
-        self.validator = validate.Validator()
-
-    def test_validate(self):
-
-        # Valid h5ad
-        self.assertTrue(self.validator.validate_adata(self.h5ad_valid))
-
-        # Invalid h5ads
-        for i in self.invalid_files:
-            self.assertFalse(self.validator.validate_adata(i))
-
-
 class TestAddLabelFunctions(unittest.TestCase):
     def setUp(self):
 
         # Set up test data
         self.test_adata = examples.adata
         self.test_adata_with_labels = examples.adata_with_labels
-        self.schema_def = validate._get_schema_definition(examples.SCHEMA_VERSION)
+        self.schema_def = schema.get_schema_definition(examples.SCHEMA_VERSION)
 
         validator = validate.Validator()
         validator.adata = self.test_adata
         validator.validate_adata()
-        self.writer = validate.LabelWriter(validator)
+        self.writer = validate.H5adLabelAppender(validator)
 
     def test_get_dictionary_mapping_feature_id(self):
 
@@ -120,7 +106,7 @@ class TestAddLabelFunctions(unittest.TestCase):
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
         ]
-        labels = ["ERCC-00002 spike-in control", "MACF1", "Trp53", "S"]
+        labels = ["ERCC-00002 (spike-in control)", "MACF1", "Trp53", "S"]
         expected_dict = {i: j for i, j in zip(ids, labels)}
         self.assertEqual(self.writer._get_mapping_dict_feature_id(ids), expected_dict)
 
@@ -205,11 +191,3 @@ class TestAddLabelFunctions(unittest.TestCase):
         ids = ["CL:NO_TERM"]
         with self.assertRaises(ValueError):
             self.writer._get_mapping_dict_curie(ids, curie_constraints)
-
-    def test_get_new_adata(self):
-
-        # Test getting a column with labels based on ids
-        expected_adata = self.test_adata_with_labels
-        self.writer._add_labels()
-        obtained_adata = self.writer.adata
-        self.assertTrue(all(expected_adata.obs == obtained_adata.obs))

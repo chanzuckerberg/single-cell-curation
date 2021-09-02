@@ -95,7 +95,7 @@ def _process_ercc(ercc_path: str, output_file: str):
         lines = ercc.readlines()[1:]
         for line in lines:
             ercc_id = line.rstrip().split("\t")[0]
-            output_to_print += ",".join([ercc_id, ercc_id + " spike-in control", "1"]) + "\n"
+            output_to_print += ",".join([ercc_id, ercc_id + " (spike-in control)", "1"]) + "\n"
 
     with gzip.open(output_file, "wt") as output:
         output.write(output_to_print)

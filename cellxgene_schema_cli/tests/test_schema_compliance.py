@@ -7,6 +7,44 @@ import fixtures.examples_validate as examples
 # Tests for schema compliance of an AnnData object
 
 
+class TestValidAnndata(unittest.TestCase):
+
+    """
+    Tests a valid AnnData object. Most other tests below modify this AnnData object and test for failure cases.
+
+    The valid AnnData object has all valid cases described in the schema.
+    """
+
+    def setUp(self):
+        self.validator = validate.Validator()
+        self.validator.adata = examples.adata.copy()
+
+    def test_valid_anndata(self):
+        self.validator.validate_adata()
+        self.assertFalse(self.validator.errors)
+
+
+class TestH5adValidation(unittest.TestCase):
+
+    """
+    Checks that validation from h5ad works, only does one invalid example as extensive testing is done in the classes
+    below
+    """
+
+    def setUp(self):
+        self.h5ad_valid_file = examples.h5ad_valid
+        self.h5ad_invalid_file = examples.h5ad_invalid
+        self.validator = validate.Validator()
+
+    def test_validate(self):
+
+        # Valid h5ad
+        self.assertTrue(self.validator.validate_adata(self.h5ad_valid_file))
+
+        # Invalid h5ads
+        self.assertFalse(self.validator.validate_adata(self.h5ad_invalid_file))
+
+
 class TestExpressionMatrix(unittest.TestCase):
 
     """
@@ -50,51 +88,56 @@ class TestExpressionMatrix(unittest.TestCase):
         self.assertEqual(
             self.validator.warnings,
             [
-                "WARNING: Sparsity of 'X' is 1.0 which is greater than 0.5, "
+                "WARNING: Sparsity of 'X' is 0.875 which is greater than 0.5, "
                 "and it is not a 'scipy.sparse.csr_matrix'. It is "
                 "STRONGLY RECOMMENDED to use this type of matrix for "
                 "the given sparsity."
             ],
         )
 
-    def test_raw_existance(self):
+    def test_raw_existence(self):
 
         """
         Except for ATAC-seq and methylation data, raw data is REQUIRED
         """
 
         # RNA - raw layer required
-        self.validator.adata.uns["X_normalization"] = "CPM"
+        del self.validator.adata.raw
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: uns['X_normalization'] is 'CPM' but raw data seems "
-                "to be in X, if X is raw then uns['X_normalization'] "
-                "MUST be 'none'."
+                "ERROR: Raw data is missing: there is no 'raw.X' and 'X_normalization' is not 'none'"
             ],
         )
 
         # ATAC - raw layer not required
+        # The assignment above makes X to not be raw: self.validator.adata.uns["X_normalization"] = "CPM"
+        # The following line makes it to be scATAC-seq data (EFO:0010891)
+        # Missing raw data in atac-seq data is allowed, thus the following should not return an error message
+        self.validator.errors=[]
         self.validator.adata.obs["assay_ontology_term_id"] = "EFO:0010891"
         self.validator.validate_adata()
-        print("HOLAaaa", self.validator.errors)
         self.assertEqual(self.validator.errors, [])
 
+    def test_final_strongly_recommended(self):
 
-class TestValidAnndata(unittest.TestCase):
+        """
+        Except for ATAC-seq and methylation data, final matrix is STRONGLY RECOMMENDED
+        """
 
-    """
-    Tests a valid anndata. Most other tests below modify this anndata object and test for failure cases
-    """
-
-    def setUp(self):
-        self.validator = validate.Validator()
-        self.validator.adata = examples.adata.copy()
-
-    def test_valid_anndata(self):
+        # move raw to X amd: i.e. there is no final
+        self.validator.adata.X = self.validator.adata.raw.X
+        del self.validator.adata.raw
+        self.validator.adata.uns["X_normalization"] = "none"
         self.validator.validate_adata()
-        self.assertFalse(self.validator.errors)
+        self.assertEqual(
+            self.validator.warnings,
+            [
+                "WARNING: Only raw data was found, i.e. there is no 'raw.X' and 'uns['X_normalization']' is 'none'. "
+                "It is STRONGLY RECOMMENDED that 'final' (normalized) data is provided."
+            ],
+        )
 
 
 class TestObs(unittest.TestCase):
@@ -123,18 +166,19 @@ class TestObs(unittest.TestCase):
         ]
 
         for column in columns:
-            self.validator.errors = []
-            self.validator.adata = examples.adata.copy()
+            with self.subTest(column=column):
+                self.validator.errors = []
+                self.validator.adata = examples.adata.copy()
 
-            self.validator.adata.obs.drop(column, axis=1, inplace=True)
-            # Remove batch condition because it has a dependency with is_primary_data
-            self.validator.adata.uns.pop("batch_condition")
+                self.validator.adata.obs.drop(column, axis=1, inplace=True)
+                # Remove batch condition because it has a dependency with is_primary_data
+                self.validator.adata.uns.pop("batch_condition")
 
-            self.validator.validate_adata()
-            self.assertEqual(
-                self.validator.errors,
-                [f"ERROR: Dataframe 'obs' is missing " f"column '{column}'."],
-            )
+                self.validator.validate_adata()
+                self.assertEqual(
+                    self.validator.errors,
+                    [f"ERROR: Dataframe 'obs' is missing " f"column '{column}'."],
+                )
 
     def test_column_presence_organism(self):
         """
@@ -165,6 +209,8 @@ class TestObs(unittest.TestCase):
         Terms documented as obsolete in an ontology MUST NOT be used. For example, EFO:0009310
         for obsolete_10x v2 was marked as obsolete in EFO version 3.31.0 and replaced by
         EFO:0009899 for 10x 3' v2.
+
+        https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0009310
         """
 
         # Not a valid term
@@ -174,7 +220,7 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is a deprecated term id of 'EFO'",
-                "ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is not a children term id "
+                "ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is not a child term id "
                 "of '[['EFO:0002772', 'EFO:0010183']]'",
             ],
         )
@@ -182,8 +228,10 @@ class TestObs(unittest.TestCase):
     def test_assay_ontology_term_id(self):
 
         """
-        assay_ontology_term_id categorical with str categories. categorical with str categories.
+        assay_ontology_term_id categorical with str categories.
         This MUST be an EFO term and either child of "EFO:0002772" or "EFO:0010183"
+        If there is not an exact match for the assay, clarifying text MAY be enclosed in parentheses and appended to
+        the most accurate term. For example, the sci-plex assay could be curated as "EFO:0010183 (sci-plex)"
         """
 
         # Not a valid term
@@ -194,7 +242,7 @@ class TestObs(unittest.TestCase):
             [
                 "ERROR: 'CL:000001' in 'assay_ontology_term_id' is not a valid "
                 "ontology term id of 'EFO'",
-                "ERROR: 'CL:000001' in 'assay_ontology_term_id' is not a children "
+                "ERROR: 'CL:000001' in 'assay_ontology_term_id' is not a child "
                 "term id of '[['EFO:0002772', 'EFO:0010183']]'",
             ],
         )
@@ -207,8 +255,21 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'EFO:0000001' in 'assay_ontology_term_id' is not a "
-                "children term id of '[['EFO:0002772', 'EFO:0010183']]'"
+                "child term id of '[['EFO:0002772', 'EFO:0010183']]'"
             ],
+        )
+
+        # Not a clarifying text
+        self.validator.adata.obs["assay_ontology_term_id"][0] = "EFO:0010183 sci-plex"
+        self.validator.errors = []
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: 'EFO:0010183 sci-plex' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'",
+                "ERROR: 'EFO:0010183 sci-plex' in 'assay_ontology_term_id' is not a child term id of "
+                "'[['EFO:0002772', 'EFO:0010183']]'"
+            ]
         )
 
     def test_cell_type_ontology_term_id(self):
@@ -228,19 +289,14 @@ class TestObs(unittest.TestCase):
             ],
         )
 
-    def test_development_stage_ontology_term_id(self):
+    def test_development_stage_ontology_term_id_human(self):
 
         """
         development_stage_ontology_term_id categorical with str categories. If unavailable, this MUST be "unknown".
         If organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens,
         this MUST be the most accurate HsapDv term.
-        If organism_ontolology_term_id is "NCBITaxon:10090" for Mus musculus,
-        this MUST be the most accurate MmusDv term
-        All other it MUST be children of UBERON:0000105 and not UBERON:0000071
         """
 
-        # If organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens,
-        # this MUST be the most accurate HsapDv term.
         self.validator.adata.obs["organism_ontology_term_id"][0] = "NCBITaxon:9606"
         self.validator.adata.obs["development_stage_ontology_term_id"][
             0
@@ -254,9 +310,12 @@ class TestObs(unittest.TestCase):
             ],
         )
 
-        # If organism_ontolology_term_id is "NCBITaxon:10090" for Mus musculus,
-        # this MUST be the most accurate MmusDv term
-        self.validator.errors = []
+    def test_development_stage_ontology_term_id_mouse(self):
+        """
+        If organism_ontolology_term_id is "NCBITaxon:10090" for Mus musculus,
+        this MUST be the most accurate MmusDv term
+        """
+
         self.validator.adata.obs["organism_ontology_term_id"][0] = "NCBITaxon:10090"
         self.validator.adata.obs["development_stage_ontology_term_id"][
             0
@@ -271,8 +330,13 @@ class TestObs(unittest.TestCase):
             ],
         )
 
-        # All other it MUST be children of UBERON:0000105 and not UBERON:0000071
-        self.validator.errors = []
+    def test_development_stage_ontology_term_id_all_species(self):
+
+        """
+        All other it MUST be children of UBERON:0000105 and not UBERON:0000071
+        """
+
+        # Fail case not an UBERON term
         self.validator.adata.obs["organism_ontology_term_id"][0] = "NCBITaxon:10114"
         self.validator.adata.obs["development_stage_ontology_term_id"][
             0
@@ -285,8 +349,24 @@ class TestObs(unittest.TestCase):
                 "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is "
                 "not a valid ontology term id of 'UBERON'",
                 "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is not "
-                "a children term id of '[['UBERON:0000105']]'",
+                "a child term id of '[['UBERON:0000105']]'",
             ],
+        )
+
+        # All other it MUST be children of UBERON:0000105 and not UBERON:0000071
+        # Fail case UBERON:0000071
+        self.validator.errors = []
+        self.validator.adata.obs["organism_ontology_term_id"][0] = "NCBITaxon:10114"
+        self.validator.adata.obs["development_stage_ontology_term_id"][
+            0
+        ] = "UBERON:0000071"
+        self.validator.adata.obs["ethnicity_ontology_term_id"][0] = "na"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: 'UBERON:0000071' in 'development_stage_ontology_term_id' is not allowed'"
+            ]
         )
 
     def test_disease_ontology_term_id(self):
@@ -296,8 +376,7 @@ class TestObs(unittest.TestCase):
         PATO:0000461 for normal or healthy.
         """
 
-        # If organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens,
-        # this MUST be the most accurate HsapDv term.
+        # Invalid ontology
         self.validator.adata.obs["disease_ontology_term_id"][0] = "EFO:0000001"
         self.validator.validate_adata()
         self.assertEqual(
@@ -307,6 +386,18 @@ class TestObs(unittest.TestCase):
                 "valid ontology term id of 'MONDO, PATO'"
             ],
         )
+
+        # Invalid PATO term id
+        self.validator.errors = []
+        self.validator.adata.obs["disease_ontology_term_id"][0] = "PATO:0001894"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: 'PATO:0001894' in 'disease_ontology_term_id' is not an allowed term: '[['PATO:0000461']]'"
+            ],
+        )
+
 
     def test_ethnicity_ontology_term_id(self):
 
@@ -330,7 +421,9 @@ class TestObs(unittest.TestCase):
             ],
         )
 
-        # Otherwise, for all other organisms this MUST be "na".
+        # Otherwise, for all other organisms this MUST be "na". Below is the test case for mouse data.
+        # development_stage_ontology_term_id has to be set to an appropriate mouse term id, otherwise there
+        # will be an error in that field.
         self.validator.errors = []
         self.validator.adata.obs["organism_ontology_term_id"][0] = "NCBITaxon:10090"
         self.validator.adata.obs["development_stage_ontology_term_id"][
@@ -352,8 +445,9 @@ class TestObs(unittest.TestCase):
         organism_ontology_term_id categorical with str categories. This MUST be a child of NCBITaxon:33208.
         """
 
-        # If organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens,
-        # this MUST be either a HANCESTRO term or "unknown" if unavailable.
+        # Setting "organism_ontology_term_id" to "EFO:0000001" is the fail case. However since this represents neither
+        # human nor mouse, then two other columns that are dependent on it need to be set appropriately to avoid
+        # other error messages: "development_stage_ontology_term_id" and "ethnicity_ontology_term_id"
         self.validator.adata.obs["organism_ontology_term_id"][0] = "EFO:0000001"
         self.validator.adata.obs["development_stage_ontology_term_id"][0] = "unknown"
         self.validator.adata.obs["ethnicity_ontology_term_id"][0] = "na"
@@ -366,17 +460,11 @@ class TestObs(unittest.TestCase):
             ],
         )
 
-    def test_tissue_ontology_term_id(self):
+    def test_tissue_ontology_term_id_base(self):
 
         """
         tissue_ontology_term_id categorical with str categories. This MUST be the term that best describes the tissue
         that this cell was derived from, depending on the type of biological sample:
-            Cell Culture - MUST be a CL term appended with " (cell culture)"
-            Organoid - MUST be an UBERON term appended with " (organoid)"
-            Enriched, Sorted,or Isolated Cells from a Tissue - MUST be an UBERON or CL term and SHOULD NOT use terms
-                that do not capture the tissue of origin (e.g. In the case of CD3+ kidney cells, use "UBERON:0002113"
-                for kidney instead of "CL:000084" for T cell. However, in the case of EPCAM+ cervical cells,
-                use "CL:000066" for epithelial cell of the cervix.)
         """
 
         self.validator.adata.obs["tissue_ontology_term_id"][0] = "EFO:0000001"
@@ -389,8 +477,12 @@ class TestObs(unittest.TestCase):
             ],
         )
 
-        # Cell Culture - MUST be a CL term appended with " (cell culture)"
-        self.errors = []
+    def test_tissue_ontology_term_id_cell_culture(self):
+
+        """
+        Cell Culture - MUST be a CL term appended with " (cell culture)"
+        """
+
         self.validator.adata.obs["tissue_ontology_term_id"][
             0
         ] = "CL:0000057 (CELL culture)"
@@ -403,8 +495,12 @@ class TestObs(unittest.TestCase):
             ],
         )
 
-        # Organoid - MUST be an UBERON term appended with " (organoid)"
-        self.errors = []
+    def test_tissue_ontology_term_id_organoid(self):
+
+        """
+        Organoid - MUST be an UBERON term appended with " (organoid)"
+        """
+
         self.validator.adata.obs["tissue_ontology_term_id"][0] = "CL:0000057 (ORGANOID)"
         self.validator.validate_adata()
         self.assertEqual(
@@ -419,7 +515,7 @@ class TestObs(unittest.TestCase):
 
         """
         sex_ontology_term_id categorical with str categories.
-        This MUST be a child of PATO:0001894 for phenotypic sex or "unknown" if unavailable
+        This MUST be a child of PATOPATO:0001894 for phenotypic sex or "unknown" if unavailable
         """
 
         self.validator.adata.obs["sex_ontology_term_id"][0] = "EFO:0000001"
@@ -446,7 +542,7 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: Column 'is_primary_data' in dataframe 'obs' "
-                "must be boolean not 'object'"
+                "must be boolean, not 'object'"
             ],
         )
 
@@ -454,12 +550,40 @@ class TestObs(unittest.TestCase):
 class TestVar(unittest.TestCase):
 
     """
-    Fail cases in adata.var
+    Fail cases in adata.var and adata.raw.var
     """
 
     def setUp(self):
         self.validator = validate.Validator()
         self.validator.adata = examples.adata.copy()
+
+    def test_var_and_raw_var_same_index(self):
+
+        """
+        var.index MUST contain unique identifiers for features. raw.var.index MUST be identical to var.index.
+        """
+
+        # Swap first row for second one
+        var = validate._getattr_anndata(self.validator.adata, "var")
+
+        # First swap the index
+        new_index = list(var.index)
+        tmp = new_index[0]
+        new_index[0] = new_index[1]
+        new_index[1] = tmp
+        var.set_index(pd.Index(new_index), inplace=True)
+
+        # Then swap the actual rows
+        tmp = var.iloc[0, :].copy()
+        var.iloc[0, :] = var.iloc[1, :].copy()
+        var.iloc[1, :] = tmp
+
+        self.validator.validate_adata()
+        print("FOO", self.validator.errors)
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: Index of 'raw.var' is not identical to index of 'var'"],
+        )
 
     def test_check_unique_var(self):
 
@@ -467,38 +591,55 @@ class TestVar(unittest.TestCase):
         var.index MUST contain unique ENSEMBL gene identifiers for features.
         """
 
-        # Duplicate 1st row in var and assigned to 2nd
-        new_index = list(self.validator.adata.var_names)
-        new_index[1] = new_index[0]
-        self.validator.adata.var_names = new_index
-        self.validator.adata.var.iloc[1, :] = self.validator.adata.var.iloc[0, :]
+        for component_name in ["var", "raw.var"]:
+            with self.subTest(component_name=component_name):
 
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            ["ERROR: Column 'index' in dataframe 'var' is not unique."],
-        )
+                # Resetting validator
+                self.validator.adata = examples.adata.copy()
+                self.validator.errors = []
+
+                # Duplicate 1st row in var and assign it to 2nd
+                component = validate._getattr_anndata(self.validator.adata, component_name)
+                new_index = list(component.index)
+                new_index[1] = new_index[0]
+                component.set_index(pd.Index(new_index), inplace=True)
+                component.iloc[1, :] = component.iloc[0, :]
+
+                self.validator.validate_adata()
+                self.assertEqual(
+                    self.validator.errors,
+                    [f"ERROR: Column 'index' in dataframe '{component_name}' is not unique."],
+                )
 
     def test_column_presence(self):
         """
         var is a pandas.DataFrame. Curators MUST annotate the following columns in the obs dataframe.
+        feature_is_filtered must not be in raw.var, and it's only checked in var
         """
 
         columns = [
             "feature_is_filtered",
+            "feature_biotype"
         ]
 
-        for column in columns:
-            self.validator.errors = []
-            self.validator.adata = examples.adata.copy()
+        for component_name in ["var", "raw.var"]:
+            for column in columns:
+                if column == "feature_is_filtered" and component_name == "raw.var":
+                    continue
+                with self.subTest(component_name=component_name, column=column):
 
-            self.validator.adata.var.drop(column, axis=1, inplace=True)
+                    # Resetting validator
+                    self.validator.errors = []
+                    self.validator.adata = examples.adata.copy()
 
-            self.validator.validate_adata()
-            self.assertEqual(
-                self.validator.errors,
-                [f"ERROR: Dataframe 'var' is missing " f"column '{column}'."],
-            )
+                    component = validate._getattr_anndata(self.validator.adata, component_name)
+                    component.drop(column, axis=1, inplace=True)
+
+                    self.validator.validate_adata()
+                    self.assertEqual(
+                        self.validator.errors,
+                        [f"ERROR: Dataframe '{component_name}' is missing " f"column '{column}'."],
+                    )
 
     def test_feature_is_filtered(self):
 
@@ -542,53 +683,96 @@ class TestVar(unittest.TestCase):
             ["ERROR: Column 'feature_is_filtered' must not be present in 'raw.var'"],
         )
 
-    def test_feature_id(self):
+    def test_feature_id_wrong_format(self):
 
         """
         feature_id (var.index) str.
         If the feature_biotype is "gene" then this MUST be an ENSEMBL term.
         If the feature_biotype is "spike-in" then this MUST be an ERCC Spike-In identifier.
+
+        This tests the case of an ID with an incorrect format "ENSEBML_NOGENE"
         """
 
-        # If the feature_biotype is "gene" then this MUST be an ENSEMBL term.
-        # First not and ENSEMBL ID
-        new_index = list(self.validator.adata.var_names)
-        new_index[0] = "ENSEBML_NOGENE"
-        self.validator.adata.var_names = new_index
-        self.validator.adata.var["feature_biotype"][0] = "gene"
+        for component_name in ["var", "raw.var"]:
+            with self.subTest(component_name=component_name):
 
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            [
-                "ERROR: Could not infer organism from feature ID 'ENSEBML_NOGENE' "
-                "in 'var', make sure it is a valid ID"
-            ],
-        )
+                # Resetting validator
+                self.validator.adata = examples.adata.copy()
+                self.validator.errors = []
 
-        # Second, something that looks like ENSEBML id but it isn't
-        new_index = list(self.validator.adata.var_names)
-        new_index[0] = "ENSG000"
-        self.validator.adata.var_names = new_index
-        self.validator.adata.var["feature_biotype"][0] = "gene"
+                component = validate._getattr_anndata(self.validator.adata, component_name)
 
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            ["ERROR: 'ENSG000' is not a valid feature ID in 'var'"],
-        )
+                new_index = list(component.index)
+                new_index[0] = "ENSEBML_NOGENE"
+                component.set_index(pd.Index(new_index), inplace=True)
+                component["feature_biotype"][0] = "gene"
 
-        # If the feature_biotype is "spike-in" then this MUST be an ERCC Spike-In identifier.
-        new_index = list(self.validator.adata.var_names)
-        new_index[0] = "ERCC-000000"
-        self.validator.adata.var_names = new_index
-        self.validator.adata.var["feature_biotype"][0] = "spike-in"
+                self.validator.validate_adata()
+                self.assertEqual(
+                    self.validator.errors,
+                    [
+                        f"ERROR: Could not infer organism from feature ID 'ENSEBML_NOGENE' "
+                        f"in '{component_name}', make sure it is a valid ID"
+                    ],
+                )
 
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            ["ERROR: 'ERCC-000000' is not a valid feature ID in 'var'"],
-        )
+    def test_feature_id_non_existent_ensembl(self):
+
+        """
+        feature_id (var.index) str.
+        If the feature_biotype is "gene" then this MUST be an ENSEMBL term.
+        If the feature_biotype is "spike-in" then this MUST be an ERCC Spike-In identifier.
+
+        This tests the case of an ENSEMBL ID that has the right format but doesn't exist
+        """
+
+        for component_name in ["var", "raw.var"]:
+            with self.subTest(component_name=component_name):
+                # Resetting validator
+                self.validator.adata = examples.adata.copy()
+                self.validator.errors = []
+
+                component = validate._getattr_anndata(self.validator.adata, component_name)
+
+                new_index = list(component.index)
+                new_index[0] = "ENSG000"
+                component.set_index(pd.Index(new_index), inplace=True)
+                component["feature_biotype"][0] = "gene"
+
+                self.validator.validate_adata()
+                self.assertEqual(
+                   self.validator.errors,
+                   [f"ERROR: 'ENSG000' is not a valid feature ID in '{component_name}'"],
+                )
+
+    def test_feature_id_non_existent_ercc(self):
+
+        """
+        feature_id (var.index) str.
+        If the feature_biotype is "gene" then this MUST be an ENSEMBL term.
+        If the feature_biotype is "spike-in" then this MUST be an ERCC Spike-In identifier.
+
+        This tests the case of an ERCC ID that has the right format but doesn't exist
+        """
+
+        for component_name in ["var", "raw.var"]:
+            with self.subTest(component_name=component_name):
+                # Resetting validator
+                self.validator.adata = examples.adata.copy()
+                self.validator.errors = []
+
+                component = validate._getattr_anndata(self.validator.adata, component_name)
+
+                new_index = list(component.index)
+                new_index[0] = "ERCC-000000"
+                component.set_index(pd.Index(new_index), inplace=True)
+                component["feature_biotype"][0] = "spike-in"
+
+                self.validator.validate_adata()
+                self.assertEqual(
+                    self.validator.errors,
+                    [f"ERROR: 'ERCC-000000' is not a valid feature ID in '{component_name}'"],
+                )
 
 
 class TestUns(unittest.TestCase):
@@ -604,7 +788,7 @@ class TestUns(unittest.TestCase):
     def test_required_fields_schema_version(self):
 
         """
-        Curators MUST annotate the following keys and values in uns: schema_version, title, X_normalization
+        Curators MUST annotate `schema_version` and values in uns (schema_version)
         """
 
         del self.validator.adata.uns["schema_version"]
@@ -620,7 +804,7 @@ class TestUns(unittest.TestCase):
     def test_required_fields_title(self):
 
         """
-        Curators MUST annotate the following keys and values in uns: schema_version, title, X_normalization
+        Curators MUST annotate `schema_version` and values in uns (title)
         """
 
         del self.validator.adata.uns["title"]
@@ -632,7 +816,7 @@ class TestUns(unittest.TestCase):
     def test_required_fields_X_normalization(self):
 
         """
-        Curators MUST annotate the following keys and values in uns: schema_version, title, X_normalization
+        Curators MUST annotate `schema_version` and values in uns (X_normalization)
         """
 
         del self.validator.adata.uns["X_normalization"]
@@ -690,8 +874,8 @@ class TestUns(unittest.TestCase):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: Schema version '1.0.0' is not supported. Validation "
-                "cannot be performed."
+                "ERROR: Schema version '1.0.0' is not supported. Current supported versions: '['2.0.0']'. "
+                "Validation cannot be performed."
             ],
         )
 
@@ -735,17 +919,19 @@ class TestUns(unittest.TestCase):
         X_normalization str. This SHOULD describe the method used to normalize the data stored in AnnData X.
         If data in X are raw, this SHOULD be "none".
 
-        FAIL CASE for when X_normalization was set to "none" but X is not raw data
+        FAIL CASE for when X_normalization was set to "none" but X may not be raw data
         """
 
         # Assign a real value to X while X_normalization is 'none'
-        self.validator.adata.X[0, 0] = 1.5
+        del self.validator.adata.raw
+        self.validator.adata.uns["X_normalization"] = "none"
         self.validator.validate_adata()
+        print("FOO", self.validator.warnings)
         self.assertEqual(
-            self.validator.errors,
+            self.validator.warnings,
             [
-                "ERROR: Matrix 'X' seems to be the raw matrix but not all of "
-                "its values are integers."
+                "WARNING: uns['X_normalization'] is 'none', there is no 'raw.X' and 'X' doesn't appear "
+                "to have raw counts (integers)"
             ],
         )
 
@@ -755,6 +941,12 @@ class TestUns(unittest.TestCase):
         batch_condition list[str]
         """
 
+        # Check valid case of numpy array which is interchangeable with lists
+        self.validator.adata.uns["batch_condition"] = numpy.array(self.validator.adata.uns["batch_condition"])
+        self.validator.validate_adata()
+        self.assertEqual(self.validator.errors, [])
+
+        # Check fail case: not a list nor numpy array
         self.validator.adata.uns["batch_condition"] = "cell_type_ontology_term_id"
         self.validator.validate_adata()
         self.assertEqual(
@@ -816,9 +1008,16 @@ class TestUns(unittest.TestCase):
     def test_X_approximate_distribution_is_str(self):
 
         """
-        X_approximate_distribution str. The value MUST be "count" [...] or "normal"
+        X_approximate_distribution str. The value MUST be "count" [...] or "normal".
+        Note that `normal` is tested in the happy path test case using `examples.good_uns`.
         """
 
+        # Check valid case of "count" which is not included in valid object
+        self.validator.adata.uns["X_approximate_distribution"] = "count"
+        self.validator.validate_adata()
+        self.assertEqual(self.validator.errors,[])
+
+        # Invalid type: list
         self.validator.adata.uns["X_approximate_distribution"] = ["count"]
         self.validator.validate_adata()
         self.assertEqual(
@@ -918,7 +1117,7 @@ class TestAddingLabels(unittest.TestCase):
 
     """
     Tests the addition of labels from IDs based on schema specification. The test is done by comparing manually
-    created dataframes (positive control) agains the ones produced by the validator
+    created dataframes (positive control) against the ones produced by the validator
     """
 
     @classmethod
@@ -933,7 +1132,7 @@ class TestAddingLabels(unittest.TestCase):
         validator.validate_adata()
 
         # Add labels through validator
-        cls.label_writer = validate.LabelWriter(validator)
+        cls.label_writer = validate.H5adLabelAppender(validator)
         cls.label_writer._add_labels()
 
     def test_var_added_labels(self):
@@ -958,7 +1157,8 @@ class TestAddingLabels(unittest.TestCase):
             obtained_column = self.label_writer.adata.var[column]
 
             for i, j in zip(expected_column.tolist(), obtained_column.tolist()):
-                self.assertEqual(i, j)
+                with self.subTest(i=i, j=j):
+                    self.assertEqual(i, j)
 
     def test_obs_added_labels(self):
 
@@ -1003,4 +1203,5 @@ class TestAddingLabels(unittest.TestCase):
             obtained_column = self.label_writer.adata.obs[column]
 
             for i, j in zip(expected_column.tolist(), obtained_column.tolist()):
-                self.assertEqual(i, j)
+                with self.subTest(i=i, j=j):
+                    self.assertEqual(i, j)
