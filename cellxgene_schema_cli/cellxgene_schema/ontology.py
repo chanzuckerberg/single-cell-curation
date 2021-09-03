@@ -32,7 +32,7 @@ def get_organism_from_feature_id(
         return SupportedOrganisms.MUS_MUSCULUS
     elif feature_id.startswith("ENSSAS"):
         return SupportedOrganisms.SARS_COV_2
-    elif feature_id.startswith("ERCC"):
+    elif feature_id.startswith("ERCC-"):
         return SupportedOrganisms.ERCC
     else:
         return None
