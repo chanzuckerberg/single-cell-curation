@@ -73,7 +73,7 @@ class TestExpressionMatrix(unittest.TestCase):
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
-            ["ERROR: Number of genes in X (3) is different than raw.X (4)"],
+            ["ERROR: Number of genes in X (3) is different than raw.X (4)."],
         )
 
     def test_sparsity(self):
@@ -107,7 +107,7 @@ class TestExpressionMatrix(unittest.TestCase):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: Raw data is missing: there is no 'raw.X' and 'X_normalization' is not 'none'"
+                "ERROR: Raw data is missing: there is no 'raw.X' and 'X_normalization' is not 'none'."
             ],
         )
 
@@ -197,10 +197,10 @@ class TestObs(unittest.TestCase):
                 "'organism_ontology_term_id'.",
                 "ERROR: Checking values with dependencies failed for "
                 "adata.obs['ethnicity_ontology_term_id'], this is likely due "
-                "to missing dependent column in adata.obs",
+                "to missing dependent column in adata.obs.",
                 "ERROR: Checking values with dependencies failed for "
                 "adata.obs['development_stage_ontology_term_id'], this is likely due "
-                "to missing dependent column in adata.obs",
+                "to missing dependent column in adata.obs.",
             ],
         )
 
@@ -219,9 +219,9 @@ class TestObs(unittest.TestCase):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is a deprecated term id of 'EFO'",
+                "ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is a deprecated term id of 'EFO'.",
                 "ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is not a child term id "
-                "of '[['EFO:0002772', 'EFO:0010183']]'",
+                "of '[['EFO:0002772', 'EFO:0010183']]'.",
             ],
         )
 
@@ -241,9 +241,9 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'CL:000001' in 'assay_ontology_term_id' is not a valid "
-                "ontology term id of 'EFO'",
+                "ontology term id of 'EFO'.",
                 "ERROR: 'CL:000001' in 'assay_ontology_term_id' is not a child "
-                "term id of '[['EFO:0002772', 'EFO:0010183']]'",
+                "term id of '[['EFO:0002772', 'EFO:0010183']]'.",
             ],
         )
 
@@ -255,7 +255,7 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'EFO:0000001' in 'assay_ontology_term_id' is not a "
-                "child term id of '[['EFO:0002772', 'EFO:0010183']]'"
+                "child term id of '[['EFO:0002772', 'EFO:0010183']]'."
             ],
         )
 
@@ -266,9 +266,9 @@ class TestObs(unittest.TestCase):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'EFO:0010183 sci-plex' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'",
+                "ERROR: 'EFO:0010183 sci-plex' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'.",
                 "ERROR: 'EFO:0010183 sci-plex' in 'assay_ontology_term_id' is not a child term id of "
-                "'[['EFO:0002772', 'EFO:0010183']]'"
+                "'[['EFO:0002772', 'EFO:0010183']]'."
             ]
         )
 
@@ -285,7 +285,7 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'EFO:0000001' in 'cell_type_ontology_term_id' is not a valid "
-                "ontology term id of 'CL'"
+                "ontology term id of 'CL'."
             ],
         )
 
@@ -306,7 +306,8 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is "
-                "not a valid ontology term id of 'HsapDv'"
+                "not a valid ontology term id of 'HsapDv'. When 'organism_ontology_term_id' is 'NCBITaxon:9606' "
+                "(Homo sapiens), 'development_stage_ontology_term_id' MUST be a term id of 'HsapDv' or unknown."
             ],
         )
 
@@ -326,7 +327,8 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is "
-                "not a valid ontology term id of 'MmusDv'"
+                "not a valid ontology term id of 'MmusDv'. When 'organism_ontology_term_id' is 'NCBITaxon:10090' "
+                "(Mus musculus), 'development_stage_ontology_term_id' MUST be a term id of 'MmusDv' or unknown."
             ],
         )
 
@@ -347,9 +349,13 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is "
-                "not a valid ontology term id of 'UBERON'",
+                "not a valid ontology term id of 'UBERON'. When 'organism_ontology_term_id' is not 'NCBITaxon:10090' "
+                "nor 'NCBITaxon:9606', 'development_stage_ontology_term_id' MUST be a child term id of "
+                "'UBERON:0000105' excluding 'UBERON:0000071', or unknown.",
                 "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is not "
-                "a child term id of '[['UBERON:0000105']]'",
+                "a child term id of '[['UBERON:0000105']]'. When 'organism_ontology_term_id' is not 'NCBITaxon:10090' "
+                "nor 'NCBITaxon:9606', 'development_stage_ontology_term_id' MUST be a child term id of "
+                "'UBERON:0000105' excluding 'UBERON:0000071', or unknown.",
             ],
         )
 
@@ -365,7 +371,10 @@ class TestObs(unittest.TestCase):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'UBERON:0000071' in 'development_stage_ontology_term_id' is not allowed'"
+                "ERROR: 'UBERON:0000071' in 'development_stage_ontology_term_id' is not allowed'. When "
+                "'organism_ontology_term_id' is not 'NCBITaxon:10090' "
+                "nor 'NCBITaxon:9606', 'development_stage_ontology_term_id' MUST be a child term id of "
+                "'UBERON:0000105' excluding 'UBERON:0000071', or unknown.",
             ]
         )
 
@@ -383,7 +392,7 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'EFO:0000001' in 'disease_ontology_term_id' is not a "
-                "valid ontology term id of 'MONDO, PATO'"
+                "valid ontology term id of 'MONDO, PATO'. Only 'PATO:0000461' is allowed for 'PATO' term ids."
             ],
         )
 
@@ -394,7 +403,8 @@ class TestObs(unittest.TestCase):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'PATO:0001894' in 'disease_ontology_term_id' is not an allowed term: '[['PATO:0000461']]'"
+                "ERROR: 'PATO:0001894' in 'disease_ontology_term_id' is not an allowed term: '[['PATO:0000461']]'. "
+                "Only 'PATO:0000461' is allowed for 'PATO' term ids."
             ],
         )
 
@@ -417,7 +427,8 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'EFO:0000001' in 'ethnicity_ontology_term_id' is "
-                "not a valid ontology term id of 'HANCESTRO'"
+                "not a valid ontology term id of 'HANCESTRO'. When 'organism_ontology_term_id' is 'NCBITaxon:9606' "
+                "(Homo sapiens), ethnicity_ontology_term_id MUST be a term id of 'HANCESTRO' or 'unknown'."
             ],
         )
 
@@ -435,7 +446,8 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'EFO:0000001' in 'ethnicity_ontology_term_id' is not a "
-                "valid value of 'ethnicity_ontology_term_id'"
+                "valid value of 'ethnicity_ontology_term_id'. When 'organism_ontology_term_id' is NOT 'NCBITaxon:9606' "
+                "(Homo sapiens), ethnicity_ontology_term_id MUST be 'na'."
             ],
         )
 
@@ -456,7 +468,7 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'EFO:0000001' in 'organism_ontology_term_id' is not a valid "
-                "ontology term id of 'NCBITaxon'"
+                "ontology term id of 'NCBITaxon'. Only children term ids of 'NCBITaxon:33208' for metazoan are allowed."
             ],
         )
 
@@ -473,7 +485,7 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'EFO:0000001' in 'tissue_ontology_term_id' is not a "
-                "valid ontology term id of 'UBERON, CL'"
+                "valid ontology term id of 'UBERON, CL'."
             ],
         )
 
@@ -491,7 +503,7 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'CL:0000057 (CELL culture)' in 'tissue_ontology_term_id' is "
-                "not a valid ontology term id of 'UBERON, CL'"
+                "not a valid ontology term id of 'UBERON, CL'."
             ],
         )
 
@@ -507,7 +519,7 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'CL:0000057 (ORGANOID)' in 'tissue_ontology_term_id' is "
-                "not a valid ontology term id of 'UBERON, CL'"
+                "not a valid ontology term id of 'UBERON, CL'."
             ],
         )
 
@@ -524,7 +536,8 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'EFO:0000001' in 'sex_ontology_term_id' is "
-                "not a valid ontology term id of 'PATO'"
+                "not a valid ontology term id of 'PATO'. Only 'PATO:0000383', 'PATO:0000384', 'PATO:0001340', "
+                "or 'unknown' are allowed."
             ],
         )
 
@@ -542,7 +555,7 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: Column 'is_primary_data' in dataframe 'obs' "
-                "must be boolean, not 'object'"
+                "must be boolean, not 'object'."
             ],
         )
 
@@ -564,7 +577,7 @@ class TestVar(unittest.TestCase):
         """
 
         # Swap first row for second one
-        var = validate._getattr_anndata(self.validator.adata, "var")
+        var = validate.Validator.getattr_anndata(self.validator.adata, "var")
 
         # First swap the index
         new_index = list(var.index)
@@ -582,7 +595,7 @@ class TestVar(unittest.TestCase):
         print("FOO", self.validator.errors)
         self.assertEqual(
             self.validator.errors,
-            ["ERROR: Index of 'raw.var' is not identical to index of 'var'"],
+            ["ERROR: Index of 'raw.var' is not identical to index of 'var'."],
         )
 
     def test_check_unique_var(self):
@@ -599,7 +612,7 @@ class TestVar(unittest.TestCase):
                 self.validator.errors = []
 
                 # Duplicate 1st row in var and assign it to 2nd
-                component = validate._getattr_anndata(self.validator.adata, component_name)
+                component = validate.Validator.getattr_anndata(self.validator.adata, component_name)
                 new_index = list(component.index)
                 new_index[1] = new_index[0]
                 component.set_index(pd.Index(new_index), inplace=True)
@@ -632,7 +645,7 @@ class TestVar(unittest.TestCase):
                     self.validator.errors = []
                     self.validator.adata = examples.adata.copy()
 
-                    component = validate._getattr_anndata(self.validator.adata, component_name)
+                    component = validate.Validator.getattr_anndata(self.validator.adata, component_name)
                     component.drop(column, axis=1, inplace=True)
 
                     self.validator.validate_adata()
@@ -680,7 +693,7 @@ class TestVar(unittest.TestCase):
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
-            ["ERROR: Column 'feature_is_filtered' must not be present in 'raw.var'"],
+            ["ERROR: Column 'feature_is_filtered' must not be present in 'raw.var'."],
         )
 
     def test_feature_id_wrong_format(self):
@@ -700,7 +713,7 @@ class TestVar(unittest.TestCase):
                 self.validator.adata = examples.adata.copy()
                 self.validator.errors = []
 
-                component = validate._getattr_anndata(self.validator.adata, component_name)
+                component = validate.Validator.getattr_anndata(self.validator.adata, component_name)
 
                 new_index = list(component.index)
                 new_index[0] = "ENSEBML_NOGENE"
@@ -712,7 +725,7 @@ class TestVar(unittest.TestCase):
                     self.validator.errors,
                     [
                         f"ERROR: Could not infer organism from feature ID 'ENSEBML_NOGENE' "
-                        f"in '{component_name}', make sure it is a valid ID"
+                        f"in '{component_name}', make sure it is a valid ID."
                     ],
                 )
 
@@ -732,7 +745,7 @@ class TestVar(unittest.TestCase):
                 self.validator.adata = examples.adata.copy()
                 self.validator.errors = []
 
-                component = validate._getattr_anndata(self.validator.adata, component_name)
+                component = validate.Validator.getattr_anndata(self.validator.adata, component_name)
 
                 new_index = list(component.index)
                 new_index[0] = "ENSG000"
@@ -742,7 +755,7 @@ class TestVar(unittest.TestCase):
                 self.validator.validate_adata()
                 self.assertEqual(
                    self.validator.errors,
-                   [f"ERROR: 'ENSG000' is not a valid feature ID in '{component_name}'"],
+                   [f"ERROR: 'ENSG000' is not a valid feature ID in '{component_name}'."],
                 )
 
     def test_feature_id_non_existent_ercc(self):
@@ -761,7 +774,7 @@ class TestVar(unittest.TestCase):
                 self.validator.adata = examples.adata.copy()
                 self.validator.errors = []
 
-                component = validate._getattr_anndata(self.validator.adata, component_name)
+                component = validate.Validator.getattr_anndata(self.validator.adata, component_name)
 
                 new_index = list(component.index)
                 new_index[0] = "ERCC-000000"
@@ -771,7 +784,7 @@ class TestVar(unittest.TestCase):
                 self.validator.validate_adata()
                 self.assertEqual(
                     self.validator.errors,
-                    [f"ERROR: 'ERCC-000000' is not a valid feature ID in '{component_name}'"],
+                    [f"ERROR: 'ERCC-000000' is not a valid feature ID in '{component_name}'."],
                 )
 
 
@@ -810,7 +823,7 @@ class TestUns(unittest.TestCase):
         del self.validator.adata.uns["title"]
         self.validator.validate_adata()
         self.assertEqual(
-            self.validator.errors, ["ERROR: 'title' in 'uns' is not present"]
+            self.validator.errors, ["ERROR: 'title' in 'uns' is not present."]
         )
 
     def test_required_fields_X_normalization(self):
@@ -822,7 +835,7 @@ class TestUns(unittest.TestCase):
         del self.validator.adata.uns["X_normalization"]
         self.validator.validate_adata()
         self.assertEqual(
-            self.validator.errors, ["ERROR: 'X_normalization' in 'uns' is not present"]
+            self.validator.errors, ["ERROR: 'X_normalization' in 'uns' is not present."]
         )
 
     def test_leading_trailing_double_spaces_in_strings(self):
@@ -953,7 +966,7 @@ class TestUns(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'cell_type_ontology_term_id' in 'uns['batch_condition']' "
-                "is not valid, it must be a list or numpy array"
+                "is not valid, it must be a list or numpy array."
             ],
         )
 
@@ -969,7 +982,7 @@ class TestUns(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: Value 'NO_COLUMN' of list 'batch_condition' is not a "
-                "column in 'adata.obs'"
+                "column in 'adata.obs'."
             ],
         )
 
@@ -1070,7 +1083,7 @@ class TestObsm(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: All embeddings have to be of 'numpy.ndarray' type, "
-                "'adata.obsm['X_tsne']' is <class 'pandas.core.frame.DataFrame'>')"
+                "'adata.obsm['X_tsne']' is <class 'pandas.core.frame.DataFrame'>')."
             ],
         )
 
@@ -1108,7 +1121,7 @@ class TestObsm(unittest.TestCase):
             [
                 "ERROR: All embeddings must have as many rows as cells, and "
                 "at least two columns.'adata.obsm['X_umap']' has shape "
-                "of '(2, 1)'"
+                "of '(2, 1)'."
             ],
         )
 
@@ -1132,7 +1145,7 @@ class TestAddingLabels(unittest.TestCase):
         validator.validate_adata()
 
         # Add labels through validator
-        cls.label_writer = validate.H5adLabelAppender(validator)
+        cls.label_writer = validate.AnnDataLabelAppender(validator)
         cls.label_writer._add_labels()
 
     def test_var_added_labels(self):

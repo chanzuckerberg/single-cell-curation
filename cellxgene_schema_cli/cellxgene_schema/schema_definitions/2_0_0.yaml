@@ -57,6 +57,7 @@ components:
         columns:
             feature_biotype:
                 type: categorical
+                error_message_suffix: "When 'feature_id' is an ENSEMBL ID 'feature_biotype' MUST be 'gene'."
                 enum:
                     - "gene"
                 dependencies:
@@ -64,6 +65,7 @@ components:
                         # If feature id start with ERCC then only allowed for "spike-in"
                         rule: "index.str.startswith('ERCC')"
                         type: categorical
+                        error_message_suffix: "When 'feature_id' is an ERCC ID 'feature_biotype' MUST be 'spike-in'."
                         enum:
                             - "spike-in"
             feature_is_filtered:
@@ -87,6 +89,7 @@ components:
         columns:
             feature_biotype:
                 type: categorical
+                error_message_suffix: "When 'feature_id' is an ENSEMBL ID 'feature_biotype' MUST be 'gene'."
                 enum:
                     - "gene"
                 dependencies:
@@ -94,6 +97,7 @@ components:
                         # If feature id start with ERCC then only allowed for "spike-in"
                         rule: "index.str.startswith('ERCC')"
                         type: categorical
+                        error_message_suffix: "When 'feature_id' is an ERCC ID 'feature_biotype' MUST be 'spike-in'."
                         enum:
                             - "spike-in"
     obs:
@@ -116,7 +120,7 @@ components:
                 curie_constraints:
                     ontologies:
                         - EFO
-                    ancestors_inclusive: # "_inclusive" means that these terms themselves are a allowed
+                    ancestors_inclusive: # "_inclusive" means that these terms themselves are allowed
                         EFO:
                             - EFO:0002772
                             - EFO:0010183
@@ -128,6 +132,7 @@ components:
                         type: curie
                         to_column: assay
             disease_ontology_term_id:
+                error_message_suffix: "Only 'PATO:0000461' is allowed for 'PATO' term ids."
                 type: curie
                 curie_constraints:
                     ontologies:
@@ -142,6 +147,7 @@ components:
                         to_column: disease
             organism_ontology_term_id:
                 type: curie
+                error_message_suffix: "Only children term ids of 'NCBITaxon:33208' for metazoan are allowed."
                 curie_constraints:
                     ontologies:
                         - NCBITaxon
@@ -150,6 +156,7 @@ components:
                         type: curie
                         to_column: organism
             sex_ontology_term_id:
+                error_message_suffix: "Only 'PATO:0000383', 'PATO:0000384', 'PATO:0001340', or 'unknown' are allowed."
                 type: curie
                 curie_constraints:
                     ontologies:
@@ -186,6 +193,9 @@ components:
                     -
                         # If organism is Human
                         rule: "organism_ontology_term_id == 'NCBITaxon:9606'"
+                        error_message_suffix: >-
+                            When 'organism_ontology_term_id' is 'NCBITaxon:9606' (Homo sapiens),
+                            ethnicity_ontology_term_id MUST be a term id of 'HANCESTRO' or 'unknown'.
                         type: curie
                         curie_constraints:
                             ontologies:
@@ -193,6 +203,9 @@ components:
                             exceptions:
                                 - unknown
                 # If organism is not Human
+                error_message_suffix: >-
+                    When 'organism_ontology_term_id' is NOT 'NCBITaxon:9606' (Homo sapiens),
+                    ethnicity_ontology_term_id MUST be 'na'.
                 curie_constraints:
                     ontologies:
                         - NA
@@ -208,6 +221,9 @@ components:
                     -
                         # If organism is Human
                         rule: "organism_ontology_term_id == 'NCBITaxon:9606'"
+                        error_message_suffix: >-
+                            When 'organism_ontology_term_id' is 'NCBITaxon:9606' (Homo sapiens),
+                            'development_stage_ontology_term_id' MUST be a term id of 'HsapDv' or unknown.
                         type: curie
                         curie_constraints:
                             ontologies:
@@ -217,6 +233,9 @@ components:
                     -
                         # If organism is Mouse
                         rule: "organism_ontology_term_id == 'NCBITaxon:10090'"
+                        error_message_suffix: >-
+                            When 'organism_ontology_term_id' is 'NCBITaxon:10090' (Mus musculus),
+                            'development_stage_ontology_term_id' MUST be a term id of 'MmusDv' or unknown.
                         type: curie
                         curie_constraints:
                             ontologies:
@@ -224,6 +243,10 @@ components:
                             exceptions:
                                 - unknown
                 # If organism is not humnan nor mouse
+                error_message_suffix: >-
+                    When 'organism_ontology_term_id' is not 'NCBITaxon:10090' nor 'NCBITaxon:9606',
+                    'development_stage_ontology_term_id' MUST be a child term id of 'UBERON:0000105'
+                    excluding 'UBERON:0000071', or unknown.
                 curie_constraints:
                     ontologies:
                         - UBERON

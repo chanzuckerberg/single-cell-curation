@@ -18,26 +18,6 @@ from . import env
 ONTOLOGY_CHECKER = ontology.OntologyChecker()
 
 
-def _getattr_anndata(adata: anndata.AnnData, attr: str = None):
-
-    """
-    same as getattr but handles the special case of "raw.var" for an anndata.AndData object
-
-    :param anndata.AnnData adata: the anndata.AnnData object from which to extract an attribute
-    :param str attr: name of the attribute to extract
-
-    :return the attribute or none if it does not exist
-    """
-
-    if attr == "raw.var":
-        if adata.raw:
-            return getattr(getattr(adata, "raw"), "var")
-        else:
-            return None
-    else:
-        return getattr(adata, attr)
-
-
 def _curie_remove_suffix(term_id: str, suffix_def: dict) -> Tuple[str, str]:
     """
     Remove suffix from a curie term id, if none present return it unmodified
@@ -88,6 +68,26 @@ class Validator:
         # Values will be instances of ontology.GeneChecker,
         # keys will be one of ontology.SupportedOrganisms
         self.gene_checkers = dict()
+
+    @staticmethod
+    def getattr_anndata(adata: anndata.AnnData, attr: str = None):
+
+        """
+        same as getattr but handles the special case of "raw.var" for an anndata.AndData object
+
+        :param anndata.AnnData adata: the anndata.AnnData object from which to extract an attribute
+        :param str attr: name of the attribute to extract
+
+        :return the attribute or none if it does not exist
+        """
+
+        if attr == "raw.var":
+            if adata.raw:
+                return getattr(getattr(adata, "raw"), "var")
+            else:
+                return None
+        else:
+            return getattr(adata, attr)
 
     def _read_h5ad(self, h5ad_path: Union[str, bytes, os.PathLike]):
 
@@ -184,7 +184,7 @@ class Validator:
         if sum(checks) == 0 and len(checks) > 0:
             all_allowed = list(terms.values())
             self.errors.append(
-                f"'{term_id}' in '{column_name}' is not an allowed term: '{all_allowed}'"
+                f"'{term_id}' in '{column_name}' is not an allowed term: '{all_allowed}'."
             )
 
     def _validate_curie_ancestors(
@@ -231,7 +231,7 @@ class Validator:
         if True not in checks:
             all_ancestors = list(allowed_ancestors.values())
             self.errors.append(
-                f"'{term_id}' in '{column_name}' is not a child term id of '{all_ancestors}'"
+                f"'{term_id}' in '{column_name}' is not a child term id of '{all_ancestors}'."
             )
 
     def _validate_curie_ontology(
@@ -260,12 +260,12 @@ class Validator:
             if is_valid:
                 if ONTOLOGY_CHECKER.is_term_id_deprecated(ontology_name, term_id):
                     self.errors.append(
-                        f"'{term_id}' in '{column_name}' is a deprecated term id of '{ontology_name}'"
+                        f"'{term_id}' in '{column_name}' is a deprecated term id of '{ontology_name}'."
                     )
 
         if sum(checks) == 0:
             self.errors.append(
-                f"'{term_id}' in '{column_name}' is not a valid ontology term id of '{', '.join(allowed_ontologies)}'"
+                f"'{term_id}' in '{column_name}' is not a valid ontology term id of '{', '.join(allowed_ontologies)}'."
             )
 
     def _validate_curie(self, term_id: str, column_name: str, curie_constraints: dict):
@@ -290,14 +290,14 @@ class Validator:
         # If there are forbidden terms
         if "forbidden" in curie_constraints:
             if term_id in curie_constraints["forbidden"]:
-                self.errors.append(f"'{term_id}' in '{column_name}' is not allowed'")
+                self.errors.append(f"'{term_id}' in '{column_name}' is not allowed'.")
                 return
 
         # If NA is found in allowed ontologies, it means only exceptions should be found. If no exceptions were found
         # then return error
         if curie_constraints["ontologies"] == ["NA"]:
             self.errors.append(
-                f"'{term_id}' in '{column_name}' is not a valid value of '{column_name}'"
+                f"'{term_id}' in '{column_name}' is not a valid value of '{column_name}'."
             )
             return
 
@@ -347,7 +347,7 @@ class Validator:
         if not organism:
             self.errors.append(
                 f"Could not infer organism from feature ID '{feature_id}' in '{df_name}', "
-                f"make sure it is a valid ID"
+                f"make sure it is a valid ID."
             )
             return
 
@@ -357,7 +357,7 @@ class Validator:
         if not self.gene_checkers[organism].is_valid_id(feature_id):
             self.invalid_feature_ids.append(feature_id)
             self.errors.append(
-                f"'{feature_id}' is not a valid feature ID in '{df_name}'"
+                f"'{feature_id}' is not a valid feature ID in '{df_name}'."
             )
 
         return
@@ -376,7 +376,7 @@ class Validator:
 
         if not column.dtype == bool:
             self.errors.append(
-                f"Column '{column_name}' in dataframe '{df_name}' must be boolean, not '{column.dtype.name}'"
+                f"Column '{column_name}' in dataframe '{df_name}' must be boolean, not '{column.dtype.name}'."
             )
 
         if sum(column) > 0:
@@ -424,6 +424,10 @@ class Validator:
         :rtype None
         """
 
+        # error_original_count will count the number of error messages prior to validating the column, this
+        # will be useful in case there's an error prefix to be added to errors found here
+        error_original_count = len(self.errors)
+
         if column_def.get("unique"):
             if column.nunique() != len(column):
                 self.errors.append(
@@ -433,13 +437,13 @@ class Validator:
         if column_def.get("type") == "bool":
             if not column.dtype == bool:
                 self.errors.append(
-                    f"Column '{column_name}' in dataframe '{df_name}' must be boolean, not '{column.dtype.name}'"
+                    f"Column '{column_name}' in dataframe '{df_name}' must be boolean, not '{column.dtype.name}'."
                 )
 
         if column_def.get("type") == "categorical":
             if not column.dtype.name == "category":
                 self.errors.append(
-                    f"Column '{column_name}' in dataframe '{df_name}' must be categorical, not {column.dtype.name}"
+                    f"Column '{column_name}' in dataframe '{df_name}' must be categorical, not {column.dtype.name}."
                 )
 
         if column_def.get("type") == "feature_is_filtered":
@@ -476,6 +480,12 @@ class Validator:
                     term_id, column_name, column_def["curie_constraints"]
                 )
 
+        # Add error suffix to errors found here
+        if "error_message_suffix" in column_def:
+            error_total_count = len(self.errors)
+            for i in range(error_original_count, error_total_count):
+                self.errors[i] = self.errors[i] + " " + column_def["error_message_suffix"]
+
     def _validate_column_dependencies(
         self, df: pd.DataFrame, df_name: str, column_name: str, dependencies: List[dict]
     ) -> pd.Series:
@@ -502,7 +512,7 @@ class Validator:
             except UndefinedVariableError:
                 self.errors.append(
                     f"Checking values with dependencies failed for adata.{df_name}['{column_name}'], "
-                    f"this is likely due to missing dependent column in adata.{df_name}"
+                    f"this is likely due to missing dependent column in adata.{df_name}."
                 )
                 return pd.Series()
 
@@ -535,7 +545,7 @@ class Validator:
             if element_type == "match_obs_columns":
                 if i not in self.adata.obs.columns:
                     self.errors.append(
-                        f"Value '{i}' of list '{list_name}' is not a column in 'adata.obs'"
+                        f"Value '{i}' of list '{list_name}' is not a column in 'adata.obs'."
                     )
 
     def _validate_str_in_dict(self, value, dict_name: str, key: str):
@@ -660,7 +670,7 @@ class Validator:
 
             if key not in dictionary:
                 if "required" in value_def:
-                    self.errors.append(f"'{key}' in '{dict_name}' is not present")
+                    self.errors.append(f"'{key}' in '{dict_name}' is not present.")
                 continue
 
             value = dictionary[key]
@@ -692,7 +702,7 @@ class Validator:
                 if not (isinstance(value, list) or isinstance(value, ndarray)):
                     self.errors.append(
                         f"'{value}' in '{dict_name}['{key}']' is not valid, "
-                        f"it must be a list or numpy array"
+                        f"it must be a list or numpy array."
                     )
                     continue
 
@@ -708,7 +718,7 @@ class Validator:
         :rtype None
         """
 
-        df = _getattr_anndata(self.adata, df_name)
+        df = self.getattr_anndata(self.adata, df_name)
 
         # Validate index if needed
         if "index" in self._get_component_def(df_name):
@@ -798,7 +808,7 @@ class Validator:
         """
 
         if not self.adata.obsm:
-            self.errors.append("No embeddings found in 'adata.obsm'")
+            self.errors.append("No embeddings found in 'adata.obsm'.")
             return
 
         obsm_with_x_prefix = 0
@@ -807,7 +817,7 @@ class Validator:
             if not isinstance(value, ndarray):
                 self.errors.append(
                     f"All embeddings have to be of 'numpy.ndarray' type, "
-                    f"'adata.obsm['{key}']' is {type(value)}')"
+                    f"'adata.obsm['{key}']' is {type(value)}')."
                 )
                 continue
 
@@ -818,13 +828,13 @@ class Validator:
                 if len(value.shape) < 2:
                     self.errors.append(
                         f"All embeddings must have as many rows as cells, and at least two columns."
-                        f"'adata.obsm['{key}']' has shape of '{value.shape}'"
+                        f"'adata.obsm['{key}']' has shape of '{value.shape}'."
                     )
                 else:
                     if value.shape[0] != self.adata.n_obs or value.shape[1] < 2:
                         self.errors.append(
                             f"All embeddings must have as many rows as cells, and at least two columns."
-                            f"'adata.obsm['{key}']' has shape of '{value.shape}'"
+                            f"'adata.obsm['{key}']' has shape of '{value.shape}'."
                         )
 
         if obsm_with_x_prefix == 0:
@@ -951,19 +961,19 @@ class Validator:
             if self.adata.n_vars != self.adata.raw.n_vars:
                 self.errors.append(
                     f"Number of genes in X ({self.adata.n_vars}) is different "
-                    f"than raw.X ({self.adata.raw.n_vars})"
+                    f"than raw.X ({self.adata.raw.n_vars})."
                 )
             else:
                 if not (self.adata.var.index == self.adata.raw.var.index).all():
-                    self.errors.append("Index of 'raw.var' is not identical to index of 'var'")
+                    self.errors.append("Index of 'raw.var' is not identical to index of 'var'.")
             if self.adata.n_obs != self.adata.raw.n_obs:
                 self.errors.append(
                     f"Number of cells in X ({self.adata.n_obs}) is different "
-                    f"than raw.X ({self.adata.raw.n_obs})"
+                    f"than raw.X ({self.adata.raw.n_obs})."
                 )
             else:
                 if not (self.adata.obs_names == self.adata.raw.obs_names).all():
-                    self.errors.append("Cells in X and raw.X are different")
+                    self.errors.append("Cells in X and raw.X are different.")
 
     def _validate_raw(self):
 
@@ -1013,7 +1023,7 @@ class Validator:
             ):
 
                 self.errors.append(
-                    f"Raw data is missing: there is no 'raw.X' and 'X_normalization' is not 'none'"
+                    f"Raw data is missing: there is no 'raw.X' and 'X_normalization' is not 'none'."
                 )
 
             # If raw data is in X but X_normalization is NOT none raise an error
@@ -1059,7 +1069,7 @@ class Validator:
         for label_def in add_labels_def:
             reserved_name = label_def["to_column"]
 
-            if reserved_name in _getattr_anndata(self.adata, component):
+            if reserved_name in self.getattr_anndata(self.adata, component):
                 self.errors.append(
                     f"Add labels error: Column '{reserved_name}' is a reserved column name "
                     f"of '{component}'. Remove it from h5ad and try again."
@@ -1081,15 +1091,15 @@ class Validator:
                 continue
 
             # Skip if component does not exist
-            if _getattr_anndata(self.adata, component) is None:
+            if self.getattr_anndata(self.adata, component) is None:
                 continue
 
             # Do it for columns that are forbidden
             if "forbidden_columns" in component_def:
                 for column in component_def["forbidden_columns"]:
-                    if column in _getattr_anndata(self.adata, component):
+                    if column in self.getattr_anndata(self.adata, component):
                         self.errors.append(
-                            f"Column '{column}' must not be present in '{component}'"
+                            f"Column '{column}' must not be present in '{component}'."
                         )
 
             # Do it for columns that map to columns
@@ -1133,10 +1143,10 @@ class Validator:
         for component, component_def in self.schema_def["components"].items():
 
             # Skip if component does not exist: only useful for adata.raw.var
-            if _getattr_anndata(self.adata, component) is None:
+            if self.getattr_anndata(self.adata, component) is None:
                 if "required" in component_def:
                     self.errors.append(
-                        f"'{component}' is missing from adata and it's required"
+                        f"'{component}' is missing from adata and it's required."
                     )
                 continue
 
@@ -1198,7 +1208,7 @@ class Validator:
         return self.is_valid
 
 
-class H5adLabelAppender:
+class AnnDataLabelAppender:
     """
     From valid h5ad, handles writing a new h5ad file with ontology/gene labels added
     to adata.obs and adata.var respectively as indicated in the schema definition
@@ -1256,10 +1266,14 @@ class H5adLabelAppender:
                     raise ValueError("Inconsistent types, impossible to merge")
 
                 if isinstance(value_2, str):
+                    if key == "error_message_suffix":
+                        merged_dict[key] = value_1 + " " + value_2
+                        continue
                     if not value_2 == value_1:
                         raise ValueError(
                             f"Strings types in dependencies cannot be different, {value_1} and {value_2}"
                         )
+
                 elif isinstance(value_2, list):
                     merged_dict[key] = list(set(value_1 + value_2))
                 elif isinstance(value_2, dict):
@@ -1409,7 +1423,7 @@ class H5adLabelAppender:
         """
 
         # Set variables for readability
-        current_df = _getattr_anndata(self.adata, component)
+        current_df = Validator.getattr_anndata(self.adata, component)
 
         if column == "index":
             original_column = pd.Series(current_df.index)
@@ -1516,7 +1530,7 @@ class H5adLabelAppender:
         try:
             self.adata.write_h5ad(add_labels_file, compression="gzip")
         except Exception as e:
-            self.errors.append(f"Writing h5ad was unsuccessful, got exception '{e}'")
+            self.errors.append(f"Writing h5ad was unsuccessful, got exception '{e}'.")
 
         # Print errors if any
         if self.errors:
@@ -1548,7 +1562,7 @@ def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = N
         return False
 
     if add_labels_file:
-        writer = H5adLabelAppender(validator)
+        writer = AnnDataLabelAppender(validator)
         writer.write_labels(add_labels_file)
 
         return validator.is_valid & writer.was_writing_successful

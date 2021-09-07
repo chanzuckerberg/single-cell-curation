@@ -95,7 +95,7 @@ class TestAddLabelFunctions(unittest.TestCase):
         validator = validate.Validator()
         validator.adata = self.test_adata
         validator.validate_adata()
-        self.writer = validate.H5adLabelAppender(validator)
+        self.writer = validate.AnnDataLabelAppender(validator)
 
     def test_get_dictionary_mapping_feature_id(self):
 
