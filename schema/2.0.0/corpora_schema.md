@@ -101,9 +101,9 @@ The following ontology dependencies are *pinned* for this version of the schema.
 | [Cell Ontology] | CL | [cl.owl] : [2021-08-10]|
 | [Experimental Factor Ontology] | EFO | [efo.owl] : [2021-08-16 EFO 3.33.0]
 | [Human Ancestry Ontology] | HANCESTRO |[hancestro.owl] : [2021-01-04 (2.5)] |
-| [Human Developmental Stages] |  HsapDv | [hsapdv.owl] : 2020-03-10 (1.2) |
+| [Human Developmental Stages] |  HsapDv | [hsapdv.owl] : 2020-03-10 |
 | [Mondo Disease Ontology] | MONDO |[mondo.owl] : [2021-08-11] |
-| [Mouse Developmental Stages]| MmusDv |  [mmusdv.owl] : 2020-03-10 (1.2) |
+| [Mouse Developmental Stages]| MmusDv |  [mmusdv.owl] : 2020-03-10 |
 | [NCBI organismal classification] |  NCBITaxon | [ncbitaxon.owl] : [2021-06-10] |
 | [Phenotype And Trait Ontology] | PATO | [pato.owl] : [2021-08-06] |  |
 | [Uberon multi-species anatomy ontology] |  UBERON | [uberon.owl] : [2021-07-27] |
