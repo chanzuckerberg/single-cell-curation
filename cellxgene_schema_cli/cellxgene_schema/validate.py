@@ -1154,6 +1154,9 @@ class Validator:
         # existence of adata.obs["assay_ontology_term_id"] and adata.obs["X_normalization"]
         if not self.errors and "raw" in self.schema_def:
             self._validate_raw()
+        else:
+            self.warnings.append("Validation of raw layer was not performed due to current errors, try again after"
+                                 "fixing current errors.")
 
     def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None) -> bool:
 
