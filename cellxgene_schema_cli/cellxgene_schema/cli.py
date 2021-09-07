@@ -42,5 +42,5 @@ def schema_validate(h5ad_file, add_labels_file):
 
 schema_cli.add_command(schema_validate)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     schema_cli()

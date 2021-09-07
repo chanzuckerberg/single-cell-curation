@@ -115,7 +115,7 @@ class TestExpressionMatrix(unittest.TestCase):
         # The assignment above makes X to not be raw: self.validator.adata.uns["X_normalization"] = "CPM"
         # The following line makes it to be scATAC-seq data (EFO:0010891)
         # Missing raw data in atac-seq data is allowed, thus the following should not return an error message
-        self.validator.errors=[]
+        self.validator.errors = []
         self.validator.adata.obs["assay_ontology_term_id"] = "EFO:0010891"
         self.validator.validate_adata()
         self.assertEqual(self.validator.errors, [])
@@ -268,8 +268,8 @@ class TestObs(unittest.TestCase):
             [
                 "ERROR: 'EFO:0010183 sci-plex' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'.",
                 "ERROR: 'EFO:0010183 sci-plex' in 'assay_ontology_term_id' is not a child term id of "
-                "'[['EFO:0002772', 'EFO:0010183']]'."
-            ]
+                "'[['EFO:0002772', 'EFO:0010183']]'.",
+            ],
         )
 
     def test_cell_type_ontology_term_id(self):
@@ -375,7 +375,7 @@ class TestObs(unittest.TestCase):
                 "'organism_ontology_term_id' is not 'NCBITaxon:10090' "
                 "nor 'NCBITaxon:9606', 'development_stage_ontology_term_id' MUST be a child term id of "
                 "'UBERON:0000105' excluding 'UBERON:0000071', or unknown.",
-            ]
+            ],
         )
 
     def test_disease_ontology_term_id(self):
@@ -407,7 +407,6 @@ class TestObs(unittest.TestCase):
                 "Only 'PATO:0000461' is allowed for 'PATO' term ids."
             ],
         )
-
 
     def test_ethnicity_ontology_term_id(self):
 
@@ -612,7 +611,9 @@ class TestVar(unittest.TestCase):
                 self.validator.errors = []
 
                 # Duplicate 1st row in var and assign it to 2nd
-                component = validate.Validator.getattr_anndata(self.validator.adata, component_name)
+                component = validate.Validator.getattr_anndata(
+                    self.validator.adata, component_name
+                )
                 new_index = list(component.index)
                 new_index[1] = new_index[0]
                 component.set_index(pd.Index(new_index), inplace=True)
@@ -621,7 +622,9 @@ class TestVar(unittest.TestCase):
                 self.validator.validate_adata()
                 self.assertEqual(
                     self.validator.errors,
-                    [f"ERROR: Column 'index' in dataframe '{component_name}' is not unique."],
+                    [
+                        f"ERROR: Column 'index' in dataframe '{component_name}' is not unique."
+                    ],
                 )
 
     def test_column_presence(self):
@@ -630,10 +633,7 @@ class TestVar(unittest.TestCase):
         feature_is_filtered must not be in raw.var, and it's only checked in var
         """
 
-        columns = [
-            "feature_is_filtered",
-            "feature_biotype"
-        ]
+        columns = ["feature_is_filtered", "feature_biotype"]
 
         for component_name in ["var", "raw.var"]:
             for column in columns:
@@ -645,13 +645,18 @@ class TestVar(unittest.TestCase):
                     self.validator.errors = []
                     self.validator.adata = examples.adata.copy()
 
-                    component = validate.Validator.getattr_anndata(self.validator.adata, component_name)
+                    component = validate.Validator.getattr_anndata(
+                        self.validator.adata, component_name
+                    )
                     component.drop(column, axis=1, inplace=True)
 
                     self.validator.validate_adata()
                     self.assertEqual(
                         self.validator.errors,
-                        [f"ERROR: Dataframe '{component_name}' is missing " f"column '{column}'."],
+                        [
+                            f"ERROR: Dataframe '{component_name}' is missing "
+                            f"column '{column}'."
+                        ],
                     )
 
     def test_feature_is_filtered(self):
@@ -713,7 +718,9 @@ class TestVar(unittest.TestCase):
                 self.validator.adata = examples.adata.copy()
                 self.validator.errors = []
 
-                component = validate.Validator.getattr_anndata(self.validator.adata, component_name)
+                component = validate.Validator.getattr_anndata(
+                    self.validator.adata, component_name
+                )
 
                 new_index = list(component.index)
                 new_index[0] = "ENSEBML_NOGENE"
@@ -745,7 +752,9 @@ class TestVar(unittest.TestCase):
                 self.validator.adata = examples.adata.copy()
                 self.validator.errors = []
 
-                component = validate.Validator.getattr_anndata(self.validator.adata, component_name)
+                component = validate.Validator.getattr_anndata(
+                    self.validator.adata, component_name
+                )
 
                 new_index = list(component.index)
                 new_index[0] = "ENSG000"
@@ -754,8 +763,10 @@ class TestVar(unittest.TestCase):
 
                 self.validator.validate_adata()
                 self.assertEqual(
-                   self.validator.errors,
-                   [f"ERROR: 'ENSG000' is not a valid feature ID in '{component_name}'."],
+                    self.validator.errors,
+                    [
+                        f"ERROR: 'ENSG000' is not a valid feature ID in '{component_name}'."
+                    ],
                 )
 
     def test_feature_id_non_existent_ercc(self):
@@ -774,7 +785,9 @@ class TestVar(unittest.TestCase):
                 self.validator.adata = examples.adata.copy()
                 self.validator.errors = []
 
-                component = validate.Validator.getattr_anndata(self.validator.adata, component_name)
+                component = validate.Validator.getattr_anndata(
+                    self.validator.adata, component_name
+                )
 
                 new_index = list(component.index)
                 new_index[0] = "ERCC-000000"
@@ -784,7 +797,9 @@ class TestVar(unittest.TestCase):
                 self.validator.validate_adata()
                 self.assertEqual(
                     self.validator.errors,
-                    [f"ERROR: 'ERCC-000000' is not a valid feature ID in '{component_name}'."],
+                    [
+                        f"ERROR: 'ERCC-000000' is not a valid feature ID in '{component_name}'."
+                    ],
                 )
 
 
@@ -955,7 +970,9 @@ class TestUns(unittest.TestCase):
         """
 
         # Check valid case of numpy array which is interchangeable with lists
-        self.validator.adata.uns["batch_condition"] = numpy.array(self.validator.adata.uns["batch_condition"])
+        self.validator.adata.uns["batch_condition"] = numpy.array(
+            self.validator.adata.uns["batch_condition"]
+        )
         self.validator.validate_adata()
         self.assertEqual(self.validator.errors, [])
 
@@ -1028,7 +1045,7 @@ class TestUns(unittest.TestCase):
         # Check valid case of "count" which is not included in valid object
         self.validator.adata.uns["X_approximate_distribution"] = "count"
         self.validator.validate_adata()
-        self.assertEqual(self.validator.errors,[])
+        self.assertEqual(self.validator.errors, [])
 
         # Invalid type: list
         self.validator.adata.uns["X_approximate_distribution"] = ["count"]

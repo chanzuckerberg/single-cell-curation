@@ -484,7 +484,9 @@ class Validator:
         if "error_message_suffix" in column_def:
             error_total_count = len(self.errors)
             for i in range(error_original_count, error_total_count):
-                self.errors[i] = self.errors[i] + " " + column_def["error_message_suffix"]
+                self.errors[i] = (
+                    self.errors[i] + " " + column_def["error_message_suffix"]
+                )
 
     def _validate_column_dependencies(
         self, df: pd.DataFrame, df_name: str, column_name: str, dependencies: List[dict]
@@ -965,7 +967,9 @@ class Validator:
                 )
             else:
                 if not (self.adata.var.index == self.adata.raw.var.index).all():
-                    self.errors.append("Index of 'raw.var' is not identical to index of 'var'.")
+                    self.errors.append(
+                        "Index of 'raw.var' is not identical to index of 'var'."
+                    )
             if self.adata.n_obs != self.adata.raw.n_obs:
                 self.errors.append(
                     f"Number of cells in X ({self.adata.n_obs}) is different "
@@ -1017,13 +1021,13 @@ class Validator:
 
             # If raw data is missing: no "raw.X", and "X_normalization" is not "none"
             if (
-                    not self._is_raw()
-                    and self._get_raw_x_loc() == "X"
-                    and normalization != "none"
+                not self._is_raw()
+                and self._get_raw_x_loc() == "X"
+                and normalization != "none"
             ):
 
                 self.errors.append(
-                    f"Raw data is missing: there is no 'raw.X' and 'X_normalization' is not 'none'."
+                    "Raw data is missing: there is no 'raw.X' and 'X_normalization' is not 'none'."
                 )
 
             # If raw data is in X but X_normalization is NOT none raise an error
@@ -1041,14 +1045,14 @@ class Validator:
             # If raw data is in X and there is nothing in raw.X (i.e. normalized values are not provided), then
             # add a warning because normalized data for RNA data is STRONGLY RECOMMENDED
             if (
-                    self._is_raw()
-                    and self._get_raw_x_loc() == "X"
-                    and normalization == "none"
+                self._is_raw()
+                and self._get_raw_x_loc() == "X"
+                and normalization == "none"
             ):
 
                 self.warnings.append(
-                    f"Only raw data was found, i.e. there is no 'raw.X' and 'uns['X_normalization']' is 'none'. "
-                    f"It is STRONGLY RECOMMENDED that 'final' (normalized) data is provided."
+                    "Only raw data was found, i.e. there is no 'raw.X' and 'uns['X_normalization']' is 'none'. "
+                    "It is STRONGLY RECOMMENDED that 'final' (normalized) data is provided."
                 )
 
     def _check_single_column_availability(
@@ -1165,8 +1169,10 @@ class Validator:
         if not self.errors and "raw" in self.schema_def:
             self._validate_raw()
         else:
-            self.warnings.append("Validation of raw layer was not performed due to current errors, try again after "
-                                 "fixing current errors.")
+            self.warnings.append(
+                "Validation of raw layer was not performed due to current errors, try again after "
+                "fixing current errors."
+            )
 
     def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None) -> bool:
 
@@ -1568,4 +1574,3 @@ def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = N
         return validator.is_valid & writer.was_writing_successful
 
     return True
-

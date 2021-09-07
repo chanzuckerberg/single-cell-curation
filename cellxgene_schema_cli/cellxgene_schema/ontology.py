@@ -14,7 +14,7 @@ class SupportedOrganisms(enum.Enum):
 
 
 def get_organism_from_feature_id(
-        feature_id: str,
+    feature_id: str,
 ) -> Union[SupportedOrganisms, None]:
 
     """
