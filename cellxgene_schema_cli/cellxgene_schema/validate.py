@@ -1155,7 +1155,7 @@ class Validator:
         if not self.errors and "raw" in self.schema_def:
             self._validate_raw()
         else:
-            self.warnings.append("Validation of raw layer was not performed due to current errors, try again after"
+            self.warnings.append("Validation of raw layer was not performed due to current errors, try again after "
                                  "fixing current errors.")
 
     def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None) -> bool:
