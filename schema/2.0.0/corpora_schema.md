@@ -101,9 +101,9 @@ The following ontology dependencies are *pinned* for this version of the schema.
 | [Cell Ontology] | CL | [cl.owl] : [2021-08-10]|
 | [Experimental Factor Ontology] | EFO | [efo.owl] : [2021-08-16 EFO 3.33.0]
 | [Human Ancestry Ontology] | HANCESTRO |[hancestro.owl] : [2021-01-04 (2.5)] |
-| [Human Developmental Stages] |  HsapDv | [hsapdv.owl] : [2016-07-06 (0.1)] |
+| [Human Developmental Stages] |  HsapDv | [hsapdv.owl] : 2020-03-10 |
 | [Mondo Disease Ontology] | MONDO |[mondo.owl] : [2021-08-11] |
-| [Mouse Developmental Stages]| MmusDv |  [mmusdv.owl] : [2016-07-06 (0.1)] |
+| [Mouse Developmental Stages]| MmusDv |  [mmusdv.owl] : 2020-03-10 |
 | [NCBI organismal classification] |  NCBITaxon | [ncbitaxon.owl] : [2021-06-10] |
 | [Phenotype And Trait Ontology] | PATO | [pato.owl] : [2021-08-06] |  |
 | [Uberon multi-species anatomy ontology] |  UBERON | [uberon.owl] : [2021-07-27] |
@@ -121,16 +121,15 @@ The following ontology dependencies are *pinned* for this version of the schema.
 [2021-01-04 (2.5)]: https://github.com/EBISPOT/ancestro/releases/tag/2.5
 [hancestro.owl]: https://github.com/EBISPOT/ancestro/blob/2.5/hancestro.owl
 
-[Human Developmental Stages]: http://www.obofoundry.org/ontology/hsapdv.html
-[hsapdv.owl]: https://github.com/obophenotype/developmental-stage-ontologies/blob/0.1/src/hsapdv/hsapdv.owl
-[2016-07-06 (0.1)]: https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/0.1
+[Human Developmental Stages]: http://obofoundry.org/ontology/hsapdv.html
+[hsapdv.owl]: http://purl.obolibrary.org/obo/hsapdv.owl
 
 [Mondo Disease Ontology]: http://obofoundry.org/ontology/mondo.html
 [2021-08-11]: https://github.com/monarch-initiative/mondo/releases/tag/v2021-08-11
 [mondo.owl]: https://github.com/monarch-initiative/mondo/releases/download/v2021-08-11/mondo.owl
 
 [Mouse Developmental Stages]: http://obofoundry.org/ontology/mmusdv.html
-[mmusdv.owl]: https://github.com/obophenotype/developmental-stage-ontologies/blob/0.1/src/mmusdv/mmusdv.owl
+[mmusdv.owl]: http://purl.obolibrary.org/obo/mmusdv.owl
 
 [NCBI organismal classification]: http://obofoundry.org/ontology/ncbitaxon.html
 [2021-06-10]: https://github.com/obophenotype/ncbitaxon/releases/tag/v2021-06-10
