@@ -32,7 +32,7 @@ make unit-test
 
 ## Quick start
 
-The CLI validates an [AnnData file](https://anndata.readthedocs.io/en/latest/) (\*.h5ad) based on the cellxgene schema specifications
+The CLI validates an [AnnData file](https://anndata.readthedocs.io/en/latest/) (\*.h5ad) based on the cellxgene schema specifications.
 
 You can run the validation by doing the following:
 
@@ -42,7 +42,7 @@ cellxgene-schema validate input.h5ad
 
 If the validation is succesful there will be a zero exit status, otherwise there will be error messages indicating why validation was unsuccesful  along with a non-zero exit status.
 
-A detailed manual for the CLI and the config yaml file can be found [here](docs/schema_guide.md).
+A detailed manual for the CLI can be found [here](docs/schema_guide.md).
 
 ## Datasets curated by cellxgene’s curation team
 
