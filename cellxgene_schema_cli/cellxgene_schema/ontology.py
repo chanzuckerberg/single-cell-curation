@@ -2,15 +2,40 @@ import os
 import gzip
 import json
 import enum
-from typing import List, Set
+from typing import List, Set, Union
 from . import env
 
 
 class SupportedOrganisms(enum.Enum):
-    HOMO_SAPIENS = "HomoSapiens"
-    MUS_MUSCULUS = "MusMusculus"
-    SARS_COV_2 = "SarsCov2"
-    ERCC = "Ercc"
+    HOMO_SAPIENS = "NCBITaxon:9606"
+    MUS_MUSCULUS = "NCBITaxon:10090"
+    SARS_COV_2 = "NCBITaxon:2697049"
+    ERCC = "NCBITaxon:32630"
+
+
+def get_organism_from_feature_id(
+    feature_id: str,
+) -> Union[SupportedOrganisms, None]:
+
+    """
+    Infers the organism of a feature id based on the prefix of a feature id, e.g. ENSG means Homo sapiens
+
+    :param str feature_id: the feature id
+
+    :rtype Union[ontology.SypportedOrganisms, None]
+    :return: the organism the feature id is from
+    """
+
+    if feature_id.startswith("ENSG") or feature_id.startswith("ENST"):
+        return SupportedOrganisms.HOMO_SAPIENS
+    elif feature_id.startswith("ENSMUS"):
+        return SupportedOrganisms.MUS_MUSCULUS
+    elif feature_id.startswith("ENSSAS"):
+        return SupportedOrganisms.SARS_COV_2
+    elif feature_id.startswith("ERCC-"):
+        return SupportedOrganisms.ERCC
+    else:
+        return None
 
 
 class GeneChecker:
@@ -144,6 +169,21 @@ class OntologyChecker:
         """
 
         return ontology in self.ontology_dict
+
+    def is_term_id_deprecated(self, ontology: str, term_id: str) -> bool:
+        """
+        Returns True if the id has been deprecated (obsolete) in the ontology
+
+        :param str ontology: the ontology id
+        :param str term_id: the ontology term id
+
+        :rtype bool
+        :return True if id has been deprecated
+        """
+
+        self.assert_term_id(ontology, term_id)
+
+        return self.ontology_dict[ontology][term_id]["deprecated"]
 
     def is_valid_term_id(self, ontology: str, term_id: str) -> bool:
         """

@@ -48,6 +48,13 @@ def _parse_gtf(gtf_path: str, output_file: str):
                     )
                     target_features[i] = current_features[feature]
 
+                # Add gene version if available from gene id
+                if feature in ["gene_id", "transcript_id"]:
+                    if "." in target_features[i]:
+                        (feature_id, feature_version) = target_features[i].split(".")
+                        target_features[i] = feature_id
+                        current_features[feature.replace("id", "version")] = feature_version
+
             output_to_print += ",".join(target_features) + "\n"
 
     with gzip.open(output_file, "wt") as output:
@@ -88,7 +95,7 @@ def _process_ercc(ercc_path: str, output_file: str):
         lines = ercc.readlines()[1:]
         for line in lines:
             ercc_id = line.rstrip().split("\t")[0]
-            output_to_print += ",".join([ercc_id, ercc_id + " spike-in control", "1"]) + "\n"
+            output_to_print += ",".join([ercc_id, ercc_id + " (spike-in control)", "1"]) + "\n"
 
     with gzip.open(output_file, "wt") as output:
         output.write(output_to_print)

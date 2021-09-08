@@ -11,31 +11,15 @@ gene-processing: download-gtf-10x-human download-gtf-10x-mouse download-gtf-covi
 
 .PHONY: download-gtf-10x-human
 download-gtf-10x-human:
-	$(eval url="https://cf.10xgenomics.com/supp/cell-exp/refdata-gex-GRCh38-2020-A.tar.gz")
-	$(eval base_dir="refdata-gex-GRCh38-2020-A")
-	$(eval output_file="homo_sapiens.gtf.gz")
-	$(MAKE) url=$(url) base_dir=$(base_dir) output_file=$(output_file) download-gtf-10x
+	mkdir -p temp
+	echo Downloading human GTF
+	curl -o ./temp/homo_sapiens.gtf.gz http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/gencode.v32.primary_assembly.annotation.gtf.gz
 
 .PHONY: download-gtf-10x-mouse
 download-gtf-10x-mouse:
-	$(eval url="https://cf.10xgenomics.com/supp/cell-exp/refdata-gex-mm10-2020-A.tar.gz")
-	$(eval base_dir="refdata-gex-mm10-2020-A")
-	$(eval output_file="mus_musculus.gtf.gz")
-	$(MAKE) url=$(url) base_dir=$(base_dir) output_file=$(output_file) download-gtf-10x
-
-.PHONY: download-gtf-10x
-download-gtf-10x:
 	mkdir -p temp
-
-	## Download data and copies data
-	curl -o temp/10Xdata.tar.gz ${url}
-	tar -xvzf temp/10Xdata.tar.gz -C temp
-
-	## Rename base dir because it changes from human to mouse
-	mv temp/${base_dir} temp/10Xdata
-	gzip temp/10Xdata/genes/genes.gtf
-	cp temp/10Xdata/genes/genes.gtf.gz temp/${output_file}
-	rm -r temp/10Xdata
+	echo Downloading human GTF
+	curl -o ./temp/mus_musculus.gtf.gz http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M23/gencode.vM23.primary_assembly.annotation.gtf.gz
 
 .PHONY: download-gtf-covid19
 download-gtf-covid19:

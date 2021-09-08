@@ -14,7 +14,7 @@ setup(
     install_requires=requirements,
     packages=["cellxgene_schema"],
     package_dir={"cellxgene_schema": "cellxgene_schema"},
-    package_data={"cellxgene_schema": ["ontology_files/*gz"]},
+    package_data={"cellxgene_schema": ["ontology_files/*gz", "schema_definitions/*yaml"]},
     include_package_data=True,
     zip_safe=False,
     classifiers=[
