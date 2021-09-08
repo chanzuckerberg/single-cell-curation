@@ -65,9 +65,19 @@ class GeneChecker:
         self.species = species
         self.gene_dict = {}
         with gzip.open(self.GENE_FILES[species], "rt") as genes:
+            gene_labels = set()
             for gene in genes:
+
                 gene = gene.rstrip().split(",")
-                self.gene_dict[gene[0]] = gene[1]
+                gene_id = gene[0]
+                gene_label = gene[1]
+
+                # Makes labels unique
+                if gene_label in gene_labels:
+                    self.gene_dict[gene_id] = gene_label + "_" + gene_id
+                else:
+                    self.gene_dict[gene_id] = gene_label
+                    gene_labels.add(gene_label)
 
     def is_valid_id(self, gene_id: str) -> bool:
         """
