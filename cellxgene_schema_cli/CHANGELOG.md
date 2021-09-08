@@ -1,27 +1,31 @@
 # Changelog
-All notable changes to the python package `cellxgene-schema` will be documented in this file.
-
+All notable changes to the python package `cellxgene-schema` are documented in this file.
+​
 The format of this changelog is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-
+​
+​
 ## [1.0.0] - 2021-09-09
+
 ### Added
-- All MUSTs in schema specification are validated, if any is violated a specific error is shown. Refer to the [schema specification](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/2.0.0/corpora_schema.md) for specific changes.
-- Some SHOULDs in the schema specification are validated, if any is violated a specific warning is shown. Refer to the [schema specification](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/2.0.0/corpora_schema.md) for specific changes.
-- Reference ontology files  (`./cellxgene_schema/ontology_files/`).
-- Reference feature files (`./cellxgene_schema/ontology_files/`).
-- Downloader and parser for ontology and feature files
-- `cellxgene-schema validate --add-labels` (`./scripts/`).
-- Tests that mirror the schema specification.
 
-
+- All **MUST** requirements in [schema version 2.0.0](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/2.0.0/corpora_schema.md) are strictly enforced. For failures, an error message is displayed and validation fails. 
+​
+- Some **STRONGLY RECOMMENDED** requirements in the schema version 2.0.0 are checked. Warnings are displayed when recommended best practices are not observed.
+​
+- Pinned versions of ontology and feature references (see `./cellxgene_schema/ontology_files/`).
+- Downloader and parser for ontology and feature references.
+- Option to apply human-readable labels for ontology and feature references: `cellxgene-schema validate --add-labels` (see `./scripts/`).
+- Tests that mirror the requirements in schema version 2.0.0.
+​
+​
 ### Changed
-- All code related to `cellxgene-schema validate` was re-written.
-- `cellxgene-schema validte` validates schema version 2.0.0.
-- Ontology validation and label retrieval are done using pinned reference files instead of EBI's REST API (`./cellxgene_schema/ontology.py`).
-- Gene/feature validation and label retrieval are done through pinned reference files (`./cellxgene_schema/ontology.py`).
 
+- `cellxgene-schema validate` validates schema version 2.0.0. The implementation is *from scratch*. 
+- Ontology validation and label retrieval depend on downloaded references instead of the EBI Ontology Service (see `./cellxgene_schema/ontology.py`).
+- Gene/feature validation and label retrieval depend on downloaded references (see `./cellxgene_schema/ontology.py`).
+​
 ### Removed
-- Subcommand `cellxgene-schema apply` was deprecated.
-- Schema versions 1.x.x are no longer supported.
+
+- Subcommand `cellxgene-schema apply`.
+- Support for schema versions 1.x.x.
