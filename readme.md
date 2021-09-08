@@ -9,7 +9,7 @@ For information/issues about cellxgene and its portal please refer to:
 
 ## Installation
 
-The central tool provided here is a CLI for augmenting datasets with the [cellxgene schema](cellxgene_schema_cli/cellxgene_schema/schema_definitions/2_0_0.yaml) so they can be hosted at [cellxgene's portal](https://cellxgene.cziscience.com/). 
+The central tool provided here is a CLI that validaties datasets follow the [cellxgene schema](single-cell-curation/schema/2.0.0/corpora_schema.md) so they can be hosted at [cellxgene's portal](https://cellxgene.cziscience.com/). 
 
 It is available through pip:
 
@@ -23,7 +23,7 @@ It can also be installed from the source by cloning this repository and running:
 make install 
 ```
 
-And you can run the test with:
+And you can run the tests with:
 
 ```
 make unit-test
@@ -32,45 +32,15 @@ make unit-test
 
 ## Quick start
 
-The CLI augments  an [AnnData file](https://anndata.readthedocs.io/en/latest/) (\*.h5ad) with cellxgene schema required ontology terms using the logic defined in a yaml config file. This yaml file should indicate the values for the schema slots or mappings between the original values and the corresponding schema slots.
+The CLI validates an [AnnData file](https://anndata.readthedocs.io/en/latest/) (\*.h5ad) based on the cellxgene schema specifications
 
-An example of a yaml config file looks like this:
-
-```
-obs:
-  assay_ontology_term_id: EFO:0010550
-  ethnicity_ontology_term_id: unknown
-  sex: male
-  tissue_ontology_term_id: UBERON:0000970
-  cell_type_ontology_term_id:
-    sub_cluster_name:
-      Adrenocortical cells-1: CL:0002097
-      Photoreceptor cells-1: CL:0000210
-uns:
-  version:
-    corpora_schema_version: 1.1.0
-  organism: Homo sapiens
-  organism_ontology_term_id: NCBITaxon:9606
-  layer_descriptions:
-    X: log1p
-   raw.X: raw
-  title: Survey of human embryonic development
-fixup_gene_symbols:
-   X: log1p
-   raw.X: raw
-```
-
-You can use the config file to augment a dataset with  the schema using:
+You can run the validation by doing the following:
 
 ```
-cellxgene-schema apply --source-h5ad original.h5ad --remix-config config.yml --output-filename remixed.h5ad
+cellxgene-schema validate input.h5ad
 ```
 
-And then verify that the schema was properly added with:
-
-```
-cellxgene-schema validate remixed.h5ad
-```
+If the validation is succesful there will be a zero exit status, otherwise there will be error messages indicating why validation was unsuccesful  along with a non-zero exit status.
 
 A detailed manual for the CLI and the config yaml file can be found [here](docs/schema_guide.md).
 
