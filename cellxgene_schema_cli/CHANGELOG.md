@@ -5,7 +5,7 @@ The format of this changelog is based on [Keep a Changelog](https://keepachangel
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [1.0.0] - 2020-10-09
+## [1.0.0] - 2021-09-09
 ### Added
 - All MUSTs in schema specification are validated, if any is violated a specific error is shown. Refer to the [schema specification](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/2.0.0/corpora_schema.md) for specifc changes.
 - Some SHOULDs in the schema specification are validated, if any is violated a specific warning is shown. Refer to the [schema specification](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/2.0.0/corpora_schema.md) for specifc changes.
