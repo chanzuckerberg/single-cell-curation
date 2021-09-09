@@ -29,20 +29,31 @@ And you can run the tests with:
 make unit-test
 ```
 
-
-## Quick start
+## Usage
 
 The CLI validates an [AnnData file](https://anndata.readthedocs.io/en/latest/) (\*.h5ad) based on the cellxgene schema specifications.
 
-You can run the validation by doing the following:
+A data contributor can run the validation by doing the following:
 
 ```
 cellxgene-schema validate input.h5ad
 ```
 
-If the validation is succesful there will be a zero exit status, otherwise there will be error messages indicating why validation was unsuccesful  along with a non-zero exit status.
+If the validation succeeds, the command returns a zero exit code; otherwise, it returns a non-zero exit code and prints validation failure messages.
 
-A detailed manual for the CLI can be found [here](docs/schema_guide.md).
+
+---
+
+The data portal runs the following in the backend:
+
+```
+cellxgene-schema validate --add-labels output.h5ad input.h5ad
+```
+
+This execution validates the dataset as above AND adds the human-readable labels for the ontology and gene IDs as defined in the schema. If the validation is successful, a new AnnData file (output.h5ad) is written to disk with the labels appended.
+
+This option SHOULD NOT be used by data contributors.
+
 
 ## Datasets curated by cellxgene’s curation team
 
