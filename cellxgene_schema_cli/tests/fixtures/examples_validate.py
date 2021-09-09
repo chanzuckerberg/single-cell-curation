@@ -133,7 +133,7 @@ var_expected = pd.DataFrame(
         ["spike-in", False, "ERCC-00002 (spike-in control)", "NCBITaxon:32630"],
         ["gene", False, "MACF1", "NCBITaxon:9606"],
         ["gene", False, "Trp53", "NCBITaxon:10090"],
-        ["gene", False, "S", "NCBITaxon:2697049"],
+        ["gene", False, "S_ENSSASG00005000004", "NCBITaxon:2697049"],
     ],
     index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"],
     columns=[
