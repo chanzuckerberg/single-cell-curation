@@ -1,5 +1,5 @@
 
-# Single Cell Matrix Schema
+# Schema
 
 Contact: acarr@chanzuckerberg.com
 
