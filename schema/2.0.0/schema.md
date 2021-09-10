@@ -1,5 +1,5 @@
 
-# cellxgene Data Integration Schema
+# Schema
 
 Contact: acarr@chanzuckerberg.com
 
@@ -40,7 +40,7 @@ This document is organized by:
 
 * **Organisms**. Data MUST be from a Metazoan organism or SARS-COV-2 and defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the pinned Human and Mouse gene annotations.
 
-* **Reserved Names**. The names of the metadata keys specified by the cellxgene schema are reserved and MUST be unique. For example, duplicate `"feature_biotype"` keys in AnnData `var` are not allowed.
+* **Reserved Names**. The names of the metadata keys specified by the schema are reserved and MUST be unique. For example, duplicate `"feature_biotype"` keys in AnnData `var` are not allowed.
 
 * **Redundant Metadata**. It is STRONGLY RECOMMENDED to avoid multiple metadata fields containing identical or similar information.
 
@@ -69,7 +69,7 @@ visualization in cellxgene Explorer be included. So that cellxgene's data can be
 *   Any genes that publishers wish to filter from the final matrix MAY have their values replaced by zeros and MUST be flagged in the column [`feature_is_filtered`](#feature_is_filtered) of [`var`](#var-and-rawvar-gene-metadata), which will mask them from exploration.
 *   Additional layers provided at author discretion MAY be stored using author-selected keys, but MUST have the same cells and genes as other layers. It is STRONGLY RECOMMENDED that these layers have names that accurately summarize what the numbers in the layer represent (e.g. `"counts_per_million"`, `"SCTransform_normalized"`, or `"RNA_velocity_unspliced"`).
 
-The following table describes the matrix data and layers requirements that are **assay-specific**. If an entry in the table is empty, the cellxgene schema does not have any other requirements on data in those layers beyond the ones listed above.
+The following table describes the matrix data and layers requirements that are **assay-specific**. If an entry in the table is empty, the schema does not have any other requirements on data in those layers beyond the ones listed above.
 
 | Assay | "raw" required? | "raw" location | "final" required? | "final" location |
 |-|-|-|-|-|
