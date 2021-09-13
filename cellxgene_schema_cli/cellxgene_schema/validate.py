@@ -510,7 +510,7 @@ class Validator:
 
         for dependency_def in dependencies:
             try:
-                column = getattr(df.query(dependency_def["rule"]), column_name)
+                column = getattr(df.query(dependency_def["rule"], engine="python"), column_name)
             except UndefinedVariableError:
                 self.errors.append(
                     f"Checking values with dependencies failed for adata.{df_name}['{column_name}'], "
@@ -524,7 +524,7 @@ class Validator:
 
         # Set column with the data that's left
         all_rules = " | ".join(all_rules)
-        column = getattr(df.query("not (" + all_rules + " )"), column_name)
+        column = getattr(df.query("not (" + all_rules + " )", engine="python"), column_name)
 
         return column
 
@@ -721,6 +721,7 @@ class Validator:
         """
 
         df = self.getattr_anndata(self.adata, df_name)
+        df_definition = self._get_component_def(df_name)
 
         # Validate index if needed
         if "index" in self._get_component_def(df_name):
@@ -732,8 +733,7 @@ class Validator:
             )
 
         # Validate columns
-        for column_name in self._get_component_def(df_name)["columns"].keys():
-
+        for column_name in df_definition["columns"].keys():
             if column_name not in df.columns:
                 self.errors.append(
                     f"Dataframe '{df_name}' is missing column '{column_name}'."
