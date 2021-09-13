@@ -6,20 +6,20 @@ download-ontologies:
 	python3 ./scripts/ontology_processing.py
 
 .PHONY: gene-processing
-gene-processing: download-gtf-10x-human download-gtf-10x-mouse download-gtf-covid19 download-gtf-ercc
+gene-processing: download-gtf-human download-gtf-mouse download-gtf-covid19 download-gtf-ercc
 	python3 ./scripts/gene_processing.py
 
-.PHONY: download-gtf-10x-human
-download-gtf-10x-human:
+.PHONY: download-gtf-human
+download-gtf-human:
 	mkdir -p temp
 	echo Downloading human GTF
-	curl -o ./temp/homo_sapiens.gtf.gz http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/gencode.v32.primary_assembly.annotation.gtf.gz
+	curl -o ./temp/homo_sapiens.gtf.gz http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_38/gencode.v38.primary_assembly.annotation.gtf.gz
 
-.PHONY: download-gtf-10x-mouse
-download-gtf-10x-mouse:
+.PHONY: download-gtf-mouse
+download-gtf-mouse:
 	mkdir -p temp
-	echo Downloading human GTF
-	curl -o ./temp/mus_musculus.gtf.gz http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M23/gencode.vM23.primary_assembly.annotation.gtf.gz
+	echo Downloading mouse GTF
+	curl -o ./temp/mus_musculus.gtf.gz http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M27/gencode.vM27.primary_assembly.annotation.gtf.gz
 
 .PHONY: download-gtf-covid19
 download-gtf-covid19:
