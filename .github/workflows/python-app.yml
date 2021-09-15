@@ -22,9 +22,11 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
+        cd cellxgene_schema_cli
         python -m pip install --upgrade pip
         pip install flake8 pytest
-        if [ -f cellxgene_schema_cli/requirements.txt ]; then pip install -r cellxgene_schema_cli/requirements.txt; fi
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install .
     - name: Lint with flake8
       run: |
         cd cellxgene_schema_cli
