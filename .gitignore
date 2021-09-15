@@ -5,6 +5,9 @@
 __pycache__
 *.DS_Store*
 
+# enviroments
+venv/
+
 # sc matrices
 *.RDS
 *.h5ad
@@ -18,6 +21,9 @@ __pycache__
 ./datasets/biccn-yao_integrated_transcriptomic_and_epigenomic_atlas/data/original/10X_nuclei_v3_AIBS
 ./datasets/biccn-yao_integrated_transcriptomic_and_epigenomic_atlas/data/original/10X_nuclei_v3_Broad
 ./datasets/biccn-tasic_2018/data/original/GSE115746_cells_exon_counts.csv.gz
+
+# Include h5ads in tests
+!cellxgene_schema_cli/tests/fixtures/h5ads/*
 
 # Kozareva big files
 cb_annotated_object.RDS

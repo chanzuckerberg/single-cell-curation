@@ -4,12 +4,12 @@ This repository contains documents and code used by cellxgene's curation team. I
 
 For information/issues about cellxgene and its portal please refer to:
 
-- [cellxgene](https://github.com/chanzuckerberg/cellxgene)
-- [Corpora data portal](https://github.com/chanzuckerberg/corpora-data-portal)
+- [single-cell-explorer](https://github.com/chanzuckerberg/single-cell-explorer)
+- [single-cell-data-portal](https://github.com/chanzuckerberg/single-cell-data-portal)
 
 ## Installation
 
-The central tool provided here is a CLI for augmenting datasets with the [cellxgene schema](docs/corpora_schema.md) so they can be hosted at [cellxgene's portal](https://cellxgene.cziscience.com/). 
+The primary curation tool is the `cellxgene-schema` CLI. It enables curators to perform [schema](single-cell-curation/schema/2.0.0/corpora_schema.md) validation for datasets to be hosted on the [cellxgene Data Portal](https://cellxgene.cziscience.com/).
 
 It is available through pip:
 
@@ -17,71 +17,52 @@ It is available through pip:
 pip install cellxgene-schema
 ```
 
-It can also e installed from the source by cloning this repository and running:
+It can also be installed from the source by cloning this repository and running:
 
 ```
 make install 
 ```
 
-And you can run the test with:
+And you can run the tests with:
 
 ```
 make unit-test
 ```
 
+## Usage
 
-## Quick start
+The CLI validates an [AnnData file](https://anndata.readthedocs.io/en/latest/) (\*.h5ad) to ensure that it addresses the schema requirements.
 
-The CLI augments  an [AnnData file](https://anndata.readthedocs.io/en/latest/) (\*.h5ad) with cellxgene schema required ontology terms using the logic defined in a yaml config file. This yaml file should indicate the values for the schema slots or mappings between the original values and the corresponding schema slots.
-
-An example of a yaml config file looks like this:
-
-```
-obs:
-  assay_ontology_term_id: EFO:0010550
-  ethnicity_ontology_term_id: unknown
-  sex: male
-  tissue_ontology_term_id: UBERON:0000970
-  cell_type_ontology_term_id:
-    sub_cluster_name:
-      Adrenocortical cells-1: CL:0002097
-      Photoreceptor cells-1: CL:0000210
-uns:
-  version:
-    corpora_schema_version: 1.1.0
-  organism: Homo sapiens
-  organism_ontology_term_id: NCBITaxon:9606
-  layer_descriptions:
-    X: log1p
-   raw.X: raw
-  title: Survey of human embryonic development
-fixup_gene_symbols:
-   X: log1p
-   raw.X: raw
-```
-
-You can use the config file to augment a dataset with  the schema using:
+Datasets can be validated using the following command line:
 
 ```
-cellxgene-schema apply --source-h5ad original.h5ad --remix-config config.yml --output-filename remixed.h5ad
+cellxgene-schema validate input.h5ad
 ```
 
-And then verify that the schema was properly added with:
+If the validation succeeds, the command returns a zero exit code; otherwise, it returns a non-zero exit code and prints validation failure messages.
+
+
+---
+
+The data portal runs the following in the backend:
 
 ```
-cellxgene-schema validate remixed.h5ad
+cellxgene-schema validate --add-labels output.h5ad input.h5ad
 ```
 
-A detailed manual for the CLI and the config yaml file can be found [here](docs/schema_guide.md).
+This execution validates the dataset as above AND adds the human-readable labels for the ontology and gene IDs as defined in the schema. If the validation is successful, a new AnnData file (output.h5ad) is written to disk with the labels appended.
+
+This option SHOULD NOT be used by data contributors.
+
 
 ## Datasets curated by cellxgene’s curation team
 
 Scripts demonstrating how the cellxgene team has curated datasets for hosting on the portal are stored in this repository. They provide worked examples that provide additional demonstrations of how the tool can be used.
 
-The `datasets` folder contains step-by-step curation instructions for each dataset we have curated, each dataset has its own independent folder and readme. 
-In principle anyone could reproduce our curation process following the dataset's readme, which starts from downloading data (usually publicly available) and finishes by creating one or more `*.h5ad` files that follow cellxgene schema and are ready to be hosted at cellxgene's portal.
+The [`datasets`](./datasets) folder contains step-by-step curation instructions for each dataset we have curated, each dataset has its own independent folder and readme. 
+In theory, anyone should be able to reproduce our curation process by following the steps in the dataset's readme, which starts with downloading data (usually publicly available) and finishes by creating one or more `*.h5ad` files that address the schema requirements and are ready to be hosted on the cellxgene Data Portal.
 
-The `docs` folder contains guides, general documentsconf, files, or scripts that have been used or could be used in the future for curation or integration processes.
+The [`docs`](./docs) folder contains guides, general documents, files, or scripts that have been used or could be used in the future for curation or integration processes.
 
 ## Contributing
 

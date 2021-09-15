@@ -1,6 +1,6 @@
 import click
-
-from cellxgene_schema import remix, validate
+import sys
+from cellxgene_schema import validate
 
 
 @click.group(
@@ -11,60 +11,36 @@ from cellxgene_schema import remix, validate
 )
 def schema_cli():
     try:
-        import scanpy  # noqa: F401
+        import anndata  # noqa: F401
     except ImportError:
-        raise click.ClickException("[cellxgene] cellxgene schema requires scanpy")
-
-
-@click.command(
-    name="apply",
-    short_help="(experimental) Apply the cellxgene data integration schema to an h5ad.",
-    help="(experimental) Using a yaml file that describes schema values to insert or convert and in input "
-    "h5ad file, apply the schema changes and create a new, conforming h5ad.",
-)
-@click.option(
-    "--source-h5ad",
-    help="Input h5ad file.",
-    nargs=1,
-    required=True,
-    type=click.Path(exists=True, dir_okay=False),
-)
-@click.option(
-    "--remix-config",
-    help="Config yaml with information on how to apply the schema.",
-    nargs=1,
-    required=True,
-    type=click.Path(exists=True, dir_okay=False),
-)
-@click.option(
-    "--output-filename",
-    help="Filename for the new, schema-conforming h5ad file.",
-    required=True,
-    nargs=1,
-)
-def schema_apply(source_h5ad, remix_config, output_filename):
-    remix.apply_schema(source_h5ad, remix_config, output_filename)
+        raise click.ClickException("[cellxgene] cellxgene-schema requires anndata")
 
 
 @click.command(
     name="validate",
-    short_help="(experimental) Check that an h5ad follows the cellxgene data integration schema.",
+    short_help="Check that an h5ad follows the cellxgene data integration schema.",
+    help="Check that an h5ad follows the cellxgene data integration schema. If validation fails this command will "
+    "return an exit status of 1 otherwise 0. When the '--add-labels <FILE>' tag is present, the command will add "
+    "ontology/gene labels based on IDs and write them to a new h5ad.",
 )
-@click.argument(
-    "h5ad",
-    nargs=1,
-    type=click.Path(exists=True, dir_okay=False),
-)
+@click.argument("h5ad_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
 @click.option(
-    "--shallow",
-    help="When true, just check that the correct version information is present.",
-    default=False,
-    show_default=True,
-    is_flag=True,
+    "-a",
+    "--add-labels",
+    "add_labels_file",
+    help="When present it will add labels to genes and ontologies based on IDs",
+    required=False,
+    default=None,
+    type=click.Path(exists=False, dir_okay=False, writable=True),
 )
-def schema_validate(h5ad, shallow):
-    validate.validate(h5ad, shallow)
+def schema_validate(h5ad_file, add_labels_file):
+    if validate.validate(h5ad_file, add_labels_file):
+        sys.exit(0)
+    else:
+        sys.exit(1)
 
 
-schema_cli.add_command(schema_apply)
 schema_cli.add_command(schema_validate)
+
+if __name__ == "__main__":
+    schema_cli()

@@ -1,148 +1,85 @@
-import json
-
 import unittest
-import unittest.mock
-
 from cellxgene_schema import ontology
+import fixtures.examples_ontology_test as examples
+
+# Tests for internal functions of the OntologyChecker and GeneChecker classes
 
 
-class TestOntologyParsing(unittest.TestCase):
+class TestGeneChecker(unittest.TestCase):
     def setUp(self):
+        self.valid_species = ontology.SupportedOrganisms
+        self.invalid_species = examples.invalid_species
+        self.valid_genes = examples.valid_genes
+        self.invalid_genes = examples.invalid_genes
 
-        self.curies = [
-            "UBERON:0002048",
-            "HsapDv:0000174",
-            "NCBITaxon:9606",
-            "EFO:0008995",
-        ]
+    def test_species_validity(self):
+        for species in self.valid_species:
+            self.assertIsInstance(ontology.GeneChecker(species), ontology.GeneChecker)
+        for species in self.invalid_species:
+            with self.assertRaises(ValueError):
+                ontology.GeneChecker(species)
 
-        self.names = ["UBERON", "HsapDv", "NCBITaxon", "EFO"]
+    def test_valid_genes(self):
+        for species in self.valid_genes:
+            geneChecker = ontology.GeneChecker(species)
+            for gene_id in self.valid_genes[species]:
+                gene_label = self.valid_genes[species][gene_id]
 
-        self.values = ["0002048", "0000174", "9606", "0008995"]
+                self.assertTrue(geneChecker.is_valid_id(gene_id))
+                self.assertEqual(geneChecker.get_symbol(gene_id), gene_label)
 
-        self.iris = [
-            "http://purl.obolibrary.org/obo/UBERON_0002048",
-            "http://purl.obolibrary.org/obo/HsapDv_0000174",
-            "http://purl.obolibrary.org/obo/NCBITaxon_9606",
-            "http://www.ebi.ac.uk/efo/EFO_0008995",
-        ]
+    def test_invalid_genes(self):
+        for species in self.invalid_genes:
+            geneChecker = ontology.GeneChecker(species)
+            for gene_id in self.invalid_genes[species]:
 
-        URL_ROOT = "http://www.ebi.ac.uk/ols/api/ontologies/"
-        self.urls = [
-            URL_ROOT
-            + "UBERON/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FUBERON_0002048",
-            URL_ROOT
-            + "HsapDv/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHsapDv_0000174",
-            URL_ROOT
-            + "NCBITaxon/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_9606",
-            URL_ROOT
-            + "EFO/terms/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0008995",
-        ]
-
-        self.responses = {
-            "UBERON:0002048": {
-                "iri": "http://purl.obolibrary.org/obo/UBERON_0002048",
-                "description": [
-                    "Respiration organ that develops as an outpocketing of the esophagus."
-                ],
-                "label": "lung",
-            },
-            "HsapDv:0000174": {
-                "iri": "http://purl.obolibrary.org/obo/HsapDv_0000174",
-                "description": [
-                    "Infant stage that refers to an infant who is over 1 and under 2 months old."
-                ],
-                "label": "1-month-old human stage",
-            },
-            "NCBITaxon:9606": {
-                "iri": "http://purl.obolibrary.org/obo/NCBITaxon_9606",
-                "description": None,
-                "label": "Homo sapiens",
-            },
-            "EFO:0008995": {
-                "iri": "http://www.ebi.ac.uk/efo/EFO_0008995",
-                "description": [
-                    (
-                        '10X is a "synthetic long-read" technology and works by capturing a barcoded oligo-coated '
-                        "gel-bead and 0.3x genome copies into a single emulsion droplet, processing the equivalent "
-                        "of 1 million pipetting steps. Successive versions of the 10x chemistry use different "
-                        "barcode locations to improve the sequencing yield and quality of 10x experiments."
-                    )
-                ],
-                "label": "10X sequencing",
-            },
-        }
-
-    def test_ontololgy_name(self):
-        for curie, expected_name in zip(self.curies, self.names):
-            self.assertEqual(ontology._ontology_name(curie), expected_name)
-
-    def test_ontololgy_value(self):
-        for curie, expected_value in zip(self.curies, self.values):
-            self.assertEqual(ontology._ontology_value(curie), expected_value)
-
-    def test_iri(self):
-        for curie, expected_iri in zip(self.curies, self.iris):
-            self.assertEqual(ontology._iri(curie), expected_iri)
-
-    def test_ontology_info_url(self):
-        for curie, expected_url in zip(self.curies, self.urls):
-            self.assertEqual(ontology._ontology_info_url(curie), expected_url)
-
-    def test_empty_ontology_info_url(self):
-        self.assertEqual(ontology._ontology_info_url(""), "")
+                self.assertFalse(geneChecker.is_valid_id(gene_id))
+                with self.assertRaises(ValueError):
+                    geneChecker.get_symbol(gene_id)
 
 
-class TestOntologyLookup(unittest.TestCase):
+class TestOntologyChecker(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.ontologyChecker = ontology.OntologyChecker()
+
     def setUp(self):
-        self.responses = {
-            "UBERON:0002048": {
-                "iri": "http://purl.obolibrary.org/obo/UBERON_0002048",
-                "description": [
-                    "Respiration organ that develops as an outpocketing of the esophagus."
-                ],
-                "label": "lung",
-            },
-            "HsapDv:0000174": {
-                "iri": "http://purl.obolibrary.org/obo/HsapDv_0000174",
-                "description": [
-                    "Infant stage that refers to an infant who is over 1 and under 2 months old."
-                ],
-                "label": "1-month-old human stage",
-            },
-            "NCBITaxon:9606": {
-                "iri": "http://purl.obolibrary.org/obo/NCBITaxon_9606",
-                "description": None,
-                "label": "Homo sapiens",
-            },
-            "EFO:0008995": {
-                "iri": "http://www.ebi.ac.uk/efo/EFO_0008995",
-                "description": [
-                    (
-                        '10X is a "synthetic long-read" technology and works by capturing a barcoded oligo-coated '
-                        "gel-bead and 0.3x genome copies into a single emulsion droplet, processing the equivalent "
-                        "of 1 million pipetting steps. Successive versions of the 10x chemistry use different barcode "
-                        "locations to improve the sequencing yield and quality of 10x experiments."
-                    )
-                ],
-                "label": "10X sequencing",
-            },
-        }
+        self.valid_ontologies = examples.valid_ontologies
+        self.invalid_ontologies = examples.invalid_ontologies
+        self.valid_terms = examples.valid_terms
+        self.invalid_terms = examples.invalid_terms
 
-        self.labels = {
-            "UBERON:0002048": "lung",
-            "HsapDv:0000174": "1-month-old human stage",
-            "NCBITaxon:9606": "Homo sapiens",
-            "EFO:0008995": "10X sequencing",
-        }
+    def test_ontology_validity(self):
+        for i in self.valid_ontologies:
+            self.assertTrue(self.ontologyChecker.is_valid_ontology(i))
+            self.assertIsNone(self.ontologyChecker.assert_ontology(i))
 
-    @unittest.mock.patch("requests.get")
-    def test_lookup_label(self, mock_get):
+        for i in self.invalid_ontologies:
+            self.assertFalse(self.ontologyChecker.is_valid_ontology(i))
+            with self.assertRaises(ValueError):
+                self.ontologyChecker.assert_ontology(i)
 
-        for curie, response in self.responses.items():
-            mock_get.return_value.content = json.dumps(response)
-            mock_get.return_value.json.return_value = response
-            mock_get.return_value.status_code = 200
+    def test_valid_term_id(self):
+        for ontology_id in self.valid_terms:
+            for term_id in self.valid_terms[ontology_id]:
+                term_label = self.valid_terms[ontology_id][term_id]
 
-            label = ontology.get_ontology_label(curie)
-            self.assertEqual(label, self.labels[curie])
+                self.assertTrue(
+                    self.ontologyChecker.is_valid_term_id(ontology_id, term_id)
+                )
+                self.assertIsNone(
+                    self.ontologyChecker.assert_term_id(ontology_id, term_id)
+                )
+                self.assertEqual(
+                    self.ontologyChecker.get_term_label(ontology_id, term_id),
+                    term_label,
+                )
+
+    def test_invalid_term_ids(self):
+        for ontology_id in self.invalid_terms:
+            for term_id in self.invalid_terms[ontology_id]:
+                self.assertFalse(
+                    self.ontologyChecker.is_valid_term_id(ontology_id, term_id)
+                )
+                with self.assertRaises(ValueError):
+                    self.ontologyChecker.assert_term_id(ontology_id, term_id)
