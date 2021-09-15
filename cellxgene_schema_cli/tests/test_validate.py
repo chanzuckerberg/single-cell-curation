@@ -106,7 +106,12 @@ class TestAddLabelFunctions(unittest.TestCase):
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
         ]
-        labels = ["ERCC-00002 (spike-in control)", "MACF1", "Trp53", "S_ENSSASG00005000004"]
+        labels = [
+            "ERCC-00002 (spike-in control)",
+            "MACF1",
+            "Trp53",
+            "S_ENSSASG00005000004",
+        ]
         expected_dict = {i: j for i, j in zip(ids, labels)}
         self.assertEqual(self.writer._get_mapping_dict_feature_id(ids), expected_dict)
 

@@ -510,7 +510,9 @@ class Validator:
 
         for dependency_def in dependencies:
             try:
-                column = getattr(df.query(dependency_def["rule"], engine="python"), column_name)
+                column = getattr(
+                    df.query(dependency_def["rule"], engine="python"), column_name
+                )
             except UndefinedVariableError:
                 self.errors.append(
                     f"Checking values with dependencies failed for adata.{df_name}['{column_name}'], "
@@ -524,7 +526,9 @@ class Validator:
 
         # Set column with the data that's left
         all_rules = " | ".join(all_rules)
-        column = getattr(df.query("not (" + all_rules + " )", engine="python"), column_name)
+        column = getattr(
+            df.query("not (" + all_rules + " )", engine="python"), column_name
+        )
 
         return column
 
