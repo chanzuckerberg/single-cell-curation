@@ -12,7 +12,7 @@ Schema version: 2.0.0
 
 All data submitted to the [cellxgene Data Portal](https://cellxgene.cziscience.com/) is automatically converted to a Seurat V3 object that can be loaded by the R package [Seurat](https://satijalab.org/seurat/).
 
-This document describes the Seurat encoding for the converted data. <mark>Readers should be familiar with the [schema](.schema.md). </mark>
+This document describes the Seurat encoding for the converted data. <u><strong>Readers should be familiar with the [schema](.schema.md).</strong></u>
 
 ## Encoding
 
