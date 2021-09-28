@@ -10,15 +10,15 @@ Schema version: 2.0.0
 
 ## Overview
 
-All data submitted to the [cellxgene data portal](https://cellxgene.cziscience.com/) is automatically converted to a Seurat V3 object that can be loaded by the R package [Seurat](https://satijalab.org/seurat/). The conversion is done through [sceasy](https://github.com/cellgeni/sceasy).
+All data submitted to the [cellxgene Data Portal](https://cellxgene.cziscience.com/) is automatically converted to a Seurat V3 object that can be loaded by the R package [Seurat](https://satijalab.org/seurat/).
 
-This document describes such Seurat encoding for the converted data and it mirrors the data [schema](./schema.md).
+This document describes the Seurat encoding for the converted data. Readers should be familiar with the [schema](.schema.md). 
 
 ## Encoding
 
-The format used to store the Seurat object is [`.rds`](https://stat.ethz.ch/R-manual/R-devel/library/base/html/readRDS.html) which provides an interface for storing individual R objects on disk.
+The Seurat V3 object is stored using the [native serialization RDS format](https://cran.r-project.org/doc/manuals/r-release/R-ints.html#Serialization-Formats). The [serialization interfaces](https://stat.ethz.ch/R-manual/R-devel/library/base/html/readRDS.html) allow the object to be serialized to and restored from disk. 
 
-A `local.rds` file downloaded from the cellxgene data portal can be read into an R session by doing the following:
+A `local.rds` file downloaded from the cellxgene Data Portal can be read into an R session with the following code.
 
 ```r
 seurat_object <- readRDS(local.rds)
@@ -43,7 +43,7 @@ Matrix data is stored in the slot `assays` under the element `RNA`.
     </tr>
     <tr>
       <th>Value</th>
-        <td>A sparse matrix of type <code>dgCMatrix</code></td>
+        <td>Sparse matrix of type <code>dgCMatrix</code></td>
     </tr>
 </tbody></table>
 <br>
@@ -61,7 +61,7 @@ Matrix data is stored in the slot `assays` under the element `RNA`.
     </tr>
     <tr>
       <th>Value</th>
-        <td>A sparse matrix of type <code>dgCMatrix</code></td>
+        <td>Sparse matrix of type <code>dgCMatrix</code></td>
     </tr>
 </tbody></table>
 <br>
@@ -69,7 +69,7 @@ Matrix data is stored in the slot `assays` under the element `RNA`.
 
 ### Cell Metadata
 
-Cell metadata is stored as a `data.frame` in the `meta.data` slot.
+It is stored as a `data.frame` in the `meta.data` slot.
 
 <table><tbody>
     <tr>
@@ -78,7 +78,7 @@ Cell metadata is stored as a `data.frame` in the `meta.data` slot.
     </tr>
     <tr>
       <th>Value</th>
-        <td>A <code>data.frame</code></td>
+        <td><code>data.frame</code></td>
     </tr>
 </tbody></table>
 <br>
@@ -164,7 +164,7 @@ This `data.frame` will have at least the following columns.
 
 ### Gene Metadata
 
-Gene metadata is stored as a `data.frame` in the `meta.features` slot of the element `RNA` of the slot `assays`.
+It is stored as a `data.frame` in the `meta.features` slot of the element `RNA` of the slot `assays`.
 
 <table><tbody>
     <tr>
@@ -173,7 +173,7 @@ Gene metadata is stored as a `data.frame` in the `meta.features` slot of the ele
     </tr>
     <tr>
       <th>Value</th>
-        <td>A <code>data.frame</code></td>
+        <td><code>data.frame</code></td>
     </tr>
 </tbody></table>
 <br>
@@ -211,7 +211,7 @@ This `data.frame` will have at least the following columns:
 
 ### Embeddings
 
-Any embedding available is stored as a named element of the slot `reductions`
+Each available embedding is stored as a named element of the slot `reductions`.
 
 <table><tbody>
     <tr>
@@ -220,7 +220,7 @@ Any embedding available is stored as a named element of the slot `reductions`
     </tr>
     <tr>
       <th>Value</th>
-        <td>A <code>DimenReduc</code> object</td>
+        <td><code>DimenReduc</code> object</td>
     </tr>
 </tbody></table>
 <br>
