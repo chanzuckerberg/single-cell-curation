@@ -12,7 +12,7 @@ Schema version: 2.0.0
 
 All data submitted to the [cellxgene Data Portal](https://cellxgene.cziscience.com/) is automatically converted to a Seurat V3 object that can be loaded by the R package [Seurat](https://satijalab.org/seurat/).
 
-This document describes the Seurat encoding for the converted data. Readers should be familiar with the [schema](.schema.md). 
+This document describes the Seurat encoding for the converted data. <mark>Readers should be familiar with the [schema](.schema.md). </mark>
 
 ## Encoding
 
@@ -83,7 +83,7 @@ It is stored as a `data.frame` in the `meta.data` slot.
 </tbody></table>
 <br>
 
-This `data.frame` will have at least the following columns.
+This `data.frame` will have the following columns required by the schema. There may be additional, optional columns from the original study.
 
 <table><tbody>
     <tr>
@@ -178,7 +178,7 @@ It is stored as a `data.frame` in the `meta.features` slot of the element `RNA` 
 </tbody></table>
 <br>
 
-This `data.frame` will have at least the following columns:
+This `data.frame` will have the following columns required by the schema. There may be additional, optional columns from the original study.
 
 <table><tbody>
     <tr>
