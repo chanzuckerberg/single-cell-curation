@@ -21,7 +21,7 @@ The Seurat V3 object is stored using the [native serialization RDS format](https
 A `local.rds` file downloaded from the cellxgene Data Portal can be read into an R session with the following code.
 
 ```r
-seurat_object <- readRDS(local.rds)
+seurat_object <- readRDS("local.rds")
 ```
 
 The following sections describe the individual components of a dataset as encoded in the Seurat object.
