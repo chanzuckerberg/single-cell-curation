@@ -2,6 +2,8 @@ import unittest
 import pandas as pd
 import numpy
 from cellxgene_schema import validate
+
+import cellxgene_schema_cli.cellxgene_schema.write_labels
 import fixtures.examples_validate as examples
 
 # Tests for schema compliance of an AnnData object
@@ -1162,7 +1164,7 @@ class TestAddingLabels(unittest.TestCase):
         validator.validate_adata()
 
         # Add labels through validator
-        cls.label_writer = validate.AnnDataLabelAppender(validator)
+        cls.label_writer = cellxgene_schema_cli.cellxgene_schema.write_labels.AnnDataLabelAppender(validator)
         cls.label_writer._add_labels()
 
     def test_var_added_labels(self):

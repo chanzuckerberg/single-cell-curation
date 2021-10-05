@@ -3,6 +3,8 @@ import unittest
 from cellxgene_schema import ontology
 from cellxgene_schema import validate
 from cellxgene_schema import schema
+
+import cellxgene_schema_cli.cellxgene_schema.write_labels
 import fixtures.examples_validate as examples
 
 # Tests for internal functions of the Validator and LabelWriter classes.
@@ -95,7 +97,7 @@ class TestAddLabelFunctions(unittest.TestCase):
         validator = validate.Validator()
         validator.adata = self.test_adata
         validator.validate_adata()
-        self.writer = validate.AnnDataLabelAppender(validator)
+        self.writer = cellxgene_schema_cli.cellxgene_schema.write_labels.AnnDataLabelAppender(validator)
 
     def test_get_dictionary_mapping_feature_id(self):
 
