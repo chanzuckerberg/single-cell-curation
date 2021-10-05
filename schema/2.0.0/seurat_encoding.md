@@ -44,9 +44,9 @@ Matrix data is stored in the slot `assays` under the element `RNA`. Seurat allow
     <tr>
       <th>Value</th>
         <td>
-        If data is sparse a <code>Matrix::dgCMatrix</code> object
+        <code>Matrix::dgCMatrix</code> object for sparse matrices
         <br>
-        If data is dense a <code>base::matrix</code> object
+        <code>base::matrix</code> object for dense matrices
         </td>
     </tr>
 </tbody></table>
@@ -66,9 +66,10 @@ Matrix data is stored in the slot `assays` under the element `RNA`. Seurat allow
     <tr>
       <th>Value</th>
         <td>
-        If data is sparse a <code>Matrix::dgCMatrix</code> object.
+        <code>Matrix::dgCMatrix</code> object for sparse matrices
         <br>
-        If data is dense a <code>base::matrix</code> object.        </td>
+        <code>base::matrix</code> object for dense matrices
+        </td>
     </tr>
 </tbody></table>
 <br>
@@ -232,8 +233,8 @@ Each available embedding is stored as a named element of the slot `reductions`.
 </tbody></table>
 <br>
 
-The matrix with reductions is stored in the slot `cell.embeddings` of the `SeuratObject::DimenReduc`. Rows correspond to cells and are named with cell IDs; columns correspond to reductions and are named `[key]_[number]`, where `key` is an alphanumeric string and `number` is an integer, e.g. `PC_1`.
+The matrix with reductions is stored in the `cell.embeddings` slot of `SeuratObject::DimenReduc`. Rows correspond to cells and are named with cell IDs. Columns correspond to reductions and are named `[key]_[number]`, where `key` is an alphanumeric string and `number` is an integer, e.g. `PC_1`.
 
 ### Dataset Metadata
 
-At the moement a Seurat object downloaded from cellxgene does not contain dataset metadata.
+At the moment a Seurat object downloaded from cellxgene does not contain the dataset metadata stored in the AnnData slot `uns`.
