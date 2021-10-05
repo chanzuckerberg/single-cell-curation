@@ -28,7 +28,7 @@ The following sections describe the individual components of a dataset as encode
 
 ### Data matrix
 
-Matrix data is stored in the slot `assays` under the element `RNA`.
+Matrix data is stored in the slot `assays` under the element `RNA`. Seurat allows elements of `assasy` to have any arbitrary name, but all matrix data from cellxgene will be stored in `RNA`.
 
 #### Raw data
 
@@ -43,7 +43,11 @@ Matrix data is stored in the slot `assays` under the element `RNA`.
     </tr>
     <tr>
       <th>Value</th>
-        <td>Sparse matrix of type <code>dgCMatrix</code></td>
+        <td>
+        If data is sparse a <code>Matrix::dgCMatrix</code> object
+        <br>
+        If data is dense a <code>base::matrix</code> object
+        </td>
     </tr>
 </tbody></table>
 <br>
@@ -61,7 +65,10 @@ Matrix data is stored in the slot `assays` under the element `RNA`.
     </tr>
     <tr>
       <th>Value</th>
-        <td>Sparse matrix of type <code>dgCMatrix</code></td>
+        <td>
+        If data is sparse a <code>Matrix::dgCMatrix</code> object.
+        <br>
+        If data is dense a <code>base::matrix</code> object.        </td>
     </tr>
 </tbody></table>
 <br>
@@ -220,7 +227,13 @@ Each available embedding is stored as a named element of the slot `reductions`.
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>DimenReduc</code> object</td>
+        <td><code> SeuratObject::DimenReduc</code> object</td>
     </tr>
 </tbody></table>
 <br>
+
+The matrix with reductions is stored in the slot `cell.embeddings` of the `SeuratObject::DimenReduc`. Rows correspond to cells and are named with cell IDs; columns correspond to reductions and are named `[key]_[number]`, where `key` is an alphanumeric string and `number` is an integer, e.g. `PC_1`.
+
+### Dataset Metadata
+
+At the moement a Seurat object downloaded from cellxgene does not contain dataset metadata.
