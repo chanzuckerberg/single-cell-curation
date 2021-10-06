@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- A performance fix was implemented. Improves the performance of `Validator._is_raw()` in `validate.py`, and addresses timeouts when validating datasets with high number of non-zero values in the expression matrix.
+- Improves the performance of `Validator._is_raw()` in `validate.py`, and addresses timeouts when validating datasets with high number of non-zero values in the expression matrix.
 
 ## [2.0.0] - 2021-09-15
 
