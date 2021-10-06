@@ -23,7 +23,7 @@ def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = N
 
     # Stop if validation was unsuccessful
     if not validator.is_valid:
-        return False
+        return False, validator.errors
 
     if add_labels_file:
         writer = AnnDataLabelAppender(validator)
