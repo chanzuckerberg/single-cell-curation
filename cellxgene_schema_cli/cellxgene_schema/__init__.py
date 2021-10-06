@@ -5,7 +5,7 @@ from cellxgene_schema.validate import Validator
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 
 
-def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = None):
+def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = None)->(bool, list):
 
     """
     Entry point for validation.
@@ -13,8 +13,8 @@ def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = N
     :param Union[str, bytes, os.PathLike] h5ad_path: Path to h5ad file to validate
     :param str add_labels_file: Path to new h5ad file with ontology/gene labels added
 
-    :return True if successful validation, False otherwise
-    :rtype bool
+    :return (True, []) if successful validation, (False, [list_of_errors] otherwise
+    :rtype tuple
     """
 
     # Perform validation
@@ -29,6 +29,6 @@ def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = N
         writer = AnnDataLabelAppender(validator)
         writer.write_labels(add_labels_file)
 
-        return validator.is_valid & writer.was_writing_successful
+        return validator.is_valid & writer.was_writing_successful, validator.errors
 
     return True
