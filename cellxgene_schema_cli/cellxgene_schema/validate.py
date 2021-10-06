@@ -935,7 +935,10 @@ class Validator:
             # Get array without zeros
             non_zeroes_index = x.nonzero()
 
-            x_non_zeroes = x[non_zeroes_index]
+            if max_values_to_check > len(non_zeroes_index[0]):
+                max_values_to_check = len(non_zeroes_index[0])
+
+            x_non_zeroes = x[non_zeroes_index[0][:max_values_to_check], non_zeroes_index[1][:max_values_to_check]]
 
             # If all values are zeros then is raw, otherwise if a single value is not an int then return is not raw
             if x_non_zeroes.size < 1:
@@ -946,10 +949,6 @@ class Validator:
 
                     if isnan(i):
                         continue
-
-                    max_values_to_check -= 1
-                    if max_values_to_check < 1:
-                        break
 
                     if i % 1 != 0:
                         self._raw_layer_exists = False
