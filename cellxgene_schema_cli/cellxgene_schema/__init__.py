@@ -5,8 +5,7 @@ from cellxgene_schema.validate import Validator
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 
 
-def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = None)->(bool, list):
-
+def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = None) -> (bool, list):
     """
     Entry point for validation.
 
