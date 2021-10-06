@@ -1,9 +1,9 @@
 import unittest
 from cellxgene_schema import ontology
 
-# Tests for internal functions of the OntologyChecker and GeneChecker classes
-from tests.fixtures.examples_ontology_test import invalid_species, valid_genes, invalid_genes, invalid_terms, \
+from fixtures.examples_ontology_test import invalid_species, valid_genes, invalid_genes, invalid_terms, \
     valid_terms, invalid_ontologies, valid_ontologies
+# Tests for internal functions of the OntologyChecker and GeneChecker classes
 
 
 class TestGeneChecker(unittest.TestCase):

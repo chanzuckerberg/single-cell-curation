@@ -4,7 +4,7 @@ from cellxgene_schema.write_labels import AnnDataLabelAppender
 from cellxgene_schema.ontology import OntologyChecker
 from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.validate import Validator
-from tests.fixtures.examples_validate import adata_minimal, SCHEMA_VERSION, adata_with_labels, adata
+from fixtures.examples_validate import adata_minimal, SCHEMA_VERSION, adata_with_labels, adata
 
 
 # Tests for internal functions of the Validator and LabelWriter classes.

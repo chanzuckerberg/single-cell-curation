@@ -5,7 +5,7 @@ import pandas as pd
 from cellxgene_schema.validate import Validator
 
 from cellxgene_schema.write_labels import AnnDataLabelAppender
-from tests.fixtures.examples_validate import adata, h5ad_valid, h5ad_invalid, adata_non_raw, adata_with_labels
+from fixtures.examples_validate import adata, h5ad_valid, h5ad_invalid, adata_non_raw, adata_with_labels
 
 
 # Tests for schema compliance of an AnnData object
