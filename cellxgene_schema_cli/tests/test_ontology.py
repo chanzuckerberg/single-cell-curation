@@ -1,16 +1,17 @@
 import unittest
 from cellxgene_schema import ontology
-import fixtures.examples_ontology_test as examples
 
 # Tests for internal functions of the OntologyChecker and GeneChecker classes
+from tests.fixtures.examples_ontology_test import invalid_species, valid_genes, invalid_genes, invalid_terms, \
+    valid_terms, invalid_ontologies, valid_ontologies
 
 
 class TestGeneChecker(unittest.TestCase):
     def setUp(self):
         self.valid_species = ontology.SupportedOrganisms
-        self.invalid_species = examples.invalid_species
-        self.valid_genes = examples.valid_genes
-        self.invalid_genes = examples.invalid_genes
+        self.invalid_species = invalid_species
+        self.valid_genes = valid_genes
+        self.invalid_genes = invalid_genes
 
     def test_species_validity(self):
         for species in self.valid_species:
@@ -44,10 +45,10 @@ class TestOntologyChecker(unittest.TestCase):
         cls.ontologyChecker = ontology.OntologyChecker()
 
     def setUp(self):
-        self.valid_ontologies = examples.valid_ontologies
-        self.invalid_ontologies = examples.invalid_ontologies
-        self.valid_terms = examples.valid_terms
-        self.invalid_terms = examples.invalid_terms
+        self.valid_ontologies = valid_ontologies
+        self.invalid_ontologies = invalid_ontologies
+        self.valid_terms = valid_terms
+        self.invalid_terms = invalid_terms
 
     def test_ontology_validity(self):
         for i in self.valid_ontologies:

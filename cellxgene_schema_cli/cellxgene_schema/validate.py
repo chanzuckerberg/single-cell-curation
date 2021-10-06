@@ -1,3 +1,4 @@
+import logging
 import re
 import sys
 import anndata
@@ -14,12 +15,11 @@ from typing import List, Dict, Union, Tuple
 from . import ontology
 from . import schema
 from . import env
-from .write_labels import AnnDataLabelAppender
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 ONTOLOGY_CHECKER = ontology.OntologyChecker()
-
-
-
 
 
 class Validator:
@@ -106,7 +106,7 @@ class Validator:
             # see https://github.com/theislab/anndata/issues/326#issuecomment-892203924
             self.adata = anndata.read_h5ad(h5ad_path, backed=None)
         except (OSError, TypeError):
-            print(f"Unable to open '{h5ad_path}' with AnnData")
+            logger.info(f"Unable to open '{h5ad_path}' with AnnData")
             sys.exit(1)
 
         self.h5ad_path = h5ad_path
@@ -1192,7 +1192,7 @@ class Validator:
         :return True if successful validation, False otherwise
         :rtype bool
         """
-
+        logger.info("Starting validation")
         # Re-start errors in case a new h5ad is being validated
         self.errors = []
 
@@ -1208,43 +1208,14 @@ class Validator:
         # Print warnings if any
         if self.warnings:
             self.warnings = ["WARNING: " + i for i in self.warnings]
-            print(*self.warnings, sep="\n")
+            logger.info(*self.warnings, sep="\n")
 
         # Print errors if any
         if self.errors:
             self.errors = ["ERROR: " + i for i in self.errors]
-            print(*self.errors, sep="\n")
+            logger.info(*self.errors, sep="\n")
             self.is_valid = False
         else:
             self.is_valid = True
 
         return self.is_valid
-
-
-def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = None):
-
-    """
-    Entry point for validation.
-
-    :param Union[str, bytes, os.PathLike] h5ad_path: Path to h5ad file to validate
-    :param str add_labels_file: Path to new h5ad file with ontology/gene labels added
-
-    :return True if successful validation, False otherwise
-    :rtype bool
-    """
-
-    # Perform validation
-    validator = Validator()
-    validator.validate_adata(h5ad_path)
-
-    # Stop if validation was unsuccessful
-    if not validator.is_valid:
-        return False
-
-    if add_labels_file:
-        writer = AnnDataLabelAppender(validator)
-        writer.write_labels(add_labels_file)
-
-        return validator.is_valid & writer.was_writing_successful
-
-    return True

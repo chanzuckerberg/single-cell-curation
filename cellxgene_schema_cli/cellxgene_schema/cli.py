@@ -34,7 +34,7 @@ def schema_cli():
     type=click.Path(exists=False, dir_okay=False, writable=True),
 )
 def schema_validate(h5ad_file, add_labels_file):
-    if validate.validate(h5ad_file, add_labels_file):
+    if validate(h5ad_file, add_labels_file):
         sys.exit(0)
     else:
         sys.exit(1)

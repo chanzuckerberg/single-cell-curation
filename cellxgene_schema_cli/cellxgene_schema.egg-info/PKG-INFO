@@ -1,0 +1,18 @@
+Metadata-Version: 2.1
+Name: cellxgene-schema
+Version: 2.0.1
+Summary: Tool for applying and validating cellxgene integration schema to single cell datasets
+Home-page: https://github.com/chanzuckerberg/single-cell-curation
+Author: Chan Zuckerberg Initiative
+Author-email: cellxgene@chanzuckerberg.com
+License: MIT
+Platform: UNKNOWN
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Scientific/Engineering :: Bio-Informatics
+License-File: LICENSE.txt
+
+UNKNOWN
+

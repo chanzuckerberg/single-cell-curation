@@ -1,8 +1,14 @@
+import logging
+import pandas as pd
+
 from typing import List, Dict, Optional
 
-from validate import Validator, ONTOLOGY_CHECKER
+from cellxgene_schema.validate import Validator, ONTOLOGY_CHECKER
 
-from ontology import ontology
+from cellxgene_schema import ontology
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 class AnnDataLabelAppender:
@@ -319,7 +325,7 @@ class AnnDataLabelAppender:
 
         :rtype None
         """
-
+        logger.info("Writing labels")
         # Add labels in obs
         self._add_labels()
 
@@ -332,7 +338,7 @@ class AnnDataLabelAppender:
         # Print errors if any
         if self.errors:
             self.errors = ["ERROR: " + i for i in self.errors]
-            print(*self.errors, sep="\n")
+            logger.info(*self.errors, sep="\n")
             self.was_writing_successful = False
         else:
             self.was_writing_successful = True
