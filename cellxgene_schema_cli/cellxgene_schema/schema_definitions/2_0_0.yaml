@@ -11,6 +11,7 @@ raw:
                         - EFO:0007045 # ATAC-seq
                         - EFO:0008804 # Methyl-seq
                         - EFO:0000751 # methylation profiling
+                        - EFO:0008939 # snmC-seq
 components:
     obsm:
         type: embedding_dict
