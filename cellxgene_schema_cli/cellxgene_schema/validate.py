@@ -734,7 +734,7 @@ class Validator:
 
         # Validate index if needed
         if "index" in self._get_component_def(df_name):
-            logger.debug(f"Validating index...")
+            logger.debug("Validating index...")
             self._validate_column(
                 pd.Series(df.index),
                 "index",

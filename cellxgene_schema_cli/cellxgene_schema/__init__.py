@@ -43,4 +43,4 @@ def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = N
 
         return validator.is_valid & writer.was_writing_successful, validator.errors
 
-    return True
+    return True, validator.errors

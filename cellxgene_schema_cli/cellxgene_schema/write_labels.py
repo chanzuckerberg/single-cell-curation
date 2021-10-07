@@ -9,6 +9,7 @@ from cellxgene_schema import ontology
 
 logger = logging.getLogger(__name__)
 
+
 class AnnDataLabelAppender:
     """
     From valid h5ad, handles writing a new h5ad file with ontology/gene labels added
