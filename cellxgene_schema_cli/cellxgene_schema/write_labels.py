@@ -8,8 +8,6 @@ from cellxgene_schema.validate import Validator, ONTOLOGY_CHECKER
 from cellxgene_schema import ontology
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
-
 
 class AnnDataLabelAppender:
     """
@@ -325,7 +323,7 @@ class AnnDataLabelAppender:
 
         :rtype None
         """
-        logger.info("Writing labels")
+        logger.debug("Writing labels")
         # Add labels in obs
         self._add_labels()
 

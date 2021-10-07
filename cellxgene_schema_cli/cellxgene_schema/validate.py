@@ -1,6 +1,8 @@
 import logging
 import re
 import sys
+from datetime import datetime
+
 import anndata
 import os
 import pandas as pd
@@ -17,7 +19,6 @@ from . import schema
 from . import env
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 ONTOLOGY_CHECKER = ontology.OntologyChecker()
 
@@ -677,7 +678,7 @@ class Validator:
         """
 
         for key, value_def in dict_def["keys"].items():
-
+            logger.debug(f"Validating uns dict for key: {key}")
             if key not in dictionary:
                 if "required" in value_def:
                     self.errors.append(f"'{key}' in '{dict_name}' is not present.")
@@ -733,6 +734,7 @@ class Validator:
 
         # Validate index if needed
         if "index" in self._get_component_def(df_name):
+            logger.debug(f"Validating index...")
             self._validate_column(
                 pd.Series(df.index),
                 "index",
@@ -742,6 +744,7 @@ class Validator:
 
         # Validate columns
         for column_name in df_definition["columns"].keys():
+            logger.debug(f"Validating column: {column_name}...")
             if column_name not in df.columns:
                 self.errors.append(
                     f"Dataframe '{df_name}' is missing column '{column_name}'."
@@ -937,13 +940,14 @@ class Validator:
                 x = self.adata.X
 
             # Get array without zeros
+            logger.debug("Getting nonzero matrix for type (int) validation...")
+            start = datetime.now()
             non_zeroes_index = x.nonzero()
-
             if max_values_to_check > len(non_zeroes_index[0]):
                 max_values_to_check = len(non_zeroes_index[0])
 
             x_non_zeroes = x[non_zeroes_index[0][:max_values_to_check], non_zeroes_index[1][:max_values_to_check]]
-
+            logger.debug(f"Copy of nonzero matrix created in: {datetime.now() - start} seconds")
             # If all values are zeros then is raw, otherwise if a single value is not an int then return is not raw
             if x_non_zeroes.size < 1:
                 self._raw_layer_exists = True
@@ -1148,11 +1152,12 @@ class Validator:
         self._check_column_availability()
 
         # Checks sparsity
+        logger.debug("Validating sparsity...")
         self._validate_sparsity()
 
         # Checks each component
         for component, component_def in self.schema_def["components"].items():
-
+            logger.debug(f"Validating component: {component}")
             # Skip if component does not exist: only useful for adata.raw.var
             if self.getattr_anndata(self.adata, component) is None:
                 if "required" in component_def:
@@ -1170,10 +1175,10 @@ class Validator:
                 self._validate_embedding_dict()
             else:
                 raise ValueError(f"Unexpected component type '{component['type']}'")
-
         # Checks for raw only if there are no errors, because it depends on the
         # existence of adata.obs["assay_ontology_term_id"] and adata.obs["X_normalization"]
         if not self.errors and "raw" in self.schema_def:
+            logger.debug("Validating raw layer...")
             self._validate_raw()
         else:
             self.warnings.append(
@@ -1192,12 +1197,14 @@ class Validator:
         :return True if successful validation, False otherwise
         :rtype bool
         """
-        logger.info("Starting validation")
+        logger.debug("Starting validation...")
         # Re-start errors in case a new h5ad is being validated
         self.errors = []
 
         if h5ad_path:
+            logger.debug("Reading the h5ad file...")
             self._read_h5ad(h5ad_path)
+            logger.debug("Successfully read the h5ad file")
 
         # Fetches schema def from anndata if schema version is not found in AnnData, this fails
         self._set_schema_def()
