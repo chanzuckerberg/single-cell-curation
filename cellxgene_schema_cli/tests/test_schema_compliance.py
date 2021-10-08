@@ -2,10 +2,10 @@ import unittest
 
 import numpy
 import pandas as pd
-from cellxgene_schema.validate import Validator
 
+import fixtures.examples_validate as examples
+from cellxgene_schema.validate import Validator
 from cellxgene_schema.write_labels import AnnDataLabelAppender
-from fixtures.examples_validate import adata, h5ad_valid, h5ad_invalid, adata_non_raw, adata_with_labels
 
 
 # Tests for schema compliance of an AnnData object
@@ -21,7 +21,7 @@ class TestValidAnndata(unittest.TestCase):
 
     def setUp(self):
         self.validator = Validator()
-        self.validator.adata = adata.copy()
+        self.validator.adata = examples.adata.copy()
 
     def test_valid_anndata(self):
         self.validator.validate_adata()
@@ -36,8 +36,8 @@ class TestH5adValidation(unittest.TestCase):
     """
 
     def setUp(self):
-        self.h5ad_valid_file = h5ad_valid
-        self.h5ad_invalid_file = h5ad_invalid
+        self.h5ad_valid_file = examples.h5ad_valid
+        self.h5ad_invalid_file = examples.h5ad_invalid
         self.validator = Validator()
 
     def test_validate(self):
@@ -58,7 +58,7 @@ class TestExpressionMatrix(unittest.TestCase):
     def setUp(self):
 
         self.validator = Validator()
-        self.validator.adata = adata.copy()
+        self.validator.adata = examples.adata.copy()
 
     def test_shapes(self):
 
@@ -69,7 +69,7 @@ class TestExpressionMatrix(unittest.TestCase):
         # Creates a raw layer
         self.validator.adata.raw = self.validator.adata
         self.validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
-        self.validator.adata.X = adata_non_raw.X.copy()
+        self.validator.adata.X = examples.adata_non_raw.X.copy()
         self.validator.adata.uns["X_normalization"] = "CPM"
 
         # remove one gene
@@ -152,7 +152,7 @@ class TestObs(unittest.TestCase):
 
     def setUp(self):
         self.validator = Validator()
-        self.validator.adata = adata.copy()
+        self.validator.adata = examples.adata.copy()
 
     def test_column_presence(self):
         """
@@ -172,7 +172,7 @@ class TestObs(unittest.TestCase):
         for column in columns:
             with self.subTest(column=column):
                 self.validator.errors = []
-                self.validator.adata = adata.copy()
+                self.validator.adata = examples.adata.copy()
 
                 self.validator.adata.obs.drop(column, axis=1, inplace=True)
                 # Remove batch condition because it has a dependency with is_primary_data
@@ -571,7 +571,7 @@ class TestVar(unittest.TestCase):
 
     def setUp(self):
         self.validator = Validator()
-        self.validator.adata = adata.copy()
+        self.validator.adata = examples.adata.copy()
 
     def test_var_and_raw_var_same_index(self):
 
@@ -611,7 +611,7 @@ class TestVar(unittest.TestCase):
             with self.subTest(component_name=component_name):
 
                 # Resetting validator
-                self.validator.adata = adata.copy()
+                self.validator.adata = examples.adata.copy()
                 self.validator.errors = []
 
                 # Duplicate 1st row in var and assign it to 2nd
@@ -647,7 +647,7 @@ class TestVar(unittest.TestCase):
 
                     # Resetting validator
                     self.validator.errors = []
-                    self.validator.adata = adata.copy()
+                    self.validator.adata = examples.adata.copy()
 
                     component = Validator.getattr_anndata(
                         self.validator.adata, component_name
@@ -719,7 +719,7 @@ class TestVar(unittest.TestCase):
             with self.subTest(component_name=component_name):
 
                 # Resetting validator
-                self.validator.adata = adata.copy()
+                self.validator.adata = examples.adata.copy()
                 self.validator.errors = []
 
                 component = Validator.getattr_anndata(
@@ -753,7 +753,7 @@ class TestVar(unittest.TestCase):
         for component_name in ["var", "raw.var"]:
             with self.subTest(component_name=component_name):
                 # Resetting validator
-                self.validator.adata = adata.copy()
+                self.validator.adata = examples.adata.copy()
                 self.validator.errors = []
 
                 component = Validator.getattr_anndata(
@@ -786,7 +786,7 @@ class TestVar(unittest.TestCase):
         for component_name in ["var", "raw.var"]:
             with self.subTest(component_name=component_name):
                 # Resetting validator
-                self.validator.adata = adata.copy()
+                self.validator.adata = examples.adata.copy()
                 self.validator.errors = []
 
                 component = Validator.getattr_anndata(
@@ -815,7 +815,7 @@ class TestUns(unittest.TestCase):
 
     def setUp(self):
         self.validator = Validator()
-        self.validator.adata = adata.copy()
+        self.validator.adata = examples.adata.copy()
 
     def test_required_fields_schema_version(self):
 
@@ -1088,7 +1088,7 @@ class TestObsm(unittest.TestCase):
     def setUp(self):
 
         self.validator = Validator()
-        self.validator.adata = adata.copy()
+        self.validator.adata = examples.adata.copy()
 
     def test_obsm_values_ara_numpy(self):
 
@@ -1158,11 +1158,11 @@ class TestAddingLabels(unittest.TestCase):
     def setUpClass(cls):
 
         # Manually created  data (positive control)
-        cls.adata_with_labels = adata_with_labels
+        cls.adata_with_labels = examples.adata_with_labels
 
         # Validate test data
         validator = Validator()
-        validator.adata = adata.copy()
+        validator.adata = examples.adata.copy()
         validator.validate_adata()
 
         # Add labels through validator

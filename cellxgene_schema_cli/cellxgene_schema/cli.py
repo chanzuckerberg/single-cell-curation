@@ -1,6 +1,6 @@
 import click
 import sys
-from cellxgene_schema import validate
+from .validate import validate
 
 
 @click.group(

@@ -1197,7 +1197,7 @@ class Validator:
         :return True if successful validation, False otherwise
         :rtype bool
         """
-        logger.debug("Starting validation...")
+        logger.info("Starting validation...")
         # Re-start errors in case a new h5ad is being validated
         self.errors = []
 
@@ -1215,14 +1215,54 @@ class Validator:
         # Print warnings if any
         if self.warnings:
             self.warnings = ["WARNING: " + i for i in self.warnings]
-            logger.info(*self.warnings, sep="\n")
+            for w in self.warnings:
+                logger.warning(w)
 
         # Print errors if any
         if self.errors:
             self.errors = ["ERROR: " + i for i in self.errors]
-            logger.info(*self.errors, sep="\n")
+            for e in self.errors:
+                logger.error(e)
             self.is_valid = False
         else:
             self.is_valid = True
 
         return self.is_valid
+
+
+def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = None, verbose: bool = False) -> (
+        bool, list):
+    from .write_labels import AnnDataLabelAppender
+    """
+    Entry point for validation.
+
+    :param Union[str, bytes, os.PathLike] h5ad_path: Path to h5ad file to validate
+    :param str add_labels_file: Path to new h5ad file with ontology/gene labels added
+
+    :return (True, []) if successful validation, (False, [list_of_errors] otherwise
+    :rtype tuple
+    """
+
+    # Perform validation
+    start = datetime.now()
+    if verbose:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+    validator = Validator()
+    validator.validate_adata(h5ad_path)
+    logger.info(f"Validation complete in {datetime.now() - start} seconds with status is_valid={validator.is_valid}")
+
+    # Stop if validation was unsuccessful
+    if not validator.is_valid:
+        return False, validator.errors
+
+    if add_labels_file:
+        label_start = datetime.now()
+        writer = AnnDataLabelAppender(validator)
+        writer.write_labels(add_labels_file)
+        logger.info(f"H5AD label writing complete in {datetime.now() - label_start}, was_writing_successful: {writer.was_writing_successful}") # noqa E501
+
+        return validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors
+
+    return True, validator.errors

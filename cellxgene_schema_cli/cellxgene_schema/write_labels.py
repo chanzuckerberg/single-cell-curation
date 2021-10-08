@@ -324,7 +324,7 @@ class AnnDataLabelAppender:
 
         :rtype None
         """
-        logger.debug("Writing labels")
+        logger.info("Writing labels")
         # Add labels in obs
         self._add_labels()
 
@@ -337,7 +337,8 @@ class AnnDataLabelAppender:
         # Print errors if any
         if self.errors:
             self.errors = ["ERROR: " + i for i in self.errors]
-            logger.info(*self.errors, sep="\n")
+            for e in self.errors:
+                logger.error(e)
             self.was_writing_successful = False
         else:
             self.was_writing_successful = True
