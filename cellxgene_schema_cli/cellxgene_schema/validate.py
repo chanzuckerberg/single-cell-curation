@@ -947,7 +947,7 @@ class Validator:
                 max_values_to_check = len(non_zeroes_index[0])
 
             x_non_zeroes = x[non_zeroes_index[0][:max_values_to_check], non_zeroes_index[1][:max_values_to_check]]
-            logger.debug(f"Copy of nonzero matrix created in: {datetime.now() - start} seconds")
+            logger.debug(f"Copy of nonzero matrix created in: {datetime.now() - start}")
             # If all values are zeros then is raw, otherwise if a single value is not an int then return is not raw
             if x_non_zeroes.size < 1:
                 self._raw_layer_exists = True
@@ -1248,10 +1248,10 @@ def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = N
     if verbose:
         logging.basicConfig(level=logging.DEBUG)
     else:
-        logging.basicConfig(level=logging.INFO)
+        logging.basicConfig(level=logging.INFO, format="%(message)s")
     validator = Validator()
     validator.validate_adata(h5ad_path)
-    logger.info(f"Validation complete in {datetime.now() - start} seconds with status is_valid={validator.is_valid}")
+    logger.info(f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}")
 
     # Stop if validation was unsuccessful
     if not validator.is_valid:

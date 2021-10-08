@@ -6,8 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.3] - 2021-10-08
 ### Changed
-- Replace print with logging
-- Return the list of errors from validate so they can be used by callers
+- Replace print with logging in `Validator` and `AnnDataLabelAppender`.
+- Return the list of errors from `validate` so they can be used by callers.
+- Add verbose option to CLI, it prints a progress log.
 
 ## [2.0.2] - 2021-10-07
 
