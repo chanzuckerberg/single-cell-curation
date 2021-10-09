@@ -1,8 +1,12 @@
 import unittest
-import pandas as pd
+
 import numpy
-from cellxgene_schema import validate
+import pandas as pd
+
 import fixtures.examples_validate as examples
+from cellxgene_schema.validate import Validator
+from cellxgene_schema.write_labels import AnnDataLabelAppender
+
 
 # Tests for schema compliance of an AnnData object
 
@@ -16,7 +20,7 @@ class TestValidAnndata(unittest.TestCase):
     """
 
     def setUp(self):
-        self.validator = validate.Validator()
+        self.validator = Validator()
         self.validator.adata = examples.adata.copy()
 
     def test_valid_anndata(self):
@@ -34,7 +38,7 @@ class TestH5adValidation(unittest.TestCase):
     def setUp(self):
         self.h5ad_valid_file = examples.h5ad_valid
         self.h5ad_invalid_file = examples.h5ad_invalid
-        self.validator = validate.Validator()
+        self.validator = Validator()
 
     def test_validate(self):
 
@@ -53,7 +57,7 @@ class TestExpressionMatrix(unittest.TestCase):
 
     def setUp(self):
 
-        self.validator = validate.Validator()
+        self.validator = Validator()
         self.validator.adata = examples.adata.copy()
 
     def test_shapes(self):
@@ -147,7 +151,7 @@ class TestObs(unittest.TestCase):
     """
 
     def setUp(self):
-        self.validator = validate.Validator()
+        self.validator = Validator()
         self.validator.adata = examples.adata.copy()
 
     def test_column_presence(self):
@@ -566,7 +570,7 @@ class TestVar(unittest.TestCase):
     """
 
     def setUp(self):
-        self.validator = validate.Validator()
+        self.validator = Validator()
         self.validator.adata = examples.adata.copy()
 
     def test_var_and_raw_var_same_index(self):
@@ -576,7 +580,7 @@ class TestVar(unittest.TestCase):
         """
 
         # Swap first row for second one
-        var = validate.Validator.getattr_anndata(self.validator.adata, "var")
+        var = Validator.getattr_anndata(self.validator.adata, "var")
 
         # First swap the index
         new_index = list(var.index)
@@ -611,7 +615,7 @@ class TestVar(unittest.TestCase):
                 self.validator.errors = []
 
                 # Duplicate 1st row in var and assign it to 2nd
-                component = validate.Validator.getattr_anndata(
+                component = Validator.getattr_anndata(
                     self.validator.adata, component_name
                 )
                 new_index = list(component.index)
@@ -645,7 +649,7 @@ class TestVar(unittest.TestCase):
                     self.validator.errors = []
                     self.validator.adata = examples.adata.copy()
 
-                    component = validate.Validator.getattr_anndata(
+                    component = Validator.getattr_anndata(
                         self.validator.adata, component_name
                     )
                     component.drop(column, axis=1, inplace=True)
@@ -718,7 +722,7 @@ class TestVar(unittest.TestCase):
                 self.validator.adata = examples.adata.copy()
                 self.validator.errors = []
 
-                component = validate.Validator.getattr_anndata(
+                component = Validator.getattr_anndata(
                     self.validator.adata, component_name
                 )
 
@@ -752,7 +756,7 @@ class TestVar(unittest.TestCase):
                 self.validator.adata = examples.adata.copy()
                 self.validator.errors = []
 
-                component = validate.Validator.getattr_anndata(
+                component = Validator.getattr_anndata(
                     self.validator.adata, component_name
                 )
 
@@ -785,7 +789,7 @@ class TestVar(unittest.TestCase):
                 self.validator.adata = examples.adata.copy()
                 self.validator.errors = []
 
-                component = validate.Validator.getattr_anndata(
+                component = Validator.getattr_anndata(
                     self.validator.adata, component_name
                 )
 
@@ -810,7 +814,7 @@ class TestUns(unittest.TestCase):
     """
 
     def setUp(self):
-        self.validator = validate.Validator()
+        self.validator = Validator()
         self.validator.adata = examples.adata.copy()
 
     def test_required_fields_schema_version(self):
@@ -1039,7 +1043,7 @@ class TestUns(unittest.TestCase):
 
         """
         X_approximate_distribution str. The value MUST be "count" [...] or "normal".
-        Note that `normal` is tested in the happy path test case using `examples.good_uns`.
+        Note that `normal` is tested in the happy path test case using `good_uns`.
         """
 
         # Check valid case of "count" which is not included in valid object
@@ -1083,7 +1087,7 @@ class TestObsm(unittest.TestCase):
 
     def setUp(self):
 
-        self.validator = validate.Validator()
+        self.validator = Validator()
         self.validator.adata = examples.adata.copy()
 
     def test_obsm_values_ara_numpy(self):
@@ -1157,12 +1161,12 @@ class TestAddingLabels(unittest.TestCase):
         cls.adata_with_labels = examples.adata_with_labels
 
         # Validate test data
-        validator = validate.Validator()
+        validator = Validator()
         validator.adata = examples.adata.copy()
         validator.validate_adata()
 
         # Add labels through validator
-        cls.label_writer = validate.AnnDataLabelAppender(validator)
+        cls.label_writer = AnnDataLabelAppender(validator)
         cls.label_writer._add_labels()
 
     def test_var_added_labels(self):

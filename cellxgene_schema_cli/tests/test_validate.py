@@ -1,9 +1,11 @@
 import unittest
 
-from cellxgene_schema import ontology
-from cellxgene_schema import validate
-from cellxgene_schema import schema
-import fixtures.examples_validate as examples
+from cellxgene_schema.write_labels import AnnDataLabelAppender
+from cellxgene_schema.ontology import OntologyChecker
+from cellxgene_schema.schema import get_schema_definition
+from cellxgene_schema.validate import Validator
+from fixtures.examples_validate import adata_minimal, SCHEMA_VERSION, adata_with_labels, adata
+
 
 # Tests for internal functions of the Validator and LabelWriter classes.
 
@@ -11,12 +13,12 @@ import fixtures.examples_validate as examples
 class TestFieldValidation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.schema_def = schema.get_schema_definition(examples.SCHEMA_VERSION)
-        cls.OntologyChecker = ontology.OntologyChecker()
+        cls.schema_def = get_schema_definition(SCHEMA_VERSION)
+        cls.OntologyChecker = OntologyChecker()
 
     def setUp(self):
-        self.validator = validate.Validator()
-        self.validator.adata = examples.adata_minimal
+        self.validator = Validator()
+        self.validator.adata = adata_minimal
         self.column_name = "cell_type_ontology_term_id"
         self.column_schema = self.schema_def["components"]["obs"]["columns"][
             self.column_name
@@ -88,14 +90,14 @@ class TestAddLabelFunctions(unittest.TestCase):
     def setUp(self):
 
         # Set up test data
-        self.test_adata = examples.adata
-        self.test_adata_with_labels = examples.adata_with_labels
-        self.schema_def = schema.get_schema_definition(examples.SCHEMA_VERSION)
+        self.test_adata = adata
+        self.test_adata_with_labels = adata_with_labels
+        self.schema_def = get_schema_definition(SCHEMA_VERSION)
 
-        validator = validate.Validator()
+        validator = Validator()
         validator.adata = self.test_adata
         validator.validate_adata()
-        self.writer = validate.AnnDataLabelAppender(validator)
+        self.writer = AnnDataLabelAppender(validator)
 
     def test_get_dictionary_mapping_feature_id(self):
 
