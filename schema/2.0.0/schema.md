@@ -620,8 +620,6 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
 
 `var` and `raw.var` are both of type [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html).
 
-`var.index` MUST contain unique identifiers for features. `raw.var.index` MUST be identical to `var.index`.
-
 Curators MUST annotate the following columns in the `var` and `raw.var` dataframes:
 
 ### feature_biotype
@@ -643,12 +641,12 @@ Curators MUST annotate the following columns in the `var` and `raw.var` datafram
 </tbody></table>
 <br>
 
-### feature_id
+### index
 
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>feature_id (<code>var.index</code>/<code>raw.var.index</code>)</td>
+      <td>index</td>
     </tr>
     <tr>
       <th>Annotator</th>
@@ -656,7 +654,7 @@ Curators MUST annotate the following columns in the `var` and `raw.var` datafram
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be an ENSEMBL term. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be an ERCC Spike-In identifier. </td>
+        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be an ENSEMBL term. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be an ERCC Spike-In identifier.<br><br> <code>var.index</code> MUST contain unique identifiers for features. <code>raw.var.index</code> MUST be identical to <code>var.index</code>.<br><br></td>
     </tr>
 </tbody></table>
 <br>
@@ -697,7 +695,7 @@ When a dataset is uploaded, cellxgene Data Portal MUST automatically add the mat
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be the human-readable ENSEMBL gene name assigned to the <code>feature_id</code>. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be the ERCC Spike-In identifier appended with <code>" (spike-in control)"</code>.
+        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be the human-readable ENSEMBL gene name assigned to the feature identifier in <code>var.index</code>. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be the ERCC Spike-In identifier appended with <code>" (spike-in control)"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -927,7 +925,7 @@ schema v2.0.0 substantially *remodeled* schema v1.1.0:
 
 * var
   * Replaced HGNC gene **symbols** as `var.index` with ENSEMBL or ERCC spike-in **identifiers** 
-  * Added `feature_id`, `feature_name`, and `feature_reference`
+  * Added `feature_name`, `index`, and `feature_reference`
   * Added `feature_is_filtered`
   * Added requirements for `raw.var` which must be identical to `var`
 
