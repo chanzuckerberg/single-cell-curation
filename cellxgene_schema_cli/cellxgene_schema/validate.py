@@ -1030,6 +1030,15 @@ class Validator:
 
             normalization = self.adata.uns["X_normalization"]
 
+            # If both "raw.X" and "X" exist but neither are raw
+            if (
+                not self._is_raw()
+                and self._get_raw_x_loc() == "raw.X"
+            ):
+                self.warnings.append(
+                    "Raw data may be missing: data in 'raw.X' contains non-integer values."
+                )
+
             # If raw data is missing: no "raw.X", and "X_normalization" is not "none"
             if (
                 not self._is_raw()

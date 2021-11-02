@@ -4,6 +4,12 @@ All notable changes to the python package `cellxgene-schema` are documented in t
 The format of this changelog is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.4] - 2021-11-01    
+    
+### Added    
+    
+- A check during raw data validation in `validate.Validator`. When both `adata.X` and `adata.raw.X` are present, but `adata.raw.X` contains non-integer values a warning is added.         
+
 ## [2.0.3] - 2021-10-08
 ### Changed
 - Replace print with logging in `Validator` and `AnnDataLabelAppender`.

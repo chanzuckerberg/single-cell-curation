@@ -99,6 +99,22 @@ class TestExpressionMatrix(unittest.TestCase):
             ],
         )
 
+    def test_raw_values(self):
+
+        """
+        When both `adata.X` and `adata.raw.X` are present, but `adata.raw.X` contains non-integer values a warning
+        is added.
+        """
+
+        self.validator.adata = examples.adata_no_raw_values.copy()
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.warnings,
+            [
+                "WARNING: Raw data may be missing: data in 'raw.X' contains non-integer values."
+            ],
+        )
+
     def test_raw_existence(self):
 
         """
