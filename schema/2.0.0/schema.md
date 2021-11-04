@@ -620,7 +620,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
 
 `var` and `raw.var` are both of type [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html).
 
-Curators MUST annotate the following columns in the `var` and `raw.var` dataframes:
+Curators MUST annotate the following columns in the `var` dataframe and if present, the `raw.var` dataframe.
 
 ### feature_biotype
 
@@ -641,12 +641,12 @@ Curators MUST annotate the following columns in the `var` and `raw.var` datafram
 </tbody></table>
 <br>
 
-### index
+### index of pandas.DataFrame
 
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>index</td>
+      <td>index of <code>pandas.DataFrame</code></td>
     </tr>
     <tr>
       <th>Annotator</th>
@@ -654,7 +654,7 @@ Curators MUST annotate the following columns in the `var` and `raw.var` datafram
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be an ENSEMBL term. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be an ERCC Spike-In identifier.<br><br> <code>var.index</code> MUST contain unique identifiers for features. <code>raw.var.index</code> MUST be identical to <code>var.index</code>.<br><br></td>
+        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be an ENSEMBL term. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be an ERCC Spike-In identifier.<br><br> The index of the <code>pandas.Dataframe</code> MUST contain unique identifiers for features. If present, the index of <code>raw.var</code> MUST be identical to the index of <code>var</code>.<br><br></td>
     </tr>
 </tbody></table>
 <br>
