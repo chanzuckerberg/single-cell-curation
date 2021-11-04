@@ -38,6 +38,8 @@ This document is organized by:
 
 * **AnnData** - The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `raw.var`, `obsm`, and `uns` attributes are described below.
 
+  All data submitted to the cellxgene Data Portal is automatically converted to a Seurat V3 object that can be loaded by the R package Seurat. See the [Seurat encoding](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/2.0.0/seurat_encoding.md) for further information.
+
 * **Organisms**. Data MUST be from a Metazoan organism or SARS-COV-2 and defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the pinned Human and Mouse gene annotations.
 
 * **Reserved Names**. The names of the metadata keys specified by the schema are reserved and MUST be unique. For example, duplicate `"feature_biotype"` keys in AnnData `var` are not allowed.
@@ -620,9 +622,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
 
 `var` and `raw.var` are both of type [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html).
 
-`var.index` MUST contain unique identifiers for features. `raw.var.index` MUST be identical to `var.index`.
-
-Curators MUST annotate the following columns in the `var` and `raw.var` dataframes:
+Curators MUST annotate the following columns in the `var` dataframe and if present, the `raw.var` dataframe.
 
 ### feature_biotype
 
@@ -643,12 +643,12 @@ Curators MUST annotate the following columns in the `var` and `raw.var` datafram
 </tbody></table>
 <br>
 
-### feature_id
+### index of pandas.DataFrame
 
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>feature_id (<code>var.index</code>/<code>raw.var.index</code>)</td>
+      <td>index of <code>pandas.DataFrame</code></td>
     </tr>
     <tr>
       <th>Annotator</th>
@@ -656,7 +656,7 @@ Curators MUST annotate the following columns in the `var` and `raw.var` datafram
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be an ENSEMBL term. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be an ERCC Spike-In identifier. </td>
+        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be an ENSEMBL term. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be an ERCC Spike-In identifier.<br><br> The index of the <code>pandas.DataFrame</code> MUST contain unique identifiers for features. If present, the index of <code>raw.var</code> MUST be identical to the index of <code>var</code>.<br><br></td>
     </tr>
 </tbody></table>
 <br>
@@ -697,7 +697,7 @@ When a dataset is uploaded, cellxgene Data Portal MUST automatically add the mat
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be the human-readable ENSEMBL gene name assigned to the <code>feature_id</code>. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be the ERCC Spike-In identifier appended with <code>" (spike-in control)"</code>.
+        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be the human-readable ENSEMBL gene name assigned to the feature identifier in <code>var.index</code>. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be the ERCC Spike-In identifier appended with <code>" (spike-in control)"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -927,7 +927,7 @@ schema v2.0.0 substantially *remodeled* schema v1.1.0:
 
 * var
   * Replaced HGNC gene **symbols** as `var.index` with ENSEMBL or ERCC spike-in **identifiers** 
-  * Added `feature_id`, `feature_name`, and `feature_reference`
+  * Added `feature_name`, `index`, and `feature_reference`
   * Added `feature_is_filtered`
   * Added requirements for `raw.var` which must be identical to `var`
 
