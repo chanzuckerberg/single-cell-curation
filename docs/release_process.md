@@ -57,4 +57,4 @@ High level checklist to ensure that you completed the release successfully.
 ## Additional Resources
 
 - [How to create a Python virtual environment](https://docs.python.org/3/library/venv.html#creating-virtual-environments)
-- If you need access to the Test PyPI or PyPI projects, please ping the [#single-cell-eng](https://czi-sci.slack.com/archives/C023Q1APASK) Slack channel. 
+- If you need access to the Test PyPI or PyPI projects, please ping the [#single-cell-eng](https://czi-sci.slack.com/archives/C023Q1APASK) Slack channel. Once you have access, **please setup 2FA**!
