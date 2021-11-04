@@ -52,6 +52,7 @@ High level checklist to ensure that you completed the release successfully.
 - [ ] Did you create and merge in a PR to bump the version in `setup.py`?
 - [ ] Did you create a Github release for the new version?
 - [ ] Did you test the new release to make sure it works?
+- [ ] For any internal uses of `cellxgene-schema` have you upgraded the version number or let the appropriate stakeholders know that a new version exists?
 
 ## Additional Resources
 
