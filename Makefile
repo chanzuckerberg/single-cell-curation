@@ -44,18 +44,18 @@ recreate-release-candidate: bump-release-candidate
 # Build dist and release the release candidate to Test PyPI
 release-candidate-to-test-pypi: pydist
 	pip install twine
-	# python -m twine upload --repository testpypi cellxgene_schema_cli/dist/*
+	python -m twine upload --repository testpypi cellxgene_schema_cli/dist/*
 	@echo "Release candidate dist built and uploaded to test.pypi.org"
 
 # Build final dist (gets rid of the rc tag) and release final candidate to TestPyPI
 release-final-to-test-pypi: bump-release pydist
 	pip install twine
-	# python -m twine upload --repository testpypi cellxgene_schema_cli/dist/*
+	python -m twine upload --repository testpypi cellxgene_schema_cli/dist/*
 	@echo "Final release dist built and uploaded to test.pypi.org"
 	@echo "Please test the release on Test PyPI"
 
 release-final: pydist
 	pip install twine
-	# python -m twine upload cellxgene_schema_cli/dist/*
+	python -m twine upload cellxgene_schema_cli/dist/*
 	@echo "Release uploaded to pypi.org"
 	@echo "Please test the release on PyPI"
