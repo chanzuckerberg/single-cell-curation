@@ -26,11 +26,12 @@ current_version := $(shell awk '/current_version =/ { print $$3 }' .bumpversion.
 show-current-version:
 	@echo $(current_version)
 
-# Create a release candidate version from a previously released version.  Commit then version change to the current branch.
+# Create a release candidate version from a previously released version.  Commit then version change to a new release branch.
 # Set PART={major,minor,patch} as param to make the version bump happen automatically.
 create-release-candidate:
-	bumpversion --config-file .bumpversion.cfg $(PART)
-	@echo "Version bumped part:$(PART) to"$(current_version)". Ready to commit and push"
+	bumpversion --config-file .bumpversion.cfg $(PART) --allow-dirty
+	git checkout -b release-version-$(shell awk '/current_version =/ { split($$3,v,"-"); print v[1] }' .bumpversion.cfg)
+	@echo "Version bumped part:$(PART) to "$(current_version)". Ready to commit and push"
 
 # Create another release candidate version from a previously created release candidate version, in case the previous release candidate had errors. Commit the version change to the current branch.
 recreate-release-candidate:
