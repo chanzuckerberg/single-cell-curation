@@ -30,7 +30,7 @@ bump-release-candidate:
 
 # This command is used to remove the `rc` tag from the release candidate after it has been successfully tested in Test PyPI.
 bump-release:
-	bumpversion --config-file .bumpversion.cfg prerel --allow-dirty
+	bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
 
 # Create new version to commit to main
 # Set PART=[major, minor, patch]
@@ -54,7 +54,7 @@ release-final-to-test-pypi: bump-release pydist
 	@echo "Final release dist built and uploaded to test.pypi.org"
 	@echo "Please test the release on Test PyPI"
 
-release-final: pydist
+release-to-pypi: pydist
 	pip install twine
 	python -m twine upload cellxgene_schema_cli/dist/*
 	@echo "Release uploaded to pypi.org"
