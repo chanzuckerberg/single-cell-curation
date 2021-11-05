@@ -15,11 +15,16 @@ clean:
 	rm -rf cellxgene_schema_cli/build cellxgene_schema_cli/dist cellxgene_schema_cli/cellxgene_schema.egg-info
 
 # RELEASE HELPERS
-
+# For displaying the current version
+current_version := $(shell awk '/current_version =/ { print $$3 }' .bumpversion.cfg)
 pydist: clean
 	cd cellxgene_schema_cli && python setup.py sdist bdist_wheel
 
-# Set PART=[major, minor, patch] as param to make bump.
+# Show the current version
+show-current-version:
+	@echo $(current_version)
+
+# Set PART={major,minor,patch}' as param to make bump.
 # This will create a new release candidate. (i.e. 0.16.1 -> 0.16.2-rc.0 for a patch bump)
 bump-version:
 	bumpversion --config-file .bumpversion.cfg $(PART)
@@ -32,14 +37,14 @@ bump-release-candidate:
 bump-release:
 	bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
 
-# Create new version to commit to main
+# Create a release candidate version from a previously released version.  Commit then version change to the current branch.
 # Set PART=[major, minor, patch]
 create-release-candidate: bump-version
-	@echo "Version bumped part:$(PART) and client built. Ready to commit and push"
+	@echo "Version bumped part:$(PART) to"$(current_version)". Ready to commit and push"
 
-# Bump the release candidate version if needed (i.e. the previous release candidate had errors).
+# Create another release candidate version from a previously created release candidate version, in case the previous release candidate had errors. Commit the version change to the current branch.
 recreate-release-candidate: bump-release-candidate
-	@echo "Version bumped part:$(PART) and client built. Ready to commit and push"
+	@echo "Version bumped part:rc to "$(current_version)". Ready to commit and push"
 
 # Build dist and release the release candidate to Test PyPI
 release-candidate-to-test-pypi: pydist
@@ -51,7 +56,7 @@ release-candidate-to-test-pypi: pydist
 release-final-to-test-pypi: bump-release pydist
 	pip install twine
 	python -m twine upload --repository testpypi cellxgene_schema_cli/dist/*
-	@echo "Final release dist built and uploaded to test.pypi.org"
+	@echo "Final release dist built for "$(current_version)" and uploaded to test.pypi.org"
 	@echo "Please test the release on Test PyPI"
 
 release-to-pypi: pydist
