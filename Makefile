@@ -14,36 +14,27 @@ unit-test:
 clean:
 	rm -rf cellxgene_schema_cli/build cellxgene_schema_cli/dist cellxgene_schema_cli/cellxgene_schema.egg-info
 
-# RELEASE HELPERS
-# For displaying the current version
-current_version := $(shell awk '/current_version =/ { print $$3 }' .bumpversion.cfg)
+### RELEASE HELPERS ###
+
 pydist: clean
 	cd cellxgene_schema_cli && python setup.py sdist bdist_wheel
+
+# For displaying the current version
+current_version := $(shell awk '/current_version =/ { print $$3 }' .bumpversion.cfg)
 
 # Show the current version
 show-current-version:
 	@echo $(current_version)
 
-# Set PART={major,minor,patch}' as param to make bump.
-# This will create a new release candidate. (i.e. 0.16.1 -> 0.16.2-rc.0 for a patch bump)
-bump-version:
-	bumpversion --config-file .bumpversion.cfg $(PART)
-
-# This command is used to increment the rc number in case an initial candidate is erronous.
-bump-release-candidate:
-	bumpversion --config-file .bumpversion.cfg prerelversion --allow-dirty
-
-# This command is used to remove the `rc` tag from the release candidate after it has been successfully tested in Test PyPI.
-bump-release:
-	bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
-
 # Create a release candidate version from a previously released version.  Commit then version change to the current branch.
-# Set PART=[major, minor, patch]
-create-release-candidate: bump-version
+# Set PART={major,minor,patch} as param to make the version bump happen automatically.
+create-release-candidate:
+	bumpversion --config-file .bumpversion.cfg $(PART)
 	@echo "Version bumped part:$(PART) to"$(current_version)". Ready to commit and push"
 
 # Create another release candidate version from a previously created release candidate version, in case the previous release candidate had errors. Commit the version change to the current branch.
-recreate-release-candidate: bump-release-candidate
+recreate-release-candidate:
+	bumpversion --config-file .bumpversion.cfg prerelversion --allow-dirty
 	@echo "Version bumped part:rc to "$(current_version)". Ready to commit and push"
 
 # Build dist and release the release candidate to Test PyPI
@@ -53,7 +44,9 @@ release-candidate-to-test-pypi: pydist
 	@echo "Release candidate dist built and uploaded to test.pypi.org"
 
 # Build final dist (gets rid of the rc tag) and release final candidate to TestPyPI
-release-final-to-test-pypi: bump-release pydist
+release-final-to-test-pypi: 
+	bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
+	pydist
 	pip install twine
 	python -m twine upload --repository testpypi cellxgene_schema_cli/dist/*
 	@echo "Final release dist built for "$(current_version)" and uploaded to test.pypi.org"
