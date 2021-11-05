@@ -56,7 +56,7 @@ release-candidate-to-test-pypi: pydist
 release-final-to-test-pypi: bump-release pydist
 	pip install twine
 	python -m twine upload --repository testpypi cellxgene_schema_cli/dist/*
-	@echo "Final release dist built and uploaded to test.pypi.org"
+	@echo "Final release dist built for "$(current_version)" and uploaded to test.pypi.org"
 	@echo "Please test the release on Test PyPI"
 
 release-final: pydist
