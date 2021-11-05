@@ -22,7 +22,7 @@ Steps must be run from the project directory and in a virtual env with all the d
 
 1. Create a release branch from the `main` branch of the `single-cell-curation` repo (e.g. `git checkout -b release-version-x.y.z`).
 
-1. Run `make create-release-candidate PART={major | minor | patch}`, where you set `PART` to be one of `major` or `minor` or `patch` based on Step 1. This step will automatically bump the version of the package to the appropriate next version in `setup.py` and commit the change to the branch. Note that this will create a release candidate version, so if the current version is 2.0.4 and you want to do a minor release, then the version will be 2.1.0rc0. The `rc` suffix will be removed in a later step.
+1. Run `make create-release-candidate PART={major | minor | patch}`, where you set `PART` to be one of `major` or `minor` or `patch` based on Step 1. This step will automatically bump the version of the package to the appropriate next version in `setup.py` and commit the change to the branch. Note that this will create a release candidate version, so if the current version is 2.0.4 and you want to do a minor release, then the version will be `2.1.4-rc.0`. The `rc` suffix will be removed in a later step.
 
 1. Update the [CHANGELOG](https://github.com/chanzuckerberg/single-cell-curation/blob/main/cellxgene_schema_cli/CHANGELOG.md) with the latest changes going into the new release. 
 
