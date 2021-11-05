@@ -44,7 +44,7 @@ create-release-candidate: bump-version
 
 # Create another release candidate version from a previously created release candidate version, in case the previous release candidate had errors. Commit the version change to the current branch.
 recreate-release-candidate: bump-release-candidate
-	@echo "Version bumped part:$(PART) and client built. Ready to commit and push"
+	@echo "Version bumped part:rc to "$(current_version)". Ready to commit and push"
 
 # Build dist and release the release candidate to Test PyPI
 release-candidate-to-test-pypi: pydist
