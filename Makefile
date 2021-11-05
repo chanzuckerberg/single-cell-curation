@@ -37,7 +37,7 @@ bump-release-candidate:
 bump-release:
 	bumpversion --config-file .bumpversion.cfg prerel --allow-dirty
 
-# Create new version to commit to main
+# Create a release candidate version from a previously released version.  Commit then version change to the current branch.
 # Set PART=[major, minor, patch]
 create-release-candidate: bump-version
 	@echo "Version bumped part:$(PART) and client built. Ready to commit and push"
