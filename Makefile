@@ -42,7 +42,7 @@ bump-release:
 create-release-candidate: bump-version
 	@echo "Version bumped part:$(PART) to"$(current_version)". Ready to commit and push"
 
-# Bump the release candidate version if needed (i.e. the previous release candidate had errors).
+# Create another release candidate version from a previously created release candidate version, in case the previous release candidate had errors. Commit the version change to the current branch.
 recreate-release-candidate: bump-release-candidate
 	@echo "Version bumped part:$(PART) and client built. Ready to commit and push"
 
