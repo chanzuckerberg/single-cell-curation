@@ -15,7 +15,8 @@ clean:
 	rm -rf cellxgene_schema_cli/build cellxgene_schema_cli/dist cellxgene_schema_cli/cellxgene_schema.egg-info
 
 # RELEASE HELPERS
-
+# For displaying the current version
+current_version := $(shell awk '/current_version =/ { print $$3 }' .bumpversion.cfg)
 pydist: clean
 	cd cellxgene_schema_cli && python setup.py sdist bdist_wheel
 
