@@ -20,7 +20,11 @@ current_version := $(shell awk '/current_version =/ { print $$3 }' .bumpversion.
 pydist: clean
 	cd cellxgene_schema_cli && python setup.py sdist bdist_wheel
 
-# Set PART=[major, minor, patch] as param to make bump.
+# Show the current version
+show-current-version:
+	@echo $(current_version)
+
+# Set PART={major,minor,patch}' as param to make bump.
 # This will create a new release candidate. (i.e. 0.16.1 -> 0.16.2-rc.0 for a patch bump)
 bump-version:
 	bumpversion --config-file .bumpversion.cfg $(PART)
