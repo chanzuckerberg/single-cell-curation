@@ -27,6 +27,7 @@ class Validator:
     """Handles validation of AnnData"""
 
     schema_definitions_dir = env.SCHEMA_DEFINITIONS_DIR
+    _seurat_array_max_length = 2 ** 31 - 1  # 32-bit signed int for indexing arrays in R imposes this limit
 
     def __init__(self):
 
@@ -39,6 +40,7 @@ class Validator:
         self.h5ad_path = ""
         self.invalid_feature_ids = []
         self._raw_layer_exists = None
+        self.is_seurat_convertible: bool = True
 
         # Values will be instances of ontology.GeneChecker,
         # keys will be one of ontology.SupportedOrganisms
@@ -811,6 +813,47 @@ class Validator:
                         f"to use this type of matrix for the given sparsity."
                     )
 
+    def _validate_seurat_convertibility(self):
+        """
+        Use length of component matrices to determine if the anndata object will be unable to be converted to Seurat by
+        virtue of the R language's array size limit (4-byte signed int length). Add warning for each matrix which is
+        too large.
+        rtype: None
+        """
+        to_validate = [self.adata.X]
+        to_validate_name = ["X"]
+        # check if there's raw data
+        if self.adata.raw:
+            to_validate.append(self.adata.raw.X)
+            to_validate_name.append("raw")
+        failing_matrix_names: List[str] = []
+        # Check length of component arrays
+        for x, x_name in zip(to_validate, to_validate_name):
+            if (
+                    isinstance(x, sparse.csc_matrix)
+                    or isinstance(x, sparse.csr_matrix)
+                    or isinstance(x, sparse.coo_matrix)
+            ):
+                effective_r_array_size = x.count_nonzero()
+            elif isinstance(x, ndarray):
+                effective_r_array_size = max(x.shape)
+            else:
+                self.warnings.append(
+                    f"{x_name} matrix is of type {type(x)}, sparsity calculation hasn't been "
+                    f"implemented"
+                )
+                continue
+            if effective_r_array_size > self._seurat_array_max_length:
+                failing_matrix_names.append(x_name)
+
+        if failing_matrix_names:
+            printable_matrix_names = "\n".join(failing_matrix_names)
+            self.warnings.append(
+                f"The following matrices will fail conversion to Seurat due to exceeding the R array size limit: "
+                f"{printable_matrix_names}"
+            )
+            self.is_seurat_convertible = False
+
     def _validate_embedding_dict(self):
 
         """
@@ -1164,6 +1207,10 @@ class Validator:
         logger.debug("Validating sparsity...")
         self._validate_sparsity()
 
+        # Checks Seurat convertibility
+        logger.debug("Validating Seurat convertibility...")
+        self._validate_seurat_convertibility()
+
         # Checks each component
         for component, component_def in self.schema_def["components"].items():
             logger.debug(f"Validating component: {component}")
@@ -1240,7 +1287,7 @@ class Validator:
 
 
 def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = None, verbose: bool = False) -> (
-        bool, list):
+        bool, list, bool):
     from .write_labels import AnnDataLabelAppender
     """
     Entry point for validation.
@@ -1248,7 +1295,8 @@ def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = N
     :param Union[str, bytes, os.PathLike] h5ad_path: Path to h5ad file to validate
     :param str add_labels_file: Path to new h5ad file with ontology/gene labels added
 
-    :return (True, []) if successful validation, (False, [list_of_errors] otherwise
+    :return (True, [], <bool>) if successful validation, (False, [list_of_errors], <bool>) otherwise; last bool is for
+    seurat convertibility
     :rtype tuple
     """
 
@@ -1274,4 +1322,4 @@ def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = N
 
         return validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors
 
-    return True, validator.errors
+    return True, validator.errors, validator.is_seurat_convertible

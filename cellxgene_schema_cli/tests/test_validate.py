@@ -1,4 +1,7 @@
+import anndata
+import numpy as np
 import unittest
+from scipy import sparse
 
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 from cellxgene_schema.ontology import OntologyChecker
@@ -198,3 +201,50 @@ class TestAddLabelFunctions(unittest.TestCase):
         ids = ["CL:NO_TERM"]
         with self.assertRaises(ValueError):
             self.writer._get_mapping_dict_curie(ids, curie_constraints)
+
+
+class TestSeuratConvertibility(unittest.TestCase):
+
+    def test_determine_seurat_convertibility(self):
+        # Sparse matrix with too many nonzero values is not Seurat-convertible
+        sparse_matrix_too_large = sparse.csr_matrix(np.ones((4, 2)))
+        data_all_nonzero = anndata.AnnData(sparse_matrix_too_large)
+        validator: Validator = Validator()
+        validator._seurat_array_max_length = 2 ** 3 - 1  # Reduce size required to fail (for better test run time)
+        validator.adata = data_all_nonzero
+        validator._validate_seurat_convertibility()
+        self.assertFalse(validator.is_seurat_convertible)
+        # Reducing nonzero count by 1, to within limit, makes it Seurat-convertible
+        sparse_matrix_with_zero = sparse.csr_matrix(np.array([0, 1, 2, 3, 4, 5, 6, 7]))
+        data_with_zero = anndata.AnnData(sparse_matrix_with_zero)
+        validator: Validator = Validator()
+        validator._seurat_array_max_length = 2 ** 3 - 1
+        validator.adata = data_with_zero
+        validator._validate_seurat_convertibility()
+        self.assertTrue(validator.is_seurat_convertible)
+        # Dense matrices with a dimension that exceeds limit will fail -- zeros are irrelevant
+        dense_matrix_with_zero = np.array([[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]])
+        data_with_zero_dense = anndata.AnnData(dense_matrix_with_zero)
+        validator: Validator = Validator()
+        validator._seurat_array_max_length = 2 ** 3 - 1
+        validator.adata = data_with_zero_dense
+        validator._validate_seurat_convertibility()
+        self.assertFalse(validator.is_seurat_convertible)
+        # Dense matrices will fail if number of rows exceeds Seurat array max length
+        dense_matrix_with_high_row_count = np.array([[0], [1], [2], [3], [4], [5], [6], [7]])
+        data_with_zero_dense_high_row_count = anndata.AnnData(dense_matrix_with_high_row_count)
+        validator: Validator = Validator()
+        validator._seurat_array_max_length = 2 ** 3 - 1
+        validator.adata = data_with_zero_dense_high_row_count
+        validator._validate_seurat_convertibility()
+        self.assertFalse(validator.is_seurat_convertible)
+
+    def test_add_warning_for_seurat_nonconvertible(self):
+        sparse_matrix_too_large = sparse.csr_matrix(np.ones((4, 2)))
+        data_all_nonzero = anndata.AnnData(sparse_matrix_too_large)
+        validator: Validator = Validator()
+        validator._seurat_array_max_length = 2 ** 3 - 1
+        validator.adata = data_all_nonzero
+        validator._validate_seurat_convertibility()
+        self.assertFalse(validator.is_seurat_convertible)
+        self.assertTrue(len(validator.warnings) == 1)
