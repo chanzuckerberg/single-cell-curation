@@ -1317,7 +1317,8 @@ def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = N
         writer.write_labels(add_labels_file)
         logger.info(f"H5AD label writing complete in {datetime.now() - label_start}, was_writing_successful: {writer.was_writing_successful}") # noqa E501
 
-        return validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors, \
-               validator.is_seurat_convertible
+        return validator.is_valid and writer.was_writing_successful, \
+            validator.errors + writer.errors, \
+            validator.is_seurat_convertible
 
     return True, validator.errors, validator.is_seurat_convertible
