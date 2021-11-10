@@ -236,3 +236,11 @@ class TestSeuratConvertibility(unittest.TestCase):
         self.validator._validate_seurat_convertibility()
         self.assertTrue(len(self.validator.warnings) == 1)
         self.assertFalse(self.validator.is_seurat_convertible)
+
+        # Dense matrices with dimensions in bounds but total count over will succeed
+        dense_matrix = np.ones((good_obs.shape[0], good_var.shape[0]))
+        self.validation_helper(dense_matrix)
+        self.validator.schema_def["max_size_for_seurat"] = 2 ** 3 - 1
+        self.validator._validate_seurat_convertibility()
+        self.assertTrue(len(self.validator.warnings) == 0)
+        self.assertTrue(self.validator.is_seurat_convertible)
