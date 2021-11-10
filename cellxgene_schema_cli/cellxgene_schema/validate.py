@@ -118,7 +118,6 @@ class Validator:
         """
         Sets schema dictionary from using information in adata. If there are any errors, it adds them to self.errors
         """
-
         # Check if schema version slot is present
         if "schema_version" not in self.adata.uns:
             self.errors.append(
@@ -826,33 +825,32 @@ class Validator:
         if self.adata.raw:
             to_validate.append(self.adata.raw.X)
             to_validate_name.append("raw")
-        failing_matrix_names: List[str] = []
+        inconvertible_matrix_names: List[(str, int, bool)] = []
         # Check length of component arrays
-        for x, x_name in zip(to_validate, to_validate_name):
-            if (
-                    isinstance(x, sparse.csc_matrix)
-                    or isinstance(x, sparse.csr_matrix)
-                    or isinstance(x, sparse.coo_matrix)
-            ):
-                effective_r_array_size = x.count_nonzero()
-            elif isinstance(x, ndarray):
-                effective_r_array_size = max(x.shape)
+        for matrix, matrix_name in zip(to_validate, to_validate_name):
+            if sparse.issparse(matrix):
+                effective_r_array_size = matrix.count_nonzero()
+                is_sparse = True
+            elif isinstance(matrix, ndarray):
+                effective_r_array_size = max(matrix.shape)
+                is_sparse = False
             else:
-                self.warnings.append(
-                    f"{x_name} matrix is of type {type(x)}, sparsity calculation hasn't been "
-                    f"implemented"
-                )
+                self.warnings.append(f"Unable to verify seurat convertibility for matrix {matrix_name} "
+                                     f"of type {type(matrix)}")
                 continue
-            if effective_r_array_size > self._seurat_array_max_length:
-                failing_matrix_names.append(x_name)
-
-        if failing_matrix_names:
-            printable_matrix_names = "\n".join(failing_matrix_names)
-            self.warnings.append(
-                f"The following matrices will fail conversion to Seurat due to exceeding the R array size limit: "
-                f"{printable_matrix_names}"
-            )
-            self.is_seurat_convertible = False
+            if effective_r_array_size > self.schema_def["max_size_for_seurat"]:
+                if is_sparse:
+                    warning_message = f"This dataset cannot be converted to the .rds (Seurat v3) format. " \
+                                      f"{effective_r_array_size} nonzero elements in matrix {matrix_name} exceed the " \
+                                      f"limitations in the R dgCMatrix sparse matrix class (2^31 - 1 nonzero " \
+                                      f"elements)."
+                else:
+                    warning_message = f"This dataset cannot be converted to the .rds (Seurat v3) format. " \
+                                      f"{effective_r_array_size} elements in at least one dimension of matrix " \
+                                      f"{matrix_name} exceed the limitations in the R dgCMatrix sparse matrix class " \
+                                      f"(2^31 - 1 nonzero elements)."
+                self.warnings.append(warning_message)
+                self.is_seurat_convertible = False
 
     def _validate_embedding_dict(self):
 
@@ -1312,7 +1310,7 @@ def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = N
 
     # Stop if validation was unsuccessful
     if not validator.is_valid:
-        return False, validator.errors
+        return False, validator.errors, validator.is_seurat_convertible
 
     if add_labels_file:
         label_start = datetime.now()
@@ -1320,6 +1318,6 @@ def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = N
         writer.write_labels(add_labels_file)
         logger.info(f"H5AD label writing complete in {datetime.now() - label_start}, was_writing_successful: {writer.was_writing_successful}") # noqa E501
 
-        return validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors
+        return validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors, validator.is_seurat_convertible
 
     return True, validator.errors, validator.is_seurat_convertible
