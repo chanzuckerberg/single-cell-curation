@@ -40,7 +40,7 @@ def schema_cli():
     is_flag=True
 )
 def schema_validate(h5ad_file, add_labels_file, verbose):
-    is_valid, _ = validate(h5ad_file, add_labels_file, verbose=verbose)
+    is_valid, _, _ = validate(h5ad_file, add_labels_file, verbose=verbose)
     if is_valid:
         sys.exit(0)
     else:
