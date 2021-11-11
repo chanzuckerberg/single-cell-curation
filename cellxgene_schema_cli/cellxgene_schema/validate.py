@@ -27,7 +27,6 @@ class Validator:
     """Handles validation of AnnData"""
 
     schema_definitions_dir = env.SCHEMA_DEFINITIONS_DIR
-    _seurat_array_max_length = 2 ** 31 - 1  # 32-bit signed int for indexing arrays in R imposes this limit
 
     def __init__(self):
 
@@ -839,16 +838,20 @@ class Validator:
                 continue
             if effective_r_array_size > self.schema_def["max_size_for_seurat"]:
                 if is_sparse:
-                    warning_message = f"This dataset cannot be converted to the .rds (Seurat v3) format. " \
-                                      f"{effective_r_array_size} nonzero elements in matrix {matrix_name} exceed the " \
-                                      f"limitations in the R dgCMatrix sparse matrix class (2^31 - 1 nonzero " \
-                                      f"elements)."
+                    self.warnings.append(
+                        f"This dataset cannot be converted to the .rds (Seurat v3) format. "
+                        f"{effective_r_array_size} nonzero elements in matrix {matrix_name} exceed the "
+                        f"limitations in the R dgCMatrix sparse matrix class (2^31 - 1 nonzero "
+                        f"elements)."
+                    )
                 else:
-                    warning_message = f"This dataset cannot be converted to the .rds (Seurat v3) format. " \
-                                      f"{effective_r_array_size} elements in at least one dimension of matrix " \
-                                      f"{matrix_name} exceed the limitations in the R dgCMatrix sparse matrix class " \
-                                      f"(2^31 - 1 nonzero elements)."
-                self.warnings.append(warning_message)
+                    self.warnings.append(
+                        f"This dataset cannot be converted to the .rds (Seurat v3) format. "
+                        f"{effective_r_array_size} elements in at least one dimension of matrix "
+                        f"{matrix_name} exceed the limitations in the R dgCMatrix sparse matrix class "
+                        f"(2^31 - 1 nonzero elements)."
+                    )
+
                 self.is_seurat_convertible = False
 
     def _validate_embedding_dict(self):
