@@ -2,6 +2,8 @@ title: Corpora schema version 2.0.0
 type: anndata
 # If sparsity of any expression matrix is greater than this and not csr sparse matrix, then there will be warning.
 sparsity: 0.5
+# If the R array will exceed this number in size, then Seurat conversion will fail
+max_size_for_seurat: 2147483647  # 2^31 - 1 (max value for 4-byte signed int)
 # Perform the checks for "raw" requirements IF:
 raw:
     obs:

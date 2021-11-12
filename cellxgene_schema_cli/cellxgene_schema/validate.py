@@ -39,6 +39,7 @@ class Validator:
         self.h5ad_path = ""
         self.invalid_feature_ids = []
         self._raw_layer_exists = None
+        self.is_seurat_convertible: bool = True
 
         # Values will be instances of ontology.GeneChecker,
         # keys will be one of ontology.SupportedOrganisms
@@ -116,7 +117,6 @@ class Validator:
         """
         Sets schema dictionary from using information in adata. If there are any errors, it adds them to self.errors
         """
-
         # Check if schema version slot is present
         if "schema_version" not in self.adata.uns:
             self.errors.append(
@@ -811,6 +811,49 @@ class Validator:
                         f"to use this type of matrix for the given sparsity."
                     )
 
+    def _validate_seurat_convertibility(self):
+        """
+        Use length of component matrices to determine if the anndata object will be unable to be converted to Seurat by
+        virtue of the R language's array size limit (4-byte signed int length). Add warning for each matrix which is
+        too large.
+        rtype: None
+        """
+        to_validate = [self.adata.X]
+        to_validate_name = ["X"]
+        # check if there's raw data
+        if self.adata.raw:
+            to_validate.append(self.adata.raw.X)
+            to_validate_name.append("raw")
+        # Check length of component arrays
+        for matrix, matrix_name in zip(to_validate, to_validate_name):
+            if sparse.issparse(matrix):
+                effective_r_array_size = matrix.count_nonzero()
+                is_sparse = True
+            elif isinstance(matrix, ndarray):
+                effective_r_array_size = max(matrix.shape)
+                is_sparse = False
+            else:
+                self.warnings.append(f"Unable to verify seurat convertibility for matrix {matrix_name} "
+                                     f"of type {type(matrix)}")
+                continue
+            if effective_r_array_size > self.schema_def["max_size_for_seurat"]:
+                if is_sparse:
+                    self.warnings.append(
+                        f"This dataset cannot be converted to the .rds (Seurat v3) format. "
+                        f"{effective_r_array_size} nonzero elements in matrix {matrix_name} exceed the "
+                        f"limitations in the R dgCMatrix sparse matrix class (2^31 - 1 nonzero "
+                        f"elements)."
+                    )
+                else:
+                    self.warnings.append(
+                        f"This dataset cannot be converted to the .rds (Seurat v3) format. "
+                        f"{effective_r_array_size} elements in at least one dimension of matrix "
+                        f"{matrix_name} exceed the limitations in the R dgCMatrix sparse matrix class "
+                        f"(2^31 - 1 nonzero elements)."
+                    )
+
+                self.is_seurat_convertible = False
+
     def _validate_embedding_dict(self):
 
         """
@@ -1164,6 +1207,10 @@ class Validator:
         logger.debug("Validating sparsity...")
         self._validate_sparsity()
 
+        # Checks Seurat convertibility
+        logger.debug("Validating Seurat convertibility...")
+        self._validate_seurat_convertibility()
+
         # Checks each component
         for component, component_def in self.schema_def["components"].items():
             logger.debug(f"Validating component: {component}")
@@ -1240,7 +1287,7 @@ class Validator:
 
 
 def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = None, verbose: bool = False) -> (
-        bool, list):
+        bool, list, bool):
     from .write_labels import AnnDataLabelAppender
     """
     Entry point for validation.
@@ -1248,7 +1295,8 @@ def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = N
     :param Union[str, bytes, os.PathLike] h5ad_path: Path to h5ad file to validate
     :param str add_labels_file: Path to new h5ad file with ontology/gene labels added
 
-    :return (True, []) if successful validation, (False, [list_of_errors] otherwise
+    :return (True, [], <bool>) if successful validation, (False, [list_of_errors], <bool>) otherwise; last bool is for
+    seurat convertibility
     :rtype tuple
     """
 
@@ -1264,7 +1312,7 @@ def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = N
 
     # Stop if validation was unsuccessful
     if not validator.is_valid:
-        return False, validator.errors
+        return False, validator.errors, validator.is_seurat_convertible
 
     if add_labels_file:
         label_start = datetime.now()
@@ -1272,6 +1320,8 @@ def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = N
         writer.write_labels(add_labels_file)
         logger.info(f"H5AD label writing complete in {datetime.now() - label_start}, was_writing_successful: {writer.was_writing_successful}") # noqa E501
 
-        return validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors
+        return validator.is_valid and writer.was_writing_successful, \
+            validator.errors + writer.errors, \
+            validator.is_seurat_convertible
 
-    return True, validator.errors
+    return True, validator.errors, validator.is_seurat_convertible
