@@ -14,6 +14,15 @@ The release process should result in the following side effects:
 
 Note all release tags pushed to GitHub MUST follow semantic versioning.
 
+## Prerequisites
+
+Before attempting releases of `cellxgene-schema` to Test PyPI and PyPI, create an account on each:
+* https://pypi.org/account/register/
+* https://test.pypi.org/account/register/
+
+and request to be added to the `Owner` role in the [#single-cell-eng](https://czi-sci.slack.com/archives/C023Q1APASK) Slack channel.
+Once you have access, **please setup 2FA**! 
+
 ## How to release the next version of `cellxgene-schema`
 
 Steps must be run from the project directory and in a virtual env with all the dependencies defined in `requirements.txt` installed.
@@ -57,4 +66,3 @@ High level checklist to ensure that you completed the release successfully.
 ## Additional Resources
 
 - [How to create a Python virtual environment](https://docs.python.org/3/library/venv.html#creating-virtual-environments)
-- If you need access to the Test PyPI or PyPI projects, please ping the [#single-cell-eng](https://czi-sci.slack.com/archives/C023Q1APASK) Slack channel. Once you have access, **please setup 2FA**!
