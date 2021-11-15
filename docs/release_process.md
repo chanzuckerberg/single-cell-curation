@@ -14,6 +14,15 @@ The release process should result in the following side effects:
 
 Note all release tags pushed to GitHub MUST follow semantic versioning.
 
+## Prerequisites
+
+Before attempting releases of `cellxgene-schema` to Test PyPI and PyPI, create an account on each:
+* https://pypi.org/account/register/
+* https://test.pypi.org/account/register/
+
+and request to be added to the `Owner` role in the [#single-cell-eng](https://czi-sci.slack.com/archives/C023Q1APASK) Slack channel.
+Once you have access, **please setup 2FA**! 
+
 ## How to release the next version of `cellxgene-schema`
 
 Steps must be run from the project directory and in a virtual env with all the dependencies defined in `requirements.txt` installed.
@@ -26,7 +35,9 @@ Steps must be run from the project directory and in a virtual env with all the d
 
 1. Commit the changes, push the new branch to origin, and open a PR to be reviewed. Do not merge in the PR yet.
 
-1. Run `make release-candidate-to-test-pypi` to release the newly created release candidate to Test PyPI. Test the release by installing `cellxgene-schema` using `pip install -i https://test.pypi.org/simple/ cellxgene-schema=={release_candidate_version}` in a fresh virtual environment.
+1. Run `make release-candidate-to-test-pypi` to release the newly created release candidate to Test PyPI.
+
+1. Using a fresh virtual environment, test the release candidate by installing `cellxgene-schema` using `python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ cellxgene-schema==2.1.0rc0`.
 
 1. If you detect errors in the release, fix them in `main` and then rebase the release branch. Then run `make recreate-release-candidate` to bump up the release candidate version (i.e. 2.1.0-rc.0 will get bumped up to 2.1.0-rc.1). Run `make release-candidate-to-test-pypi` again to release this candidate to Test PyPI for testing.
 
@@ -57,4 +68,3 @@ High level checklist to ensure that you completed the release successfully.
 ## Additional Resources
 
 - [How to create a Python virtual environment](https://docs.python.org/3/library/venv.html#creating-virtual-environments)
-- If you need access to the Test PyPI or PyPI projects, please ping the [#single-cell-eng](https://czi-sci.slack.com/archives/C023Q1APASK) Slack channel. Once you have access, **please setup 2FA**!
