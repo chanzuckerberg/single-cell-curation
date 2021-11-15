@@ -39,6 +39,8 @@ Steps must be run from the project directory and in a virtual env with all the d
 
 1. Using a fresh virtual environment, test the release candidate by installing `cellxgene-schema` using `python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ cellxgene-schema==2.1.0rc0`.
 
+1. If you detect errors in the release, fix them in `main` and then rebase the release branch. Then run `make recreate-release-candidate` to bump up the release candidate version (i.e. 2.1.0-rc.0 will get bumped up to 2.1.0-rc.1). Run `make release-candidate-to-test-pypi` again to release this candidate to Test PyPI for testing.
+
 1. If everything looks good, release the final candidate to Test PyPI by running `make release-final-to-test-pypi`. This will remove the `rc` tag from the version and upload the distribution to Test PyPI in one go. Test one last time to make sure everything is OK.
 
 1. Ensure that all commits are pushed to your branch (especially make sure that all the version changes are pushed) and get the PR reviewed and **merged**.
