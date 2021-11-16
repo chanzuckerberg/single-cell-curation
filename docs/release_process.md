@@ -50,9 +50,10 @@ Steps must be run from the project directory and in a virtual env with all the d
 1. Test the installation in a fresh virtual environment by running `pip install --no-cache-dir cellxgene-schema`. If you find errors, go back to step 1.
 
 1. Create a Github release ([instructions](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository)):
-    1. Draft a new release. The release description should be the same as the CHANGELOG from Step 4. The release title should be "Release {version_num}".
-    1. Select `main` as release branch (ensure you merged the release PR).
-    1. Create a new tag with same name as the release (`vx.y.z`).
+    1. [Draft a new release](https://github.com/chanzuckerberg/single-cell-curation/releases/new).
+      1. Create a new tag with same name as the release (`vx.y.z`).
+      1. Select `main` as target branch (ensure you merged the release PR).
+      1. The release title should be `Release vx.y.z`. The release description should be the same as the CHANGELOG from Step 4.
 
 ## Gut-check checklist
 
