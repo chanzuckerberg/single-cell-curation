@@ -20,7 +20,7 @@ pydist: clean
 	cd cellxgene_schema_cli && python setup.py sdist bdist_wheel
 
 # For displaying the current version
-current_version := $(shell awk '/current_version =/ { print $$3 }' .bumpversion.cfg)
+current_version = $$(awk '/current_version =/ { print $$3 }' .bumpversion.cfg)
 
 # Show the current version
 show-current-version:
@@ -30,7 +30,7 @@ show-current-version:
 # Set PART={major,minor,patch} as param to make the version bump happen automatically.
 create-release-candidate:
 	bumpversion --config-file .bumpversion.cfg $(PART) --allow-dirty
-	git checkout -b release-version-$(shell awk '/current_version =/ { split($$3,v,"-"); print v[1] }' .bumpversion.cfg)
+	git checkout -b release-version-$$(awk '/current_version =/ { split($$3,v,"-"); print v[1] }' .bumpversion.cfg)
 	@echo "Version bumped part:$(PART) to "$(current_version)". Ready to commit and push"
 
 # Create another release candidate version from a previously created release candidate version, in case the previous release candidate had errors. Commit the version change to the current branch.
