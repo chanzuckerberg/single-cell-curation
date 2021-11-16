@@ -45,7 +45,7 @@ Steps must be run from the project directory and in a virtual env with all the d
 
 1. Ensure that all commits are pushed to your branch (especially make sure that all the version changes are pushed) and get the PR reviewed and **merged**.
 
-1. Release to (prod) PyPI by running `make release-final`.
+1. Release to (prod) PyPI by running `make release-to-pypi`.
 
 1. Test the installation in a fresh virtual environment by running `pip install --no-cache-dir cellxgene-schema`. If you find errors, go back to step 1.
 
