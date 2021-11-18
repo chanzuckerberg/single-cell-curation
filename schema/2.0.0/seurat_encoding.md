@@ -12,7 +12,7 @@ Schema version: 2.0.0
 
 All data submitted to the [cellxgene Data Portal](https://cellxgene.cziscience.com/) is automatically converted to a Seurat V3 object that can be loaded by the R package [Seurat](https://satijalab.org/seurat/).
 
-This document describes the Seurat encoding for the converted data. <u><strong>Readers should be familiar with the [schema](.schema.md).</strong></u>
+This document describes the Seurat encoding for the converted data. <u><strong>Readers should be familiar with the [schema](./schema.md).</strong></u>
 
 ## Encoding
 
@@ -251,7 +251,7 @@ The dataset metadata from the AnnData slot `uns` is stored in the Seurat object 
 </tbody></table>
 <br>
 
-Only fields defined in the [schema](.schema.md/#uns-dataset-metadata) are transferred from the AnnData to the Suerat object:
+Only fields defined in the [schema](./schema.md/#uns-dataset-metadata) are transferred from the AnnData to the Suerat object:
 
 
 <table><tbody>
