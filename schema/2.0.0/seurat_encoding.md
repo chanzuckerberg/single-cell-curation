@@ -28,7 +28,7 @@ The following sections describe the individual components of a dataset as encode
 
 ### Data matrix
 
-Matrix data is stored in the slot `assays` under the element `RNA`. Seurat allows elements of `assasy` to have any arbitrary name, but all matrix data from cellxgene will be stored in `RNA`.
+Matrix data is stored in the slot `assays` under the element `RNA`. Seurat allows elements of `assays` to have any arbitrary name, but all matrix data from cellxgene will be stored in `RNA`.
 
 #### Raw data
 
@@ -251,7 +251,7 @@ The dataset metadata from the AnnData slot `uns` is stored in the Seurat object 
 </tbody></table>
 <br>
 
-Only fields defined in the [schema](./schema.md/#uns-dataset-metadata) are transferred from the AnnData to the Suerat object:
+Only fields defined in the [schema](./schema.md/#uns-dataset-metadata) are transferred from the AnnData to the Seurat object:
 
 
 <table><tbody>
