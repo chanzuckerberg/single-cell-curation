@@ -237,7 +237,7 @@ The matrix with reductions is stored in the `cell.embeddings` slot of `SeuratObj
 
 ### Dataset Metadata
 
-The dataset metadata from the AnnData slot `uns` is stored in the Seurat object in the slot `misc`. 
+Dataset metadata is stored in the `misc` slot.
 
 <table><tbody>
     <tr>
@@ -251,7 +251,7 @@ The dataset metadata from the AnnData slot `uns` is stored in the Seurat object 
 </tbody></table>
 <br>
 
-Only fields defined in the [schema](./schema.md/#uns-dataset-metadata) are transferred from the AnnData to the Seurat object:
+Only fields defined in the [schema](./schema.md/#uns-dataset-metadata) are transferred to the Seurat object:
 
 
 <table><tbody>
