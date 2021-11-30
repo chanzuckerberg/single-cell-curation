@@ -12,7 +12,7 @@ Schema version: 2.0.0
 
 All data submitted to the [cellxgene Data Portal](https://cellxgene.cziscience.com/) is automatically converted to a Seurat V3 object that can be loaded by the R package [Seurat](https://satijalab.org/seurat/).
 
-This document describes the Seurat encoding for the converted data. <u><strong>Readers should be familiar with the [schema](.schema.md).</strong></u>
+This document describes the Seurat encoding for the converted data. <u><strong>Readers should be familiar with the [schema](./schema.md).</strong></u>
 
 ## Encoding
 
@@ -28,7 +28,7 @@ The following sections describe the individual components of a dataset as encode
 
 ### Data matrix
 
-Matrix data is stored in the slot `assays` under the element `RNA`. Seurat allows elements of `assasy` to have any arbitrary name, but all matrix data from cellxgene will be stored in `RNA`.
+Matrix data is stored in the slot `assays` under the element `RNA`. Seurat allows elements of `assays` to have any arbitrary name, but all matrix data from cellxgene will be stored in `RNA`.
 
 #### Raw data
 
@@ -237,4 +237,64 @@ The matrix with reductions is stored in the `cell.embeddings` slot of `SeuratObj
 
 ### Dataset Metadata
 
-At the moment a Seurat object downloaded from cellxgene does not contain the dataset metadata stored in the AnnData slot `uns`.
+Dataset metadata is stored in the `misc` slot.
+
+<table><tbody>
+    <tr>
+      <th>Access</th>
+      <td><code>seurat_object@misc</code></td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>list[character|list]</code></td>
+    </tr>
+</tbody></table>
+<br>
+
+Only fields defined in the [schema](./schema.md/#uns-dataset-metadata) are transferred to the Seurat object:
+
+
+<table><tbody>
+    <tr>
+      <th>Name</th>
+      <th>Value</th>
+      <th>Optional</th>
+    </tr>
+    <tr>
+      <td>schema_version</td>
+      <td><code>character</code></td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td>title</td>
+      <td><code>character</code></td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td>X_normalization</td>
+      <td><code>character</code></td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td>feature_name</td>
+      <td><code>character</code></td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td>batch_condition</td>
+      <td><code>list[character]</code></td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>default_embedding</td>
+      <td><code>character</code></td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>X_approximate_distribution</td>
+      <td><code>character</code></td>
+      <td>Yes</td>
+    </tr>
+ </tbody></table>
+<br>
+
