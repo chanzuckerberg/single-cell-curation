@@ -1,6 +1,9 @@
 import os
 import gzip
 import sys
+import gtf_tools
+from typing import Dict
+
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../cellxgene_schema"))
 import env
 
@@ -18,6 +21,7 @@ def _parse_gtf(gtf_path: str, output_file: str):
     """
 
     output_to_print = ""
+    gene_lengths = _get_gene_lengths_from_gtf(gtf_path)
     with gzip.open(gtf_path, "rb") as gtf:
         for line in gtf:
             line = line.decode("utf-8")
@@ -30,59 +34,103 @@ def _parse_gtf(gtf_path: str, output_file: str):
             # Desired features based on whether is gene or transcript
             if line[2] == "gene":
                 features = ["gene_id", "gene_name", "gene_version"]
-            elif line[2] == "transcript":
-                features = ["transcript_id", "transcript_name", "transcript_version"]
+            # TRANSCRIPT implementation
+            #elif line[2] == "transcript":
+            #    features = ["transcript_id", "transcript_name", "transcript_version"]
             else:
                 continue
 
-            # Extract features (column 9 of GTF)
-            current_features = _get_features(line)
+            # Extract features (column 9 of GTF) and get gene length
+            current_features = gtf_tools._get_features(line)
+            current_length = str(gene_lengths[current_features["gene_id"]])
 
             # Select  features of interest, raise error feature of interest not found
             target_features = [""] * len(features)
             for i in range(len(features)):
                 feature = features[i]
                 if feature in current_features:
-                    current_features[feature] = current_features[feature].replace(
-                        '"', ""
-                    )
+                    current_features[feature] = current_features[feature]
                     target_features[i] = current_features[feature]
 
                 # Add gene version if available from gene id
-                if feature in ["gene_id", "transcript_id"]:
+                #if feature in ["gene_id", "transcript_id"]:
+                if feature in ["gene_id"]:
                     if "." in target_features[i]:
                         (feature_id, feature_version) = target_features[i].split(".")
-                        target_features[i] = feature_id
-                        current_features[feature.replace("id", "version")] = feature_version
+                    else:
+                        feature_id = target_features[i]
+                        feature_version = ""
 
-            output_to_print += ",".join(target_features) + "\n"
+                    target_features[i] = feature_id
+                    current_features[feature.replace("id", "version")] = feature_version
+
+            output_to_print += ",".join(target_features + [current_length]) + "\n"
 
     with gzip.open(output_file, "wt") as output:
         output.write(output_to_print)
 
 
-def _get_features(gtf_line: str) -> dict:
+def _get_gene_lengths_from_gtf(gtf_path: str) -> Dict[str, int]:
 
     """
-    Parses the features found in column 8 of GTF, returns a dict with keys as feature names and values as the feature
-    values
+    Parses a GTF file and calculates gene lengths, which are calculated as follows for each gene:
+       1. Get all different isoforms
+       2. Merge exons to create a set of non-overlapping "meta" exons
+       3. Sum the lengths of these "meta" exons
 
-    :param str gtf_line: a line from a GTF file
+    Code inspired from http://www.genemine.org/gtftools.php
+
+    :param str gtf_path: path to gzipped gtf file
+
+    :rtype  Dict[str]
+    :return A dictionary with keys being gene ids and values the corresponding length in base pairs
     """
 
-    return_features = {}
+    with gzip.open(gtf_path, "rb") as gtf:
 
-    for feature in gtf_line[8].split(";"):
-        if len(feature) > 1:
-            feature = feature.strip().split(" ")
-            feature_name = feature[0]
-            feature_value = feature[1]
-            return_features[feature_name] = feature_value
+        # Dictionary of list of tuples that will store exon in bed format-like. Elements of the tuples will be the
+        # equivalent  fields from the bed format: chromosome, start, end, strand). Each list of tuples will correspond
+        # to one gene.
 
-    return return_features
+        exons_in_bed = {}
+
+        for line in gtf:
+            line = line.decode("utf-8")
+
+            if line[0] == "#":
+                continue
+
+            line = line.rstrip().split("\t")
+
+            if line[2] != "exon":
+                continue
+
+            # Convert line to bed-like format: (chromosome, start, end, strand)
+            exon_bed = (line[0], int(line[3]) - 1, int(line[4]), line[6])
+
+            current_features = gtf_tools._get_features(line)
+            gene_id = current_features["gene_id"]
+            if gene_id in exons_in_bed:
+                exons_in_bed[gene_id].append(exon_bed)
+            else:
+                exons_in_bed[gene_id] = [exon_bed]
+
+    # Merge exons from the same gene to create non-overlapping "meta" genes
+    # Then calculate gene length
+    gene_lengths = {}
+    for gene in exons_in_bed:
+        meta_exons = gtf_tools.merge_bed_ranges(exons_in_bed[gene])
+
+        # get length for this gene, i.e. sum of lengths of "meta" exons
+        gene_lengths[gene] = 0
+        for exon in meta_exons:
+            gene_lengths[gene] += exon[2] - exon[1]
+
+    return gene_lengths
 
 
 def _process_ercc(ercc_path: str, output_file: str):
+
     """
     process the ERCC download, keeps only first column with no header
 
@@ -94,8 +142,11 @@ def _process_ercc(ercc_path: str, output_file: str):
     with open(ercc_path, "r") as ercc:
         lines = ercc.readlines()[1:]
         for line in lines:
-            ercc_id = line.rstrip().split("\t")[0]
-            output_to_print += ",".join([ercc_id, ercc_id + " (spike-in control)", "1"]) + "\n"
+            line = line.rstrip().split("\t")
+            ercc_id = line[0]
+            errc_length = str(len(line[4]))
+            errc_version = "1"
+            output_to_print += ",".join([ercc_id, ercc_id + " (spike-in control)", errc_version, errc_length]) + "\n"
 
     with gzip.open(output_file, "wt") as output:
         output.write(output_to_print)
