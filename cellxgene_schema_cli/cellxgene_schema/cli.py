@@ -36,7 +36,9 @@ def schema_cli():
     is_flag=True
 )
 def schema_validate(h5ad_file, add_labels_file, verbose):
-    # This can ve very slow so we defer loading until Click arg validation has passed
+    # Imports are very slow so we defer loading until Click arg validation has passed
+
+    print("Loading dependencies")
     try:
         import anndata  # noqa: F401
     except ImportError:
