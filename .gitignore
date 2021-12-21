@@ -4,6 +4,10 @@
 *.idea*
 __pycache__
 *.DS_Store*
+dist
+cellxgene_schema_cli/build
+cellxgene_schema_cli/dist
+*.egg-info
 
 # enviroments
 venv/
