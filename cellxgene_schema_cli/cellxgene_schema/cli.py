@@ -1,6 +1,5 @@
 import click
 import sys
-from .validate import validate
 
 
 @click.group(
@@ -10,10 +9,7 @@ from .validate import validate
     context_settings=dict(max_content_width=85, help_option_names=["-h", "--help"]),
 )
 def schema_cli():
-    try:
-        import anndata  # noqa: F401
-    except ImportError:
-        raise click.ClickException("[cellxgene] cellxgene-schema requires anndata")
+    pass
 
 
 @click.command(
@@ -40,6 +36,17 @@ def schema_cli():
     is_flag=True
 )
 def schema_validate(h5ad_file, add_labels_file, verbose):
+    # Imports are very slow so we defer loading until Click arg validation has passed
+
+    print("Loading dependencies")
+    try:
+        import anndata  # noqa: F401
+    except ImportError:
+        raise click.ClickException("[cellxgene] cellxgene-schema requires anndata")
+
+    print("Loading validator modules")
+    from .validate import validate
+
     is_valid, _, _ = validate(h5ad_file, add_labels_file, verbose=verbose)
     if is_valid:
         sys.exit(0)
