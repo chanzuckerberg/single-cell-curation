@@ -42,10 +42,16 @@ def merge_bed_ranges(ranges: List[Tuple]) -> List[Tuple]:
     return merged
 
 
-def _neighbor_merge_ranges(range1, range2):
+def _neighbor_merge_ranges(range1: Tuple, range2: Tuple) -> List[Tuple]:
 
     """
     Merges two neighboring ranges
+
+    :param range1 Tuple: a tuple of the form [chromosome, start, end, strand]
+    :param range2 Tuple: a tuple of the form [chromosome, start, end, strand]
+
+    :rtype List[Tuple]
+    :return A list of non-overlapping ranges
     """
 
     if range2[1]<=range1[2]:
@@ -62,6 +68,9 @@ def _get_features(gtf_line: str) -> dict:
     values
 
     :param str gtf_line: a line from a GTF file
+
+    :rtype dict
+    :Return a dictionary with keys and values from column 8 of GTF; key-value example: gene_id-ENSG0000001
     """
 
     return_features = {}

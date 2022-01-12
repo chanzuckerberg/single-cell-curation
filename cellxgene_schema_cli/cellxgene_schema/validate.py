@@ -68,9 +68,7 @@ class Validator:
                 search_results = re.search(r"%s$" % suffix, term_id)
                 if search_results:
                     stripped_term_id = re.sub(r"%s$" % suffix, "", term_id)
-                    if ONTOLOGY_CHECKER.is_valid_term_id(
-                        ontology_name, stripped_term_id
-                    ):
+                    if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, stripped_term_id):
                         id_suffix = search_results.group(0)
 
                         return stripped_term_id, id_suffix
@@ -1331,7 +1329,7 @@ def validate(
         logger.info(
             f"H5AD label writing complete in {datetime.now() - label_start}, was_writing_successful: "
             f"{writer.was_writing_successful}"
-        )  # noqa E501
+        )
 
         return (
             validator.is_valid and writer.was_writing_successful,
