@@ -97,7 +97,7 @@ If reference gene versions need to be updated then `Makefile` has to be changed 
 
 ## Cleanup
 
-If  instead of the rule `update-references` individual make rules were executed, then make sure to remove all unused downloads using:
+If instead of the rule `update-references` individual make rules were executed, then make sure to remove all unused downloads using:
 ```bash
 make clean
 ```
