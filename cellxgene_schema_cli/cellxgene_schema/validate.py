@@ -1331,7 +1331,7 @@ def validate(
         logger.info(
             f"H5AD label writing complete in {datetime.now() - label_start}, was_writing_successful: "
             f"{writer.was_writing_successful}"
-        )  # noqa E501
+        )
 
         return (
             validator.is_valid and writer.was_writing_successful,
