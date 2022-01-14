@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.1.1] - 2021-12-14
 
 ### Changed
-- Gene reference files now have an extra column with for gene length.
+- Gene reference files now have an extra column for gene length.
 - Gene reference files no longer have transcripts.
 
 ## [2.1.0] - 2021-11-12    
