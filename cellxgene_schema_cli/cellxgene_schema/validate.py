@@ -833,8 +833,10 @@ class Validator:
                 effective_r_array_size = max(matrix.shape)
                 is_sparse = False
             else:
-                self.warnings.append(f"Unable to verify seurat convertibility for matrix {matrix_name} "
-                                     f"of type {type(matrix)}")
+                self.warnings.append(
+                    f"Unable to verify seurat convertibility for matrix {matrix_name} "
+                    f"of type {type(matrix)}"
+                )
                 continue
             if effective_r_array_size > self.schema_def["max_size_for_seurat"]:
                 if is_sparse:
@@ -989,7 +991,10 @@ class Validator:
             if max_values_to_check > len(non_zeroes_index[0]):
                 max_values_to_check = len(non_zeroes_index[0])
 
-            x_non_zeroes = x[non_zeroes_index[0][:max_values_to_check], non_zeroes_index[1][:max_values_to_check]]
+            x_non_zeroes = x[
+                non_zeroes_index[0][:max_values_to_check],
+                non_zeroes_index[1][:max_values_to_check],
+            ]
             logger.debug(f"Copy of nonzero matrix created in: {datetime.now() - start}")
             # If all values are zeros then is raw, otherwise if a single value is not an int then return is not raw
             if x_non_zeroes.size < 1:
@@ -1074,10 +1079,7 @@ class Validator:
             normalization = self.adata.uns["X_normalization"]
 
             # If both "raw.X" and "X" exist but neither are raw
-            if (
-                not self._is_raw()
-                and self._get_raw_x_loc() == "raw.X"
-            ):
+            if not self._is_raw() and self._get_raw_x_loc() == "raw.X":
                 self.warnings.append(
                     "Raw data may be missing: data in 'raw.X' contains non-integer values."
                 )
@@ -1286,9 +1288,13 @@ class Validator:
         return self.is_valid
 
 
-def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = None, verbose: bool = False) -> (
-        bool, list, bool):
+def validate(
+    h5ad_path: Union[str, bytes, os.PathLike],
+    add_labels_file: str = None,
+    verbose: bool = False,
+) -> (bool, list, bool):
     from .write_labels import AnnDataLabelAppender
+
     """
     Entry point for validation.
 
@@ -1308,7 +1314,9 @@ def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = N
         logging.basicConfig(level=logging.INFO, format="%(message)s")
     validator = Validator()
     validator.validate_adata(h5ad_path)
-    logger.info(f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}")
+    logger.info(
+        f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}"
+    )
 
     # Stop if validation was unsuccessful
     if not validator.is_valid:
@@ -1318,10 +1326,15 @@ def validate(h5ad_path: Union[str, bytes, os.PathLike], add_labels_file: str = N
         label_start = datetime.now()
         writer = AnnDataLabelAppender(validator)
         writer.write_labels(add_labels_file)
-        logger.info(f"H5AD label writing complete in {datetime.now() - label_start}, was_writing_successful: {writer.was_writing_successful}") # noqa E501
+        logger.info(
+            f"H5AD label writing complete in {datetime.now() - label_start}, was_writing_successful: "
+            f"{writer.was_writing_successful}"
+        )
 
-        return validator.is_valid and writer.was_writing_successful, \
-            validator.errors + writer.errors, \
-            validator.is_seurat_convertible
+        return (
+            validator.is_valid and writer.was_writing_successful,
+            validator.errors + writer.errors,
+            validator.is_seurat_convertible,
+        )
 
     return True, validator.errors, validator.is_seurat_convertible
