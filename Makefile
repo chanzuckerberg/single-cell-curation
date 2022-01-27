@@ -45,10 +45,9 @@ release-candidate-to-test-pypi: pydist
 	@echo "Release candidate dist built and uploaded to test.pypi.org"
 
 # Build final dist (gets rid of the rc tag) and release final candidate to TestPyPI
-release-final-to-test-pypi: 
+release-final-to-test-pypi:
 	bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
-	pydist
-	pip install twine
+	$(MAKE) pydist
 	python -m twine upload --repository testpypi cellxgene_schema_cli/dist/*
 	@echo "Final release dist built for "$(current_version)" and uploaded to test.pypi.org"
 	@echo "Please test the release on Test PyPI"

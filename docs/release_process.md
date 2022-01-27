@@ -37,7 +37,8 @@ Steps must be run from the repo root with `bumpversion` installed from pypi
 
 1. Run `make release-candidate-to-test-pypi` to release the newly created release candidate to Test PyPI.
 
-1. Using a fresh virtual environment, test the release candidate by installing `cellxgene-schema` using `python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ cellxgene-schema==2.1.0rc0`. (`--extra-index-url` is required to install dependencies that may not exist on Test PyPI)
+1. Using a fresh virtual environment, test the release candidate by installing `cellxgene-schema` using `python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ cellxgene-schema==a.b.crc0`. (`--extra-index-url` is required to install dependencies that may not exist on Test PyPI)
+    At a minimum, run `cellxgene-schema validate some-path/single-cell-curation/cellxgene_schema_cli/tests/fixtures/h5ads/example_valid.h5ad` to test it validates the test file.
 
 1. If you detect errors in the release candidate, fix them in `main` and then rebase the release branch. Then run `make recreate-release-candidate` to bump up the release candidate version (i.e. 2.1.0-rc.0 will get bumped up to 2.1.0-rc.1). Run `make release-candidate-to-test-pypi` again to release this candidate to Test PyPI for testing.
 
