@@ -4,11 +4,12 @@ All notable changes to the python package `cellxgene-schema` are documented in t
 The format of this changelog is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.1.1] - 2021-12-14
+## [2.1.1] - 2022-01-27
 
 ### Changed
 - Gene reference files now have an extra column for gene length.
 - Gene reference files no longer have transcripts.
+- Improved CLI responsiveness in certain situations
 
 ## [2.1.0] - 2021-11-12    
 ### Added 

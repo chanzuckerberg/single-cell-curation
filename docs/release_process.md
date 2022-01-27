@@ -25,7 +25,7 @@ Once you have access, **please setup 2FA**!
 
 ## How to release the next version of `cellxgene-schema`
 
-Steps must be run from the project directory and in a virtual env with all the dependencies defined in `requirements.txt` installed.
+Steps must be run from the repo root with `bumpversion` installed from pypi
 
 1. Decide on whether the changes going into the next release warrant a patch, minor, or major version bump using [semantic versioning](https://semver.org/) and determine the version number based on the current latest version (i.e. if the current version is 2.0.4 and you'd like to do a minor version bump, then the next version will be 2.1.0).
 
