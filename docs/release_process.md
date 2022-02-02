@@ -25,7 +25,7 @@ Once you have access, **please setup 2FA**!
 
 ## How to release the next version of `cellxgene-schema`
 
-Steps must be run from the project directory and in a virtual env with all the dependencies defined in `requirements.txt` installed.
+Steps must be run from the repo root with `bumpversion` installed from pypi
 
 1. Decide on whether the changes going into the next release warrant a patch, minor, or major version bump using [semantic versioning](https://semver.org/) and determine the version number based on the current latest version (i.e. if the current version is 2.0.4 and you'd like to do a minor version bump, then the next version will be 2.1.0).
 
@@ -37,7 +37,8 @@ Steps must be run from the project directory and in a virtual env with all the d
 
 1. Run `make release-candidate-to-test-pypi` to release the newly created release candidate to Test PyPI.
 
-1. Using a fresh virtual environment, test the release candidate by installing `cellxgene-schema` using `python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ cellxgene-schema==2.1.0rc0`. (`--extra-index-url` is required to install dependencies that may not exist on Test PyPI)
+1. Using a fresh virtual environment, test the release candidate by installing `cellxgene-schema` using `python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ cellxgene-schema==a.b.crc0`. (`--extra-index-url` is required to install dependencies that may not exist on Test PyPI)
+    At a minimum, run `cellxgene-schema validate some-path/single-cell-curation/cellxgene_schema_cli/tests/fixtures/h5ads/example_valid.h5ad` to test it validates the test file.
 
 1. If you detect errors in the release candidate, fix them in `main` and then rebase the release branch. Then run `make recreate-release-candidate` to bump up the release candidate version (i.e. 2.1.0-rc.0 will get bumped up to 2.1.0-rc.1). Run `make release-candidate-to-test-pypi` again to release this candidate to Test PyPI for testing.
 
