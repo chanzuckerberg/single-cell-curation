@@ -46,3 +46,5 @@ jobs:
           pip install pytest
       - name: Unit tests
         run: make unit-test
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
