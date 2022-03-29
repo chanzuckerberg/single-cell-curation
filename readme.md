@@ -1,5 +1,7 @@
 # cellxgene curation tools
 
+[![codecov](https://codecov.io/gh/chanzuckerberg/single-cell-curation/branch/main/graph/badge.svg?token=J8OT7OXKHJ)](https://codecov.io/gh/chanzuckerberg/single-cell-curation)
+
 This repository contains documents and code used by cellxgene's curation team. Issues/suggestions pertaining to datasets and how they interact with cellxgene should be created here. 
 
 For information/issues about cellxgene and its portal please refer to:
