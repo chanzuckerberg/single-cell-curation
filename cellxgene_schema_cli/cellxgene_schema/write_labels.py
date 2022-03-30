@@ -296,10 +296,10 @@ class AnnDataLabelAppender:
 
         """
         From a valid (per cellxgene's schema) adata, this function adds to self.adata ontology/gene labels
-        to adata.obs and adata.var respectively
+        to adata.obs, adata.var, and adata.raw.var respectively
         """
 
-        for component in ["obs", "var"]:
+        for component in self.schema_def["components"]:
 
             # Doing it for columns
             for column, column_def in self.schema_def["components"][component][
