@@ -37,8 +37,13 @@ def _parse_gtf(gtf_path: str, output_file: str):
             else:
                 continue
 
-            # Extract features (column 9 of GTF) and get gene length
+            # Extract features (column 9 of GTF)
             current_features = gtf_tools._get_features(line)
+            # Filter genes suffixed with "PAR_Y"
+            if current_features["gene_id"].endswith("PAR_Y"):
+                continue
+
+            # get gene length
             current_length = gene_lengths[current_features["gene_id"]]
 
             # Select  features of interest, raise error if feature of interest not found
@@ -46,7 +51,7 @@ def _parse_gtf(gtf_path: str, output_file: str):
             for i in range(len(features)):
                 feature = features[i]
                 if feature in current_features:
-                    current_features[feature] = current_features[feature]
+                    current_features[feature] = current_features[feature] # unnecessary assignment?
                     target_features[i] = current_features[feature]
 
                 # if the symbol starts with ENSG and it does not match the Ensembl ID, then the symbol used should be the Ensembl ID
