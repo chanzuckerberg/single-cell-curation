@@ -51,7 +51,6 @@ def _parse_gtf(gtf_path: str, output_file: str):
             for i in range(len(features)):
                 feature = features[i]
                 if feature in current_features:
-                    current_features[feature] = current_features[feature] # unnecessary assignment?
                     target_features[i] = current_features[feature]
 
                 # if the symbol starts with ENSG and it does not match the Ensembl ID, then the symbol used should be the Ensembl ID
