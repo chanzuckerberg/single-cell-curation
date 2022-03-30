@@ -49,6 +49,10 @@ def _parse_gtf(gtf_path: str, output_file: str):
                     current_features[feature] = current_features[feature]
                     target_features[i] = current_features[feature]
 
+                # if the symbol starts with ENSG and it does not match the Ensembl ID, then the symbol used should be the Ensembl ID
+                if feature in ["gene_name"] and current_features[feature].startswith("ENSG") and current_features[feature] != current_features["gene_id"]:
+                    target_features[i] = current_features["gene_id"]
+
                 # Add gene version if available from gene id
                 if feature in ["gene_id"]:
                     if "." in target_features[i]:
