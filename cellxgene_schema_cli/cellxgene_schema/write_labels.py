@@ -290,6 +290,7 @@ class AnnDataLabelAppender:
 
             # The sintax below is a programtic way to access obs and var in adata:
             # adata.__dict__["_obs"] is adata.obs
+            # "raw.var" requires to levels of programtic access
             if "." in component:
                 [first_elem, second_elem] = component.split(".")
                 self.adata.__dict__["_" + first_elem].__dict__["_" + second_elem][new_column_name] = new_column
