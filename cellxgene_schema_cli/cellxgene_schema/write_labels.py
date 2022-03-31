@@ -290,16 +290,20 @@ class AnnDataLabelAppender:
 
             # The sintax below is a programtic way to access obs and var in adata:
             # adata.__dict__["_obs"] is adata.obs
-            self.adata.__dict__["_" + component][new_column_name] = new_column
+            # "raw.var" requires to levels of programtic access
+            if "." in component:
+                [first_elem, second_elem] = component.split(".")
+                self.adata.__dict__["_" + first_elem].__dict__["_" + second_elem][new_column_name] = new_column
+            else:
+                self.adata.__dict__["_" + component][new_column_name] = new_column
 
     def _add_labels(self):
 
         """
         From a valid (per cellxgene's schema) adata, this function adds to self.adata ontology/gene labels
-        to adata.obs and adata.var respectively
+        to adata.obs, adata.var, and adata.raw.var respectively
         """
-
-        for component in ["obs", "var"]:
+        for component in ["obs", "var", "raw.var"]:
 
             # Doing it for columns
             for column, column_def in self.schema_def["components"][component][
