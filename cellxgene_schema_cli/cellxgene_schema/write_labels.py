@@ -1,5 +1,4 @@
 import logging
-from re import I
 import pandas as pd
 
 from typing import List, Dict, Optional
