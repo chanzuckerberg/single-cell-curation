@@ -4,6 +4,13 @@ All notable changes to the python package `cellxgene-schema` are documented in t
 The format of this changelog is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.2] - 2022-04-13
+
+### Changed
+- Feature names and reference organims id's are added to `raw.var`
+- Duplicate genes with suffix "PAR_Y" are filtered
+- Correct eroneous gene names introduced in GENCODE v38
+
 ## [2.1.1] - 2022-01-27
 
 ### Changed
