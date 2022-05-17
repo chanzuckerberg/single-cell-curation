@@ -2,3 +2,7 @@
 
 - Made repository public
 - Added information to stay complaint with CZI's open-source policies
+
+
+# 2.1.3
+- add notebook for curation api usage
