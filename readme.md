@@ -11,7 +11,7 @@ For information/issues about cellxgene and its portal please refer to:
 
 ## Installation
 
-The primary curation tool is the `cellxgene-schema` CLI. It enables curators to perform [schema](single-cell-curation/schema/2.0.0/corpora_schema.md) validation for datasets to be hosted on the [cellxgene Data Portal](https://cellxgene.cziscience.com/).
+The primary curation tool is the `cellxgene-schema` CLI. It enables curators to perform [schema](single-cell-curation/blob/main/schema/2.0.0/schema.md) validation for datasets to be hosted on the [cellxgene Data Portal](https://cellxgene.cziscience.com/).
 
 It is available through pip:
 
