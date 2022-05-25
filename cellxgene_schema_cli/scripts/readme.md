@@ -7,7 +7,7 @@ To update the gene and ontology references the following files need to be modifi
 - Ontologies `cellxgene_schema_cli/cellxgene_schema/ontology_files/owl_info` 
 
 Then the following will command download and process the reference files, and then update the respective package files under `cellxgene_schema_cli/cellxgene_schema/ontology_files/`
-
+Following an update and release, copy the new ontology files to the single-cell-data-portal repo, replacing the files currently stored in `backend/ontology_files`
 ```bash
 make update-references
 ```
@@ -101,3 +101,5 @@ If instead of the rule `update-references` individual make rules were executed, 
 ```bash
 make clean
 ```
+Please ensure you have replaced the ontology files in the single-cell-data-portal repo with  the updated ontology files.
+The files should be stored under `backend/ontology_files`
