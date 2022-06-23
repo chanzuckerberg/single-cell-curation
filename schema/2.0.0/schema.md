@@ -225,6 +225,10 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td><a href="http://www.ebi.ac.uk/efo/EFO_0011025"><code>"EFO:0011025"</code></a></td>
             </tr>
             <tr>
+              <td><i>10x 5' v2</i></td>
+              <td><a href="http://www.ebi.ac.uk/efo/EFO_0009900"><code>"EFO:0009900"</code></a></td>
+            </tr>
+            <tr>
               <td><i>Smart-seq</i></td>
               <td><a href="http://www.ebi.ac.uk/efo/EFO_0008930"><code>"EFO:0008930"</code></a></td>
             </tr>
