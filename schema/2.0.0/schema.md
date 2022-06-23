@@ -1,7 +1,7 @@
 
 # Schema
 
-Contact: acarr@chanzuckerberg.com
+Contact: brianraymor@chanzuckerberg.com
 
 Document Status: _Approved_
 
