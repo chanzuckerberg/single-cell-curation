@@ -758,7 +758,7 @@ When a dataset is uploaded, cellxgene Data Portal MUST automatically add the mat
 
 For each `str` key, `obsm` stores a `numpy.ndarray` of shape `(n_obs, m)`, where `n_obs` is the number of rows in `X` and `m >= 1`.
 
-To display a dataset in cellxgene Explorer, Curators MUST annotate **one or more** two-dimensional (`m >= 2`) embeddings (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`. The key for the embedding MUST be prefixed with `"X_"`. The text that follows this prefix is presented to users in the *Embedding Choice* selector in cellxgene Explorer.
+To display a dataset in cellxgene Explorer, Curators MUST annotate **one or more** two-dimensional (`m >= 2`) embeddings (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`. The keys for these embedding MUST be prefixed with `"X_"`. The text that follows this prefix is presented to users in the *Embedding Choice* selector in cellxgene Explorer.
 
 To illustrate, the [Krasnow Lab Human Lung Cell Atlas, 10X dataset](https://cellxgene.cziscience.com/e/krasnow_lab_human_lung_cell_atlas_10x-1-remixed.cxg/) in the [A molecular cell atlas of the human lung from single cell RNA sequencing collection](https://cellxgene.cziscience.com/collections/5d445965-6f1a-4b68-ba3a-b8f765155d3a) defines two embeddings in `obsm`:
 
