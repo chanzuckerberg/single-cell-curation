@@ -1,7 +1,7 @@
 
 # Schema
 
-Contact: acarr@chanzuckerberg.com
+Contact: brianraymor@chanzuckerberg.com
 
 Document Status: _Approved_
 
@@ -86,9 +86,9 @@ cellxgene requires ontology terms to enable search, comparison, and integration 
 Ontology terms for cell metadata MUST use [OBO-format identifiers](http://www.obofoundry.org/id-policy.html), meaning a CURIE (prefixed identifier) of the form **Ontology:Identifier**.
 For example, [EFO:0000001](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0000001) is a term in the Experimental Factor Ontology (EFO).
 
-When no appropriate ontology value is available, then the most accurate term MUST be used.
+The most accurate ontology term MUST always be used. This is true even in cases where there may not be an exact or approximate ontology term.
 
-For example if `cell_type_ontology_term_id` describes a relay interneuron, but the most specific available term in the CL ontology is [CL:0000099](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000099) for *interneuron*, then the interneuron term can be used to fulfill this requirement and ensures that users searching for "neuron" are able to find these data. If no appropriate high-level term can be found or the cell type is unknown, then the most accurate term is [CL:0000003](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000003) for *native cell*.
+For example if `cell_type_ontology_term_id` describes a relay interneuron, but the most accurate available term in the CL ontology is [CL:0000099](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000099) for *interneuron*, then the interneuron term can be used to fulfill this requirement and ensures that users searching for "neuron" are able to find these data. If no appropriate high-level term can be found or the cell type is unknown, then the most accurate term is [CL:0000003](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000003) for *native cell*.
 
 Users will still be able to access more specific cell type annotations that have been submitted with the dataset (but aren't required by the schema).
 
@@ -223,6 +223,10 @@ Curators MUST annotate the following columns in the `obs` dataframe:
             <tr>
               <td><i>10x 5' v1</i></td>
               <td><a href="http://www.ebi.ac.uk/efo/EFO_0011025"><code>"EFO:0011025"</code></a></td>
+            </tr>
+            <tr>
+              <td><i>10x 5' v2</i></td>
+              <td><a href="http://www.ebi.ac.uk/efo/EFO_0009900"><code>"EFO:0009900"</code></a></td>
             </tr>
             <tr>
               <td><i>Smart-seq</i></td>
@@ -754,7 +758,7 @@ When a dataset is uploaded, cellxgene Data Portal MUST automatically add the mat
 
 For each `str` key, `obsm` stores a `numpy.ndarray` of shape `(n_obs, m)`, where `n_obs` is the number of rows in `X` and `m >= 1`.
 
-To display a dataset in cellxgene Explorer, Curators MUST annotate **one or more** two-dimensional (`m >= 2`) embeddings (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`. The key for the embedding MUST be prefixed with `"X_"`. The text that follows this prefix is presented to users in the *Embedding Choice* selector in cellxgene Explorer.
+To display a dataset in cellxgene Explorer, Curators MUST annotate **one or more** two-dimensional (`m >= 2`) embeddings (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`. The keys for these embedding MUST be prefixed with `"X_"`. The text that follows this prefix is presented to users in the *Embedding Choice* selector in cellxgene Explorer.
 
 To illustrate, the [Krasnow Lab Human Lung Cell Atlas, 10X dataset](https://cellxgene.cziscience.com/e/krasnow_lab_human_lung_cell_atlas_10x-1-remixed.cxg/) in the [A molecular cell atlas of the human lung from single cell RNA sequencing collection](https://cellxgene.cziscience.com/collections/5d445965-6f1a-4b68-ba3a-b8f765155d3a) defines two embeddings in `obsm`:
 
