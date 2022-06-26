@@ -3,7 +3,6 @@ import logging
 import os
 import requests
 import threading
-from typing import Union
 from botocore.credentials import RefreshableCredentials
 from botocore.session import get_session
 from datetime import datetime, timezone
@@ -11,12 +10,10 @@ from datetime import datetime, timezone
 from src.utils.logger import get_custom_logger
 
 
-def upload_local_datafile(
-        datafile_path: str,
-        collection_uuid: str,
-        identifier: str,
-        log_level: Union[int, str] = "INFO",
-) -> bool:
+logger = get_custom_logger()
+
+
+def upload_local_datafile(datafile_path: str, collection_uuid: str, identifier: str) -> bool:
     """
     :param datafile_path: the fully qualified path of the datafile to be uploaded
     :param collection_uuid: the uuid of the Collection to which the resultant Dataset will belong
@@ -26,8 +23,6 @@ def upload_local_datafile(
     Datasets.
     :return: True if upload succeeds otherwise False
     """
-    logger = get_custom_logger(log_level)
-
     s3_credentials_path = f"/curation/v1/collections/{collection_uuid}/datasets/s3-upload-credentials"
     s3_credentials_url = f"{os.getenv('api_url_base')}{s3_credentials_path}"
     s3_cred_headers = {"Authorization": f"Bearer {os.getenv('access_token')}"}
@@ -35,6 +30,7 @@ def upload_local_datafile(
     def retrieve_s3_credentials_and_upload_key_prefix():
         return requests.post(s3_credentials_url, headers=s3_cred_headers).json()
 
+    log_level = os.getenv("log_level", "INFO")
     time_zone_info = datetime.now(timezone.utc).astimezone().tzinfo
 
     def s3_refreshable_credentials_cb():
@@ -47,7 +43,7 @@ def upload_local_datafile(
             "expiry_time": datetime.fromtimestamp(s3_credentials.get("Expiration")).replace(
                 tzinfo=time_zone_info).isoformat(),
         }
-        if getattr(logging, log_level) < 20:
+        if getattr(logging, log_level) < 20:  # if log level NOTSET or DEBUG
             print("Retrieved/refreshed s3 credentials")
         return s3_credentials_formatted
 
