@@ -37,7 +37,7 @@ def set_access_token(api_key_file_path: str):
 
     api_url_base = os.getenv("api_url_base")
     if not api_url_base:
-        raise Exception("You must first set the API url environment variables with set_api_urls() from api_urls.py")
+        raise Exception("You must first set the API url environment variables with set_api_urls()")
 
     access_token_url = f"{api_url_base}{access_token_path}"
     res = requests.post(access_token_url, headers=access_token_headers)
