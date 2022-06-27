@@ -1,11 +1,11 @@
 
 # Schema - Seurat encoding
 
-Contact: acarr@chanzuckerberg.com
+Contact: brianraymor@chanzuckerberg.com
 
-Document Status: _In progress_
+Document Status: _Draft_
 
-Schema version: 2.0.0
+Schema version: 3.0.0
 
 
 ## Overview
