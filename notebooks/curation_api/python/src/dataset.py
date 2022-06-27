@@ -13,7 +13,7 @@ from src.utils.logger import get_custom_logger
 logger = get_custom_logger()
 
 
-def upload_local_datafile(datafile_path: str, collection_uuid: str, identifier: str) -> bool:
+def upload_local_datafile(datafile_path: str, collection_uuid: str, identifier: str):
     """
     :param datafile_path: the fully qualified path of the datafile to be uploaded
     :param collection_uuid: the uuid of the Collection to which the resultant Dataset will belong
@@ -21,7 +21,7 @@ def upload_local_datafile(datafile_path: str, collection_uuid: str, identifier: 
     of upload_local_datafile.ipynb for details about how to use the identifier to 'create new' vs 'replace existing'
     :param log_level: the logging level
     Datasets.
-    :return: True if upload succeeds otherwise False
+    :return: None
     """
     s3_credentials_path = f"/curation/v1/collections/{collection_uuid}/datasets/s3-upload-credentials"
     s3_credentials_url = f"{os.getenv('api_url_base')}{s3_credentials_path}"
@@ -100,6 +100,7 @@ def upload_local_datafile(datafile_path: str, collection_uuid: str, identifier: 
         )
     except Exception as e:
         logger.error(f"\n\033[1m\033[38;5;9mFAILED uploading:\033[0m {collection_uuid}/{identifier}")
-        logger.error(f"\n{e}")
-        return False
-    return True
+        raise e
+    else:
+        logger.info("\n\033[1m\033[38;5;10mSUCCESS\033[0m\n")  # 'SUCCESS' in bold green
+
