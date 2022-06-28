@@ -778,26 +778,6 @@ See also `default_embedding` in `uns`.
 </tbody></table>
 <br>
 
-### X_normalization
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>X_normalization</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Curator</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>
-          <code>str</code>. This SHOULD describe the method used to normalize the data stored in AnnData <code>X</code>. If data in <code>X</code> are raw, this SHOULD be <code>"none"</code>.
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
 ​Curators MAY also annotate the following optional keys and values in `uns`. If the key is present, then its value MUST NOT be empty.
 ​
 ### batch_condition
@@ -864,8 +844,11 @@ See also `default_embedding` in `uns`.
 
 schema v3.0.0
 
-* obs (cell metadata)
+* obs (Cell metadata)
   * Deprecated `ethnicity_ontology_term_id` and `ethnicity`
+
+* uns (Dataset metadata)
+  * Deprecated `X_normalization`
 
 schema v2.0.0 substantially *remodeled* schema v1.1.0:
 
