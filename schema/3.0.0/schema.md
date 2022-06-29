@@ -841,6 +841,8 @@ schema v3.0.0
 * obs (Cell metadata)
   * Deprecated `ethnicity_ontology_term_id` and `ethnicity`
   * Removed guidance in `assay_ontology_term_id` that allowed clarifying text enclosed in parentheses if there was not an exact match for an assay.
+* var and raw.var (Gene metadata)
+  * `feature_biotype` must be annotated by the Data Portal and not the Curator.
 * uns (Dataset metadata)
   * Deprecated `X_normalization`
 
