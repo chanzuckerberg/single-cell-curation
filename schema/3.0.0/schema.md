@@ -102,7 +102,6 @@ The following ontology dependencies are *pinned* for this version of the schema.
 |:--|:--|:--|
 | [Cell Ontology] | CL | [cl.owl] : [2021-08-10]|
 | [Experimental Factor Ontology] | EFO | [efo.owl] : [2021-08-16 EFO 3.33.0]
-| [Human Ancestry Ontology] | HANCESTRO |[hancestro.owl] : [2021-01-04 (2.5)] |
 | [Human Developmental Stages] |  HsapDv | [hsapdv.owl] : 2020-03-10 |
 | [Mondo Disease Ontology] | MONDO |[mondo.owl] : [2021-08-11] |
 | [Mouse Developmental Stages]| MmusDv |  [mmusdv.owl] : 2020-03-10 |
@@ -118,10 +117,6 @@ The following ontology dependencies are *pinned* for this version of the schema.
 [Experimental Factor Ontology]: http://www.ebi.ac.uk/efo
 [2021-08-16 EFO 3.33.0]: https://github.com/EBISPOT/efo/releases/tag/v3.33.0
 [efo.owl]: https://github.com/EBISPOT/efo/releases/download/v3.33.0/efo.owl
-
-[Human Ancestry Ontology]: http://www.obofoundry.org/ontology/hancestro.html
-[2021-01-04 (2.5)]: https://github.com/EBISPOT/ancestro/releases/tag/2.5
-[hancestro.owl]: https://github.com/EBISPOT/ancestro/blob/2.5/hancestro.owl
 
 [Human Developmental Stages]: http://obofoundry.org/ontology/hsapdv.html
 [hsapdv.owl]: http://purl.obolibrary.org/obo/hsapdv.owl
