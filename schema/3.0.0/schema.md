@@ -378,6 +378,25 @@ Curators MUST annotate the following columns in the `obs` dataframe:
 </tbody></table>
 <br>
 
+### self_reported_ethnicity
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>self_reported_ethnicity</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be either free-text or <code>"unknown"</code> if unavailable. <br><br>Otherwise, for all other organisms this MUST be <code>"na"</code>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
 ### sex_ontology_term_id
 
 <table><tbody>
@@ -839,8 +858,9 @@ See also `default_embedding` in `uns`.
 schema v3.0.0
 
 * obs (Cell metadata)
-  * Deprecated `ethnicity_ontology_term_id` and `ethnicity`
   * Removed guidance in `assay_ontology_term_id` that allowed clarifying text enclosed in parentheses if there was not an exact match for an assay.
+  * Deprecated `ethnicity_ontology_term_id` and `ethnicity`
+  * Added `self_reported_ethnicity`
 * var and raw.var (Gene metadata)
   * `feature_biotype` must be annotated by the Data Portal and not the Curator.
 * uns (Dataset metadata)
