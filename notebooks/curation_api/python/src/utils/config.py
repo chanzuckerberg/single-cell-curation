@@ -2,7 +2,7 @@ import os
 import requests
 
 
-def set_api_urls(env: str):
+def set_api_urls(env: str = "prod"):
     """
     This function sets url environment variables that other Curator API notebook modules use when calling
     Curator API endpoints.
