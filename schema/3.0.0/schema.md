@@ -858,8 +858,8 @@ See also `default_embedding` in `uns`.
 schema v3.0.0
 
 * obs (Cell metadata)
-  * Deprecated `ethnicity_ontology_term_id` and `ethnicity`
   * Removed guidance in `assay_ontology_term_id` that allowed clarifying text enclosed in parentheses if there was not an exact match for an assay.
+  * Deprecated `ethnicity_ontology_term_id` and `ethnicity`
   * Added `self_reported_ethnicity`
 * var and raw.var (Gene metadata)
   * `feature_biotype` must be annotated by the Data Portal and not the Curator.
