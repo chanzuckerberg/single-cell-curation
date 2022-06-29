@@ -202,7 +202,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
             <a href="http://www.ebi.ac.uk/efo/EFO_0010183"><code>"EFO:0010183"</code></a>  for <i>single cell library construction</i> or <b>preferably</b> its most accurate child
           </li></ul>
         An assay based on 10X Genomics products SHOULD either be <a href="http://www.ebi.ac.uk/efo/EFO_0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i> or <b>preferably</b> its most accurate child. An assay based on <i>SMART (Switching Mechanism at the 5' end of the RNA Template) or SMARTer technology</i> SHOULD either be <a href="http://www.ebi.ac.uk/efo/EFO_0010184"><code>"EFO:0010184"</code></a> for <i>Smart-like</i> or preferably its most accurate child.<br><br>
-        If there is not an exact match for the assay, clarifying text MAY be enclosed in parentheses and appended to the most accurate term. For example, the sci-plex assay could be curated as <code>"EFO:0010183 (sci-plex)"</code>.<br><br>Recommended values for specific assays:
+       <br>Recommended values for specific assays:
           <br><br>
           <table>
           <thead>
@@ -463,7 +463,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>assay_ontology_term_id</code>. Any clarifying text enclosed in parentheses and appended to <code>assay_ontology_term_id</code> MUST be appended to <code>assay</code>.<br><br> For example, if the sci-plex assay was curated as <code>"EFO:0010183 (sci-plex)"</code>, then the value would be <code>"single-cell library construction (sci-plex)"</code>.
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>assay_ontology_term_id</code>. 
         </td>
     </tr>
 </tbody></table>
@@ -846,7 +846,7 @@ schema v3.0.0
 
 * obs (Cell metadata)
   * Deprecated `ethnicity_ontology_term_id` and `ethnicity`
-
+  * Removed guidance in `assay_ontology_term_id` that allowed clarifying text enclosed in parentheses if there was not an exact match for an assay.
 * uns (Dataset metadata)
   * Deprecated `X_normalization`
 
