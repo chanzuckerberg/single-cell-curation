@@ -2,7 +2,7 @@ import os
 import requests
 
 
-def set_api_urls(env: str = "prod"):
+def set_api_urls(env: str) -> None:
     """
     This function sets url environment variables that other Curator API notebook modules use when calling
     Curator API endpoints.
@@ -22,7 +22,7 @@ def set_api_urls(env: str = "prod"):
     print(f"Set 'api_url_base' env var to {os.getenv('api_url_base')}")
 
 
-def set_access_token(api_key_file_path: str):
+def set_api_access_config(api_key_file_path: str = None, env: str = "prod") -> None:
     """
     This function uses the API key to retrieve a temporary access token from the Curator API. It then sets
     the 'access_token' environment variable, which other Curator API notebook modules use when calling
@@ -31,6 +31,10 @@ def set_access_token(api_key_file_path: str):
     :param env: the deployment environment
     :return: None
     """
+    set_api_urls(env)
+    if not api_key_file_path:
+        print("No API key file provided. Without an access token, no private data or actions are accessible.")
+        return
     api_key = open(api_key_file_path).read().strip()
     access_token_headers = {"x-api-key": api_key}
     access_token_path = "/curation/v1/auth/token"
