@@ -8,6 +8,7 @@ from botocore.session import get_session
 from datetime import datetime, timezone
 
 from src.utils.logger import get_custom_logger
+from src.utils.http import url_builder, get_headers
 
 
 logger = get_custom_logger()
@@ -23,14 +24,13 @@ def upload_local_datafile(datafile_path: str, collection_uuid: str, identifier: 
     Datasets.
     :return: None
     """
-    s3_credentials_path = f"/curation/v1/collections/{collection_uuid}/datasets/s3-upload-credentials"
-    s3_credentials_url = f"{os.getenv('api_url_base')}{s3_credentials_path}"
-    s3_cred_headers = {"Authorization": f"Bearer {os.getenv('access_token')}"}
+    url = url_builder(f"/collections/{collection_uuid}/datasets/s3-upload-credentials")
+    headers = get_headers()
 
     def retrieve_s3_credentials_and_upload_key_prefix():
-        return requests.post(s3_credentials_url, headers=s3_cred_headers).json()
+        return requests.post(url, headers=headers).json()
 
-    log_level = os.getenv("log_level", "INFO")
+    log_level = os.getenv("log_level", "INFO")  # hack to determine log level in callback (separate process)
     time_zone_info = datetime.now(timezone.utc).astimezone().tzinfo
 
     def s3_refreshable_credentials_cb():
@@ -103,4 +103,3 @@ def upload_local_datafile(datafile_path: str, collection_uuid: str, identifier: 
         raise e
     else:
         logger.info("\n\033[1m\033[38;5;10mSUCCESS\033[0m\n")  # 'SUCCESS' in bold green
-
