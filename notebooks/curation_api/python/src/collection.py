@@ -3,27 +3,10 @@ import os
 import requests
 
 from src.utils.logger import get_custom_logger
+from src.utils.http import url_builder, get_headers
 
 
 logger = get_custom_logger()
-
-
-def url_builder(path_segment):
-    api_url_base = os.getenv("api_url_base")
-    if not api_url_base:
-        raise Exception("The required 'api_url_base' env var is not set. Call set_api_urls() from src.utils.config")
-    route_path = f"/curation/v1{path_segment}"
-    logger.debug(f"route path: {route_path}")
-    url = f"{api_url_base}{route_path}"
-    logger.debug(f"url: {url}")
-    return url
-
-
-def get_headers():
-    access_token = os.getenv("access_token")
-    if not access_token:
-        logger.warning("Access token is not set!")
-    return {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
 
 
 def create_collection(collection_form_metadata: str) -> str:
