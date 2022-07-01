@@ -36,17 +36,99 @@ This document is organized by:
 
 ## General Requirements
 
-* **AnnData** - The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `raw.var`, `obsm`, and `uns` attributes are described below.
+**AnnData.** The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `raw.var`, `obsm`, and `uns` attributes are described below.
 
-  All data submitted to the cellxgene Data Portal is automatically converted to a Seurat V3 object that can be loaded by the R package Seurat. See the [Seurat encoding](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/2.0.0/seurat_encoding.md) for further information.
+All data submitted to the cellxgene Data Portal is automatically converted to a Seurat V3 object that can be loaded by the R package Seurat. See the [Seurat encoding](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/2.0.0/seurat_encoding.md) for further information.
 
-* **Organisms**. Data MUST be from a Metazoan organism or SARS-COV-2 and defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the pinned Human and Mouse gene annotations.
+**Organisms**. Data MUST be from a Metazoan organism or SARS-COV-2 and defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the pinned Human and Mouse gene annotations.
 
-* **Reserved Names**. The names of the metadata keys specified by the schema are reserved and MUST be unique. For example, duplicate `"feature_biotype"` keys in AnnData `var` are not allowed.
+**Reserved Names**. The names of the metadata keys specified by the schema are reserved and MUST be unique. For example, duplicate <code>"feature_biotype"</code> keys in AnnData <code>var</code> are not allowed. Reserved Names from previous schema versions that have since been deprecated MUST NOT be present in datasets:
 
-* **Redundant Metadata**. It is STRONGLY RECOMMENDED to avoid multiple metadata fields containing identical or similar information.
+<table>
+<thead>
+  <tr>
+    <th>Reserved Name</th>
+    <th>AnnData</th>
+    <th>Deprecated in</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>ethnicity</td>
+    <td>obs</td>
+    <td>3.0.0</td>
+  </tr>
+  <tr>
+    <td>ethnicity_ontology_term_id</td>
+    <td>obs</td>
+    <td>3.0.0</td>
+  </tr>
+  <tr>
+    <td>X_normalization</td>
+    <td>uns</td>
+    <td>3.0.0</td>
+  </tr>
+  <tr>
+    <td>default_field</td>
+    <td>uns</td>
+    <td>2.0.0</td>
+  </tr>
+  <tr>
+    <td>layer_descriptions</td>
+    <td>uns</td>
+    <td>2.0.0</td>
+  </tr>
+  <tr>
+    <td>tags</td>
+    <td>uns</td>
+    <td>2.0.0</td>
+  </tr>
+   <tr>
+    <td>version</td>
+    <td>uns</td>
+    <td>2.0.0</td>
+  </tr>
+  <tr>
+    <td>contributors</td>
+    <td>uns</td>
+    <td>1.1.0</td>
+  </tr>
+  <tr>
+    <td>preprint_doi</td>
+    <td>uns</td>
+    <td>1.1.0</td>
+  </tr>
+  <tr>
+    <td>project_description</td>
+    <td>uns</td>
+    <td>1.1.0</td>
+  </tr>
+  <tr>
+    <td>project_links</td>
+    <td>uns</td>
+    <td>1.1.0</td>
+  </tr>
+  <tr>
+    <td>project_name</td>
+    <td>uns</td>
+    <td>1.1.0</td>
+  </tr>
+  <tr>
+    <td>publication_doi</td>
+    <td>uns</td>
+    <td>1.1.0</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+</tbody>
+</table>
 
-*   **No PII**. Curators agree to this requirement as part of the data submission policy.
+**Redundant Metadata**. It is STRONGLY RECOMMENDED to avoid multiple metadata fields containing identical or similar information.
+
+**No PII**. Curators agree to this requirement as part of the data submission policy.
     However, it is not strictly enforced in our validation tooling because it is difficult for software to predict what is and is not PII.
     It is up to the submitter to ensure that no metadata can be personally identifiable: no names, dates of birth, specific locations, etc.
     See this [list](https://docs.google.com/document/d/1sboOmbafvMh3VYjK1-3MAUt0I13UUJfkQseq8ANLPl8/edit) for guidance.
@@ -877,6 +959,8 @@ See also `default_embedding` in `uns`.
 
 schema v3.0.0
 
+* General Requirements
+  * Reserved Names from previous schema versions that have since been deprecated MUST NOT be present.
 * obs (Cell metadata)
   * Removed guidance in `assay_ontology_term_id` that allowed clarifying text enclosed in parentheses if there was not an exact match for an assay.
   * Added `donor_id`
