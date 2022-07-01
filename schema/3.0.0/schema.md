@@ -765,7 +765,7 @@ See also `default_embedding` in `uns`.
     <tr>
       <th>Value</th>
         <td>
-          This MUST be <code>"2.0.0"</code>.
+          This MUST be <code>"3.0.0"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -864,6 +864,7 @@ schema v3.0.0
 * var and raw.var (Gene metadata)
   * `feature_biotype` must be annotated by the Data Portal and not the Curator.
 * uns (Dataset metadata)
+  * Updated `schema_version`
   * Deprecated `X_normalization`
 
 schema v2.0.0 substantially *remodeled* schema v1.1.0:
