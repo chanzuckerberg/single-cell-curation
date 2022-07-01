@@ -26,7 +26,8 @@ def set_api_access_config(api_key_file_path: str = None, env: str = "prod") -> N
     """
     This function uses the API key to retrieve a temporary access token from the Curator API. It then sets
     the 'access_token' environment variable, which other Curator API notebook modules use when calling
-    Curator API endpoints. The usage of this function relies on a *prior* set_api_urls() call (from api_urls.py).
+    Curator API endpoints. If no api_key_file_path arg is provided, then no access token will be set, and the user
+    will be limited to only publicly-accessible data.
     :param api_key_file_path: the relative path to the file containing the API key
     :param env: the deployment environment
     :return: None
