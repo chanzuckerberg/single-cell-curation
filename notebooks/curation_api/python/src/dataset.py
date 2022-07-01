@@ -1,6 +1,7 @@
 import boto3
 import logging
 import os
+import re
 import requests
 import threading
 from botocore.credentials import RefreshableCredentials
@@ -12,6 +13,52 @@ from src.utils.http import url_builder, get_headers
 
 
 logger = get_custom_logger()
+
+UUID_REGEX = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+DATASET_ID_REGEX = f"(?P<dataset_uuid>{UUID_REGEX})"
+CURATOR_TAG_PREFIX_REGEX = r"(?P<tag_prefix>.*)"
+EXTENSION_REGEX = r"(?P<extension>h5ad)"
+
+
+def delete_dataset(collection_uuid: str, identifier: str):
+    """
+    Delete a private Dataset
+    :param collection_uuid: the uuid of the Collection to which the Dataset belongs
+    :param identifier: the curator tag or cellxgene Dataset uuid.
+    :return: True if deletion is successful otherwise False
+    """
+    url = url_builder(f"/collections/{collection_uuid}/datasets")
+    headers = get_headers()
+
+    identifier_name = None
+    if re.match(f"^{DATASET_ID_REGEX}$", identifier):
+        # identifier is a uuid
+        identifier_name = "dataset_uuid"
+    else:
+        # CURATOR_TAG_PREFIX_REGEX is superfluous; leaving in to match lambda handler code; may use later
+        matched = re.match(f"({DATASET_ID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})\\.{EXTENSION_REGEX}$", identifier)
+        if matched:
+            matches = matched.groupdict()
+            if matches.get("dataset_uuid"):
+                identifier_name = "dataset_uuid"
+            else:
+                identifier_name = "curator_tag"
+
+    if not identifier_name:
+        raise Exception(f"The identifier '{identifier}' must either 1) include a '.h5ad' suffix OR 2) be a uuid")
+
+    params_dict = dict()
+    params_dict[identifier_name] = identifier
+    try:
+        res = requests.delete(url, headers=headers, params=params_dict)
+        res.raise_for_status()
+    except Exception as e:
+        logger.error("\n\033[1m\033[38;5;9mFAILED\033[0m")  # 'FAILED' in bold red
+        raise e
+    else:
+        logger.info("\n\033[1m\033[38;5;10mSUCCESS\033[0m\n")  # 'SUCCESS' in bold green
+        logger.info(f"Deleted the Dataset with {identifier_name} '{identifier}' from its Collection: "
+                    f"\n{os.getenv('site_url')}/collections/{collection_uuid}")
 
 
 def upload_local_datafile(datafile_path: str, collection_uuid: str, identifier: str):
