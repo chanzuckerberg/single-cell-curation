@@ -340,6 +340,26 @@ Curators MUST annotate the following columns in the `obs` dataframe:
 </tbody></table>
 <br>
 
+### donor_id
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>donor_id</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. If unavailable, this MUST be <code>"unknown"</code>.<br><br>
+This MUST be free-text that identifies a unique biosample donor in the dataset. It is STRONGLY RECOMMENDED that this identifier be unique within the collection of datasets that includes this dataset. 
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
 ### is_primary_data
 
 <table><tbody>
@@ -859,6 +879,7 @@ schema v3.0.0
 
 * obs (Cell metadata)
   * Removed guidance in `assay_ontology_term_id` that allowed clarifying text enclosed in parentheses if there was not an exact match for an assay.
+  * Added `donor_id`
   * Deprecated `ethnicity_ontology_term_id` and `ethnicity`
   * Added `self_reported_ethnicity`
 * var and raw.var (Gene metadata)
