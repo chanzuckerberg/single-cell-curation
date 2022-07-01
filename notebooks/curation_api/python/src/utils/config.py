@@ -36,15 +36,13 @@ def set_api_access_config(api_key_file_path: str = None, env: str = "prod") -> N
     if not api_key_file_path:
         print("No API key file provided. Without an access token, no private data or actions are accessible.")
         return
+
     api_key = open(api_key_file_path).read().strip()
     access_token_headers = {"x-api-key": api_key}
     access_token_path = "/curation/v1/auth/token"
-
     api_url_base = os.getenv("api_url_base")
-    if not api_url_base:
-        raise Exception("You must first set the API url environment variables with set_api_urls()")
-
     access_token_url = f"{api_url_base}{access_token_path}"
+
     res = requests.post(access_token_url, headers=access_token_headers)
     res.raise_for_status()
     access_token = res.json().get("access_token")
