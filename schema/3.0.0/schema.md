@@ -3,9 +3,9 @@
 
 Contact: brianraymor@chanzuckerberg.com
 
-Document Status: _Approved_
+Document Status: _Draft_
 
-Version: 2.0.0
+Version: 3.0.0
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED" "MAY", and "OPTIONAL" in this document are to be interpreted as described in [BCP 14](https://tools.ietf.org/html/bcp14), [RFC2119](https://www.rfc-editor.org/rfc/rfc2119.txt), and [RFC8174](https://www.rfc-editor.org/rfc/rfc8174.txt) when, and only when, they appear in all capitals, as shown here.
 
@@ -36,17 +36,99 @@ This document is organized by:
 
 ## General Requirements
 
-* **AnnData** - The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `raw.var`, `obsm`, and `uns` attributes are described below.
+**AnnData.** The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `raw.var`, `obsm`, and `uns` attributes are described below.
 
-  All data submitted to the cellxgene Data Portal is automatically converted to a Seurat V3 object that can be loaded by the R package Seurat. See the [Seurat encoding](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/2.0.0/seurat_encoding.md) for further information.
+All data submitted to the cellxgene Data Portal is automatically converted to a Seurat V3 object that can be loaded by the R package Seurat. See the [Seurat encoding](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/2.0.0/seurat_encoding.md) for further information.
 
-* **Organisms**. Data MUST be from a Metazoan organism or SARS-COV-2 and defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the pinned Human and Mouse gene annotations.
+**Organisms**. Data MUST be from a Metazoan organism or SARS-COV-2 and defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the pinned Human and Mouse gene annotations.
 
-* **Reserved Names**. The names of the metadata keys specified by the schema are reserved and MUST be unique. For example, duplicate `"feature_biotype"` keys in AnnData `var` are not allowed.
+**Reserved Names**. The names of the metadata keys specified by the schema are reserved and MUST be unique. For example, duplicate <code>"feature_biotype"</code> keys in AnnData <code>var</code> are not allowed. Reserved Names from previous schema versions that have since been deprecated MUST NOT be present in datasets:
 
-* **Redundant Metadata**. It is STRONGLY RECOMMENDED to avoid multiple metadata fields containing identical or similar information.
+<table>
+<thead>
+  <tr>
+    <th>Reserved Name</th>
+    <th>AnnData</th>
+    <th>Deprecated in</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>ethnicity</td>
+    <td>obs</td>
+    <td>3.0.0</td>
+  </tr>
+  <tr>
+    <td>ethnicity_ontology_term_id</td>
+    <td>obs</td>
+    <td>3.0.0</td>
+  </tr>
+  <tr>
+    <td>X_normalization</td>
+    <td>uns</td>
+    <td>3.0.0</td>
+  </tr>
+  <tr>
+    <td>default_field</td>
+    <td>uns</td>
+    <td>2.0.0</td>
+  </tr>
+  <tr>
+    <td>layer_descriptions</td>
+    <td>uns</td>
+    <td>2.0.0</td>
+  </tr>
+  <tr>
+    <td>tags</td>
+    <td>uns</td>
+    <td>2.0.0</td>
+  </tr>
+   <tr>
+    <td>version</td>
+    <td>uns</td>
+    <td>2.0.0</td>
+  </tr>
+  <tr>
+    <td>contributors</td>
+    <td>uns</td>
+    <td>1.1.0</td>
+  </tr>
+  <tr>
+    <td>preprint_doi</td>
+    <td>uns</td>
+    <td>1.1.0</td>
+  </tr>
+  <tr>
+    <td>project_description</td>
+    <td>uns</td>
+    <td>1.1.0</td>
+  </tr>
+  <tr>
+    <td>project_links</td>
+    <td>uns</td>
+    <td>1.1.0</td>
+  </tr>
+  <tr>
+    <td>project_name</td>
+    <td>uns</td>
+    <td>1.1.0</td>
+  </tr>
+  <tr>
+    <td>publication_doi</td>
+    <td>uns</td>
+    <td>1.1.0</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+</tbody>
+</table>
 
-*   **No PII**. Curators agree to this requirement as part of the data submission policy.
+**Redundant Metadata**. It is STRONGLY RECOMMENDED to avoid multiple metadata fields containing identical or similar information.
+
+**No PII**. Curators agree to this requirement as part of the data submission policy.
     However, it is not strictly enforced in our validation tooling because it is difficult for software to predict what is and is not PII.
     It is up to the submitter to ensure that no metadata can be personally identifiable: no names, dates of birth, specific locations, etc.
     See this [list](https://docs.google.com/document/d/1sboOmbafvMh3VYjK1-3MAUt0I13UUJfkQseq8ANLPl8/edit) for guidance.
@@ -102,7 +184,6 @@ The following ontology dependencies are *pinned* for this version of the schema.
 |:--|:--|:--|
 | [Cell Ontology] | CL | [cl.owl] : [2021-08-10]|
 | [Experimental Factor Ontology] | EFO | [efo.owl] : [2021-08-16 EFO 3.33.0]
-| [Human Ancestry Ontology] | HANCESTRO |[hancestro.owl] : [2021-01-04 (2.5)] |
 | [Human Developmental Stages] |  HsapDv | [hsapdv.owl] : 2020-03-10 |
 | [Mondo Disease Ontology] | MONDO |[mondo.owl] : [2021-08-11] |
 | [Mouse Developmental Stages]| MmusDv |  [mmusdv.owl] : 2020-03-10 |
@@ -118,10 +199,6 @@ The following ontology dependencies are *pinned* for this version of the schema.
 [Experimental Factor Ontology]: http://www.ebi.ac.uk/efo
 [2021-08-16 EFO 3.33.0]: https://github.com/EBISPOT/efo/releases/tag/v3.33.0
 [efo.owl]: https://github.com/EBISPOT/efo/releases/download/v3.33.0/efo.owl
-
-[Human Ancestry Ontology]: http://www.obofoundry.org/ontology/hancestro.html
-[2021-01-04 (2.5)]: https://github.com/EBISPOT/ancestro/releases/tag/2.5
-[hancestro.owl]: https://github.com/EBISPOT/ancestro/blob/2.5/hancestro.owl
 
 [Human Developmental Stages]: http://obofoundry.org/ontology/hsapdv.html
 [hsapdv.owl]: http://purl.obolibrary.org/obo/hsapdv.owl
@@ -202,7 +279,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
             <a href="http://www.ebi.ac.uk/efo/EFO_0010183"><code>"EFO:0010183"</code></a>  for <i>single cell library construction</i> or <b>preferably</b> its most accurate child
           </li></ul>
         An assay based on 10X Genomics products SHOULD either be <a href="http://www.ebi.ac.uk/efo/EFO_0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i> or <b>preferably</b> its most accurate child. An assay based on <i>SMART (Switching Mechanism at the 5' end of the RNA Template) or SMARTer technology</i> SHOULD either be <a href="http://www.ebi.ac.uk/efo/EFO_0010184"><code>"EFO:0010184"</code></a> for <i>Smart-like</i> or preferably its most accurate child.<br><br>
-        If there is not an exact match for the assay, clarifying text MAY be enclosed in parentheses and appended to the most accurate term. For example, the sci-plex assay could be curated as <code>"EFO:0010183 (sci-plex)"</code>.<br><br>Recommended values for specific assays:
+       <br>Recommended values for specific assays:
           <br><br>
           <table>
           <thead>
@@ -345,12 +422,12 @@ Curators MUST annotate the following columns in the `obs` dataframe:
 </tbody></table>
 <br>
 
-### ethnicity_ontology_term_id
+### donor_id
 
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>ethnicity_ontology_term_id</td>
+      <td>donor_id</td>
     </tr>
     <tr>
       <th>Annotator</th>
@@ -358,7 +435,8 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be either a HANCESTRO term or <code>"unknown"</code> if unavailable. <br><br>Otherwise, for all other organisms this MUST be <code>"na"</code>.
+        <td>categorical with <code>str</code> categories. If unavailable, this MUST be <code>"unknown"</code>.<br><br>
+This MUST be free-text that identifies a unique biosample donor in the dataset. It is STRONGLY RECOMMENDED that this identifier be unique within the collection of datasets that includes this dataset. 
         </td>
     </tr>
 </tbody></table>
@@ -397,6 +475,25 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     <tr>
       <th>Value</th>
         <td>categorical with <code>str</code> categories. This MUST be a child of <a href="http://purl.obolibrary.org/obo/NCBITaxon_33208"<code>NCBITaxon:33208</code></a> for <i>Metazoa</i>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### self_reported_ethnicity
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>self_reported_ethnicity</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be either free-text or <code>"unknown"</code> if unavailable. <br><br>Otherwise, for all other organisms this MUST be <code>"na"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -482,7 +579,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>assay_ontology_term_id</code>. Any clarifying text enclosed in parentheses and appended to <code>assay_ontology_term_id</code> MUST be appended to <code>assay</code>.<br><br> For example, if the sci-plex assay was curated as <code>"EFO:0010183 (sci-plex)"</code>, then the value would be <code>"single-cell library construction (sci-plex)"</code>.
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>assay_ontology_term_id</code>. 
         </td>
     </tr>
 </tbody></table>
@@ -540,25 +637,6 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     <tr>
       <th>Value</th>
         <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>disease_ontology_term_id</code>.
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
-### ethnicity
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>ethnicity</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Data Portal</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code> or <code>"unknown"</code> if set in <code>ethnicity_ontology_term_id</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>ethnicity_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -628,25 +706,6 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
 
 Curators MUST annotate the following columns in the `var` dataframe and if present, the `raw.var` dataframe.
 
-### feature_biotype
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>feature_biotype</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Curator</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>This MUST be <code>"gene"</code> or <code>"spike-in"</code>.  
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
 ### index of pandas.DataFrame
 
 <table><tbody>
@@ -686,7 +745,26 @@ Curators MUST annotate the following column only in the `var` dataframe. This co
 <br>
 
 
-When a dataset is uploaded, cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding feature identifier and the inferred NCBITaxon term for the reference organism  to the `var` and `raw.var` dataframes. Curators MUST NOT annotate the following columns:
+When a dataset is uploaded, cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding feature biotype, identifier, and the NCBITaxon term for the reference organism to the `var` and `raw.var` dataframes. Curators MUST NOT annotate the following columns:
+
+### feature_biotype
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>feature_biotype</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Data Portal</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>This MUST be <code>"gene"</code> or <code>"spike-in"</code>.  
+        </td>
+    </tr>
+</tbody></table>
+<br>
 
 ### feature_name
 
@@ -708,7 +786,6 @@ When a dataset is uploaded, cellxgene Data Portal MUST automatically add the mat
 <br>
 
 ### feature_reference
-
 
 <table><tbody>
     <tr>
@@ -790,7 +867,7 @@ See also `default_embedding` in `uns`.
     <tr>
       <th>Value</th>
         <td>
-          This MUST be <code>"2.0.0"</code>.
+          This MUST be <code>"3.0.0"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -811,26 +888,6 @@ See also `default_embedding` in `uns`.
       <th>Value</th>
         <td>
           <code>str</code>. This text describes and differentiates the dataset from other datasets in the same collection. It is displayed on a page in the cellxgene Data Portal that also has the collection name. To illustrate, the first dataset name in the <a href="https://cellxgene.cziscience.com/collections/b52eb423-5d0d-4645-b217-e1c6d38b2e72">Cells of the adult human heart collection</a> is "All — Cells of the adult human heart".<br><br>It is STRONGLY RECOMMENDED that each dataset <code>title</code> in a collection is unique and does not depend on other metadata such as a different  <code>assay</code> to disambiguate it from other datasets in the collection.
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
-### X_normalization
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>X_normalization</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Curator</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>
-          <code>str</code>. This SHOULD describe the method used to normalize the data stored in AnnData <code>X</code>. If data in <code>X</code> are raw, this SHOULD be <code>"none"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -899,6 +956,21 @@ See also `default_embedding` in `uns`.
 <br>
 
 ## Appendix A. Changelog
+
+schema v3.0.0
+
+* General Requirements
+  * Reserved Names from previous schema versions that have since been deprecated MUST NOT be present.
+* obs (Cell metadata)
+  * Removed guidance in `assay_ontology_term_id` that allowed clarifying text enclosed in parentheses if there was not an exact match for an assay.
+  * Added `donor_id`
+  * Deprecated `ethnicity_ontology_term_id` and `ethnicity`
+  * Added `self_reported_ethnicity`
+* var and raw.var (Gene metadata)
+  * `feature_biotype` must be annotated by the Data Portal and not the Curator.
+* uns (Dataset metadata)
+  * Updated `schema_version`
+  * Deprecated `X_normalization`
 
 schema v2.0.0 substantially *remodeled* schema v1.1.0:
 
