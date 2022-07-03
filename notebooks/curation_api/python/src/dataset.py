@@ -7,6 +7,7 @@ import threading
 from botocore.credentials import RefreshableCredentials
 from botocore.session import get_session
 from datetime import datetime, timezone
+from typing import Sequence
 
 from src.utils.logger import get_custom_logger
 from src.utils.http import url_builder, get_headers
@@ -20,6 +21,29 @@ CURATOR_TAG_PREFIX_REGEX = r"(?P<tag_prefix>.*)"
 EXTENSION_REGEX = r"(?P<extension>h5ad)"
 
 
+def get_identifier_type_and_value(identifier: str) -> Sequence[str, str]:
+    identifier_type = None
+    identifier_value = identifier
+    if re.match(f"^{DATASET_ID_REGEX}$", identifier):
+        # identifier is a uuid
+        identifier_type = "dataset_uuid"
+    else:
+        # CURATOR_TAG_PREFIX_REGEX is superfluous; leaving in to match lambda handler code; may use later
+        matched = re.match(f"({DATASET_ID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})\\.{EXTENSION_REGEX}$", identifier)
+        if matched:
+            matches = matched.groupdict()
+            if dataset_uuid := matches.get("dataset_uuid"):
+                identifier_type = "dataset_uuid"
+                identifier_value = dataset_uuid
+            else:
+                identifier_type = "curator_tag"
+
+    if not identifier_type:
+        raise Exception(f"The identifier '{identifier}' must either 1) include a '.h5ad' suffix OR 2) be a uuid")
+
+    return identifier_value, identifier_type
+
+
 def delete_dataset(collection_uuid: str, identifier: str):
     """
     Delete a private Dataset
@@ -30,25 +54,10 @@ def delete_dataset(collection_uuid: str, identifier: str):
     url = url_builder(f"/collections/{collection_uuid}/datasets")
     headers = get_headers()
 
-    identifier_name = None
-    if re.match(f"^{DATASET_ID_REGEX}$", identifier):
-        # identifier is a uuid
-        identifier_name = "dataset_uuid"
-    else:
-        # CURATOR_TAG_PREFIX_REGEX is superfluous; leaving in to match lambda handler code; may use later
-        matched = re.match(f"({DATASET_ID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})\\.{EXTENSION_REGEX}$", identifier)
-        if matched:
-            matches = matched.groupdict()
-            if matches.get("dataset_uuid"):
-                identifier_name = "dataset_uuid"
-            else:
-                identifier_name = "curator_tag"
-
-    if not identifier_name:
-        raise Exception(f"The identifier '{identifier}' must either 1) include a '.h5ad' suffix OR 2) be a uuid")
+    identifier_value, identifier_type = get_identifier_type_and_value(identifier)
 
     params_dict = dict()
-    params_dict[identifier_name] = identifier
+    params_dict[identifier_type] = identifier_value
     try:
         res = requests.delete(url, headers=headers, params=params_dict)
         res.raise_for_status()
@@ -57,7 +66,7 @@ def delete_dataset(collection_uuid: str, identifier: str):
         raise e
     else:
         logger.info("\n\033[1m\033[38;5;10mSUCCESS\033[0m\n")  # 'SUCCESS' in bold green
-        logger.info(f"Deleted the Dataset with {identifier_name} '{identifier}' from its Collection: "
+        logger.info(f"Deleted the Dataset with {identifier_type} '{identifier_value}' from its Collection: "
                     f"\n{os.getenv('site_url')}/collections/{collection_uuid}")
 
 
