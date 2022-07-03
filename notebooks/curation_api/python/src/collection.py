@@ -89,7 +89,7 @@ def update_collection(collection_uuid: str, collection_form_metadata: dict) -> N
     url = url_builder(f"/collections/{collection_uuid}")
     headers = get_headers()
     try:
-        res = requests.patch(url, headers=headers, data=json.dumps(collection_form_metadata))
+        res = requests.put(url, headers=headers, data=json.dumps(collection_form_metadata))
         res.raise_for_status()
     except Exception as e:
         logger.error("\n\033[1m\033[38;5;9mFAILED\033[0m")  # 'FAILED' in bold red
