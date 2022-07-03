@@ -51,7 +51,7 @@ def create_revision(collection_uuid: str) -> str:
         return revision_uuid
 
 
-def delete_collection(collection_uuid: str):
+def delete_collection(collection_uuid: str) -> None:
 
     url = url_builder(f"/collections/{collection_uuid}")
     headers = get_headers()
@@ -66,7 +66,7 @@ def delete_collection(collection_uuid: str):
         logger.info(f"Deleted the Collection at url:\n{os.getenv('site_url')}/collections/{collection_uuid}")
 
 
-def get_collection_uuid(collection_uuid: str) -> dict:
+def get_collection(collection_uuid: str) -> dict:
 
     url = url_builder(f"/collections/{collection_uuid}")
     headers = get_headers()
@@ -82,3 +82,18 @@ def get_collections(visibility: str = "PUBLIC") -> list:
     res = requests.get(url, headers=headers, params={"visibility": visibility})
     res.raise_for_status()
     return res.json().get("collections")
+
+
+def update_collection(collection_uuid: str, collection_form_metadata: dict) -> None:
+
+    url = url_builder(f"/collections/{collection_uuid}")
+    headers = get_headers()
+    try:
+        res = requests.patch(url, headers=headers, data=json.dumps(collection_form_metadata))
+        res.raise_for_status()
+    except Exception as e:
+        logger.error("\n\033[1m\033[38;5;9mFAILED\033[0m")  # 'FAILED' in bold red
+        raise e
+    else:
+        logger.info("\n\033[1m\033[38;5;10mSUCCESS\033[0m\n")  # 'SUCCESS' in bold green
+        logger.info(f"Updated the Collection at url:\n{os.getenv('site_url')}/collections/{collection_uuid}")
