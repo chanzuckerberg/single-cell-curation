@@ -1,3 +1,5 @@
+import json
+
 import boto3
 import logging
 import os
@@ -7,7 +9,7 @@ import threading
 from botocore.credentials import RefreshableCredentials
 from botocore.session import get_session
 from datetime import datetime, timezone
-from typing import Sequence
+from typing import Tuple
 
 from src.utils.logger import get_custom_logger
 from src.utils.http import url_builder, get_headers
@@ -21,7 +23,7 @@ CURATOR_TAG_PREFIX_REGEX = r"(?P<tag_prefix>.*)"
 EXTENSION_REGEX = r"(?P<extension>h5ad)"
 
 
-def get_identifier_type_and_value(identifier: str) -> Sequence[str, str]:
+def get_identifier_type_and_value(identifier: str) -> Tuple[str, str]:
     identifier_type = None
     identifier_value = identifier
     if re.match(f"^{DATASET_ID_REGEX}$", identifier):
@@ -48,7 +50,7 @@ def delete_dataset(collection_uuid: str, identifier: str):
     """
     Delete a private Dataset
     :param collection_uuid: the uuid of the Collection to which the Dataset belongs
-    :param identifier: the curator tag or cellxgene Dataset uuid.
+    :param identifier: the curator tag or cellxgene Dataset uuid
     :return: True if deletion is successful otherwise False
     """
     url = url_builder(f"/collections/{collection_uuid}/datasets")
@@ -68,6 +70,33 @@ def delete_dataset(collection_uuid: str, identifier: str):
         logger.info("\n\033[1m\033[38;5;10mSUCCESS\033[0m\n")  # 'SUCCESS' in bold green
         logger.info(f"Deleted the Dataset with {identifier_type} '{identifier_value}' from its Collection: "
                     f"\n{os.getenv('site_url')}/collections/{collection_uuid}")
+
+
+def update_curator_tag(collection_uuid: str, identifier: str, new_tag: str):
+    """
+    Update a private Dataset's curator tag
+    :param collection_uuid: the uuid of the Collection to which the Dataset belongs
+    :param identifier: the curator tag or cellxgene Dataset uuid
+    :param new_tag: the new curator tag to assign to the Dataset
+    """
+    url = url_builder(f"/collections/{collection_uuid}/datasets")
+    headers = get_headers()
+
+    identifier_value, identifier_type = get_identifier_type_and_value(identifier)
+
+    params_dict = dict()
+    params_dict[identifier_type] = identifier_value
+
+    new_curator_tag_dict = dict(curator_tag=new_tag)
+    try:
+        res = requests.patch(url, headers=headers, params=params_dict, data=json.dumps(new_curator_tag_dict))
+        res.raise_for_status()
+    except Exception as e:
+        logger.error("\n\033[1m\033[38;5;9mFAILED\033[0m")  # 'FAILED' in bold red
+        raise e
+    else:
+        logger.info("\n\033[1m\033[38;5;10mSUCCESS\033[0m\n")  # 'SUCCESS' in bold green
+        logger.info(f"Dataset with {identifier_type} '{identifier_value}' updated to have curator_tag '{new_tag}'")
 
 
 def upload_local_datafile(datafile_path: str, collection_uuid: str, identifier: str):
