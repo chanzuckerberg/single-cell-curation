@@ -26,12 +26,8 @@ def set_api_access_config(api_key_file_path: str = None, env: str = "prod") -> N
     """
     This function uses the API key to retrieve a temporary access token from the Curator API. It then sets
     the 'access_token' environment variable, which other Curator API notebook modules use when calling
-<<<<<<< HEAD
-    Curator API endpoints. The usage of this function relies on a *prior* set_api_urls() call (from api_urls.py).
-=======
     Curator API endpoints. If no api_key_file_path arg is provided, then no access token will be set, and the user
     will be limited to only publicly-accessible data.
->>>>>>> main
     :param api_key_file_path: the relative path to the file containing the API key
     :param env: the deployment environment
     :return: None
@@ -40,17 +36,6 @@ def set_api_access_config(api_key_file_path: str = None, env: str = "prod") -> N
     if not api_key_file_path:
         print("No API key file provided. Without an access token, no private data or actions are accessible.")
         return
-<<<<<<< HEAD
-    api_key = open(api_key_file_path).read().strip()
-    access_token_headers = {"x-api-key": api_key}
-    access_token_path = "/curation/v1/auth/token"
-
-    api_url_base = os.getenv("api_url_base")
-    if not api_url_base:
-        raise Exception("You must first set the API url environment variables with set_api_urls()")
-
-    access_token_url = f"{api_url_base}{access_token_path}"
-=======
 
     api_key = open(api_key_file_path).read().strip()
     access_token_headers = {"x-api-key": api_key}
@@ -58,7 +43,6 @@ def set_api_access_config(api_key_file_path: str = None, env: str = "prod") -> N
     api_url_base = os.getenv("api_url_base")
     access_token_url = f"{api_url_base}{access_token_path}"
 
->>>>>>> main
     res = requests.post(access_token_url, headers=access_token_headers)
     res.raise_for_status()
     access_token = res.json().get("access_token")
