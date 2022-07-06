@@ -11,7 +11,7 @@ from botocore.session import get_session
 from datetime import datetime, timezone
 from typing import Tuple
 
-from src.utils.logger import get_custom_logger
+from src.utils.logger import get_custom_logger, failure, success
 from src.utils.http import url_builder, get_headers
 
 
@@ -60,16 +60,16 @@ def delete_dataset(collection_uuid: str, identifier: str):
 
     params_dict = dict()
     params_dict[identifier_type] = identifier_value
+
+    success_message = f"Deleted the Dataset with {identifier_type} '{identifier_value}' from its Collection: " \
+                      f"\n{os.getenv('site_url')}/collections/{collection_uuid}"
     try:
         res = requests.delete(url, headers=headers, params=params_dict)
         res.raise_for_status()
     except Exception as e:
-        logger.error("\n\033[1m\033[38;5;9mFAILED\033[0m")  # 'FAILED' in bold red
-        raise e
+        failure(logger, e)
     else:
-        logger.info("\n\033[1m\033[38;5;10mSUCCESS\033[0m\n")  # 'SUCCESS' in bold green
-        logger.info(f"Deleted the Dataset with {identifier_type} '{identifier_value}' from its Collection: "
-                    f"\n{os.getenv('site_url')}/collections/{collection_uuid}")
+        success(logger, success_message)
 
 
 def update_curator_tag(collection_uuid: str, identifier: str, new_tag: str):
@@ -88,15 +88,44 @@ def update_curator_tag(collection_uuid: str, identifier: str, new_tag: str):
     params_dict[identifier_type] = identifier_value
 
     new_curator_tag_dict = dict(curator_tag=new_tag)
+
+    success_message = f"Dataset with {identifier_type} '{identifier_value}' updated to have curator_tag '{new_tag}'"
     try:
         res = requests.patch(url, headers=headers, params=params_dict, data=json.dumps(new_curator_tag_dict))
         res.raise_for_status()
     except Exception as e:
-        logger.error("\n\033[1m\033[38;5;9mFAILED\033[0m")  # 'FAILED' in bold red
-        raise e
+        failure(logger, e)
     else:
-        logger.info("\n\033[1m\033[38;5;10mSUCCESS\033[0m\n")  # 'SUCCESS' in bold green
-        logger.info(f"Dataset with {identifier_type} '{identifier_value}' updated to have curator_tag '{new_tag}'")
+        success(logger, success_message)
+
+
+def upload_datafile_from_link(link: str, collection_uuid: str, identifier: str):
+    """
+    Create/update a Dataset from the datafile found at the source link.
+    :param link: the source datafile link to upload to the Data Portal to become a Dataset
+    :param collection_uuid: the uuid of the Collection to which the resultant Dataset will belong
+    :param identifier: the curator tag or cellxgene Dataset uuid. Must be suffixed with '.h5ad'. See heading
+    of upload_local_datafile.ipynb for details about how to use the identifier to 'create new' vs 'replace existing'
+    """
+    url = url_builder(f"/v1/collections/{collection_uuid}/datasets/upload-link")
+    headers = get_headers()
+
+    identifier_value, identifier_type = get_identifier_type_and_value(identifier)
+
+    params_dict = dict()
+    identifier_param_name = "curator_tag" if identifier_type == "curator_tag" else "id"
+    params_dict[identifier_param_name] = identifier_value
+    params_dict["link"] = link
+
+    success_message = f"Uploading Dataset with {identifier_type} '{identifier_value}' to Collection " \
+                      f"{collection_uuid}, sourcing from datafile at {link}"
+    try:
+        res = requests.put(url, headers=headers, params=params_dict)
+        res.raise_for_status()
+    except Exception as e:
+        failure(logger, e)
+    else:
+        success(logger, success_message)
 
 
 def upload_local_datafile(datafile_path: str, collection_uuid: str, identifier: str):
@@ -184,7 +213,6 @@ def upload_local_datafile(datafile_path: str, collection_uuid: str, identifier: 
             Callback=get_progress_cb(collection_uuid, identifier),
         )
     except Exception as e:
-        logger.error(f"\n\033[1m\033[38;5;9mFAILED uploading:\033[0m {collection_uuid}/{identifier}")
-        raise e
+        failure(logger, e)
     else:
-        logger.info("\n\033[1m\033[38;5;10mSUCCESS\033[0m\n")  # 'SUCCESS' in bold green
+        success(logger)
