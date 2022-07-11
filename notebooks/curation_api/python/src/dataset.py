@@ -99,28 +99,33 @@ def update_curator_tag(collection_uuid: str, identifier: str, new_tag: str):
         success(logger, success_message)
 
 
-def upload_datafile_from_link(link: str, collection_uuid: str, identifier: str):
+def upload_datafile_from_link(link: str, collection_uuid: str, identifier: str = None):
     """
     Create/update a Dataset from the datafile found at the source link.
     :param link: the source datafile link to upload to the Data Portal to become a Dataset
     :param collection_uuid: the uuid of the Collection to which the resultant Dataset will belong
     :param identifier: the curator tag or cellxgene Dataset uuid. Must be suffixed with '.h5ad'. See heading
-    of upload_local_datafile.ipynb for details about how to use the identifier to 'create new' vs 'replace existing'
+    of create_dataset_from_local_file.ipynb for details about how to use the identifier to 'create new' vs 'replace existing'
     """
-    url = url_builder(f"/v1/collections/{collection_uuid}/datasets/upload-link")
+    url = url_builder(f"/collections/{collection_uuid}/datasets/upload-link")
     headers = get_headers()
 
-    identifier_value, identifier_type = get_identifier_type_and_value(identifier)
+    data_dict = dict(link=link)
+    if identifier:
+        identifier_value, identifier_type = get_identifier_type_and_value(identifier)
 
-    params_dict = dict()
-    identifier_param_name = "curator_tag" if identifier_type == "curator_tag" else "id"
-    params_dict[identifier_param_name] = identifier_value
-    params_dict["link"] = link
+        identifier_param_name = "curator_tag" if identifier_type == "curator_tag" else "id"
+        data_dict[identifier_param_name] = identifier_value
+        print(data_dict)
 
-    success_message = f"Uploading Dataset with {identifier_type} '{identifier_value}' to Collection " \
-                      f"{collection_uuid}, sourcing from datafile at {link}"
+        success_message = f"Uploading Dataset with {identifier_type} '{identifier_value}' to Collection " \
+                          f"{os.getenv('site_url')}/collections/{collection_uuid} sourcing from datafile at {link}"
+    else:
+        success_message = f"Uploading Dataset to Collection {os.getenv('site_url')}/collections/{collection_uuid} " \
+                          f"sourcing from datafile at {link}"
+
     try:
-        res = requests.put(url, headers=headers, params=params_dict)
+        res = requests.put(url, headers=headers, data=json.dumps(data_dict))
         res.raise_for_status()
     except Exception as e:
         failure(logger, e)
