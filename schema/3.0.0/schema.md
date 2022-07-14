@@ -744,7 +744,7 @@ Curators MUST annotate the following columns in the `var` dataframe and if prese
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be an ENSEMBL term. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be an ERCC Spike-In identifier.<br><br> The index of the <code>pandas.DataFrame</code> MUST contain unique identifiers for features. If present, the index of <code>raw.var</code> MUST be identical to the index of <code>var</code>.<br><br></td>
+        <td><code>str</code>. If the feature is a gene then this MUST be an ENSEMBL term. If the feature is a RNA Spike-In Control Mix</code> then this MUST be an ERCC Spike-In identifier (e.g. <code>"ERCC-0003"</code>).<br><br> The index of the <code>pandas.DataFrame</code> MUST contain unique identifiers for features. If present, the index of <code>raw.var</code> MUST be identical to the index of <code>var</code>.<br><br></td>
     </tr>
 </tbody></table>
 <br>
