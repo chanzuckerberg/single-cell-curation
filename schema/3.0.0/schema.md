@@ -42,7 +42,9 @@ All data submitted to the cellxgene Data Portal is automatically converted to a 
 
 **Organisms**. Data MUST be from a Metazoan organism or SARS-COV-2 and defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the pinned Human and Mouse gene annotations.
 
-**Reserved Names**. The names of the metadata keys specified by the schema are reserved and MUST be unique. For example, duplicate <code>"feature_biotype"</code> keys in AnnData <code>var</code> are not allowed. Reserved Names from previous schema versions that have since been deprecated MUST NOT be present in datasets:
+**Reserved Names**. The names of metadata keys MUST NOT start with `"__"`. The names of the metadata keys specified by the schema are reserved and MUST be unique. For example, duplicate <code>"feature_biotype"</code> keys in AnnData <code>var</code> are not allowed. 
+
+Reserved Names from previous schema versions that have since been deprecated MUST NOT be present in datasets:
 
 <table>
 <thead>
