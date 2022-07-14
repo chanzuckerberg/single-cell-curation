@@ -184,6 +184,7 @@ The following ontology dependencies are *pinned* for this version of the schema.
 |:--|:--|:--|
 | [Cell Ontology] | CL | [cl.owl] : [2021-08-10]|
 | [Experimental Factor Ontology] | EFO | [efo.owl] : [2021-08-16 EFO 3.33.0]
+| [Human Ancestry Ontology] | HANCESTRO |[hancestro.owl] : [2021-01-04 (2.5)] |
 | [Human Developmental Stages] |  HsapDv | [hsapdv.owl] : 2020-03-10 |
 | [Mondo Disease Ontology] | MONDO |[mondo.owl] : [2021-08-11] |
 | [Mouse Developmental Stages]| MmusDv |  [mmusdv.owl] : 2020-03-10 |
@@ -199,6 +200,10 @@ The following ontology dependencies are *pinned* for this version of the schema.
 [Experimental Factor Ontology]: http://www.ebi.ac.uk/efo
 [2021-08-16 EFO 3.33.0]: https://github.com/EBISPOT/efo/releases/tag/v3.33.0
 [efo.owl]: https://github.com/EBISPOT/efo/releases/download/v3.33.0/efo.owl
+
+[Human Ancestry Ontology]: http://www.obofoundry.org/ontology/hancestro.html
+[2021-01-04 (2.5)]: https://github.com/EBISPOT/ancestro/releases/tag/2.5
+[hancestro.owl]: https://github.com/EBISPOT/ancestro/blob/2.5/hancestro.owl
 
 [Human Developmental Stages]: http://obofoundry.org/ontology/hsapdv.html
 [hsapdv.owl]: http://purl.obolibrary.org/obo/hsapdv.owl
@@ -479,12 +484,12 @@ Curators MUST annotate the following columns in the `obs` dataframe:
 </tbody></table>
 <br>
 
-### self_reported_ethnicity
+### self_reported_ethnicity_ontology_term_id
 
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>self_reported_ethnicity</td>
+      <td>self_reported_ethnicity_ontology_term_id</td>
     </tr>
     <tr>
       <th>Annotator</th>
@@ -492,7 +497,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be either free-text or <code>"unknown"</code> if unavailable. <br><br>Otherwise, for all other organisms this MUST be <code>"na"</code>.
+        <td>categorical with <code>str</code> categories. If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be either a HANCESTRO term or <code>"unknown"</code> if unavailable. <br><br>Otherwise, for all other organisms this MUST be <code>"na"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -655,6 +660,25 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     <tr>
       <th>Value</th>
         <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>organism_ontology_term_id</code>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### self_reported_ethnicity
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>self_reported_ethnicity</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Data Portal</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code> or <code>"unknown"</code> if set in <code>self_reported_ethnicity_ontology_term_id</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>self_reported_ethnicity_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -963,8 +987,8 @@ schema v3.0.0
 * obs (Cell metadata)
   * Removed guidance in `assay_ontology_term_id` that allowed clarifying text enclosed in parentheses if there was not an exact match for an assay.
   * Added `donor_id`
-  * Deprecated `ethnicity_ontology_term_id` and `ethnicity`
-  * Added `self_reported_ethnicity`
+  * Renamed `ethnicity_ontology_term_id` to `self_reported_ethnicity_ontology_term_id`
+  * Renamed `ethnicity` to `self_reported_ethnicity`
 * var and raw.var (Gene metadata)
   * `feature_biotype` must be annotated by the Data Portal and not the Curator.
 * uns (Dataset metadata)
