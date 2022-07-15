@@ -144,23 +144,21 @@ The data stored in the `X` data matrix is the data that is viewable in cellxgene
 
 In any layer, if a matrix has 50% or more values that are zeros, it is STRONGLY RECOMMENDED that the matrix be encoded as a [`scipy.sparse.csr_matrix`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.html).
 
-cellxgene's matrix layer requirements are tailored to optimize data reuse. Because each assay has different characteristics, the requirements differ by assay type. In general,
-cellxgene requires submission of "raw" data suitable for computational reuse when a standard raw matrix format exists for an assay and strongly recommends that a "final" matrix suitable for
-visualization in cellxgene Explorer be included. So that cellxgene's data can be provided in download formats suitable for both R and Python, the schema imposes the following requirements:
+cellxgene's matrix layer requirements are tailored to optimize data reuse. Because each assay has different characteristics, the requirements differ by assay type. In general, cellxgene requires submission of "raw" data suitable for computational reuse when a standard raw matrix format exists for an assay. It is STRONGLY RECOMMENDED to also include a "normalized" matrix with processed values ready for data analysis and suitable for visualization in cellxgene Explorer. So that cellxgene's data can be provided in download formats suitable for both R and Python, the schema imposes the following requirements:
 
 *   All matrix layers MUST have the same shape, and have the same cell labels and gene labels.
-*   Because it is impractical to retain all barcodes in raw and final matrices, any cell filtering MUST be applied to both.
+*   Because it is impractical to retain all barcodes in raw and normalized matrices, any cell filtering MUST be applied to both.
     By contrast, those wishing to reuse datasets require access to raw gene expression values, so genes SHOULD NOT be filtered from either dataset.
-    Summarizing, any cell barcodes that are removed from the data MUST be filtered from both raw and final matrices and genes SHOULD NOT be filtered from the raw matrix.
-*   Any genes that publishers wish to filter from the final matrix MAY have their values replaced by zeros and MUST be flagged in the column [`feature_is_filtered`](#feature_is_filtered) of [`var`](#var-and-rawvar-gene-metadata), which will mask them from exploration.
+    Summarizing, any cell barcodes that are removed from the data MUST be filtered from both raw and normalized matrices and genes SHOULD NOT be filtered from the raw matrix.
+*   Any genes that publishers wish to filter from the normalized matrix MAY have their values replaced by zeros and MUST be flagged in the column [`feature_is_filtered`](#feature_is_filtered) of [`var`](#var-and-rawvar-gene-metadata), which will mask them from exploration.
 *   Additional layers provided at author discretion MAY be stored using author-selected keys, but MUST have the same cells and genes as other layers. It is STRONGLY RECOMMENDED that these layers have names that accurately summarize what the numbers in the layer represent (e.g. `"counts_per_million"`, `"SCTransform_normalized"`, or `"RNA_velocity_unspliced"`).
 
 The following table describes the matrix data and layers requirements that are **assay-specific**. If an entry in the table is empty, the schema does not have any other requirements on data in those layers beyond the ones listed above.
 
-| Assay | "raw" required? | "raw" location | "final" required? | "final" location |
+| Assay | "raw" required? | "raw" location | "normalized" required? | "normalized" location |
 |-|-|-|-|-|
-| scRNA-seq (UMI, e.g. 10x v3) | REQUIRED. Values MUST be de-duplicated molecule counts. | `AnnData.raw.X` unless no "final" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
-| scRNA-seq (non-UMI, e.g. SS2) | REQUIRED. Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM). | `AnnData.raw.X` unless no "final" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
+| scRNA-seq (UMI, e.g. 10x v3) | REQUIRED. Values MUST be de-duplicated molecule counts. | `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
+| scRNA-seq (non-UMI, e.g. SS2) | REQUIRED. Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM). | `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
 | Accessibility (e.g. ATAC-seq, mC-seq) | NOT REQUIRED | | REQUIRED | `AnnData.X` | STRONGLY RECOMMENDED |
 |||||
 
@@ -764,7 +762,7 @@ Curators MUST annotate the following column only in the `var` dataframe. This co
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>bool</code>. This MUST be <code>True</code> if the feature was filtered out in the final matrix (<code>X</code>) but is present in the raw matrix (<code>raw.X</code>). The value for all cells of the given feature in the final matrix MUST be <code>0</code>.  <br><br>Otherwise, this MUST be <code>False</code>. </td>
+        <td><code>bool</code>. This MUST be <code>True</code> if the feature was filtered out in the normalized matrix (<code>X</code>) but is present in the raw matrix (<code>raw.X</code>). The value for all cells of the given feature in the normalized matrix MUST be <code>0</code>.  <br><br>Otherwise, this MUST be <code>False</code>. </td>
     </tr>
 </tbody></table>
 <br>
@@ -984,6 +982,7 @@ See also `default_embedding` in `uns`.
 
 schema v3.0.0
 
+* All references to the "final" matrix has been replaced with "normalized" for clarity.
 * General Requirements
   * Reserved Names from previous schema versions that have since been deprecated MUST NOT be present.
 * obs (Cell metadata)
