@@ -440,7 +440,9 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If unavailable, this MUST be <code>"unknown"</code>.<br><br>This MUST be free-text that identifies a unique individual that data were derived from. It is STRONGLY RECOMMENDED that this identifier be unique to a given individual within the collection of datasets that includes this dataset. 
+        <td>categorical with <code>str</code> categories. This MUST be free-text that identifies a unique individual that data were derived from. It is STRONGLY RECOMMENDED that this identifier be designed so that it is unique to:<br><br>
+          <ul><li>a given individual within the collection of datasets that includes this dataset</li>
+          <li>a given individual across all collections in the cellxgene Data Portal</li></ul>
         </td>
     </tr>
 </tbody></table>
