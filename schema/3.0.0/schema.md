@@ -550,7 +550,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           </thead>
           <tbody>
             <tr>
-              <td><i>10x transcription profiling</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030080"><code>EFO:0030080</code></a>]  and its children</td>
+              <td><i>10x transcription profiling</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030080"><code>EFO:0030080</code></a>] and its children</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr> 
             <tr>
@@ -558,63 +558,63 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>CEL-seq2</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0010010"><code>EFO:0010010</code></a>]  </td>
+              <td><i>CEL-seq2</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0010010"><code>EFO:0010010</code></a>]</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>CITE-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0009294"><code>EFO:0009294</code></a>]  and its children</td>
+              <td><i>CITE-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0009294"><code>EFO:0009294</code></a>] and its children</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>DroNc-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008720"><code>EFO:0008720</code></a>]  </td>
+              <td><i>DroNc-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008720"><code>EFO:0008720</code></a>]</td>
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>Drop-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008722"><code>EFO:0008722</code></a>]  </td>
+              <td><i>Drop-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008722"><code>EFO:0008722</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>microwell-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030002"><code>EFO:0030002</code></a>]  </td>
+              <td><i>microwell-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030002"><code>EFO:0030002</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>    
             <tr>
-              <td><i>Patch-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008853"><code>EFO:0008853</code></a>]  </td>
+              <td><i>Patch-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008853"><code>EFO:0008853</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>sci-Plex</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030026"><code>EFO:0030026</code></a>]  </td>
+              <td><i>sci-Plex</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030026"><code>EFO:0030026</code></a>]</td>
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>sci-RNA-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0010550"><code>EFO:0010550</code></a>]  </td>
+              <td><i>sci-RNA-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0010550"><code>EFO:0010550</code></a>]</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>Seq-Well</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008919"><code>EFO:0008919</code></a>]  </td>
+              <td><i>Seq-Well</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008919"><code>EFO:0008919</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>Smart-like</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0010184"><code>EFO:0010184</code></a>] and its children </td>
+              <td><i>Smart-like</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0010184"><code>EFO:0010184</code></a>] and its children</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>smFISH</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0009918"><code>EFO:0009918</code></a>] and its children </td>
+              <td><i>smFISH</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0009918"><code>EFO:0009918</code></a>] and its children</td>
               <td><code>"na"</code></td>
            </tr>   
             <tr>
-              <td><i>snmC-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008939"><code>EFO:0008939</code></a>]  </td>
+              <td><i>snmC-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008939"><code>EFO:0008939</code></a>]</td>
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>snmC-seq2</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030027"><code>EFO:0030027</code></a>]  </td>
+              <td><i>snmC-seq2</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030027"><code>EFO:0030027</code></a>]</td>
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>spatial proteomics</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0700000"><code>EFO:0700000</code></a>] and its children </td>
+              <td><i>spatial proteomics</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0700000"><code>EFO:0700000</code></a>] and its children</td>
               <td><code>"na"</code></td>
            </tr>
             <tr>
-              <td><i>spatial transcriptomics by high-throughput sequencing</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030005"><code>EFO:0030005</code></a>] and its children </td>
+              <td><i>spatial transcriptomics by high-throughput sequencing</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030005"><code>EFO:0030005</code></a>] and its children</td>
               <td><code>"na"</code></td>
            </tr>    
           </tbody></table>
