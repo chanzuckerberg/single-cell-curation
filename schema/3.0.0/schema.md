@@ -36,7 +36,7 @@ This document is organized by:
 
 ## General Requirements
 
-**AnnData.** The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.7 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `raw.var`, `obsm`, and `uns` attributes are described below.
+**AnnData.** The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.8 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `raw.var`, `obsm`, and `uns` attributes are described below.
 
 All data submitted to the cellxgene Data Portal is automatically converted to a Seurat V3 object that can be loaded by the R package Seurat. See the [Seurat encoding](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/2.0.0/seurat_encoding.md) for further information.
 
@@ -130,10 +130,11 @@ Reserved Names from previous schema versions that have since been deprecated MUS
 
 **Redundant Metadata**. It is STRONGLY RECOMMENDED to avoid multiple metadata fields containing identical or similar information.
 
-**No PII**. Curators agree to this requirement as part of the data submission policy.
-    However, it is not strictly enforced in our validation tooling because it is difficult for software to predict what is and is not PII.
-    It is up to the submitter to ensure that no metadata can be personally identifiable: no names, dates of birth, specific locations, etc.
-    See this [list](https://docs.google.com/document/d/1sboOmbafvMh3VYjK1-3MAUt0I13UUJfkQseq8ANLPl8/edit) for guidance.
+**No Personal Identifiable Information (PII)**.  This is not strictly enforced by validation because it is difficult for software to predict what is and is not PII; however, curators MUST agree to the data submission policies of the cellxgene Data Portal on behalf of data submitters which includes this requirement:
+
+> It is my responsibility to ensure that this data is not identifiable. In particular, I commit that I will remove any [direct personal identifiers](https://docs.google.com/document/d/1sboOmbafvMh3VYjK1-3MAUt0I13UUJfkQseq8ANLPl8/edit) in the metadata portions of the data, and that CZI may further contact me if it believes more work is needed to de-identify it.
+
+This includes names, emails, or other PII for researchers or curators involved in the data generation and submission.
 
 #### *Note on types*
 The types below are python3 types. Note that a python3 `str` is a sequence of Unicode code points, which is stored null-terminated and UTF-8-encoded by anndata.
@@ -168,11 +169,14 @@ cellxgene requires ontology terms to enable search, comparison, and integration 
 Ontology terms for cell metadata MUST use [OBO-format identifiers](http://www.obofoundry.org/id-policy.html), meaning a CURIE (prefixed identifier) of the form **Ontology:Identifier**.
 For example, [EFO:0000001](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0000001) is a term in the Experimental Factor Ontology (EFO).
 
-The most accurate ontology term MUST always be used. This is true even in cases where there may not be an exact or approximate ontology term.
+The most accurate ontology term MUST always be used. If an exact or approximate ontology term is not available, a new term may be requested:
 
-For example if `cell_type_ontology_term_id` describes a relay interneuron, but the most accurate available term in the CL ontology is [CL:0000099](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000099) for *interneuron*, then the interneuron term can be used to fulfill this requirement and ensures that users searching for "neuron" are able to find these data. If no appropriate high-level term can be found or the cell type is unknown, then the most accurate term is [CL:0000003](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000003) for *native cell*.
+- For the [Cell Ontology], data submitters may [suggest a new term](https://github.com/obophenotype/cell-ontology/issues/new?assignees=bvarner-ebi&labels=new+term+request%2C+cellxgene&template=a_adding_term_cellxgene.md&title=%5BNTR-cxg%5D) and [notify the curation team](mailto:cellxgene@chanzuckerberg.com) of the pending term request, so that the datasets can be updated once the term is available.
 
-Users will still be able to access more specific cell type annotations that have been submitted with the dataset (but aren't required by the schema).
+  To meet cellxgene schema requirements, the most accurate available CL term MUST be used until the new term is available. For example if `cell_type_ontology_term_id` describes a relay interneuron, but the most accurate available term in the CL ontology is [CL:0000099](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000099) for *interneuron*, then the interneuron term can be used to fulfill this requirement and ensures that users searching for "neuron" are able to find these data. If no appropriate high-level term can be found or the cell type is unknown, then the most accurate term is [CL:0000003](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000003) for *native cell*. Users will still be able to access more specific cell type annotations that have been submitted with the dataset (but aren't required by the schema).
+
+   
+- For all other ontologies, data submitters may submit a [request to the curation team](mailto:cellxgene@chanzuckerberg.com) during the submission process.
 
 Terms documented as obsolete in an ontology MUST NOT be used. For example, [EFO:0009310](http://www.ebi.ac.uk/efo/EFO_0009310) for *obsolete_10x v2* was marked as obsolete in EFO version 3.31.0 and replaced by [EFO:0009899](http://www.ebi.ac.uk/efo/EFO_0009899) for *10x 3' v2*.
 
@@ -1084,6 +1088,7 @@ See also `default_embedding` in `uns`.
 
 schema v3.0.0
 
+* The canonical data format was updated from AnnData 0.7 to 0.8.
 * All references to the "final" matrix has been replaced with "normalized" for clarity.
 * General Requirements
   * Reserved Names from previous schema versions that have since been deprecated MUST NOT be present.
