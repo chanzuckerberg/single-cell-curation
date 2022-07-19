@@ -618,6 +618,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td><code>"na"</code></td>
            </tr>    
           </tbody></table>
+          <br>If the assay does not appear in this table, the most appropriate value MUST be selected and <a href="mailto:cellxgene@chanzuckerberg.com">the curation team informed</a> during submission so that the assay can be added to the table.<br>
         </td>
     </tr>
 </tbody></table>
