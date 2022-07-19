@@ -1092,6 +1092,7 @@ schema v3.0.0
   * Added `donor_id`
   * Renamed `ethnicity_ontology_term_id` to `self_reported_ethnicity_ontology_term_id`
   * Renamed `ethnicity` to `self_reported_ethnicity`
+  * Added `suspension_type`
 * var and raw.var (Gene metadata)
   * `feature_biotype` must be annotated by the Data Portal and not the Curator.
 * uns (Dataset metadata)
