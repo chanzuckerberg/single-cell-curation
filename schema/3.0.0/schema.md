@@ -503,7 +503,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be either a HANCESTRO term, <code>"unknown"</code> if unavailable, or <code>"multiethnic"</code> if more than one ethnicities are reported. <br><br>Otherwise, for all other organisms this MUST be <code>"na"</code>.
+        <td>categorical with <code>str</code> categories. If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be either a HANCESTRO term, <code>"multiethnic"</code> if more than one ethnicity is reported, or <code>"unknown"</code> if unavailable. <br><br>Otherwise, for all other organisms this MUST be <code>"na"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -784,7 +784,7 @@ When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code>, <code>"unknown"</code>, or <code>"multiethnic"</code> if set in <code>self_reported_ethnicity_ontology_term_id</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>self_reported_ethnicity_ontology_term_id</code>.
+        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code>, <code>"multiethnic"</code>, or <code>"unknown"</code> if set in <code>self_reported_ethnicity_ontology_term_id</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>self_reported_ethnicity_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
