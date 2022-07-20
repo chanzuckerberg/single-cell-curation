@@ -28,7 +28,7 @@ class Validator:
 
     schema_definitions_dir = env.SCHEMA_DEFINITIONS_DIR
 
-    def __init__(self):
+    def __init__(self, ignore_labels):
 
         # Set initial state
         self.errors = []
@@ -40,6 +40,7 @@ class Validator:
         self.invalid_feature_ids = []
         self._raw_layer_exists = None
         self.is_seurat_convertible: bool = True
+        self.ignore_labels = ignore_labels
 
         # Values will be instances of ontology.GeneChecker,
         # keys will be one of ontology.SupportedOrganisms
@@ -1171,6 +1172,10 @@ class Validator:
                             f"Column '{column}' must not be present in '{component}'."
                         )
 
+            # If ignore_labels is set, we will skip all the subsequent label checks
+            if self.ignore_labels:
+                continue
+
             # Do it for columns that map to columns
             for column, columns_def in component_def["columns"].items():
 
@@ -1291,6 +1296,7 @@ class Validator:
 def validate(
     h5ad_path: Union[str, bytes, os.PathLike],
     add_labels_file: str = None,
+    ignore_labels: bool = False,
     verbose: bool = False,
 ) -> (bool, list, bool):
     from .write_labels import AnnDataLabelAppender
@@ -1312,7 +1318,7 @@ def validate(
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO, format="%(message)s")
-    validator = Validator()
+    validator = Validator(ignore_labels)
     validator.validate_adata(h5ad_path)
     logger.info(
         f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}"
