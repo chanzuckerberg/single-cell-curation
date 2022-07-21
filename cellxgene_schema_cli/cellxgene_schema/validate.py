@@ -28,7 +28,7 @@ class Validator:
 
     schema_definitions_dir = env.SCHEMA_DEFINITIONS_DIR
 
-    def __init__(self, ignore_labels):
+    def __init__(self, ignore_labels=False):
 
         # Set initial state
         self.errors = []
