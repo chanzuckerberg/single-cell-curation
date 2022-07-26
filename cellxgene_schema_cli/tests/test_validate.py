@@ -32,7 +32,6 @@ class TestFieldValidation(unittest.TestCase):
         ]["curie_constraints"]
 
     def test_schema_definition(self):
-
         """
         Tests that the definition of schema is well-defined
         """
@@ -205,9 +204,9 @@ class TestAddLabelFunctions(unittest.TestCase):
 
 
 class TestIgnoreLabelFunctions(unittest.TestCase):
-    
+
     def setUp(self):
-        #Set up test data
+        # Set up test data
         self.test_adata = adata
         self.test_adata_with_labels = adata_with_labels
 
