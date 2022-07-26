@@ -203,7 +203,7 @@ adata_non_raw = anndata.AnnData(
 adata_with_labels = anndata.AnnData(
     X=sparse.csr_matrix(X),
     obs=pd.concat([good_obs, obs_expected], axis=1),
-    var=pd.concat([good_var, var_expected], axis=1),
+    var=var_expected,#pd.concat([good_var, var_expected], axis=1),
     uns=good_uns,
     obsm=good_obsm,
 )

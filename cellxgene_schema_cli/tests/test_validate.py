@@ -204,6 +204,32 @@ class TestAddLabelFunctions(unittest.TestCase):
             self.writer._get_mapping_dict_curie(ids, curie_constraints)
 
 
+class TestIgnoreLabelFunctions(unittest.TestCase):
+    
+    def setUp(self):
+        #Set up test data
+        self.test_adata = adata
+        self.test_adata_with_labels = adata_with_labels
+
+    def test_validating_labeled_h5ad_should_fail_if_no_flag_set(self):
+
+        validator = Validator()
+        validator.adata = self.test_adata_with_labels
+        is_valid = validator.validate_adata()
+
+        self.assertFalse(is_valid)
+
+    def test_validating_labeled_h5ad_should_pass_if_flag_set(self):
+
+        validator = Validator(ignore_labels=True)
+        import copy
+        validator.adata = copy.deepcopy(self.test_adata_with_labels)
+        validator.adata.uns["X_normalization"] = 'none'
+        is_valid = validator.validate_adata()
+
+        self.assertTrue(is_valid)
+
+
 class TestSeuratConvertibility(unittest.TestCase):
 
     def validation_helper(self, matrix):
