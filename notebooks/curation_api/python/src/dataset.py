@@ -18,7 +18,7 @@ from src.utils.http import url_builder, get_headers
 logger = get_custom_logger()
 
 UUID_REGEX = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
-DATASET_ID_REGEX = f"(?P<dataset_uuid>{UUID_REGEX})"
+ID_REGEX = f"(?P<id>{UUID_REGEX})"
 CURATOR_TAG_PREFIX_REGEX = r"(?P<tag_prefix>.*)"
 EXTENSION_REGEX = r"(?P<extension>h5ad)"
 
@@ -26,19 +26,19 @@ EXTENSION_REGEX = r"(?P<extension>h5ad)"
 def get_identifier_type_and_value(identifier: str) -> Tuple[str, str]:
     identifier_type = None
     identifier_value = identifier
-    if re.match(f"^{DATASET_ID_REGEX}$", identifier):
+    if re.match(f"^{UUID_REGEX}$", identifier):
         # identifier is a uuid
-        identifier_type = "dataset_uuid"
+        identifier_type = "id"
     else:
         # CURATOR_TAG_PREFIX_REGEX is superfluous; leaving in to match lambda handler code; may use later
-        matched = re.match(f"({DATASET_ID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})\\.{EXTENSION_REGEX}$", identifier)
+        matched = re.match(f"({UUID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})\\.{EXTENSION_REGEX}$", identifier)
         if matched:
             matches = matched.groupdict()
-            if dataset_uuid := matches.get("dataset_uuid"):
-                identifier_type = "dataset_uuid"
-                identifier_value = dataset_uuid
+            if _id := matches.get("id"):
+                identifier_type = "id"
+                identifier_value = _id
             else:
-                identifier_type = "curator_tag"
+                identifier_type = "curator tag"
 
     if not identifier_type:
         raise Exception(f"The identifier '{identifier}' must either 1) include a '.h5ad' suffix OR 2) be a uuid")
@@ -46,14 +46,14 @@ def get_identifier_type_and_value(identifier: str) -> Tuple[str, str]:
     return identifier_value, identifier_type
 
 
-def delete_dataset(collection_uuid: str, identifier: str):
+def delete_dataset(collection_id: str, identifier: str):
     """
     Delete a private Dataset
-    :param collection_uuid: the uuid of the Collection to which the Dataset belongs
-    :param identifier: the curator tag or cellxgene Dataset uuid
+    :param collection_id: the id of the Collection to which the Dataset belongs
+    :param identifier: the curator tag or cellxgene Dataset id
     :return: True if deletion is successful otherwise False
     """
-    url = url_builder(f"/collections/{collection_uuid}/datasets")
+    url = url_builder(f"/collections/{collection_id}/datasets")
     headers = get_headers()
 
     identifier_value, identifier_type = get_identifier_type_and_value(identifier)
@@ -62,7 +62,7 @@ def delete_dataset(collection_uuid: str, identifier: str):
     params_dict[identifier_type] = identifier_value
 
     success_message = f"Deleted the Dataset with {identifier_type} '{identifier_value}' from its Collection: " \
-                      f"\n{os.getenv('site_url')}/collections/{collection_uuid}"
+                      f"\n{os.getenv('site_url')}/collections/{collection_id}"
     try:
         res = requests.delete(url, headers=headers, params=params_dict)
         res.raise_for_status()
@@ -72,14 +72,14 @@ def delete_dataset(collection_uuid: str, identifier: str):
         success(logger, success_message)
 
 
-def update_curator_tag(collection_uuid: str, identifier: str, new_tag: str):
+def update_curator_tag(collection_id: str, identifier: str, new_tag: str):
     """
     Update a private Dataset's curator tag
-    :param collection_uuid: the uuid of the Collection to which the Dataset belongs
-    :param identifier: the curator tag or cellxgene Dataset uuid
+    :param collection_id: the id of the Collection to which the Dataset belongs
+    :param identifier: the curator tag or cellxgene Dataset id
     :param new_tag: the new curator tag to assign to the Dataset
     """
-    url = url_builder(f"/collections/{collection_uuid}/datasets")
+    url = url_builder(f"/collections/{collection_id}/datasets")
     headers = get_headers()
 
     identifier_value, identifier_type = get_identifier_type_and_value(identifier)
@@ -99,15 +99,15 @@ def update_curator_tag(collection_uuid: str, identifier: str, new_tag: str):
         success(logger, success_message)
 
 
-def upload_datafile_from_link(link: str, collection_uuid: str, identifier: str = None):
+def upload_datafile_from_link(link: str, collection_id: str, identifier: str = None):
     """
     Create/update a Dataset from the datafile found at the source link.
     :param link: the source datafile link to upload to the Data Portal to become a Dataset
-    :param collection_uuid: the uuid of the Collection to which the resultant Dataset will belong
-    :param identifier: the curator tag or cellxgene Dataset uuid. Must be suffixed with '.h5ad'. See heading
+    :param collection_id: the id of the Collection to which the resultant Dataset will belong
+    :param identifier: the curator tag or cellxgene Dataset id. Must be suffixed with '.h5ad'. See heading
     of create_dataset_from_local_file.ipynb for details about how to use the identifier to 'create new' vs 'replace existing'
     """
-    url = url_builder(f"/collections/{collection_uuid}/datasets/upload-link")
+    url = url_builder(f"/collections/{collection_id}/datasets/upload-link")
     headers = get_headers()
 
     data_dict = dict(link=link)
@@ -119,9 +119,9 @@ def upload_datafile_from_link(link: str, collection_uuid: str, identifier: str =
         print(data_dict)
 
         success_message = f"Uploading Dataset with {identifier_type} '{identifier_value}' to Collection " \
-                          f"{os.getenv('site_url')}/collections/{collection_uuid} sourcing from datafile at {link}"
+                          f"{os.getenv('site_url')}/collections/{collection_id} sourcing from datafile at {link}"
     else:
-        success_message = f"Uploading Dataset to Collection {os.getenv('site_url')}/collections/{collection_uuid} " \
+        success_message = f"Uploading Dataset to Collection {os.getenv('site_url')}/collections/{collection_id} " \
                           f"sourcing from datafile at {link}"
 
     try:
@@ -133,17 +133,17 @@ def upload_datafile_from_link(link: str, collection_uuid: str, identifier: str =
         success(logger, success_message)
 
 
-def upload_local_datafile(datafile_path: str, collection_uuid: str, identifier: str):
+def upload_local_datafile(datafile_path: str, collection_id: str, identifier: str):
     """
     :param datafile_path: the fully qualified path of the datafile to be uploaded
-    :param collection_uuid: the uuid of the Collection to which the resultant Dataset will belong
-    :param identifier: the curator tag or cellxgene Dataset uuid. Must be suffixed with '.h5ad'. See heading
+    :param collection_id: the id of the Collection to which the resultant Dataset will belong
+    :param identifier: the curator tag or cellxgene Dataset id. Must be suffixed with '.h5ad'. See heading
     of upload_local_datafile.ipynb for details about how to use the identifier to 'create new' vs 'replace existing'
     :param log_level: the logging level
     Datasets.
     :return: None
     """
-    url = url_builder(f"/collections/{collection_uuid}/datasets/s3-upload-credentials")
+    url = url_builder(f"/collections/{collection_id}/datasets/s3-upload-credentials")
     headers = get_headers()
 
     def retrieve_s3_credentials_and_upload_key_prefix():
@@ -168,7 +168,7 @@ def upload_local_datafile(datafile_path: str, collection_uuid: str, identifier: 
 
     filesize = os.path.getsize(datafile_path)
 
-    def get_progress_cb(collection_uuid: str, identifier: str):
+    def get_progress_cb(collection_id: str, identifier: str):
         lock = threading.Lock()
         uploaded_bytes = 0
         prev_percent = 0
@@ -189,7 +189,7 @@ def upload_local_datafile(datafile_path: str, collection_uuid: str, identifier: 
             if should_update_progress_printout:
                 color = "\033[38;5;10m" if percent_of_total_upload == 100 else ""
                 if getattr(logging, log_level) < 40:
-                    print(f"{collection_uuid}/{identifier}: "
+                    print(f"{collection_id}/{identifier}: "
                           f"\033[1m{color}{percent_of_total_upload}% uploaded\033[0m\r", end="")
 
         return progress_cb
@@ -210,12 +210,12 @@ def upload_local_datafile(datafile_path: str, collection_uuid: str, identifier: 
     s3 = boto3_session.client("s3")
 
     try:
-        logger.info(f"\nUploading {datafile_path} to Collection {collection_uuid} with identifier '{identifier}'...\n")
+        logger.info(f"\nUploading {datafile_path} to Collection {collection_id} with identifier '{identifier}'...\n")
         s3.upload_file(
             Filename=datafile_path,
             Bucket=bucket,
             Key=upload_key,
-            Callback=get_progress_cb(collection_uuid, identifier),
+            Callback=get_progress_cb(collection_id, identifier),
         )
     except Exception as e:
         failure(logger, e)
