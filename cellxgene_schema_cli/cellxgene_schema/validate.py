@@ -1318,7 +1318,7 @@ def validate(
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO, format="%(message)s")
-    validator = Validator(ignore_labels)
+    validator = Validator(ignore_labels=ignore_labels)
     validator.validate_adata(h5ad_path)
     logger.info(
         f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}"
