@@ -7,7 +7,7 @@ from scipy import sparse
 
 # -----------------------------------------------------------------#
 # General example information
-SCHEMA_VERSION = "2.0.0"
+SCHEMA_VERSION = "3.0.0"
 FIXTURES_ROOT = os.path.join(os.path.dirname(__file__))
 
 # -----------------------------------------------------------------#
@@ -151,7 +151,6 @@ good_uns = {
     "schema_version": SCHEMA_VERSION,
     "title": "A title",
     "default_embedding": "X_umap",
-    "X_normalization": "CPM",
     "X_approximate_distribution": "normal",
     "batch_condition": ["is_primary_data"],
 }
