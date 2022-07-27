@@ -1,6 +1,7 @@
 import anndata
 import numpy as np
 import unittest
+import copy
 from scipy import sparse
 
 from cellxgene_schema.write_labels import AnnDataLabelAppender
@@ -221,7 +222,6 @@ class TestIgnoreLabelFunctions(unittest.TestCase):
     def test_validating_labeled_h5ad_should_pass_if_flag_set(self):
 
         validator = Validator(ignore_labels=True)
-        import copy
         validator.adata = copy.deepcopy(self.test_adata_with_labels)
         validator.adata.uns["X_normalization"] = 'none'
         is_valid = validator.validate_adata()
