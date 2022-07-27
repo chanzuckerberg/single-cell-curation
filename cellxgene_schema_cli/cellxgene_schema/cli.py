@@ -53,7 +53,7 @@ def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose):
     print("Loading validator modules")
     from .validate import validate
 
-    is_valid, _, _ = validate(h5ad_file, add_labels_file, ignore_labels, verbose=verbose)
+    is_valid, _, _ = validate(h5ad_file, add_labels_file, ignore_labels=ignore_labels, verbose=verbose)
     if is_valid:
         sys.exit(0)
     else:
