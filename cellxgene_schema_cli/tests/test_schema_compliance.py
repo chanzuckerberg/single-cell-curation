@@ -898,8 +898,6 @@ class TestUns(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: Schema version '1.0.0' is not supported. Current supported versions: '['3.0.0']'. "
-<<<<<<< HEAD
-=======
                 "Validation cannot be performed."
             ],
         )
@@ -910,7 +908,6 @@ class TestUns(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: Schema version '2.0.0' is not supported. Current supported versions: '['3.0.0']'. "
->>>>>>> feature/schema-3-0-0
                 "Validation cannot be performed."
             ],
         )
