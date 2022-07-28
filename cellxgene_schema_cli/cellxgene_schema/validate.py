@@ -1035,7 +1035,7 @@ class Validator:
 
             # If both "raw.X" and "X" exist but neither are raw
             if not self._is_raw() and self._get_raw_x_loc() == "raw.X":
-                self.warnings.append(
+                self.error.append(
                     "Raw data may be missing: data in 'raw.X' contains non-integer values."
                 )
             # Only "X" exists but it's not raw
