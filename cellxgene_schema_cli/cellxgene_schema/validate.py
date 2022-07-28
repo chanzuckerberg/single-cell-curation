@@ -1038,7 +1038,14 @@ class Validator:
                 self.warnings.append(
                     "Raw data may be missing: data in 'raw.X' contains non-integer values."
                 )
-
+            # Only "X" exists but it's not raw
+            if (
+                not self._is_raw()
+                and self._get_raw_x_loc() == "X"
+            ):
+               self.errors.append(
+                       "Only `X` was found and it doesn't contain raw values.
+                )
             # If raw data is in X and there is nothing in raw.X (i.e. normalized values are not provided), then
             # add a warning because normalized data for RNA data is STRONGLY RECOMMENDED
             if (
