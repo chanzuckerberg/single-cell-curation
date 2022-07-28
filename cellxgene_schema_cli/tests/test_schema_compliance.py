@@ -159,7 +159,6 @@ class TestExpressionMatrix(unittest.TestCase):
             ],
         )
 
-
 class TestObs(unittest.TestCase):
 
     """
@@ -183,6 +182,7 @@ class TestObs(unittest.TestCase):
             "is_primary_data",
             "sex_ontology_term_id",
             "tissue_ontology_term_id",
+            "donor_id",
         ]
 
         for column in columns:
@@ -578,6 +578,24 @@ class TestObs(unittest.TestCase):
             ],
         )
 
+    def test_donor_id(self):
+        """
+        donor_id categorical with str categories. This MUST be free-text that identifies
+        a unique individual that data were derived from. It is STRONGLY RECOMMENDED
+        that this identifier be designed so that it is unique to:
+        - a given individual within the collection of datasets that includes this dataset
+        - a given individual across all collections in the cellxgene Data Portal
+        """
+
+        self.validator.adata.obs["donor_id"] = "NA"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Column 'donor_id' in dataframe 'obs' "
+                "must be categorical, not object."
+            ],
+        )
 
 class TestVar(unittest.TestCase):
 
