@@ -914,7 +914,7 @@ class TestUns(unittest.TestCase):
     def test_schema_version(self):
 
         """
-        Schema_version, This MUST be "2.0.0".
+        Schema_version, This MUST be "3.0.0".
         """
 
         self.validator.adata.uns["schema_version"] = "1.0.0"
@@ -922,7 +922,17 @@ class TestUns(unittest.TestCase):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: Schema version '1.0.0' is not supported. Current supported versions: '['2.0.0']'. "
+                "ERROR: Schema version '1.0.0' is not supported. Current supported versions: '['3.0.0']'. "
+                "Validation cannot be performed."
+            ],
+        )
+
+        self.validator.adata.uns["schema_version"] = "2.0.0"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Schema version '2.0.0' is not supported. Current supported versions: '['3.0.0']'. "
                 "Validation cannot be performed."
             ],
         )
