@@ -45,7 +45,7 @@ good_obs = pd.DataFrame(
             True,
             "HANCESTRO:0575",
             "HsapDv:0000003",
-            "na",
+            "donor_1",
         ],
         [
             "CL:0000192",
