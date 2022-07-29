@@ -263,3 +263,5 @@ components:
                         to_column: development_stage
             is_primary_data:
                 type: bool
+            donor_id:
+                type: categorical

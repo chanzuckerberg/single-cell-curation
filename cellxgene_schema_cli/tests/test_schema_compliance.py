@@ -74,9 +74,9 @@ class TestExpressionMatrix(unittest.TestCase):
         # remove one gene
         self.validator.adata = self.validator.adata[:, 1:]
         self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            ["ERROR: Number of genes in X (3) is different than raw.X (4)."],
+        self.assertIn(
+            "ERROR: Number of genes in X (3) is different than raw.X (4).", 
+            self.validator.errors
         )
 
     def test_sparsity(self):
@@ -101,16 +101,16 @@ class TestExpressionMatrix(unittest.TestCase):
     def test_raw_values(self):
 
         """
-        When both `adata.X` and `adata.raw.X` are present, but `adata.raw.X` contains non-integer values a warning
-        is added.
+        When both `adata.X` and `adata.raw.X` are present, but `adata.raw.X` contains non-integer values an error
+        is raised.
         """
 
         self.validator.adata = examples.adata_no_raw_values.copy()
         self.validator.validate_adata()
         self.assertEqual(
-            self.validator.warnings,
+            self.validator.errors,
             [
-                "WARNING: Raw data may be missing: data in 'raw.X' contains non-integer values."
+                "ERROR: Raw data may be missing: data in 'raw.X' contains non-integer values."
             ],
         )
 
@@ -140,13 +140,11 @@ class TestExpressionMatrix(unittest.TestCase):
         del self.validator.adata.raw
         self.validator.validate_adata()
         self.assertEqual(
-            self.validator.warnings,
+            self.validator.errors,
             [
-                "WARNING: Only raw data was found, i.e. there is no 'raw.X'."
-                "It is STRONGLY RECOMMENDED that 'final' (normalized) data is provided."
+                "ERROR: Only raw data was found, i.e. there is no 'raw.X'."
             ],
         )
-
 
 class TestObs(unittest.TestCase):
 
@@ -171,6 +169,7 @@ class TestObs(unittest.TestCase):
             "is_primary_data",
             "sex_ontology_term_id",
             "tissue_ontology_term_id",
+            "donor_id",
         ]
 
         for column in columns:
@@ -566,6 +565,24 @@ class TestObs(unittest.TestCase):
             ],
         )
 
+    def test_donor_id(self):
+        """
+        donor_id categorical with str categories. This MUST be free-text that identifies
+        a unique individual that data were derived from. It is STRONGLY RECOMMENDED
+        that this identifier be designed so that it is unique to:
+        - a given individual within the collection of datasets that includes this dataset
+        - a given individual across all collections in the cellxgene Data Portal
+        """
+
+        self.validator.adata.obs["donor_id"] = "NA"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Column 'donor_id' in dataframe 'obs' "
+                "must be categorical, not object."
+            ],
+        )
 
 class TestVar(unittest.TestCase):
 

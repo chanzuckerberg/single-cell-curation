@@ -1035,7 +1035,7 @@ class Validator:
 
             # If both "raw.X" and "X" exist but neither are raw
             if not self._is_raw() and self._get_raw_x_loc() == "raw.X":
-                self.error.append(
+                self.errors.append(
                     "Raw data may be missing: data in 'raw.X' contains non-integer values."
                 )
             # Only "X" exists but it's not raw
@@ -1044,7 +1044,7 @@ class Validator:
                 and self._get_raw_x_loc() == "X"
             ):
                self.errors.append(
-                       "Only `X` was found and it doesn't contain raw values.
+                       "Only `X` was found and it doesn't contain raw values."
                 )
             # If raw data is in X and there is nothing in raw.X (i.e. normalized values are not provided), then
             # add a warning because normalized data for RNA data is STRONGLY RECOMMENDED
@@ -1052,9 +1052,8 @@ class Validator:
                 self._is_raw()
                 and self._get_raw_x_loc() == "X"
             ):
-                self.error.append(
+                self.errors.append(
                     "Only raw data was found, i.e. there is no 'raw.X'."
-                    "It is STRONGLY RECOMMENDED that 'final' (normalized) data is provided."
                 )
 
     def _check_single_column_availability(
