@@ -278,6 +278,7 @@ Only fields defined in the [schema](./schema.md/#uns-dataset-metadata) are trans
       <td><code>character</code></td>
       <td>No</td>
     </tr>
+    <tr>
       <td>batch_condition</td>
       <td><code>list[character]</code></td>
       <td>Yes</td>
