@@ -57,7 +57,7 @@ good_obs = pd.DataFrame(
             False,
             "na",
             "MmusDv:0000003",
-            "na",
+            "donor_2",
         ],
     ],
     index=["X", "Y"],
