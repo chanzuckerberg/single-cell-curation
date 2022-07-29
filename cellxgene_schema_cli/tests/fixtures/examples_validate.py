@@ -48,7 +48,7 @@ good_obs = pd.DataFrame(
         ],
         [
             "CL:0000192",
-            "EFO:0010183 (sci-plex)",
+            "EFO:0010183",
             "PATO:0000461",
             "NCBITaxon:10090",
             "unknown",
@@ -88,7 +88,7 @@ obs_expected = pd.DataFrame(
         ],
         [
             "smooth muscle cell",
-            "single cell library construction (sci-plex)",
+            "single cell library construction",
             "normal",
             "Mus musculus",
             "unknown",

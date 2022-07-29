@@ -250,8 +250,6 @@ class TestObs(unittest.TestCase):
         """
         assay_ontology_term_id categorical with str categories.
         This MUST be an EFO term and either child of "EFO:0002772" or "EFO:0010183"
-        If there is not an exact match for the assay, clarifying text MAY be enclosed in parentheses and appended to
-        the most accurate term. For example, the sci-plex assay could be curated as "EFO:0010183 (sci-plex)"
         """
 
         # Not a valid term
@@ -279,15 +277,15 @@ class TestObs(unittest.TestCase):
             ],
         )
 
-        # Not a clarifying text
-        self.validator.adata.obs["assay_ontology_term_id"][0] = "EFO:0010183 sci-plex"
+        # Includes extraneous text
+        self.validator.adata.obs["assay_ontology_term_id"][0] = "EFO:0010183 (sci-plex)"
         self.validator.errors = []
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'EFO:0010183 sci-plex' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'.",
-                "ERROR: 'EFO:0010183 sci-plex' in 'assay_ontology_term_id' is not a child term id of "
+                "ERROR: 'EFO:0010183 (sci-plex)' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'.",
+                "ERROR: 'EFO:0010183 (sci-plex)' in 'assay_ontology_term_id' is not a child term id of "
                 "'[['EFO:0002772', 'EFO:0010183']]'.",
             ],
         )
@@ -1228,8 +1226,7 @@ class TestAddingLabels(unittest.TestCase):
         Curators MUST NOT annotate the following columns.
 
             - assay. categorical with str categories. This MUST be the human-readable name assigned to the value
-            of assay_ontology_term_id. Any clarifying text enclosed in parentheses and appended to
-            assay_ontology_term_id MUST be appended to assay.
+            of assay_ontology_term_id.
             - cell_type. categorical with str categories. This MUST be the human-readable name assigned to the value
             of cell_type_ontology_term_id.
             - development_stage. categorical with str categories. This MUST be "unknown" if set in
