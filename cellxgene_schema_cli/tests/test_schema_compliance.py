@@ -70,14 +70,13 @@ class TestExpressionMatrix(unittest.TestCase):
         self.validator.adata.raw = self.validator.adata
         self.validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
         self.validator.adata.X = examples.adata_non_raw.X.copy()
-        self.validator.adata.uns["X_normalization"] = "CPM"
 
         # remove one gene
         self.validator.adata = self.validator.adata[:, 1:]
         self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            ["ERROR: Number of genes in X (3) is different than raw.X (4)."],
+        self.assertIn(
+            "ERROR: Number of genes in X (3) is different than raw.X (4).", 
+            self.validator.errors
         )
 
     def test_sparsity(self):
@@ -102,16 +101,16 @@ class TestExpressionMatrix(unittest.TestCase):
     def test_raw_values(self):
 
         """
-        When both `adata.X` and `adata.raw.X` are present, but `adata.raw.X` contains non-integer values a warning
-        is added.
+        When both `adata.X` and `adata.raw.X` are present, but `adata.raw.X` contains non-integer values an error
+        is raised.
         """
 
         self.validator.adata = examples.adata_no_raw_values.copy()
         self.validator.validate_adata()
         self.assertEqual(
-            self.validator.warnings,
+            self.validator.errors,
             [
-                "WARNING: Raw data may be missing: data in 'raw.X' contains non-integer values."
+                "ERROR: Raw data may be missing: data in 'raw.X' contains non-integer values."
             ],
         )
 
@@ -120,16 +119,6 @@ class TestExpressionMatrix(unittest.TestCase):
         """
         Except for ATAC-seq and methylation data, raw data is REQUIRED
         """
-
-        # RNA - raw layer required
-        del self.validator.adata.raw
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            [
-                "ERROR: Raw data is missing: there is no 'raw.X' and 'X_normalization' is not 'none'."
-            ],
-        )
 
         # ATAC - raw layer not required
         # The assignment above makes X to not be raw: self.validator.adata.uns["X_normalization"] = "CPM"
@@ -149,16 +138,13 @@ class TestExpressionMatrix(unittest.TestCase):
         # move raw to X amd: i.e. there is no final
         self.validator.adata.X = self.validator.adata.raw.X
         del self.validator.adata.raw
-        self.validator.adata.uns["X_normalization"] = "none"
         self.validator.validate_adata()
         self.assertEqual(
-            self.validator.warnings,
+            self.validator.errors,
             [
-                "WARNING: Only raw data was found, i.e. there is no 'raw.X' and 'uns['X_normalization']' is 'none'. "
-                "It is STRONGLY RECOMMENDED that 'final' (normalized) data is provided."
+                "ERROR: Only raw data was found, i.e. there is no 'raw.X'."
             ],
         )
-
 
 class TestObs(unittest.TestCase):
 
@@ -183,6 +169,7 @@ class TestObs(unittest.TestCase):
             "is_primary_data",
             "sex_ontology_term_id",
             "tissue_ontology_term_id",
+            "donor_id",
         ]
 
         for column in columns:
@@ -578,6 +565,24 @@ class TestObs(unittest.TestCase):
             ],
         )
 
+    def test_donor_id(self):
+        """
+        donor_id categorical with str categories. This MUST be free-text that identifies
+        a unique individual that data were derived from. It is STRONGLY RECOMMENDED
+        that this identifier be designed so that it is unique to:
+        - a given individual within the collection of datasets that includes this dataset
+        - a given individual across all collections in the cellxgene Data Portal
+        """
+
+        self.validator.adata.obs["donor_id"] = "NA"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Column 'donor_id' in dataframe 'obs' "
+                "must be categorical, not object."
+            ],
+        )
 
 class TestVar(unittest.TestCase):
 
@@ -714,7 +719,6 @@ class TestVar(unittest.TestCase):
         """
 
         self.validator.adata.raw = self.validator.adata
-        self.validator.adata.uns["X_normalization"] = "CPM"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -861,18 +865,6 @@ class TestUns(unittest.TestCase):
             self.validator.errors, ["ERROR: 'title' in 'uns' is not present."]
         )
 
-    def test_required_fields_X_normalization(self):
-
-        """
-        Curators MUST annotate `schema_version` and values in uns (X_normalization)
-        """
-
-        del self.validator.adata.uns["X_normalization"]
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors, ["ERROR: 'X_normalization' in 'uns' is not present."]
-        )
-
     def test_leading_trailing_double_spaces_in_strings(self):
 
         """
@@ -951,45 +943,6 @@ class TestUns(unittest.TestCase):
             [
                 "ERROR: '['title']' in 'uns['title']' is not valid, "
                 "it must be a string."
-            ],
-        )
-
-    def test_X_normalization_is_str(self):
-
-        """
-        X_normalization str.
-        """
-
-        # list instead of string
-        self.validator.adata.uns["X_normalization"] = ["normalization"]
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            [
-                "ERROR: '['normalization']' in 'uns['X_normalization']' is "
-                "not valid, it must be a string."
-            ],
-        )
-
-    def test_X_normalization_not_raw(self):
-
-        """
-        X_normalization str. This SHOULD describe the method used to normalize the data stored in AnnData X.
-        If data in X are raw, this SHOULD be "none".
-
-        FAIL CASE for when X_normalization was set to "none" but X may not be raw data
-        """
-
-        # Assign a real value to X while X_normalization is 'none'
-        del self.validator.adata.raw
-        self.validator.adata.uns["X_normalization"] = "none"
-        self.validator.validate_adata()
-        print("FOO", self.validator.warnings)
-        self.assertEqual(
-            self.validator.warnings,
-            [
-                "WARNING: uns['X_normalization'] is 'none', there is no 'raw.X' and 'X' doesn't appear "
-                "to have raw counts (integers)"
             ],
         )
 
