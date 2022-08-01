@@ -1,4 +1,4 @@
-title: Corpora schema version 2.0.0
+title: Corpora schema version 3.0.0
 type: anndata
 # If sparsity of any expression matrix is greater than this and not csr sparse matrix, then there will be warning.
 sparsity: 0.5
@@ -124,9 +124,6 @@ components:
                         EFO:
                             - EFO:0002772
                             - EFO:0010183
-                    suffixes:
-                        EFO:
-                            - " (.+)" #e.g. EFO:0010183 (sci-plex)
                 add_labels:
                     -
                         type: curie
