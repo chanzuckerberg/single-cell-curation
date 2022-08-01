@@ -486,14 +486,6 @@ class Validator:
                     term_id, column_name, column_def["curie_constraints"]
                 )
 
-        # Check for columns that have a category defined 0 times
-        if column_def.get("type") in ["categorical", "curie"] and df_name == "obs" and column.dtype == "category":
-            for category in column.dtype.categories:
-                if category not in column.values:
-                    self.warnings.append(
-                        f"Column '{column_name}' in dataframe '{df_name}' contains a category '{category}' with zero observations."
-                    )
-
         # Add error suffix to errors found here
         if "error_message_suffix" in column_def:
             error_total_count = len(self.errors)
@@ -707,6 +699,18 @@ class Validator:
                 df_name,
                 self._get_column_def(df_name, "index"),
             )
+
+        # Check for columns that have a category defined 0 times (obs only)
+        if df_name == "obs":
+            for column in df.columns:
+                col = df[column]
+                if col.dtype != "category": 
+                    continue
+                for category in col.dtype.categories:
+                    if category not in col.values:
+                        self.warnings.append(
+                            f"Column '{column}' in dataframe '{df_name}' contains a category '{category}' with zero observations."
+                        )
 
         # Validate columns
         for column_name in df_definition["columns"].keys():
