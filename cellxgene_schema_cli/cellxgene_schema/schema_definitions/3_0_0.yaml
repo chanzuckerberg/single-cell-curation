@@ -34,9 +34,6 @@ components:
                 element_type: match_obs_columns
             default_embedding:
                 type: match_obsm_keys
-            X_normalization:
-                type: X_normalization # Special type to handle "none"
-                required: null
             X_approximate_distribution:
                 type: string
                 enum:
