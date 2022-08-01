@@ -418,12 +418,12 @@ class TestObs(unittest.TestCase):
         """
         self_reported_ethnicity_term_ontology_id categorical with str categories.
         If organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens,
-        this MUST be either a HANCESTRO term or "unknown" if unavailable.
+        this MUST be either a HANCESTRO term, "multiethnic", or "unknown" if unavailable.
         Otherwise, for all other organisms this MUST be "na".
         """
 
         # If organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens,
-        # this MUST be either a HANCESTRO term or "unknown" if unavailable.
+        # this MUST be either a HANCESTRO term, "multiethnic", or "unknown" if unavailable.
         self.validator.adata.obs["organism_ontology_term_id"][0] = "NCBITaxon:9606"
         self.validator.adata.obs["self_reported_ethnicity_term_ontology_id"][0] = "EFO:0000001"
         self.validator.validate_adata()
@@ -432,7 +432,8 @@ class TestObs(unittest.TestCase):
             [
                 "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_term_ontology_id' is "
                 "not a valid ontology term id of 'HANCESTRO'. When 'organism_ontology_term_id' is 'NCBITaxon:9606' "
-                "(Homo sapiens), self_reported_ethnicity_term_ontology_id MUST be a term id of 'HANCESTRO' or 'unknown'."
+                "(Homo sapiens), self_reported_ethnicity_term_ontology_id MUST be either: a term id of 'HANCESTRO', "
+                "'multiethnic' if more than one ethnicity is reported, or 'unknown' if unavailable."
             ],
         )
 
