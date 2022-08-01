@@ -45,6 +45,7 @@ good_obs = pd.DataFrame(
             True,
             "HANCESTRO:0575",
             "HsapDv:0000003",
+            "donor_1",
         ],
         [
             "CL:0000192",
@@ -56,6 +57,7 @@ good_obs = pd.DataFrame(
             False,
             "na",
             "MmusDv:0000003",
+            "donor_2",
         ],
     ],
     index=["X", "Y"],
@@ -69,8 +71,11 @@ good_obs = pd.DataFrame(
         "is_primary_data",
         "ethnicity_ontology_term_id",
         "development_stage_ontology_term_id",
+        "donor_id"
     ],
 )
+
+good_obs.loc[:, ["donor_id"]] = good_obs.astype("category")
 
 # Expected obs, this is what the obs above should look like after adding the necessary columns with the validator,
 # these columns are defined in the schema
@@ -151,7 +156,6 @@ good_uns = {
     "schema_version": SCHEMA_VERSION,
     "title": "A title",
     "default_embedding": "X_umap",
-    "X_normalization": "CPM",
     "X_approximate_distribution": "normal",
     "batch_condition": ["is_primary_data"],
 }

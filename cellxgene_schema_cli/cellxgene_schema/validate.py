@@ -625,46 +625,6 @@ class Validator:
                 f"Allowed terms: {enum}."
             )
 
-    def _validate_X_normalization(self, value):
-
-        """
-        Verifies the adata.uns["X_normalization"] folllows the schema. Adds errors to self.errors if any
-
-        :param value: value in adata.uns["X_normalization"]
-
-        :rtype None
-        """
-
-        if self._validate_str_in_dict(value, "uns", "X_normalization"):
-
-            # If value is "none" then there must NOT be a raw layer
-            if value == "none":
-
-                if self._get_raw_x_loc() == "raw.X":
-                    self.errors.append(
-                        "uns['X_normalization'] is 'none' but 'raw.X' is present. Please indicate "
-                        "the normalization used for 'X'."
-                    )
-
-                if self._get_raw_x_loc() == "raw.X" and not self._is_raw():
-                    self.warnings.append(
-                        "uns['X_normalization'] is 'none' but 'raw.X' doesn't appear to have "
-                        "raw counts (integers)"
-                    )
-
-                if self._get_raw_x_loc() == "X" and not self._is_raw():
-                    self.warnings.append(
-                        "uns['X_normalization'] is 'none', there is no 'raw.X' and 'X' doesn't appear to have "
-                        "raw counts (integers)"
-                    )
-
-            else:
-                if self._get_raw_x_loc() == "X" and self._is_raw():
-                    self.warnings.append(
-                        f"uns['X_normalization'] is '{value}' but 'X' seems to have mostly "
-                        f"raw values (integers)."
-                    )
-
     def _validate_dict(self, dictionary: dict, dict_name: str, dict_def: dict):
 
         """
@@ -694,9 +654,6 @@ class Validator:
                     self._validate_enum_in_dict(
                         value, value_def["enum"], dict_name, key
                     )
-
-            if value_def["type"] == "X_normalization":
-                self._validate_X_normalization(value)
 
             if value_def["type"] == "match_obsm_keys":
 
@@ -1076,48 +1033,27 @@ class Validator:
         # If all checks passed then proceed with validation
         if all(checks):
 
-            normalization = self.adata.uns["X_normalization"]
-
             # If both "raw.X" and "X" exist but neither are raw
             if not self._is_raw() and self._get_raw_x_loc() == "raw.X":
-                self.warnings.append(
+                self.errors.append(
                     "Raw data may be missing: data in 'raw.X' contains non-integer values."
                 )
-
-            # If raw data is missing: no "raw.X", and "X_normalization" is not "none"
+            # Only "X" exists but it's not raw
             if (
                 not self._is_raw()
                 and self._get_raw_x_loc() == "X"
-                and normalization != "none"
             ):
-
-                self.errors.append(
-                    "Raw data is missing: there is no 'raw.X' and 'X_normalization' is not 'none'."
+               self.errors.append(
+                       "Only `X` was found and it doesn't contain raw values."
                 )
-
-            # If raw data is in X but X_normalization is NOT none raise an error
-            if (
-                self._is_raw()
-                and self._get_raw_x_loc() == "X"
-                and normalization != "none"
-            ):
-
-                self.errors.append(
-                    f"uns['X_normalization'] is '{normalization}' but raw data seems to be in X, "
-                    f"if X is raw then uns['X_normalization'] MUST be 'none'."
-                )
-
             # If raw data is in X and there is nothing in raw.X (i.e. normalized values are not provided), then
             # add a warning because normalized data for RNA data is STRONGLY RECOMMENDED
             if (
                 self._is_raw()
                 and self._get_raw_x_loc() == "X"
-                and normalization == "none"
             ):
-
-                self.warnings.append(
-                    "Only raw data was found, i.e. there is no 'raw.X' and 'uns['X_normalization']' is 'none'. "
-                    "It is STRONGLY RECOMMENDED that 'final' (normalized) data is provided."
+                self.errors.append(
+                    "Only raw data was found, i.e. there is no 'raw.X'."
                 )
 
     def _check_single_column_availability(
@@ -1234,7 +1170,7 @@ class Validator:
             else:
                 raise ValueError(f"Unexpected component type '{component['type']}'")
         # Checks for raw only if there are no errors, because it depends on the
-        # existence of adata.obs["assay_ontology_term_id"] and adata.obs["X_normalization"]
+        # existence of adata.obs["assay_ontology_term_id"]
         if not self.errors and "raw" in self.schema_def:
             logger.debug("Validating raw layer...")
             self._validate_raw()
