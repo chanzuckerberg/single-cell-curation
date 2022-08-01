@@ -584,6 +584,20 @@ class TestObs(unittest.TestCase):
             ],
         )
 
+    def test_categories_with_zero_values_warn(self):
+
+        modified_donor_id = self.validator.adata.obs["donor_id"].cat.add_categories("donor_3")
+        self.validator.adata.obs["donor_id"] = modified_donor_id
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.warnings,
+            [
+                "WARNING: Column 'donor_id' in dataframe 'obs' "
+                "contains a category 'donor_3' with zero observations."
+            ],
+        )
+
+
 class TestVar(unittest.TestCase):
 
     """

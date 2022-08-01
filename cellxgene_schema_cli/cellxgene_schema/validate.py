@@ -1,3 +1,4 @@
+from ast import Continue
 import logging
 import re
 import sys
@@ -484,6 +485,14 @@ class Validator:
                 self._validate_curie(
                     term_id, column_name, column_def["curie_constraints"]
                 )
+
+        # Check for columns that have a category defined 0 times
+        if column_def.get("type") in ["categorical", "curie"] and df_name == "obs" and column.dtype == "category":
+            for category in column.dtype.categories:
+                if category not in column.values:
+                    self.warnings.append(
+                        f"Column '{column_name}' in dataframe '{df_name}' contains a category '{category}' with zero observations."
+                    )
 
         # Add error suffix to errors found here
         if "error_message_suffix" in column_def:
