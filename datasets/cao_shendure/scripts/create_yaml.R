@@ -48,7 +48,7 @@ make_yaml_list <- function() {
     
     list(
          obs = list(assay_ontology_term_id = "EFO:0010550",
-                    ethnicity_ontology_term_id = "unknown",
+                    self_reported_ethnicity_term_ontology_id = "unknown",
                     sex = list(
                                Sex = list(
                                           M = 'male', 

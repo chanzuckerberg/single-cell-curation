@@ -14,7 +14,7 @@ for c_file in files:
     
     dataset = sc.read(os.path.join(in_dir, c_file))
 
-    columns = ['tissue', 'disease', 'cell_type', 'ethnicity', 'development_stage']
+    columns = ['tissue', 'disease', 'cell_type', 'self_reported_ethnicity', 'development_stage']
     suffix = '_ontology_term_id'
 
     dataset.uns['version'] = {'corpora_schema_version': '1.1.0', 'corpora_encoding_version': '0.1.0'}
