@@ -190,7 +190,7 @@ components:
                     -
                         type: curie
                         to_column: tissue
-            ethnicity_ontology_term_id:
+            self_reported_ethnicity_term_ontology_id:
                 type: curie
                 dependencies:
                     -
@@ -198,7 +198,7 @@ components:
                         rule: "organism_ontology_term_id == 'NCBITaxon:9606'"
                         error_message_suffix: >-
                             When 'organism_ontology_term_id' is 'NCBITaxon:9606' (Homo sapiens),
-                            ethnicity_ontology_term_id MUST be a term id of 'HANCESTRO' or 'unknown'.
+                            self_reported_ethnicity_term_ontology_id MUST be a term id of 'HANCESTRO' or 'unknown'.
                         type: curie
                         curie_constraints:
                             ontologies:
@@ -208,7 +208,7 @@ components:
                 # If organism is not Human
                 error_message_suffix: >-
                     When 'organism_ontology_term_id' is NOT 'NCBITaxon:9606' (Homo sapiens),
-                    ethnicity_ontology_term_id MUST be 'na'.
+                    self_reported_ethnicity_term_ontology_id MUST be 'na'.
                 curie_constraints:
                     ontologies:
                         - NA
@@ -217,7 +217,7 @@ components:
                 add_labels:
                     -
                         type: curie
-                        to_column: ethnicity
+                        to_column: self_reported_ethnicity
             development_stage_ontology_term_id:
                 type: curie
                 dependencies:

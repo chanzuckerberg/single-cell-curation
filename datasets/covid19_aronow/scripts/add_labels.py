@@ -16,7 +16,7 @@ dataset.obsm['X_pca'] = pca.to_numpy()
 dataset.obsm['X_tsne'] = tsne.to_numpy()
 dataset.obsm['X_umap'] = umap.to_numpy()
 
-columns = ['tissue', 'disease', 'cell_type', 'ethnicity', 'development_stage']
+columns = ['tissue', 'disease', 'cell_type', 'self_reported_ethnicity', 'development_stage']
 suffix = '_ontology_term_id'
 
 # Correct issues
