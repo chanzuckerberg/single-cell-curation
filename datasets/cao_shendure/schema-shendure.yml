@@ -1,6 +1,6 @@
 obs:
   assay_ontology_term_id: EFO:0010550
-  self_reported_ethnicity_term_ontology_id: unknown
+  ethnicity_ontology_term_id: unknown
   sex:
     Sex:
       M: male
