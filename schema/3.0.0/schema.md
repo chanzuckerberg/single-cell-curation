@@ -56,12 +56,12 @@ Reserved Names from previous schema versions that have since been deprecated MUS
 </thead>
 <tbody>
   <tr>
-    <td>ethnicity</td>
+    <td>self_reported_ethnicity</td>
     <td>obs</td>
     <td>3.0.0</td>
   </tr>
   <tr>
-    <td>ethnicity_ontology_term_id</td>
+    <td>self_reported_ethnicity_ontology_term_id</td>
     <td>obs</td>
     <td>3.0.0</td>
   </tr>

@@ -3,7 +3,7 @@ fixup_gene_symbols:
   raw.X: raw
 obs:
   assay_ontology_term_id: EFO:0009922
-  ethnicity_ontology_term_id: unknown
+  self_reported_ethnicity_term_ontology_id: unknown
   sex:
     Sex:
       male: male
