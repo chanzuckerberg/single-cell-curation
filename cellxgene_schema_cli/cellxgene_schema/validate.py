@@ -709,7 +709,7 @@ class Validator:
                 for category in col.dtype.categories:
                     if category not in col.values:
                         self.warnings.append(
-                            f"Column '{column}' in dataframe '{df_name}' contains a category '{category}' with zero observations."
+                            f"Column '{column}' in dataframe '{df_name}' contains a category '{category}' with zero observations. These categories will be removed when `--add-labels` flag is present."
                         )
 
         # Validate columns
