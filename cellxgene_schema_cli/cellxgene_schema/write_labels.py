@@ -318,6 +318,13 @@ class AnnDataLabelAppender:
             if "add_labels" in index_def:
                 self._add_column(component, "index", index_def)
 
+    def _remove_categories_with_zero_values(self):
+        df = self.validator.adata.obs
+        for column in df.columns:
+            col = df[column]
+            if col.dtype == "category": 
+                df[column] = col.cat.remove_unused_categories()
+
     def write_labels(self, add_labels_file: str):
 
         """
@@ -331,6 +338,9 @@ class AnnDataLabelAppender:
         logger.info("Writing labels")
         # Add labels in obs
         self._add_labels()
+
+        # Remove unused categories
+        self._remove_categories_with_zero_values()
 
         # Write file
         try:

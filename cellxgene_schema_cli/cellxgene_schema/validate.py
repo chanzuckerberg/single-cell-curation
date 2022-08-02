@@ -1,3 +1,4 @@
+from ast import Continue
 import logging
 import re
 import sys
@@ -698,6 +699,18 @@ class Validator:
                 df_name,
                 self._get_column_def(df_name, "index"),
             )
+
+        # Check for columns that have a category defined 0 times (obs only)
+        if df_name == "obs":
+            for column in df.columns:
+                col = df[column]
+                if col.dtype != "category": 
+                    continue
+                for category in col.dtype.categories:
+                    if category not in col.values:
+                        self.warnings.append(
+                            f"Column '{column}' in dataframe '{df_name}' contains a category '{category}' with zero observations. These categories will be removed when `--add-labels` flag is present."
+                        )
 
         # Validate columns
         for column_name in df_definition["columns"].keys():

@@ -203,7 +203,6 @@ class TestAddLabelFunctions(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.writer._get_mapping_dict_curie(ids, curie_constraints)
 
-
 class TestSeuratConvertibility(unittest.TestCase):
 
     def validation_helper(self, matrix):
