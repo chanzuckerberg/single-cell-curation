@@ -69,7 +69,7 @@ good_obs = pd.DataFrame(
         "sex_ontology_term_id",
         "tissue_ontology_term_id",
         "is_primary_data",
-        "self_reported_ethnicity_term_ontology_id",
+        "self_reported_ethnicity_ontology_term_id",
         "development_stage_ontology_term_id",
         "donor_id"
     ],

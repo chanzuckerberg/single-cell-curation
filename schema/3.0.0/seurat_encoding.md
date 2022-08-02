@@ -131,7 +131,7 @@ This `data.frame` will have the following columns required by the schema. There 
       <td><code>character</code></td>
     </tr>
     <tr>
-      <td>self_reported_ethnicity_term_ontology_id</td>
+      <td>self_reported_ethnicity_ontology_term_id</td>
       <td><code>character</code></td>
     </tr>
     <tr>
