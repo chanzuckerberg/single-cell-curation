@@ -593,7 +593,9 @@ class TestObs(unittest.TestCase):
             self.validator.warnings,
             [
                 "WARNING: Column 'donor_id' in dataframe 'obs' "
-                "contains a category 'donor_3' with zero observations."
+                "contains a category 'donor_3' with zero observations. "
+                "These categories will be removed when `--add-labels` "
+                "flag is present."
             ],
         )
 
