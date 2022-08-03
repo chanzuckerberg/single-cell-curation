@@ -1066,7 +1066,7 @@ class Validator:
                 and self._get_raw_x_loc() == "X"
             ):
                 self.warnings.append(
-                    "Only raw data was found, i.e. there is no 'raw.X' and 'uns['X_normalization']' is 'none'. "
+                    "Only raw data was found, i.e. there is no 'raw.X'. "
                     "It is STRONGLY RECOMMENDED that 'final' (normalized) data is provided."
                 )
 
