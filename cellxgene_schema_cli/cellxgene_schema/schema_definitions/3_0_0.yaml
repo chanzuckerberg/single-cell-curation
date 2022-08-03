@@ -21,6 +21,18 @@ components:
     uns:
         type: dict
         required: null # Means it's required
+        deprecated_columns:
+            - X_normalization
+            - default_field
+            - layer_descriptions
+            - tags
+            - version
+            - contributors
+            - preprint_doi
+            - project_description
+            - project_links
+            - project_name
+            - publication_doi
         keys:
             schema_version:
                 type: string
@@ -105,6 +117,9 @@ components:
         required: null # Means it's required
         index:
             unique: true
+        # deprecated_columns:
+            # - ethnicity
+            # - ethnicity_ontology_term_id
         columns:
             cell_type_ontology_term_id:
                 type: curie

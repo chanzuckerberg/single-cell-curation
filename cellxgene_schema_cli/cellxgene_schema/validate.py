@@ -1093,6 +1093,22 @@ class Validator:
                     f"of '{component}'. Remove it from h5ad and try again."
                 )
 
+    def _check_deprecated_columns(self):
+        """
+        This method will check for columns or keys that have been deprecated
+
+        :rtype none
+        """
+        for component, component_def in self.schema_def["components"].items():
+            if "deprecated_columns" in component_def:
+                for column in component_def["deprecated_columns"]:
+                    print(f"%%%%%%%%%%%%% column {column}")
+                    if column in self.getattr_anndata(self.adata, component):
+                        self.errors.append(
+                            f"The field '{column}' is present in '{component}', but it is deprecated."
+                        )
+
+
     def _check_column_availability(self):
 
         """
@@ -1150,6 +1166,11 @@ class Validator:
             raise RuntimeError(
                 "adata is loaded in backed mode, validation requires anndata to be loaded in memory"
             )
+
+        # Checks for deprecated columns
+        self._check_deprecated_columns()
+        if self.errors:
+            return
 
         # Checks that reserved columns are not used
         self._check_column_availability()
