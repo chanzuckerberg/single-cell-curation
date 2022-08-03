@@ -139,9 +139,10 @@ class TestExpressionMatrix(unittest.TestCase):
         del self.validator.adata.raw
         self.validator.validate_adata()
         self.assertEqual(
-            self.validator.errors,
+            self.validator.warnings,
             [
-                "ERROR: Only raw data was found, i.e. there is no 'raw.X'."
+                "WARNING: Only raw data was found, i.e. there is no 'raw.X'. "
+                "It is STRONGLY RECOMMENDED that 'final' (normalized) data is provided."
             ],
         )
 
