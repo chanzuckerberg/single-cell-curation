@@ -44,7 +44,6 @@ class TestH5adValidation(unittest.TestCase):
 
         # Valid h5ad
         self.assertTrue(self.validator.validate_adata(self.h5ad_valid_file))
-
         # Invalid h5ads
         self.assertFalse(self.validator.validate_adata(self.h5ad_invalid_file))
 
@@ -165,7 +164,7 @@ class TestObs(unittest.TestCase):
             "assay_ontology_term_id",
             "development_stage_ontology_term_id",
             "disease_ontology_term_id",
-            "ethnicity_ontology_term_id",
+            "self_reported_ethnicity_ontology_term_id",
             "is_primary_data",
             "sex_ontology_term_id",
             "tissue_ontology_term_id",
@@ -203,7 +202,7 @@ class TestObs(unittest.TestCase):
                 "ERROR: Dataframe 'obs' is missing column "
                 "'organism_ontology_term_id'.",
                 "ERROR: Checking values with dependencies failed for "
-                "adata.obs['ethnicity_ontology_term_id'], this is likely due "
+                "adata.obs['self_reported_ethnicity_ontology_term_id'], this is likely due "
                 "to missing dependent column in adata.obs.",
                 "ERROR: Checking values with dependencies failed for "
                 "adata.obs['development_stage_ontology_term_id'], this is likely due "
@@ -326,7 +325,7 @@ class TestObs(unittest.TestCase):
         self.validator.adata.obs["development_stage_ontology_term_id"][
             0
         ] = "EFO:0000001"
-        self.validator.adata.obs["ethnicity_ontology_term_id"][0] = "na"
+        self.validator.adata.obs["self_reported_ethnicity_ontology_term_id"][0] = "na"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -348,7 +347,7 @@ class TestObs(unittest.TestCase):
         self.validator.adata.obs["development_stage_ontology_term_id"][
             0
         ] = "EFO:0000001"
-        self.validator.adata.obs["ethnicity_ontology_term_id"][0] = "na"
+        self.validator.adata.obs["self_reported_ethnicity_ontology_term_id"][0] = "na"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -371,7 +370,7 @@ class TestObs(unittest.TestCase):
         self.validator.adata.obs["development_stage_ontology_term_id"][
             0
         ] = "UBERON:0000071"
-        self.validator.adata.obs["ethnicity_ontology_term_id"][0] = "na"
+        self.validator.adata.obs["self_reported_ethnicity_ontology_term_id"][0] = "na"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -413,26 +412,27 @@ class TestObs(unittest.TestCase):
             ],
         )
 
-    def test_ethnicity_ontology_term_id(self):
+    def test_self_reported_ethnicity_ontology_term_id(self):
 
         """
-        ethnicity_ontology_term_id categorical with str categories.
+        self_reported_ethnicity_ontology_term_id categorical with str categories.
         If organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens,
-        this MUST be either a HANCESTRO term or "unknown" if unavailable.
+        this MUST be either a HANCESTRO term, "multiethnic", or "unknown" if unavailable.
         Otherwise, for all other organisms this MUST be "na".
         """
 
         # If organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens,
-        # this MUST be either a HANCESTRO term or "unknown" if unavailable.
+        # this MUST be either a HANCESTRO term, "multiethnic", or "unknown" if unavailable.
         self.validator.adata.obs["organism_ontology_term_id"][0] = "NCBITaxon:9606"
-        self.validator.adata.obs["ethnicity_ontology_term_id"][0] = "EFO:0000001"
+        self.validator.adata.obs["self_reported_ethnicity_ontology_term_id"][0] = "EFO:0000001"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'EFO:0000001' in 'ethnicity_ontology_term_id' is "
+                "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is "
                 "not a valid ontology term id of 'HANCESTRO'. When 'organism_ontology_term_id' is 'NCBITaxon:9606' "
-                "(Homo sapiens), ethnicity_ontology_term_id MUST be a term id of 'HANCESTRO' or 'unknown'."
+                "(Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be either: a term id of 'HANCESTRO', "
+                "'multiethnic' if more than one ethnicity is reported, or 'unknown' if unavailable."
             ],
         )
 
@@ -444,14 +444,14 @@ class TestObs(unittest.TestCase):
         self.validator.adata.obs["development_stage_ontology_term_id"][
             0
         ] = "MmusDv:0000003"
-        self.validator.adata.obs["ethnicity_ontology_term_id"][0] = "EFO:0000001"
+        self.validator.adata.obs["self_reported_ethnicity_ontology_term_id"][0] = "EFO:0000001"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'EFO:0000001' in 'ethnicity_ontology_term_id' is not a "
-                "valid value of 'ethnicity_ontology_term_id'. When 'organism_ontology_term_id' is NOT 'NCBITaxon:9606' "
-                "(Homo sapiens), ethnicity_ontology_term_id MUST be 'na'."
+                "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is not a "
+                "valid value of 'self_reported_ethnicity_ontology_term_id'. When 'organism_ontology_term_id' is NOT 'NCBITaxon:9606' "
+                "(Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be 'na'."
             ],
         )
 
@@ -463,10 +463,10 @@ class TestObs(unittest.TestCase):
 
         # Setting "organism_ontology_term_id" to "EFO:0000001" is the fail case. However since this represents neither
         # human nor mouse, then two other columns that are dependent on it need to be set appropriately to avoid
-        # other error messages: "development_stage_ontology_term_id" and "ethnicity_ontology_term_id"
+        # other error messages: "development_stage_ontology_term_id" and "self_reported_ethnicity_ontology_term_id"
         self.validator.adata.obs["organism_ontology_term_id"][0] = "EFO:0000001"
         self.validator.adata.obs["development_stage_ontology_term_id"][0] = "unknown"
-        self.validator.adata.obs["ethnicity_ontology_term_id"][0] = "na"
+        self.validator.adata.obs["self_reported_ethnicity_ontology_term_id"][0] = "na"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -1203,9 +1203,9 @@ class TestAddingLabels(unittest.TestCase):
             the value of development_stage_ontology_term_id.
             - disease. categorical with str categories. This MUST be the human-readable name assigned to
             the value of disease_ontology_term_id.
-            - ethnicity. categorical with str categories. This MUST be "na" or "unknown" if
-            set in ethnicity_ontology_term_id; otherwise, this MUST be the human-readable
-            name assigned to the value of ethnicity_ontology_term_id.
+            - self_reported_ethnicity. categorical with str categories. This MUST be "na" or "unknown" if
+            set in self_reported_ethnicity_ontology_term_id; otherwise, this MUST be the human-readable
+            name assigned to the value of self_reported_ethnicity_ontology_term_id.
             - organism. categorical with str categories. This MUST be the human-readable name assigned
             to the value of organism_ontology_term_id.
             - sex. categorical with str categories. This MUST be "unknown" if set in sex_ontology_term_id;
@@ -1220,7 +1220,7 @@ class TestAddingLabels(unittest.TestCase):
             "cell_type",
             "development_stage",
             "disease",
-            "ethnicity",
+            "self_reported_ethnicity",
             "organism",
             "sex",
             "tissue",
