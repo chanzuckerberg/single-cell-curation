@@ -1065,8 +1065,9 @@ class Validator:
                 self._is_raw()
                 and self._get_raw_x_loc() == "X"
             ):
-                self.errors.append(
-                    "Only raw data was found, i.e. there is no 'raw.X'."
+                self.warnings.append(
+                    "Only raw data was found, i.e. there is no 'raw.X' and 'uns['X_normalization']' is 'none'. "
+                    "It is STRONGLY RECOMMENDED that 'final' (normalized) data is provided."
                 )
 
     def _check_single_column_availability(
