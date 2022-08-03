@@ -1169,8 +1169,6 @@ class Validator:
 
         # Checks for deprecated columns
         self._check_deprecated_columns()
-        if self.errors:
-            return
 
         # Checks that reserved columns are not used
         self._check_column_availability()
