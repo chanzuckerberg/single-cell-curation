@@ -597,7 +597,7 @@ class TestObs(unittest.TestCase):
             ],
         )
 
-    def _test_deprecated_fields(self):
+    def test_deprecated_fields(self):
         self.validator.adata.obs["ethnicity"] = "test"
         self.validator.adata.obs["ethnicity_ontology_term_id"] = "unknown"
 

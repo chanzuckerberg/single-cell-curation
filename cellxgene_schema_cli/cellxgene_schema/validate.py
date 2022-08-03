@@ -1102,7 +1102,6 @@ class Validator:
         for component, component_def in self.schema_def["components"].items():
             if "deprecated_columns" in component_def:
                 for column in component_def["deprecated_columns"]:
-                    print(f"%%%%%%%%%%%%% column {column}")
                     if column in self.getattr_anndata(self.adata, component):
                         self.errors.append(
                             f"The field '{column}' is present in '{component}', but it is deprecated."
