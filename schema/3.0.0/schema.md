@@ -1092,6 +1092,7 @@ schema v3.0.0
 * All references to the "final" matrix has been replaced with "normalized" for clarity.
 * General Requirements
   * Reserved Names from previous schema versions that have since been deprecated MUST NOT be present.
+  * Updated *pinned* ontologies to require the most recent version
 * obs (Cell metadata)
   * Removed guidance in `assay_ontology_term_id` that allowed clarifying text enclosed in parentheses if there was not an exact match for an assay.
   * Added `donor_id`
