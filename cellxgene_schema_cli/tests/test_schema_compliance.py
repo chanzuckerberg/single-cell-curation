@@ -597,6 +597,19 @@ class TestObs(unittest.TestCase):
             ],
         )
 
+    def test_deprecated_fields(self):
+        self.validator.adata.obs["ethnicity"] = "test"
+        self.validator.adata.obs["ethnicity_ontology_term_id"] = "unknown"
+
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: The field 'ethnicity' is present in 'obs', but it is deprecated.",
+                "ERROR: The field 'ethnicity_ontology_term_id' is present in 'obs', but it is deprecated."
+            ],
+        )
+
 
 class TestVar(unittest.TestCase):
 
@@ -1071,6 +1084,37 @@ class TestUns(unittest.TestCase):
             ],
         )
 
+    def test_deprecated_fields(self):
+        self.validator.adata.uns["X_normalization"] = "test_value"
+        self.validator.adata.uns["default_field"] = "test_value"
+        self.validator.adata.uns["layer_descriptions"] = "test_value"
+        self.validator.adata.uns["tags"] = "test_value"
+        self.validator.adata.uns["version"] = "test_value"
+        self.validator.adata.uns["contributors"] = "test_value"
+        self.validator.adata.uns["preprint_doi"] = "test_value"
+        self.validator.adata.uns["project_description"] = "test_value"
+        self.validator.adata.uns["project_links"] = "test_value"
+        self.validator.adata.uns["project_name"] = "test_value"
+        self.validator.adata.uns["publication_doi"] = "test_value"
+
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: The field 'X_normalization' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'default_field' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'layer_descriptions' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'tags' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'version' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'contributors' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'preprint_doi' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'project_description' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'project_links' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'project_name' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'publication_doi' is present in 'uns', but it is deprecated.",
+            ],
+        )
+
 
 class TestObsm(unittest.TestCase):
 
@@ -1242,5 +1286,3 @@ class TestAddingLabels(unittest.TestCase):
         print(self.label_writer.validator.adata.obs["donor_id"].dtype.categories)
 
         self.assertCountEqual(self.label_writer.validator.adata.obs["donor_id"].dtype.categories, ["donor_1", "donor_2"])
-
-
