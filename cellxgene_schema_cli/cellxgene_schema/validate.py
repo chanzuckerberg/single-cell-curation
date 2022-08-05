@@ -246,14 +246,14 @@ class Validator:
 
         """
         Validate a single curie term id belongs to specified ontologies. If it does belong to an allowed ontology
-        verifies that it is not deprecated (obsolete).
+        verifies that it is not deprecated (obsolete). Returns True if term has no errors, else False.
         If there are any errors, it adds them to self.errors
 
         :param str term_id: the curie term id to validate
         :param str column_name: original column name in adata where the term_id comes from (used for error messages)
         :param List[str] allowed_ontologies: allowed ontologies
 
-        :rtype None
+        :rtype Bool
         """
 
         checks = []
@@ -268,11 +268,14 @@ class Validator:
                     self.errors.append(
                         f"'{term_id}' in '{column_name}' is a deprecated term id of '{ontology_name}'."
                     )
+                    return False
 
         if sum(checks) == 0:
             self.errors.append(
                 f"'{term_id}' in '{column_name}' is not a valid ontology term id of '{', '.join(allowed_ontologies)}'."
             )
+            return False
+        return True
 
     def _validate_curie(self, term_id: str, column_name: str, curie_constraints: dict):
 
@@ -314,27 +317,28 @@ class Validator:
             )
 
         # Check that term id belongs to allowed ontologies
-        self._validate_curie_ontology(
+        is_term_id_valid = self._validate_curie_ontology(
             term_id, column_name, curie_constraints["ontologies"]
         )
 
-        # If there are specified ancestors then make sure that this id is a valid child
-        if "ancestors" in curie_constraints:
-            self._validate_curie_ancestors(
-                term_id, column_name, curie_constraints["ancestors"], False
-            )
+        if is_term_id_valid:
+            # If there are specified ancestors then make sure that this id is a valid child
+            if "ancestors" in curie_constraints:
+                self._validate_curie_ancestors(
+                    term_id, column_name, curie_constraints["ancestors"], False
+                )
 
-        # Ancestors themselves are allowed
-        if "ancestors_inclusive" in curie_constraints:
-            self._validate_curie_ancestors(
-                term_id, column_name, curie_constraints["ancestors_inclusive"], True
-            )
+            # Ancestors themselves are allowed
+            if "ancestors_inclusive" in curie_constraints:
+                self._validate_curie_ancestors(
+                    term_id, column_name, curie_constraints["ancestors_inclusive"], True
+                )
 
-        # If there is a set of allowed terms check for it
-        if "allowed_terms" in curie_constraints:
-            self._validate_curie_allowed_terms(
-                term_id, column_name, curie_constraints["allowed_terms"]
-            )
+            # If there is a set of allowed terms check for it
+            if "allowed_terms" in curie_constraints:
+                self._validate_curie_allowed_terms(
+                    term_id, column_name, curie_constraints["allowed_terms"]
+                )
 
     def _validate_feature_id(self, feature_id: str, df_name: str):
 

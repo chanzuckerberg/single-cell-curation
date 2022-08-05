@@ -227,8 +227,6 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is a deprecated term id of 'EFO'.",
-                "ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is not a child term id "
-                "of '[['EFO:0002772', 'EFO:0010183']]'.",
             ],
         )
 
@@ -247,8 +245,6 @@ class TestObs(unittest.TestCase):
             [
                 "ERROR: 'CL:000001' in 'assay_ontology_term_id' is not a valid "
                 "ontology term id of 'EFO'.",
-                "ERROR: 'CL:000001' in 'assay_ontology_term_id' is not a child "
-                "term id of '[['EFO:0002772', 'EFO:0010183']]'.",
             ],
         )
 
@@ -272,8 +268,6 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'EFO:0010183 (sci-plex)' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'.",
-                "ERROR: 'EFO:0010183 (sci-plex)' in 'assay_ontology_term_id' is not a child term id of "
-                "'[['EFO:0002772', 'EFO:0010183']]'.",
             ],
         )
 
@@ -355,10 +349,6 @@ class TestObs(unittest.TestCase):
             [
                 "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is "
                 "not a valid ontology term id of 'UBERON'. When 'organism_ontology_term_id' is not 'NCBITaxon:10090' "
-                "nor 'NCBITaxon:9606', 'development_stage_ontology_term_id' MUST be a child term id of "
-                "'UBERON:0000105' excluding 'UBERON:0000071', or unknown.",
-                "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is not "
-                "a child term id of '[['UBERON:0000105']]'. When 'organism_ontology_term_id' is not 'NCBITaxon:10090' "
                 "nor 'NCBITaxon:9606', 'development_stage_ontology_term_id' MUST be a child term id of "
                 "'UBERON:0000105' excluding 'UBERON:0000071', or unknown.",
             ],
