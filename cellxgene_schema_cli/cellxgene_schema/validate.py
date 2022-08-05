@@ -713,26 +713,27 @@ class Validator:
                         )
 
         # Validate columns
-        for column_name in df_definition["columns"].keys():
-            logger.debug(f"Validating column: {column_name}...")
-            if column_name not in df.columns:
-                self.errors.append(
-                    f"Dataframe '{df_name}' is missing column '{column_name}'."
-                )
-                continue
+        if "columns" in df_definition:
+            for column_name in df_definition["columns"].keys():
+                logger.debug(f"Validating column: {column_name}...")
+                if column_name not in df.columns:
+                    self.errors.append(
+                        f"Dataframe '{df_name}' is missing column '{column_name}'."
+                    )
+                    continue
 
-            column_def = self._get_column_def(df_name, column_name)
-            column = getattr(df, column_name)
+                column_def = self._get_column_def(df_name, column_name)
+                column = getattr(df, column_name)
 
-            # First check if there are dependencies with other columns and work with a subset of the data if so
-            if "dependencies" in column_def:
-                column = self._validate_column_dependencies(
-                    df, df_name, column_name, column_def["dependencies"]
-                )
+                # First check if there are dependencies with other columns and work with a subset of the data if so
+                if "dependencies" in column_def:
+                    column = self._validate_column_dependencies(
+                        df, df_name, column_name, column_def["dependencies"]
+                    )
 
-            # If after validating dependencies there's still values in the column, validate them.
-            if len(column) > 0:
-                self._validate_column(column, column_name, df_name, column_def)
+                # If after validating dependencies there's still values in the column, validate them.
+                if len(column) > 0:
+                    self._validate_column(column, column_name, df_name, column_def)
 
     def _validate_sparsity(self):
 
@@ -1144,12 +1145,13 @@ class Validator:
                         )
 
             # Do it for columns that map to columns
-            for column, columns_def in component_def["columns"].items():
+            if "columns" in component_def:
+                for column, columns_def in component_def["columns"].items():
 
-                if "add_labels" in columns_def:
-                    self._check_single_column_availability(
-                        component, columns_def["add_labels"]
-                    )
+                    if "add_labels" in columns_def:
+                        self._check_single_column_availability(
+                            component, columns_def["add_labels"]
+                        )
 
             # Do it for index that map to columns
             if "index" in component_def:

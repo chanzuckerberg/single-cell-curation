@@ -202,6 +202,25 @@ class AnnDataLabelAppender:
 
         return mapping_dict
 
+    def _get_mapping_dict_feature_biotype(self, ids: List[str]) -> Dict[str, str]:
+        """
+        Creates a mapping dictionary of feature IDs and biotype ("gene" or "spike-in")
+
+        :param list[str] ids: feature IDs use for mapping
+
+        :return a mapping dictionary: {id: "gene", id: "spike-in", ...}
+        :rtype dict
+        """
+        mapping_dict = {}
+
+        for i in ids:
+            if i.startswith('ERCC'):
+                mapping_dict[i] = "spike-in"
+            else:
+                mapping_dict[i] = "gene"
+
+        return mapping_dict
+
     def _get_labels(
         self,
         component: str,
@@ -244,8 +263,8 @@ class AnnDataLabelAppender:
 
             if "curie_constraints" not in column_definition:
                 raise ValueError(
-                    f"Schema definition error: 'add_lables' with type 'curie' was found for '{column}' "
-                    "but no curie constraints were found for the lables"
+                    f"Schema definition error: 'add_labels' with type 'curie' was found for '{column}' "
+                    "but no curie constraints were found for the labels"
                 )
 
             mapping_dict = self._get_mapping_dict_curie(
@@ -257,6 +276,9 @@ class AnnDataLabelAppender:
 
         elif label_type == "feature_reference":
             mapping_dict = self._get_mapping_dict_feature_reference(ids=ids)
+
+        elif label_type == "feature_biotype":
+            mapping_dict = self._get_mapping_dict_feature_biotype(ids=ids)
 
         else:
             raise TypeError(
@@ -306,12 +328,13 @@ class AnnDataLabelAppender:
         for component in ["obs", "var", "raw.var"]:
 
             # Doing it for columns
-            for column, column_def in self.schema_def["components"][component][
-                "columns"
-            ].items():
+            if "columns" in self.schema_def["components"][component]:
+                for column, column_def in self.schema_def["components"][component][
+                    "columns"
+                ].items():
 
-                if "add_labels" in column_def:
-                    self._add_column(component, column, column_def)
+                    if "add_labels" in column_def:
+                        self._add_column(component, column, column_def)
 
             # Doing it for index
             index_def = self.schema_def["components"][component]["index"]
