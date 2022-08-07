@@ -84,10 +84,7 @@ def update_collection(collection_id: str, collection_form_metadata: dict) -> Non
 
     url = url_builder(f"/collections/{collection_id}")
     headers = get_headers()
-    try:
-        res = requests.patch(url, headers=headers, data=json.dumps(collection_form_metadata))
-        res.raise_for_status()
-    except Exception as e:
-        failure(logger, e)
-    else:
-        success(logger, f"Updated the Collection at url:\n{os.getenv('site_url')}/collections/{collection_id}")
+    res = requests.patch(url, headers=headers, data=json.dumps(collection_form_metadata))
+    res.raise_for_status()
+    success(logger, f"Updated the Collection at url:\n{os.getenv('site_url')}/collections/{collection_id}")
+    return res.json()
