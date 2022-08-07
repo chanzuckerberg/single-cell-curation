@@ -41,7 +41,8 @@ def get_identifier_type_and_value(identifier: str) -> Tuple[str, str]:
                 identifier_type = "curator tag"
 
     if not identifier_type:
-        raise Exception(f"The identifier '{identifier}' must either 1) include a '.h5ad' suffix OR 2) be a uuid")
+        raise Exception(f"The identifier '{identifier}' must be either 1) a curator tag that includes a '.h5ad' suffix "
+                        f"OR 2) a uuid")
 
     return identifier_value, identifier_type
 
@@ -66,8 +67,9 @@ def delete_dataset(collection_id: str, identifier: str):
     try:
         res = requests.delete(url, headers=headers, params=params_dict)
         res.raise_for_status()
-    except Exception as e:
+    except requests.HTTPError as e:
         failure(logger, e)
+        raise e
     else:
         success(logger, success_message)
 
@@ -93,8 +95,9 @@ def update_curator_tag(collection_id: str, identifier: str, new_tag: str):
     try:
         res = requests.patch(url, headers=headers, params=params_dict, data=json.dumps(new_curator_tag_dict))
         res.raise_for_status()
-    except Exception as e:
+    except requests.HTTPError as e:
         failure(logger, e)
+        raise e
     else:
         success(logger, success_message)
 
@@ -127,8 +130,9 @@ def upload_datafile_from_link(link: str, collection_id: str, identifier: str = N
     try:
         res = requests.put(url, headers=headers, data=json.dumps(data_dict))
         res.raise_for_status()
-    except Exception as e:
+    except requests.HTTPError as e:
         failure(logger, e)
+        raise e
     else:
         success(logger, success_message)
 
@@ -147,10 +151,9 @@ def upload_local_datafile(datafile_path: str, collection_id: str, identifier: st
     headers = get_headers()
 
     def retrieve_s3_credentials_and_upload_key_prefix():
-        return requests.post(url, headers=headers).json()
+        return requests.get(url, headers=headers).json()
 
     log_level = os.getenv("log_level", "INFO")  # hack to determine log level in callback (separate process)
-    time_zone_info = datetime.now(timezone.utc).astimezone().tzinfo
 
     def s3_refreshable_credentials_cb():
         res_data = retrieve_s3_credentials_and_upload_key_prefix()
@@ -159,8 +162,7 @@ def upload_local_datafile(datafile_path: str, collection_id: str, identifier: st
             "access_key": s3_credentials.get("AccessKeyId"),
             "secret_key": s3_credentials.get("SecretAccessKey"),
             "token": s3_credentials.get("SessionToken"),
-            "expiry_time": datetime.fromtimestamp(s3_credentials.get("Expiration")).replace(
-                tzinfo=time_zone_info).isoformat(),
+            "expiry_time": s3_credentials.get("Expiration"),
         }
         if getattr(logging, log_level) < 20:  # if log level NOTSET or DEBUG
             print("Retrieved/refreshed s3 credentials")
@@ -217,7 +219,8 @@ def upload_local_datafile(datafile_path: str, collection_id: str, identifier: st
             Key=upload_key,
             Callback=get_progress_cb(collection_id, identifier),
         )
-    except Exception as e:
+    except requests.HTTPError as e:
         failure(logger, e)
+        raise e
     else:
         success(logger)
