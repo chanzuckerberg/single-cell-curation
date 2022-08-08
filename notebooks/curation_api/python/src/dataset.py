@@ -28,14 +28,14 @@ def get_identifier_type_and_value(identifier: str) -> Tuple[str, str]:
     identifier_value = identifier
     if re.match(f"^{UUID_REGEX}$", identifier):
         # identifier is a uuid
-        identifier_type = "id"
+        identifier_type = "dataset_id"
     else:
         # CURATOR_TAG_PREFIX_REGEX is superfluous; leaving in to match lambda handler code; may use later
         matched = re.match(f"({UUID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})\\.{EXTENSION_REGEX}$", identifier)
         if matched:
             matches = matched.groupdict()
             if _id := matches.get("id"):
-                identifier_type = "id"
+                identifier_type = "dataset_id"
                 identifier_value = _id
             else:
                 identifier_type = "curator tag"
@@ -142,7 +142,6 @@ def upload_datafile_from_link(link: str, collection_id: str, identifier: str = N
 
         identifier_param_name = "curator_tag" if identifier_type == "curator_tag" else "id"
         data_dict[identifier_param_name] = identifier_value
-        print(data_dict)
 
         success_message = f"Uploading Dataset with {identifier_type} '{identifier_value}' to Collection " \
                           f"{os.getenv('site_url')}/collections/{collection_id} sourcing from datafile at {link}"
