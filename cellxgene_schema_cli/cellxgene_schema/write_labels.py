@@ -305,6 +305,10 @@ class AnnDataLabelAppender:
         """
         for component in ["obs", "var", "raw.var"]:
 
+            # If the component does not exist, skip (this is for raw.var)
+            if Validator.getattr_anndata(self.adata, component) is None:
+                continue
+
             # Doing it for columns
             for column, column_def in self.schema_def["components"][component][
                 "columns"
