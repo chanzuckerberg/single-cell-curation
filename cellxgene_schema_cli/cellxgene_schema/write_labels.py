@@ -319,7 +319,7 @@ class AnnDataLabelAppender:
                 self._add_column(component, "index", index_def)
 
     def _remove_categories_with_zero_values(self):
-        df = self.validator.adata.obs
+        df = self.adata.obs
         for column in df.columns:
             col = df[column]
             if col.dtype == "category": 
