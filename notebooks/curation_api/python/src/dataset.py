@@ -51,7 +51,7 @@ def delete_dataset(collection_id: str, identifier: str):
     """
     Delete a private Dataset
     :param collection_id: the id of the Collection to which the Dataset belongs
-    :param identifier: the curator tag or cellxgene Dataset id
+    :param identifier: the curator tag or Dataset id
     :return: True if deletion is successful otherwise False
     """
     url = url_builder(f"/collections/{collection_id}/datasets")
@@ -74,11 +74,34 @@ def delete_dataset(collection_id: str, identifier: str):
         success(logger, success_message)
 
 
+def get_assets(collection_id: str, identifier: str):
+    """
+    Fetch download links for assets for a Dataset
+    :param collection_id: the id of the Collection to which the Dataset belongs
+    :param identifier: the curator tag or Dataset id
+    :return: download links
+    """
+    url = url_builder(f"/collections/{collection_id}/assets")
+    headers = get_headers()
+
+    identifier_value, identifier_type = get_identifier_type_and_value(identifier)
+    params_dict = dict()
+    params_dict[identifier_type] = identifier_value
+
+    try:
+        res = requests.get(url, headers=headers, params=params_dict)
+        res.raise_for_status()
+    except requests.HTTPError as e:
+        failure(logger, e)
+        raise e
+    return res.json()
+
+
 def update_curator_tag(collection_id: str, identifier: str, new_tag: str):
     """
     Update a private Dataset's curator tag
     :param collection_id: the id of the Collection to which the Dataset belongs
-    :param identifier: the curator tag or cellxgene Dataset id
+    :param identifier: the curator tag or Dataset id
     :param new_tag: the new curator tag to assign to the Dataset
     """
     url = url_builder(f"/collections/{collection_id}/datasets")
@@ -107,7 +130,7 @@ def upload_datafile_from_link(link: str, collection_id: str, identifier: str = N
     Create/update a Dataset from the datafile found at the source link.
     :param link: the source datafile link to upload to the Data Portal to become a Dataset
     :param collection_id: the id of the Collection to which the resultant Dataset will belong
-    :param identifier: the curator tag or cellxgene Dataset id. Must be suffixed with '.h5ad'. See heading
+    :param identifier: the curator tag or Dataset id. Must be suffixed with '.h5ad'. See heading
     of create_dataset_from_local_file.ipynb for details about how to use the identifier to 'create new' vs 'replace existing'
     """
     url = url_builder(f"/collections/{collection_id}/datasets/upload-link")
@@ -141,7 +164,7 @@ def upload_local_datafile(datafile_path: str, collection_id: str, identifier: st
     """
     :param datafile_path: the fully qualified path of the datafile to be uploaded
     :param collection_id: the id of the Collection to which the resultant Dataset will belong
-    :param identifier: the curator tag or cellxgene Dataset id. Must be suffixed with '.h5ad'. See heading
+    :param identifier: the curator tag or Dataset id. Must be suffixed with '.h5ad'. See heading
     of upload_local_datafile.ipynb for details about how to use the identifier to 'create new' vs 'replace existing'
     :param log_level: the logging level
     Datasets.
