@@ -738,6 +738,16 @@ class TestVar(unittest.TestCase):
             ],
         )
 
+        # Test that feature_is_filtered is a bool and not a string
+        self.validator.adata.var["feature_is_filtered"] = "string"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                f"ERROR: Column 'feature_is_filtered' in dataframe 'var' must be boolean, not 'object'."
+            ],
+        )
+
     def test_columns_not_in_raw_var(self):
 
         """
