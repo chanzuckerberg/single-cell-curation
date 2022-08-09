@@ -855,6 +855,18 @@ class TestVar(BaseValidationTest):
                     ],
                 )
 
+    def test_should_warn_for_low_gene_count(self):
+        """
+        Raise a warning if there are too few genes
+        """
+        self.validator.schema_def["components"]["var"]["warn_if_less_than_rows"] = 100
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.warnings,
+            [
+                f"WARNING: Dataframe 'var' only has 4 rows. This might indicate an error in the dataset."
+            ],
+        )
 
 class TestUns(BaseValidationTest):
 
