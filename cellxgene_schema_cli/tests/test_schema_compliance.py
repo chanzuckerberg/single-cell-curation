@@ -48,16 +48,25 @@ class TestH5adValidation(unittest.TestCase):
         self.assertFalse(self.validator.validate_adata(self.h5ad_invalid_file))
 
 
-class TestExpressionMatrix(unittest.TestCase):
-
-    """
-    Fail cases for expression matrices (anndata.X and anndata.raw.X)
-    """
+class BaseValidationTest(unittest.TestCase):
 
     def setUp(self):
 
         self.validator = Validator()
         self.validator.adata = examples.adata.copy()
+
+        # Override the schema definition here
+        self.validator._set_schema_def()
+
+        # lower threshold for low gene count warning
+        self.validator.schema_def["components"]["var"]["warn_if_less_than_rows"] = 1 
+    
+
+class TestExpressionMatrix(BaseValidationTest):
+
+    """
+    Fail cases for expression matrices (anndata.X and anndata.raw.X)
+    """
 
     def test_shapes(self):
 
@@ -146,15 +155,11 @@ class TestExpressionMatrix(unittest.TestCase):
             ],
         )
 
-class TestObs(unittest.TestCase):
+class TestObs(BaseValidationTest):
 
     """
     Fail cases in adata.uns
     """
-
-    def setUp(self):
-        self.validator = Validator()
-        self.validator.adata = examples.adata.copy()
 
     def test_column_presence(self):
         """
@@ -612,15 +617,11 @@ class TestObs(unittest.TestCase):
         )
 
 
-class TestVar(unittest.TestCase):
+class TestVar(BaseValidationTest):
 
     """
     Fail cases in adata.var and adata.raw.var
     """
-
-    def setUp(self):
-        self.validator = Validator()
-        self.validator.adata = examples.adata.copy()
 
     def test_var_and_raw_var_same_index(self):
 
@@ -855,15 +856,11 @@ class TestVar(unittest.TestCase):
                 )
 
 
-class TestUns(unittest.TestCase):
+class TestUns(BaseValidationTest):
 
     """
     Fail cases in adata.uns
     """
-
-    def setUp(self):
-        self.validator = Validator()
-        self.validator.adata = examples.adata.copy()
 
     def test_required_fields_schema_version(self):
 
@@ -1117,16 +1114,11 @@ class TestUns(unittest.TestCase):
         )
 
 
-class TestObsm(unittest.TestCase):
+class TestObsm(BaseValidationTest):
 
     """
     Fail cases for adata.obsm
     """
-
-    def setUp(self):
-
-        self.validator = Validator()
-        self.validator.adata = examples.adata.copy()
 
     def test_obsm_values_ara_numpy(self):
 

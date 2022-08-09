@@ -136,7 +136,8 @@ class Validator:
                     f"Validation cannot be performed."
                 )
             else:
-                self.schema_def = schema.get_schema_definition(version)
+                if not self.schema_def:
+                    self.schema_def = schema.get_schema_definition(version)
 
     def _get_component_def(self, component: str) -> dict:
         """
@@ -699,6 +700,14 @@ class Validator:
                 df_name,
                 self._get_column_def(df_name, "index"),
             )
+
+        low_rows_threshold = self._get_component_def(df_name).get("warn_if_less_than_rows")
+        if low_rows_threshold is not None:
+            num_rows = df.shape[0]
+            if num_rows < low_rows_threshold:
+                self.warnings.append(
+                    f"Dataframe '{df_name}' only has {num_rows} rows. This might indicate an error in the dataset."
+                )
 
         # Check for columns that have a category defined 0 times (obs only)
         if df_name == "obs":
