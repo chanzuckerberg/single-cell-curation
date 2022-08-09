@@ -611,6 +611,17 @@ class TestObs(unittest.TestCase):
             ],
         )
 
+    def test_nan_values_must_be_rejected(self):
+        """
+        NaN values should not be allowed in dataframes
+        """
+        self.validator.adata.obs["tissue_ontology_term_id"][0] = numpy.nan
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: Column 'tissue_ontology_term_id' in dataframe 'obs' must not contain NaN values."],
+        )
+
 
 class TestVar(unittest.TestCase):
 

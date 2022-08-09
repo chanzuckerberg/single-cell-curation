@@ -472,6 +472,14 @@ class Validator:
                 self._validate_feature_id(feature_id, df_name)
 
         if column_def.get("type") == "curie":
+
+            # Check for NaN values
+            if column.isnull().any():
+                self.errors.append(
+                    f"Column '{column_name}' in dataframe '{df_name}' must not contain NaN values."
+                )
+                return
+
             if "curie_constraints" not in column_def:
                 raise ValueError(
                     f"Corrupt schema definition, no 'curie_constraints' were found for '{column_name}'"
