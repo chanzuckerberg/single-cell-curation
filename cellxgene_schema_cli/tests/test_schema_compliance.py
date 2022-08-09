@@ -611,6 +611,17 @@ class TestObs(unittest.TestCase):
             ],
         )
 
+    def test_fields_with_double_underscore_fail(self):
+        self.validator.adata.obs["__test_field"] = "test"
+
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: The field '__test_field' in 'obs' is invalid. Fields that start with '__' are reserved.",
+            ],
+        )
+
 
 class TestVar(unittest.TestCase):
 
