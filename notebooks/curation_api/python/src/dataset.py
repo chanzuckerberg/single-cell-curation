@@ -8,7 +8,6 @@ import requests
 import threading
 from botocore.credentials import RefreshableCredentials
 from botocore.session import get_session
-from datetime import datetime, timezone
 from typing import Tuple
 
 from src.utils.logger import get_custom_logger, failure, success
@@ -81,7 +80,7 @@ def get_assets(collection_id: str, identifier: str):
     :param identifier: the curator tag or Dataset id
     :return: download links
     """
-    url = url_builder(f"/collections/{collection_id}/assets")
+    url = url_builder(f"/collections/{collection_id}/datasets/assets")
     headers = get_headers()
 
     identifier_value, identifier_type = get_identifier_type_and_value(identifier)
