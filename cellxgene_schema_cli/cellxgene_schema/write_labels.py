@@ -329,6 +329,10 @@ class AnnDataLabelAppender:
         """
         for component in ["obs", "var", "raw.var"]:
 
+            # If the component does not exist, skip (this is for raw.var)
+            if Validator.getattr_anndata(self.adata, component) is None:
+                continue
+
             # Doing it for columns
             if "columns" in self.schema_def["components"][component]:
                 for column, column_def in self.schema_def["components"][component][
@@ -344,7 +348,7 @@ class AnnDataLabelAppender:
                 self._add_column(component, "index", index_def)
 
     def _remove_categories_with_zero_values(self):
-        df = self.validator.adata.obs
+        df = self.adata.obs
         for column in df.columns:
             col = df[column]
             if col.dtype == "category": 

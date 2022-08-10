@@ -136,7 +136,8 @@ class Validator:
                     f"Validation cannot be performed."
                 )
             else:
-                self.schema_def = schema.get_schema_definition(version)
+                if not self.schema_def:
+                    self.schema_def = schema.get_schema_definition(version)
 
     def _get_component_def(self, component: str) -> dict:
         """
@@ -318,6 +319,10 @@ class Validator:
             term_id, column_name, curie_constraints["ontologies"]
         )
 
+        # If the term id does not belong to an allowed ontology, the subsequent checks are redundant
+        if self.errors:
+            return
+
         # If there are specified ancestors then make sure that this id is a valid child
         if "ancestors" in curie_constraints:
             self._validate_curie_ancestors(
@@ -384,6 +389,7 @@ class Validator:
             self.errors.append(
                 f"Column '{column_name}' in dataframe '{df_name}' must be boolean, not '{column.dtype.name}'."
             )
+            return 
 
         if sum(column) > 0:
 
@@ -451,6 +457,17 @@ class Validator:
                 self.errors.append(
                     f"Column '{column_name}' in dataframe '{df_name}' must be categorical, not {column.dtype.name}."
                 )
+            else:
+                if any(len(cat.strip()) == 0 for cat in column.dtype.categories):
+                    self.errors.append(
+                        f"Column '{column_name}' in dataframe '{df_name}' must not contain empty values."
+                    )
+
+                if column.isnull().any():
+                    self.errors.append(
+                        f"Column '{column_name}' in dataframe '{df_name}' must not contain NaN values."
+                    )
+
 
         if column_def.get("type") == "feature_is_filtered":
             self._validate_column_feature_is_filtered(column, column_name, df_name)
@@ -472,6 +489,14 @@ class Validator:
                 self._validate_feature_id(feature_id, df_name)
 
         if column_def.get("type") == "curie":
+
+            # Check for NaN values
+            if column.isnull().any():
+                self.errors.append(
+                    f"Column '{column_name}' in dataframe '{df_name}' must not contain NaN values."
+                )
+                return
+
             if "curie_constraints" not in column_def:
                 raise ValueError(
                     f"Corrupt schema definition, no 'curie_constraints' were found for '{column_name}'"
@@ -699,6 +724,14 @@ class Validator:
                 df_name,
                 self._get_column_def(df_name, "index"),
             )
+
+        low_rows_threshold = self._get_component_def(df_name).get("warn_if_less_than_rows")
+        if low_rows_threshold is not None:
+            num_rows = df.shape[0]
+            if num_rows < low_rows_threshold:
+                self.warnings.append(
+                    f"Dataframe '{df_name}' only has {num_rows} rows. Features SHOULD NOT be filtered from expression matrix."
+                )
 
         # Check for columns that have a category defined 0 times (obs only)
         if df_name == "obs":
@@ -1116,6 +1149,23 @@ class Validator:
                             f"The field '{column}' is present in '{component}', but it is deprecated."
                         )
 
+    def _check_invalid_columns(self):
+        """
+        This method will check for columns or keys that are invalid
+        - Columns that start with '__' (will fail the cxg conversion)
+
+        :rtype none
+        """
+        for component, _ in self.schema_def["components"].items():
+            df = self.getattr_anndata(self.adata, component)
+            if df is None:
+                continue
+            for column in df:
+                if column.startswith("__"):
+                    self.errors.append(
+                        f"The field '{column}' in '{component}' is invalid. Fields that start with '__' are reserved."
+                    )
+
 
     def _check_column_availability(self):
 
@@ -1178,6 +1228,9 @@ class Validator:
 
         # Checks for deprecated columns
         self._check_deprecated_columns()
+
+        # Checks for invalid columns
+        self._check_invalid_columns()
 
         # Checks that reserved columns are not used
         self._check_column_availability()
