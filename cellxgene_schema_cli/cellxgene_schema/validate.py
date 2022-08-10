@@ -451,6 +451,17 @@ class Validator:
                 self.errors.append(
                     f"Column '{column_name}' in dataframe '{df_name}' must be categorical, not {column.dtype.name}."
                 )
+            else:
+                if any(len(cat.strip()) == 0 for cat in column.dtype.categories):
+                    self.errors.append(
+                        f"Column '{column_name}' in dataframe '{df_name}' must not contain empty values."
+                    )
+
+                if column.isnull().any():
+                    self.errors.append(
+                        f"Column '{column_name}' in dataframe '{df_name}' must not contain NaN values."
+                    )
+
 
         if column_def.get("type") == "feature_is_filtered":
             self._validate_column_feature_is_filtered(column, column_name, df_name)

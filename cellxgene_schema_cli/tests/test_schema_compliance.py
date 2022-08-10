@@ -564,7 +564,7 @@ class TestObs(unittest.TestCase):
             ],
         )
 
-    def test_donor_id(self):
+    def test_donor_id_must_be_categorical(self):
         """
         donor_id categorical with str categories. This MUST be free-text that identifies
         a unique individual that data were derived from. It is STRONGLY RECOMMENDED
@@ -580,6 +580,30 @@ class TestObs(unittest.TestCase):
             [
                 "ERROR: Column 'donor_id' in dataframe 'obs' "
                 "must be categorical, not object."
+            ],
+        )
+
+    def test_donor_id_must_not_be_empty(self):
+        self.validator.adata.obs["donor_id"] = self.validator.adata.obs["donor_id"].cat.add_categories("")
+        self.validator.adata.obs["donor_id"].iloc[0] = ""
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Column 'donor_id' in dataframe 'obs' "
+                "must not contain empty values."
+            ],
+        )
+
+    def test_donor_id_must_not_be_nan(self):
+
+        self.validator.adata.obs["donor_id"][0] = numpy.nan
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Column 'donor_id' in dataframe 'obs' "
+                "must not contain NaN values."
             ],
         )
 
