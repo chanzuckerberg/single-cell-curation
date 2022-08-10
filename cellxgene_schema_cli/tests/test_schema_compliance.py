@@ -1278,12 +1278,12 @@ class TestAddingLabels(unittest.TestCase):
                     self.assertEqual(i, j)
 
     def test_remove_unused_categories(self):
-        modified_donor_id = self.label_writer.validator.adata.obs["donor_id"].cat.add_categories("donor_3")
-        self.label_writer.validator.adata.obs["donor_id"] = modified_donor_id
+        modified_donor_id = self.label_writer.adata.obs["donor_id"].cat.add_categories("donor_3")
+        self.label_writer.adata.obs["donor_id"] = modified_donor_id
 
-        self.assertCountEqual(self.label_writer.validator.adata.obs["donor_id"].dtype.categories, ["donor_1", "donor_2", "donor_3"])
+        self.assertCountEqual(self.label_writer.adata.obs["donor_id"].dtype.categories, ["donor_1", "donor_2", "donor_3"])
         self.label_writer._remove_categories_with_zero_values()
 
-        print(self.label_writer.validator.adata.obs["donor_id"].dtype.categories)
+        print(self.label_writer.adata.obs["donor_id"].dtype.categories)
 
-        self.assertCountEqual(self.label_writer.validator.adata.obs["donor_id"].dtype.categories, ["donor_1", "donor_2"])
+        self.assertCountEqual(self.label_writer.adata.obs["donor_id"].dtype.categories, ["donor_1", "donor_2"])
