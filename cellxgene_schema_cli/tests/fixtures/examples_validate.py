@@ -46,10 +46,11 @@ good_obs = pd.DataFrame(
             "HANCESTRO:0575",
             "HsapDv:0000003",
             "donor_1",
+            "nucleus",
         ],
         [
             "CL:0000192",
-            "EFO:0010183",
+            "EFO:0009918",
             "PATO:0000461",
             "NCBITaxon:10090",
             "unknown",
@@ -58,6 +59,7 @@ good_obs = pd.DataFrame(
             "na",
             "MmusDv:0000003",
             "donor_2",
+            "na",
         ],
     ],
     index=["X", "Y"],
@@ -71,11 +73,13 @@ good_obs = pd.DataFrame(
         "is_primary_data",
         "self_reported_ethnicity_ontology_term_id",
         "development_stage_ontology_term_id",
-        "donor_id"
+        "donor_id",
+        "suspension_type",
     ],
 )
 
 good_obs.loc[:, ["donor_id"]] = good_obs.astype("category")
+good_obs.loc[:, ["suspension_type"]] = good_obs.astype("category")
 
 # Expected obs, this is what the obs above should look like after adding the necessary columns with the validator,
 # these columns are defined in the schema
@@ -93,7 +97,7 @@ obs_expected = pd.DataFrame(
         ],
         [
             "smooth muscle cell",
-            "single cell library construction",
+            "smFISH",
             "normal",
             "Mus musculus",
             "unknown",
