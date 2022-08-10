@@ -723,7 +723,7 @@ class TestVar(BaseValidationTest):
         feature_is_filtered must not be in raw.var, and it's only checked in var
         """
 
-        columns = ["feature_is_filtered", "feature_biotype"]
+        columns = ["feature_is_filtered"]
 
         for component_name in ["var", "raw.var"]:
             for column in columns:
@@ -804,8 +804,6 @@ class TestVar(BaseValidationTest):
 
         """
         feature_id (var.index) str.
-        If the feature_biotype is "gene" then this MUST be an ENSEMBL term.
-        If the feature_biotype is "spike-in" then this MUST be an ERCC Spike-In identifier.
 
         This tests the case of an ID with an incorrect format "ENSEBML_NOGENE"
         """
@@ -824,7 +822,6 @@ class TestVar(BaseValidationTest):
                 new_index = list(component.index)
                 new_index[0] = "ENSEBML_NOGENE"
                 component.set_index(pd.Index(new_index), inplace=True)
-                component["feature_biotype"][0] = "gene"
 
                 self.validator.validate_adata()
                 self.assertEqual(
@@ -839,8 +836,6 @@ class TestVar(BaseValidationTest):
 
         """
         feature_id (var.index) str.
-        If the feature_biotype is "gene" then this MUST be an ENSEMBL term.
-        If the feature_biotype is "spike-in" then this MUST be an ERCC Spike-In identifier.
 
         This tests the case of an ENSEMBL ID that has the right format but doesn't exist
         """
@@ -858,7 +853,6 @@ class TestVar(BaseValidationTest):
                 new_index = list(component.index)
                 new_index[0] = "ENSG000"
                 component.set_index(pd.Index(new_index), inplace=True)
-                component["feature_biotype"][0] = "gene"
 
                 self.validator.validate_adata()
                 self.assertEqual(
@@ -872,8 +866,6 @@ class TestVar(BaseValidationTest):
 
         """
         feature_id (var.index) str.
-        If the feature_biotype is "gene" then this MUST be an ENSEMBL term.
-        If the feature_biotype is "spike-in" then this MUST be an ERCC Spike-In identifier.
 
         This tests the case of an ERCC ID that has the right format but doesn't exist
         """
@@ -891,7 +883,6 @@ class TestVar(BaseValidationTest):
                 new_index = list(component.index)
                 new_index[0] = "ERCC-000000"
                 component.set_index(pd.Index(new_index), inplace=True)
-                component["feature_biotype"][0] = "spike-in"
 
                 self.validator.validate_adata()
                 self.assertEqual(
@@ -1264,17 +1255,18 @@ class TestAddingLabels(unittest.TestCase):
         name for the corresponding feature identifier and the inferred NCBITaxon term for the reference organism
         to the var dataframe. Curators MUST NOT annotate the following columns:
 
-            - feature_name. If the feature_biotype is "gene" then this MUST be the human-readable ENSEMBL gene
-            name assigned to the feature_id. If the feature_biotype is "spike-in" then this MUST be the
-            ERCC Spike-In identifier appended with " spike-in control".
+            - feature_name. this MUST be a human-readable ENSEMBL gene name or a ERCC Spike-In identifier
+            appended with " spike-in control", corresponding to the feature_id
             - feature_reference. This MUST be the reference organism for a feature:
                 Homo sapiens	"NCBITaxon:9606"
                 Mus musculus	"NCBITaxon:10090"
                 SARS-CoV-2	"NCBITaxon:2697049"
                 ERCC Spike-Ins	"NCBITaxon:32630"
+            - feature_biotype. This MUST be "gene" if the feature_id is an ENSEMBL gene, or "spike-in" if the feature_id
+            is an ERCC Spike-In identifier.
         """
 
-        for column in ["feature_name", "feature_reference"]:
+        for column in ["feature_name", "feature_reference", "feature_biotype"]:
             expected_column = self.adata_with_labels.var[column]
             obtained_column = self.label_writer.adata.var[column]
 
