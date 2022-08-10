@@ -318,6 +318,10 @@ class Validator:
             term_id, column_name, curie_constraints["ontologies"]
         )
 
+        # If the term id does not belong to an allowed ontology, the subsequent checks are redundant
+        if self.errors:
+            return
+
         # If there are specified ancestors then make sure that this id is a valid child
         if "ancestors" in curie_constraints:
             self._validate_curie_ancestors(
@@ -384,6 +388,7 @@ class Validator:
             self.errors.append(
                 f"Column '{column_name}' in dataframe '{df_name}' must be boolean, not '{column.dtype.name}'."
             )
+            return 
 
         if sum(column) > 0:
 
@@ -451,6 +456,17 @@ class Validator:
                 self.errors.append(
                     f"Column '{column_name}' in dataframe '{df_name}' must be categorical, not {column.dtype.name}."
                 )
+            else:
+                if any(len(cat.strip()) == 0 for cat in column.dtype.categories):
+                    self.errors.append(
+                        f"Column '{column_name}' in dataframe '{df_name}' must not contain empty values."
+                    )
+
+                if column.isnull().any():
+                    self.errors.append(
+                        f"Column '{column_name}' in dataframe '{df_name}' must not contain NaN values."
+                    )
+
 
         if column_def.get("type") == "feature_is_filtered":
             self._validate_column_feature_is_filtered(column, column_name, df_name)
@@ -472,6 +488,14 @@ class Validator:
                 self._validate_feature_id(feature_id, df_name)
 
         if column_def.get("type") == "curie":
+
+            # Check for NaN values
+            if column.isnull().any():
+                self.errors.append(
+                    f"Column '{column_name}' in dataframe '{df_name}' must not contain NaN values."
+                )
+                return
+
             if "curie_constraints" not in column_def:
                 raise ValueError(
                     f"Corrupt schema definition, no 'curie_constraints' were found for '{column_name}'"

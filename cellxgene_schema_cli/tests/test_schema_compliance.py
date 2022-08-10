@@ -226,9 +226,7 @@ class TestObs(unittest.TestCase):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is a deprecated term id of 'EFO'.",
-                "ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is not a child term id "
-                "of '[['EFO:0002772', 'EFO:0010183']]'.",
+                "ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is a deprecated term id of 'EFO'."
             ],
         )
 
@@ -246,9 +244,7 @@ class TestObs(unittest.TestCase):
             self.validator.errors,
             [
                 "ERROR: 'CL:000001' in 'assay_ontology_term_id' is not a valid "
-                "ontology term id of 'EFO'.",
-                "ERROR: 'CL:000001' in 'assay_ontology_term_id' is not a child "
-                "term id of '[['EFO:0002772', 'EFO:0010183']]'.",
+                "ontology term id of 'EFO'."
             ],
         )
 
@@ -271,9 +267,7 @@ class TestObs(unittest.TestCase):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'EFO:0010183 (sci-plex)' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'.",
-                "ERROR: 'EFO:0010183 (sci-plex)' in 'assay_ontology_term_id' is not a child term id of "
-                "'[['EFO:0002772', 'EFO:0010183']]'.",
+                "ERROR: 'EFO:0010183 (sci-plex)' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'."
             ],
         )
 
@@ -356,11 +350,7 @@ class TestObs(unittest.TestCase):
                 "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is "
                 "not a valid ontology term id of 'UBERON'. When 'organism_ontology_term_id' is not 'NCBITaxon:10090' "
                 "nor 'NCBITaxon:9606', 'development_stage_ontology_term_id' MUST be a child term id of "
-                "'UBERON:0000105' excluding 'UBERON:0000071', or unknown.",
-                "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is not "
-                "a child term id of '[['UBERON:0000105']]'. When 'organism_ontology_term_id' is not 'NCBITaxon:10090' "
-                "nor 'NCBITaxon:9606', 'development_stage_ontology_term_id' MUST be a child term id of "
-                "'UBERON:0000105' excluding 'UBERON:0000071', or unknown.",
+                "'UBERON:0000105' excluding 'UBERON:0000071', or unknown."
             ],
         )
 
@@ -564,7 +554,7 @@ class TestObs(unittest.TestCase):
             ],
         )
 
-    def test_donor_id(self):
+    def test_donor_id_must_be_categorical(self):
         """
         donor_id categorical with str categories. This MUST be free-text that identifies
         a unique individual that data were derived from. It is STRONGLY RECOMMENDED
@@ -580,6 +570,30 @@ class TestObs(unittest.TestCase):
             [
                 "ERROR: Column 'donor_id' in dataframe 'obs' "
                 "must be categorical, not object."
+            ],
+        )
+
+    def test_donor_id_must_not_be_empty(self):
+        self.validator.adata.obs["donor_id"] = self.validator.adata.obs["donor_id"].cat.add_categories("")
+        self.validator.adata.obs["donor_id"].iloc[0] = ""
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Column 'donor_id' in dataframe 'obs' "
+                "must not contain empty values."
+            ],
+        )
+
+    def test_donor_id_must_not_be_nan(self):
+
+        self.validator.adata.obs["donor_id"][0] = numpy.nan
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Column 'donor_id' in dataframe 'obs' "
+                "must not contain NaN values."
             ],
         )
 
@@ -620,6 +634,17 @@ class TestObs(unittest.TestCase):
             [
                 "ERROR: The field '__test_field' in 'obs' is invalid. Fields that start with '__' are reserved.",
             ],
+        )
+        
+    def test_nan_values_must_be_rejected(self):
+        """
+        NaN values should not be allowed in dataframes
+        """
+        self.validator.adata.obs["tissue_ontology_term_id"][0] = numpy.nan
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: Column 'tissue_ontology_term_id' in dataframe 'obs' must not contain NaN values."],
         )
 
 
@@ -746,6 +771,16 @@ class TestVar(unittest.TestCase):
                 "ERROR: Some features are 'True' in 'feature_is_filtered' of dataframe 'var', "
                 "but there are 1 non-zero values in the corresponding columns of the matrix 'X'. "
                 "All values for these features must be 0."
+            ],
+        )
+
+        # Test that feature_is_filtered is a bool and not a string
+        self.validator.adata.var["feature_is_filtered"] = "string"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                f"ERROR: Column 'feature_is_filtered' in dataframe 'var' must be boolean, not 'object'."
             ],
         )
 
@@ -1289,12 +1324,12 @@ class TestAddingLabels(unittest.TestCase):
                     self.assertEqual(i, j)
 
     def test_remove_unused_categories(self):
-        modified_donor_id = self.label_writer.validator.adata.obs["donor_id"].cat.add_categories("donor_3")
-        self.label_writer.validator.adata.obs["donor_id"] = modified_donor_id
+        modified_donor_id = self.label_writer.adata.obs["donor_id"].cat.add_categories("donor_3")
+        self.label_writer.adata.obs["donor_id"] = modified_donor_id
 
-        self.assertCountEqual(self.label_writer.validator.adata.obs["donor_id"].dtype.categories, ["donor_1", "donor_2", "donor_3"])
+        self.assertCountEqual(self.label_writer.adata.obs["donor_id"].dtype.categories, ["donor_1", "donor_2", "donor_3"])
         self.label_writer._remove_categories_with_zero_values()
 
-        print(self.label_writer.validator.adata.obs["donor_id"].dtype.categories)
+        print(self.label_writer.adata.obs["donor_id"].dtype.categories)
 
-        self.assertCountEqual(self.label_writer.validator.adata.obs["donor_id"].dtype.categories, ["donor_1", "donor_2"])
+        self.assertCountEqual(self.label_writer.adata.obs["donor_id"].dtype.categories, ["donor_1", "donor_2"])
