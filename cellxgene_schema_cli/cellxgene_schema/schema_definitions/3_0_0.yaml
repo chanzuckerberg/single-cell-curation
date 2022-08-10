@@ -54,6 +54,7 @@ components:
     var:
         type: dataframe
         required: null # Means it's required
+        warn_if_less_than_rows: 20000
         index:
             unique: true
             type: feature_id
