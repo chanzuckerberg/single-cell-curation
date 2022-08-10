@@ -384,6 +384,7 @@ class Validator:
             self.errors.append(
                 f"Column '{column_name}' in dataframe '{df_name}' must be boolean, not '{column.dtype.name}'."
             )
+            return 
 
         if sum(column) > 0:
 
