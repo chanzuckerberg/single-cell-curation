@@ -318,6 +318,10 @@ class Validator:
             term_id, column_name, curie_constraints["ontologies"]
         )
 
+        # If the term id does not belong to an allowed ontology, the subsequent checks are redundant
+        if self.errors:
+            return
+
         # If there are specified ancestors then make sure that this id is a valid child
         if "ancestors" in curie_constraints:
             self._validate_curie_ancestors(
