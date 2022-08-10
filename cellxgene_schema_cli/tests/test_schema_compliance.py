@@ -625,6 +625,17 @@ class TestObs(unittest.TestCase):
             ],
         )
 
+    def test_fields_with_double_underscore_fail(self):
+        self.validator.adata.obs["__test_field"] = "test"
+
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: The field '__test_field' in 'obs' is invalid. Fields that start with '__' are reserved.",
+            ],
+        )
+        
     def test_nan_values_must_be_rejected(self):
         """
         NaN values should not be allowed in dataframes

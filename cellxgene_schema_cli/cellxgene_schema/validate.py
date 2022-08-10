@@ -1139,6 +1139,23 @@ class Validator:
                             f"The field '{column}' is present in '{component}', but it is deprecated."
                         )
 
+    def _check_invalid_columns(self):
+        """
+        This method will check for columns or keys that are invalid
+        - Columns that start with '__' (will fail the cxg conversion)
+
+        :rtype none
+        """
+        for component, _ in self.schema_def["components"].items():
+            df = self.getattr_anndata(self.adata, component)
+            if df is None:
+                continue
+            for column in df:
+                if column.startswith("__"):
+                    self.errors.append(
+                        f"The field '{column}' in '{component}' is invalid. Fields that start with '__' are reserved."
+                    )
+
 
     def _check_column_availability(self):
 
@@ -1200,6 +1217,9 @@ class Validator:
 
         # Checks for deprecated columns
         self._check_deprecated_columns()
+
+        # Checks for invalid columns
+        self._check_invalid_columns()
 
         # Checks that reserved columns are not used
         self._check_column_availability()
