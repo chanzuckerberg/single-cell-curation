@@ -706,7 +706,7 @@ class Validator:
             num_rows = df.shape[0]
             if num_rows < low_rows_threshold:
                 self.warnings.append(
-                    f"Dataframe '{df_name}' only has {num_rows} rows. This might indicate an error in the dataset."
+                    f"Dataframe '{df_name}' only has {num_rows} rows. Features SHOULD NOT be filtered from expression matrix."
                 )
 
         # Check for columns that have a category defined 0 times (obs only)

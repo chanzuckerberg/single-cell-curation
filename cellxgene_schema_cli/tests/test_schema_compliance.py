@@ -864,7 +864,7 @@ class TestVar(BaseValidationTest):
         self.assertEqual(
             self.validator.warnings,
             [
-                f"WARNING: Dataframe 'var' only has 4 rows. This might indicate an error in the dataset."
+                f"WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix."
             ],
         )
 
