@@ -29,7 +29,6 @@ def schema_cli():
     default=None,
     type=click.Path(exists=False, dir_okay=False, writable=True),
 )
-@click.argument("h5ad_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
 @click.option(
     "-v",
     "--verbose",
