@@ -15,5 +15,8 @@ def convert(input_file, output_file):
     # Remove X_normalization
     del dataset.uns["X_normalization"]
 
+    # Set suspension type
+    # TODO
+
     dataset.write(output_file)
 
