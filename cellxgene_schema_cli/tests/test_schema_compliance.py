@@ -692,6 +692,35 @@ class TestObs(BaseValidationTest):
                     ],
                 )
 
+    def test_suspension_type_with_child_term_id(self):
+        """
+        suspension_id categorical with str categories. This field MUST be "cell", "nucleus", or "na". The allowed
+        values depend on the assay_ontology_term_id. MUST support matching against ancestor term rules if specified.
+        """
+        with self.subTest("failure"):
+            self.validator.adata.obs["assay_ontology_term_id"][0] = "EFO:0030008" # child of EFO:0009294
+            self.validator.adata.obs["suspension_type"][0] = "nucleus"
+
+            self.validator.validate_adata()
+            self.assertEqual(
+                self.validator.errors,
+                [
+                    f"ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
+                    f"'['nucleus']'. Values must be one of ['cell'] when "
+                    f"'assay_ontology_term_id' is EFO:0009294 or its children"
+                ],
+            )
+
+        with self.subTest("success"):
+            self.validator.adata.obs["assay_ontology_term_id"][0] = "EFO:0008904" # child of EFO:0007045
+            self.validator.adata.obs["suspension_type"][0] = "nucleus"
+
+            self.validator.validate_adata()
+            self.assertEqual(
+                self.validator.errors,
+                [],
+            )
+
     def test_suspension_type_unrecognized_assay(self):
         """
         suspension_id categorical with str categories. This field MUST be "cell", "nucleus", or "na". The allowed
