@@ -125,15 +125,14 @@ obs_expected = pd.DataFrame(
 # Valid var per schema
 good_var = pd.DataFrame(
     [
-        ["spike-in", False],
-        ["gene", False],
-        ["gene", False],
-        ["gene", False],
+        [False],
+        [False],
+        [False],
+        [False],
     ],
     index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"],
-    columns=["feature_biotype", "feature_is_filtered"],
+    columns=["feature_is_filtered"],
 )
-good_var.loc[:, ["feature_biotype"]] = good_var.astype("category")
 
 # Expected var, this is what the obs above should look like after adding the necessary columns with the validator,
 # these columns are defined in the schema
@@ -152,7 +151,6 @@ var_expected = pd.DataFrame(
         "feature_reference",
     ],
 )
-var_expected.loc[:, ["feature_biotype"]] = var_expected.astype("category")
 
 # ---
 # 3. Creating individual uns component

@@ -66,21 +66,11 @@ components:
                 -
                     type: feature_reference
                     to_column: feature_reference
+                -
+                    type: feature_biotype
+                    to_column: feature_biotype
         # All columns are required
         columns:
-            feature_biotype:
-                type: categorical
-                error_message_suffix: "When 'feature_id' is an ENSEMBL ID 'feature_biotype' MUST be 'gene'."
-                enum:
-                    - "gene"
-                dependencies:
-                    -
-                        # If feature id start with ERCC then only allowed for "spike-in"
-                        rule: "index.str.startswith('ERCC')"
-                        type: categorical
-                        error_message_suffix: "When 'feature_id' is an ERCC ID 'feature_biotype' MUST be 'spike-in'."
-                        enum:
-                            - "spike-in"
             feature_is_filtered:
                 type: feature_is_filtered
     raw.var:
@@ -98,21 +88,9 @@ components:
                 -
                     type: feature_reference
                     to_column: feature_reference
-        # All columns are required
-        columns:
-            feature_biotype:
-                type: categorical
-                error_message_suffix: "When 'feature_id' is an ENSEMBL ID 'feature_biotype' MUST be 'gene'."
-                enum:
-                    - "gene"
-                dependencies:
-                    -
-                        # If feature id start with ERCC then only allowed for "spike-in"
-                        rule: "index.str.startswith('ERCC')"
-                        type: categorical
-                        error_message_suffix: "When 'feature_id' is an ERCC ID 'feature_biotype' MUST be 'spike-in'."
-                        enum:
-                            - "spike-in"
+                -
+                    type: feature_biotype
+                    to_column: feature_biotype
     obs:
         type: dataframe
         required: null # Means it's required
