@@ -58,6 +58,7 @@ def convert(input_file, output_file):
         return np.nan
                 
     dataset.obs["suspension_type"] = dataset.obs.apply(lambda row: assign_suspension_type(row.assay_ontology_term_id), axis = 1)
+    dataset.obs.loc[:, ["suspension_type"]] = dataset.obs.astype("category")
 
     dataset.write(output_file)
 
