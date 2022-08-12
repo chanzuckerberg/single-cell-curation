@@ -548,22 +548,9 @@ class Validator:
         for dependency_def in dependencies:
             if "complex_rule" in dependency_def:
                 if "match_ancestors" in dependency_def["complex_rule"]:
-                    rule_def = dependency_def["complex_rule"]["match_ancestors"]
-                    validate_curie_ancestors_vectorized = vectorize(self._validate_curie_ancestors)
-                    ancestor_map = rule_def["ancestors"]
-                    inclusive = rule_def["inclusive"]
-
-                    def filter_df_by_ancestor_match(term_id, ontologies, ancestors):
-                        allowed_ancestors = dict(zip(ontologies, ancestors))
-                        return validate_curie_ancestors_vectorized(term_id, "", allowed_ancestors, inclusive, False)
-
-                    # hack: pandas dataframe query doesn't support Dict inputs
-                    ontology_keys = []
-                    ancestor_list = []
-                    for key, val in ancestor_map.items():
-                        ontology_keys.append(key)
-                        ancestor_list.append(val)
-                    query_exp = f"@filter_df_by_ancestor_match({rule_def['column']}, {ontology_keys}, {ancestor_list})"
+                    query_fn, args = self._generate_match_ancestors_query_fn(dependency_def["complex_rule"]["match_ancestors"])
+                    term_id, ontologies, ancestors, ancestor_inclusive = args
+                    query_exp = f"@query_fn({term_id}, {ontologies}, {ancestors}, {ancestor_inclusive})"
             elif "rule" in dependency_def:
                 query_exp = dependency_def["rule"]
             else:
@@ -591,6 +578,30 @@ class Validator:
         )
 
         return column
+
+    def _generate_match_ancestors_query_fn(self, rule_def: Dict):
+        """
+        Generates vectorized function and args to query a pandas dataframe. Function will determine whether values from
+        a specified column is a child term to a group of specified ancestors, returning a Bool.
+        :param rule_def: defines arguments to pass into vectorized ancestor match validation function
+        :return: Tuple(function, Tuple(str, List[str], List[str]))
+        """
+        validate_curie_ancestors_vectorized = vectorize(self._validate_curie_ancestors)
+        ancestor_map = rule_def["ancestors"]
+        inclusive = rule_def["inclusive"]
+
+        # hack: pandas dataframe query doesn't support Dict inputs
+        ontology_keys = []
+        ancestor_list = []
+        for key, val in ancestor_map.items():
+            ontology_keys.append(key)
+            ancestor_list.append(val)
+
+        def is_ancestor_match(term_id: str, ontologies: List[str], ancestors: List[str], ancestor_inclusive: bool) -> bool:
+            allowed_ancestors = dict(zip(ontologies, ancestors))
+            return validate_curie_ancestors_vectorized(term_id, "", allowed_ancestors, ancestor_inclusive, False)
+
+        return is_ancestor_match, (rule_def['column'], ontology_keys, ancestor_list, inclusive)
 
     def _validate_list(
         self, list_name: str, current_list: List[str], element_type: str
