@@ -178,7 +178,7 @@ def upload_local_datafile(datafile_path: str, collection_id: str, identifier: st
             res.raise_for_status()
         except requests.HTTPError as e:
             failure(logger, e)
-        raise e
+            raise e
         return res.json()
 
     log_level = os.getenv("log_level", "INFO")  # hack to determine log level in callback (separate process)
