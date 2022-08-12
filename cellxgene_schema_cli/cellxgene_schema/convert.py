@@ -78,5 +78,25 @@ def convert(input_file, output_file):
     dataset.obs["suspension_type"] = dataset.obs.apply(lambda row: suspension_type_map.get(row.assay_ontology_term_id),
                                                        axis=1)
     dataset.obs.loc[:, ["suspension_type"]] = dataset.obs.astype("category")
+
+    # Update deprecated ontologies with known direct replacements
+    disease_ontology_update_map = {
+        'MONDO:0008345': 'MONDO:0800029',
+    }
+    cell_type_ontology_update_map = {
+        'CL:0002609': 'CL:0010012',
+        'CL:0011107': 'CL:0000636',
+    }
+
+    def update_categorical_column_vals(dataframe, column_name, update_map):
+        if dataframe[column_name].dtype != "category":
+            dataframe.loc[:, [column_name]] = dataset.obs.astype("category")
+        for deprecated_term, new_term in update_map.items():
+            if deprecated_term in dataframe[column_name].cat.categories:
+                dataframe[column_name] = dataframe[column_name].cat.rename_categories({deprecated_term: new_term})
+
+    update_categorical_column_vals(dataset.obs, "disease_ontology_term_id", disease_ontology_update_map)
+    update_categorical_column_vals(dataset.obs, "cell_type_ontology_term_id", cell_type_ontology_update_map)
+
     dataset.write(output_file)
 
