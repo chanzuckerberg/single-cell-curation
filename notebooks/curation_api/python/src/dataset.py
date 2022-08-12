@@ -38,7 +38,7 @@ def get_identifier_type_and_value(identifier: str) -> Tuple[str, str]:
                 identifier_type = "dataset_id"
                 identifier_value = _id
             else:
-                identifier_type = "curator tag"
+                identifier_type = "curator_tag"
 
     if not identifier_type:
         raise Exception(f"The identifier '{identifier}' must be either 1) a curator tag that includes a '.h5ad' suffix "
@@ -251,4 +251,4 @@ def upload_local_datafile(datafile_path: str, collection_id: str, identifier: st
         failure(logger, e)
         raise e
     else:
-        success(logger, "UPLOAD COMPLETE -- Dataset queued for processing.")
+        success(logger, "UPLOAD COMPLETE -- Dataset is queued for processing and will surface in the system shortly.")
