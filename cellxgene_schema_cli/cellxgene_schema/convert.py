@@ -2,6 +2,7 @@ import anndata as ad
 import numpy as np
 from . import ontology
 
+
 def convert(input_file, output_file):
     print(f"converting {input_file} into {output_file}")
     
@@ -13,12 +14,25 @@ def convert(input_file, output_file):
     # Set schema version to 3.0.0
     dataset.uns["schema_version"] = "3.0.0"
 
-    # Remove X_normalization
-    if "X_normalization" in dataset.uns:
-        del dataset.uns["X_normalization"]
+    # Remove Deprecated uns Fields
+    deprecated_uns_fields = [
+        "X_normalization",
+        "default_field",
+        "layer_descriptions",
+        "tags",
+        "version",
+        "contributors",
+        "preprint_doi",
+        "project_description",
+        "project_links",
+        "project_name",
+        "publication_doi",
+    ]
+    for field in deprecated_uns_fields:
+        if field in dataset.uns:
+            del dataset.uns[field]
 
     # Set suspension type
-
     match_assays = {
         # 'EFO:0010010': ['cell', 'nucleus'], 
         'EFO:0008720': 'nucleus',
