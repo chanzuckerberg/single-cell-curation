@@ -34,7 +34,9 @@ def set_api_access_config(api_key_file_path: str = None, env: str = "prod") -> N
     """
     set_api_urls(env)
     if not api_key_file_path:
-        print("No API key file provided. Without an access token, no private data or actions are accessible.")
+        print("No API key file provided. Without an access token, which requires an API key to retrieve, no private "
+              "data or actions are accessible (except for fetching an individual Collection or Dataset, which only "
+              "requires the url).")
         return
 
     api_key = open(api_key_file_path).read().strip()
