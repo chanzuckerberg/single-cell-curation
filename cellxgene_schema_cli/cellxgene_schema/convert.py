@@ -1,5 +1,4 @@
 import anndata as ad
-import pandas as pd
 import numpy as np
 from . import ontology
 
@@ -22,25 +21,25 @@ def convert(input_file, output_file):
 
     match_assays = {
         # 'EFO:0010010': ['cell', 'nucleus'], 
-        'EFO:0008720': ['nucleus'], 
-        'EFO:0008722': ['cell'],
-        'EFO:0030002': ['cell'], 
-        'EFO:0008853': ['cell'], 
-        'EFO:0030026': ['nucleus'],
+        'EFO:0008720': 'nucleus',
+        'EFO:0008722': 'cell',
+        'EFO:0030002': 'cell',
+        'EFO:0008853': 'cell',
+        'EFO:0030026': 'nucleus',
         # 'EFO:0010550': ['cell', 'nucleus'], 
-        'EFO:0008919': ['cell'], 
-        'EFO:0008939': ['nucleus'],
-        'EFO:0030027': ['nucleus'],
+        'EFO:0008919': 'cell',
+        'EFO:0008939': 'nucleus',
+        'EFO:0030027': 'nucleus',
     }
 
     match_assays_or_children = {
         # 'EFO:0030080': ['cell', 'nucleus'], 
-        'EFO:0007045': ['nucleus'], 
-        'EFO:0009294': ['cell'],
+        'EFO:0007045': 'nucleus',
+        'EFO:0009294': 'cell',
         # 'EFO:0010184': ['cell', 'nucleus'], 
-        'EFO:0009918': ['na'],  
-        'EFO:0700000': ['na'], 
-        'EFO:0030005': ['na']
+        'EFO:0009918': 'na',
+        'EFO:0700000': 'na',
+        'EFO:0030005': 'na',
     }
 
     ontology_checker = ontology.OntologyChecker()
@@ -51,14 +50,19 @@ def convert(input_file, output_file):
         else:
             for k, v in match_assays_or_children.items():
                 try:
-                    if ontology_checker.is_descendent_of("EFO", item, k):
+                    if k == item or ontology_checker.is_descendent_of("EFO", item, k):
                         return v
                 except Exception:
                     return np.nan
         return np.nan
-                
-    dataset.obs["suspension_type"] = dataset.obs.apply(lambda row: assign_suspension_type(row.assay_ontology_term_id), axis = 1)
-    dataset.obs.loc[:, ["suspension_type"]] = dataset.obs.astype("category")
 
+    suspension_type_map = {}
+    if dataset.obs["assay_ontology_term_id"].dtype != "category":
+        dataset.obs.loc[:, ["assay_ontology_term_id"]] = dataset.obs.astype("category")
+    for item in dataset.obs["assay_ontology_term_id"].cat.categories:
+        suspension_type_map[item] = assign_suspension_type(item)
+    dataset.obs["suspension_type"] = dataset.obs.apply(lambda row: suspension_type_map.get(row.assay_ontology_term_id),
+                                                       axis=1)
+    dataset.obs.loc[:, ["suspension_type"]] = dataset.obs.astype("category")
     dataset.write(output_file)
 
