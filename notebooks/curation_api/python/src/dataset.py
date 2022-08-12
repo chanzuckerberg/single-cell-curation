@@ -31,7 +31,7 @@ def get_identifier_type_and_value(identifier: str) -> Tuple[str, str]:
         identifier_type = "dataset_id"
     else:
         # CURATOR_TAG_PREFIX_REGEX is superfluous; leaving in to match lambda handler code; may use later
-        matched = re.match(f"({UUID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})\\.{EXTENSION_REGEX}$", identifier)
+        matched = re.match(f"({ID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})\\.{EXTENSION_REGEX}$", identifier)
         if matched:
             matches = matched.groupdict()
             if _id := matches.get("id"):
@@ -39,10 +39,6 @@ def get_identifier_type_and_value(identifier: str) -> Tuple[str, str]:
                 identifier_value = _id
             else:
                 identifier_type = "curator_tag"
-
-    if not identifier_type:
-        raise Exception(f"The identifier '{identifier}' must be either 1) a curator tag that includes a '.h5ad' suffix "
-                        f"OR 2) a uuid")
 
     return identifier_value, identifier_type
 
@@ -85,6 +81,30 @@ def get_assets(collection_id: str, identifier: str):
     headers = get_headers()
 
     identifier_value, identifier_type = get_identifier_type_and_value(identifier)
+    params_dict = dict()
+    params_dict[identifier_type] = identifier_value
+
+    try:
+        res = requests.get(url, headers=headers, params=params_dict)
+        res.raise_for_status()
+    except requests.HTTPError as e:
+        failure(logger, e)
+        raise e
+    return res.json()
+
+
+def get_dataset(collection_id: str, identifier: str):
+    """
+    Get full metadata for a Dataset
+    :param collection_id: the id of the Collection to which the Dataset belongs
+    :param identifier: the curator tag or Dataset id
+    :return: the full Dataset metadata
+    """
+    url = url_builder(f"/collections/{collection_id}/datasets")
+    headers = get_headers()
+
+    identifier_value, identifier_type = get_identifier_type_and_value(identifier)
+
     params_dict = dict()
     params_dict[identifier_type] = identifier_value
 
