@@ -59,8 +59,8 @@ class BaseValidationTest(unittest.TestCase):
         self.validator._set_schema_def()
 
         # lower threshold for low gene count warning
-        self.validator.schema_def["components"]["var"]["warn_if_less_than_rows"] = 1 
-    
+        self.validator.schema_def["components"]["var"]["warn_if_less_than_rows"] = 1
+
 
 class TestExpressionMatrix(BaseValidationTest):
 
@@ -134,6 +134,8 @@ class TestExpressionMatrix(BaseValidationTest):
         # Missing raw data in atac-seq data is allowed, thus the following should not return an error message
         self.validator.errors = []
         self.validator.adata.obs["assay_ontology_term_id"] = "EFO:0010891"
+        self.validator.adata.obs["suspension_type"] = "nucleus"
+        self.validator.adata.obs.loc[:, ["suspension_type"]] = self.validator.adata.obs.astype("category")
         self.validator.validate_adata()
         self.assertEqual(self.validator.errors, [])
 
@@ -167,7 +169,6 @@ class TestObs(BaseValidationTest):
         """
 
         columns = [
-            "assay_ontology_term_id",
             "development_stage_ontology_term_id",
             "disease_ontology_term_id",
             "self_reported_ethnicity_ontology_term_id",
@@ -175,6 +176,7 @@ class TestObs(BaseValidationTest):
             "sex_ontology_term_id",
             "tissue_ontology_term_id",
             "donor_id",
+            "suspension_type",
         ]
 
         for column in columns:
@@ -212,6 +214,28 @@ class TestObs(BaseValidationTest):
                 "to missing dependent column in adata.obs.",
                 "ERROR: Checking values with dependencies failed for "
                 "adata.obs['development_stage_ontology_term_id'], this is likely due "
+                "to missing dependent column in adata.obs.",
+            ],
+        )
+
+    def test_column_presence_assay(self):
+        """
+        obs is a pandas.DataFrame. Curators MUST annotate the following columns in the obs dataframe.
+
+        A separate check is need for assay_ontology_term_id because removing from anndata results in multiple
+        errors given that other columns depend on its presence
+        """
+
+        self.validator.adata = examples.adata.copy()
+        self.validator.adata.obs.drop("assay_ontology_term_id", axis=1, inplace=True)
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Dataframe 'obs' is missing column "
+                "'assay_ontology_term_id'.",
+                "ERROR: Checking values with dependencies failed for "
+                "adata.obs['suspension_type'], this is likely due "
                 "to missing dependent column in adata.obs.",
             ],
         )
@@ -602,6 +626,123 @@ class TestObs(BaseValidationTest):
             ],
         )
 
+    def test_suspension_type(self):
+        """
+        suspension_id categorical with str categories. This field MUST be "cell", "nucleus", or "na". The allowed
+        values depend on the assay_ontology_term_id. MUST  fail if the corresponding assay is present in the table, but
+        the value of the suspension_type does not match the required value(s) in the table.
+        """
+        match_assays = {
+            'EFO:0010010': ['cell', 'nucleus'], 'EFO:0008720': ['nucleus'], 'EFO:0008722': ['cell'],
+            'EFO:0030002': ['cell'], 'EFO:0008853': ['cell'], 'EFO:0030026': ['nucleus'],
+            'EFO:0010550': ['cell', 'nucleus'], 'EFO:0008919': ['cell'], 'EFO:0008939': ['nucleus'],
+            'EFO:0030027': ['nucleus'],
+        }
+
+        for assay, suspension_types in match_assays.items():
+            with self.subTest(assay=assay):
+                # Resetting validator
+                self.validator.adata = examples.adata.copy()
+                self.validator.errors = []
+                self.validator.warnings = []
+
+                invalid_suspension_type = "na"
+                self.validator.adata.obs["suspension_type"][1] = invalid_suspension_type
+                self.validator.adata.obs["assay_ontology_term_id"][1] = assay
+                self.validator.validate_adata()
+                self.assertEqual(
+                    self.validator.errors,
+                    [
+                        f"ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
+                        f"'['{invalid_suspension_type}']'. Values must be one of {suspension_types} when "
+                        f"'assay_ontology_term_id' is {assay}"
+                    ],
+                )
+
+    def test_suspension_type_ancestors_inclusive(self):
+        """
+        suspension_id categorical with str categories. This field MUST be "cell", "nucleus", or "na". The allowed
+        values depend on the assay_ontology_term_id. MUST  fail if the corresponding assay is present in the table, but
+        the value of the suspension_type does not match the required value(s) in the table.
+        """
+        match_assays_or_children = {
+            'EFO:0030080': ['cell', 'nucleus'], 'EFO:0007045': ['nucleus'], 'EFO:0009294': ['cell'],
+            'EFO:0010184': ['cell', 'nucleus'], 'EFO:0009918': ['na'],  'EFO:0700000': ['na'], 'EFO:0030005': ['na']
+        }
+        for assay, suspension_types in match_assays_or_children.items():
+            with self.subTest(assay=assay):
+                # Resetting validator
+                self.validator.adata = examples.adata.copy()
+                self.validator.errors = []
+                self.validator.warnings = []
+
+                invalid_suspension_type = "na"
+                if assay in {'EFO:0009918', 'EFO:0700000', 'EFO:0030005'}:
+                    invalid_suspension_type = "nucleus"
+                    self.validator.adata.obs["suspension_type"] = self.validator.adata.obs["suspension_type"].cat.remove_unused_categories()
+                self.validator.adata.obs["assay_ontology_term_id"][1] = assay
+                self.validator.adata.obs["suspension_type"][1] = invalid_suspension_type
+                self.validator.validate_adata()
+                self.assertEqual(
+                    self.validator.errors,
+                    [
+                        f"ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
+                        f"'['{invalid_suspension_type}']'. Values must be one of {suspension_types} when "
+                        f"'assay_ontology_term_id' is {assay} or its children"
+                    ],
+                )
+
+    def test_suspension_type_with_child_term_id(self):
+        """
+        suspension_id categorical with str categories. This field MUST be "cell", "nucleus", or "na". The allowed
+        values depend on the assay_ontology_term_id. MUST support matching against ancestor term rules if specified.
+        """
+        with self.subTest("failure"):
+            self.validator.adata.obs["assay_ontology_term_id"][0] = "EFO:0030008" # child of EFO:0009294
+            self.validator.adata.obs["suspension_type"][0] = "nucleus"
+
+            self.validator.validate_adata()
+            self.assertEqual(
+                self.validator.errors,
+                [
+                    f"ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
+                    f"'['nucleus']'. Values must be one of ['cell'] when "
+                    f"'assay_ontology_term_id' is EFO:0009294 or its children"
+                ],
+            )
+
+        with self.subTest("success"):
+            self.validator.adata.obs["assay_ontology_term_id"][0] = "EFO:0008904" # child of EFO:0007045
+            self.validator.adata.obs["suspension_type"][0] = "nucleus"
+
+            self.validator.validate_adata()
+            self.assertEqual(
+                self.validator.errors,
+                [],
+            )
+
+    def test_suspension_type_unrecognized_assay(self):
+        """
+        suspension_id categorical with str categories. This field MUST be "cell", "nucleus", or "na". The allowed
+        values depend on the assay_ontology_term_id. MUST warn if the corresponding assay is not recognized.
+        """
+        self.validator.adata.obs["assay_ontology_term_id"][1] = "EFO:0010183"
+        self.validator.validate_adata()
+        with self.subTest("no errors"):
+            self.assertEqual(self.validator.errors, [])
+
+        with self.subTest("warnings"):
+            self.assertEqual(
+                self.validator.warnings,
+                [
+                    "WARNING: Data contains assay(s) that are not represented in the 'suspension_type' schema "
+                    "definition table. Ensure you have selected the most appropriate value for the assay(s) between "
+                    "'cell', 'nucleus', and 'na'. Please contact cellxgene@chanzuckerberg.com "
+                    "during submission so that the assay(s) can be added to the schema definition document."
+                ],
+            )
+
+
     def test_categories_with_zero_values_warn(self):
 
         modified_donor_id = self.validator.adata.obs["donor_id"].cat.add_categories("donor_3")
@@ -640,7 +781,7 @@ class TestObs(BaseValidationTest):
                 "ERROR: The field '__test_field' in 'obs' is invalid. Fields that start with '__' are reserved.",
             ],
         )
-        
+
     def test_nan_values_must_be_rejected(self):
         """
         NaN values should not be allowed in dataframes

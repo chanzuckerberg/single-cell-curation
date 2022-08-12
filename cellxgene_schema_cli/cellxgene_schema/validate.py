@@ -13,6 +13,7 @@ from numpy import count_nonzero
 from numpy import cumprod
 from numpy import isnan
 from numpy import nditer
+from numpy import vectorize
 from scipy import sparse
 from typing import List, Dict, Union, Tuple
 from . import ontology
@@ -200,19 +201,21 @@ class Validator:
         column_name: str,
         allowed_ancestors: Dict[str, List[str]],
         inclusive: bool,
+        errors=True,
     ):
 
         """
         Validate a single curie term id is a valid children of any of allowed ancestors
-        If there are any errors, it adds them to self.errors
+        If there are any errors, it adds them to self.errors if the errors flag is True.
 
         :param str term_id: the curie term id to validate
         :param str column_name: original column name in adata where the term_id comes from (used for error messages)
         :param dict{str: list[str]} allowed_ancestors: keys must be ontology names and values must lists of
-        :param bool inclusive:  if True then the ancestors themselves are allowed
         allowed ancestors
+        :param bool inclusive:  if True then the ancestors themselves are allowed
+        :param bool errors: if True then errors are appended to self.errors
 
-        :rtype None
+        :rtype Bool
         """
 
         checks = []
@@ -236,10 +239,13 @@ class Validator:
                     checks.append(is_child)
 
         if True not in checks:
-            all_ancestors = list(allowed_ancestors.values())
-            self.errors.append(
-                f"'{term_id}' in '{column_name}' is not a child term id of '{all_ancestors}'."
-            )
+            if errors:
+                all_ancestors = list(allowed_ancestors.values())
+                self.errors.append(
+                    f"'{term_id}' in '{column_name}' is not a child term id of '{all_ancestors}'."
+                )
+            return False
+        return True
 
     def _validate_curie_ontology(
         self, term_id: str, column_name: str, allowed_ontologies: List[str]
@@ -479,7 +485,7 @@ class Validator:
             if bad_enums:
                 self.errors.append(
                     f"Column '{column_name}' in dataframe '{df_name}' contains invalid values "
-                    f"'{bad_enums}'. Values must be one of {column_def['enum']}."
+                    f"'{bad_enums}'. Values must be one of {column_def['enum']}"
                 )
 
         if column_def.get("type") == "feature_id":
@@ -540,9 +546,19 @@ class Validator:
         all_rules = []
 
         for dependency_def in dependencies:
+            if "complex_rule" in dependency_def:
+                if "match_ancestors" in dependency_def["complex_rule"]:
+                    query_fn, args = self._generate_match_ancestors_query_fn(dependency_def["complex_rule"]["match_ancestors"])
+                    term_id, ontologies, ancestors, ancestor_inclusive = args
+                    query_exp = f"@query_fn({term_id}, {ontologies}, {ancestors}, {ancestor_inclusive})"
+            elif "rule" in dependency_def:
+                query_exp = dependency_def["rule"]
+            else:
+                continue
+
             try:
                 column = getattr(
-                    df.query(dependency_def["rule"], engine="python"), column_name
+                    df.query(query_exp, engine="python"), column_name
                 )
             except UndefinedVariableError:
                 self.errors.append(
@@ -551,7 +567,7 @@ class Validator:
                 )
                 return pd.Series()
 
-            all_rules.append(dependency_def["rule"])
+            all_rules.append(query_exp)
 
             self._validate_column(column, column_name, df_name, dependency_def)
 
@@ -562,6 +578,30 @@ class Validator:
         )
 
         return column
+
+    def _generate_match_ancestors_query_fn(self, rule_def: Dict):
+        """
+        Generates vectorized function and args to query a pandas dataframe. Function will determine whether values from
+        a specified column is a child term to a group of specified ancestors, returning a Bool.
+        :param rule_def: defines arguments to pass into vectorized ancestor match validation function
+        :return: Tuple(function, Tuple(str, List[str], List[str]))
+        """
+        validate_curie_ancestors_vectorized = vectorize(self._validate_curie_ancestors)
+        ancestor_map = rule_def["ancestors"]
+        inclusive = rule_def["inclusive"]
+
+        # hack: pandas dataframe query doesn't support Dict inputs
+        ontology_keys = []
+        ancestor_list = []
+        for key, val in ancestor_map.items():
+            ontology_keys.append(key)
+            ancestor_list.append(val)
+
+        def is_ancestor_match(term_id: str, ontologies: List[str], ancestors: List[str], ancestor_inclusive: bool) -> bool:
+            allowed_ancestors = dict(zip(ontologies, ancestors))
+            return validate_curie_ancestors_vectorized(term_id, "", allowed_ancestors, ancestor_inclusive, False)
+
+        return is_ancestor_match, (rule_def['column'], ontology_keys, ancestor_list, inclusive)
 
     def _validate_list(
         self, list_name: str, current_list: List[str], element_type: str
@@ -766,6 +806,8 @@ class Validator:
 
                 # If after validating dependencies there's still values in the column, validate them.
                 if len(column) > 0:
+                    if "warning_message" in column_def:
+                        self.warnings.append(column_def['warning_message'])
                     self._validate_column(column, column_name, df_name, column_def)
 
     def _validate_sparsity(self):
