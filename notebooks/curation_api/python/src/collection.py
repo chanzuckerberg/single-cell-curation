@@ -1,7 +1,7 @@
 import json
-import os
 import requests
 
+from src.utils.config import format_c_url
 from src.utils.logger import get_custom_logger, failure, success
 from src.utils.http import url_builder, get_headers
 
@@ -26,7 +26,7 @@ def create_collection(collection_form_metadata: dict) -> str:
         raise e
     collection_id = data.get("collection_id")
     success(logger, f"New private Collection id:\n{collection_id}\n",
-            f"New private Collection url:\n{os.getenv('site_url')}/collections/{collection_id}")
+            f"New private Collection url:\n{format_c_url(collection_id)}")
     return collection_id
 
 
@@ -43,7 +43,7 @@ def create_revision(collection_id: str) -> str:
         raise e
     revision_id = data.get("revision_id")
     success(logger, f"Revision id:\n{revision_id}\n",
-            f"Revision url:\n{os.getenv('site_url')}/collections/{revision_id}")
+            f"Revision url:\n{format_c_url(revision_id)}")
     return revision_id
 
 
@@ -57,7 +57,7 @@ def delete_collection(collection_id: str) -> None:
     except requests.HTTPError as e:
         failure(logger, e)
         raise e
-    success(logger, f"Deleted the Collection at url:\n{os.getenv('site_url')}/collections/{collection_id}")
+    success(logger, f"Deleted the Collection at url:\n{format_c_url(collection_id)}")
 
 
 def get_collection(collection_id: str) -> dict:
@@ -97,5 +97,5 @@ def update_collection(collection_id: str, collection_form_metadata: dict) -> Non
     except requests.HTTPError as e:
         failure(logger, e)
         raise e
-    success(logger, f"Updated the Collection at url:\n{os.getenv('site_url')}/collections/{collection_id}")
+    success(logger, f"Updated the Collection at url:\n{format_c_url(collection_id)}")
     return res.json()

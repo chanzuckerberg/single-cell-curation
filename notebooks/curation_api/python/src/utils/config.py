@@ -48,3 +48,7 @@ def set_api_access_config(api_key_file_path: str = None, env: str = "prod") -> N
     access_token = res.json().get("access_token")
     os.environ["access_token"] = access_token
     print("Successfully set 'access_token' env var!")
+
+
+def format_c_url(collection_id: str) -> str:
+    return f"{os.getenv('site_url')}/collections/{collection_id}"

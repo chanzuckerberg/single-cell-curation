@@ -10,6 +10,7 @@ from botocore.credentials import RefreshableCredentials
 from botocore.session import get_session
 from typing import Tuple
 
+from src.utils.config import format_c_url
 from src.utils.logger import get_custom_logger, failure, success
 from src.utils.http import url_builder, get_headers
 
@@ -62,7 +63,7 @@ def delete_dataset(collection_id: str, identifier: str):
     params_dict[identifier_type] = identifier_value
 
     success_message = f"Deleted the Dataset with {identifier_type} '{identifier_value}' from its Collection: " \
-                      f"\n{os.getenv('site_url')}/collections/{collection_id}"
+                      f"\n{format_c_url(collection_id)}"
     try:
         res = requests.delete(url, headers=headers, params=params_dict)
         res.raise_for_status()
@@ -172,7 +173,13 @@ def upload_local_datafile(datafile_path: str, collection_id: str, identifier: st
     headers = get_headers()
 
     def retrieve_s3_credentials_and_upload_key_prefix():
-        return requests.get(url, headers=headers).json()
+        try:
+            res = requests.get(url, headers=headers)
+            res.raise_for_status()
+        except requests.HTTPError as e:
+            failure(logger, e)
+        raise e
+        return res.json()
 
     log_level = os.getenv("log_level", "INFO")  # hack to determine log level in callback (separate process)
 
@@ -244,4 +251,4 @@ def upload_local_datafile(datafile_path: str, collection_id: str, identifier: st
         failure(logger, e)
         raise e
     else:
-        success(logger)
+        success(logger, "UPLOAD COMPLETE -- Dataset queued for processing.")
