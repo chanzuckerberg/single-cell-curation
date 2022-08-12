@@ -1,6 +1,6 @@
 obs:
   assay_ontology_term_id: EFO:0008931
-  self_reported_ethnicity_term_ontology_id: na
+  ethnicity_ontology_term_id: na
   disease_ontology_term_id: PATO:0000461
   cell_type_ontology_term_id:
     cell_ontology_class:

@@ -225,7 +225,7 @@ Obs:
 
 - assay_ontology_term_id: "EFO:0010550"
 - disease_ontology_term_id: "PATO:0000461"
-- self_reported_ethnicity_term_ontology_id: "unknown"
+- ethnicity_ontology_term_id: "unknown"
 
 Uns: 
 

@@ -17,7 +17,7 @@ with open(ontology_10x_file, 'r') as i:
         ontology[line[0]] = line[1].replace(" (BICCN)", "")
 
 # arraging 10x
-to_keep = ['sex', 'cell_type', 'cell_type_ontology_term_id', 'tissue', 'tissue_ontology_term_id', 'assay', 'assay_ontology_term_id', 'self_reported_ethnicity', 'self_reported_ethnicity_term_ontology_id', 'disease', 'disease_ontology_term_id', 'BICCN_cluster_label', 'BICCN_subclass_label', 'BICCN_ontology_term_id', 'development_stage', 'development_stage_ontology_term_id']
+to_keep = ['sex', 'cell_type', 'cell_type_ontology_term_id', 'tissue', 'tissue_ontology_term_id', 'assay', 'assay_ontology_term_id', 'ethnicity', 'ethnicity_ontology_term_id', 'disease', 'disease_ontology_term_id', 'BICCN_cluster_label', 'BICCN_subclass_label', 'BICCN_ontology_term_id', 'development_stage', 'development_stage_ontology_term_id']
 
 dataset_10x.obs = dataset_10x.obs[to_keep]
 dataset_10x.obs.loc[:,'BICCN_subclass_label'] = [ontology[i] for i in dataset_10x.obs['BICCN_ontology_term_id']]
