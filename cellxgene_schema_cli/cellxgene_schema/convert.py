@@ -10,6 +10,8 @@ def convert(input_file, output_file):
 
     # Rename ethnicity_ontology_term_id field
     dataset.obs.rename(columns={"ethnicity_ontology_term_id": "self_reported_ethnicity_ontology_term_id"}, inplace=True)
+    # For existing datasets with labels already added
+    dataset.obs.rename(columns={"ethnicity": "self_reported_ethnicity"}, inplace=True)
 
     # Set schema version to 3.0.0
     dataset.uns["schema_version"] = "3.0.0"
