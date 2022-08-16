@@ -35,7 +35,7 @@ def convert(input_file, output_file):
     # To be removed from var and raw.var
     labeled_var_fields = [
         "feature_name",
-        "feature_reference"
+        "feature_reference",
         "feature_biotype",
     ]
 
