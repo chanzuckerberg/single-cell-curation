@@ -10,8 +10,6 @@ def convert(input_file, output_file):
 
     # Rename ethnicity_ontology_term_id field
     dataset.obs.rename(columns={"ethnicity_ontology_term_id": "self_reported_ethnicity_ontology_term_id"}, inplace=True)
-    # For existing datasets with labels already added
-    dataset.obs.rename(columns={"ethnicity": "self_reported_ethnicity"}, inplace=True)
 
     # Set schema version to 3.0.0
     dataset.uns["schema_version"] = "3.0.0"
@@ -105,14 +103,15 @@ def convert(input_file, output_file):
                     return np.nan
         return np.nan
 
-    suspension_type_map = {}
-    if dataset.obs["assay_ontology_term_id"].dtype != "category":
-        dataset.obs.loc[:, ["assay_ontology_term_id"]] = dataset.obs.astype("category")
-    for item in dataset.obs["assay_ontology_term_id"].cat.categories:
-        suspension_type_map[item] = assign_suspension_type(item)
-    dataset.obs["suspension_type"] = dataset.obs.apply(lambda row: suspension_type_map.get(row.assay_ontology_term_id),
-                                                       axis=1)
-    dataset.obs.loc[:, ["suspension_type"]] = dataset.obs.astype("category")
+    if "suspension_type" not in dataset.obs:
+        suspension_type_map = {}
+        if dataset.obs["assay_ontology_term_id"].dtype != "category":
+            dataset.obs.loc[:, ["assay_ontology_term_id"]] = dataset.obs.astype("category")
+        for item in dataset.obs["assay_ontology_term_id"].cat.categories:
+            suspension_type_map[item] = assign_suspension_type(item)
+        dataset.obs["suspension_type"] = dataset.obs.apply(lambda row: suspension_type_map.get(row.assay_ontology_term_id),
+                                                           axis=1)
+        dataset.obs.loc[:, ["suspension_type"]] = dataset.obs.astype("category")
 
     # Update deprecated ontologies with known direct replacements
     disease_ontology_update_map = {
