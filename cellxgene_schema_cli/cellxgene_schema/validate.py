@@ -116,6 +116,14 @@ class Validator:
 
         self.h5ad_path = h5ad_path
 
+    def _validate_encoding_version(self):
+        import h5py
+        with h5py.File(self.h5ad_path, "r") as f:
+            encoding_dict = dict(f.attrs)
+            encoding_version = encoding_dict.get("encoding-version")
+            if encoding_version != "0.1.0":
+                self.warnings.append("The h5ad artifact was likely generated with an AnnData version different from 0.8.0.")
+
     def _set_schema_def(self):
         """
         Sets schema dictionary from using information in adata. If there are any errors, it adds them to self.errors
@@ -1339,7 +1347,9 @@ class Validator:
         if h5ad_path:
             logger.debug("Reading the h5ad file...")
             self._read_h5ad(h5ad_path)
+            self._validate_encoding_version()
             logger.debug("Successfully read the h5ad file")
+
 
         # Fetches schema def from anndata if schema version is not found in AnnData, this fails
         self._set_schema_def()
