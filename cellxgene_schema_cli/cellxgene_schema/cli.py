@@ -59,8 +59,20 @@ def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose):
     else:
         sys.exit(1)
 
+@click.command(
+    name="convert",
+    short_help="Convert an h5ad from version 2.0.0 to version 3.0.0",
+    help="Convert an h5ad from version 2.0.0 to version 3.0.0. No validation will be performed on either"
+    "the input or the output file.",
+)
+@click.argument("input_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.argument("output_file", nargs=1, type=click.Path(exists=False, dir_okay=False))
+def convert(input_file, output_file):
+    from .convert import convert
+    convert(input_file, output_file)
 
 schema_cli.add_command(schema_validate)
+schema_cli.add_command(convert)
 
 if __name__ == "__main__":
     schema_cli()
