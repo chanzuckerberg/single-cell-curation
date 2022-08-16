@@ -120,7 +120,7 @@ class Validator:
         import h5py
         with h5py.File(self.h5ad_path, "r") as f:
             encoding_dict = dict(f.attrs)
-            encoding_version = encoding_dict["encoding-version"]
+            encoding_version = encoding_dict.get("encoding-version")
             if encoding_version != "0.1.0":
                 self.warnings.append("The h5ad artifact was likely generated with an AnnData version different from 0.8.0")
 
