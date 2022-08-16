@@ -46,6 +46,7 @@ def convert(input_file, output_file):
         "cell_type",
         "assay",
         "disease",
+        "ethnicity",
         "organism",
         "sex",
         "tissue",
