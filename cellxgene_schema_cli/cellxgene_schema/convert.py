@@ -104,14 +104,21 @@ def convert(input_file, output_file):
         return np.nan
 
     if "suspension_type" not in dataset.obs:
+        print("column 'suspension_type' not found in obs. Adding column and auto-assigning value where possible.")
         suspension_type_map = {}
         if dataset.obs["assay_ontology_term_id"].dtype != "category":
             dataset.obs.loc[:, ["assay_ontology_term_id"]] = dataset.obs.astype("category")
         for item in dataset.obs["assay_ontology_term_id"].cat.categories:
             suspension_type_map[item] = assign_suspension_type(item)
+            print(f"Dataset contains row(s) with assay_ontology_term_id {item}. "
+                  f"Automatically assigned suspension_type {suspension_type_map[item]}")
         dataset.obs["suspension_type"] = dataset.obs.apply(lambda row: suspension_type_map.get(row.assay_ontology_term_id),
                                                            axis=1)
         dataset.obs.loc[:, ["suspension_type"]] = dataset.obs.astype("category")
+    else:
+        if dataset.obs["suspension_type"].dtype != "category":
+            dataset.obs.loc[:, ["suspension_type"]] = dataset.obs.astype("category")
+        print(f"suspension_type already exists in obs, with categories {dataset.obs['suspension_type'].cat.categories}")
 
     # Update deprecated ontologies with known direct replacements
     disease_ontology_update_map = {
