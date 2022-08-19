@@ -258,6 +258,7 @@ components:
                 type: bool
             donor_id:
                 type: categorical
+                subtype: str
             suspension_type:
                 type: categorical
                 error_message_suffix: "'suspension_type' MUST be one of 'cell', 'nucleus', or 'na'.'"

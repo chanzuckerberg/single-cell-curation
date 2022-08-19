@@ -473,10 +473,16 @@ class Validator:
                     f"Column '{column_name}' in dataframe '{df_name}' must be categorical, not {column.dtype.name}."
                 )
             else:
-                if any(len(cat.strip()) == 0 for cat in column.dtype.categories):
-                    self.errors.append(
-                        f"Column '{column_name}' in dataframe '{df_name}' must not contain empty values."
-                    )
+                if column_def.get("subtype") == "str":
+                    if column.dtype.categories.dtype != "object" and column.dtype.categories.dtype != "string":
+                        self.errors.append(
+                            f"Column '{column_name}' in dataframe '{df_name}' must be object or string, not {column.dtype.categories.dtype}."
+                        )
+                    else:
+                        if any(len(cat.strip()) == 0 for cat in column.dtype.categories):
+                            self.errors.append(
+                                f"Column '{column_name}' in dataframe '{df_name}' must not contain empty values."
+                            )
 
                 if column.isnull().any():
                     self.errors.append(
