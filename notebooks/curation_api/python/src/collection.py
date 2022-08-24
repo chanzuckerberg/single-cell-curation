@@ -71,11 +71,13 @@ def get_collection(collection_id: str) -> dict:
     return res.json()
 
 
-def get_collections(visibility: str = "PUBLIC") -> list:
-
+def get_collections(visibility: str = "PUBLIC", curator: str = None) -> list:
+    params = {"visibility": visibility}
+    if curator:
+        params["curator"] = curator
     url = url_builder("/collections")
     headers = get_headers()
-    res = requests.get(url, headers=headers, params={"visibility": visibility})
+    res = requests.get(url, headers=headers, params=params)
     res.raise_for_status()
     return res.json().get("collections")
 
