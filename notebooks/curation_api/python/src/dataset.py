@@ -20,7 +20,6 @@ logger = get_custom_logger()
 UUID_REGEX = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
 ID_REGEX = f"(?P<id>{UUID_REGEX})"
 CURATOR_TAG_PREFIX_REGEX = r"(?P<tag_prefix>.*)"
-EXTENSION_REGEX = r"(?P<extension>h5ad)"
 
 
 def get_identifier_type_and_value(identifier: str) -> Tuple[str, str]:
@@ -31,7 +30,7 @@ def get_identifier_type_and_value(identifier: str) -> Tuple[str, str]:
         identifier_type = "id"
     else:
         # CURATOR_TAG_PREFIX_REGEX is superfluous; leaving in to match lambda handler code; may use later
-        matched = re.match(f"({UUID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})\\.{EXTENSION_REGEX}$", identifier)
+        matched = re.match(f"({UUID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})$", identifier)
         if matched:
             matches = matched.groupdict()
             if _id := matches.get("id"):
@@ -41,7 +40,7 @@ def get_identifier_type_and_value(identifier: str) -> Tuple[str, str]:
                 identifier_type = "curator tag"
 
     if not identifier_type:
-        raise Exception(f"The identifier '{identifier}' must either 1) include a '.h5ad' suffix OR 2) be a uuid")
+        raise Exception(f"The identifier '{identifier}' must be a uuid or a valid string.")
 
     return identifier_value, identifier_type
 
@@ -104,7 +103,7 @@ def upload_datafile_from_link(link: str, collection_id: str, identifier: str = N
     Create/update a Dataset from the datafile found at the source link.
     :param link: the source datafile link to upload to the Data Portal to become a Dataset
     :param collection_id: the id of the Collection to which the resultant Dataset will belong
-    :param identifier: the curator tag or cellxgene Dataset id. Must be suffixed with '.h5ad'. See heading
+    :param identifier: the curator tag or cellxgene Dataset id. See heading
     of create_dataset_from_local_file.ipynb for details about how to use the identifier to 'create new' vs 'replace existing'
     """
     url = url_builder(f"/collections/{collection_id}/datasets/upload-link")
@@ -137,7 +136,7 @@ def upload_local_datafile(datafile_path: str, collection_id: str, identifier: st
     """
     :param datafile_path: the fully qualified path of the datafile to be uploaded
     :param collection_id: the id of the Collection to which the resultant Dataset will belong
-    :param identifier: the curator tag or cellxgene Dataset id. Must be suffixed with '.h5ad'. See heading
+    :param identifier: the curator tag or cellxgene Dataset id. See heading
     of upload_local_datafile.ipynb for details about how to use the identifier to 'create new' vs 'replace existing'
     :param log_level: the logging level
     Datasets.
