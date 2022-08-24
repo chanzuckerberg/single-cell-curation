@@ -1,0 +1,4 @@
+include requirements.txt
+include cellxgene_schema/ontology_files/*.gz
+include cellxgene_schema/ontology_files/owl_info.yml
+include cellxgene_schema/schema_definitions/*.yaml

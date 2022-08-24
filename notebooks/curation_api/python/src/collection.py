@@ -73,18 +73,21 @@ def get_collection(collection_id: str) -> dict:
     return res.json()
 
 
-def get_collections(visibility: str = None) -> list:
-
+def get_collections(visibility: str = None, curator: str = None) -> list:
+    params = {}
+    if visibility:
+        params["visibility"] =visibility
+    if curator:
+        params["curator"] = curator
     url = url_builder("/collections")
     headers = get_headers()
-    params = {"visibility": visibility} if visibility else None
     try:
         res = requests.get(url, headers=headers, params=params)
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)
         raise e
-    return res.json()
+    return res.json().get("collections")
 
 
 def update_collection(collection_id: str, collection_form_metadata: dict) -> None:
