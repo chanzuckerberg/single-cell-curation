@@ -122,7 +122,7 @@ class Validator:
             encoding_dict = dict(f.attrs)
             encoding_version = encoding_dict.get("encoding-version")
             if encoding_version != "0.1.0":
-                self.warnings.append("The h5ad artifact was likely generated with an AnnData version different from 0.8.0.")
+                self.errors.append("The h5ad artifact was generated with an AnnData version different from 0.8.0.")
 
     def _set_schema_def(self):
         """
