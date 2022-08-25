@@ -36,14 +36,15 @@ def get_custom_logger() -> logging.Logger:
     return logger
 
 
-def failure(logger: logging.Logger, e: Exception, message=None):
-    logger.error("\n\033[1m\033[38;5;9mFAILED\033[0m")  # 'FAILED' in bold red
-    if message:
-        logger.error(message)
-    raise e
+def failure(logger: logging.Logger, e, *messages):
+    logger.error("\n\033[1m\033[38;5;9mFAILED\033[0m\n")  # 'FAILED' in bold red
+    logger.error(e.response.reason + "\n")
+    logger.error(e.response.text + "\n")
+    if messages:
+        [logger.error(m) for m in messages]
 
 
-def success(logger: logging.Logger, message=None):
+def success(logger: logging.Logger, *messages):
     logger.info("\n\033[1m\033[38;5;10mSUCCESS\033[0m\n")  # 'SUCCESS' in bold green
-    if message:
-        logger.info(message)
+    if messages:
+        [logger.info(m) for m in messages]
