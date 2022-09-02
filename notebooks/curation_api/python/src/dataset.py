@@ -100,9 +100,7 @@ def get_dataset(collection_id: str, identifier: str):
 
     params_dict = dict()
     params_dict[identifier_type] = identifier_value
-    print(url)
-    print(params_dict)
-    print(headers)
+
     try:
         res = requests.get(url, headers=headers, params=params_dict)
         res.raise_for_status()
