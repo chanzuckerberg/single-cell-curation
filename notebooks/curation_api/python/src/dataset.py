@@ -23,7 +23,7 @@ CURATOR_TAG_PREFIX_REGEX = r"(?P<tag>.*)"
 
 
 def get_identifier_type_and_value(identifier_value: str) -> Tuple[str, str]:
-    if matched := re.match(f"({UUID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})$", identifier_value):
+    if matched := re.match(f"({ID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})$", identifier_value):
         matches = matched.groupdict()
         if matches.get("id"):
             # identifier value is a uuid
@@ -100,7 +100,9 @@ def get_dataset(collection_id: str, identifier: str):
 
     params_dict = dict()
     params_dict[identifier_type] = identifier_value
-
+    print(url)
+    print(params_dict)
+    print(headers)
     try:
         res = requests.get(url, headers=headers, params=params_dict)
         res.raise_for_status()
