@@ -3,55 +3,32 @@ import json
 import boto3
 import logging
 import os
-import re
 import requests
 import threading
 from botocore.credentials import RefreshableCredentials
 from botocore.session import get_session
-from typing import Tuple
 
 from src.utils.config import format_c_url
 from src.utils.logger import get_custom_logger, failure, success
 from src.utils.http import url_builder, get_headers
 
-
 logger = get_custom_logger()
 
-UUID_REGEX = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
-ID_REGEX = f"(?P<id>{UUID_REGEX})"
-CURATOR_TAG_PREFIX_REGEX = r"(?P<tag>.*)"
 
-
-def get_identifier_type_and_value(identifier_value: str) -> Tuple[str, str]:
-    if matched := re.match(f"({ID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})$", identifier_value):
-        matches = matched.groupdict()
-        if matches.get("id"):
-            # identifier value is a uuid
-            identifier_type = "dataset_id"
-        else:
-            identifier_type = "curator_tag"
-    else:
-        identifier_type = None
-
-    return identifier_value, identifier_type
-
-
-def delete_dataset(collection_id: str, identifier: str):
+def delete_dataset(collection_id: str, dataset_id: str):
     """
     Delete a private Dataset
     :param collection_id: the id of the Collection to which the Dataset belongs
-    :param identifier: the curator tag or Dataset id
+    :param dataset_id: Dataset id
     :return: True if deletion is successful otherwise False
     """
     url = url_builder(f"/collections/{collection_id}/datasets")
     headers = get_headers()
 
-    identifier_value, identifier_type = get_identifier_type_and_value(identifier)
-
     params_dict = dict()
-    params_dict[identifier_type] = identifier_value
+    params_dict["id"] = dataset_id
 
-    success_message = f"Deleted the Dataset with {identifier_type} '{identifier_value}' from its Collection: " \
+    success_message = f"Deleted the Dataset with id '{dataset_id}' from its Collection: " \
                       f"\n{format_c_url(collection_id)}"
     try:
         res = requests.delete(url, headers=headers, params=params_dict)
@@ -63,19 +40,18 @@ def delete_dataset(collection_id: str, identifier: str):
         success(logger, success_message)
 
 
-def get_assets(collection_id: str, identifier: str):
+def get_assets(collection_id: str, dataset_id: str):
     """
     Fetch download links for assets for a Dataset
     :param collection_id: the id of the Collection to which the Dataset belongs
-    :param identifier: the curator tag or Dataset id
+    :param dataset_id: Dataset id
     :return: download links
     """
     url = url_builder(f"/collections/{collection_id}/datasets/assets")
     headers = get_headers()
 
-    identifier_value, identifier_type = get_identifier_type_and_value(identifier)
     params_dict = dict()
-    params_dict[identifier_type] = identifier_value
+    params_dict["id"] = dataset_id
 
     try:
         res = requests.get(url, headers=headers, params=params_dict)
@@ -86,20 +62,18 @@ def get_assets(collection_id: str, identifier: str):
     return res.json()
 
 
-def get_dataset(collection_id: str, identifier: str):
+def get_dataset(collection_id: str, dataset_id: str):
     """
     Get full metadata for a Dataset
     :param collection_id: the id of the Collection to which the Dataset belongs
-    :param identifier: the curator tag or Dataset id
+    :param dataset_id: Dataset id
     :return: the full Dataset metadata
     """
     url = url_builder(f"/collections/{collection_id}/datasets")
     headers = get_headers()
 
-    identifier_value, identifier_type = get_identifier_type_and_value(identifier)
-
     params_dict = dict()
-    params_dict[identifier_type] = identifier_value
+    params_dict["id"] = dataset_id
 
     try:
         res = requests.get(url, headers=headers, params=params_dict)
@@ -110,53 +84,22 @@ def get_dataset(collection_id: str, identifier: str):
     return res.json()
 
 
-def update_curator_tag(collection_id: str, identifier: str, new_tag: str):
-    """
-    Update a private Dataset's curator tag
-    :param collection_id: the id of the Collection to which the Dataset belongs
-    :param identifier: the curator tag or Dataset id
-    :param new_tag: the new curator tag to assign to the Dataset
-    """
-    url = url_builder(f"/collections/{collection_id}/datasets")
-    headers = get_headers()
-
-    identifier_value, identifier_type = get_identifier_type_and_value(identifier)
-
-    params_dict = dict()
-    params_dict[identifier_type] = identifier_value
-
-    new_curator_tag_dict = dict(curator_tag=new_tag)
-
-    success_message = f"Dataset with {identifier_type} '{identifier_value}' updated to have curator_tag '{new_tag}'"
-    try:
-        res = requests.patch(url, headers=headers, params=params_dict, data=json.dumps(new_curator_tag_dict))
-        res.raise_for_status()
-    except requests.HTTPError as e:
-        failure(logger, e)
-        raise e
-    else:
-        success(logger, success_message)
-
-
-def upload_datafile_from_link(link: str, collection_id: str, identifier: str = None):
+def upload_datafile_from_link(link: str, collection_id: str, dataset_id: str = None):
     """
     Create/update a Dataset from the datafile found at the source link.
     :param link: the source datafile link to upload to the Data Portal to become a Dataset
     :param collection_id: the id of the Collection to which the resultant Dataset will belong
-    :param identifier: the curator tag or Dataset id. See heading
-    of create_dataset_from_local_file.ipynb for details about how to use the identifier to 'create new' vs 'replace existing'
+    :param dataset_id: Dataset id. See heading
+    of create_dataset_from_local_file.ipynb for details about how to use the dataset_id to 'create new' vs 'replace existing'
     """
     url = url_builder(f"/collections/{collection_id}/datasets/upload-link")
     headers = get_headers()
 
     data_dict = dict(link=link)
-    if identifier:
-        identifier_value, identifier_type = get_identifier_type_and_value(identifier)
+    if dataset_id:
+        data_dict["id"] = dataset_id
 
-        identifier_param_name = "curator_tag" if identifier_type == "curator_tag" else "id"
-        data_dict[identifier_param_name] = identifier_value
-
-        success_message = f"Uploading Dataset with {identifier_type} '{identifier_value}' to Collection " \
+        success_message = f"Uploading Dataset with id '{dataset_id}' to Collection " \
                           f"{os.getenv('site_url')}/collections/{collection_id} sourcing from datafile at {link}"
     else:
         success_message = f"Uploading Dataset to Collection {os.getenv('site_url')}/collections/{collection_id} " \
@@ -172,12 +115,12 @@ def upload_datafile_from_link(link: str, collection_id: str, identifier: str = N
         success(logger, success_message)
 
 
-def upload_local_datafile(datafile_path: str, collection_id: str, identifier: str):
+def upload_local_datafile(datafile_path: str, collection_id: str, dataset_id: str):
     """
     :param datafile_path: the fully qualified path of the datafile to be uploaded
     :param collection_id: the id of the Collection to which the resultant Dataset will belong
-    :param identifier: the curator tag or Dataset id. See heading
-    of upload_local_datafile.ipynb for details about how to use the identifier to 'create new' vs 'replace existing'
+    :param dataset_id: Dataset id. See heading
+    of upload_local_datafile.ipynb for details about how to use the dataset_id to 'create new' vs 'replace existing'
     :param log_level: the logging level
     Datasets.
     :return: None
@@ -211,7 +154,7 @@ def upload_local_datafile(datafile_path: str, collection_id: str, identifier: st
 
     filesize = os.path.getsize(datafile_path)
 
-    def get_progress_cb(collection_id: str, identifier: str):
+    def get_progress_cb(collection_id: str, dataset_id: str):
         lock = threading.Lock()
         uploaded_bytes = 0
         prev_percent = 0
@@ -232,14 +175,14 @@ def upload_local_datafile(datafile_path: str, collection_id: str, identifier: st
             if should_update_progress_printout:
                 color = "\033[38;5;10m" if percent_of_total_upload == 100 else ""
                 if getattr(logging, log_level) < 40:
-                    print(f"{collection_id}/{identifier}: "
+                    print(f"{collection_id}/{dataset_id}: "
                           f"\033[1m{color}{percent_of_total_upload}% uploaded\033[0m\r", end="")
 
         return progress_cb
 
     credentials_and_path = retrieve_s3_credentials_and_upload_key_prefix()
     bucket, key_prefix = credentials_and_path["Bucket"], credentials_and_path["UploadKeyPrefix"]
-    upload_key = key_prefix + identifier
+    upload_key = key_prefix + dataset_id
     logger.debug(f"Full S3 write path is s3://{bucket}/{upload_key}\n")
 
     session_creds = RefreshableCredentials.create_from_metadata(
@@ -253,12 +196,12 @@ def upload_local_datafile(datafile_path: str, collection_id: str, identifier: st
     s3 = boto3_session.client("s3")
 
     try:
-        logger.info(f"\nUploading {datafile_path} to Collection {collection_id} with identifier '{identifier}'...\n")
+        logger.info(f"\nUploading {datafile_path} to Collection {collection_id} with dataset_id '{dataset_id}'...\n")
         s3.upload_file(
             Filename=datafile_path,
             Bucket=bucket,
             Key=upload_key,
-            Callback=get_progress_cb(collection_id, identifier),
+            Callback=get_progress_cb(collection_id, dataset_id),
         )
     except requests.HTTPError as e:
         failure(logger, e)
