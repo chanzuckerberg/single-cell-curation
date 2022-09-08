@@ -87,7 +87,7 @@ def get_collections(visibility: str = None, curator: str = None) -> list:
     except requests.HTTPError as e:
         failure(logger, e)
         raise e
-    return res.json().get("collections")
+    return res.json()
 
 
 def update_collection(collection_id: str, collection_form_metadata: dict) -> None:
