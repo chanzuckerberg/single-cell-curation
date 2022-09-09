@@ -390,13 +390,14 @@ components:
                         enum:
                             - "nucleus"
                     -
-                        # If assay_ontology_term_id is EFO:0008722, 'suspension_type' MUST be 'cell'
+                        # If assay_ontology_term_id is EFO:0008722, 'suspension_type' MUST be 'cell' or 'nucleus'
                         rule: "assay_ontology_term_id == 'EFO:0008722'"
                         type: categorical
                         error_message_suffix: >- 
                             when 'assay_ontology_term_id' is EFO:0008722
                         enum:
                             - "cell"
+                            - "nucleus"
                     -
                         # If assay_ontology_term_id is EFO:0030002, 'suspension_type' MUST be 'cell'
                         rule: "assay_ontology_term_id == 'EFO:0030002'"

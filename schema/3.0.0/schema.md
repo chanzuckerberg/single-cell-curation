@@ -575,7 +575,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
            </tr>
             <tr>
               <td><i>Drop-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008722"><code>EFO:0008722</code></a>]</td>
-              <td><code>"cell"</code></td>
+              <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
               <td><i>microwell-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030002"><code>EFO:0030002</code></a>]</td>
