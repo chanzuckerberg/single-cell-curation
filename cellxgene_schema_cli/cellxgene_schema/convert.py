@@ -66,10 +66,13 @@ def convert(input_file, output_file):
             del dataset.obs[label]
 
     # Set suspension type
+
+    # mappings of assays (or assays + child term assays) to corresponding suspension_type
+    # valid assays with multiple possible suspension_types shown but commented out
     match_assays = {
         # 'EFO:0010010': ['cell', 'nucleus'], 
         'EFO:0008720': 'nucleus',
-        'EFO:0008722': 'cell',
+        # 'EFO:0008722': ['cell', 'nucleus'], ,
         'EFO:0030002': 'cell',
         'EFO:0008853': 'cell',
         'EFO:0030026': 'nucleus',
@@ -110,8 +113,12 @@ def convert(input_file, output_file):
             dataset.obs.loc[:, ["assay_ontology_term_id"]] = dataset.obs.astype("category")
         for item in dataset.obs["assay_ontology_term_id"].cat.categories:
             suspension_type_map[item] = assign_suspension_type(item)
-            print(f"Dataset contains row(s) with assay_ontology_term_id {item}. "
-                  f"Automatically assigned suspension_type {suspension_type_map[item]}")
+            if np.isnan(suspension_type_map[item]):
+                print(f"Dataset contains row(s) with assay_ontology_term_id {item}. These cannot be auto-assigned a "
+                      f"suspension type, please assign a suspension_type manually and validate.")
+            else:
+                print(f"Dataset contains row(s) with assay_ontology_term_id {item}. "
+                      f"Automatically assigned suspension_type {suspension_type_map[item]}")
         dataset.obs["suspension_type"] = dataset.obs.apply(lambda row: suspension_type_map.get(row.assay_ontology_term_id),
                                                            axis=1)
         dataset.obs.loc[:, ["suspension_type"]] = dataset.obs.astype("category")

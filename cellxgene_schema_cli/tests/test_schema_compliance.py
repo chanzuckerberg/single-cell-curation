@@ -633,7 +633,7 @@ class TestObs(BaseValidationTest):
         the value of the suspension_type does not match the required value(s) in the table.
         """
         match_assays = {
-            'EFO:0010010': ['cell', 'nucleus'], 'EFO:0008720': ['nucleus'], 'EFO:0008722': ['cell'],
+            'EFO:0010010': ['cell', 'nucleus'], 'EFO:0008720': ['nucleus'], 'EFO:0008722': ['cell', 'nucleus'],
             'EFO:0030002': ['cell'], 'EFO:0008853': ['cell'], 'EFO:0030026': ['nucleus'],
             'EFO:0010550': ['cell', 'nucleus'], 'EFO:0008919': ['cell'], 'EFO:0008939': ['nucleus'],
             'EFO:0030027': ['nucleus'],
