@@ -66,6 +66,9 @@ def convert(input_file, output_file):
             del dataset.obs[label]
 
     # Set suspension type
+
+    # mappings of assays (or assays + child term assays) to corresponding suspension_type
+    # valid assays with multiple possible suspension_types shown but commented out
     match_assays = {
         # 'EFO:0010010': ['cell', 'nucleus'], 
         'EFO:0008720': 'nucleus',
