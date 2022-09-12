@@ -131,6 +131,10 @@ This `data.frame` will have the following columns required by the schema. There 
       <td><code>character</code></td>
     </tr>
     <tr>
+      <td>donor_id</td>
+      <td><code>character</code></td>
+    </tr>
+    <tr>
       <td>self_reported_ethnicity_ontology_term_id</td>
       <td><code>character</code></td>
     </tr>
@@ -156,6 +160,10 @@ This `data.frame` will have the following columns required by the schema. There 
     </tr>
     <tr>
       <td>sex</td>
+      <td><code>character</code></td>
+    </tr>
+    <tr>
+      <td>suspension_type</td>
       <td><code>character</code></td>
     </tr>
     <tr>
@@ -267,11 +275,6 @@ Only fields defined in the [schema](./schema.md/#uns-dataset-metadata) are trans
     </tr>
     <tr>
       <td>title</td>
-      <td><code>character</code></td>
-      <td>No</td>
-    </tr>
-    <tr>
-      <td>X_normalization</td>
       <td><code>character</code></td>
       <td>No</td>
     </tr>
