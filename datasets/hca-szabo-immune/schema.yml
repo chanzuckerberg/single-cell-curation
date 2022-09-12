@@ -16,7 +16,7 @@ obs:
       Donor2: HsapDv:0000146
       DonorA: unknown
       DonorB: unknown
-  self_reported_ethnicity_term_ontology_id:
+  ethnicity_term_ontology_id:
     donor:
       Donor1: HANCESTRO:0014
       Donor2: HANCESTRO:0005

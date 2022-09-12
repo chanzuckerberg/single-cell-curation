@@ -37,7 +37,7 @@ make_yaml_list <- function(title_suffix) {
     x <- list(
          fixup_gene_symbols = list(X = "log1p", raw.X = "raw"),
          obs = list(assay_ontology_term_id = "EFO:0009922",
-                    self_reported_ethnicity_term_ontology_id = "unknown",
+                    ethnicity_term_ontology_id = "unknown",
                     sex = list(
                                Sex = list(
                                           male = 'male',

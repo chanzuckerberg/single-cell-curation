@@ -6,7 +6,7 @@ obs:
     assay_ontology_term_id: EFO:0010891
     disease_ontology_term_id: PATO:0000461
     sex: mixed
-    self_reported_ethnicity_term_ontology_id: na
+    ethnicity_term_ontology_id: na
     development_stage_ontology_term_id: unknown
 uns:
     version:

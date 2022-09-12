@@ -1,6 +1,6 @@
 obs:
   assay_ontology_term_id: EFO:0009922
-  self_reported_ethnicity_term_ontology_id: na
+  ethnicity_term_ontology_id: na
   sex:
     sex:
       MALE: male

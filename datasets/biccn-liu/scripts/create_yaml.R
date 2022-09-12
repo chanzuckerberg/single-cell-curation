@@ -44,7 +44,7 @@ make_yaml_list <- function(dataset_title) {
                     sex = 'male',
                     disease_ontology_term_id =  'PATO:0000461',
                     assay_ontology_term_id = 'EFO:0008939',
-                    self_reported_ethnicity_term_ontology_id =  'na',
+                    ethnicity_term_ontology_id =  'na',
                     development_stage_ontology_term_id = 'EFO:0001272'
                     ),
          

@@ -1,6 +1,6 @@
 obs:
   assay_ontology_term_id: 10X
-  self_reported_ethnicity_term_ontology_id: unknown
+  ethnicity_term_ontology_id: unknown
   sex:
     sex:
       M: MALE
