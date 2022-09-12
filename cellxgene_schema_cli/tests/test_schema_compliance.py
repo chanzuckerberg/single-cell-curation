@@ -49,7 +49,6 @@ class TestH5adValidation(unittest.TestCase):
 
 
 class BaseValidationTest(unittest.TestCase):
-
     def setUp(self):
 
         self.validator = Validator()
@@ -83,8 +82,8 @@ class TestExpressionMatrix(BaseValidationTest):
         self.validator.adata = self.validator.adata[:, 1:]
         self.validator.validate_adata()
         self.assertIn(
-            "ERROR: Number of genes in X (3) is different than raw.X (4).", 
-            self.validator.errors
+            "ERROR: Number of genes in X (3) is different than raw.X (4).",
+            self.validator.errors,
         )
 
     def test_sparsity(self):
@@ -135,7 +134,9 @@ class TestExpressionMatrix(BaseValidationTest):
         self.validator.errors = []
         self.validator.adata.obs["assay_ontology_term_id"] = "EFO:0010891"
         self.validator.adata.obs["suspension_type"] = "nucleus"
-        self.validator.adata.obs.loc[:, ["suspension_type"]] = self.validator.adata.obs.astype("category")
+        self.validator.adata.obs.loc[
+            :, ["suspension_type"]
+        ] = self.validator.adata.obs.astype("category")
         self.validator.validate_adata()
         self.assertEqual(self.validator.errors, [])
 
@@ -156,6 +157,7 @@ class TestExpressionMatrix(BaseValidationTest):
                 "It is STRONGLY RECOMMENDED that 'final' (normalized) data is provided."
             ],
         )
+
 
 class TestObs(BaseValidationTest):
 
@@ -232,8 +234,7 @@ class TestObs(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: Dataframe 'obs' is missing column "
-                "'assay_ontology_term_id'.",
+                "ERROR: Dataframe 'obs' is missing column " "'assay_ontology_term_id'.",
                 "ERROR: Checking values with dependencies failed for "
                 "adata.obs['suspension_type'], this is likely due "
                 "to missing dependent column in adata.obs.",
@@ -444,7 +445,9 @@ class TestObs(BaseValidationTest):
         # If organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens,
         # this MUST be either a HANCESTRO term, "multiethnic", or "unknown" if unavailable.
         self.validator.adata.obs["organism_ontology_term_id"][0] = "NCBITaxon:9606"
-        self.validator.adata.obs["self_reported_ethnicity_ontology_term_id"][0] = "EFO:0000001"
+        self.validator.adata.obs["self_reported_ethnicity_ontology_term_id"][
+            0
+        ] = "EFO:0000001"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -464,14 +467,16 @@ class TestObs(BaseValidationTest):
         self.validator.adata.obs["development_stage_ontology_term_id"][
             0
         ] = "MmusDv:0000003"
-        self.validator.adata.obs["self_reported_ethnicity_ontology_term_id"][0] = "EFO:0000001"
+        self.validator.adata.obs["self_reported_ethnicity_ontology_term_id"][
+            0
+        ] = "EFO:0000001"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
             [
                 "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is not a "
-                "valid value of 'self_reported_ethnicity_ontology_term_id'. When 'organism_ontology_term_id' is NOT 'NCBITaxon:9606' "
-                "(Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be 'na'."
+                "valid value of 'self_reported_ethnicity_ontology_term_id'. When 'organism_ontology_term_id' is NOT "
+                "'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be 'na'."
             ],
         )
 
@@ -603,7 +608,9 @@ class TestObs(BaseValidationTest):
         )
 
     def test_donor_id_must_not_be_empty(self):
-        self.validator.adata.obs["donor_id"] = self.validator.adata.obs["donor_id"].cat.add_categories("")
+        self.validator.adata.obs["donor_id"] = self.validator.adata.obs[
+            "donor_id"
+        ].cat.add_categories("")
         self.validator.adata.obs["donor_id"].iloc[0] = ""
         self.validator.validate_adata()
         self.assertEqual(
@@ -633,10 +640,16 @@ class TestObs(BaseValidationTest):
         the value of the suspension_type does not match the required value(s) in the table.
         """
         match_assays = {
-            'EFO:0010010': ['cell', 'nucleus'], 'EFO:0008720': ['nucleus'], 'EFO:0008722': ['cell', 'nucleus'],
-            'EFO:0030002': ['cell'], 'EFO:0008853': ['cell'], 'EFO:0030026': ['nucleus'],
-            'EFO:0010550': ['cell', 'nucleus'], 'EFO:0008919': ['cell'], 'EFO:0008939': ['nucleus'],
-            'EFO:0030027': ['nucleus'],
+            "EFO:0010010": ["cell", "nucleus"],
+            "EFO:0008720": ["nucleus"],
+            "EFO:0008722": ["cell", "nucleus"],
+            "EFO:0030002": ["cell"],
+            "EFO:0008853": ["cell"],
+            "EFO:0030026": ["nucleus"],
+            "EFO:0010550": ["cell", "nucleus"],
+            "EFO:0008919": ["cell"],
+            "EFO:0008939": ["nucleus"],
+            "EFO:0030027": ["nucleus"],
         }
 
         for assay, suspension_types in match_assays.items():
@@ -666,8 +679,13 @@ class TestObs(BaseValidationTest):
         the value of the suspension_type does not match the required value(s) in the table.
         """
         match_assays_or_children = {
-            'EFO:0030080': ['cell', 'nucleus'], 'EFO:0007045': ['nucleus'], 'EFO:0009294': ['cell'],
-            'EFO:0010184': ['cell', 'nucleus'], 'EFO:0009918': ['na'],  'EFO:0700000': ['na'], 'EFO:0030005': ['na']
+            "EFO:0030080": ["cell", "nucleus"],
+            "EFO:0007045": ["nucleus"],
+            "EFO:0009294": ["cell"],
+            "EFO:0010184": ["cell", "nucleus"],
+            "EFO:0009918": ["na"],
+            "EFO:0700000": ["na"],
+            "EFO:0030005": ["na"],
         }
         for assay, suspension_types in match_assays_or_children.items():
             with self.subTest(assay=assay):
@@ -677,9 +695,13 @@ class TestObs(BaseValidationTest):
                 self.validator.warnings = []
 
                 invalid_suspension_type = "na"
-                if assay in {'EFO:0009918', 'EFO:0700000', 'EFO:0030005'}:
+                if assay in {"EFO:0009918", "EFO:0700000", "EFO:0030005"}:
                     invalid_suspension_type = "nucleus"
-                    self.validator.adata.obs["suspension_type"] = self.validator.adata.obs["suspension_type"].cat.remove_unused_categories()
+                    self.validator.adata.obs[
+                        "suspension_type"
+                    ] = self.validator.adata.obs[
+                        "suspension_type"
+                    ].cat.remove_unused_categories()
                 self.validator.adata.obs["assay_ontology_term_id"][1] = assay
                 self.validator.adata.obs["suspension_type"][1] = invalid_suspension_type
                 self.validator.validate_adata()
@@ -698,21 +720,25 @@ class TestObs(BaseValidationTest):
         values depend on the assay_ontology_term_id. MUST support matching against ancestor term rules if specified.
         """
         with self.subTest("failure"):
-            self.validator.adata.obs["assay_ontology_term_id"][0] = "EFO:0030008" # child of EFO:0009294
+            self.validator.adata.obs["assay_ontology_term_id"][
+                0
+            ] = "EFO:0030008"  # child of EFO:0009294
             self.validator.adata.obs["suspension_type"][0] = "nucleus"
 
             self.validator.validate_adata()
             self.assertEqual(
                 self.validator.errors,
                 [
-                    f"ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
-                    f"'['nucleus']'. Values must be one of ['cell'] when "
-                    f"'assay_ontology_term_id' is EFO:0009294 or its children"
+                    "ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
+                    "'['nucleus']'. Values must be one of ['cell'] when "
+                    "'assay_ontology_term_id' is EFO:0009294 or its children"
                 ],
             )
 
         with self.subTest("success"):
-            self.validator.adata.obs["assay_ontology_term_id"][0] = "EFO:0008904" # child of EFO:0007045
+            self.validator.adata.obs["assay_ontology_term_id"][
+                0
+            ] = "EFO:0008904"  # child of EFO:0007045
             self.validator.adata.obs["suspension_type"][0] = "nucleus"
 
             self.validator.validate_adata()
@@ -742,10 +768,11 @@ class TestObs(BaseValidationTest):
                 ],
             )
 
-
     def test_categories_with_zero_values_warn(self):
 
-        modified_donor_id = self.validator.adata.obs["donor_id"].cat.add_categories("donor_3")
+        modified_donor_id = self.validator.adata.obs["donor_id"].cat.add_categories(
+            "donor_3"
+        )
         self.validator.adata.obs["donor_id"] = modified_donor_id
         self.validator.validate_adata()
         self.assertEqual(
@@ -767,7 +794,7 @@ class TestObs(BaseValidationTest):
             self.validator.errors,
             [
                 "ERROR: The field 'ethnicity' is present in 'obs', but it is deprecated.",
-                "ERROR: The field 'ethnicity_ontology_term_id' is present in 'obs', but it is deprecated."
+                "ERROR: The field 'ethnicity_ontology_term_id' is present in 'obs', but it is deprecated.",
             ],
         )
 
@@ -790,7 +817,9 @@ class TestObs(BaseValidationTest):
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
-            ["ERROR: Column 'tissue_ontology_term_id' in dataframe 'obs' must not contain NaN values."],
+            [
+                "ERROR: Column 'tissue_ontology_term_id' in dataframe 'obs' must not contain NaN values."
+            ],
         )
 
 
@@ -922,7 +951,7 @@ class TestVar(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             [
-                f"ERROR: Column 'feature_is_filtered' in dataframe 'var' must be boolean, not 'object'."
+                "ERROR: Column 'feature_is_filtered' in dataframe 'var' must be boolean, not 'object'."
             ],
         )
 
@@ -1042,9 +1071,10 @@ class TestVar(BaseValidationTest):
         self.assertEqual(
             self.validator.warnings,
             [
-                f"WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix."
+                "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix."
             ],
         )
+
 
 class TestUns(BaseValidationTest):
 
@@ -1461,12 +1491,20 @@ class TestAddingLabels(unittest.TestCase):
                     self.assertEqual(i, j)
 
     def test_remove_unused_categories(self):
-        modified_donor_id = self.label_writer.adata.obs["donor_id"].cat.add_categories("donor_3")
+        modified_donor_id = self.label_writer.adata.obs["donor_id"].cat.add_categories(
+            "donor_3"
+        )
         self.label_writer.adata.obs["donor_id"] = modified_donor_id
 
-        self.assertCountEqual(self.label_writer.adata.obs["donor_id"].dtype.categories, ["donor_1", "donor_2", "donor_3"])
+        self.assertCountEqual(
+            self.label_writer.adata.obs["donor_id"].dtype.categories,
+            ["donor_1", "donor_2", "donor_3"],
+        )
         self.label_writer._remove_categories_with_zero_values()
 
         print(self.label_writer.adata.obs["donor_id"].dtype.categories)
 
-        self.assertCountEqual(self.label_writer.adata.obs["donor_id"].dtype.categories, ["donor_1", "donor_2"])
+        self.assertCountEqual(
+            self.label_writer.adata.obs["donor_id"].dtype.categories,
+            ["donor_1", "donor_2"],
+        )

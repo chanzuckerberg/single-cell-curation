@@ -30,16 +30,10 @@ def schema_cli():
     type=click.Path(exists=False, dir_okay=False, writable=True),
 )
 @click.option(
-    "-i",
-    "--ignore-labels",
-    help="Ignore ontology labels when validating",
-    is_flag=True
+    "-i", "--ignore-labels", help="Ignore ontology labels when validating", is_flag=True
 )
 @click.option(
-    "-v",
-    "--verbose",
-    help="When present will set logging level to debug",
-    is_flag=True
+    "-v", "--verbose", help="When present will set logging level to debug", is_flag=True
 )
 def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose):
     # Imports are very slow so we defer loading until Click arg validation has passed
@@ -53,11 +47,14 @@ def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose):
     print("Loading validator modules")
     from .validate import validate
 
-    is_valid, _, _ = validate(h5ad_file, add_labels_file, ignore_labels=ignore_labels, verbose=verbose)
+    is_valid, _, _ = validate(
+        h5ad_file, add_labels_file, ignore_labels=ignore_labels, verbose=verbose
+    )
     if is_valid:
         sys.exit(0)
     else:
         sys.exit(1)
+
 
 @click.command(
     name="convert",
@@ -69,7 +66,9 @@ def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose):
 @click.argument("output_file", nargs=1, type=click.Path(exists=False, dir_okay=False))
 def convert(input_file, output_file):
     from .convert import convert
+
     convert(input_file, output_file)
+
 
 schema_cli.add_command(schema_validate)
 schema_cli.add_command(convert)

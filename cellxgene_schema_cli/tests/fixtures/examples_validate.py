@@ -188,7 +188,11 @@ adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
 
 # Anndata with "X" and "raw.X" but neither has actual raw values
 adata_no_raw_values = anndata.AnnData(
-    X=sparse.csr_matrix(non_raw_X), obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var
+    X=sparse.csr_matrix(non_raw_X),
+    obs=good_obs,
+    uns=good_uns,
+    obsm=good_obsm,
+    var=good_var,
 )
 adata_no_raw_values.raw = adata_no_raw_values
 adata_no_raw_values.raw.var.drop("feature_is_filtered", axis=1, inplace=True)

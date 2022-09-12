@@ -214,12 +214,14 @@ class AnnDataLabelAppender:
         mapping_dict = {}
 
         for i in ids:
-            if i.startswith('ERCC'):
+            if i.startswith("ERCC"):
                 mapping_dict[i] = "spike-in"
-            elif i.startswith('ENS'):
-                 mapping_dict[i] = "gene"
+            elif i.startswith("ENS"):
+                mapping_dict[i] = "gene"
             else:
-               raise ValueError (f"{i} is not a recognized `feature_name` and cannot be assigned a `feature_type`")
+                raise ValueError(
+                    f"{i} is not a recognized `feature_name` and cannot be assigned a `feature_type`"
+                )
 
         return mapping_dict
 
@@ -317,7 +319,9 @@ class AnnDataLabelAppender:
             # "raw.var" requires to levels of programtic access
             if "." in component:
                 [first_elem, second_elem] = component.split(".")
-                self.adata.__dict__["_" + first_elem].__dict__["_" + second_elem][new_column_name] = new_column
+                self.adata.__dict__["_" + first_elem].__dict__["_" + second_elem][
+                    new_column_name
+                ] = new_column
             else:
                 self.adata.__dict__["_" + component][new_column_name] = new_column
 
@@ -351,7 +355,7 @@ class AnnDataLabelAppender:
         df = self.adata.obs
         for column in df.columns:
             col = df[column]
-            if col.dtype == "category": 
+            if col.dtype == "category":
                 df[column] = col.cat.remove_unused_categories()
 
     def write_labels(self, add_labels_file: str):
