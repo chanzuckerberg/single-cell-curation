@@ -1,6 +1,7 @@
 import anndata as ad
 import numpy as np
 from . import ontology
+from .remove_labels import remove_labels_inplace
 
 
 def convert(input_file, output_file):
@@ -37,38 +38,7 @@ def convert(input_file, output_file):
         if field in dataset.uns:
             del dataset.uns[field]
 
-    # To be removed from var and raw.var
-    labeled_var_fields = [
-        "feature_name",
-        "feature_reference",
-        "feature_biotype",
-    ]
-
-    # To be removed from obs
-    labeled_obs_fields = [
-        "cell_type",
-        "assay",
-        "disease",
-        "ethnicity",
-        "organism",
-        "sex",
-        "tissue",
-        "self_reported_ethnicity",
-        "development_stage",
-    ]
-
-    for label in labeled_var_fields:
-        if label in dataset.var:
-            del dataset.var[label]
-        try:  # raw may not be defined
-            if label in dataset.raw.var:
-                del dataset.raw.var[label]
-        except Exception:
-            pass
-
-    for label in labeled_obs_fields:
-        if label in dataset.obs:
-            del dataset.obs[label]
+    remove_labels_inplace(dataset)
 
     # Set suspension type
 
