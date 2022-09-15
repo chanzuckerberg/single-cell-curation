@@ -14,6 +14,7 @@ to 3.0.0 compliant h5ads, where possible.
   - [suspension_type](https://github.com/chanzuckerberg/single-cell-curation/blob/feature/schema-3-0-0/schema/3.0.0/schema.md#suspension_type) 
   and [donor_id](https://github.com/chanzuckerberg/single-cell-curation/blob/feature/schema-3-0-0/schema/3.0.0/schema.md#donor_id) 
   may require manual curation to be 3.x.x compliant, please see linked schema definition for details. 
+- `remove-labels` CLI command, for locally removing data portal added labels from datasets.
 
 ### Changed
 - Updated pinned versions of ontology and feature references (see `./cellxgene_schema/ontology_files/`).

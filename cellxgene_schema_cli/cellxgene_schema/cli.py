@@ -64,9 +64,20 @@ def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose):
 @click.argument("input_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
 @click.argument("output_file", nargs=1, type=click.Path(exists=False, dir_okay=False))
 def remove_labels(input_file, output_file):
-    from .remove_labels import remove_labels
+    from .remove_labels import AnnDataLabelRemover
+    print("Loading dependencies")
+    try:
+        import anndata  # noqa: F401
+    except ImportError:
+        raise click.ClickException("[cellxgene] cellxgene-schema requires anndata")
 
-    remove_labels(input_file, output_file)
+    print(f'Loading h5ad from {input_file}')
+    adata = anndata.read_h5ad(input_file)
+    anndata_label_remover = AnnDataLabelRemover(adata)
+    print('Removing labels')
+    anndata_label_remover.remove_labels()
+    print(f'Labels have been removed. Writing to {output_file}')
+    anndata_label_remover.adata.write(output_file)
 
 
 @click.command(

@@ -1,11 +1,11 @@
 import anndata as ad
 import numpy as np
 from . import ontology
-from .remove_labels import remove_labels_inplace
+from .remove_labels import AnnDataLabelRemover
 
 
 def convert(input_file, output_file):
-    print(f"converting {input_file} into {output_file}")
+    print(f"Converting {input_file} into {output_file}")
 
     dataset = ad.read_h5ad(input_file)
 
@@ -38,7 +38,10 @@ def convert(input_file, output_file):
         if field in dataset.uns:
             del dataset.uns[field]
 
-    remove_labels_inplace(dataset)
+    # remove labels that are meant to be added by data portal
+    anndata_label_remover = AnnDataLabelRemover(dataset)
+    anndata_label_remover.remove_labels()
+    dataset = anndata_label_remover.adata
 
     # Set suspension type
 
@@ -138,4 +141,6 @@ def convert(input_file, output_file):
         dataset.obs, "cell_type_ontology_term_id", cell_type_ontology_update_map
     )
 
+    print(f"Automatable conversions completed. Please run 'cellxgene-schema validate {output_file}' to check for "
+          f"required manual changes, if any.")
     dataset.write(output_file)
