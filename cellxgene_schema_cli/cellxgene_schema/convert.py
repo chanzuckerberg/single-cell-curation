@@ -1,10 +1,11 @@
 import anndata as ad
 import numpy as np
 from . import ontology
+from .remove_labels import AnnDataLabelRemover
 
 
 def convert(input_file, output_file):
-    print(f"converting {input_file} into {output_file}")
+    print(f"Converting {input_file} into {output_file}")
 
     dataset = ad.read_h5ad(input_file)
 
@@ -37,38 +38,14 @@ def convert(input_file, output_file):
         if field in dataset.uns:
             del dataset.uns[field]
 
-    # To be removed from var and raw.var
-    labeled_var_fields = [
-        "feature_name",
-        "feature_reference",
-        "feature_biotype",
-    ]
+    # remove labels that are meant to be added by data portal
+    anndata_label_remover = AnnDataLabelRemover(dataset)
+    anndata_label_remover.remove_labels()
+    dataset = anndata_label_remover.adata
 
-    # To be removed from obs
-    labeled_obs_fields = [
-        "cell_type",
-        "assay",
-        "disease",
-        "ethnicity",
-        "organism",
-        "sex",
-        "tissue",
-        "self_reported_ethnicity",
-        "development_stage",
-    ]
-
-    for label in labeled_var_fields:
-        if label in dataset.var:
-            del dataset.var[label]
-        try:  # raw may not be defined
-            if label in dataset.raw.var:
-                del dataset.raw.var[label]
-        except Exception:
-            pass
-
-    for label in labeled_obs_fields:
-        if label in dataset.obs:
-            del dataset.obs[label]
+    # remove 'ethnicity' label (needs to be done separately since its no longer in the schema definition)
+    if 'ethnicity' in dataset.obs:
+        del dataset.obs['ethnicity']
 
     # Set suspension type
 
@@ -168,4 +145,6 @@ def convert(input_file, output_file):
         dataset.obs, "cell_type_ontology_term_id", cell_type_ontology_update_map
     )
 
+    print(f"Automatable conversions completed. Please run 'cellxgene-schema validate {output_file}' to check for "
+          f"required manual changes, if any.")
     dataset.write(output_file)
