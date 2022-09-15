@@ -43,6 +43,10 @@ def convert(input_file, output_file):
     anndata_label_remover.remove_labels()
     dataset = anndata_label_remover.adata
 
+    # remove 'ethnicity' label (needs to be done separately since its no longer in the schema definition)
+    if 'ethnicity' in dataset.obs:
+        del dataset.obs['ethnicity']
+
     # Set suspension type
 
     # mappings of assays (or assays + child term assays) to corresponding suspension_type
