@@ -177,7 +177,7 @@ class AnnDataLabelAppender:
 
         for i in ids:
             organism = ontology.get_organism_from_feature_id(i)
-            mapping_dict[i] = self.validator.gene_checkers[organism].get_symbol(i)
+            mapping_dict[i] = self.validator.gene_checkers[organism].get_gene_name(i)
 
         return mapping_dict
 

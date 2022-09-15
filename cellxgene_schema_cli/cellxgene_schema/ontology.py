@@ -39,7 +39,7 @@ def get_organism_from_feature_id(
 
 
 class GeneChecker:
-    """Handles checking gene ids, retrieves symbols"""
+    """Handles checking gene ids, retrieves gene names"""
 
     GENE_FILES = {
         SupportedOrganisms.HOMO_SAPIENS: os.path.join(
@@ -100,14 +100,14 @@ class GeneChecker:
 
         return gene_id in self.gene_dict
 
-    def get_symbol(self, gene_id) -> str:
+    def get_gene_name(self, gene_id) -> str:
         """
-        Gets symbol associated to the ENSEBML id
+        Gets gene name associated to the ENSEBML id
 
         :param str gene_id: ENSEMBL gene id
 
         :rtype str
-        :return A gene symbol
+        :return A gene name
         """
 
         if not self.is_valid_id(gene_id):
