@@ -1,4 +1,4 @@
-# Reformats from seurat to anndata
+# Reformats from suerat V3 to anndata
 # If sct transform is present saves that to main layer and saves counts to X
 
 library('sceasy')
