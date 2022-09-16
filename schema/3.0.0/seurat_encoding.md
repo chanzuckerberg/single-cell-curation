@@ -10,13 +10,13 @@ Schema version: 3.0.0
 
 ## Overview
 
-All data submitted to the [cellxgene Data Portal](https://cellxgene.cziscience.com/) is automatically converted to a Seurat V3 object that can be loaded by the R package [Seurat](https://satijalab.org/seurat/).
+All data submitted to the [cellxgene Data Portal](https://cellxgene.cziscience.com/) is automatically converted to a Seurat V4 object that can be loaded by the R package [Seurat](https://satijalab.org/seurat/).
 
 This document describes the Seurat encoding for the converted data. <u><strong>Readers should be familiar with the [schema](./schema.md).</strong></u>
 
 ## Encoding
 
-The Seurat V3 object is stored using the [native serialization RDS format](https://cran.r-project.org/doc/manuals/r-release/R-ints.html#Serialization-Formats). The [serialization interfaces](https://stat.ethz.ch/R-manual/R-devel/library/base/html/readRDS.html) allow the object to be serialized to and restored from disk. 
+The Seurat V4 object is stored using the [native serialization RDS format](https://cran.r-project.org/doc/manuals/r-release/R-ints.html#Serialization-Formats). The [serialization interfaces](https://stat.ethz.ch/R-manual/R-devel/library/base/html/readRDS.html) allow the object to be serialized to and restored from disk. 
 
 A `local.rds` file downloaded from the cellxgene Data Portal can be read into an R session with the following code.
 
