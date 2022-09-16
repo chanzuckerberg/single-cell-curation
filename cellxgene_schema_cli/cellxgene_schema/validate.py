@@ -927,14 +927,14 @@ class Validator:
             if effective_r_array_size > self.schema_def["max_size_for_seurat"]:
                 if is_sparse:
                     self.warnings.append(
-                        f"This dataset cannot be converted to the .rds (Seurat v3) format. "
+                        f"This dataset cannot be converted to the .rds (Seurat v4) format. "
                         f"{effective_r_array_size} nonzero elements in matrix {matrix_name} exceed the "
                         f"limitations in the R dgCMatrix sparse matrix class (2^31 - 1 nonzero "
                         f"elements)."
                     )
                 else:
                     self.warnings.append(
-                        f"This dataset cannot be converted to the .rds (Seurat v3) format. "
+                        f"This dataset cannot be converted to the .rds (Seurat v4) format. "
                         f"{effective_r_array_size} elements in at least one dimension of matrix "
                         f"{matrix_name} exceed the limitations in the R dgCMatrix sparse matrix class "
                         f"(2^31 - 1 nonzero elements)."
