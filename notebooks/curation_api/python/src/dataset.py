@@ -116,7 +116,7 @@ def upload_local_datafile(datafile_path: str, collection_id: str, dataset_id: st
     Datasets.
     :return: None
     """
-    url = url_builder(f"/collections/{collection_id}/datasets/s3-upload-credentials")
+    url = url_builder(f"/collections/{collection_id}/s3-upload-credentials")
     headers = get_headers()
 
     def retrieve_s3_credentials_and_upload_key_prefix():
