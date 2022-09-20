@@ -74,6 +74,8 @@ def remove_labels(input_file, output_file):
     print(f'Loading h5ad from {input_file}')
     adata = anndata.read_h5ad(input_file)
     anndata_label_remover = AnnDataLabelRemover(adata)
+    if not anndata_label_remover.schema_def:
+        return
     print('Removing labels')
     anndata_label_remover.remove_labels()
     print(f'Labels have been removed. Writing to {output_file}')
