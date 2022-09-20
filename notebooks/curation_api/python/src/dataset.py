@@ -22,16 +22,13 @@ def delete_dataset(collection_id: str, dataset_id: str):
     :param dataset_id: Dataset id
     :return: True if deletion is successful otherwise False
     """
-    url = url_builder(f"/collections/{collection_id}/datasets")
+    url = url_builder(f"/collections/{collection_id}/datasets/{dataset_id}")
     headers = get_headers()
-
-    params_dict = dict()
-    params_dict["id"] = dataset_id
 
     success_message = f"Deleted the Dataset with id '{dataset_id}' from its Collection: " \
                       f"\n{format_c_url(collection_id)}"
     try:
-        res = requests.delete(url, headers=headers, params=params_dict)
+        res = requests.delete(url, headers=headers)
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)
@@ -47,14 +44,11 @@ def get_assets(collection_id: str, dataset_id: str):
     :param dataset_id: Dataset id
     :return: download links
     """
-    url = url_builder(f"/collections/{collection_id}/datasets/assets")
+    url = url_builder(f"/collections/{collection_id}/datasets/{dataset_id}/assets")
     headers = get_headers()
 
-    params_dict = dict()
-    params_dict["id"] = dataset_id
-
     try:
-        res = requests.get(url, headers=headers, params=params_dict)
+        res = requests.get(url, headers=headers)
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)
@@ -69,14 +63,11 @@ def get_dataset(collection_id: str, dataset_id: str):
     :param dataset_id: Dataset id
     :return: the full Dataset metadata
     """
-    url = url_builder(f"/collections/{collection_id}/datasets")
+    url = url_builder(f"/collections/{collection_id}/datasets/{dataset_id}")
     headers = get_headers()
 
-    params_dict = dict()
-    params_dict["id"] = dataset_id
-
     try:
-        res = requests.get(url, headers=headers, params=params_dict)
+        res = requests.get(url, headers=headers)
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)
