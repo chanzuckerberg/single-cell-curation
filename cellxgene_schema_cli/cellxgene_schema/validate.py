@@ -494,7 +494,8 @@ class Validator:
                                 f"Column '{column_name}' in dataframe '{df_name}' must not contain empty values."
                             )
 
-                if column.isnull().any():
+                # check for null values--skip on column defs with enums, since it will already be part of that check
+                if not column_def.get("enum") and column.isnull().any():
                     self.errors.append(
                         f"Column '{column_name}' in dataframe '{df_name}' must not contain NaN values."
                     )

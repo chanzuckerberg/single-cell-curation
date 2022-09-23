@@ -261,11 +261,12 @@ components:
                 subtype: str
             suspension_type:
                 type: categorical
-                error_message_suffix: "'suspension_type' MUST be one of 'cell', 'nucleus', or 'na'.'"
                 enum:
                     - "cell"
                     - "nucleus"
                     - "na"
+                error_message_suffix: >-
+                    when 'assay_ontology_term_id' does not match one of the assays in the schema definition.
                 # if no dependencies are matched
                 warning_message: >-
                     Data contains assay(s) that are not represented in the 'suspension_type' schema definition table. Ensure you have
