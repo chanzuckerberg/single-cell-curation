@@ -123,10 +123,15 @@ def convert(input_file, output_file):
     # Update deprecated ontologies with known direct replacements
     disease_ontology_update_map = {
         "MONDO:0008345": "MONDO:0800029",
+        "MONDO:0004553": "MONDO:0017853",
     }
     cell_type_ontology_update_map = {
         "CL:0002609": "CL:0010012",
         "CL:0011107": "CL:0000636",
+    }
+    assay_ontology_update_map = {
+        "EFO:0030002 (BD Rhapsody)": "EFO:0700003",
+        "EFO:0010183 (BD Rhapsody)": "EFO:0700003",
     }
 
     def update_categorical_column_vals(dataframe, column_name, update_map):
@@ -143,6 +148,9 @@ def convert(input_file, output_file):
     )
     update_categorical_column_vals(
         dataset.obs, "cell_type_ontology_term_id", cell_type_ontology_update_map
+    )
+    update_categorical_column_vals(
+        dataset.obs, "assay_ontology_term_id", assay_ontology_update_map
     )
 
     print(f"Automatable conversions completed. Please run 'cellxgene-schema validate {output_file}' to check for "
