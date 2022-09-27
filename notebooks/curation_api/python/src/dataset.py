@@ -15,6 +15,27 @@ from src.utils.http import url_builder, get_headers
 logger = get_custom_logger()
 
 
+def create_dataset(collection_id: str):
+    """
+    Create a new, empty Dataset
+    :param collection_id: the id of the Collection to which the Dataset belongs
+    :return: None
+    """
+    url = url_builder(f"/collections/{collection_id}/datasets")
+    headers = get_headers()
+
+    try:
+        res = requests.post(url, headers=headers)
+        res.raise_for_status()
+        data = res.json()
+    except requests.HTTPError as e:
+        failure(logger, e)
+        raise e
+    dataset_id = data["dataset_id"]
+    success(logger, f"Created new Dataset {dataset_id} in the Collection at {format_c_url(collection_id)}")
+    return dataset_id
+
+
 def delete_dataset(collection_id: str, dataset_id: str):
     """
     Delete a private Dataset
@@ -80,8 +101,8 @@ def upload_datafile_from_link(link: str, collection_id: str, dataset_id: str = N
     Create/update a Dataset from the datafile found at the source link.
     :param link: the source datafile link to upload to the Data Portal to become a Dataset
     :param collection_id: the id of the Collection to which the resultant Dataset will belong
-    :param dataset_id: Dataset id. See heading
-    of create_dataset_from_local_file.ipynb for details about how to use the dataset_id to 'create new' vs 'replace existing'
+    :param dataset_id: Dataset id.
+    :return: None
     """
     url = url_builder(f"/collections/{collection_id}/datasets/upload-link")
     headers = get_headers()
@@ -110,10 +131,8 @@ def upload_local_datafile(datafile_path: str, collection_id: str, dataset_id: st
     """
     :param datafile_path: the fully qualified path of the datafile to be uploaded
     :param collection_id: the id of the Collection to which the resultant Dataset will belong
-    :param dataset_id: Dataset id. See heading
-    of upload_local_datafile.ipynb for details about how to use the dataset_id to 'create new' vs 'replace existing'
+    :param dataset_id: Dataset id.
     :param log_level: the logging level
-    Datasets.
     :return: None
     """
     url = url_builder(f"/collections/{collection_id}/s3-upload-credentials")
