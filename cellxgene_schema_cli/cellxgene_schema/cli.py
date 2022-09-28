@@ -30,16 +30,10 @@ def schema_cli():
     type=click.Path(exists=False, dir_okay=False, writable=True),
 )
 @click.option(
-    "-i",
-    "--ignore-labels",
-    help="Ignore ontology labels when validating",
-    is_flag=True
+    "-i", "--ignore-labels", help="Ignore ontology labels when validating", is_flag=True
 )
 @click.option(
-    "-v",
-    "--verbose",
-    help="When present will set logging level to debug",
-    is_flag=True
+    "-v", "--verbose", help="When present will set logging level to debug", is_flag=True
 )
 def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose):
     # Imports are very slow so we defer loading until Click arg validation has passed
@@ -53,14 +47,58 @@ def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose):
     print("Loading validator modules")
     from .validate import validate
 
-    is_valid, _, _ = validate(h5ad_file, add_labels_file, ignore_labels=ignore_labels, verbose=verbose)
+    is_valid, _, _ = validate(
+        h5ad_file, add_labels_file, ignore_labels=ignore_labels, verbose=verbose
+    )
     if is_valid:
         sys.exit(0)
     else:
         sys.exit(1)
 
 
+@click.command(
+    name="remove-labels",
+    short_help="Create a copy of an h5ad without portal-added labels",
+    help="Create a copy of an h5ad without portal-added labels.",
+)
+@click.argument("input_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.argument("output_file", nargs=1, type=click.Path(exists=False, dir_okay=False))
+def remove_labels(input_file, output_file):
+    from .remove_labels import AnnDataLabelRemover
+    print("Loading dependencies")
+    try:
+        import anndata  # noqa: F401
+    except ImportError:
+        raise click.ClickException("[cellxgene] cellxgene-schema requires anndata")
+
+    print(f'Loading h5ad from {input_file}')
+    adata = anndata.read_h5ad(input_file)
+    anndata_label_remover = AnnDataLabelRemover(adata)
+    if not anndata_label_remover.schema_def:
+        return
+    print('Removing labels')
+    anndata_label_remover.remove_labels()
+    print(f'Labels have been removed. Writing to {output_file}')
+    anndata_label_remover.adata.write(output_file)
+
+
+@click.command(
+    name="convert",
+    short_help="Convert an h5ad from version 2.0.0 to version 3.0.0",
+    help="Convert an h5ad from version 2.0.0 to version 3.0.0. No validation will be performed on either"
+    "the input or the output file.",
+)
+@click.argument("input_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.argument("output_file", nargs=1, type=click.Path(exists=False, dir_okay=False))
+def convert(input_file, output_file):
+    from .convert import convert
+
+    convert(input_file, output_file)
+
+
 schema_cli.add_command(schema_validate)
+schema_cli.add_command(convert)
+schema_cli.add_command(remove_labels)
 
 if __name__ == "__main__":
     schema_cli()

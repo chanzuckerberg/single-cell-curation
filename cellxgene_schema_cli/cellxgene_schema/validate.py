@@ -12,6 +12,7 @@ from numpy import count_nonzero
 from numpy import cumprod
 from numpy import isnan
 from numpy import nditer
+from numpy import vectorize
 from scipy import sparse
 from typing import List, Dict, Union, Tuple
 from . import ontology
@@ -69,7 +70,9 @@ class Validator:
                 search_results = re.search(r"%s$" % suffix, term_id)
                 if search_results:
                     stripped_term_id = re.sub(r"%s$" % suffix, "", term_id)
-                    if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, stripped_term_id):
+                    if ONTOLOGY_CHECKER.is_valid_term_id(
+                        ontology_name, stripped_term_id
+                    ):
                         id_suffix = search_results.group(0)
 
                         return stripped_term_id, id_suffix
@@ -114,6 +117,17 @@ class Validator:
 
         self.h5ad_path = h5ad_path
 
+    def _validate_encoding_version(self):
+        import h5py
+
+        with h5py.File(self.h5ad_path, "r") as f:
+            encoding_dict = dict(f.attrs)
+            encoding_version = encoding_dict.get("encoding-version")
+            if encoding_version != "0.1.0":
+                self.errors.append(
+                    "The h5ad artifact was generated with an AnnData version different from 0.8.0."
+                )
+
     def _set_schema_def(self):
         """
         Sets schema dictionary from using information in adata. If there are any errors, it adds them to self.errors
@@ -136,7 +150,8 @@ class Validator:
                     f"Validation cannot be performed."
                 )
             else:
-                self.schema_def = schema.get_schema_definition(version)
+                if not self.schema_def:
+                    self.schema_def = schema.get_schema_definition(version)
 
     def _get_component_def(self, component: str) -> dict:
         """
@@ -199,19 +214,21 @@ class Validator:
         column_name: str,
         allowed_ancestors: Dict[str, List[str]],
         inclusive: bool,
+        errors=True,
     ):
 
         """
         Validate a single curie term id is a valid children of any of allowed ancestors
-        If there are any errors, it adds them to self.errors
+        If there are any errors, it adds them to self.errors if the errors flag is True.
 
         :param str term_id: the curie term id to validate
         :param str column_name: original column name in adata where the term_id comes from (used for error messages)
         :param dict{str: list[str]} allowed_ancestors: keys must be ontology names and values must lists of
-        :param bool inclusive:  if True then the ancestors themselves are allowed
         allowed ancestors
+        :param bool inclusive:  if True then the ancestors themselves are allowed
+        :param bool errors: if True then errors are appended to self.errors
 
-        :rtype None
+        :rtype Bool
         """
 
         checks = []
@@ -235,10 +252,13 @@ class Validator:
                     checks.append(is_child)
 
         if True not in checks:
-            all_ancestors = list(allowed_ancestors.values())
-            self.errors.append(
-                f"'{term_id}' in '{column_name}' is not a child term id of '{all_ancestors}'."
-            )
+            if errors:
+                all_ancestors = list(allowed_ancestors.values())
+                self.errors.append(
+                    f"'{term_id}' in '{column_name}' is not a child term id of '{all_ancestors}'."
+                )
+            return False
+        return True
 
     def _validate_curie_ontology(
         self, term_id: str, column_name: str, allowed_ontologies: List[str]
@@ -318,6 +338,10 @@ class Validator:
             term_id, column_name, curie_constraints["ontologies"]
         )
 
+        # If the term id does not belong to an allowed ontology, the subsequent checks are redundant
+        if self.errors:
+            return
+
         # If there are specified ancestors then make sure that this id is a valid child
         if "ancestors" in curie_constraints:
             self._validate_curie_ancestors(
@@ -384,6 +408,7 @@ class Validator:
             self.errors.append(
                 f"Column '{column_name}' in dataframe '{df_name}' must be boolean, not '{column.dtype.name}'."
             )
+            return
 
         if sum(column) > 0:
 
@@ -451,6 +476,29 @@ class Validator:
                 self.errors.append(
                     f"Column '{column_name}' in dataframe '{df_name}' must be categorical, not {column.dtype.name}."
                 )
+            else:
+                if column_def.get("subtype") == "str":
+                    if (
+                        column.dtype.categories.dtype != "object"
+                        and column.dtype.categories.dtype != "string"
+                    ):
+                        self.errors.append(
+                            f"Column '{column_name}' in dataframe '{df_name}' must be object or string, not"
+                            f" {column.dtype.categories.dtype}."
+                        )
+                    else:
+                        if any(
+                            len(cat.strip()) == 0 for cat in column.dtype.categories
+                        ):
+                            self.errors.append(
+                                f"Column '{column_name}' in dataframe '{df_name}' must not contain empty values."
+                            )
+
+                # check for null values--skip on column defs with enums, since it will already be part of that check
+                if not column_def.get("enum") and column.isnull().any():
+                    self.errors.append(
+                        f"Column '{column_name}' in dataframe '{df_name}' must not contain NaN values."
+                    )
 
         if column_def.get("type") == "feature_is_filtered":
             self._validate_column_feature_is_filtered(column, column_name, df_name)
@@ -462,7 +510,7 @@ class Validator:
             if bad_enums:
                 self.errors.append(
                     f"Column '{column_name}' in dataframe '{df_name}' contains invalid values "
-                    f"'{bad_enums}'. Values must be one of {column_def['enum']}."
+                    f"'{bad_enums}'. Values must be one of {column_def['enum']}"
                 )
 
         if column_def.get("type") == "feature_id":
@@ -472,6 +520,14 @@ class Validator:
                 self._validate_feature_id(feature_id, df_name)
 
         if column_def.get("type") == "curie":
+
+            # Check for NaN values
+            if column.isnull().any():
+                self.errors.append(
+                    f"Column '{column_name}' in dataframe '{df_name}' must not contain NaN values."
+                )
+                return
+
             if "curie_constraints" not in column_def:
                 raise ValueError(
                     f"Corrupt schema definition, no 'curie_constraints' were found for '{column_name}'"
@@ -515,10 +571,20 @@ class Validator:
         all_rules = []
 
         for dependency_def in dependencies:
+            if "complex_rule" in dependency_def:
+                if "match_ancestors" in dependency_def["complex_rule"]:
+                    query_fn, args = self._generate_match_ancestors_query_fn(
+                        dependency_def["complex_rule"]["match_ancestors"]
+                    )
+                    term_id, ontologies, ancestors, ancestor_inclusive = args
+                    query_exp = f"@query_fn({term_id}, {ontologies}, {ancestors}, {ancestor_inclusive})"
+            elif "rule" in dependency_def:
+                query_exp = dependency_def["rule"]
+            else:
+                continue
+
             try:
-                column = getattr(
-                    df.query(dependency_def["rule"], engine="python"), column_name
-                )
+                column = getattr(df.query(query_exp, engine="python"), column_name)
             except UndefinedVariableError:
                 self.errors.append(
                     f"Checking values with dependencies failed for adata.{df_name}['{column_name}'], "
@@ -526,7 +592,7 @@ class Validator:
                 )
                 return pd.Series()
 
-            all_rules.append(dependency_def["rule"])
+            all_rules.append(query_exp)
 
             self._validate_column(column, column_name, df_name, dependency_def)
 
@@ -537,6 +603,42 @@ class Validator:
         )
 
         return column
+
+    def _generate_match_ancestors_query_fn(self, rule_def: Dict):
+        """
+        Generates vectorized function and args to query a pandas dataframe. Function will determine whether values from
+        a specified column is a child term to a group of specified ancestors, returning a Bool.
+        :param rule_def: defines arguments to pass into vectorized ancestor match validation function
+        :return: Tuple(function, Tuple(str, List[str], List[str]))
+        """
+        validate_curie_ancestors_vectorized = vectorize(self._validate_curie_ancestors)
+        ancestor_map = rule_def["ancestors"]
+        inclusive = rule_def["inclusive"]
+
+        # hack: pandas dataframe query doesn't support Dict inputs
+        ontology_keys = []
+        ancestor_list = []
+        for key, val in ancestor_map.items():
+            ontology_keys.append(key)
+            ancestor_list.append(val)
+
+        def is_ancestor_match(
+            term_id: str,
+            ontologies: List[str],
+            ancestors: List[str],
+            ancestor_inclusive: bool,
+        ) -> bool:
+            allowed_ancestors = dict(zip(ontologies, ancestors))
+            return validate_curie_ancestors_vectorized(
+                term_id, "", allowed_ancestors, ancestor_inclusive, False
+            )
+
+        return is_ancestor_match, (
+            rule_def["column"],
+            ontology_keys,
+            ancestor_list,
+            inclusive,
+        )
 
     def _validate_list(
         self, list_name: str, current_list: List[str], element_type: str
@@ -626,46 +728,6 @@ class Validator:
                 f"Allowed terms: {enum}."
             )
 
-    def _validate_X_normalization(self, value):
-
-        """
-        Verifies the adata.uns["X_normalization"] folllows the schema. Adds errors to self.errors if any
-
-        :param value: value in adata.uns["X_normalization"]
-
-        :rtype None
-        """
-
-        if self._validate_str_in_dict(value, "uns", "X_normalization"):
-
-            # If value is "none" then there must NOT be a raw layer
-            if value == "none":
-
-                if self._get_raw_x_loc() == "raw.X":
-                    self.errors.append(
-                        "uns['X_normalization'] is 'none' but 'raw.X' is present. Please indicate "
-                        "the normalization used for 'X'."
-                    )
-
-                if self._get_raw_x_loc() == "raw.X" and not self._is_raw():
-                    self.warnings.append(
-                        "uns['X_normalization'] is 'none' but 'raw.X' doesn't appear to have "
-                        "raw counts (integers)"
-                    )
-
-                if self._get_raw_x_loc() == "X" and not self._is_raw():
-                    self.warnings.append(
-                        "uns['X_normalization'] is 'none', there is no 'raw.X' and 'X' doesn't appear to have "
-                        "raw counts (integers)"
-                    )
-
-            else:
-                if self._get_raw_x_loc() == "X" and self._is_raw():
-                    self.warnings.append(
-                        f"uns['X_normalization'] is '{value}' but 'X' seems to have mostly "
-                        f"raw values (integers)."
-                    )
-
     def _validate_dict(self, dictionary: dict, dict_name: str, dict_def: dict):
 
         """
@@ -695,9 +757,6 @@ class Validator:
                     self._validate_enum_in_dict(
                         value, value_def["enum"], dict_name, key
                     )
-
-            if value_def["type"] == "X_normalization":
-                self._validate_X_normalization(value)
 
             if value_def["type"] == "match_obsm_keys":
 
@@ -743,27 +802,54 @@ class Validator:
                 self._get_column_def(df_name, "index"),
             )
 
+        low_rows_threshold = self._get_component_def(df_name).get(
+            "warn_if_less_than_rows"
+        )
+        if low_rows_threshold is not None:
+            num_rows = df.shape[0]
+            if num_rows < low_rows_threshold:
+                self.warnings.append(
+                    f"Dataframe '{df_name}' only has {num_rows} rows. "
+                    f"Features SHOULD NOT be filtered from expression matrix."
+                )
+
+        # Check for columns that have a category defined 0 times (obs only)
+        if df_name == "obs":
+            for column in df.columns:
+                col = df[column]
+                if col.dtype != "category":
+                    continue
+                for category in col.dtype.categories:
+                    if category not in col.values:
+                        self.warnings.append(
+                            f"Column '{column}' in dataframe '{df_name}' contains a category '{category}' with "
+                            f"zero observations. These categories will be removed when `--add-labels` flag is present."
+                        )
+
         # Validate columns
-        for column_name in df_definition["columns"].keys():
-            logger.debug(f"Validating column: {column_name}...")
-            if column_name not in df.columns:
-                self.errors.append(
-                    f"Dataframe '{df_name}' is missing column '{column_name}'."
-                )
-                continue
+        if "columns" in df_definition:
+            for column_name in df_definition["columns"].keys():
+                logger.debug(f"Validating column: {column_name}...")
+                if column_name not in df.columns:
+                    self.errors.append(
+                        f"Dataframe '{df_name}' is missing column '{column_name}'."
+                    )
+                    continue
 
-            column_def = self._get_column_def(df_name, column_name)
-            column = getattr(df, column_name)
+                column_def = self._get_column_def(df_name, column_name)
+                column = getattr(df, column_name)
 
-            # First check if there are dependencies with other columns and work with a subset of the data if so
-            if "dependencies" in column_def:
-                column = self._validate_column_dependencies(
-                    df, df_name, column_name, column_def["dependencies"]
-                )
+                # First check if there are dependencies with other columns and work with a subset of the data if so
+                if "dependencies" in column_def:
+                    column = self._validate_column_dependencies(
+                        df, df_name, column_name, column_def["dependencies"]
+                    )
 
-            # If after validating dependencies there's still values in the column, validate them.
-            if len(column) > 0:
-                self._validate_column(column, column_name, df_name, column_def)
+                # If after validating dependencies there's still values in the column, validate them.
+                if len(column) > 0:
+                    if "warning_message" in column_def:
+                        self.warnings.append(column_def["warning_message"])
+                    self._validate_column(column, column_name, df_name, column_def)
 
     def _validate_sparsity(self):
 
@@ -842,14 +928,14 @@ class Validator:
             if effective_r_array_size > self.schema_def["max_size_for_seurat"]:
                 if is_sparse:
                     self.warnings.append(
-                        f"This dataset cannot be converted to the .rds (Seurat v3) format. "
+                        f"This dataset cannot be converted to the .rds (Seurat v4) format. "
                         f"{effective_r_array_size} nonzero elements in matrix {matrix_name} exceed the "
                         f"limitations in the R dgCMatrix sparse matrix class (2^31 - 1 nonzero "
                         f"elements)."
                     )
                 else:
                     self.warnings.append(
-                        f"This dataset cannot be converted to the .rds (Seurat v3) format. "
+                        f"This dataset cannot be converted to the .rds (Seurat v4) format. "
                         f"{effective_r_array_size} elements in at least one dimension of matrix "
                         f"{matrix_name} exceed the limitations in the R dgCMatrix sparse matrix class "
                         f"(2^31 - 1 nonzero elements)."
@@ -1077,47 +1163,25 @@ class Validator:
         # If all checks passed then proceed with validation
         if all(checks):
 
-            normalization = self.adata.uns["X_normalization"]
-
             # If both "raw.X" and "X" exist but neither are raw
+            # This is testing for when sometimes data contributors put a normalized matrix in both "X" and "raw.X".
             if not self._is_raw() and self._get_raw_x_loc() == "raw.X":
-                self.warnings.append(
+                self.errors.append(
                     "Raw data may be missing: data in 'raw.X' contains non-integer values."
                 )
 
-            # If raw data is missing: no "raw.X", and "X_normalization" is not "none"
-            if (
-                not self._is_raw()
-                and self._get_raw_x_loc() == "X"
-                and normalization != "none"
-            ):
-
+            # Only "X" exists but it's not raw
+            # This is testing for when there is only a normalized matrix in "X" and there is no "raw.X".
+            if not self._is_raw() and self._get_raw_x_loc() == "X":
                 self.errors.append(
-                    "Raw data is missing: there is no 'raw.X' and 'X_normalization' is not 'none'."
-                )
-
-            # If raw data is in X but X_normalization is NOT none raise an error
-            if (
-                self._is_raw()
-                and self._get_raw_x_loc() == "X"
-                and normalization != "none"
-            ):
-
-                self.errors.append(
-                    f"uns['X_normalization'] is '{normalization}' but raw data seems to be in X, "
-                    f"if X is raw then uns['X_normalization'] MUST be 'none'."
+                    "Raw data is missing: there is only a normalized matrix in X and no raw.X"
                 )
 
             # If raw data is in X and there is nothing in raw.X (i.e. normalized values are not provided), then
             # add a warning because normalized data for RNA data is STRONGLY RECOMMENDED
-            if (
-                self._is_raw()
-                and self._get_raw_x_loc() == "X"
-                and normalization == "none"
-            ):
-
+            if self._is_raw() and self._get_raw_x_loc() == "X":
                 self.warnings.append(
-                    "Only raw data was found, i.e. there is no 'raw.X' and 'uns['X_normalization']' is 'none'. "
+                    "Only raw data was found, i.e. there is no 'raw.X'. "
                     "It is STRONGLY RECOMMENDED that 'final' (normalized) data is provided."
                 )
 
@@ -1144,6 +1208,37 @@ class Validator:
                     f"Add labels error: Column '{reserved_name}' is a reserved column name "
                     f"of '{component}'. Remove it from h5ad and try again."
                 )
+
+    def _check_deprecated_columns(self):
+        """
+        This method will check for columns or keys that have been deprecated
+
+        :rtype none
+        """
+        for component, component_def in self.schema_def["components"].items():
+            if "deprecated_columns" in component_def:
+                for column in component_def["deprecated_columns"]:
+                    if column in self.getattr_anndata(self.adata, component):
+                        self.errors.append(
+                            f"The field '{column}' is present in '{component}', but it is deprecated."
+                        )
+
+    def _check_invalid_columns(self):
+        """
+        This method will check for columns or keys that are invalid
+        - Columns that start with '__' (will fail the cxg conversion)
+
+        :rtype none
+        """
+        for component, _ in self.schema_def["components"].items():
+            df = self.getattr_anndata(self.adata, component)
+            if df is None:
+                continue
+            for column in df:
+                if column.startswith("__"):
+                    self.errors.append(
+                        f"The field '{column}' in '{component}' is invalid. Fields that start with '__' are reserved."
+                    )
 
     def _check_column_availability(self):
 
@@ -1177,12 +1272,13 @@ class Validator:
                 continue
 
             # Do it for columns that map to columns
-            for column, columns_def in component_def["columns"].items():
+            if "columns" in component_def:
+                for column, columns_def in component_def["columns"].items():
 
-                if "add_labels" in columns_def:
-                    self._check_single_column_availability(
-                        component, columns_def["add_labels"]
-                    )
+                    if "add_labels" in columns_def:
+                        self._check_single_column_availability(
+                            component, columns_def["add_labels"]
+                        )
 
             # Do it for index that map to columns
             if "index" in component_def:
@@ -1206,6 +1302,12 @@ class Validator:
             raise RuntimeError(
                 "adata is loaded in backed mode, validation requires anndata to be loaded in memory"
             )
+
+        # Checks for deprecated columns
+        self._check_deprecated_columns()
+
+        # Checks for invalid columns
+        self._check_invalid_columns()
 
         # Checks that reserved columns are not used
         self._check_column_availability()
@@ -1239,7 +1341,7 @@ class Validator:
             else:
                 raise ValueError(f"Unexpected component type '{component['type']}'")
         # Checks for raw only if there are no errors, because it depends on the
-        # existence of adata.obs["assay_ontology_term_id"] and adata.obs["X_normalization"]
+        # existence of adata.obs["assay_ontology_term_id"]
         if not self.errors and "raw" in self.schema_def:
             logger.debug("Validating raw layer...")
             self._validate_raw()
@@ -1267,6 +1369,7 @@ class Validator:
         if h5ad_path:
             logger.debug("Reading the h5ad file...")
             self._read_h5ad(h5ad_path)
+            self._validate_encoding_version()
             logger.debug("Successfully read the h5ad file")
 
         # Fetches schema def from anndata if schema version is not found in AnnData, this fails

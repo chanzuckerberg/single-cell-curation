@@ -7,7 +7,7 @@ from scipy import sparse
 
 # -----------------------------------------------------------------#
 # General example information
-SCHEMA_VERSION = "2.0.0"
+SCHEMA_VERSION = "3.0.0"
 FIXTURES_ROOT = os.path.join(os.path.dirname(__file__))
 
 # -----------------------------------------------------------------#
@@ -45,10 +45,12 @@ good_obs = pd.DataFrame(
             True,
             "HANCESTRO:0575",
             "HsapDv:0000003",
+            "donor_1",
+            "nucleus",
         ],
         [
             "CL:0000192",
-            "EFO:0010183 (sci-plex)",
+            "EFO:0009918",
             "PATO:0000461",
             "NCBITaxon:10090",
             "unknown",
@@ -56,6 +58,8 @@ good_obs = pd.DataFrame(
             False,
             "na",
             "MmusDv:0000003",
+            "donor_2",
+            "na",
         ],
     ],
     index=["X", "Y"],
@@ -67,10 +71,15 @@ good_obs = pd.DataFrame(
         "sex_ontology_term_id",
         "tissue_ontology_term_id",
         "is_primary_data",
-        "ethnicity_ontology_term_id",
+        "self_reported_ethnicity_ontology_term_id",
         "development_stage_ontology_term_id",
+        "donor_id",
+        "suspension_type",
     ],
 )
+
+good_obs.loc[:, ["donor_id"]] = good_obs.astype("category")
+good_obs.loc[:, ["suspension_type"]] = good_obs.astype("category")
 
 # Expected obs, this is what the obs above should look like after adding the necessary columns with the validator,
 # these columns are defined in the schema
@@ -88,7 +97,7 @@ obs_expected = pd.DataFrame(
         ],
         [
             "smooth muscle cell",
-            "single cell library construction (sci-plex)",
+            "smFISH",
             "normal",
             "Mus musculus",
             "unknown",
@@ -105,7 +114,7 @@ obs_expected = pd.DataFrame(
         "organism",
         "sex",
         "tissue",
-        "ethnicity",
+        "self_reported_ethnicity",
         "development_stage",
     ],
 )
@@ -116,15 +125,14 @@ obs_expected = pd.DataFrame(
 # Valid var per schema
 good_var = pd.DataFrame(
     [
-        ["spike-in", False],
-        ["gene", False],
-        ["gene", False],
-        ["gene", False],
+        [False],
+        [False],
+        [False],
+        [False],
     ],
     index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"],
-    columns=["feature_biotype", "feature_is_filtered"],
+    columns=["feature_is_filtered"],
 )
-good_var.loc[:, ["feature_biotype"]] = good_var.astype("category")
 
 # Expected var, this is what the obs above should look like after adding the necessary columns with the validator,
 # these columns are defined in the schema
@@ -143,7 +151,6 @@ var_expected = pd.DataFrame(
         "feature_reference",
     ],
 )
-var_expected.loc[:, ["feature_biotype"]] = var_expected.astype("category")
 
 # ---
 # 3. Creating individual uns component
@@ -151,7 +158,6 @@ good_uns = {
     "schema_version": SCHEMA_VERSION,
     "title": "A title",
     "default_embedding": "X_umap",
-    "X_normalization": "CPM",
     "X_approximate_distribution": "normal",
     "batch_condition": ["is_primary_data"],
 }
@@ -182,7 +188,11 @@ adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
 
 # Anndata with "X" and "raw.X" but neither has actual raw values
 adata_no_raw_values = anndata.AnnData(
-    X=sparse.csr_matrix(non_raw_X), obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var
+    X=sparse.csr_matrix(non_raw_X),
+    obs=good_obs,
+    uns=good_uns,
+    obsm=good_obsm,
+    var=good_var,
 )
 adata_no_raw_values.raw = adata_no_raw_values
 adata_no_raw_values.raw.var.drop("feature_is_filtered", axis=1, inplace=True)

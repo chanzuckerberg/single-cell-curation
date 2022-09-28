@@ -35,7 +35,7 @@ for i in dataset_files:
     print(dataset.obs[['assay_ontology_term_id']].drop_duplicates())
 
     # ethnicity
-    print(dataset.obs[['ethnicity_ontology_term_id']].drop_duplicates())
+    print(dataset.obs[['ethnicity_term_ontology_id']].drop_duplicates())
 
     # dev
     print(dataset.obs[['development_stage_ontology_term_id']].drop_duplicates())

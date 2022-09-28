@@ -12,7 +12,7 @@ dataset.obs[['disease_ontology_term_id', 'disease']].drop_duplicates()
 dataset.obs[['cell_type_ontology_term_id', 'Cell.class']].drop_duplicates()
 
 # ethnicity
-dataset.obs[['ethnicity_ontology_term_id']].drop_duplicates()
+dataset.obs[['ethnicity_term_ontology_id']].drop_duplicates()
 
-# ethnicity
+# development stage
 dataset.obs[['development_stage_ontology_term_id', 'age(y)']].drop_duplicates()

@@ -4,6 +4,26 @@ All notable changes to the python package `cellxgene-schema` are documented in t
 The format of this changelog is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2022-09-28
+
+### Added
+- All new schema requirements and restrictions outlined in [schema version 3.0.0](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#appendix-a-changelog) are strictly enforced by `validate` command. For failures, an error message is displayed and validation fails.
+- Tests that mirror the requirements in schema version 3.0.0.
+- `convert` CLI command, for automating conversion of cellxgene schema 2.x.x compliant h5ads
+to 3.0.0 compliant h5ads, where possible.
+  - [suspension_type](https://github.com/chanzuckerberg/single-cell-curation/blob/feature/schema-3-0-0/schema/3.0.0/schema.md#suspension_type) 
+  and [donor_id](https://github.com/chanzuckerberg/single-cell-curation/blob/feature/schema-3-0-0/schema/3.0.0/schema.md#donor_id) 
+  may require manual curation to be 3.x.x compliant, please see linked schema definition for details. 
+- `remove-labels` CLI command, for locally removing data portal added labels from datasets.
+
+### Changed
+- Updated pinned versions of ontology and feature references (see `./cellxgene_schema/ontology_files/`).
+- Updated various dependency versions (see [requirements.txt](./requirements.txt))
+- Require Python >= 3.8 for installation
+
+### Removed
+- Support for validating cellxgene schema versions 2.x.x.
+
 ## [2.1.2] - 2022-04-13
 
 ### Changed

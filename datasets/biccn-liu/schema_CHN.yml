@@ -4,7 +4,7 @@ obs:
   sex: male
   disease_ontology_term_id: PATO:0000461
   assay_ontology_term_id: EFO:0008939
-  ethnicity_ontology_term_id: na
+  ethnicity_term_ontology_id: na
   development_stage_ontology_term_id: EFO:0001272
   cell_type_ontology_term_id:
     BICCN_subclass_label:
