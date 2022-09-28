@@ -47,6 +47,43 @@ def convert(input_file, output_file):
     if 'ethnicity' in dataset.obs:
         del dataset.obs['ethnicity']
 
+    # Update deprecated ontologies with known direct replacements
+    disease_ontology_update_map = {
+        "MONDO:0008345": "MONDO:0800029",
+        "MONDO:0004553": "MONDO:0017853",
+    }
+    cell_type_ontology_update_map = {
+        "CL:0002609": "CL:0010012",
+        "CL:0011107": "CL:0000636",
+    }
+    assay_ontology_update_map = {
+        "EFO:0030002 (BD Rhapsody)": "EFO:0700003",
+        "EFO:0010183 (BD Rhapsody)": "EFO:0700003",
+    }
+
+    def update_categorical_column_vals(dataframe, column_name, update_map):
+        if dataframe[column_name].dtype != "category":
+            dataframe[column_name] = dataframe[column_name].astype("category")
+        for deprecated_term, new_term in update_map.items():
+            if deprecated_term in dataframe[column_name].cat.categories:
+                # add new one if not already in category, else continue
+                if new_term not in dataframe[column_name].cat.categories:
+                    dataframe[column_name] = dataframe[column_name].cat.add_categories(new_term)
+                # replace in dataset
+                dataframe.loc[dataframe[column_name] == deprecated_term, column_name] = new_term
+                # remove deprecated_term from category
+                dataframe[column_name] = dataframe[column_name].cat.remove_categories(deprecated_term)
+
+    update_categorical_column_vals(
+        dataset.obs, "disease_ontology_term_id", disease_ontology_update_map
+    )
+    update_categorical_column_vals(
+        dataset.obs, "cell_type_ontology_term_id", cell_type_ontology_update_map
+    )
+    update_categorical_column_vals(
+        dataset.obs, "assay_ontology_term_id", assay_ontology_update_map
+    )
+
     # Set suspension type
 
     # mappings of assays (or assays + child term assays) to corresponding suspension_type
@@ -119,39 +156,6 @@ def convert(input_file, output_file):
         print(
             f"suspension_type already exists in obs, with categories {dataset.obs['suspension_type'].cat.categories}"
         )
-
-    # Update deprecated ontologies with known direct replacements
-    disease_ontology_update_map = {
-        "MONDO:0008345": "MONDO:0800029",
-        "MONDO:0004553": "MONDO:0017853",
-    }
-    cell_type_ontology_update_map = {
-        "CL:0002609": "CL:0010012",
-        "CL:0011107": "CL:0000636",
-    }
-    assay_ontology_update_map = {
-        "EFO:0030002 (BD Rhapsody)": "EFO:0700003",
-        "EFO:0010183 (BD Rhapsody)": "EFO:0700003",
-    }
-
-    def update_categorical_column_vals(dataframe, column_name, update_map):
-        if dataframe[column_name].dtype != "category":
-            dataframe.loc[:, [column_name]] = dataset.obs.astype("category")
-        for deprecated_term, new_term in update_map.items():
-            if deprecated_term in dataframe[column_name].cat.categories:
-                dataframe[column_name] = dataframe[column_name].cat.rename_categories(
-                    {deprecated_term: new_term}
-                )
-
-    update_categorical_column_vals(
-        dataset.obs, "disease_ontology_term_id", disease_ontology_update_map
-    )
-    update_categorical_column_vals(
-        dataset.obs, "cell_type_ontology_term_id", cell_type_ontology_update_map
-    )
-    update_categorical_column_vals(
-        dataset.obs, "assay_ontology_term_id", assay_ontology_update_map
-    )
 
     print(f"Automatable conversions completed. Please run 'cellxgene-schema validate {output_file}' to check for "
           f"required manual changes, if any.")
