@@ -24,7 +24,7 @@ def create_collection(collection_form_metadata: dict) -> str:
     except requests.HTTPError as e:
         failure(logger, e)
         raise e
-    collection_id = data.get("collection_id")
+    collection_id = data.get("id")
     success(logger, f"New private Collection id:\n{collection_id}\n",
             f"New private Collection url:\n{format_c_url(collection_id)}")
     return collection_id
@@ -41,7 +41,7 @@ def create_revision(collection_id: str) -> str:
     except requests.HTTPError as e:
         failure(logger, e)
         raise e
-    revision_id = data.get("revision_id")
+    revision_id = data.get("id")
     success(logger, f"Revision id:\n{revision_id}\n",
             f"Revision url:\n{format_c_url(revision_id)}")
     return revision_id
