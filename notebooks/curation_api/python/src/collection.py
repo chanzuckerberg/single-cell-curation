@@ -18,7 +18,7 @@ def create_collection(collection_form_metadata: dict) -> str:
     url = url_builder("/collections")
     headers = get_headers()
     try:
-        res = requests.post(url, data=json.dumps(collection_form_metadata), headers=headers)
+        res = requests.post(url, json=collection_form_metadata, headers=headers)
         res.raise_for_status()
         data = res.json()
     except requests.HTTPError as e:
@@ -95,7 +95,7 @@ def update_collection(collection_id: str, collection_form_metadata: dict) -> Non
     url = url_builder(f"/collections/{collection_id}")
     headers = get_headers()
     try:
-        res = requests.patch(url, headers=headers, data=json.dumps(collection_form_metadata))
+        res = requests.patch(url, headers=headers, json=collection_form_metadata)
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)

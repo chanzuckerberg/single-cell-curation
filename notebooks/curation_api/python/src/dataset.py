@@ -96,7 +96,7 @@ def get_dataset(collection_id: str, dataset_id: str):
     return res.json()
 
 
-def upload_datafile_from_link(link: str, collection_id: str, dataset_id: str = None):
+def upload_datafile_from_link(link: str, collection_id: str, dataset_id: str):
     """
     Create/update a Dataset from the datafile found at the source link.
     :param link: the source datafile link to upload to the Data Portal to become a Dataset
@@ -104,21 +104,16 @@ def upload_datafile_from_link(link: str, collection_id: str, dataset_id: str = N
     :param dataset_id: Dataset id.
     :return: None
     """
-    url = url_builder(f"/collections/{collection_id}/datasets/upload-link")
+    url = url_builder(f"/collections/{collection_id}/datasets/{dataset_id}")
     headers = get_headers()
 
     data_dict = dict(link=link)
-    if dataset_id:
-        data_dict["id"] = dataset_id
 
-        success_message = f"Uploading Dataset with id '{dataset_id}' to Collection " \
-                          f"{os.getenv('site_url')}/collections/{collection_id} sourcing from datafile at {link}"
-    else:
-        success_message = f"Uploading Dataset to Collection {os.getenv('site_url')}/collections/{collection_id} " \
-                          f"sourcing from datafile at {link}"
+    success_message = f"Uploading Dataset with id '{dataset_id}' to Collection " \
+                      f"{os.getenv('site_url')}/collections/{collection_id} sourcing from datafile at {link}"
 
     try:
-        res = requests.put(url, headers=headers, data=json.dumps(data_dict))
+        res = requests.put(url, headers=headers, json=data_dict)
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)
