@@ -19,6 +19,9 @@ def url_builder(path_segment):
 
 def get_headers():
     access_token = os.getenv("access_token")
+    headers = {"Content-Type": "application/json"}
     if not access_token:
-        logger.warning("Access token is not set!")
-    return {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
+        logger.warning("No access token included in request")
+    else:
+        headers["Authorization"] = f"Bearer {access_token}"
+    return headers
