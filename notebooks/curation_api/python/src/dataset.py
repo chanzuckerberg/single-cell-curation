@@ -83,7 +83,7 @@ def download_assets(collection_id: str, dataset_id: str):
     Download assets locally for a Dataset
     :param collection_id: the id of the Collection to which the Dataset belongs
     :param dataset_id: Dataset id
-    :return: download links
+    :return: None
     """
     assets_response = get_download_links_for_assets(collection_id, dataset_id)
 
