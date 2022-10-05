@@ -58,7 +58,7 @@ def delete_dataset(collection_id: str, dataset_id: str):
         success(logger, success_message)
 
 
-def get_assets(collection_id: str, dataset_id: str):
+def get_download_links_for_assets(collection_id: str, dataset_id: str):
     """
     Fetch download links for assets for a Dataset
     :param collection_id: the id of the Collection to which the Dataset belongs
@@ -74,7 +74,32 @@ def get_assets(collection_id: str, dataset_id: str):
     except requests.HTTPError as e:
         failure(logger, e)
         raise e
-    return res.json()
+
+    return res.json().get("assets")
+
+
+def download_assets(collection_id: str, dataset_id: str):
+    """
+    Download assets locally for a Dataset
+    :param collection_id: the id of the Collection to which the Dataset belongs
+    :param dataset_id: Dataset id
+    :return: None
+    """
+    assets_response = get_download_links_for_assets(collection_id, dataset_id)
+
+    try:
+        for asset in assets_response:
+            download_filename = f"{collection_id}_{dataset_id}_{asset['filename']}"
+            print(f"Downloading {asset['filetype']} file to {download_filename}... ")
+            with requests.get(asset["presigned_url"], stream=True) as res:
+                res.raise_for_status()
+                with open(download_filename, "wb") as df:
+                    for chunk in res.iter_content(chunk_size=1024 * 1024):
+                        df.write(chunk)
+    except requests.HTTPError as e:
+        failure(logger, e)
+        raise e
+    success(logger, "Finished downloading assets")
 
 
 def get_dataset(collection_id: str, dataset_id: str):
