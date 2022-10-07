@@ -90,12 +90,19 @@ def download_assets(collection_id: str, dataset_id: str):
     try:
         for asset in assets_response:
             download_filename = f"{collection_id}_{dataset_id}_{asset['filename']}"
-            print(f"Downloading {asset['filetype']} file to {download_filename}... ")
+            print(f"\nDownloading {asset['filetype']} file to {download_filename}... ")
             with requests.get(asset["presigned_url"], stream=True) as res:
                 res.raise_for_status()
+                filesize = int(res.headers["Content-Length"])
                 with open(download_filename, "wb") as df:
+                    total_bytes_received = 0
                     for chunk in res.iter_content(chunk_size=1024 * 1024):
                         df.write(chunk)
+                        total_bytes_received += len(chunk)
+                        percent_of_total_upload = float("{:.1f}".format(total_bytes_received / filesize * 100))
+                        color = "\033[38;5;10m" if percent_of_total_upload == 100 else ""
+                        print(f"\033[1m{color}{percent_of_total_upload}% downloaded\033[0m\r", end="")
+        print()
     except requests.HTTPError as e:
         failure(logger, e)
         raise e
