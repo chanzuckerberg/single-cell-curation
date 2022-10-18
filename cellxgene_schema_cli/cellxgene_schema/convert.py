@@ -159,4 +159,4 @@ def convert(input_file, output_file):
 
     print(f"Automatable conversions completed. Please run 'cellxgene-schema validate {output_file}' to check for "
           f"required manual changes, if any.")
-    dataset.write(output_file)
+    dataset.write(output_file, compression='gzip')
