@@ -1,9 +1,0 @@
-subclass_label	subclass_label_lookup	ontology_term_id	ontology_term_name	final
-Oligo	Oligo	CL:0000128	oligodendrocyte	True
-Micro-PVM	Micro-PVM	CL:0000129	microgial cell	True
-OPC	OPC	CL:0002453	oligodendrocyte precursor cell	True
-Astro	Astro	CL:0000127	astrocyte	True
-Endo	Endo	CL:0000115	endothelial cell	True
-VLMC	VLMC	CL:0000708	leptomeningeal cel	True
-Peri	Peri	CL:0000669	pericyte cell	True
-SMC	SMC	CL:0000192	smooth muscle cell	True

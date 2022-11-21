@@ -1,5 +1,0 @@
-donor	lookup_name	ontology_term_id	ontology_term_name	final	type
-Donor1	hispanic	HANCESTRO:0014	Hispanic or Latin American	True	ethnicity
-Donor2	white	HANCESTRO:0005	European	True	ethnicity
-DonorA		unknown	unknown	True	ethnicity
-DonorB		unknown	unknown	True	ethnicity
