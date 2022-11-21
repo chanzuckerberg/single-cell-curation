@@ -3,7 +3,7 @@
 
 Contact: brianraymor@chanzuckerberg.com
 
-Document Status: _Draft_
+Document Status: _Approved_
 
 Version: 3.0.0
 
@@ -446,7 +446,8 @@ Curators MUST annotate the following columns in the `obs` dataframe:
       <th>Value</th>
         <td>categorical with <code>str</code> categories. This MUST be free-text that identifies a unique individual that data were derived from. It is STRONGLY RECOMMENDED that this identifier be designed so that it is unique to:<br><br>
           <ul><li>a given individual within the collection of datasets that includes this dataset</li>
-          <li>a given individual across all collections in the cellxgene Data Portal</li></ul>
+          <li>a given individual across all collections in the cellxgene Data Portal</li></ul><br>
+          It is STRONGLY RECOMMENDED that <code>"pooled"</code> be used  for observations from a sample of multiple individuals that were not confidently assigned to a single individual through demultiplexing.<br><br>It is STRONGLY RECOMMENDED that <code>"unknown"</code> ONLY be used for observations in a dataset when it is not known which observations are from the same individual.<br><br>
         </td>
     </tr>
 </tbody></table>
