@@ -56,16 +56,6 @@ This execution validates the dataset as above AND adds the human-readable labels
 
 This option SHOULD NOT be used by data contributors.
 
-
-## Datasets curated by cellxgene’s curation team
-
-Scripts demonstrating how the cellxgene team has curated datasets for hosting on the portal are stored in this repository. They provide worked examples that provide additional demonstrations of how the tool can be used.
-
-The [`datasets`](./datasets) folder contains step-by-step curation instructions for each dataset we have curated, each dataset has its own independent folder and readme. 
-In theory, anyone should be able to reproduce our curation process by following the steps in the dataset's readme, which starts with downloading data (usually publicly available) and finishes by creating one or more `*.h5ad` files that address the schema requirements and are ready to be hosted on the cellxgene Data Portal.
-
-The [`docs`](./docs) folder contains guides, general documents, files, or scripts that have been used or could be used in the future for curation or integration processes.
-
 ## Contributing
 
 Please read our contributing [guidelines](CONTRIBUTING.md) and make sure adhere to the Contributor Covenant [code of conduct](https://github.com/chanzuckerberg/.github/blob/master/CODE_OF_CONDUCT.md). 
