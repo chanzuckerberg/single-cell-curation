@@ -1,8 +1,0 @@
-Dear **[insert first author and last author names]**, 
-
-I am contacting you regarding the data associated with your work focused on **[insert paper/preprint title]**. It’s a fascinating and useful dataset and your willingness to make it open and accessible to the community is deeply appreciated. Thank you! With an increasing number of datasets becoming available as a part of the Human Cell Atlas and other international efforts, multiple groups have begun to work together to assemble and curate data into a standard format. The shared goal is to promote interoperability, encourage reuse, and increase visibility of the processed count matrices for wider use. Your data has been included in some of these curated collections and I wanted to get in touch and let you know the dataset(s) mentioned above will be included. If you have any other data that you’d like to contribute, please let us know and we can work with you and your team. 
-
-There is no ask of you or your team at this time and all of the transformations, effort associated with curation, and costs to maintain the data will be taken care of. The result will be a web portal hosted by the Chan Zuckerberg Initiative that enables scientists to explore your data using cellxgene via the embeddings from your work, and download your data in a variety of standard formats. All data will be accessible via a URL that you can share with collaborators, link to on your website or add to other visualization tools that you may have for the data. When the work is done, we will circle back with that link to make sure you are the first to know!
-
-Thank you again for making your fantastic data available. Please feel free to reach out with any questions you may have. 
-

@@ -1,7 +1,0 @@
-age	age_lookup_term	ontology_term_id	ontology_term_name	final	type
-1m	1m	EFO:0000399	infant	True	development_stage
-3m	3m	EFO:0001272	adult	True	development_stage
-18m	18m	EFO:0001272	adult	True	development_stage
-21m	21m	EFO:0001272	adult	True	development_stage
-24m	24m	EFO:0001272	adult	True	development_stage
-30m	30m	EFO:0001272	adult	True	development_stage

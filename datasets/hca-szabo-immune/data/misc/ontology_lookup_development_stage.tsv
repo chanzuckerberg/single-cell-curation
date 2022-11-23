@@ -1,5 +1,0 @@
-donor	lookup_name	ontology_term_id	ontology_term_name	final	type
-Donor1		HsapDv:0000159	65-year-old human stage	True	development_stage
-Donor2		HsapDv:0000146	52-year-old human stage	True	development_stage
-DonorA		unknown	unknown	True	development_stage
-DonorB		unknown	unknown	True	development_stage
