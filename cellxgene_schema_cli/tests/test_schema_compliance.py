@@ -251,7 +251,9 @@ class TestObs(BaseValidationTest):
         """
 
         # Not a valid term
-        self.validator.adata.obs["assay_ontology_term_id"][0] = "EFO:0009310"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "assay_ontology_term_id"
+        ] = "EFO:0009310"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -268,7 +270,10 @@ class TestObs(BaseValidationTest):
         """
 
         # Not a valid term
-        self.validator.adata.obs["assay_ontology_term_id"][0] = "CL:000001"
+        # self.validator.adata.obs["assay_ontology_term_id"][0] = "CL:000001"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "assay_ontology_term_id"
+        ] = "CL:000001"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -279,7 +284,9 @@ class TestObs(BaseValidationTest):
         )
 
         # Not a valid child
-        self.validator.adata.obs["assay_ontology_term_id"][0] = "EFO:0000001"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "assay_ontology_term_id"
+        ] = "EFO:0000001"
         self.validator.errors = []
         self.validator.validate_adata()
         self.assertEqual(
@@ -291,7 +298,9 @@ class TestObs(BaseValidationTest):
         )
 
         # Includes extraneous text
-        self.validator.adata.obs["assay_ontology_term_id"][0] = "EFO:0010183 (sci-plex)"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "assay_ontology_term_id"
+        ] = "EFO:0010183 (sci-plex)"
         self.validator.errors = []
         self.validator.validate_adata()
         self.assertEqual(
@@ -308,7 +317,9 @@ class TestObs(BaseValidationTest):
         """
 
         # Not a valid term
-        self.validator.adata.obs["cell_type_ontology_term_id"][0] = "EFO:0000001"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "cell_type_ontology_term_id"
+        ] = "EFO:0000001"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -326,9 +337,11 @@ class TestObs(BaseValidationTest):
         this MUST be the most accurate HsapDv term.
         """
 
-        self.validator.adata.obs["organism_ontology_term_id"][0] = "NCBITaxon:9606"
-        self.validator.adata.obs["development_stage_ontology_term_id"][
-            0
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "organism_ontology_term_id"
+        ] = "NCBITaxon:9606"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "development_stage_ontology_term_id"
         ] = "EFO:0000001"
         self.validator.validate_adata()
         self.assertEqual(
@@ -346,11 +359,16 @@ class TestObs(BaseValidationTest):
         this MUST be the most accurate MmusDv term
         """
 
-        self.validator.adata.obs["organism_ontology_term_id"][0] = "NCBITaxon:10090"
-        self.validator.adata.obs["development_stage_ontology_term_id"][
-            0
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "organism_ontology_term_id"
+        ] = "NCBITaxon:10090"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "development_stage_ontology_term_id"
         ] = "EFO:0000001"
-        self.validator.adata.obs["self_reported_ethnicity_ontology_term_id"][0] = "na"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "na"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -368,11 +386,16 @@ class TestObs(BaseValidationTest):
         """
 
         # Fail case not an UBERON term
-        self.validator.adata.obs["organism_ontology_term_id"][0] = "NCBITaxon:10114"
-        self.validator.adata.obs["development_stage_ontology_term_id"][
-            0
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "organism_ontology_term_id"
+        ] = "NCBITaxon:10114"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "development_stage_ontology_term_id"
         ] = "EFO:0000001"
-        self.validator.adata.obs["self_reported_ethnicity_ontology_term_id"][0] = "na"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "na"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -387,11 +410,16 @@ class TestObs(BaseValidationTest):
         # All other it MUST be children of UBERON:0000105 and not UBERON:0000071
         # Fail case UBERON:0000071
         self.validator.errors = []
-        self.validator.adata.obs["organism_ontology_term_id"][0] = "NCBITaxon:10114"
-        self.validator.adata.obs["development_stage_ontology_term_id"][
-            0
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "organism_ontology_term_id"
+        ] = "NCBITaxon:10114"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "development_stage_ontology_term_id"
         ] = "UBERON:0000071"
-        self.validator.adata.obs["self_reported_ethnicity_ontology_term_id"][0] = "na"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "na"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -411,7 +439,9 @@ class TestObs(BaseValidationTest):
         """
 
         # Invalid ontology
-        self.validator.adata.obs["disease_ontology_term_id"][0] = "EFO:0000001"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "disease_ontology_term_id"
+        ] = "EFO:0000001"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -423,7 +453,9 @@ class TestObs(BaseValidationTest):
 
         # Invalid PATO term id
         self.validator.errors = []
-        self.validator.adata.obs["disease_ontology_term_id"][0] = "PATO:0001894"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "disease_ontology_term_id"
+        ] = "PATO:0001894"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -444,9 +476,12 @@ class TestObs(BaseValidationTest):
 
         # If organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens,
         # this MUST be either a HANCESTRO term, "multiethnic", or "unknown" if unavailable.
-        self.validator.adata.obs["organism_ontology_term_id"][0] = "NCBITaxon:9606"
-        self.validator.adata.obs["self_reported_ethnicity_ontology_term_id"][
-            0
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "organism_ontology_term_id"
+        ] = "NCBITaxon:9606"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
         ] = "EFO:0000001"
         self.validator.validate_adata()
         self.assertEqual(
@@ -463,12 +498,15 @@ class TestObs(BaseValidationTest):
         # development_stage_ontology_term_id has to be set to an appropriate mouse term id, otherwise there
         # will be an error in that field.
         self.validator.errors = []
-        self.validator.adata.obs["organism_ontology_term_id"][0] = "NCBITaxon:10090"
-        self.validator.adata.obs["development_stage_ontology_term_id"][
-            0
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "organism_ontology_term_id"
+        ] = "NCBITaxon:10090"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "development_stage_ontology_term_id"
         ] = "MmusDv:0000003"
-        self.validator.adata.obs["self_reported_ethnicity_ontology_term_id"][
-            0
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
         ] = "EFO:0000001"
         self.validator.validate_adata()
         self.assertEqual(
@@ -489,9 +527,16 @@ class TestObs(BaseValidationTest):
         # Setting "organism_ontology_term_id" to "EFO:0000001" is the fail case. However since this represents neither
         # human nor mouse, then two other columns that are dependent on it need to be set appropriately to avoid
         # other error messages: "development_stage_ontology_term_id" and "self_reported_ethnicity_ontology_term_id"
-        self.validator.adata.obs["organism_ontology_term_id"][0] = "EFO:0000001"
-        self.validator.adata.obs["development_stage_ontology_term_id"][0] = "unknown"
-        self.validator.adata.obs["self_reported_ethnicity_ontology_term_id"][0] = "na"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "organism_ontology_term_id"
+        ] = "EFO:0000001"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "development_stage_ontology_term_id"
+        ] = "unknown"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "na"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -508,7 +553,9 @@ class TestObs(BaseValidationTest):
         that this cell was derived from, depending on the type of biological sample:
         """
 
-        self.validator.adata.obs["tissue_ontology_term_id"][0] = "EFO:0000001"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "tissue_ontology_term_id"
+        ] = "EFO:0000001"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -524,8 +571,8 @@ class TestObs(BaseValidationTest):
         Cell Culture - MUST be a CL term appended with " (cell culture)"
         """
 
-        self.validator.adata.obs["tissue_ontology_term_id"][
-            0
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "tissue_ontology_term_id"
         ] = "CL:0000057 (CELL culture)"
         self.validator.validate_adata()
         self.assertEqual(
@@ -542,7 +589,9 @@ class TestObs(BaseValidationTest):
         Organoid - MUST be an UBERON term appended with " (organoid)"
         """
 
-        self.validator.adata.obs["tissue_ontology_term_id"][0] = "CL:0000057 (ORGANOID)"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "tissue_ontology_term_id"
+        ] = "CL:0000057 (ORGANOID)"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -559,7 +608,9 @@ class TestObs(BaseValidationTest):
         This MUST be a child of PATOPATO:0001894 for phenotypic sex or "unknown" if unavailable
         """
 
-        self.validator.adata.obs["sex_ontology_term_id"][0] = "EFO:0000001"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "sex_ontology_term_id"
+        ] = "EFO:0000001"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -660,8 +711,12 @@ class TestObs(BaseValidationTest):
                 self.validator.warnings = []
 
                 invalid_suspension_type = "na"
-                self.validator.adata.obs["suspension_type"][1] = invalid_suspension_type
-                self.validator.adata.obs["assay_ontology_term_id"][1] = assay
+                self.validator.adata.obs.loc[
+                    self.validator.adata.obs.index[1], "suspension_type"
+                ] = invalid_suspension_type
+                self.validator.adata.obs.loc[
+                    self.validator.adata.obs.index[1], "assay_ontology_term_id"
+                ] = assay
                 self.validator.validate_adata()
                 self.assertEqual(
                     self.validator.errors,
@@ -702,8 +757,12 @@ class TestObs(BaseValidationTest):
                     ] = self.validator.adata.obs[
                         "suspension_type"
                     ].cat.remove_unused_categories()
-                self.validator.adata.obs["assay_ontology_term_id"][1] = assay
-                self.validator.adata.obs["suspension_type"][1] = invalid_suspension_type
+                self.validator.adata.obs.loc[
+                    self.validator.adata.obs.index[1], "assay_ontology_term_id"
+                ] = assay
+                self.validator.adata.obs.loc[
+                    self.validator.adata.obs.index[1], "suspension_type"
+                ] = invalid_suspension_type
                 self.validator.validate_adata()
                 self.assertEqual(
                     self.validator.errors,
@@ -720,10 +779,12 @@ class TestObs(BaseValidationTest):
         values depend on the assay_ontology_term_id. MUST support matching against ancestor term rules if specified.
         """
         with self.subTest("failure"):
-            self.validator.adata.obs["assay_ontology_term_id"][
-                0
+            self.validator.adata.obs.loc[
+                self.validator.adata.obs.index[0], "assay_ontology_term_id"
             ] = "EFO:0030008"  # child of EFO:0009294
-            self.validator.adata.obs["suspension_type"][0] = "nucleus"
+            self.validator.adata.obs.loc[
+                self.validator.adata.obs.index[0], "suspension_type"
+            ] = "nucleus"
 
             self.validator.validate_adata()
             self.assertEqual(
@@ -736,8 +797,8 @@ class TestObs(BaseValidationTest):
             )
 
         with self.subTest("success"):
-            self.validator.adata.obs["assay_ontology_term_id"][
-                0
+            self.validator.adata.obs.loc[
+                self.validator.adata.obs.index[0], "assay_ontology_term_id"
             ] = "EFO:0008904"  # child of EFO:0007045
             self.validator.adata.obs["suspension_type"][0] = "nucleus"
 
@@ -752,7 +813,9 @@ class TestObs(BaseValidationTest):
         suspension_id categorical with str categories. This field MUST be "cell", "nucleus", or "na". The allowed
         values depend on the assay_ontology_term_id. MUST warn if the corresponding assay is not recognized.
         """
-        self.validator.adata.obs["assay_ontology_term_id"][1] = "EFO:0010183"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[1], "assay_ontology_term_id"
+        ] = "EFO:0010183"
         self.validator.validate_adata()
         with self.subTest("no errors"):
             self.assertEqual(self.validator.errors, [])
@@ -813,7 +876,9 @@ class TestObs(BaseValidationTest):
         """
         NaN values should not be allowed in dataframes
         """
-        self.validator.adata.obs["tissue_ontology_term_id"][0] = numpy.nan
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "tissue_ontology_term_id"
+        ] = numpy.nan
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
