@@ -391,12 +391,6 @@ class Validator:
 
         return
 
-    def _get_matrix_by_name(
-        self, matrix_name: str
-    ) -> Union[sparse.spmatrix, np.ndarray]:
-        matrix_getter = operator.attrgetter(matrix_name)
-        return matrix_getter(self.adata)
-
     def _get_matrix_format(self, matrix: Union[np.ndarray, sparse.spmatrix]) -> str:
         """
         Given a matrix, returns the format as one of: csc, csr, coo, dense
