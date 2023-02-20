@@ -1,4 +1,6 @@
 import logging
+import math
+import operator
 import re
 import sys
 from datetime import datetime
@@ -6,15 +8,10 @@ from datetime import datetime
 import anndata
 import os
 import pandas as pd
+import numpy as np
 from pandas.core.computation.ops import UndefinedVariableError
-from numpy import ndarray
-from numpy import count_nonzero
-from numpy import cumprod
-from numpy import isnan
-from numpy import nditer
-from numpy import vectorize
 from scipy import sparse
-from typing import List, Dict, Union, Tuple
+from typing import List, Dict, Union, Tuple, Optional
 from . import ontology
 from . import schema
 from . import env
@@ -30,7 +27,6 @@ class Validator:
     schema_definitions_dir = env.SCHEMA_DEFINITIONS_DIR
 
     def __init__(self, ignore_labels=False):
-
         # Set initial state
         self.errors = []
         self.warnings = []
@@ -46,6 +42,9 @@ class Validator:
         # Values will be instances of ontology.GeneChecker,
         # keys will be one of ontology.SupportedOrganisms
         self.gene_checkers = dict()
+
+        # Matrix (e.g., X, raw.X, ...) number non-zero cache
+        self.number_non_zero = dict()
 
     @staticmethod
     def _curie_remove_suffix(term_id: str, suffix_def: dict) -> Tuple[str, str]:
@@ -63,7 +62,6 @@ class Validator:
         id_suffix = ""
 
         for ontology_name, suffixes in suffix_def.items():
-
             for suffix in suffixes:
                 suffix = suffix.replace("(", r"\(")
                 suffix = suffix.replace(")", r"\)")
@@ -81,7 +79,6 @@ class Validator:
 
     @staticmethod
     def getattr_anndata(adata: anndata.AnnData, attr: str = None):
-
         """
         same as getattr but handles the special case of "raw.var" for an anndata.AndData object
 
@@ -100,7 +97,6 @@ class Validator:
             return getattr(adata, attr)
 
     def _read_h5ad(self, h5ad_path: Union[str, bytes, os.PathLike]):
-
         """
         Reads h5ad into self.adata
         :params Union[str, bytes, os.PathLike] h5ad_path: path to h5ad to read
@@ -108,9 +104,20 @@ class Validator:
         :rtype None
         """
         try:
-            # H5AD has to be loaded in memory mode. If not the types of X are not properly retrieved by anndata
-            # see https://github.com/theislab/anndata/issues/326#issuecomment-892203924
-            self.adata = anndata.read_h5ad(h5ad_path, backed=None)
+            self.adata = anndata.read_h5ad(h5ad_path, backed="r")
+
+            # This code, and AnnData in general, is optimized for row access.
+            # Running backed, with CSC, is prohibitively slow. Read the entire
+            # AnnData into memory if it is CSC.
+            if (self._get_matrix_format(self.adata.X) == "csc") or (
+                (self.adata.raw is not None)
+                and (self._get_matrix_format(self.adata.raw.X) == "csc")
+            ):
+                logger.warning(
+                    "Matrices are in CSC format; loading entire dataset into memory."
+                )
+                self.adata = self.adata.to_memory()
+
         except (OSError, TypeError):
             logger.info(f"Unable to open '{h5ad_path}' with AnnData")
             sys.exit(1)
@@ -138,7 +145,6 @@ class Validator:
                 "adata has no schema definition in 'adata.uns'. Validation cannot be performed."
             )
         else:
-
             # Check if schema version is supported
             version = self.adata.uns["schema_version"]
             path = schema.get_schema_file_path(version)
@@ -185,7 +191,6 @@ class Validator:
     def _validate_curie_allowed_terms(
         self, term_id: str, column_name: str, terms: Dict[str, List[str]]
     ):
-
         """
         Validate a single curie term id is a valid children of any of allowed terms
         If there are any errors, it adds them to self.errors
@@ -216,7 +221,6 @@ class Validator:
         inclusive: bool,
         errors=True,
     ):
-
         """
         Validate a single curie term id is a valid children of any of allowed ancestors
         If there are any errors, it adds them to self.errors if the errors flag is True.
@@ -235,7 +239,6 @@ class Validator:
 
         for ontology_name, ancestors in allowed_ancestors.items():
             for ancestor in ancestors:
-
                 if inclusive and term_id == ancestor:
                     checks.append(True)
 
@@ -263,7 +266,6 @@ class Validator:
     def _validate_curie_ontology(
         self, term_id: str, column_name: str, allowed_ontologies: List[str]
     ):
-
         """
         Validate a single curie term id belongs to specified ontologies. If it does belong to an allowed ontology
         verifies that it is not deprecated (obsolete).
@@ -279,7 +281,6 @@ class Validator:
         checks = []
 
         for ontology_name in allowed_ontologies:
-
             is_valid = ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id)
             checks.append(is_valid)
 
@@ -295,7 +296,6 @@ class Validator:
             )
 
     def _validate_curie(self, term_id: str, column_name: str, curie_constraints: dict):
-
         """
         Validate a single curie term id based on some constraints.
         If there are any errors, it adds them to self.errors
@@ -361,7 +361,6 @@ class Validator:
             )
 
     def _validate_feature_id(self, feature_id: str, df_name: str):
-
         """
         Validates a feature id, i.e. checks that it's present in the reference
         If there are any errors, it adds them to self.errors and adds it to the list of invalid features
@@ -392,10 +391,88 @@ class Validator:
 
         return
 
+    def _get_matrix_by_name(
+        self, matrix_name: str
+    ) -> Union[sparse.spmatrix, np.ndarray]:
+        matrix_getter = operator.attrgetter(matrix_name)
+        return matrix_getter(self.adata)
+
+    def _get_matrix_format(self, matrix: Union[np.ndarray, sparse.spmatrix]) -> str:
+        """
+        Given a matrix, returns the format as one of: csc, csr, coo, dense
+        or unknown.
+
+        This mimics the scipy.sparse `format` property, but extends it to
+        support ndarray and other classes AnnData may proxy the matrix with.
+        """
+
+        # Note: the AnnData proxy classes DO support the `format_str` property, but
+        # doing a slice seemed safer, if less performant.  Using `format_str`, which
+        # currently works, uses private API:
+        #
+        # >>> return getattr(matrix, "format_str", "dense)
+        #
+        format = "unknown"
+        if self.adata.n_obs == 0 or self.adata.n_vars == 0:
+            format = "dense"
+        else:
+            matrix_slice = matrix[0:1, 0:1]
+            if isinstance(matrix_slice, sparse.spmatrix):
+                format = matrix_slice.format
+            elif isinstance(matrix_slice, np.ndarray):
+                format = "dense"
+
+        assert format in ["unknown", "csr", "csc", "coo", "dense"]
+        return format
+
+    def _chunk_matrix(
+        self,
+        matrix: Union[np.ndarray, sparse.spmatrix],
+        obs_chunk_size: Optional[int] = 10_000,
+    ):
+        """
+        Iterator which chunks the _named_ or _specified_ matrix by the
+        first (obs) dimension
+
+        The parameter type restrictions are strictly for ensuring that the
+        AnnData read fast-path is used (as of AnnData 0.8.0).
+
+        Iterator produces a sequence of tuples, each containing
+        (chunk, start, end)
+        """
+        start = 0
+        n = matrix.shape[0]
+        for i in range(int(n // obs_chunk_size)):
+            logger.debug(f"_chunk_matrix [{i} of {math.ceil(n/obs_chunk_size)}]")
+            end = start + obs_chunk_size
+            yield (matrix[start:end], start, end)
+            start = end
+        if start < n:
+            yield (matrix[start:n], start, n)
+
+    def _count_matrix_nonzero(
+        self, matrix_name: str, matrix: Union[np.ndarray, sparse.spmatrix]
+    ) -> int:
+        if matrix_name in self.number_non_zero:
+            return self.number_non_zero[matrix_name]
+
+        logger.debug(f"Counting non-zero values in {matrix_name}")
+
+        nnz = 0
+        format = self._get_matrix_format(matrix)
+        for matrix_chunk, _, _ in self._chunk_matrix(matrix):
+            nnz += (
+                matrix_chunk.count_nonzero()
+                if format != "dense"
+                else np.count_nonzero(matrix_chunk)
+            )
+
+        self.number_non_zero[matrix_name] = nnz
+        return nnz
+
     def _validate_column_feature_is_filtered(
         self, column: pd.Series, column_name: str, df_name: str
     ):
-
         """
         Validates the "is_feature_filtered" in adata.var. This column must be bool, and for genes that are set to
         True, their expression values in X must be 0.
@@ -411,19 +488,14 @@ class Validator:
             return
 
         if sum(column) > 0:
-
             n_nonzero = 0
 
-            if (
-                isinstance(self.adata.X, sparse.csc_matrix)
-                or isinstance(self.adata.X, sparse.csr_matrix)
-                or isinstance(self.adata.X, sparse.coo_matrix)
-            ):
-
+            X_format = self._get_matrix_format(self.adata.X)
+            if X_format in ["csc", "csr", "coo"]:
                 n_nonzero = self.adata.X[:, column].count_nonzero()
 
-            elif isinstance(self.adata.X, ndarray):
-                n_nonzero = count_nonzero(self.adata.X[:, column])
+            elif X_format == "dense":
+                n_nonzero = np.count_nonzero(self.adata.X[:, column])
 
             else:
                 self.errors.append(
@@ -441,7 +513,6 @@ class Validator:
     def _validate_column(
         self, column: pd.Series, column_name: str, df_name: str, column_def: dict
     ):
-
         """
         Given a schema definition and the column of a dataframe, verify that the column satisfies the schema.
         If there are any errors, it adds them to self.errors
@@ -514,13 +585,11 @@ class Validator:
                 )
 
         if column_def.get("type") == "feature_id":
-
             # Validates each id
             for feature_id in column:
                 self._validate_feature_id(feature_id, df_name)
 
         if column_def.get("type") == "curie":
-
             # Check for NaN values
             if column.isnull().any():
                 self.errors.append(
@@ -553,7 +622,6 @@ class Validator:
     def _validate_column_dependencies(
         self, df: pd.DataFrame, df_name: str, column_name: str, dependencies: List[dict]
     ) -> pd.Series:
-
         """
         Validates subset of columns based on dependecies, for instance development_stage_ontology_term_id has
         dependencies with organism_ontology_term_id -- the allowed values depend on whether organism is human, mouse
@@ -590,7 +658,7 @@ class Validator:
                     f"Checking values with dependencies failed for adata.{df_name}['{column_name}'], "
                     f"this is likely due to missing dependent column in adata.{df_name}."
                 )
-                return pd.Series()
+                return pd.Series(dtype=np.float64)
 
             all_rules.append(query_exp)
 
@@ -611,7 +679,9 @@ class Validator:
         :param rule_def: defines arguments to pass into vectorized ancestor match validation function
         :return: Tuple(function, Tuple(str, List[str], List[str]))
         """
-        validate_curie_ancestors_vectorized = vectorize(self._validate_curie_ancestors)
+        validate_curie_ancestors_vectorized = np.vectorize(
+            self._validate_curie_ancestors
+        )
         ancestor_map = rule_def["ancestors"]
         inclusive = rule_def["inclusive"]
 
@@ -643,7 +713,6 @@ class Validator:
     def _validate_list(
         self, list_name: str, current_list: List[str], element_type: str
     ):
-
         """
         Validates the elements of a list based on the type definition. Adds errors to self.errors if any
 
@@ -655,7 +724,6 @@ class Validator:
         """
 
         for i in current_list:
-
             if element_type == "match_obs_columns":
                 if i not in self.adata.obs.columns:
                     self.errors.append(
@@ -663,7 +731,6 @@ class Validator:
                     )
 
     def _validate_str_in_dict(self, value, dict_name: str, key: str):
-
         """
         Validates that a value from a dictionary is a string and it does not have leading, trailing or double spaces.
         Adds errors to self.errors if any
@@ -685,7 +752,6 @@ class Validator:
 
             is_valid = False
         else:
-
             if value != value.rstrip():
                 self.errors.append(
                     f"'{value}' in '{dict_name}['{key}']' is not valid, it contains trailing spaces."
@@ -710,7 +776,6 @@ class Validator:
         return is_valid
 
     def _validate_enum_in_dict(self, value, enum: List[str], dict_name: str, key: str):
-
         """
         Validates that a value from a dictionary is part of a list. Adds errors to self.errors if any
 
@@ -729,7 +794,6 @@ class Validator:
             )
 
     def _validate_dict(self, dictionary: dict, dict_name: str, dict_def: dict):
-
         """
         Verifies the dictionary follows the schema. Adds errors to self.errors if any
 
@@ -759,7 +823,6 @@ class Validator:
                     )
 
             if value_def["type"] == "match_obsm_keys":
-
                 if not self._validate_str_in_dict(value, dict_name, key):
                     continue
 
@@ -770,7 +833,7 @@ class Validator:
                     )
 
             if value_def["type"] == "list":
-                if not (isinstance(value, list) or isinstance(value, ndarray)):
+                if not (isinstance(value, list) or isinstance(value, np.ndarray)):
                     self.errors.append(
                         f"'{value}' in '{dict_name}['{key}']' is not valid, "
                         f"it must be a list or numpy array."
@@ -780,7 +843,6 @@ class Validator:
                 self._validate_list(key, value, value_def["element_type"])
 
     def _validate_dataframe(self, df_name: str):
-
         """
         Verifies the dataframe follows the schema. Adds errors to self.errors if any
 
@@ -852,51 +914,47 @@ class Validator:
                     self._validate_column(column, column_name, df_name, column_def)
 
     def _validate_sparsity(self):
-
         """
         calculates sparsity of x and raw.x, if bigger than indicated in the schema and not a scipy sparse matrix, then
         adds to warnings
 
         :rtype none
         """
-
         max_sparsity = float(self.schema_def["sparsity"])
 
-        to_validate = [self.adata.X]
-        to_validate_name = ["X"]
+        to_validate = [(self.adata.X, "X")]
 
         # check if there's raw data
         if self.adata.raw:
-            to_validate.append(self.adata.raw.X)
-            to_validate_name.append("raw")
+            to_validate.append((self.adata.raw.X, "raw.X"))
 
         # check if there's other expression matrices under layers
         if self.adata.layers:
             for key, value in self.adata.layers.items():
-                to_validate.append(value)
-                to_validate_name.append(f"layers['{key}']")
+                to_validate.append((value, f"layers['{key}']"))
 
         # Check sparsity
-        for x, x_name in zip(to_validate, to_validate_name):
-            if not isinstance(x, sparse.csr_matrix):
+        for x, x_name in to_validate:
+            matrix_format = self._get_matrix_format(x)
+            if matrix_format == "csr":
+                continue
+            assert format != "unknown"
 
-                if isinstance(x, sparse.csc_matrix) or isinstance(x, sparse.coo_matrix):
-                    sparsity = 1 - x.count_nonzero() / float(cumprod(x.shape)[-1])
-                elif isinstance(x, ndarray):
-                    sparsity = 1 - count_nonzero(x) / float(cumprod(x.shape)[-1])
-                else:
-                    self.warnings.append(
-                        f"{x_name} matrix is of type {type(x)}, sparsity calculation hasn't been "
-                        f"implemented"
-                    )
-                    continue
+            # It seems silly to perform this test for 'coo' and 'csc' formats,
+            # which are, by definition, already sparse. But the old code
+            # performs test, and so we continue the tradition. It is possible
+            # that the prolog comment is incorrect, and the purpose of this
+            # function is to recommend CSR for _any_ matrix with sparsity beyond
+            # a given limit.
 
-                if sparsity > max_sparsity:
-                    self.warnings.append(
-                        f"Sparsity of '{x_name}' is {sparsity} which is greater than {max_sparsity}, "
-                        f"and it is not a 'scipy.sparse.csr_matrix'. It is STRONGLY RECOMMENDED "
-                        f"to use this type of matrix for the given sparsity."
-                    )
+            nnz = self._count_matrix_nonzero(x_name, x)
+            sparsity = 1 - nnz / np.prod(x.shape)
+            if sparsity > max_sparsity:
+                self.warnings.append(
+                    f"Sparsity of '{x_name}' is {sparsity} which is greater than {max_sparsity}, "
+                    f"and it is not a 'scipy.sparse.csr_matrix'. It is STRONGLY RECOMMENDED "
+                    f"to use this type of matrix for the given sparsity."
+                )
 
     def _validate_seurat_convertibility(self):
         """
@@ -905,18 +963,17 @@ class Validator:
         too large.
         rtype: None
         """
-        to_validate = [self.adata.X]
-        to_validate_name = ["X"]
+        to_validate = [(self.adata.X, "X")]
         # check if there's raw data
         if self.adata.raw:
-            to_validate.append(self.adata.raw.X)
-            to_validate_name.append("raw")
+            to_validate.append((self.adata.raw.X, "raw.X"))
         # Check length of component arrays
-        for matrix, matrix_name in zip(to_validate, to_validate_name):
-            if sparse.issparse(matrix):
-                effective_r_array_size = matrix.count_nonzero()
+        for matrix, matrix_name in to_validate:
+            format = self._get_matrix_format(matrix)
+            if format in ["csc", "csr", "coo"]:
+                effective_r_array_size = self._count_matrix_nonzero(matrix_name, matrix)
                 is_sparse = True
-            elif isinstance(matrix, ndarray):
+            elif format == "dense":
                 effective_r_array_size = max(matrix.shape)
                 is_sparse = False
             else:
@@ -925,6 +982,7 @@ class Validator:
                     f"of type {type(matrix)}"
                 )
                 continue
+
             if effective_r_array_size > self.schema_def["max_size_for_seurat"]:
                 if is_sparse:
                     self.warnings.append(
@@ -944,7 +1002,6 @@ class Validator:
                 self.is_seurat_convertible = False
 
     def _validate_embedding_dict(self):
-
         """
         Validates the embedding dictionary -- it checks that all values of adata.obms are numpy arrays with the correct
         dimension. Adds errors to self.errors if any. Checks that the keys start with "X_"
@@ -958,8 +1015,7 @@ class Validator:
 
         obsm_with_x_prefix = 0
         for key, value in self.adata.obsm.items():
-
-            if not isinstance(value, ndarray):
+            if not isinstance(value, np.ndarray):
                 self.errors.append(
                     f"All embeddings have to be of 'numpy.ndarray' type, "
                     f"'adata.obsm['{key}']' is {type(value)}')."
@@ -990,7 +1046,6 @@ class Validator:
     def _are_children_of(
         self, component: str, column: str, ontology_name: str, ancestors: List[str]
     ) -> bool:
-
         """
         Checks if elements in the specified column of the component (e.g. 'assay_ontology_term_id' of 'adata.obs') are
         children of the given ancestors.
@@ -1020,8 +1075,7 @@ class Validator:
 
         return False
 
-    def _get_raw_x(self) -> Union[ndarray, sparse.csc_matrix, sparse.csr_matrix]:
-
+    def _get_raw_x(self) -> Union[np.ndarray, sparse.csc_matrix, sparse.csr_matrix]:
         """
         gets raw x (best guess, i.e. not guarantee it's actually raw)
         """
@@ -1032,7 +1086,6 @@ class Validator:
             return self.adata.X
 
     def _get_raw_x_loc(self) -> str:
-
         """
         gets raw x location (best guess, i.e. not guarantee it's actually raw)
         """
@@ -1043,7 +1096,6 @@ class Validator:
             return "X"
 
     def _is_raw(self, max_values_to_check: int = 5000, force: bool = False) -> bool:
-
         """
         Checks if the first non-zero "max_values_to_check" in the best guess for the raw matrix (adata.X or adata.raw.X)
         are integers. Returns False if at least one value is not an integer,
@@ -1058,12 +1110,10 @@ class Validator:
         :rtype bool
         :return False if at least one value is not an integer, True otherwise
         """
-
         if force:
             self._raw_layer_exists = None
 
         if self._raw_layer_exists is None:
-
             # Get potential raw_X
             raw_loc = self._get_raw_x_loc()
             if raw_loc == "raw.X":
@@ -1071,36 +1121,31 @@ class Validator:
             else:
                 x = self.adata.X
 
-            # Get array without zeros
-            logger.debug("Getting nonzero matrix for type (int) validation...")
-            start = datetime.now()
-            non_zeroes_index = x.nonzero()
-            if max_values_to_check > len(non_zeroes_index[0]):
-                max_values_to_check = len(non_zeroes_index[0])
+            num_values_checked = 0
+            format = self._get_matrix_format(x)
+            assert format != "unknown"
+            self._raw_layer_exists = True
+            for matrix_chunk, _, _ in self._chunk_matrix(x):
+                data = (
+                    matrix_chunk
+                    if isinstance(matrix_chunk, np.ndarray)
+                    else matrix_chunk.data
+                )
+                if (data % 1 > 0).any():
+                    self._raw_layer_exists = False
+                    break
 
-            x_non_zeroes = x[
-                non_zeroes_index[0][:max_values_to_check],
-                non_zeroes_index[1][:max_values_to_check],
-            ]
-            logger.debug(f"Copy of nonzero matrix created in: {datetime.now() - start}")
-            # If all values are zeros then is raw, otherwise if a single value is not an int then return is not raw
-            if x_non_zeroes.size < 1:
-                self._raw_layer_exists = True
-            else:
-                self._raw_layer_exists = True
-                for i in nditer(x_non_zeroes):
-
-                    if isnan(i):
-                        continue
-
-                    if i % 1 != 0:
-                        self._raw_layer_exists = False
-                        break
+                num_values_checked += (
+                    matrix_chunk.nnz
+                    if format != "dense"
+                    else np.count_nonzero(matrix_chunk)
+                )
+                if num_values_checked > max_values_to_check:
+                    break
 
         return self._raw_layer_exists
 
     def _validate_x_raw_x_dimensions(self):
-
         """
         Validates that X and raw.X have the same shape. Adds errors to self.errors if any.
         """
@@ -1126,7 +1171,6 @@ class Validator:
                     self.errors.append("Cells in X and raw.X are different.")
 
     def _validate_raw(self):
-
         """
         Validates raw only if the rules in the schema definition are fulfilled and that X and raw.X have the same shape
         The validation entails checking that:
@@ -1162,7 +1206,6 @@ class Validator:
 
         # If all checks passed then proceed with validation
         if all(checks):
-
             # If both "raw.X" and "X" exist but neither are raw
             # This is testing for when sometimes data contributors put a normalized matrix in both "X" and "raw.X".
             if not self._is_raw() and self._get_raw_x_loc() == "raw.X":
@@ -1188,7 +1231,6 @@ class Validator:
     def _check_single_column_availability(
         self, component: str, add_labels_def: List[dict]
     ):
-
         """
         This method checks a single reserved column in adata.obs or adata.var and adds a message to self.error if
         it already exists
@@ -1241,7 +1283,6 @@ class Validator:
                     )
 
     def _check_column_availability(self):
-
         """
         This method will check for columns that are reserved in self.adata.obs or
         self.adata.var already exist
@@ -1250,7 +1291,6 @@ class Validator:
         """
 
         for component, component_def in self.schema_def["components"].items():
-
             # If not a dataframe we don't need to check for columns
             if component_def["type"] != "dataframe":
                 continue
@@ -1274,7 +1314,6 @@ class Validator:
             # Do it for columns that map to columns
             if "columns" in component_def:
                 for column, columns_def in component_def["columns"].items():
-
                     if "add_labels" in columns_def:
                         self._check_single_column_availability(
                             component, columns_def["add_labels"]
@@ -1282,7 +1321,6 @@ class Validator:
 
             # Do it for index that map to columns
             if "index" in component_def:
-
                 index_def = component_def["index"]
                 if "add_labels" in index_def:
                     self._check_single_column_availability(
@@ -1290,18 +1328,11 @@ class Validator:
                     )
 
     def _deep_check(self):
-
         """
         Perform a "deep" check of the AnnData object using the schema definition. Adds errors to self.errors if any
 
         :rtype None
         """
-
-        # Checks that adata is fully loaded
-        if self.adata.isbacked:
-            raise RuntimeError(
-                "adata is loaded in backed mode, validation requires anndata to be loaded in memory"
-            )
 
         # Checks for deprecated columns
         self._check_deprecated_columns()
@@ -1352,7 +1383,6 @@ class Validator:
             )
 
     def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None) -> bool:
-
         """
         Validates adata
 
