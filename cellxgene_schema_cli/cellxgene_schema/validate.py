@@ -1,6 +1,5 @@
 import logging
 import math
-import operator
 import re
 import sys
 from datetime import datetime
