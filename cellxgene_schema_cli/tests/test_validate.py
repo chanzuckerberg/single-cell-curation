@@ -250,7 +250,7 @@ class TestSeuratConvertibility(unittest.TestCase):
     def test_determine_seurat_convertibility(self):
         # Sparse matrix with too many nonzero values is not Seurat-convertible
         sparse_matrix_too_large = sparse.csr_matrix(
-            np.ones((good_obs.shape[0], good_var.shape[0]))
+            np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32)
         )
         self.validation_helper(sparse_matrix_too_large)
         self.validator._validate_seurat_convertibility()
@@ -259,7 +259,7 @@ class TestSeuratConvertibility(unittest.TestCase):
 
         # Reducing nonzero count by 1, to within limit, makes it Seurat-convertible
         sparse_matrix_with_zero = sparse.csr_matrix(
-            np.ones((good_obs.shape[0], good_var.shape[0]))
+            np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32)
         )
         sparse_matrix_with_zero[0, 0] = 0
         self.validation_helper(sparse_matrix_with_zero)
@@ -268,7 +268,9 @@ class TestSeuratConvertibility(unittest.TestCase):
         self.assertTrue(self.validator.is_seurat_convertible)
 
         # Dense matrices with a dimension that exceeds limit will fail -- zeros are irrelevant
-        dense_matrix_with_zero = np.zeros((good_obs.shape[0], good_var.shape[0]))
+        dense_matrix_with_zero = np.zeros(
+            (good_obs.shape[0], good_var.shape[0]), dtype=np.float32
+        )
         self.validation_helper(dense_matrix_with_zero)
         self.validator.schema_def["max_size_for_seurat"] = 2**2 - 1
         self.validator._validate_seurat_convertibility()
@@ -276,7 +278,7 @@ class TestSeuratConvertibility(unittest.TestCase):
         self.assertFalse(self.validator.is_seurat_convertible)
 
         # Dense matrices with dimensions in bounds but total count over will succeed
-        dense_matrix = np.ones((good_obs.shape[0], good_var.shape[0]))
+        dense_matrix = np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32)
         self.validation_helper(dense_matrix)
         self.validator.schema_def["max_size_for_seurat"] = 2**3 - 1
         self.validator._validate_seurat_convertibility()
