@@ -73,6 +73,19 @@ def get_collection(collection_id: str) -> dict:
     return res.json()
 
 
+def get_collection_version(collection_version_id: str) -> dict:
+
+    url = url_builder(f"/collection_versions/{collection_version_id}")
+    headers = get_headers()
+    try:
+        res = requests.get(url, headers=headers)
+        res.raise_for_status()
+    except requests.HTTPError as e:
+        failure(logger, e)
+        raise e
+    return res.json()
+
+
 def get_collections(visibility: str = None, curator: str = None) -> list:
     params = {}
     if visibility:
