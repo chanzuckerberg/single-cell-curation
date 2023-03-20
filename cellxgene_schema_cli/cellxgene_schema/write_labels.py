@@ -30,10 +30,11 @@ class AnnDataLabelAppender:
                 "Validate AnnData first before attempting to write labels"
             )
 
-        if validator.adata.isbacked:
-            self.adata = validator.adata.to_memory()
+        # Follow the same loading method as validator
+        if validator.adata_to_memory:
+            self.adata = self.adata.to_memory()
         else:
-            self.adata = validator.adata.copy()
+            self.adata = validator.adata
 
         self.validator = validator
         self.schema_def = validator.schema_def

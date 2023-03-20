@@ -37,7 +37,7 @@ class Validator:
         self._raw_layer_exists = None
         self.is_seurat_convertible: bool = True
         self.ignore_labels = ignore_labels
-
+        self.adata_to_memory: bool =  False  # determine if a dataset is loaded into memory
         # Values will be instances of ontology.GeneChecker,
         # keys will be one of ontology.SupportedOrganisms
         self.gene_checkers = dict()
@@ -116,6 +116,7 @@ class Validator:
                     "Matrices are in CSC format; loading entire dataset into memory."
                 )
                 self.adata = self.adata.to_memory()
+                self.adata_to_memory = True
 
         except (OSError, TypeError):
             logger.info(f"Unable to open '{h5ad_path}' with AnnData")
