@@ -385,9 +385,8 @@ class AnnDataLabelAppender:
 
         # Print errors if any
         if self.errors:
-            self.errors = ["ERROR: " + i for i in self.errors]
             for e, tb in self.errors:
-                logger.error(e, traceback=tb)
+                logger.error(e, extra={"exec_info":tb})
             self.was_writing_successful = False
         else:
             self.was_writing_successful = True

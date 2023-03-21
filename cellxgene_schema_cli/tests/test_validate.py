@@ -1,3 +1,7 @@
+import os
+import tempfile
+from unittest import mock
+
 import anndata
 import numpy as np
 import unittest
@@ -7,7 +11,7 @@ from scipy import sparse
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 from cellxgene_schema.ontology import OntologyChecker
 from cellxgene_schema.schema import get_schema_definition
-from cellxgene_schema.validate import Validator
+from cellxgene_schema.validate import Validator, validate
 from fixtures.examples_validate import (
     adata_minimal,
     SCHEMA_VERSION,
@@ -17,6 +21,8 @@ from fixtures.examples_validate import (
     good_var,
     good_uns,
     good_obsm,
+    h5ad_valid,
+    h5ad_invalid
 )
 
 
@@ -102,7 +108,7 @@ class TestAddLabelFunctions(unittest.TestCase):
     def setUp(self):
 
         # Set up test data
-        self.test_adata = adata
+        self.test_adata = adata.copy()
         self.test_adata_with_labels = adata_with_labels
         self.schema_def = get_schema_definition(SCHEMA_VERSION)
 
@@ -211,6 +217,22 @@ class TestAddLabelFunctions(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.writer._get_mapping_dict_curie(ids, curie_constraints)
 
+    def test__write__Success(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            labels_path = "/".join([temp_dir, "labels.h5ad"])
+            self.writer.write_labels(labels_path)
+        self.assertTrue(self.writer.was_writing_successful)
+        self.assertFalse(self.writer.errors)
+
+    def test__write__Fail(self):
+        self.writer.adata.write_h5ad = mock.Mock(side_effect=Exception("Test Fail"))
+        with tempfile.TemporaryDirectory() as temp_dir:
+            labels_path = "/".join([temp_dir, "labels.h5ad"])
+            self.writer.write_labels(labels_path)
+        self.assertFalse(self.writer.was_writing_successful)
+        self.assertTrue(self.writer.errors)
+
+
 
 class TestIgnoreLabelFunctions(unittest.TestCase):
     def setUp(self):
@@ -233,6 +255,44 @@ class TestIgnoreLabelFunctions(unittest.TestCase):
         is_valid = validator.validate_adata()
 
         self.assertTrue(is_valid)
+
+
+class TestValidate(unittest.TestCase):
+    def test__validate_with_h5ad_valid_and_labels(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            labels_path = "/".join([temp_dir, "labels.h5ad"])
+
+            success, errors, is_seurat_convertible = validate(h5ad_valid, labels_path)
+
+            self.assertTrue(success)
+            self.assertListEqual(errors, [])
+            self.assertTrue(is_seurat_convertible)
+            self.assertTrue(os.path.exists(labels_path))
+
+    def test__validate_with_h5ad_valid_and_without_labels(self):
+        success, errors, is_seurat_convertible = validate(h5ad_valid)
+
+        self.assertTrue(success)
+        self.assertListEqual(errors, [])
+        self.assertTrue(is_seurat_convertible)
+
+    def test__validate_with_h5ad_invalid_and_with_labels(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            labels_path = "/".join([temp_dir, "labels.h5ad"])
+
+            success, errors, is_seurat_convertible = validate(h5ad_invalid, labels_path)
+
+            self.assertFalse(success)
+            self.assertTrue(errors)
+            self.assertTrue(is_seurat_convertible)
+            self.assertFalse(os.path.exists(labels_path))
+
+    def test__validate_with_h5ad_invalid_and_without_labels(self):
+        success, errors, is_seurat_convertible = validate(h5ad_invalid)
+
+        self.assertFalse(success)
+        self.assertTrue(errors)
+        self.assertTrue(is_seurat_convertible)
 
 
 class TestSeuratConvertibility(unittest.TestCase):
