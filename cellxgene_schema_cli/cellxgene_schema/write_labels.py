@@ -2,7 +2,7 @@ import logging
 import pandas as pd
 
 from typing import List, Dict, Optional
-
+import traceback
 from cellxgene_schema.validate import Validator, ONTOLOGY_CHECKER
 
 from cellxgene_schema import ontology
@@ -380,13 +380,14 @@ class AnnDataLabelAppender:
         try:
             self.adata.write_h5ad(add_labels_file, compression="gzip")
         except Exception as e:
-            self.errors.append(f"Writing h5ad was unsuccessful, got exception '{e}'.")
+            tb = traceback.format_exc()
+            self.errors.append((f"Writing h5ad was unsuccessful, got exception '{e}'.", tb))
 
         # Print errors if any
         if self.errors:
             self.errors = ["ERROR: " + i for i in self.errors]
-            for e in self.errors:
-                logger.error(e)
+            for e, tb in self.errors:
+                logger.error(e, traceback=tb)
             self.was_writing_successful = False
         else:
             self.was_writing_successful = True
