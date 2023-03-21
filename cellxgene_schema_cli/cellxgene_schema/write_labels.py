@@ -32,9 +32,9 @@ class AnnDataLabelAppender:
 
         # Follow the same loading method as validator
         if validator.adata_to_memory:
-            self.adata = self.adata.to_memory()
+            self.adata = validator.adata.to_memory()
         else:
-            self.adata = validator.adata
+            self.adata = validator.adata.copy()
 
         self.validator = validator
         self.schema_def = validator.schema_def
