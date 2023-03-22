@@ -31,7 +31,7 @@ def create_dataset(collection_id: str):
     except requests.HTTPError as e:
         failure(logger, e)
         raise e
-    dataset_id = data["id"]
+    dataset_id = data["dataset_id"]
     success(logger, f"Created new Dataset {dataset_id} in the Collection at {format_c_url(collection_id)}")
     return dataset_id
 
