@@ -31,7 +31,7 @@ def create_dataset(collection_id: str):
     except requests.HTTPError as e:
         failure(logger, e)
         raise e
-    dataset_id = data["id"]
+    dataset_id = data["dataset_id"]
     success(logger, f"Created new Dataset {dataset_id} in the Collection at {format_c_url(collection_id)}")
     return dataset_id
 
@@ -117,6 +117,58 @@ def get_dataset(collection_id: str, dataset_id: str):
     :return: the full Dataset metadata
     """
     url = url_builder(f"/collections/{collection_id}/datasets/{dataset_id}")
+    headers = get_headers()
+
+    try:
+        res = requests.get(url, headers=headers)
+        res.raise_for_status()
+    except requests.HTTPError as e:
+        failure(logger, e)
+        raise e
+    return res.json()
+
+
+def get_dataset_version(dataset_version_id: str):
+    """
+    Get full metadata for a Dataset Version
+    :param dataset_version_id: Dataset Version id
+    :return: the full Dataset Version metadata
+    """
+    url = url_builder(f"/dataset_versions/{dataset_version_id}")
+    headers = get_headers()
+
+    try:
+        res = requests.get(url, headers=headers)
+        res.raise_for_status()
+    except requests.HTTPError as e:
+        failure(logger, e)
+        raise e
+    return res.json()
+
+
+def get_datasets():
+    """
+    Get full metadata for all public Datasets
+    """
+    url = url_builder(f"/datasets")
+    headers = get_headers()
+
+    try:
+        res = requests.get(url, headers)
+        res.raise_for_status()
+    except requests.HTTPError as e:
+        failure(logger, e)
+        raise e
+    return res.json()
+    
+
+def get_dataset_versions(dataset_id: str):
+    """
+    Get list of metadata for all Published Versions of a Dataset
+    :param dataset_id: Dataset id
+    :return: the full Dataset metadata
+    """
+    url = url_builder(f"/datasets/{dataset_id}/versions")
     headers = get_headers()
 
     try:

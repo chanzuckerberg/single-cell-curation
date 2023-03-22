@@ -24,7 +24,7 @@ def create_collection(collection_form_metadata: dict) -> str:
     except requests.HTTPError as e:
         failure(logger, e)
         raise e
-    collection_id = data.get("id")
+    collection_id = data.get("collection_id")
     success(logger, f"New private Collection id:\n{collection_id}\n",
             f"New private Collection url:\n{format_c_url(collection_id)}")
     return collection_id
@@ -41,7 +41,7 @@ def create_revision(collection_id: str) -> str:
     except requests.HTTPError as e:
         failure(logger, e)
         raise e
-    revision_id = data.get("id")
+    revision_id = data.get("collection_id")
     success(logger, f"Revision id:\n{revision_id}\n",
             f"Revision url:\n{format_c_url(revision_id)}")
     return revision_id
@@ -76,6 +76,19 @@ def get_collection(collection_id: str) -> dict:
 def get_collection_version(collection_version_id: str) -> dict:
 
     url = url_builder(f"/collection_versions/{collection_version_id}")
+        headers = get_headers()
+    try:
+        res = requests.get(url, headers=headers)
+        res.raise_for_status()
+    except requests.HTTPError as e:
+        failure(logger, e)
+        raise e
+    return res.json()
+
+
+def get_collection_versions(collection_id: str) -> list:
+
+    url = url_builder(f"/collections/{collection_id}/versions")
     headers = get_headers()
     try:
         res = requests.get(url, headers=headers)
