@@ -128,6 +128,22 @@ def get_dataset(collection_id: str, dataset_id: str):
     return res.json()
 
 
+def get_datasets():
+    """
+    Get full metadata for all public Datasets
+    """
+    url = url_builder(f"/datasets")
+    headers = get_headers()
+
+    try:
+        res = requests.get(url, headers)
+        res.raise_for_status()
+    except requests.HTTPError as e:
+        failure(logger, e)
+        raise e
+    return res.json()
+    
+
 def get_dataset_versions(dataset_id: str):
     """
     Get list of metadata for all Published Versions of a Dataset
