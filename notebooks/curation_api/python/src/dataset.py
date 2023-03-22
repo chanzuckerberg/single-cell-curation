@@ -160,6 +160,24 @@ def get_datasets():
         failure(logger, e)
         raise e
     return res.json()
+    
+
+def get_dataset_versions(dataset_id: str):
+    """
+    Get list of metadata for all Published Versions of a Dataset
+    :param dataset_id: Dataset id
+    :return: the full Dataset metadata
+    """
+    url = url_builder(f"/datasets/{dataset_id}/versions")
+    headers = get_headers()
+
+    try:
+        res = requests.get(url, headers=headers)
+        res.raise_for_status()
+    except requests.HTTPError as e:
+        failure(logger, e)
+        raise e
+    return res.json()
 
 
 def upload_datafile_from_link(link: str, collection_id: str, dataset_id: str):
