@@ -1457,8 +1457,8 @@ def validate(
 
     if add_labels_file:
         label_start = datetime.now()
-        writer = AnnDataLabelAppender(validator)
-        writer.write_labels(add_labels_file)
+        writer = AnnDataLabelAppender(validator, add_labels_file)
+        writer.write_labels()
         logger.info(
             f"H5AD label writing complete in {datetime.now() - label_start}, was_writing_successful: "
             f"{writer.was_writing_successful}"

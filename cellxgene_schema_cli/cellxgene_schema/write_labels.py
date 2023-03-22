@@ -3,6 +3,9 @@ import pandas as pd
 
 from typing import List, Dict, Optional
 import traceback
+
+from anndata import AnnData
+
 from cellxgene_schema.validate import Validator, ONTOLOGY_CHECKER
 
 from cellxgene_schema import ontology
@@ -16,12 +19,13 @@ class AnnDataLabelAppender:
     to adata.obs and adata.var respectively as indicated in the schema definition
     """
 
-    def __init__(self, validator: Validator):
+    def __init__(self, validator: Validator, copy_file_name: str = "output.h5ad"):
         """
         From a list of ids and defined constraints, creates a mapping dictionary {id: label, ...}
 
         :param Validator validator: a Validator object, it's used to get adata and schema defintion for its validation,
         it's also used to make sure the validation on this adata was successful.
+        :param str copy_file_name:
         """
 
         if not validator.is_valid:
@@ -33,9 +37,12 @@ class AnnDataLabelAppender:
         # Follow the same loading method as validator
         if validator.adata_to_memory:
             self.adata = validator.adata.to_memory()
+        elif validator.adata.isbacked:
+            self.adata = validator.adata.copy(copy_file_name)
         else:
             self.adata = validator.adata.copy()
 
+        self.copy_file_name: str = copy_file_name
         self.validator = validator
         self.schema_def = validator.schema_def
         self.errors = []
@@ -359,17 +366,20 @@ class AnnDataLabelAppender:
             if col.dtype == "category":
                 df[column] = col.cat.remove_unused_categories()
 
-    def write_labels(self, add_labels_file: str):
+    def write_labels(self, add_labels_file: Optional[str] = None):
 
         """
         From a valid (per cellxgene's schema) h5ad, this function writes a new h5ad file with ontology/gene labels added
         to adata.obs  and adata.var respectively
 
-        :param str add_labels_file: Path to new h5ad file with ontology/gene labels added
+        :param str add_labels_file: Path to new h5ad file with ontology/gene labels added. If None then use
+        self.copy_file_name.
 
         :rtype None
         """
         logger.info("Writing labels")
+
+        add_labels_file = add_labels_file if add_labels_file else self.copy_file_name
         # Add labels in obs
         self._add_labels()
 
