@@ -76,7 +76,7 @@ def get_collection(collection_id: str) -> dict:
 def get_collection_version(collection_version_id: str) -> dict:
 
     url = url_builder(f"/collection_versions/{collection_version_id}")
-        headers = get_headers()
+    headers = get_headers()
     try:
         res = requests.get(url, headers=headers)
         res.raise_for_status()
