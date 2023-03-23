@@ -366,14 +366,13 @@ class AnnDataLabelAppender:
             if col.dtype == "category":
                 df[column] = col.cat.remove_unused_categories()
 
-    def write_labels(self, add_labels_file: Optional[str] = None):
+    def write_labels(self, add_labels_file: str):
 
         """
         From a valid (per cellxgene's schema) h5ad, this function writes a new h5ad file with ontology/gene labels added
         to adata.obs  and adata.var respectively
 
-        :param str add_labels_file: Path to new h5ad file with ontology/gene labels added. If None then use
-        self.copy_file_name.
+        :param str add_labels_file: Path to new h5ad file with ontology/gene labels added.
 
         :rtype None
         """
