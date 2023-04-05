@@ -233,7 +233,6 @@ class TestAddLabelFunctions(unittest.TestCase):
         self.assertTrue(self.writer.errors)
 
 
-
 class TestIgnoreLabelFunctions(unittest.TestCase):
     def setUp(self):
         # Set up test data
