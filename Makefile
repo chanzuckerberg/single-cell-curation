@@ -9,7 +9,8 @@ install:
 	cd cellxgene_schema_cli/ && pip install -r requirements.txt && pip install .
 
 unit-test:
-	cd cellxgene_schema_cli && coverage run --source=cellxgene_schema -m unittest discover --start-directory=tests/ --verbose && coverage xml
+	cd cellxgene_schema_cli && coverage run --source=cellxgene_schema -m pytest --log-level=INFO ./tests  && coverage
+	 xml
 
 clean:
 	rm -rf cellxgene_schema_cli/build cellxgene_schema_cli/dist cellxgene_schema_cli/cellxgene_schema.egg-info
