@@ -23,7 +23,7 @@ from fixtures.examples_validate import (
     good_uns,
     good_obsm,
     h5ad_valid,
-    h5ad_invalid
+    h5ad_invalid,
 )
 
 
@@ -107,7 +107,6 @@ class TestFieldValidation(unittest.TestCase):
 
 class TestAddLabelFunctions(unittest.TestCase):
     def setUp(self):
-
         # Set up test data
         self.test_adata = adata.copy()
         self.test_adata_with_labels = adata_with_labels
@@ -119,7 +118,6 @@ class TestAddLabelFunctions(unittest.TestCase):
         self.writer = AnnDataLabelAppender(validator)
 
     def test_get_dictionary_mapping_feature_id(self):
-
         # Good
         ids = [
             "ERCC-00002",
@@ -143,7 +141,6 @@ class TestAddLabelFunctions(unittest.TestCase):
             self.writer._get_mapping_dict_feature_id(ids)
 
     def test_get_dictionary_mapping_feature_reference(self):
-
         # Good
         ids = [
             "ERCC-00002",
@@ -169,7 +166,6 @@ class TestAddLabelFunctions(unittest.TestCase):
             self.writer._get_mapping_dict_feature_id(ids)
 
     def test_get_dictionary_mapping_curie(self):
-
         # Good
         ids = ["CL:0000066", "CL:0000192"]
         labels = ["epithelial cell", "smooth muscle cell"]
@@ -241,7 +237,6 @@ class TestIgnoreLabelFunctions(unittest.TestCase):
         self.test_adata_with_labels = adata_with_labels
 
     def test_validating_labeled_h5ad_should_fail_if_no_flag_set(self):
-
         validator = Validator()
         validator.adata = self.test_adata_with_labels
         is_valid = validator.validate_adata()
@@ -249,7 +244,6 @@ class TestIgnoreLabelFunctions(unittest.TestCase):
         self.assertFalse(is_valid)
 
     def test_validating_labeled_h5ad_should_pass_if_flag_set(self):
-
         validator = Validator(ignore_labels=True)
         validator.adata = copy.deepcopy(self.test_adata_with_labels)
         is_valid = validator.validate_adata()
@@ -278,9 +272,19 @@ class TestValidate(unittest.TestCase):
             self.assertListEqual(errors, [])
             self.assertTrue(is_seurat_convertible)
             self.assertTrue(os.path.exists(labels_path))
+            expected_hash = (
+                "55fbc095218a01cad33390f534d6690af0ecd6593f27d7cd4d26e91072ea8835"
+            )
+            actual_hash = self.hash_file(labels_path)
+            original_hash = self.hash_file(h5ad_valid)
+            self.assertNotEqual(
+                original_hash,
+                expected_hash,
+                "Writing labels did not change the dataset from the " "original.",
+            )
             self.assertEqual(
-                "55fbc095218a01cad33390f534d6690af0ecd6593f27d7cd4d26e91072ea8835",
-                self.hash_file(labels_path),
+                expected_hash,
+                actual_hash,
                 "The shape of the h5ad has changed. Check that the generated file is correct and update the new hash "
                 "to match.",
             )
