@@ -1,11 +1,10 @@
 import logging
+from typing import Dict, List, Optional
+
 import pandas as pd
 
-from typing import List, Dict, Optional
-
-from cellxgene_schema.validate import Validator, ONTOLOGY_CHECKER
-
 from cellxgene_schema import ontology
+from cellxgene_schema.validate import ONTOLOGY_CHECKER, Validator
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +40,6 @@ class AnnDataLabelAppender:
         self.was_writing_successful = False
 
     def _merge_dicts(self, dict1: dict, dict2: dict) -> dict:
-
         """
         Recursively merges two dicts, designed to be used to flatten a column definition.
 
@@ -55,7 +53,6 @@ class AnnDataLabelAppender:
         merged_dict = dict1.copy()
 
         for key, value_2 in dict2.items():
-
             if key == "rule":
                 continue
 
@@ -72,9 +69,7 @@ class AnnDataLabelAppender:
                         merged_dict[key] = value_1 + " " + value_2
                         continue
                     if not value_2 == value_1:
-                        raise ValueError(
-                            f"Strings types in dependencies cannot be different, {value_1} and {value_2}"
-                        )
+                        raise ValueError(f"Strings types in dependencies cannot be different, {value_1} and {value_2}")
 
                 elif isinstance(value_2, list):
                     merged_dict[key] = list(set(value_1 + value_2))
@@ -86,7 +81,6 @@ class AnnDataLabelAppender:
         return merged_dict
 
     def _flatten_column_def_with_dependencies(self, column_def: dict) -> dict:
-
         """
         Flattens a column definition  that has dependencies, it essentially concatenates all the definitions of the
         dependencies into the on definition
@@ -109,10 +103,7 @@ class AnnDataLabelAppender:
 
         return flatten
 
-    def _get_mapping_dict_curie(
-        self, ids: List[str], curie_constraints: dict
-    ) -> Dict[str, str]:
-
+    def _get_mapping_dict_curie(self, ids: List[str], curie_constraints: dict) -> Dict[str, str]:
         """
         From defined constraints it creates a mapping dictionary of ontology IDs and labels.
 
@@ -136,24 +127,19 @@ class AnnDataLabelAppender:
 
         if "suffixes" in curie_constraints:
             for i in range(len(ids)):
-                ids[i], id_suffixes[i] = Validator._curie_remove_suffix(
-                    ids[i], curie_constraints["suffixes"]
-                )
+                ids[i], id_suffixes[i] = Validator._curie_remove_suffix(ids[i], curie_constraints["suffixes"])
 
         for original_id, id, id_suffix in zip(original_ids, ids, id_suffixes):
             # If there are exceptions the label should be the same as the id
-            if "exceptions" in curie_constraints:
-                if original_id in curie_constraints["exceptions"]:
-                    mapping_dict[original_id] = original_id
-                    continue
+            if "exceptions" in curie_constraints and original_id in curie_constraints["exceptions"]:
+                mapping_dict[original_id] = original_id
+                continue
 
             for ontology_name in allowed_ontologies:
                 if ontology_name == "NA":
                     continue
                 if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, id):
-                    mapping_dict[original_id] = (
-                        ONTOLOGY_CHECKER.get_term_label(ontology_name, id) + id_suffix
-                    )
+                    mapping_dict[original_id] = ONTOLOGY_CHECKER.get_term_label(ontology_name, id) + id_suffix
 
         # Check that all ids got a mapping. All ids should be found if adata was validated
         for id in original_ids:
@@ -163,7 +149,6 @@ class AnnDataLabelAppender:
         return mapping_dict
 
     def _get_mapping_dict_feature_id(self, ids: List[str]) -> Dict[str, str]:
-
         """
         Creates a mapping dictionary of gene/feature IDs and labels.
 
@@ -181,10 +166,7 @@ class AnnDataLabelAppender:
 
         return mapping_dict
 
-    def _get_mapping_dict_feature_reference(
-        self, ids: List[str]
-    ) -> Dict[str, Optional[ontology.SupportedOrganisms]]:
-
+    def _get_mapping_dict_feature_reference(self, ids: List[str]) -> Dict[str, Optional[ontology.SupportedOrganisms]]:
         """
         Creates a mapping dictionary of gene/feature IDs and NCBITaxon curies
 
@@ -219,9 +201,7 @@ class AnnDataLabelAppender:
             elif i.startswith("ENS"):
                 mapping_dict[i] = "gene"
             else:
-                raise ValueError(
-                    f"{i} is not a recognized `feature_name` and cannot be assigned a `feature_type`"
-                )
+                raise ValueError(f"{i} is not a recognized `feature_name` and cannot be assigned a `feature_type`")
 
         return mapping_dict
 
@@ -232,7 +212,6 @@ class AnnDataLabelAppender:
         column_definition: dict,
         label_type: dict,
     ) -> pd.Categorical:
-
         """
         Retrieves a new column (pandas categorical) with labels based on the IDs in 'column' and the logic in the
         'column_definition'
@@ -259,21 +238,16 @@ class AnnDataLabelAppender:
         ids = getattr(current_df, column).drop_duplicates().tolist()
 
         # Flatten column definition (will do so if there are dependencies in the definition
-        column_definition = self._flatten_column_def_with_dependencies(
-            column_definition
-        )
+        column_definition = self._flatten_column_def_with_dependencies(column_definition)
 
         if label_type == "curie":
-
             if "curie_constraints" not in column_definition:
                 raise ValueError(
                     f"Schema definition error: 'add_labels' with type 'curie' was found for '{column}' "
                     "but no curie constraints were found for the labels"
                 )
 
-            mapping_dict = self._get_mapping_dict_curie(
-                ids, column_definition["curie_constraints"]
-            )
+            mapping_dict = self._get_mapping_dict_curie(ids, column_definition["curie_constraints"])
 
         elif label_type == "feature_id":
             mapping_dict = self._get_mapping_dict_feature_id(ids=ids)
@@ -285,16 +259,13 @@ class AnnDataLabelAppender:
             mapping_dict = self._get_mapping_dict_feature_biotype(ids=ids)
 
         else:
-            raise TypeError(
-                f"'{label_type}' is not supported in 'add-labels' functionality"
-            )
+            raise TypeError(f"'{label_type}' is not supported in 'add-labels' functionality")
 
         new_column = original_column.copy().replace(mapping_dict).astype("category")
 
         return new_column
 
     def _add_column(self, component: str, column: str, column_definition: dict):
-
         """
         Adds a new column (pandas categorical) to a component of adata with labels based on the IDs
         in 'column' and the logic in the 'column_def'
@@ -308,10 +279,7 @@ class AnnDataLabelAppender:
         """
 
         for label_def in column_definition["add_labels"]:
-
-            new_column = self._get_labels(
-                component, column, column_definition, label_def["type"]
-            )
+            new_column = self._get_labels(component, column, column_definition, label_def["type"])
             new_column_name = label_def["to_column"]
 
             # The sintax below is a programtic way to access obs and var in adata:
@@ -319,30 +287,23 @@ class AnnDataLabelAppender:
             # "raw.var" requires to levels of programtic access
             if "." in component:
                 [first_elem, second_elem] = component.split(".")
-                self.adata.__dict__["_" + first_elem].__dict__["_" + second_elem][
-                    new_column_name
-                ] = new_column
+                self.adata.__dict__["_" + first_elem].__dict__["_" + second_elem][new_column_name] = new_column
             else:
                 self.adata.__dict__["_" + component][new_column_name] = new_column
 
     def _add_labels(self):
-
         """
         From a valid (per cellxgene's schema) adata, this function adds to self.adata ontology/gene labels
         to adata.obs, adata.var, and adata.raw.var respectively
         """
         for component in ["obs", "var", "raw.var"]:
-
             # If the component does not exist, skip (this is for raw.var)
             if Validator.getattr_anndata(self.adata, component) is None:
                 continue
 
             # Doing it for columns
             if "columns" in self.schema_def["components"][component]:
-                for column, column_def in self.schema_def["components"][component][
-                    "columns"
-                ].items():
-
+                for column, column_def in self.schema_def["components"][component]["columns"].items():
                     if "add_labels" in column_def:
                         self._add_column(component, column, column_def)
 
@@ -359,7 +320,6 @@ class AnnDataLabelAppender:
                 df[column] = col.cat.remove_unused_categories()
 
     def write_labels(self, add_labels_file: str):
-
         """
         From a valid (per cellxgene's schema) h5ad, this function writes a new h5ad file with ontology/gene labels added
         to adata.obs  and adata.var respectively

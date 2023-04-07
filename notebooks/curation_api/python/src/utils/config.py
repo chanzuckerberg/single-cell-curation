@@ -1,4 +1,5 @@
 import os
+
 import requests
 
 
@@ -34,12 +35,15 @@ def set_api_access_config(api_key_file_path: str = None, env: str = "prod") -> N
     """
     set_api_urls(env)
     if not api_key_file_path:
-        print("No API key file provided. Without an access token, which requires an API key to retrieve, no private "
-              "data or actions are accessible (except for fetching an individual Collection or Dataset, which only "
-              "requires the url).")
+        print(
+            "No API key file provided. Without an access token, which requires an API key to retrieve, no private "
+            "data or actions are accessible (except for fetching an individual Collection or Dataset, which only "
+            "requires the url)."
+        )
         return
 
-    api_key = open(api_key_file_path).read().strip()
+    with open(api_key_file_path) as fp:
+        api_key = fp.read().strip()
     access_token_headers = {"x-api-key": api_key}
     access_token_path = "/curation/v1/auth/token"
     api_url_base = os.getenv("api_url_base")

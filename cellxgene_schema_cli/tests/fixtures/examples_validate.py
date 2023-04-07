@@ -179,9 +179,7 @@ good_obsm = {"X_umap": numpy.zeros([X.shape[0], 2])}
 #   the unittests
 
 # Valid anndata
-adata = anndata.AnnData(
-    X=sparse.csr_matrix(X), obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var
-)
+adata = anndata.AnnData(X=sparse.csr_matrix(X), obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var)
 adata.raw = adata
 adata.X = non_raw_X
 adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)

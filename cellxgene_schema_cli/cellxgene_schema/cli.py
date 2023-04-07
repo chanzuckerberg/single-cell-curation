@@ -1,5 +1,6 @@
-import click
 import sys
+
+import click
 
 
 @click.group(
@@ -29,12 +30,8 @@ def schema_cli():
     default=None,
     type=click.Path(exists=False, dir_okay=False, writable=True),
 )
-@click.option(
-    "-i", "--ignore-labels", help="Ignore ontology labels when validating", is_flag=True
-)
-@click.option(
-    "-v", "--verbose", help="When present will set logging level to debug", is_flag=True
-)
+@click.option("-i", "--ignore-labels", help="Ignore ontology labels when validating", is_flag=True)
+@click.option("-v", "--verbose", help="When present will set logging level to debug", is_flag=True)
 def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose):
     # Imports are very slow so we defer loading until Click arg validation has passed
 
@@ -42,14 +39,12 @@ def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose):
     try:
         import anndata  # noqa: F401
     except ImportError:
-        raise click.ClickException("[cellxgene] cellxgene-schema requires anndata")
+        raise click.ClickException("[cellxgene] cellxgene-schema requires anndata") from None
 
     print("Loading validator modules")
     from .validate import validate
 
-    is_valid, _, _ = validate(
-        h5ad_file, add_labels_file, ignore_labels=ignore_labels, verbose=verbose
-    )
+    is_valid, _, _ = validate(h5ad_file, add_labels_file, ignore_labels=ignore_labels, verbose=verbose)
     if is_valid:
         sys.exit(0)
     else:
@@ -65,20 +60,21 @@ def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose):
 @click.argument("output_file", nargs=1, type=click.Path(exists=False, dir_okay=False))
 def remove_labels(input_file, output_file):
     from .remove_labels import AnnDataLabelRemover
+
     print("Loading dependencies")
     try:
         import anndata  # noqa: F401
     except ImportError:
-        raise click.ClickException("[cellxgene] cellxgene-schema requires anndata")
+        raise click.ClickException("[cellxgene] cellxgene-schema requires anndata") from None
 
-    print(f'Loading h5ad from {input_file}')
+    print(f"Loading h5ad from {input_file}")
     adata = anndata.read_h5ad(input_file)
     anndata_label_remover = AnnDataLabelRemover(adata)
     if not anndata_label_remover.schema_def:
         return
-    print('Removing labels')
+    print("Removing labels")
     anndata_label_remover.remove_labels()
-    print(f'Labels have been removed. Writing to {output_file}')
+    print(f"Labels have been removed. Writing to {output_file}")
     anndata_label_remover.adata.write(output_file)
 
 

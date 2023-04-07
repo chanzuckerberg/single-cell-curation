@@ -1,14 +1,14 @@
 import unittest
-from cellxgene_schema import ontology
 
+from cellxgene_schema import ontology
 from fixtures.examples_ontology_test import (
-    invalid_species,
-    valid_genes,
     invalid_genes,
-    invalid_terms,
-    valid_terms,
     invalid_ontologies,
+    invalid_species,
+    invalid_terms,
+    valid_genes,
     valid_ontologies,
+    valid_terms,
 )
 
 # Tests for internal functions of the OntologyChecker and GeneChecker classes
@@ -41,7 +41,6 @@ class TestGeneChecker(unittest.TestCase):
         for species in self.invalid_genes:
             geneChecker = ontology.GeneChecker(species)
             for gene_id in self.invalid_genes[species]:
-
                 self.assertFalse(geneChecker.is_valid_id(gene_id))
                 with self.assertRaises(ValueError):
                     geneChecker.get_symbol(gene_id)
@@ -73,12 +72,8 @@ class TestOntologyChecker(unittest.TestCase):
             for term_id in self.valid_terms[ontology_id]:
                 term_label = self.valid_terms[ontology_id][term_id]
 
-                self.assertTrue(
-                    self.ontologyChecker.is_valid_term_id(ontology_id, term_id)
-                )
-                self.assertIsNone(
-                    self.ontologyChecker.assert_term_id(ontology_id, term_id)
-                )
+                self.assertTrue(self.ontologyChecker.is_valid_term_id(ontology_id, term_id))
+                self.assertIsNone(self.ontologyChecker.assert_term_id(ontology_id, term_id))
                 self.assertEqual(
                     self.ontologyChecker.get_term_label(ontology_id, term_id),
                     term_label,
@@ -87,8 +82,6 @@ class TestOntologyChecker(unittest.TestCase):
     def test_invalid_term_ids(self):
         for ontology_id in self.invalid_terms:
             for term_id in self.invalid_terms[ontology_id]:
-                self.assertFalse(
-                    self.ontologyChecker.is_valid_term_id(ontology_id, term_id)
-                )
+                self.assertFalse(self.ontologyChecker.is_valid_term_id(ontology_id, term_id))
                 with self.assertRaises(ValueError):
                     self.ontologyChecker.assert_term_id(ontology_id, term_id)

@@ -1,8 +1,9 @@
-import os
+import enum
 import gzip
 import json
-import enum
+import os
 from typing import List, Set, Union
+
 from . import env
 
 
@@ -16,7 +17,6 @@ class SupportedOrganisms(enum.Enum):
 def get_organism_from_feature_id(
     feature_id: str,
 ) -> Union[SupportedOrganisms, None]:
-
     """
     Infers the organism of a feature id based on the prefix of a feature id, e.g. ENSG means Homo sapiens
 
@@ -42,15 +42,9 @@ class GeneChecker:
     """Handles checking gene ids, retrieves symbols"""
 
     GENE_FILES = {
-        SupportedOrganisms.HOMO_SAPIENS: os.path.join(
-            env.ONTOLOGY_DIR, "genes_homo_sapiens.csv.gz"
-        ),
-        SupportedOrganisms.MUS_MUSCULUS: os.path.join(
-            env.ONTOLOGY_DIR, "genes_mus_musculus.csv.gz"
-        ),
-        SupportedOrganisms.SARS_COV_2: os.path.join(
-            env.ONTOLOGY_DIR, "genes_sars_cov_2.csv.gz"
-        ),
+        SupportedOrganisms.HOMO_SAPIENS: os.path.join(env.ONTOLOGY_DIR, "genes_homo_sapiens.csv.gz"),
+        SupportedOrganisms.MUS_MUSCULUS: os.path.join(env.ONTOLOGY_DIR, "genes_mus_musculus.csv.gz"),
+        SupportedOrganisms.SARS_COV_2: os.path.join(env.ONTOLOGY_DIR, "genes_sars_cov_2.csv.gz"),
         SupportedOrganisms.ERCC: os.path.join(env.ONTOLOGY_DIR, "genes_ercc.csv.gz"),
     }
 
@@ -65,12 +59,10 @@ class GeneChecker:
         self.species = species
         self.gene_dict = {}
         with gzip.open(self.GENE_FILES[species], "rt") as genes:
-
             gene_labels = set()
             duplicated_gene_labels = set()
 
             for gene in genes:
-
                 gene = gene.rstrip().split(",")
                 gene_id = gene[0]
                 gene_label = gene[1]
@@ -111,9 +103,7 @@ class GeneChecker:
         """
 
         if not self.is_valid_id(gene_id):
-            raise ValueError(
-                f"The id '{gene_id}' is not a valid ENSEMBL id for '{self.species}'"
-            )
+            raise ValueError(f"The id '{gene_id}' is not a valid ENSEMBL id for '{self.species}'")
 
         return self.gene_dict[gene_id]
 
@@ -219,9 +209,7 @@ class OntologyChecker:
 
         return term_id in self.ontology_dict[ontology]
 
-    def is_descendent_of(
-        self, ontology: str, query_term_id: str, target_term_id: str
-    ) -> bool:
+    def is_descendent_of(self, ontology: str, query_term_id: str, target_term_id: str) -> bool:
         """
         Returns True if query_term_id is a descendent of target_term_id in a given ontology
 
@@ -248,9 +236,7 @@ class OntologyChecker:
         """
 
         if not self.is_valid_ontology(ontology):
-            raise ValueError(
-                f"The ontology '{ontology}' is not present in the ontology checker"
-            )
+            raise ValueError(f"The ontology '{ontology}' is not present in the ontology checker")
 
     def assert_term_id(self, ontology: str, term_id: str):
         """
@@ -263,13 +249,9 @@ class OntologyChecker:
         """
 
         if not self.is_valid_term_id(ontology, term_id):
-            raise ValueError(
-                f"The term id '{term_id}' is not present in the ontology '{ontology}'"
-            )
+            raise ValueError(f"The term id '{term_id}' is not present in the ontology '{ontology}'")
 
-    def assert_descendent_of(
-        self, ontology: str, query_term_id: str, target_term_id: str
-    ):
+    def assert_descendent_of(self, ontology: str, query_term_id: str, target_term_id: str):
         """
         Raises error if query_term_id is not a descendent of target_term_id in a given ontology
 
