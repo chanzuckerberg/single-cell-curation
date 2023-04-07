@@ -1,3 +1,4 @@
+import hashlib
 import os
 import tempfile
 from unittest import mock
@@ -257,6 +258,16 @@ class TestIgnoreLabelFunctions(unittest.TestCase):
 
 
 class TestValidate(unittest.TestCase):
+    @staticmethod
+    def hash_file(file_name: str) -> str:
+        with open(file_name, "rb") as f:
+            # Read the contents of the file in chunks
+            chunk_size = 1024
+            hasher = hashlib.sha256()
+            while chunk := f.read(chunk_size):
+                hasher.update(chunk)
+        return hasher.hexdigest()
+
     def test__validate_with_h5ad_valid_and_labels(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
@@ -267,6 +278,12 @@ class TestValidate(unittest.TestCase):
             self.assertListEqual(errors, [])
             self.assertTrue(is_seurat_convertible)
             self.assertTrue(os.path.exists(labels_path))
+            self.assertEqual(
+                "55fbc095218a01cad33390f534d6690af0ecd6593f27d7cd4d26e91072ea8835",
+                self.hash_file(labels_path),
+                "The shape of the h5ad has changed. Check that the generated file is correct and update the new hash "
+                "to match.",
+            )
 
     def test__validate_with_h5ad_valid_and_without_labels(self):
         success, errors, is_seurat_convertible = validate(h5ad_valid)
