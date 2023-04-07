@@ -1,11 +1,15 @@
 import copy
+import hashlib
+import os
+import tempfile
 import unittest
+from unittest import mock
 
 import anndata
 import numpy as np
 from cellxgene_schema.ontology import OntologyChecker
 from cellxgene_schema.schema import get_schema_definition
-from cellxgene_schema.validate import Validator
+from cellxgene_schema.validate import Validator, validate
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 from fixtures.examples_validate import (
     SCHEMA_VERSION,
@@ -16,6 +20,8 @@ from fixtures.examples_validate import (
     good_obsm,
     good_uns,
     good_var,
+    h5ad_invalid,
+    h5ad_valid,
 )
 from scipy import sparse
 
@@ -80,7 +86,7 @@ class TestFieldValidation(unittest.TestCase):
 class TestAddLabelFunctions(unittest.TestCase):
     def setUp(self):
         # Set up test data
-        self.test_adata = adata
+        self.test_adata = adata.copy()
         self.test_adata_with_labels = adata_with_labels
         self.schema_def = get_schema_definition(SCHEMA_VERSION)
 
@@ -178,6 +184,21 @@ class TestAddLabelFunctions(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.writer._get_mapping_dict_curie(ids, curie_constraints)
 
+    def test__write__Success(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            labels_path = "/".join([temp_dir, "labels.h5ad"])
+            self.writer.write_labels(labels_path)
+        self.assertTrue(self.writer.was_writing_successful)
+        self.assertFalse(self.writer.errors)
+
+    def test__write__Fail(self):
+        self.writer.adata.write_h5ad = mock.Mock(side_effect=Exception("Test Fail"))
+        with tempfile.TemporaryDirectory() as temp_dir:
+            labels_path = "/".join([temp_dir, "labels.h5ad"])
+            self.writer.write_labels(labels_path)
+        self.assertFalse(self.writer.was_writing_successful)
+        self.assertTrue(self.writer.errors)
+
 
 class TestIgnoreLabelFunctions(unittest.TestCase):
     def setUp(self):
@@ -198,6 +219,68 @@ class TestIgnoreLabelFunctions(unittest.TestCase):
         is_valid = validator.validate_adata()
 
         self.assertTrue(is_valid)
+
+
+class TestValidate(unittest.TestCase):
+    @staticmethod
+    def hash_file(file_name: str) -> str:
+        with open(file_name, "rb") as f:
+            # Read the contents of the file in chunks
+            chunk_size = 1024
+            hasher = hashlib.sha256()
+            while chunk := f.read(chunk_size):
+                hasher.update(chunk)
+        return hasher.hexdigest()
+
+    def test__validate_with_h5ad_valid_and_labels(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            labels_path = "/".join([temp_dir, "labels.h5ad"])
+
+            success, errors, is_seurat_convertible = validate(h5ad_valid, labels_path)
+
+            self.assertTrue(success)
+            self.assertListEqual(errors, [])
+            self.assertTrue(is_seurat_convertible)
+            self.assertTrue(os.path.exists(labels_path))
+            expected_hash = "55fbc095218a01cad33390f534d6690af0ecd6593f27d7cd4d26e91072ea8835"
+            actual_hash = self.hash_file(labels_path)
+            original_hash = self.hash_file(h5ad_valid)
+            self.assertNotEqual(
+                original_hash,
+                expected_hash,
+                "Writing labels did not change the dataset from the " "original.",
+            )
+            self.assertEqual(
+                expected_hash,
+                actual_hash,
+                "The shape of the h5ad has changed. Check that the generated file is correct and update the new hash "
+                "to match.",
+            )
+
+    def test__validate_with_h5ad_valid_and_without_labels(self):
+        success, errors, is_seurat_convertible = validate(h5ad_valid)
+
+        self.assertTrue(success)
+        self.assertListEqual(errors, [])
+        self.assertTrue(is_seurat_convertible)
+
+    def test__validate_with_h5ad_invalid_and_with_labels(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            labels_path = "/".join([temp_dir, "labels.h5ad"])
+
+            success, errors, is_seurat_convertible = validate(h5ad_invalid, labels_path)
+
+            self.assertFalse(success)
+            self.assertTrue(errors)
+            self.assertTrue(is_seurat_convertible)
+            self.assertFalse(os.path.exists(labels_path))
+
+    def test__validate_with_h5ad_invalid_and_without_labels(self):
+        success, errors, is_seurat_convertible = validate(h5ad_invalid)
+
+        self.assertFalse(success)
+        self.assertTrue(errors)
+        self.assertTrue(is_seurat_convertible)
 
 
 class TestSeuratConvertibility(unittest.TestCase):

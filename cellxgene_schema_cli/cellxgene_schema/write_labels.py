@@ -1,4 +1,5 @@
 import logging
+import traceback
 from typing import Dict, List, Optional
 
 import pandas as pd
@@ -29,11 +30,7 @@ class AnnDataLabelAppender:
                 "Validate AnnData first before attempting to write labels"
             )
 
-        if validator.adata.isbacked:
-            self.adata = validator.adata.to_memory()
-        else:
-            self.adata = validator.adata.copy()
-
+        self.adata = validator.adata
         self.validator = validator
         self.schema_def = validator.schema_def
         self.errors = []
@@ -339,13 +336,13 @@ class AnnDataLabelAppender:
         try:
             self.adata.write_h5ad(add_labels_file, compression="gzip")
         except Exception as e:
-            self.errors.append(f"Writing h5ad was unsuccessful, got exception '{e}'.")
+            tb = traceback.format_exc()
+            self.errors.append((f"Writing h5ad was unsuccessful, got exception '{e}'.", tb))
 
         # Print errors if any
         if self.errors:
-            self.errors = ["ERROR: " + i for i in self.errors]
-            for e in self.errors:
-                logger.error(e)
+            for e, tb in self.errors:
+                logger.error(e, extra={"exec_info": tb})
             self.was_writing_successful = False
         else:
             self.was_writing_successful = True
