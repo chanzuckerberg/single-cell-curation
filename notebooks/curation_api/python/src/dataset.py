@@ -1,16 +1,14 @@
-import json
-
-import boto3
 import logging
 import os
-import requests
 import threading
+
+import boto3
+import requests
 from botocore.credentials import RefreshableCredentials
 from botocore.session import get_session
-
 from src.utils.config import format_c_url
-from src.utils.logger import get_custom_logger, failure, success
-from src.utils.http import url_builder, get_headers
+from src.utils.http import get_headers, url_builder
+from src.utils.logger import failure, get_custom_logger, success
 
 logger = get_custom_logger()
 
@@ -46,8 +44,9 @@ def delete_dataset(collection_id: str, dataset_id: str):
     url = url_builder(f"/collections/{collection_id}/datasets/{dataset_id}")
     headers = get_headers()
 
-    success_message = f"Deleted the Dataset with id '{dataset_id}' from its Collection: " \
-                      f"\n{format_c_url(collection_id)}"
+    success_message = (
+        f"Deleted the Dataset with id '{dataset_id}' from its Collection: " f"\n{format_c_url(collection_id)}"
+    )
     try:
         res = requests.delete(url, headers=headers)
         res.raise_for_status()
@@ -150,7 +149,7 @@ def get_datasets():
     """
     Get full metadata for all public Datasets
     """
-    url = url_builder(f"/datasets")
+    url = url_builder("/datasets")
     headers = get_headers()
 
     try:
@@ -160,7 +159,7 @@ def get_datasets():
         failure(logger, e)
         raise e
     return res.json()
-    
+
 
 def get_dataset_versions(dataset_id: str):
     """
@@ -193,8 +192,10 @@ def upload_datafile_from_link(link: str, collection_id: str, dataset_id: str):
 
     data_dict = dict(link=link)
 
-    success_message = f"Uploading Dataset with id '{dataset_id}' to Collection " \
-                      f"{os.getenv('site_url')}/collections/{collection_id} sourcing from datafile at {link}"
+    success_message = (
+        f"Uploading Dataset with id '{dataset_id}' to Collection "
+        f"{os.getenv('site_url')}/collections/{collection_id} sourcing from datafile at {link}"
+    )
 
     try:
         res = requests.put(url, headers=headers, json=data_dict)
@@ -264,8 +265,10 @@ def upload_local_datafile(datafile_path: str, collection_id: str, dataset_id: st
             if should_update_progress_printout:
                 color = "\033[38;5;10m" if percent_of_total_upload == 100 else ""
                 if getattr(logging, log_level) < 40:
-                    print(f"{collection_id}/{dataset_id}: "
-                          f"\033[1m{color}{percent_of_total_upload}% uploaded\033[0m\r", end="")
+                    print(
+                        f"{collection_id}/{dataset_id}: " f"\033[1m{color}{percent_of_total_upload}% uploaded\033[0m\r",
+                        end="",
+                    )
 
         return progress_cb
 

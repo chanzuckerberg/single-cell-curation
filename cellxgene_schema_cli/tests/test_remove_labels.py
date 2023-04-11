@@ -2,14 +2,13 @@ import unittest
 
 from cellxgene_schema.remove_labels import AnnDataLabelRemover
 from fixtures.examples_validate import (
-    adata_with_labels,
     adata,
+    adata_with_labels,
 )
 from pandas.testing import assert_frame_equal
 
 
 class TestRemoveLabels(unittest.TestCase):
-
     def setUp(self):
         self.anndata_label_remover = AnnDataLabelRemover(adata_with_labels.copy())
         self.adata_no_labels = adata

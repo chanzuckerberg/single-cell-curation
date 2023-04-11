@@ -12,23 +12,16 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.8
-      - name: Install dependencies
-        run: |
-          pip install flake8 black
-      - name: Lint
-        run: make lint
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+      - name: check backend
+        uses: pre-commit/action@v3.0.0
 
   unit-tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set up Python 3.8
         uses: actions/setup-python@v1
         with:

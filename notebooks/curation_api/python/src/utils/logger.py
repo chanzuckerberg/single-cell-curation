@@ -9,8 +9,8 @@ def set_log_level(log_level: str):
     """
     all_levels = logging._nameToLevel.keys()
     if log_level not in all_levels:
-        raise Exception(f"The log_level arg must be one of {[x for x in all_levels]}")
-    os.environ["log_level"] = log_level
+        raise Exception(f"The log_level arg must be one of {list(all_levels)}")
+    os.environ["LOG_LEVEL"] = log_level
     logger = logging.getLogger()
     logger.setLevel(log_level)
     for h in logger.handlers:
@@ -23,7 +23,7 @@ def get_custom_logger() -> logging.Logger:
     Get a custom logger that will still print to stdout in notebooks.
     :return: the logger object
     """
-    log_level = os.getenv("log_level", "INFO")
+    log_level = os.getenv("LOG_LEVEL", "INFO")
     logging.basicConfig(level=log_level)
     logger = logging.getLogger()
     logger.removeHandler(logger.handlers[0])

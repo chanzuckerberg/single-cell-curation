@@ -1,6 +1,6 @@
 .PHONY: fmt
 fmt:
-	cd cellxgene_schema_cli/ && black cellxgene_schema/ tests/
+	pre-commit run -a
 
 lint:
 	cd cellxgene_schema_cli/ && flake8 cellxgene_schema/ tests/

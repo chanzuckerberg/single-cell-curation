@@ -1,8 +1,9 @@
-import os
 import gzip
+import os
 import sys
-import gtf_tools
 from typing import Dict
+
+import gtf_tools
 
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../cellxgene_schema"))
 import env
@@ -54,7 +55,11 @@ def _parse_gtf(gtf_path: str, output_file: str):
                     target_features[i] = current_features[feature]
 
                 # if the symbol starts with ENSG and it does not match the Ensembl ID, then the symbol used should be the Ensembl ID
-                if feature in ["gene_name"] and current_features[feature].startswith("ENSG") and current_features[feature] != current_features["gene_id"]:
+                if (
+                    feature in ["gene_name"]
+                    and current_features[feature].startswith("ENSG")
+                    and current_features[feature] != current_features["gene_id"]
+                ):
                     target_features[i] = current_features["gene_id"]
 
                 # Add gene version if available from gene id
@@ -75,7 +80,6 @@ def _parse_gtf(gtf_path: str, output_file: str):
 
 
 def _get_gene_lengths_from_gtf(gtf_path: str) -> Dict[str, int]:
-
     """
     Parses a GTF file and calculates gene lengths, which are calculated as follows for each gene:
        1. Get all different isoforms
@@ -91,7 +95,6 @@ def _get_gene_lengths_from_gtf(gtf_path: str) -> Dict[str, int]:
     """
 
     with gzip.open(gtf_path, "rb") as gtf:
-
         # Dictionary of list of tuples that will store exon in bed format-like. Elements of the tuples will be the
         # equivalent  fields from the bed format: chromosome, start, end, strand). Each list of tuples will correspond
         # to one gene.
@@ -134,7 +137,6 @@ def _get_gene_lengths_from_gtf(gtf_path: str) -> Dict[str, int]:
 
 
 def _process_ercc(ercc_path: str, output_file: str):
-
     """
     process the ERCC download, keeps only first column with no header
 

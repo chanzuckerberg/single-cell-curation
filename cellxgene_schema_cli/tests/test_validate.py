@@ -1,31 +1,29 @@
+import copy
 import hashlib
 import os
 import tempfile
+import unittest
 from unittest import mock
 
 import anndata
 import numpy as np
-import unittest
-import copy
-from scipy import sparse
-
-from cellxgene_schema.write_labels import AnnDataLabelAppender
 from cellxgene_schema.ontology import OntologyChecker
 from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.validate import Validator, validate
+from cellxgene_schema.write_labels import AnnDataLabelAppender
 from fixtures.examples_validate import (
-    adata_minimal,
     SCHEMA_VERSION,
-    adata_with_labels,
     adata,
+    adata_minimal,
+    adata_with_labels,
     good_obs,
-    good_var,
-    good_uns,
     good_obsm,
-    h5ad_valid,
+    good_uns,
+    good_var,
     h5ad_invalid,
+    h5ad_valid,
 )
-
+from scipy import sparse
 
 # Tests for internal functions of the Validator and LabelWriter classes.
 
@@ -40,12 +38,8 @@ class TestFieldValidation(unittest.TestCase):
         self.validator = Validator()
         self.validator.adata = adata_minimal
         self.column_name = "cell_type_ontology_term_id"
-        self.column_schema = self.schema_def["components"]["obs"]["columns"][
-            self.column_name
-        ]
-        self.curie_constraints = self.schema_def["components"]["obs"]["columns"][
-            self.column_name
-        ]["curie_constraints"]
+        self.column_schema = self.schema_def["components"]["obs"]["columns"][self.column_name]
+        self.curie_constraints = self.schema_def["components"]["obs"]["columns"][self.column_name]["curie_constraints"]
 
     def test_schema_definition(self):
         """
@@ -58,50 +52,34 @@ class TestFieldValidation(unittest.TestCase):
 
         # Check that any columns in obs that are "curie" have "curie_constraints" and "ontologies" under the constraints
         for i in self.schema_def["components"]["obs"]["columns"]:
-            self.assertTrue(
-                "type" in self.schema_def["components"]["obs"]["columns"][i]
-            )
+            self.assertTrue("type" in self.schema_def["components"]["obs"]["columns"][i])
             if i == "curie":
                 self.assertIsInstance(
-                    self.schema_def["components"]["obs"]["columns"][i][
-                        "curie_constrains"
-                    ],
+                    self.schema_def["components"]["obs"]["columns"][i]["curie_constrains"],
                     dict,
                 )
                 self.assertIsInstance(
-                    self.schema_def["components"]["obs"]["columns"][i][
-                        "curie_constrains"
-                    ]["ontolgies"],
+                    self.schema_def["components"]["obs"]["columns"][i]["curie_constrains"]["ontolgies"],
                     list,
                 )
 
                 # Check that the allowed ontologies are in the ontology checker
-                for ontology_name in self.schema_def["components"]["obs"]["columns"][i][
-                    "curie_constrains"
-                ]["ontolgies"]:
-                    self.assertTrue(
-                        self.OntologyChecker.is_valid_ontology(ontology_name)
-                    )
+                for ontology_name in self.schema_def["components"]["obs"]["columns"][i]["curie_constrains"][
+                    "ontolgies"
+                ]:
+                    self.assertTrue(self.OntologyChecker.is_valid_ontology(ontology_name))
 
     def test_validate_ontology_good(self):
-        self.validator._validate_curie(
-            "CL:0000066", self.column_name, self.curie_constraints
-        )
-        self.validator._validate_curie(
-            "CL:0000192", self.column_name, self.curie_constraints
-        )
+        self.validator._validate_curie("CL:0000066", self.column_name, self.curie_constraints)
+        self.validator._validate_curie("CL:0000192", self.column_name, self.curie_constraints)
         self.assertFalse(self.validator.errors)
 
     def test_validate_ontology_wrong_ontology(self):
-        self.validator._validate_curie(
-            "EFO:0009899", self.column_name, self.curie_constraints
-        )
+        self.validator._validate_curie("EFO:0009899", self.column_name, self.curie_constraints)
         self.assertTrue(self.validator.errors)
 
     def test_validate_ontology_wrong_term(self):
-        self.validator._validate_curie(
-            "NO_TERM2", self.column_name, self.curie_constraints
-        )
+        self.validator._validate_curie("NO_TERM2", self.column_name, self.curie_constraints)
         self.assertTrue(self.validator.errors)
 
 
@@ -131,12 +109,12 @@ class TestAddLabelFunctions(unittest.TestCase):
             "Trp53",
             "S",
         ]
-        expected_dict = {i: j for i, j in zip(ids, labels)}
+        expected_dict = dict(zip(ids, labels))
         self.assertEqual(self.writer._get_mapping_dict_feature_id(ids), expected_dict)
 
         # Bad
         ids = ["NO_GENE"]
-        expected_dict = {i: j for i, j in zip(ids, labels)}
+        expected_dict = dict(zip(ids, labels))
         with self.assertRaises(KeyError):
             self.writer._get_mapping_dict_feature_id(ids)
 
@@ -154,14 +132,12 @@ class TestAddLabelFunctions(unittest.TestCase):
             "NCBITaxon:10090",
             "NCBITaxon:2697049",
         ]
-        expected_dict = {i: j for i, j in zip(ids, labels)}
-        self.assertEqual(
-            self.writer._get_mapping_dict_feature_reference(ids), expected_dict
-        )
+        expected_dict = dict(zip(ids, labels))
+        self.assertEqual(self.writer._get_mapping_dict_feature_reference(ids), expected_dict)
 
         # Bad
         ids = ["NO_GENE"]
-        expected_dict = {i: j for i, j in zip(ids, labels)}
+        expected_dict = dict(zip(ids, labels))
         with self.assertRaises(KeyError):
             self.writer._get_mapping_dict_feature_id(ids)
 
@@ -169,38 +145,32 @@ class TestAddLabelFunctions(unittest.TestCase):
         # Good
         ids = ["CL:0000066", "CL:0000192"]
         labels = ["epithelial cell", "smooth muscle cell"]
-        curie_constraints = self.schema_def["components"]["obs"]["columns"][
-            "cell_type_ontology_term_id"
-        ]["curie_constraints"]
-        expected_dict = {i: j for i, j in zip(ids, labels)}
-        self.assertEqual(
-            self.writer._get_mapping_dict_curie(ids, curie_constraints), expected_dict
-        )
+        curie_constraints = self.schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"][
+            "curie_constraints"
+        ]
+        expected_dict = dict(zip(ids, labels))
+        self.assertEqual(self.writer._get_mapping_dict_curie(ids, curie_constraints), expected_dict)
 
         ids = ["EFO:0009899", "EFO:0009922"]
         labels = ["10x 3' v2", "10x 3' v3"]
-        curie_constraints = self.schema_def["components"]["obs"]["columns"][
-            "assay_ontology_term_id"
-        ]["curie_constraints"]
-        expected_dict = {i: j for i, j in zip(ids, labels)}
-        self.assertEqual(
-            self.writer._get_mapping_dict_curie(ids, curie_constraints), expected_dict
-        )
+        curie_constraints = self.schema_def["components"]["obs"]["columns"]["assay_ontology_term_id"][
+            "curie_constraints"
+        ]
+        expected_dict = dict(zip(ids, labels))
+        self.assertEqual(self.writer._get_mapping_dict_curie(ids, curie_constraints), expected_dict)
 
         ids = ["MONDO:0100096"]
         labels = ["COVID-19"]
-        curie_constraints = self.schema_def["components"]["obs"]["columns"][
-            "disease_ontology_term_id"
-        ]["curie_constraints"]
-        expected_dict = {i: j for i, j in zip(ids, labels)}
-        self.assertEqual(
-            self.writer._get_mapping_dict_curie(ids, curie_constraints), expected_dict
-        )
+        curie_constraints = self.schema_def["components"]["obs"]["columns"]["disease_ontology_term_id"][
+            "curie_constraints"
+        ]
+        expected_dict = dict(zip(ids, labels))
+        self.assertEqual(self.writer._get_mapping_dict_curie(ids, curie_constraints), expected_dict)
 
         # Bad
-        curie_constraints = self.schema_def["components"]["obs"]["columns"][
-            "cell_type_ontology_term_id"
-        ]["curie_constraints"]
+        curie_constraints = self.schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"][
+            "curie_constraints"
+        ]
 
         ids = ["CL:0000066", "CL:0000192_FOO"]
         with self.assertRaises(ValueError):
@@ -272,9 +242,7 @@ class TestValidate(unittest.TestCase):
             self.assertListEqual(errors, [])
             self.assertTrue(is_seurat_convertible)
             self.assertTrue(os.path.exists(labels_path))
-            expected_hash = (
-                "55fbc095218a01cad33390f534d6690af0ecd6593f27d7cd4d26e91072ea8835"
-            )
+            expected_hash = "55fbc095218a01cad33390f534d6690af0ecd6593f27d7cd4d26e91072ea8835"
             actual_hash = self.hash_file(labels_path)
             original_hash = self.hash_file(h5ad_valid)
             self.assertNotEqual(
@@ -317,30 +285,22 @@ class TestValidate(unittest.TestCase):
 
 class TestSeuratConvertibility(unittest.TestCase):
     def validation_helper(self, matrix):
-        data = anndata.AnnData(
-            X=matrix, obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var
-        )
+        data = anndata.AnnData(X=matrix, obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var)
         self.validator: Validator = Validator()
         self.validator._set_schema_def()
-        self.validator.schema_def["max_size_for_seurat"] = (
-            2**3 - 1
-        )  # Reduce size required to fail (faster tests)
+        self.validator.schema_def["max_size_for_seurat"] = 2**3 - 1  # Reduce size required to fail (faster tests)
         self.validator.adata = data
 
     def test_determine_seurat_convertibility(self):
         # Sparse matrix with too many nonzero values is not Seurat-convertible
-        sparse_matrix_too_large = sparse.csr_matrix(
-            np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32)
-        )
+        sparse_matrix_too_large = sparse.csr_matrix(np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32))
         self.validation_helper(sparse_matrix_too_large)
         self.validator._validate_seurat_convertibility()
         self.assertTrue(len(self.validator.warnings) == 1)
         self.assertFalse(self.validator.is_seurat_convertible)
 
         # Reducing nonzero count by 1, to within limit, makes it Seurat-convertible
-        sparse_matrix_with_zero = sparse.csr_matrix(
-            np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32)
-        )
+        sparse_matrix_with_zero = sparse.csr_matrix(np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32))
         sparse_matrix_with_zero[0, 0] = 0
         self.validation_helper(sparse_matrix_with_zero)
         self.validator._validate_seurat_convertibility()
@@ -348,9 +308,7 @@ class TestSeuratConvertibility(unittest.TestCase):
         self.assertTrue(self.validator.is_seurat_convertible)
 
         # Dense matrices with a dimension that exceeds limit will fail -- zeros are irrelevant
-        dense_matrix_with_zero = np.zeros(
-            (good_obs.shape[0], good_var.shape[0]), dtype=np.float32
-        )
+        dense_matrix_with_zero = np.zeros((good_obs.shape[0], good_var.shape[0]), dtype=np.float32)
         self.validation_helper(dense_matrix_with_zero)
         self.validator.schema_def["max_size_for_seurat"] = 2**2 - 1
         self.validator._validate_seurat_convertibility()

@@ -12,7 +12,7 @@ setup(
     author_email="cellxgene@chanzuckerberg.com",
     description="Tool for applying and validating cellxgene integration schema to single cell datasets",
     install_requires=requirements,
-    python_requires='>=3.8',
+    python_requires=">=3.8",
     packages=["cellxgene_schema"],
     package_dir={"cellxgene_schema": "cellxgene_schema"},
     package_data={"cellxgene_schema": ["ontology_files/*gz", "schema_definitions/*yaml"]},
@@ -25,5 +25,5 @@ setup(
         "Programming Language :: Python :: 3",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
-    entry_points={"console_scripts": ["cellxgene-schema = cellxgene_schema.cli:schema_cli"]}
+    entry_points={"console_scripts": ["cellxgene-schema = cellxgene_schema.cli:schema_cli"]},
 )
