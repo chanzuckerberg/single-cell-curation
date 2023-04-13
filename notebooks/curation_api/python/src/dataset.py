@@ -74,7 +74,7 @@ def get_download_links_for_assets(collection_id: str, dataset_id: str):
         failure(logger, e)
         raise e
 
-    return res.json()['assets']
+    return res.json()["assets"]
 
 
 def download_assets(collection_id: str, dataset_id: str):
