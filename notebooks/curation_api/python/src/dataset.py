@@ -88,8 +88,8 @@ def download_assets(collection_id: str, dataset_id: str):
 
     try:
         for asset in assets_response:
-            download_filename = f"{collection_id}_{dataset_id}_{asset['filename']}"
-            print(f"\nDownloading {asset['filetype']} file to {download_filename}... ")
+            download_filename = f"{dataset_id}.{asset['filetype']}"
+            print(f"\nDownloading {download_filename}... ")
             with requests.get(asset["url"], stream=True) as res:
                 res.raise_for_status()
                 filesize = int(res.headers["Content-Length"])
