@@ -64,7 +64,7 @@ def get_download_links_for_assets(collection_id: str, dataset_id: str):
     :param dataset_id: Dataset id
     :return: download links
     """
-    url = url_builder(f"/collections/{collection_id}/datasets/{dataset_id}/assets")
+    url = url_builder(f"/collections/{collection_id}/datasets/{dataset_id}/")
     headers = get_headers()
 
     try:
@@ -74,7 +74,7 @@ def get_download_links_for_assets(collection_id: str, dataset_id: str):
         failure(logger, e)
         raise e
 
-    return res.json()
+    return res.json()['assets']
 
 
 def download_assets(collection_id: str, dataset_id: str):
@@ -90,7 +90,7 @@ def download_assets(collection_id: str, dataset_id: str):
         for asset in assets_response:
             download_filename = f"{collection_id}_{dataset_id}_{asset['filename']}"
             print(f"\nDownloading {asset['filetype']} file to {download_filename}... ")
-            with requests.get(asset["presigned_url"], stream=True) as res:
+            with requests.get(asset["url"], stream=True) as res:
                 res.raise_for_status()
                 filesize = int(res.headers["Content-Length"])
                 with open(download_filename, "wb") as df:
