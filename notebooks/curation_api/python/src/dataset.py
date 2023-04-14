@@ -57,51 +57,31 @@ def delete_dataset(collection_id: str, dataset_id: str):
         success(logger, success_message)
 
 
-def get_download_links_for_assets(collection_id: str, dataset_id: str):
+def download_assets(datasets: list, log_version_id: bool = False):
     """
-    Fetch download links for assets for a Dataset
-    :param collection_id: the id of the Collection to which the Dataset belongs
-    :param dataset_id: Dataset id
-    :return: download links
-    """
-    url = url_builder(f"/collections/{collection_id}/datasets/{dataset_id}/")
-    headers = get_headers()
-
-    try:
-        res = requests.get(url, headers=headers)
-        res.raise_for_status()
-    except requests.HTTPError as e:
-        failure(logger, e)
-        raise e
-
-    return res.json()["assets"]
-
-
-def download_assets(collection_id: str, dataset_id: str):
-    """
-    Download assets locally for a Dataset
-    :param collection_id: the id of the Collection to which the Dataset belongs
-    :param dataset_id: Dataset id
+    Download assets locally for a list of Datasets
+    :param log_version_id: bool to log dataset version ID rather than dataset ID
+    :param datasets: list of full metadata Dataset json response objects.
     :return: None
     """
-    assets_response = get_download_links_for_assets(collection_id, dataset_id)
-
     try:
-        for asset in assets_response:
-            download_filename = f"{dataset_id}.{asset['filetype']}"
-            print(f"\nDownloading {download_filename}... ")
-            with requests.get(asset["url"], stream=True) as res:
-                res.raise_for_status()
-                filesize = int(res.headers["Content-Length"])
-                with open(download_filename, "wb") as df:
-                    total_bytes_received = 0
-                    for chunk in res.iter_content(chunk_size=1024 * 1024):
-                        df.write(chunk)
-                        total_bytes_received += len(chunk)
-                        percent_of_total_upload = float("{:.1f}".format(total_bytes_received / filesize * 100))
-                        color = "\033[38;5;10m" if percent_of_total_upload == 100 else ""
-                        print(f"\033[1m{color}{percent_of_total_upload}% downloaded\033[0m\r", end="")
-        print()
+        for dataset in datasets:
+            dataset_id = dataset["dataset_version_id"] if log_version_id else dataset["dataset_id"]
+            assets = dataset["assets"]
+            for asset in assets:
+                download_filename = f"{dataset_id}.{asset['filetype']}"
+                print(f"\nDownloading {download_filename}... ")
+                with requests.get(asset["url"], stream=True) as res:
+                    res.raise_for_status()
+                    filesize = int(res.headers["Content-Length"])
+                    with open(download_filename, "wb") as df:
+                        total_bytes_received = 0
+                        for chunk in res.iter_content(chunk_size=1024 * 1024):
+                            df.write(chunk)
+                            total_bytes_received += len(chunk)
+                            percent_of_total_upload = float("{:.1f}".format(total_bytes_received / filesize * 100))
+                            color = "\033[38;5;10m" if percent_of_total_upload == 100 else ""
+                            print(f"\033[1m{color}{percent_of_total_upload}% downloaded\033[0m\r", end="")
     except requests.HTTPError as e:
         failure(logger, e)
         raise e
