@@ -174,7 +174,7 @@ def upload_datafile_from_link(link: str, collection_id: str, dataset_id: str):
 
     success_message = (
         f"Uploading Dataset with id '{dataset_id}' to Collection "
-        f"{os.getenv('site_url')}/collections/{collection_id} sourcing from datafile at {link}"
+        f"{os.getenv('SITE_URL')}/collections/{collection_id} sourcing from datafile at {link}"
     )
 
     try:
