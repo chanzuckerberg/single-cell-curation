@@ -1,0 +1,36 @@
+name: Ontology Bump Dry Run
+
+on:
+  push:
+    branches: nayib/ontology-update-dry-run-demo
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Python cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          pip install owlready2
+          pip install pyyaml
+          pip install requests
+      - name: Run Dry-Run Script
+        run: python3 -m ontology_bump_dry_run
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: curator-report
+          path: curator-report.txt
+          retention-days: 30
