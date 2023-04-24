@@ -40,7 +40,7 @@ def failure(logger: logging.Logger, e, *messages):
     logger.error("\n\033[1m\033[38;5;9mFAILED\033[0m\n")  # 'FAILED' in bold red
     logger.error(e.response.reason + "\n")
     logger.error(e.response.text + "\n")
-    logger.error("x-request-id: {}".format(e.response.headers.get("x-request-id")))
+    logger.error(f"x-request-id: {e.response.headers.get('x-request-id')}")
 
     if messages:
         [logger.error(m) for m in messages]
