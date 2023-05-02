@@ -13,13 +13,13 @@ gene-processing: download-gtf-human download-gtf-mouse download-gtf-covid19 down
 download-gtf-human:
 	mkdir -p temp
 	echo Downloading human GTF
-	curl -o ./temp/homo_sapiens.gtf.gz http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_38/gencode.v38.primary_assembly.annotation.gtf.gz
+	curl -o ./temp/homo_sapiens.gtf.gz $(yq .human.url ./cellxgene_schema/ontology_files/gene_info.yml)
 
 .PHONY: download-gtf-mouse
 download-gtf-mouse:
 	mkdir -p temp
 	echo Downloading mouse GTF
-	curl -o ./temp/mus_musculus.gtf.gz http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M27/gencode.vM27.primary_assembly.annotation.gtf.gz
+	curl -o ./temp/homo_sapiens.gtf.gz $(yq .mouse.url ./cellxgene_schema/ontology_files/gene_info.yml)
 
 .PHONY: download-gtf-covid19
 download-gtf-covid19:

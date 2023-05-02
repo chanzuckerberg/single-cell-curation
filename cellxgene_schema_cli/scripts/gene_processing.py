@@ -4,6 +4,7 @@ import sys
 from typing import Dict
 
 import gtf_tools
+import yaml
 
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../cellxgene_schema"))
 import env
@@ -54,7 +55,8 @@ def _parse_gtf(gtf_path: str, output_file: str):
                 if feature in current_features:
                     target_features[i] = current_features[feature]
 
-                # if the symbol starts with ENSG and it does not match the Ensembl ID, then the symbol used should be the Ensembl ID
+                # if the symbol starts with ENSG and it does not match the Ensembl ID, then the symbol used should be
+                # the Ensembl ID
                 if (
                     feature in ["gene_name"]
                     and current_features[feature].startswith("ENSG")
@@ -158,8 +160,53 @@ def _process_ercc(ercc_path: str, output_file: str):
         output.write(output_to_print)
 
 
-if __name__ == "__main__":
+def get_latest_release_from_gencode(species: str) -> dict:
+    """
+    return a URL to the latest release of annotations from https://www.gencodegenes.org/ for mouse or human.
+    :param species:mouse or human
+    :return:
+    """
+    import ftplib
+
+    server = "ftp.ebi.ac.uk"
+    ftp = ftplib.FTP(server)
+    ftp.login()
+    ftp.cwd(f"/pub/databases/gencode/Gencode_{species}/latest_release/")
+    file_name = [*filter(lambda x: x.endswith(".primary_assembly.annotation.gtf.gz"), ftp.nlst())][0]
+    release_version = file_name.split(".")[1][1:]
+
+    release_url = f"https://{server}/pub/databases/gencode/Gencode_{species}/release_{release_version}/"
+    return {"version": release_version, "URL": release_url}
+
+
+def update_gene_info():
+    """
+    Get the current version and compare it to the latest. Update the version in the yaml files
+    :return:
+    """
+    with open(env.GENE_INFO_YAML, "r") as gene_info_handle:
+        gene_info = yaml.safe_load(gene_info_handle)
+
+    gene_info_updates = {}
+    for species in ["mouse", "human"]:
+        latest_version = get_latest_release_from_gencode(species)
+        if gene_info[species]["version"] == latest_version["version"]:
+            print(f"{species} is update to date with latest")
+        else:
+            gene_info_updates[species] = latest_version
+
+    if gene_info_updates:
+        gene_info.update(**gene_info_updates)
+        with open(env.GENE_INFO_YAML, "w") as gene_info_handle:
+            yaml.dump(gene_info)
+
+
+def main():
     _parse_gtf("./temp/mus_musculus.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_mus_musculus.csv.gz"))
     _parse_gtf("./temp/homo_sapiens.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_homo_sapiens.csv.gz"))
     _parse_gtf("./temp/sars_cov_2.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_sars_cov_2.csv.gz"))
     _process_ercc("./temp/ercc.txt", os.path.join(env.ONTOLOGY_DIR, "genes_ercc.csv.gz"))
+
+
+if __name__ == "__main__":
+    main()
