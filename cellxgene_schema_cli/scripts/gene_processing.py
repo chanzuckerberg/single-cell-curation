@@ -1,6 +1,8 @@
 import gzip
 import os
 import sys
+import urllib.request
+from multiprocessing import Process
 from typing import Dict
 
 import gtf_tools
@@ -160,52 +162,37 @@ def _process_ercc(ercc_path: str, output_file: str):
         output.write(output_to_print)
 
 
-def get_latest_release_from_gencode(species: str) -> dict:
+def process_gene_info(gene_info: dict) -> None:
     """
-    return a URL to the latest release of annotations from https://www.gencodegenes.org/ for mouse or human.
-    :param species:mouse or human
-    :return:
+    Download the gene_info and convert it into a csv
+    :param gene_info: context to download and process the gene information.
     """
-    import ftplib
-
-    server = "ftp.ebi.ac.uk"
-    ftp = ftplib.FTP(server)
-    ftp.login()
-    ftp.cwd(f"/pub/databases/gencode/Gencode_{species}/latest_release/")
-    file_name = [*filter(lambda x: x.endswith(".primary_assembly.annotation.gtf.gz"), ftp.nlst())][0]
-    release_version = file_name.split(".")[1][1:]
-
-    release_url = f"https://{server}/pub/databases/gencode/Gencode_{species}/release_{release_version}/"
-    return {"version": release_version, "URL": release_url}
-
-
-def update_gene_info():
-    """
-    Get the current version and compare it to the latest. Update the version in the yaml files
-    :return:
-    """
-    with open(env.GENE_INFO_YAML, "r") as gene_info_handle:
-        gene_info = yaml.safe_load(gene_info_handle)
-
-    gene_info_updates = {}
-    for species in ["mouse", "human"]:
-        latest_version = get_latest_release_from_gencode(species)
-        if gene_info[species]["version"] == latest_version["version"]:
-            print(f"{species} is update to date with latest")
-        else:
-            gene_info_updates[species] = latest_version
-
-    if gene_info_updates:
-        gene_info.update(**gene_info_updates)
-        with open(env.GENE_INFO_YAML, "w") as gene_info_handle:
-            yaml.dump(gene_info)
+    print("download", gene_info["description"])
+    temp_file_path, _ = urllib.request.urlretrieve(gene_info["url"])
+    print("process", gene_info["description"])
+    gene_info["processor"](temp_file_path, gene_info["new_file"])
+    print("finish", gene_info["description"])
 
 
 def main():
-    _parse_gtf("./temp/mus_musculus.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_mus_musculus.csv.gz"))
-    _parse_gtf("./temp/homo_sapiens.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_homo_sapiens.csv.gz"))
-    _parse_gtf("./temp/sars_cov_2.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_sars_cov_2.csv.gz"))
-    _process_ercc("./temp/ercc.txt", os.path.join(env.ONTOLOGY_DIR, "genes_ercc.csv.gz"))
+    with open(env.GENE_INFO_YAML, "r") as gene_info_handle:
+        gene_infos: dict = yaml.safe_load(gene_info_handle)
+
+    ps = []
+    for gene_info in gene_infos.values():
+        gene_info["new_file"] = os.path.join(env.ONTOLOGY_DIR, f"genes_{gene_info['description']}.csv.gz")
+        if gene_info["file_type"] == "gtf.gz":
+            gene_info["processor"] = _parse_gtf
+        elif gene_info["file_type"] == "txt":
+            gene_info["processor"] = _process_ercc
+        else:
+            raise TypeError(f"unknown file type: {gene_info['file_type']}")
+        p = Process(target=process_gene_info, args=(gene_info,))
+        p.start()
+        ps.append(p)
+
+    for p in ps:
+        p.join()
 
 
 if __name__ == "__main__":

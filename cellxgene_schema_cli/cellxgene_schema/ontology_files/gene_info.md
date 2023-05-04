@@ -6,7 +6,7 @@ Bellow is a description of the expected fields.
 
 ```
 {id}:                 (object, required)                  used to identify the dataset
-    file_description: (str, required)                     can only container characters valid in a file name.
+    description: (str, required)                     can only container characters valid in a file name.
     file_type:        (str, required)                     the file type to save the file as.
     version:          (str, optional, default is None)    use to track the current version of the data used
     url:              (str, required)                     the URL pointing at the data to download.
