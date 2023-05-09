@@ -16,11 +16,11 @@ def dry_run():
     # Load processed ontologies file
     ontologies = "cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz"
     with gzip.open(ontologies, "r") as f:
-        onto_map = json.loads(f.read().decode('utf-8'))
+        onto_map = json.loads(f.read().decode("utf-8"))
 
     # fetch all currently published datasets
     # TODO: include datasets from private collections (requires curator auth, do not upload to GHA)
-    base_url = API_URL[os.getenv("env", default="dev")]
+    base_url = API_URL[os.getenv("corpus_env", default="dev")]
     datasets = requests.get(f"{base_url}/curation/v1/datasets").json()
     # dataset metadata fields that contain ontology terms
     ontology_types = {
