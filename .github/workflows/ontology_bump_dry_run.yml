@@ -2,6 +2,7 @@ name: Ontology Bump Dry Run
 
 on:
   push:
+    # TODO: change after testing
     branches: nayib/ontology-update-dry-run-demo
 
 jobs:
@@ -23,14 +24,15 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          pip install owlready2
-          pip install pyyaml
-          pip install requests
+          pip install -r schema_bump_dry_run_scripts/ontologies/requirements.txt
       - name: Run Dry-Run Script
-        run: python3 -m ontology_bump_dry_run
+        run: python3 -m schema_bump_dry_run_scripts.ontologies.ontology_bump_dry_run
+        env:
+          - env: "dev" # TODO: Change to dynamic or prod once ready to deploy
+      # TODO: temp upload while waiting to integrate with Slack
       - uses: actions/upload-artifact@v2
         if: always()
         with:
-          name: curator-report
-          path: curator-report.txt
+          name: ontologies-curator-report
+          path: ontologies-curator-report.txt
           retention-days: 30

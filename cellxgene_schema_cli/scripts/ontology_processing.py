@@ -136,9 +136,18 @@ def _parse_owls(
             # Add the "deprecated" status
             onto_dict[onto.name][term_id]["deprecated"] = False
             if onto_class.deprecated and onto_class.deprecated.first():
+                # if deprecated, include information to determine replacement term(s)
                 onto_dict[onto.name][term_id]["deprecated"] = True
-
-                # Gets ancestors
+                if onto_class.IAO_0100001 and onto_class.IAO_0100001.first():
+                    # url --> term
+                    ontology_term = str(onto_class.IAO_0100001[0]).split("/")[-1]
+                    onto_dict[onto.name][term_id]["replaced_by"] = ontology_term
+                else:
+                    if hasattr(onto_class, "consider") and onto_class.consider:
+                        onto_dict[onto.name][term_id]["consider"] = [str(c) for c in onto_class.consider]
+                    if onto_class.comment:
+                        onto_dict[onto.name][term_id]["comments"] = [str(c) for c in onto_class.comment]
+            # Gets ancestors
             ancestors = _get_ancestors(onto_class, onto.name)
 
             # If "children_of" specified in owl info then skip the current term if it is
