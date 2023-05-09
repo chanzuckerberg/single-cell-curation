@@ -16,9 +16,7 @@ def get_latest_release_from_gencode(species: str) -> dict:
     ftp.cwd(f"/pub/databases/gencode/Gencode_{species}/latest_release/")
     file_name = [*filter(lambda x: x.endswith(".primary_assembly.annotation.gtf.gz"), ftp.nlst())][0]
     release_version = file_name.split(".")[1][1:]
-
-    release_url = f"https://{server}/pub/databases/gencode/Gencode_{species}/release_{release_version}/"
-    return {"version": release_version, "URL": release_url}
+    return {"version": release_version}
 
 
 def update_gene_info():

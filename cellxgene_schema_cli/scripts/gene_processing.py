@@ -181,12 +181,17 @@ def main():
     ps = []
     for gene_info in gene_infos.values():
         gene_info["new_file"] = os.path.join(env.ONTOLOGY_DIR, f"genes_{gene_info['description']}.csv.gz")
-        if gene_info["file_type"] == "gtf.gz":
+        # determine how to process based on file type
+        if gene_info["url"].endswith("gtf.gz"):
             gene_info["processor"] = _parse_gtf
-        elif gene_info["file_type"] == "txt":
+        elif gene_info["url"].endswith("txt"):
             gene_info["processor"] = _process_ercc
         else:
             raise TypeError(f"unknown file type: {gene_info['file_type']}")
+
+        # add version to URL if needed
+        if gene_info.get("version"):
+            gene_info["url"] = gene_info["url"].format(version=gene_info["version"])
         p = Process(target=process_gene_info, args=(gene_info,))
         p.start()
         ps.append(p)
