@@ -17,7 +17,7 @@ def get_auth_token(base_url: str):
     claims = "openid profile email offline"
     auth0_secrets = json.loads(os.getenv('AUTH0_SECRETS'))
     response = requests.post(
-        f"https://{auth0_secrets['auth0_domain']}",
+        f"https://{auth0_secrets['auth0_domain']}/oauth/token",
         headers={"content-type": "application/x-www-form-urlencoded"},
         data=dict(
             grant_type="password",
