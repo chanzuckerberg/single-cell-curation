@@ -2,8 +2,9 @@ name: Ontology Bump Dry Run
 
 on:
   push:
-    # TODO: change after testing
-    branches: nayib/ontology-update-dry-run-demo
+    branches: main
+    paths:
+      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
 
 jobs:
   dry-run:
@@ -28,7 +29,7 @@ jobs:
       - name: Run Dry-Run Script
         run: python3 -m schema_bump_dry_run_scripts.ontologies.ontology_bump_dry_run
         env:
-          corpus_env: "dev" # TODO: Change to dynamic or prod once ready to deploy
+          corpus_env: "dev" # TODO: Change to prod once ready to deploy
       # TODO: temp upload while waiting to integrate with Slack
       - uses: actions/upload-artifact@v2
         if: always()
