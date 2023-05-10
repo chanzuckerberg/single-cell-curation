@@ -6,7 +6,7 @@ on:
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/owl_info.yml'
 
 jobs:
-  gene-processing:
+  ontology-processing:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
