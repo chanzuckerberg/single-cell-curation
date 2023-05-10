@@ -2,9 +2,12 @@ name: Ontology Bump Dry Run
 
 on:
   push:
-    branches: main
+    branches:
+      - main
+      - nayib/dry-run-with-private-collections # TODO: temp while testing, remove before merge
     paths:
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
+      - '**/.github/workflows/ontology_bump_dry_run/yml' # TODO: temp while testing, remove before merge
 
 jobs:
   dry-run:
@@ -26,10 +29,26 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r schema_bump_dry_run_scripts/ontologies/requirements.txt
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - name: Pull AWS Secrets
+        uses: aws-actions/aws-secretsmanager-get-secrets@v1
+        with:
+          # TODO: Change to prod and make separate, manual dev workflow once ready to deploy
+          secret-ids:
+            client_id, corpora/backend/dev/auth0-secret/curator_api_client_id
+            client_secret, corpora/backend/dev/auth0-secret/curator_api_client_secret
+            password, corpora/backend/dev/auth0-secret/test_account_password
+            username, corpora/backend/dev/auth0-secret/test_account_username
+            auth0_domain, corpora/backend/dev/auth0-secret/auth0_domain
       - name: Run Dry-Run Script
         run: python3 -m schema_bump_dry_run_scripts.ontologies.ontology_bump_dry_run
         env:
-          corpus_env: "dev" # TODO: Change to prod once ready to deploy
+          corpus_env: "dev" # TODO: Change to prod and make separate, manual dev workflow once ready to deploy
       # TODO: temp upload while waiting to integrate with Slack
       - uses: actions/upload-artifact@v2
         if: always()

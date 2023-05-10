@@ -6,11 +6,32 @@ import os
 
 import requests
 
-API_URL = {
-    "prod": "https://api.cellxgene.cziscience.com",
-    "staging": "https://api.cellxgene.staging.single-cell.czi.technology",
-    "dev": "https://api.cellxgene.dev.single-cell.czi.technology",
+BASE_API = {
+    "prod": "api.cellxgene.cziscience.com",
+    "staging": "api.cellxgene.staging.single-cell.czi.technology",
+    "dev": "api.cellxgene.dev.single-cell.czi.technology",
 }
+
+
+def get_auth_token(base_url: str):
+    claims = "openid profile email offline"
+    response = requests.post(
+        f"https://{os.getenv('auth0_domain')}",
+        headers={"content-type": "application/x-www-form-urlencoded"},
+        data=dict(
+            grant_type="password",
+            username=os.getenv("username"),
+            password=os.getenv("password"),
+            audience=base_url,
+            scope=claims,
+            client_id=os.getenv("client_id"),
+            client_secret=os.getenv("client_secret"),
+        ),
+    )
+    access_token = response.json()["access_token"]
+    id_token = response.json()["id_token"]
+    token = {"access_token": access_token, "id_token": id_token}
+    return token
 
 
 def dry_run():
@@ -20,9 +41,11 @@ def dry_run():
         onto_map = json.loads(f.read())
 
     # fetch all currently published datasets
+    base_url = BASE_API[os.getenv("corpus_env", default="dev")]
+    auth_token = get_auth_token(base_url)
     # TODO: include datasets from private collections (requires curator auth, do not upload to GHA)
-    base_url = API_URL[os.getenv("corpus_env", default="dev")]
-    datasets = requests.get(f"{base_url}/curation/v1/datasets").json()
+    datasets = requests.get(f"https://{base_url}/curation/v1/datasets").json()
+    private_datasets = requests.get(f"https://{base_url}/curation/v1/datasets").json()
     # dataset metadata fields that contain ontology terms
     ontology_types = {
         "assay",
