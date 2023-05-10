@@ -16,16 +16,16 @@ BASE_API = {
 def get_auth_token(base_url: str):
     claims = "openid profile email offline"
     response = requests.post(
-        f"https://{os.getenv('auth0_domain')}",
+        f"https://{os.getenv('AUTH0_DOMAIN')}",
         headers={"content-type": "application/x-www-form-urlencoded"},
         data=dict(
             grant_type="password",
-            username=os.getenv("username"),
-            password=os.getenv("password"),
+            username=os.getenv("USERNAME"),
+            password=os.getenv("PASSWORD"),
             audience=base_url,
             scope=claims,
-            client_id=os.getenv("client_id"),
-            client_secret=os.getenv("client_secret"),
+            client_id=os.getenv("CLIENT_ID"),
+            client_secret=os.getenv("CLIENT_SECRET"),
         ),
     )
     access_token = response.json()["access_token"]

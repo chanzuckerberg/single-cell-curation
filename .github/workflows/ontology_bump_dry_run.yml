@@ -44,11 +44,11 @@ jobs:
         with:
           # TODO: Change to prod and make separate, manual dev workflow once ready to deploy
           secret-ids:
-            client_id, corpora/backend/dev/auth0-secret/curator_api_client_id
-            client_secret, corpora/backend/dev/auth0-secret/curator_api_client_secret
-            password, corpora/backend/dev/auth0-secret/test_account_password
-            username, corpora/backend/dev/auth0-secret/test_account_username
-            auth0_domain, corpora/backend/dev/auth0-secret/auth0_domain
+            CLIENT_ID, corpora/backend/dev/auth0-secret/curator_api_client_id
+            CLIENT_SECRET, corpora/backend/dev/auth0-secret/curator_api_client_secret
+            PASSWORD, corpora/backend/dev/auth0-secret/test_account_password
+            USERNAME, corpora/backend/dev/auth0-secret/test_account_username
+            AUTH0_DOMAIN, corpora/backend/dev/auth0-secret/auth0_domain
       - name: Run Dry-Run Script
         run: python3 -m schema_bump_dry_run_scripts.ontologies.ontology_bump_dry_run
         env:
