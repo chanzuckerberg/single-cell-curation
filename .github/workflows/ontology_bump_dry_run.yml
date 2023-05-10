@@ -1,0 +1,39 @@
+name: Ontology Bump Dry Run
+
+on:
+  push:
+    branches: main
+    paths:
+      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Python cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          pip install -r schema_bump_dry_run_scripts/ontologies/requirements.txt
+      - name: Run Dry-Run Script
+        run: python3 -m schema_bump_dry_run_scripts.ontologies.ontology_bump_dry_run
+        env:
+          corpus_env: "dev" # TODO: Change to prod once ready to deploy
+      # TODO: temp upload while waiting to integrate with Slack
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: ontologies-curator-report
+          path: ontologies-curator-report.txt
+          retention-days: 30
