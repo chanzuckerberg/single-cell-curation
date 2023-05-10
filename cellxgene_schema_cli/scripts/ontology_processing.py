@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import urllib.request
+from threading import Thread
 
 import owlready2
 import yaml
@@ -27,23 +28,33 @@ def _download_owls(owl_info_yml: str = env.OWL_INFO_YAML, output_dir: str = env.
     with open(owl_info_yml, "r") as owl_info_handle:
         owl_info = yaml.safe_load(owl_info_handle)
 
-    for ontology, _info in owl_info.items():
-        print(f"Downloading {ontology}")
+    def download(_ontology):
+        print(f"Start Downloading {_ontology}")
 
         # Get owl info
-        latest_version = owl_info[ontology]["latest"]
-        url = owl_info[ontology]["urls"][latest_version]
+        latest_version = owl_info[_ontology]["latest"]
+        url = owl_info[_ontology]["urls"][latest_version]
 
         # Format of owl (handles cases where they are compressed)
         download_format = url.split(".")[-1]
 
-        output_file = os.path.join(output_dir, ontology + ".owl")
+        output_file = os.path.join(output_dir, _ontology + ".owl")
         if download_format == "gz":
             urllib.request.urlretrieve(url, output_file + ".gz")
             _decompress(output_file + ".gz", output_file)
             os.remove(output_file + ".gz")
         else:
             urllib.request.urlretrieve(url, output_file)
+        print(f"Finish Downloading {_ontology}")
+
+    threads = []
+    for ontology, _ in owl_info.items():
+        t = Thread(target=download, args=(ontology,))
+        t.start()
+        threads.append(t)
+
+    for t in threads:
+        t.join()
 
 
 def _decompress(infile: str, tofile: str):
@@ -136,9 +147,18 @@ def _parse_owls(
             # Add the "deprecated" status
             onto_dict[onto.name][term_id]["deprecated"] = False
             if onto_class.deprecated and onto_class.deprecated.first():
+                # if deprecated, include information to determine replacement term(s)
                 onto_dict[onto.name][term_id]["deprecated"] = True
-
-                # Gets ancestors
+                if onto_class.IAO_0100001 and onto_class.IAO_0100001.first():
+                    # url --> term
+                    ontology_term = str(onto_class.IAO_0100001[0]).split("/")[-1]
+                    onto_dict[onto.name][term_id]["replaced_by"] = ontology_term
+                else:
+                    if hasattr(onto_class, "consider") and onto_class.consider:
+                        onto_dict[onto.name][term_id]["consider"] = [str(c) for c in onto_class.consider]
+                    if onto_class.comment:
+                        onto_dict[onto.name][term_id]["comments"] = [str(c) for c in onto_class.comment]
+            # Gets ancestors
             ancestors = _get_ancestors(onto_class, onto.name)
 
             # If "children_of" specified in owl info then skip the current term if it is
