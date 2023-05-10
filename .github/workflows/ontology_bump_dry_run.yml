@@ -44,7 +44,7 @@ jobs:
         with:
           # TODO: Change to prod and make separate, manual dev workflow once ready to deploy
           secret-ids:
-            AUTH0_SECRETS, corpora/backend/dev/auth0-secret/
+            AUTH0_SECRETS, corpora/backend/dev/auth0-secret
       - name: Run Dry-Run Script
         run: python3 -m schema_bump_dry_run_scripts.ontologies.ontology_bump_dry_run
         env:
