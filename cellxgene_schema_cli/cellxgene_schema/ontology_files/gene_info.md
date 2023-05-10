@@ -1,7 +1,5 @@
-This file describes the expected format of *[gene_info.yml](./gene_info.yml)*. It is used to track is used to track the
-current
-version of
-gene data to be download from various sources.
+This file describes the expected format of *[gene_info.yml](./gene_info.yml)*. It is used to track the
+current version of gene data to be download from various sources.
 
 ### FORMAT
 
