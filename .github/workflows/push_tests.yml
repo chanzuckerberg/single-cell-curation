@@ -25,6 +25,8 @@ jobs:
           filters: |
             owl_info:
               - 'cellxgene_schema_cli/cellxgene_schema/ontology_files/owl_info.yml'
+            gene_info:
+              - 'cellxgene_schema_cli/cellxgene_schema/ontology_files/gene_info.yml'
 
   ontology-processing:
     runs-on: ubuntu-latest
@@ -49,15 +51,25 @@ jobs:
       - name: install requirements
         run: |
           pip install -r cellxgene_schema_cli/requirements.txt
+      - name: setup git
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
       - name: owl-processing
         if: ${{ needs.ontology-changes.outputs.owl_info == 'true' }}
         run: |
           make download-ontologies -C cellxgene_schema_cli
+          git add ./cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz
+      - name: gene-processing
+        if: ${{ needs.ontology-changes.outputs.gene_info == 'true' }}
+        run: |
+          make gene-processing -C cellxgene_schema_cli
+          git add ./cellxgene_schema_cli/cellxgene_schema/ontology_files/genes_ercc.csv.gz
+          git add ./cellxgene_schema_cli/cellxgene_schema/ontology_files/genes_sars_cov_2.csv.gz
+          git add ./cellxgene_schema_cli/cellxgene_schema/ontology_files/genes_homo_sapiens.csv.gz
+          git add ./cellxgene_schema_cli/cellxgene_schema/ontology_files/genes_mus_musculus.csv.gz
       - name: Commit
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add ./cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz
           git commit -m "AUTO: update ontologies"
           git push
 

@@ -1,6 +1,6 @@
 human:
   description: homo_sapiens
-  version: '38'
+  version: 38
   url: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_{version}/gencode.v{version}.primary_assembly.annotation.gtf.gz
 mouse:
   description: mus_musculus
