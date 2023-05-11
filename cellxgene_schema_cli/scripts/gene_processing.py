@@ -1,9 +1,12 @@
 import gzip
 import os
 import sys
+import urllib.request
+from multiprocessing import Process
 from typing import Dict
 
 import gtf_tools
+import yaml
 
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../cellxgene_schema"))
 import env
@@ -54,7 +57,8 @@ def _parse_gtf(gtf_path: str, output_file: str):
                 if feature in current_features:
                     target_features[i] = current_features[feature]
 
-                # if the symbol starts with ENSG and it does not match the Ensembl ID, then the symbol used should be the Ensembl ID
+                # if the symbol starts with ENSG and it does not match the Ensembl ID, then the symbol used should be
+                # the Ensembl ID
                 if (
                     feature in ["gene_name"]
                     and current_features[feature].startswith("ENSG")
@@ -158,8 +162,43 @@ def _process_ercc(ercc_path: str, output_file: str):
         output.write(output_to_print)
 
 
+def process_gene_info(gene_info: dict) -> None:
+    """
+    Download the gene_info and convert it into a csv
+    :param gene_info: context to download and process the gene information.
+    """
+    print("download", gene_info["description"])
+    temp_file_path, _ = urllib.request.urlretrieve(gene_info["url"])
+    print("process", gene_info["description"])
+    gene_info["processor"](temp_file_path, gene_info["new_file"])
+    print("finish", gene_info["description"])
+
+
+def main():
+    with open(env.GENE_INFO_YAML, "r") as gene_info_handle:
+        gene_infos: dict = yaml.safe_load(gene_info_handle)
+
+    ps = []
+    for gene_info in gene_infos.values():
+        gene_info["new_file"] = os.path.join(env.ONTOLOGY_DIR, f"genes_{gene_info['description']}.csv.gz")
+        # determine how to process based on file type
+        if gene_info["url"].endswith("gtf.gz"):
+            gene_info["processor"] = _parse_gtf
+        elif gene_info["url"].endswith("txt"):
+            gene_info["processor"] = _process_ercc
+        else:
+            raise TypeError(f"unknown file type: {gene_info['file_type']}")
+
+        # add version to URL if needed
+        if gene_info.get("version"):
+            gene_info["url"] = gene_info["url"].format(version=gene_info["version"])
+        p = Process(target=process_gene_info, args=(gene_info,))
+        p.start()
+        ps.append(p)
+
+    for p in ps:
+        p.join()
+
+
 if __name__ == "__main__":
-    _parse_gtf("./temp/mus_musculus.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_mus_musculus.csv.gz"))
-    _parse_gtf("./temp/homo_sapiens.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_homo_sapiens.csv.gz"))
-    _parse_gtf("./temp/sars_cov_2.gtf.gz", os.path.join(env.ONTOLOGY_DIR, "genes_sars_cov_2.csv.gz"))
-    _process_ercc("./temp/ercc.txt", os.path.join(env.ONTOLOGY_DIR, "genes_ercc.csv.gz"))
+    main()
