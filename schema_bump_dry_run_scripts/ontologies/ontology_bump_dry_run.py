@@ -24,21 +24,11 @@ ONTOLOGY_TYPES = {
 }
 
 
-def get_headers():
-    claims = "openid profile email offline read:collections write:collections"
+def get_headers(base_url):
     auth0_secrets = json.loads(os.getenv('AUTH0_SECRETS'))
     response = requests.post(
-        f"https://{auth0_secrets['auth0_domain']}/oauth/token",
-        headers={"content-type": "application/x-www-form-urlencoded"},
-        data=dict(
-            grant_type="password",
-            username=auth0_secrets["test_auth0_user_account"],
-            password=auth0_secrets["test_auth0_user_account_password"],
-            audience=auth0_secrets["curation_audience"],
-            scope=claims,
-            client_id=auth0_secrets["client_id"],
-            client_secret=auth0_secrets["client_secret"],
-        ),
+        f"https://{base_url}/curation/v1/auth/token",
+        headers={"x-api-key": f"{auth0_secrets['super_curator_api_key']}"}
     )
     access_token = response.json()["access_token"]
     return {"Authorization": f"Bearer {access_token}"}
@@ -97,7 +87,7 @@ def dry_run():
         report_deprecated_terms(dataset, dataset["collection_id"], onto_map, non_deprecated_term_cache)
 
     # get private collections
-    headers = get_headers()
+    headers = get_headers(base_url)
     private_collections = requests.get(
         f"https://{base_url}/curation/v1/collections?visibility=PRIVATE",
         headers=headers
