@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - tsmith/ontology-slack-4782 # TODO: temp while testing, remove before merge
+      - nayib/dry-run-with-private-collections # TODO: temp while testing, remove before merge
     paths:
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
       - '**/.github/workflows/ontology_bump_dry_run.yml' # TODO: temp while testing, remove before merge
