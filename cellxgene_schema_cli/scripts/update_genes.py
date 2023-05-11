@@ -1,14 +1,15 @@
+import ftplib
+
 import yaml
 from cellxgene_schema import env
 
 
-def get_latest_release_from_gencode(species: str) -> dict:
+def get_latest_release_from_gencode(species: str) -> str:
     """
     return a URL to the latest release of annotations from https://www.gencodegenes.org/ for mouse or human.
     :param species:mouse or human
     :return:
     """
-    import ftplib
 
     server = "ftp.ebi.ac.uk"
     ftp = ftplib.FTP(server)
@@ -16,7 +17,7 @@ def get_latest_release_from_gencode(species: str) -> dict:
     ftp.cwd(f"/pub/databases/gencode/Gencode_{species}/latest_release/")
     file_name = [*filter(lambda x: x.endswith(".primary_assembly.annotation.gtf.gz"), ftp.nlst())][0]
     release_version = file_name.split(".")[1][1:]
-    return {"version": release_version}
+    return release_version
 
 
 def update_gene_info():
@@ -33,11 +34,11 @@ def update_gene_info():
             print(f"{key} has no version")
             continue
         latest_version = get_latest_release_from_gencode(key)
-        if gene_info["version"] == latest_version["version"]:
-            print(f"{key} is update to date with latest: {gene_info['version']}")
+        if gene_info["version"] == latest_version:
+            print(f"{key} is up to date with latest: {gene_info['version']}")
         else:
-            print(f"updating {key}: {gene_info['version']} -> {latest_version['version']}")
-            gene_info["version"] = latest_version["version"]
+            print(f"updating {key}: {gene_info['version']} -> {latest_version}")
+            gene_info["version"] = latest_version
             gene_info_updated = True
 
     if gene_info_updated:
