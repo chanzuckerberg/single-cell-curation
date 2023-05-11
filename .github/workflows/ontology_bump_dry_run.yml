@@ -8,6 +8,7 @@ on:
     paths:
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
       - '**/.github/workflows/ontology_bump_dry_run.yml' # TODO: temp while testing, remove before merge
+      - '**/schema_bump_dry_run_scripts/ontologies/ontology_bump_dry_run.py' # TODO: temp while testing, remove before merge
 
 permissions:
   id-token: write
