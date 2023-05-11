@@ -57,3 +57,7 @@ jobs:
           name: ontologies-curator-report
           path: ontologies-curator-report.txt
           retention-days: 30
+      - name: upload to slack
+        run: |
+          curl -F file=@ontologies-curator-report.txt -F "initial_comment=Ontology Dry Run Report" -F channels=${{secret.SLACK_CURATOR_REPORTING_CHANNEL}} -H "Authorization: Bearer ${{secret.SLACK_CURATOR_REPORTING_APP_AUTH}}" https://slack.com/api/files.upload
+
