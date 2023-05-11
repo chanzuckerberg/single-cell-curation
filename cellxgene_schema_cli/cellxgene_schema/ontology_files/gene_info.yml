@@ -1,14 +1,14 @@
-human:
-  description: homo_sapiens
-  version: 38
-  url: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_{version}/gencode.v{version}.primary_assembly.annotation.gtf.gz
-mouse:
-  description: mus_musculus
-  version: M27
-  url: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_{version}/gencode.v{version}.primary_assembly.annotation.gtf.gz
-sars_cov_2:
-  description: sars_cov_2
-  url: ftp://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz
 ercc:
   description: ercc
   url: https://assets.thermofisher.com/TFS-Assets/LSG/manuals/cms_095047.txt
+human:
+  description: homo_sapiens
+  url: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_{version}/gencode.v{version}.primary_assembly.annotation.gtf.gz
+  version: '43'
+mouse:
+  description: mus_musculus
+  url: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_{version}/gencode.v{version}.primary_assembly.annotation.gtf.gz
+  version: M32
+sars_cov_2:
+  description: sars_cov_2
+  url: ftp://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz
