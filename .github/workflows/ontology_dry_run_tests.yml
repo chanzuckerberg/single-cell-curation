@@ -1,4 +1,4 @@
-name: Ontology Bump Dry Run
+name: Ontology Bump Dry Run Test
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
     paths:
       - '**/schema_bump_dry_run_scripts/**'
 
+jobs:
   ontology-dry-run-tests:
     runs-on: ubuntu-latest
     steps:
