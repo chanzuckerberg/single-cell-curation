@@ -56,7 +56,7 @@ def get_headers(base_url):
 
 
 def report_deprecated_terms(
-        output_file, dataset, collection_id, onto_map, non_deprecated_term_cache, revision_of=False
+    output_file, dataset, collection_id, onto_map, non_deprecated_term_cache, revision_of=False
 ):
     with open(output_file, "a") as f:
         for ontology_type in ONTOLOGY_TYPES:
@@ -76,7 +76,7 @@ def report_deprecated_terms(
                     if ontology["deprecated"]:
                         replaced_in_diff_ontology = False
                         if "replaced_by" in ontology:
-                            replacement_term_ontology = ontology['replaced_by'].split("_")[0]
+                            replacement_term_ontology = ontology["replaced_by"].split("_")[0]
                             if replacement_term_ontology != term_prefix:
                                 replaced_in_diff_ontology = True
                         if "replaced_by" not in ontology or replaced_in_diff_ontology:

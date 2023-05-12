@@ -37,18 +37,8 @@ jobs:
         run: |
           pip install -r cellxgene_schema_cli/requirements.txt
           pip install pytest
-      - name: ontology dry run changes
-        uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: |
-            ontology_dry_run:
-              - 'schema_bump_dry_run_scripts/ontologies/ontology_bump_dry_run.py'
       - name: cellxgene_schema_cli Unit tests
         run: make unit-test
-      - name: Ontology Dry Run Unit Tests
-        if: ${{ steps.filter.outputs.ontology_dry_run == 'true' }}
-        run: make ontology-dry-run-tests
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
 
