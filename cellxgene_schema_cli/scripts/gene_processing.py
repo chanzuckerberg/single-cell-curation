@@ -169,6 +169,8 @@ def process_gene_info(gene_info: dict) -> None:
     """
     print("download", gene_info["description"])
     temp_file_path, _ = urllib.request.urlretrieve(gene_info["url"])
+    print("backup_previous")
+    os.rename(gene_info["new_file"], gene_info["new_file"] + ".bak")
     print("process", gene_info["description"])
     gene_info["processor"](temp_file_path, gene_info["new_file"])
     print("finish", gene_info["description"])
