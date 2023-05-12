@@ -25,10 +25,9 @@ ONTOLOGY_TYPES = {
 
 
 def get_headers(base_url):
-    auth0_secrets = json.loads(os.getenv('AUTH0_SECRETS'))
+    auth0_secrets = json.loads(os.getenv("AUTH0_SECRETS"))
     response = requests.post(
-        f"https://{base_url}/curation/v1/auth/token",
-        headers={"x-api-key": f"{auth0_secrets['super_curator_api_key']}"}
+        f"https://{base_url}/curation/v1/auth/token", headers={"x-api-key": f"{auth0_secrets['super_curator_api_key']}"}
     )
     access_token = response.json()["access_token"]
     return {"Authorization": f"Bearer {access_token}"}
@@ -89,8 +88,7 @@ def dry_run():
     # get private collections
     headers = get_headers(base_url)
     private_collections = requests.get(
-        f"https://{base_url}/curation/v1/collections?visibility=PRIVATE",
-        headers=headers
+        f"https://{base_url}/curation/v1/collections?visibility=PRIVATE", headers=headers
     ).json()
     open_revision_set = set()
     with open("ontologies-curator-report.txt", "a") as f:
@@ -104,11 +102,10 @@ def dry_run():
             dataset_id = ds["dataset_id"]
             # TODO: consider adding ontology fields to dataset preview response so a follow-up call isn't needed
             dataset_metadata = requests.get(
-                f"https://{base_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}",
-                headers=headers
+                f"https://{base_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}",  headers=headers
             ).json()
             # only process uploaded datasets
-            if "processing_status" not in dataset_metadata or dataset_metadata["processing_status"] != 'SUCCESS':
+            if "processing_status" not in dataset_metadata or dataset_metadata["processing_status"] != "SUCCESS":
                 continue
             report_deprecated_terms(dataset_metadata, collection_id, onto_map, non_deprecated_term_cache, revision_of)
     if open_revision_set:
