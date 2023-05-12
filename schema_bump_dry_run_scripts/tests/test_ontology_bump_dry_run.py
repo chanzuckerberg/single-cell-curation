@@ -1,6 +1,6 @@
+from tempfile import NamedTemporaryFile
 from unittest import TestCase
 from unittest.mock import patch, Mock
-from tempfile import NamedTemporaryFile
 
 from schema_bump_dry_run_scripts.ontologies import ontology_bump_dry_run
 
