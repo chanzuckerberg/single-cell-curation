@@ -7,6 +7,7 @@ on:
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/owl_info.yml'
     branches-ignore:
       - main
+      - demo # temp for dev testing and demos
 
 jobs:
   ontology-processing:
