@@ -4,7 +4,7 @@ ALERT: Requires Manual Curator Intervention
 Collection ID: public_coll_0
 Dataset ID: public_ds_0
 Deprecated Term: EFO:0000006
-Replaced By: CL_0000006
+Replaced By: CL:0000006
 
 
 Deprecated Terms in Private Datasets:
@@ -13,14 +13,14 @@ ALERT: Requires Manual Curator Intervention
 Collection ID: private_coll_0
 Dataset ID: private_ds_0
 Deprecated Term: EFO:0000006
-Replaced By: CL_0000006
+Replaced By: CL:0000006
 
 ALERT: Requires Manual Curator Intervention
 Note--In A Revision of: public_coll_0
 Collection ID: public_coll_0_revision
 Dataset ID: public_ds_0
 Deprecated Term: EFO:0000006
-Replaced By: CL_0000006
+Replaced By: CL:0000006
 
 
 The Following Public Collections Will Not Be Auto-Migrated Due To Having an Open Revision:
