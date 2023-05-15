@@ -16,7 +16,7 @@ class TestOntologyBumpDryRun(TestCase):
                 "EFO:0000002": {
                     "label": "obsolete term with replacement",
                     "deprecated": True,
-                    "replaced_by": "EFO_0000001",
+                    "replaced_by": "EFO:0000001",
                 },
                 "EFO:0000003": {
                     "label": "obsolete term without replacement, with comment",
@@ -37,7 +37,7 @@ class TestOntologyBumpDryRun(TestCase):
                 "EFO:0000006": {
                     "label": "obsolete term with replacement from a different ontology",
                     "deprecated": True,
-                    "replaced_by": "CL_0000006",
+                    "replaced_by": "CL:0000006",
                 },
             }
         }
