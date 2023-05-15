@@ -25,7 +25,21 @@ def logit(func):
     return wrapper
 
 
+def retry(func):
+    def wrapper(*arg, **kw):
+        for i in range(10):
+            try:
+                res = func(*arg, **kw)
+                break
+            except Exception:
+                print(f"Failed {func.__name__} on try {i+1}")
+                time.sleep(2)
+        return res
+
+    return wrapper
+
+
 def print_tracking():
-    print("Function: # calls, avg duration, min duration, max duration")
+    print("Function: # calls, avg duration, min duration, max duration, total duration")
     for k, v in tracker.items():
-        print(f"{k}: {len(v)}, {sum(v)/len(v)}, {min(v)}, {max(v)}")
+        print(f"{k}: {len(v)}, {sum(v)/len(v)}, {min(v)}, {max(v)}, {sum(v)}")
