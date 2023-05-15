@@ -1,6 +1,7 @@
 import gzip
 import json
 import os
+import re
 import sys
 import urllib.request
 from threading import Thread
@@ -151,8 +152,8 @@ def _parse_owls(
                 onto_dict[onto.name][term_id]["deprecated"] = True
                 if onto_class.IAO_0100001 and onto_class.IAO_0100001.first():
                     # url --> term
-                    ontology_term = str(onto_class.IAO_0100001[0]).split("/")[-1]
-                    onto_dict[onto.name][term_id]["replaced_by"] = ontology_term
+                    ontology_term = re.findall(r"[^\W_]+", str(onto_class.IAO_0100001[0]))
+                    onto_dict[onto.name][term_id]["replaced_by"] = f"{ontology_term[-2]}:{ontology_term[-1]}"
                 else:
                     if hasattr(onto_class, "consider") and onto_class.consider:
                         onto_dict[onto.name][term_id]["consider"] = [str(c) for c in onto_class.consider]

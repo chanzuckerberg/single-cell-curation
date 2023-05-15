@@ -76,7 +76,7 @@ def report_deprecated_terms(
                     if ontology["deprecated"]:
                         replaced_in_diff_ontology = False
                         if "replaced_by" in ontology:
-                            replacement_term_ontology = ontology["replaced_by"].split("_")[0]
+                            replacement_term_ontology = ontology["replaced_by"].split(":")[0]
                             if replacement_term_ontology != term_prefix:
                                 replaced_in_diff_ontology = True
                         if "replaced_by" not in ontology or replaced_in_diff_ontology:
