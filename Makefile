@@ -9,7 +9,8 @@ install:
 	cd cellxgene_schema_cli/ && pip install -r requirements.txt && pip install .
 
 unit-test:
-	cd cellxgene_schema_cli && coverage run --source=cellxgene_schema -m unittest discover --start-directory=tests/ --verbose && coverage xml
+	cd cellxgene_schema_cli && coverage run --source=cellxgene_schema -m pytest --log-level=INFO ./tests  \
+		&& coverage xml
 
 ontology-dry-run-tests:
 	cd schema_bump_dry_run_scripts/tests && pytest
