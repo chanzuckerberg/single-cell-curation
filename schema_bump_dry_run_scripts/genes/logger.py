@@ -39,7 +39,7 @@ def retry(func):
     return wrapper
 
 
-def print_tracking():
-    print("Function: # calls, avg duration, min duration, max duration, total duration")
+def log_tracking():
+    logging.info("Function: # calls, avg duration, min duration, max duration, total duration")
     for k, v in tracker.items():
-        print(f"{k}: {len(v)}, {sum(v)/len(v)}, {min(v)}, {max(v)}, {sum(v)}")
+        logging.info(f"{k}: {len(v)}, {sum(v)/len(v)}, {min(v)}, {max(v)}, {sum(v)}")
