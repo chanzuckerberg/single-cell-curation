@@ -5,14 +5,14 @@ with open("requirements.txt") as fh:
 
 setup(
     name="cellxgene-schema",
-    version="3.0.1",
+    version="3.0.2-rc.0",
     url="https://github.com/chanzuckerberg/single-cell-curation",
     license="MIT",
     author="Chan Zuckerberg Initiative",
     author_email="cellxgene@chanzuckerberg.com",
     description="Tool for applying and validating cellxgene integration schema to single cell datasets",
     install_requires=requirements,
-    python_requires='>=3.8',
+    python_requires=">=3.8",
     packages=["cellxgene_schema"],
     package_dir={"cellxgene_schema": "cellxgene_schema"},
     package_data={"cellxgene_schema": ["ontology_files/*gz", "schema_definitions/*yaml"]},
@@ -25,5 +25,5 @@ setup(
         "Programming Language :: Python :: 3",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
-    entry_points={"console_scripts": ["cellxgene-schema = cellxgene_schema.cli:schema_cli"]}
+    entry_points={"console_scripts": ["cellxgene-schema = cellxgene_schema.cli:schema_cli"]},
 )

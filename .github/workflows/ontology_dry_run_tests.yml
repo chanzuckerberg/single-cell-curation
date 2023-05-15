@@ -1,0 +1,33 @@
+name: Ontology Bump Dry Run Test
+
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: "*"
+    paths:
+      - '**/schema_bump_dry_run_scripts/**'
+
+jobs:
+  ontology-dry-run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Python cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          pip install -r schema_bump_dry_run_scripts/ontologies/requirements.txt
+          pip install pytest
+      - name: Ontology Dry Run Unit Tests
+        run: make ontology-dry-run-tests

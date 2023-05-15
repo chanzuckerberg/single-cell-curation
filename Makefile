@@ -1,6 +1,6 @@
 .PHONY: fmt
 fmt:
-	cd cellxgene_schema_cli/ && black cellxgene_schema/ tests/
+	pre-commit run -a
 
 lint:
 	cd cellxgene_schema_cli/ && flake8 cellxgene_schema/ tests/
@@ -11,6 +11,9 @@ install:
 unit-test:
 	cd cellxgene_schema_cli && coverage run --source=cellxgene_schema -m pytest --log-level=INFO ./tests  \
 		&& coverage xml
+
+ontology-dry-run-tests:
+	cd schema_bump_dry_run_scripts/tests && pytest
 
 clean:
 	rm -rf cellxgene_schema_cli/build cellxgene_schema_cli/dist cellxgene_schema_cli/cellxgene_schema.egg-info

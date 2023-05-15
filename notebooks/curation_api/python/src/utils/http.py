@@ -2,14 +2,13 @@ import os
 
 from src.utils.logger import get_custom_logger
 
-
 logger = get_custom_logger()
 
 
 def url_builder(path_segment):
-    api_url_base = os.getenv("api_url_base")
+    api_url_base = os.getenv("API_URL_BASE")
     if not api_url_base:
-        raise Exception("The required 'api_url_base' env var is not set. Call set_api_urls() from src.utils.config")
+        raise Exception("The required 'API_URL_BASE' env var is not set. Call set_api_urls() from src.utils.config")
     route_path = f"/curation/v1{path_segment}"
     logger.debug(f"route path: {route_path}")
     url = f"{api_url_base}{route_path}"
@@ -18,7 +17,7 @@ def url_builder(path_segment):
 
 
 def get_headers():
-    access_token = os.getenv("access_token")
+    access_token = os.getenv("ACCESS_TOKEN")
     headers = {"Content-Type": "application/json"}
     if not access_token:
         logger.warning("No access token included in request")

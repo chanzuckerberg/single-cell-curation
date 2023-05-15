@@ -1,5 +1,6 @@
 import anndata as ad
 import numpy as np
+
 from . import ontology
 from .remove_labels import AnnDataLabelRemover
 
@@ -11,9 +12,7 @@ def convert(input_file, output_file):
 
     # Rename ethnicity_ontology_term_id field
     dataset.obs.rename(
-        columns={
-            "ethnicity_ontology_term_id": "self_reported_ethnicity_ontology_term_id"
-        },
+        columns={"ethnicity_ontology_term_id": "self_reported_ethnicity_ontology_term_id"},
         inplace=True,
     )
 
@@ -44,8 +43,8 @@ def convert(input_file, output_file):
     dataset = anndata_label_remover.adata
 
     # remove 'ethnicity' label (needs to be done separately since its no longer in the schema definition)
-    if 'ethnicity' in dataset.obs:
-        del dataset.obs['ethnicity']
+    if "ethnicity" in dataset.obs:
+        del dataset.obs["ethnicity"]
 
     # Update deprecated ontologies with known direct replacements
     disease_ontology_update_map = {
@@ -74,15 +73,9 @@ def convert(input_file, output_file):
                 # remove deprecated_term from category
                 dataframe[column_name] = dataframe[column_name].cat.remove_categories(deprecated_term)
 
-    update_categorical_column_vals(
-        dataset.obs, "disease_ontology_term_id", disease_ontology_update_map
-    )
-    update_categorical_column_vals(
-        dataset.obs, "cell_type_ontology_term_id", cell_type_ontology_update_map
-    )
-    update_categorical_column_vals(
-        dataset.obs, "assay_ontology_term_id", assay_ontology_update_map
-    )
+    update_categorical_column_vals(dataset.obs, "disease_ontology_term_id", disease_ontology_update_map)
+    update_categorical_column_vals(dataset.obs, "cell_type_ontology_term_id", cell_type_ontology_update_map)
+    update_categorical_column_vals(dataset.obs, "assay_ontology_term_id", assay_ontology_update_map)
 
     # Set suspension type
 
@@ -126,14 +119,10 @@ def convert(input_file, output_file):
         return np.nan
 
     if "suspension_type" not in dataset.obs:
-        print(
-            "column 'suspension_type' not found in obs. Adding column and auto-assigning value where possible."
-        )
+        print("column 'suspension_type' not found in obs. Adding column and auto-assigning value where possible.")
         suspension_type_map = {}
         if dataset.obs["assay_ontology_term_id"].dtype != "category":
-            dataset.obs.loc[:, ["assay_ontology_term_id"]] = dataset.obs.astype(
-                "category"
-            )
+            dataset.obs.loc[:, ["assay_ontology_term_id"]] = dataset.obs.astype("category")
         for item in dataset.obs["assay_ontology_term_id"].cat.categories:
             suspension_type_map[item] = assign_suspension_type(item)
             if np.isnan(suspension_type_map[item]):
@@ -153,10 +142,10 @@ def convert(input_file, output_file):
     else:
         if dataset.obs["suspension_type"].dtype != "category":
             dataset.obs.loc[:, ["suspension_type"]] = dataset.obs.astype("category")
-        print(
-            f"suspension_type already exists in obs, with categories {dataset.obs['suspension_type'].cat.categories}"
-        )
+        print(f"suspension_type already exists in obs, with categories {dataset.obs['suspension_type'].cat.categories}")
 
-    print(f"Automatable conversions completed. Please run 'cellxgene-schema validate {output_file}' to check for "
-          f"required manual changes, if any.")
-    dataset.write(output_file, compression='gzip')
+    print(
+        f"Automatable conversions completed. Please run 'cellxgene-schema validate {output_file}' to check for "
+        f"required manual changes, if any."
+    )
+    dataset.write(output_file, compression="gzip")

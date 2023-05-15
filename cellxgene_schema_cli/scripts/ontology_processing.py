@@ -1,20 +1,22 @@
-import owlready2
-import yaml
-import urllib.request
-import os
 import gzip
 import json
-import sys
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../cellxgene_schema"))
-import env
-from typing import List
 import os
+import re
+import sys
+import urllib.request
+from threading import Thread
+
+import owlready2
+import yaml
+
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../cellxgene_schema"))
+import os
+from typing import List
+
+import env
 
 
-def _download_owls(
-    owl_info_yml: str = env.OWL_INFO_YAML, output_dir: str = env.ONTOLOGY_DIR
-):
-
+def _download_owls(owl_info_yml: str = env.OWL_INFO_YAML, output_dir: str = env.ONTOLOGY_DIR):
     """
     Downloads the ontology owl files specified in 'owl_info_yml' into 'output_dir'
 
@@ -27,24 +29,33 @@ def _download_owls(
     with open(owl_info_yml, "r") as owl_info_handle:
         owl_info = yaml.safe_load(owl_info_handle)
 
-    for ontology, info in owl_info.items():
-
-        print(f"Downloading {ontology}")
+    def download(_ontology):
+        print(f"Start Downloading {_ontology}")
 
         # Get owl info
-        latest_version = owl_info[ontology]["latest"]
-        url = owl_info[ontology]["urls"][latest_version]
+        latest_version = owl_info[_ontology]["latest"]
+        url = owl_info[_ontology]["urls"][latest_version]
 
         # Format of owl (handles cases where they are compressed)
         download_format = url.split(".")[-1]
 
-        output_file = os.path.join(output_dir, ontology + ".owl")
+        output_file = os.path.join(output_dir, _ontology + ".owl")
         if download_format == "gz":
             urllib.request.urlretrieve(url, output_file + ".gz")
             _decompress(output_file + ".gz", output_file)
             os.remove(output_file + ".gz")
         else:
             urllib.request.urlretrieve(url, output_file)
+        print(f"Finish Downloading {_ontology}")
+
+    threads = []
+    for ontology, _ in owl_info.items():
+        t = Thread(target=download, args=(ontology,))
+        t.start()
+        threads.append(t)
+
+    for t in threads:
+        t.join()
 
 
 def _decompress(infile: str, tofile: str):
@@ -66,7 +77,6 @@ def _parse_owls(
     owl_info_yml: str = env.OWL_INFO_YAML,
     output_json_file: str = env.PARSED_ONTOLOGIES_FILE,
 ):
-
     """
     Parser all owl files in working_dir. Extracts information from all classes in the owl file.
     The extracted information is written into a gzipped a json file with the following structure:
@@ -110,7 +120,6 @@ def _parse_owls(
     # Parse owl files
     onto_dict = {}
     for owl_file in owl_files:
-
         world = owlready2.World()
         onto = world.get_ontology(owl_file)
         onto.load()
@@ -119,18 +128,15 @@ def _parse_owls(
         print(f"Processing {onto.name}")
 
         for onto_class in onto.classes():
-
             term_id = onto_class.name.replace("_", ":")
 
             # Skip terms that are not direct children from this ontology
-            if not onto.name == term_id.split(":")[0]:
+            if onto.name != term_id.split(":")[0]:
                 continue
 
             # If there are specified target terms then only work with them
-            if onto.name in owl_info:
-                if "only" in owl_info[onto.name]:
-                    if term_id not in owl_info[onto.name]["only"]:
-                        continue
+            if onto.name in owl_info and "only" in owl_info[onto.name] and term_id not in owl_info[onto.name]["only"]:
+                continue
 
             # Gets label
             onto_dict[onto.name][term_id] = dict()
@@ -141,21 +147,28 @@ def _parse_owls(
 
             # Add the "deprecated" status
             onto_dict[onto.name][term_id]["deprecated"] = False
-            if onto_class.deprecated:
-                if onto_class.deprecated.first():
-                    onto_dict[onto.name][term_id]["deprecated"] = True
-
-                # Gets ancestors
+            if onto_class.deprecated and onto_class.deprecated.first():
+                # if deprecated, include information to determine replacement term(s)
+                onto_dict[onto.name][term_id]["deprecated"] = True
+                if onto_class.IAO_0100001 and onto_class.IAO_0100001.first():
+                    # url --> term
+                    ontology_term = re.findall(r"[^\W_]+", str(onto_class.IAO_0100001[0]))
+                    onto_dict[onto.name][term_id]["replaced_by"] = f"{ontology_term[-2]}:{ontology_term[-1]}"
+                else:
+                    if hasattr(onto_class, "consider") and onto_class.consider:
+                        onto_dict[onto.name][term_id]["consider"] = [str(c) for c in onto_class.consider]
+                    if onto_class.comment:
+                        onto_dict[onto.name][term_id]["comments"] = [str(c) for c in onto_class.comment]
+            # Gets ancestors
             ancestors = _get_ancestors(onto_class, onto.name)
 
             # If "children_of" specified in owl info then skip the current term if it is
             # not a children of those indicated.
-            if onto.name in owl_info:
-                if "children_of" in owl_info[onto.name]:
-                    if not list(set(ancestors) &
-                                set(owl_info[onto.name]["children_of"])):
-                        onto_dict[onto.name].pop(term_id)
-                        continue
+            if (onto.name in owl_info and "children_of" in owl_info[onto.name]) and (
+                not list(set(ancestors) & set(owl_info[onto.name]["children_of"]))
+            ):
+                onto_dict[onto.name].pop(term_id)
+                continue
 
             # only add the ancestors if it's not NCBITaxon, as this saves a lot of disk space
             if onto.name == "NCBITaxon":
@@ -168,7 +181,6 @@ def _parse_owls(
 
 
 def _get_ancestors(onto_class: owlready2.entity.ThingClass, ontololgy_name: str) -> List[str]:
-
     """
     Returns a list of ancestors ids of the given onto class, only returns those belonging to ontology_name,
     it will format the id from the form CL_xxxx to CL:xxxx

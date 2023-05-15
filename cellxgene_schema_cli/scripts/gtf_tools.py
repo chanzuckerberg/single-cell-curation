@@ -2,7 +2,6 @@ from typing import List, Tuple
 
 
 def merge_bed_ranges(ranges: List[Tuple]) -> List[Tuple]:
-
     """
     Merges bed-like ranges and returns non-overlapping ranges
 
@@ -43,7 +42,6 @@ def merge_bed_ranges(ranges: List[Tuple]) -> List[Tuple]:
 
 
 def _neighbor_merge_ranges(range1: Tuple, range2: Tuple) -> List[Tuple]:
-
     """
     Merges two neighboring ranges
 
@@ -54,15 +52,14 @@ def _neighbor_merge_ranges(range1: Tuple, range2: Tuple) -> List[Tuple]:
     :return A list of non-overlapping ranges
     """
 
-    if range2[1]<=range1[2]:
-            merged =[(range1[0],range1[1],max(range1[2],range2[2]),range1[3])]
+    if range2[1] <= range1[2]:
+        merged = [(range1[0], range1[1], max(range1[2], range2[2]), range1[3])]
     else:
-            merged=[range1,range2]
+        merged = [range1, range2]
     return merged
 
 
 def _get_features(gtf_line: str) -> dict:
-
     """
     Parses the features found in column 8 of GTF, returns a dict with keys as feature names and values as the feature
     values
@@ -80,6 +77,6 @@ def _get_features(gtf_line: str) -> dict:
             feature = feature.strip().split(" ")
             feature_name = feature[0]
             feature_value = feature[1]
-            return_features[feature_name] = feature_value.replace('"', '')
+            return_features[feature_name] = feature_value.replace('"', "")
 
     return return_features

@@ -1,0 +1,31 @@
+[tool.black]
+line-length = 120
+target_version = ['py38']
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | venv
+    | virtualenv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | vendor
+    | vendor.in
+    | node_modules
+  )/
+)
+'''
+
+[tool.ruff]
+select = ["E", "F", "B", "SIM", "C4", "I"]
+ignore = ["E501", "E402", "C408", "SIM112"]
+line-length = 120
+target-version = "py38"
