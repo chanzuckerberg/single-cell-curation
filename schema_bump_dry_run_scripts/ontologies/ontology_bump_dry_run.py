@@ -2,7 +2,6 @@
 import gzip
 import json
 import os
-
 from collections import defaultdict
 
 import requests
@@ -98,7 +97,7 @@ def map_deprecated_terms(curator_report_entry_map, dataset, collection_id, onto_
 
 def write_to_curator_report(output_file, curator_report_entry_map, revision_map=None):
     with open(output_file, "a") as f:
-        for collection_id in curator_report_entry_map.keys():
+        for collection_id in curator_report_entry_map:
             for deprecated_term, entry in curator_report_entry_map[collection_id].items():
                 if entry["needs_alert"]:
                     f.write("ALERT: Requires Manual Curator Intervention\n")
