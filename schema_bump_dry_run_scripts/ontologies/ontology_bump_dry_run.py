@@ -56,7 +56,20 @@ def get_headers(base_url):
     return {"Authorization": f"Bearer {access_token}"}
 
 
-def map_deprecated_terms(curator_report_entry_map, dataset, collection_id, onto_map, non_deprecated_term_cache):
+def map_deprecated_terms(curator_report_entry_map: dict, dataset: dict, collection_id: str, onto_map: dict,
+                         non_deprecated_term_cache: set) -> None:
+    """
+    For a dataset, detects all deprecated ontology terms and, for each found, populates an entry in
+    curator_report_entry_map with data required to report the deprecated term and any ontology-provided guidance
+    to replace it.
+    :param curator_report_entry_map: dict with information on deprecated terms detected in the data-portal corpus, and
+    guidance from ontologies on how to replace them
+    :param dataset: dict with dataset metadata
+    :param collection_id: str unique identifier for collection the dataset is found in
+    :param onto_map: dict derived from processed ontology file, contains map of all ontology terms from all ontologies
+    used in data-portal and metadata from their owl files
+    :param non_deprecated_term_cache: set caching known terms that are not deprecated, used to skip re-processing
+    """
     for ontology_type in ONTOLOGY_TYPES:
         if ontology_type in dataset:
             for ontology_term in dataset[ontology_type]:
@@ -95,7 +108,15 @@ def map_deprecated_terms(curator_report_entry_map, dataset, collection_id, onto_
                     non_deprecated_term_cache.add(ontology_term_id)
 
 
-def write_to_curator_report(output_file, curator_report_entry_map, revision_map=None):
+def write_to_curator_report(output_file: str, curator_report_entry_map: dict, revision_map: dict=None) -> None:
+    """
+    Writes curator report entries to output_file. Each entry reports a Collection ID, a Deprecated Term that has been
+    detected in that collection, how many datasets are affected, and info derived from owl files that guide how to
+    replace the deprecated term.
+    :param output_file: filepath to write curator report to
+    :param curator_report_entry_map: map containing info for curator report entries, Collection ID -> Deprecated Term
+    :param revision_map: mapping of Revision ID -> Collection ID for all revisions
+    """
     with open(output_file, "a") as f:
         for collection_id in curator_report_entry_map:
             for deprecated_term, entry in curator_report_entry_map[collection_id].items():
@@ -115,7 +136,11 @@ def write_to_curator_report(output_file, curator_report_entry_map, revision_map=
                 f.write("\n")
 
 
-def dry_run(output_file):
+def dry_run(output_file: str) -> None:
+    """
+    main function which coordinates fetching information to populate a curator report and writing it to the output file
+    :param output_file: filepath to write curator report to
+    """
     onto_map = load_ontology_map()
 
     # cache terms we know are not deprecated to skip processing; init with special-case, non-ontology terms we use
