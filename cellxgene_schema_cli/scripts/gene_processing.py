@@ -171,10 +171,19 @@ def process_gene_info(gene_info: dict) -> None:
     print("download", gene_info["description"])
     temp_file_path, _ = urllib.request.urlretrieve(gene_info["url"])
     previous_ref_filepath = os.path.join(env.ONTOLOGY_DIR, f"previous_{gene_info['description']}.csv.gz")
-    os.rename(gene_info["new_file"], previous_ref_filepath)
-    print("process", gene_info["description"])
-    gene_info["processor"](temp_file_path, gene_info["new_file"])
-    generate_gene_ref_diff(gene_info["description"], gene_info["new_file"], previous_ref_filepath)
+    try:
+        # temporarily backup previous processed csv
+        os.rename(gene_info["new_file"], previous_ref_filepath)
+        print("process", gene_info["description"])
+        gene_info["processor"](temp_file_path, gene_info["new_file"])
+        print("generating gene reference diff for", gene_info["description"])
+        generate_gene_ref_diff(gene_info["description"], gene_info["new_file"], previous_ref_filepath)
+    except Exception as e:
+        print("processing failed, reverting", gene_info["description"])
+        os.replace(previous_ref_filepath, gene_info["new_file"])
+        raise e
+    # remove previous processed csv once diff is complete
+    os.remove(previous_ref_filepath)
     print("finish", gene_info["description"])
 
 
@@ -203,8 +212,6 @@ def generate_gene_ref_diff(output_filename: str, current_ref_filepath: str, prev
     with open(diff_filepath, "w") as f:
         for gene_id in removed_gene_ids:
             f.write(f"{gene_id}\n")
-
-    os.remove(previous_ref_filepath)
 
 
 def main():
