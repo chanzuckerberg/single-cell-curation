@@ -80,16 +80,16 @@ def map_deprecated_terms(curator_report_entry_map, dataset, collection_id, onto_
                         entry["needs_alert"] = False
                         entry["dataset_ct"] = 1
                         if "replaced_by" in ontology:
-                            entry["replaced_by"] = ontology['replaced_by']
+                            entry["replaced_by"] = ontology["replaced_by"]
                             replacement_term_ontology = ontology["replaced_by"].split(":")[0]
                             if replacement_term_ontology != term_prefix:
                                 entry["needs_alert"] = True
                         else:
                             entry["needs_alert"] = True
                             if "consider" in ontology:
-                                entry['consider'] = ontology['consider']
+                                entry["consider"] = ontology["consider"]
                             if "comments" in ontology:
-                                entry['comments'] = ontology['comments']
+                                entry["comments"] = ontology["comments"]
 
                         curator_report_entry_map[collection_id][ontology_term_id] = entry
                 else:
@@ -100,7 +100,7 @@ def write_to_curator_report(output_file, curator_report_entry_map, revision_map=
     with open(output_file, "a") as f:
         for collection_id in curator_report_entry_map.keys():
             for deprecated_term, entry in curator_report_entry_map[collection_id].items():
-                if entry['needs_alert']:
+                if entry["needs_alert"]:
                     f.write("ALERT: Requires Manual Curator Intervention\n")
                 f.write(f"Collection ID: {collection_id}\n")
                 if revision_map and collection_id in revision_map:
@@ -129,8 +129,9 @@ def dry_run(output_file):
         # for every dataset, check its ontology term metadata to see if any terms are deprecated. If so, report.
         f.write("Deprecated Terms in Public Datasets:\n\n")
     for dataset in datasets:
-        map_deprecated_terms(public_curator_report_entry_map, dataset, dataset["collection_id"], onto_map,
-                             non_deprecated_term_cache)
+        map_deprecated_terms(
+            public_curator_report_entry_map, dataset, dataset["collection_id"], onto_map, non_deprecated_term_cache
+        )
     write_to_curator_report(output_file, public_curator_report_entry_map)
 
     headers = get_headers(base_url)

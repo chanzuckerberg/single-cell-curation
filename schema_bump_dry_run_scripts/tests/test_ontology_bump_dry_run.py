@@ -129,23 +129,29 @@ class TestOntologyBumpDryRun(TestCase):
 
     def test_group_datasets_by_collection(self):
         self.public_datasets[0]["assay"].append({"ontology_term_id": "EFO:0000002"})
-        self.public_datasets.append({
+        self.public_datasets.append(
+            {
                 "collection_id": "public_coll_0",
                 "dataset_id": "public_ds_1",
                 "assay": [{"ontology_term_id": "EFO:0000002"}],
-            })
+            }
+        )
         self.private_collections[0]["datasets"][0]["assay"].append({"ontology_term_id": "EFO:0000005"})
-        self.private_collections[0]["datasets"].append({
+        self.private_collections[0]["datasets"].append(
+            {
                 "dataset_id": "private_ds_1",
                 "assay": [{"ontology_term_id": "EFO:0000005"}],
                 "processing_status": "SUCCESS",
-            })
+            }
+        )
         self.private_collections[1]["datasets"][0]["assay"].append({"ontology_term_id": "EFO:0000006"})
-        self.private_collections[1]["datasets"].append({
-            "dataset_id": "revision_ds_0",
-            "assay": [{"ontology_term_id": "EFO:0000006"}],
-            "processing_status": "SUCCESS",
-        })
+        self.private_collections[1]["datasets"].append(
+            {
+                "dataset_id": "revision_ds_0",
+                "assay": [{"ontology_term_id": "EFO:0000006"}],
+                "processing_status": "SUCCESS",
+            }
+        )
         with NamedTemporaryFile() as tmp, open("fixtures/group_datasets_by_collection_expected", "rb") as expected:
             ontology_bump_dry_run.dry_run(tmp.name)
             self.assertListEqual(list(expected), list(tmp))
