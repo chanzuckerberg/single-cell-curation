@@ -1,7 +1,7 @@
 Deprecated Terms in Public Datasets:
 
 Collection ID: public_coll_0
-Dataset ID: public_ds_0
+# of Affected Datasets: 1
 Deprecated Term: EFO:0000002
 Replaced By: EFO:0000001
 
@@ -9,13 +9,13 @@ Replaced By: EFO:0000001
 Deprecated Terms in Private Datasets:
 
 Collection ID: private_coll_0
-Dataset ID: private_ds_0
+# of Affected Datasets: 1
 Deprecated Term: EFO:0000002
 Replaced By: EFO:0000001
 
-Note--In A Revision of: public_coll_0
 Collection ID: public_coll_0_revision
-Dataset ID: public_ds_0
+Note--In A Revision of: public_coll_0
+# of Affected Datasets: 1
 Deprecated Term: EFO:0000002
 Replaced By: EFO:0000001
 
