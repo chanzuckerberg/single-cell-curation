@@ -56,8 +56,9 @@ def get_headers(base_url):
     return {"Authorization": f"Bearer {access_token}"}
 
 
-def map_deprecated_terms(curator_report_entry_map: dict, dataset: dict, collection_id: str, onto_map: dict,
-                         non_deprecated_term_cache: set) -> None:
+def map_deprecated_terms(
+    curator_report_entry_map: dict, dataset: dict, collection_id: str, onto_map: dict, non_deprecated_term_cache: set
+) -> None:
     """
     For a dataset, detects all deprecated ontology terms and, for each found, populates an entry in
     curator_report_entry_map with data required to report the deprecated term and any ontology-provided guidance
@@ -108,7 +109,7 @@ def map_deprecated_terms(curator_report_entry_map: dict, dataset: dict, collecti
                     non_deprecated_term_cache.add(ontology_term_id)
 
 
-def write_to_curator_report(output_file: str, curator_report_entry_map: dict, revision_map: dict=None) -> None:
+def write_to_curator_report(output_file: str, curator_report_entry_map: dict, revision_map: dict = None) -> None:
     """
     Writes curator report entries to output_file. Each entry reports a Collection ID, a Deprecated Term that has been
     detected in that collection, how many datasets are affected, and info derived from owl files that guide how to
