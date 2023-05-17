@@ -1,3 +1,4 @@
+import csv
 import gzip
 import os
 import sys
@@ -169,11 +170,48 @@ def process_gene_info(gene_info: dict) -> None:
     """
     print("download", gene_info["description"])
     temp_file_path, _ = urllib.request.urlretrieve(gene_info["url"])
-    print("backup_previous")
-    os.rename(gene_info["new_file"], gene_info["new_file"] + ".bak")
-    print("process", gene_info["description"])
-    gene_info["processor"](temp_file_path, gene_info["new_file"])
+    previous_ref_filepath = os.path.join(env.ONTOLOGY_DIR, f"previous_{gene_info['description']}.csv.gz")
+    try:
+        # temporarily backup previous processed csv
+        os.rename(gene_info["new_file"], previous_ref_filepath)
+        print("process", gene_info["description"])
+        gene_info["processor"](temp_file_path, gene_info["new_file"])
+        print("generating gene reference diff for", gene_info["description"])
+        generate_gene_ref_diff(gene_info["description"], gene_info["new_file"], previous_ref_filepath)
+    except Exception as e:
+        print("processing failed, reverting", gene_info["description"])
+        os.replace(previous_ref_filepath, gene_info["new_file"])
+        raise e
+    # remove previous processed csv once diff is complete
+    os.remove(previous_ref_filepath)
     print("finish", gene_info["description"])
+
+
+def generate_gene_ref_diff(output_filename: str, current_ref_filepath: str, previous_ref_filepath: str) -> None:
+    """
+    Compare the previous gene reference CSV to the newest generated CSV. Report a text file with every
+    Ensembl ID available in the previous gene reference CSV that is no longer found in the newest.
+    :param output_filename: Filename for output diff textfile
+    :param current_ref_filepath: Full filepath for the new processed gene csv
+    :param previous_ref_filepath: Full filepath for the previous processed gene csv
+    """
+    new_ref_gene_ids = set()
+    with gzip.open(current_ref_filepath, "rt") as f:
+        for row in csv.reader(f):
+            gene_id = row[0]
+            new_ref_gene_ids.add(gene_id)
+
+    removed_gene_ids = []
+    with gzip.open(previous_ref_filepath, "rt") as f:
+        for row in csv.reader(f):
+            gene_id = row[0]
+            if gene_id not in new_ref_gene_ids:
+                removed_gene_ids.append(gene_id)
+
+    diff_filepath = os.path.join(env.ONTOLOGY_DIR, f"{output_filename}_diff.txt")
+    with open(diff_filepath, "w") as f:
+        for gene_id in removed_gene_ids:
+            f.write(f"{gene_id}\n")
 
 
 def main():

@@ -2,9 +2,14 @@ name: Ontology Bump Dry Run
 
 on:
   push:
-    branches: main
+    branches:
+      - main
     paths:
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   dry-run:
@@ -26,14 +31,24 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r schema_bump_dry_run_scripts/ontologies/requirements.txt
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - name: Pull AWS Secrets
+        uses: aws-actions/aws-secretsmanager-get-secrets@v1
+        with:
+          # TODO: Change to prod and make separate, manual dev workflow once ready for deploy
+          secret-ids:
+            AUTH0_SECRETS, corpora/backend/dev/auth0-secret
       - name: Run Dry-Run Script
         run: python3 -m schema_bump_dry_run_scripts.ontologies.ontology_bump_dry_run
         env:
-          corpus_env: "dev" # TODO: Change to prod once ready to deploy
+          corpus_env: "dev" # TODO: Change to prod and make separate, manual dev workflow once ready for deploy
       # TODO: temp upload while waiting to integrate with Slack
-      - uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: ontologies-curator-report
-          path: ontologies-curator-report.txt
-          retention-days: 30
+      - name: upload to slack
+        run: |
+          curl -F file=@ontologies-curator-report.txt -F "initial_comment=Ontology Dry Run Report" -F channels=${{secrets.SLACK_CURATOR_REPORTING_CHANNEL}} -H "Authorization: Bearer ${{secrets.SLACK_CURATOR_REPORTING_APP_AUTH}}" https://slack.com/api/files.upload
+
