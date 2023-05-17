@@ -2,7 +2,7 @@ Deprecated Terms in Public Datasets:
 
 ALERT: Requires Manual Curator Intervention
 Collection ID: public_coll_0
-Dataset ID: public_ds_0
+# of Affected Datasets: 1
 Deprecated Term: EFO:0000003
 Comments: ['note: replace with EFO:0000001']
 
@@ -11,14 +11,14 @@ Deprecated Terms in Private Datasets:
 
 ALERT: Requires Manual Curator Intervention
 Collection ID: private_coll_0
-Dataset ID: private_ds_0
+# of Affected Datasets: 1
 Deprecated Term: EFO:0000004
 Consider: ['EFO:0000001', 'EFO:0000010']
 
 ALERT: Requires Manual Curator Intervention
-Note--In A Revision of: public_coll_0
 Collection ID: public_coll_0_revision
-Dataset ID: public_ds_0
+Note--In A Revision of: public_coll_0
+# of Affected Datasets: 1
 Deprecated Term: EFO:0000005
 Consider: ['EFO:0000001', 'EFO:0000010']
 Comments: ['Consider removing this term entirely', 'Or using one from a different ontology']
