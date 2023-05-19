@@ -2,3 +2,4 @@ requests==2.30.0
 tiledb==0.16.5
 pandas==2.0.1
 pyarrow>=1.0.0
+jinja2==3.1.2
