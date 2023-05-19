@@ -149,7 +149,7 @@ def dry_run(output_file: str) -> None:
     private_curator_report_entry_map = defaultdict(dict)
     for collection in private_collections:
         collection_id = collection["collection_id"]
-        if collection["revision_of"]:
+        if collection.get("revision_of"):
             revision_map[collection_id] = collection["revision_of"]
         for ds in collection["datasets"]:
             dataset_id = ds["dataset_id"]

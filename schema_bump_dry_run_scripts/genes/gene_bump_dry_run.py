@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import logging
 import os
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import tiledb as tiledb
 from jinja2 import Template
@@ -95,7 +95,7 @@ def get_diff_map() -> dict[str, list[str]]:
     return diff_map
 
 
-def fetch_private_datasets(base_url) -> list[dict]:
+def fetch_private_datasets(base_url) -> Tuple[list[dict], Optional[str]]:
     """
     Fetches all private collections and parses the datasets from the response.
     :param base_url:
@@ -109,9 +109,7 @@ def fetch_private_datasets(base_url) -> list[dict]:
             # only process uploaded datasets
             if "processing_status" not in dataset_metadata or dataset_metadata["processing_status"] != "SUCCESS":
                 continue
-            if collection["revision_of"]:
-                dataset_metadata["collection_revision_id"] = collection["revision_of"]
-            yield dataset_metadata
+            yield dataset_metadata, collection.get("revision_of")
 
 
 def compare_genes(
@@ -127,7 +125,8 @@ def compare_genes(
     :param depreciated_datasets: The dictionary to store depreciated datasets.
     :type depreciated_datasets: dict
 
-    :return: A tuple containing the updated depreciated_datasets dictionary and a flag indicating if any deprecated genes were found.
+    :return: A tuple containing the updated depreciated_datasets dictionary and a flag indicating if any deprecated
+    genes were found.
     :rtype: tuple
     """
     dataset_id = dataset["dataset_id"]
@@ -170,31 +169,32 @@ def generate_deprecated_public(base_url: str, diff_map: Dict) -> Dict:
     :rtype: dict
     """
     datasets = fetch_public_datasets(base_url)
-    depreciated_datasets = {}
+    public_depreciated_datasets = {}
     for dataset in datasets:
-        compare_genes(dataset, diff_map, depreciated_datasets)
-    return depreciated_datasets
+        compare_genes(dataset, diff_map, public_depreciated_datasets)
+    return public_depreciated_datasets
 
 
 def generate_depreciated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, List]:
     """
-    Generate a dictionary of depreciated datasets and a list of non-auto-migrated datasets from private datasets.
+    Generate a dictionary of depreciated private collections its datasets and a list of non-auto-migrated public
+    collections.
 
     :param base_url: The base URL for fetching private datasets.
     :type base_url: str
     :param diff_map: The map of organisms and their deprecated genes.
     :type diff_map: dict
-
-    :return: A tuple containing the dictionary of depreciated datasets and the list of non-auto-migrated datasets.
+    :return: A tuple containing the dictionary of depreciated datasets and the list of non-auto-migrated datasets
     :rtype: tuple
     """
-    depreciated_datasets = {}
+    private_depreciated_datasets = {}
     non_auto_migrated = []
-    for dataset in fetch_private_datasets(base_url):
-        is_deprecated_genes_found = compare_genes(dataset, diff_map, depreciated_datasets)
-        if is_deprecated_genes_found:
-            non_auto_migrated.append(dataset["collection_revision_id"])
-    return depreciated_datasets, non_auto_migrated
+    for dataset, revision_of in fetch_private_datasets(base_url):
+        is_deprecated_genes_found = compare_genes(dataset, diff_map, private_depreciated_datasets)
+        if revision_of and revision_of not in non_auto_migrated and is_deprecated_genes_found:
+            non_auto_migrated.append(revision_of)
+            private_depreciated_datasets[dataset["collection_id"]] = revision_of
+    return private_depreciated_datasets, non_auto_migrated
 
 
 def main():
