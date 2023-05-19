@@ -1,15 +1,22 @@
 #!/usr/bin/env python
-import json
 import logging
 import os
+from typing import Any, Dict, List, Tuple
 
-import requests
 import tiledb as tiledb
+from jinja2 import Template
 
-from schema_bump_dry_run_scripts.genes.logger import configure_logging, log_tracking, logit
+from cellxgene_schema_cli.cellxgene_schema.env import ONTOLOGY_DIR
+from cellxgene_schema_cli.cellxgene_schema.ontology import SupportedOrganisms
+from schema_bump_dry_run_scripts.common import (
+    fetch_private_collections,
+    fetch_private_dataset,
+    fetch_public_datasets,
+    get_headers,
+)
+from schema_bump_dry_run_scripts.genes.logger import configure_logging
 
 configure_logging()
-stage = "prod"
 logger = logging.getLogger()
 
 API_URL = {
@@ -17,120 +24,192 @@ API_URL = {
     "staging": "https://api.cellxgene.staging.single-cell.czi.technology",
     "dev": "https://api.cellxgene.dev.single-cell.czi.technology",
 }
-
-EXPLORER = {
-    "prod": "https://api.cellxgene.cziscience.com/cellxgene/s3_uri/s3%253A%252F%252Fhosted-cellxgene-{"
-    "stage}%252F{identifier}.cxg/api/v0.3/annotations/var?annotation-name=feature_name",
-    "dev": "https://api.cellxgene.{stage}.single-cell.czi.technology/cellxgene/s3_uri/s3%253A%252F%252Fhosted"
-    "-cellxgene-{stage}%252F{identifier}.cxg/api/v0.3/annotations/var?annotation-name=feature_name",
-    "staging": "https://api.cellxgene.{stage}.single-cell.czi.technology/cellxgene/s3_uri/s3%253A%252F%252Fhosted"
-    "-cellxgene-{stage}%252F{identifier}.cxg/api/v0.3/annotations/var?annotation-name=feature_name",
-}
 ctx = tiledb.default_ctx({"vfs.s3.region": "us-west-2"})
 
 
-@logit
-def get_datasets_curation():
-    # fetch all currently published datasets
-    # TODO: include datasets from private collections (requires curator auth, do not upload to GHA)
-    base_url = API_URL[os.getenv("corpus_env", default=stage)]
-    datasets = requests.get(f"{base_url}/curation/v1/datasets").json()
-    return datasets
+def generate_report(data) -> str:
+    report = """## Deprecated Terms in Public Datasets:
+
+{% for collection in deprecated_public %}
+Collection ID: {{ collection }}
+Number of Affected Datasets: {{ deprecated_public[collection].num_datasets }}
+Deprecated Terms: 
+    {{ deprecated_public[collection].deprecated_terms  | join(', ') | wordwrap(78) | replace('\n', '\n    ')}}
+
+{% endfor %}
+## Deprecated Genes in Private Datasets:
+
+{% for collection in open_revisions %}
+Collection ID: {{ collection}}
+{% if open_revisions[collection].revision_of %}
+Note--In A Revision of: {{ open_revisions[collection].revision_of }}
+{% endif %}
+Number of Affected Datasets: {{ open_revisions[collection].num_datasets }}
+Deprecated Terms: 
+    {{ open_revisions[collection].deprecated_terms | join(', ') | wordwrap(78) | replace('\n', '\n    ')}}
+
+{% endfor %}
+## The Following Public Collections Will Not Be Auto-Migrated Due To Having an Open Revision:
+{% for collection in non_auto_migrated %}
+{{ collection }}
+{% endfor %}
+"""
+
+    j2_template = Template(report, trim_blocks=True, lstrip_blocks=True)
+    report = j2_template.render(data)
+    return report
 
 
-@logit
-def get_datasets_dp():
-    # fetch all currently published datasets
-    # TODO: include datasets from private collections (requires curator auth, do not upload to GHA)
-    base_url = API_URL[os.getenv("corpus_env", default=stage)]
-    datasets = requests.get(f"{base_url}/dp/v1/datasets/index").json()
-    for dataset in datasets:
-        dataset["s3_uri"] = [i["s3_uri"] for i in dataset["dataset_assets"] if i["filetype"] == "CXG"][0]
-    return datasets
-
-
-@logit
-def get_genes_with_explorer(identifier) -> list[str]:
-    """
-    Uses the explorer API to get the genes for a dataset. This depends on the explorer API ramaining constant. This
-    method is faster, but adds a dependency on the explorer API, and costs more to extra data. The cost may be
-    negiligble, more testing is needed to confirm.
-    :param identifier:
-    :return:
-    """
-    # This used explorer to get the speicies, but this information can be found in the dataset metadata.
-    # schema = requests.get(
-    #     f"https://api.cellxgene.dev.single-cell.czi.technology/cellxgene/s3_uri/s3%253A%252F%252Fhosted-cellxgene-dev%252F{identifier}.cxg/api/v0.3/schema"
-    # ).json()
-    # try:
-    #     feature_references = []
-    #     for col in schema["schema"]["annotations"]["var"]["columns"]:
-    #         if col["name"] == "feature_reference":
-    #             feature_references.extend(col["categories"])
-    # except KeyError as ex:
-    #     print(schema["message"])
-    #     raise ex
-
-    feature_name = requests.get(EXPLORER[stage].format(stage=stage, identifier=identifier)).content
-    try:
-        feature_name = feature_name[feature_name.rfind(b"[") : feature_name.rfind(b"]") + 1].decode("utf-8")
-        feature_name = json.loads(feature_name)
-    except json.decoder.JSONDecodeError as ex:
-        raise ex
-    return feature_name
-
-
-@logit
-def get_genes_with_tiledb(dataset_version_id=None, s3_uri=None) -> list[str]:
+def get_genes(dataset: dict, stage: str) -> list[str]:
     """
     Uses tiledb to get the genes for a dataset. This method is slower, but does not add a dependency on the explorer. It
     is also free if we run computer with in the same AWS region.
 
-    10x slower than the explorer method.
-
-    :param dataset_version_id:
+    :param dataset: dataset metadata
+    :param stage: prod, staging, or dev
     :return:
     """
-    s3_path = s3_uri + "/var" if s3_uri else f"s3://hosted-cellxgene-{stage}/{dataset_version_id}.cxg/var"
+    dataset_version_id = dataset["dataset_version_id"]
+    s3_path = (
+        f"s3://hosted-cellxgene-{stage}/{dataset_version_id}.cxg/var"
+        if dataset.get("s3_uri")
+        else dataset["s3_uri"] + "/var"
+    )
     with tiledb.open(s3_path, "r") as var:
         var_df = var.df[:]
         stored_genes = set(var_df["feature_name"].to_numpy(dtype=str))
-        # species = json.loads(var.meta["cxg_schema"])["feature_reference"]["categories"] # get the speicies from tiledb
     return stored_genes
 
 
+def get_diff_map() -> dict[str, list[str]]:
+    # list all of the files ending with diff.txt in the cellxgene_schema/ontology_files directory
+    # for each file, open it and read the contents into a dictionary
+    diff_map = {}
+    suffix = "_diff.txt"
+    files = os.listdir(ONTOLOGY_DIR)
+    for file in files:
+        if file.endswith(suffix):
+            with open(f"{ONTOLOGY_DIR}/{file}") as fp:
+                organism = getattr(SupportedOrganisms, file.removesuffix(suffix).upper()).value
+                diff_map[organism] = fp.read().splitlines()
+    return diff_map
+
+
+def fetch_private_datasets(base_url) -> list[dict]:
+    """
+    Fetches all private collections and parses the datasets from the response.
+    :param base_url:
+    :return:
+    """
+    auth_headers = get_headers(base_url)
+    for collection in fetch_private_collections(base_url, auth_headers):
+        collection_id = collection["collection_id"]
+        for ds in collection["datasets"]:
+            dataset_metadata = fetch_private_dataset(base_url, auth_headers, collection_id, ds["dataset_id"])
+            # only process uploaded datasets
+            if "processing_status" not in dataset_metadata or dataset_metadata["processing_status"] != "SUCCESS":
+                continue
+            if collection["revision_of"]:
+                dataset_metadata["collection_revision_id"] = collection["revision_of"]
+            yield dataset_metadata
+
+
+def compare_genes(
+    dataset: Dict[str, Any], diff_map: Dict[str, str], depreciated_datasets: Dict[str, Dict[str, str]]
+) -> Tuple[Dict, bool]:
+    """
+    Compare genes in a dataset with the provided diff map and update the depreciated_datasets dictionary.
+
+    :param dataset: The dataset to compare genes for.
+    :type dataset: dict
+    :param diff_map: The map of organisms and their deprecated genes.
+    :type diff_map: dict
+    :param depreciated_datasets: The dictionary to store depreciated datasets.
+    :type depreciated_datasets: dict
+
+    :return: A tuple containing the updated depreciated_datasets dictionary and a flag indicating if any deprecated genes were found.
+    :rtype: tuple
+    """
+    dataset_id = dataset["dataset_id"]
+    collection_id = dataset["collection_id"]
+    dataset_genes_to_compare = set(get_genes(dataset))
+    organisms = [organism_info["ontology_term_id"] for organism_info in dataset["organism"]]
+    is_deprecated_genes_found = False
+    deprecated_genes_in_dataset = set()
+    for organism in organisms:
+        deprecated_genes_source = diff_map.get(organism, set())
+        intersection_genes = dataset_genes_to_compare.intersection(deprecated_genes_source)
+        if intersection_genes:
+            deprecated_genes_in_dataset.update(intersection_genes)
+            is_deprecated_genes_found = True
+
+    if is_deprecated_genes_found:
+        if collection_id not in depreciated_datasets:
+            depreciated_datasets[collection_id] = {"num_datasets": 0, "deprecated_terms": deprecated_genes_in_dataset}
+        else:
+            depreciated_datasets[collection_id]["deprecated_terms"].update(deprecated_genes_in_dataset)
+        depreciated_datasets[collection_id]["num_datasets"] += 1
+        num_deprecated_genes = len(deprecated_genes_in_dataset)
+        logger.info(f"Dataset {dataset_id} has {num_deprecated_genes} deprecated genes")
+    else:
+        logger.info(f"Dataset {dataset_id} has no deprecated genes")
+
+    return is_deprecated_genes_found
+
+
+def generate_deprecated_public(base_url: str, diff_map: Dict) -> Dict:
+    """
+    Generate a dictionary of depreciated datasets from public datasets.
+
+    :param base_url: The base URL for fetching public datasets.
+    :type base_url: str
+    :param diff_map: The map of organisms and their deprecated genes.
+    :type diff_map: dict
+
+    :return: A dictionary of depreciated datasets.
+    :rtype: dict
+    """
+    datasets = fetch_public_datasets(base_url)
+    depreciated_datasets = {}
+    for dataset in datasets:
+        compare_genes(dataset, diff_map, depreciated_datasets)
+    return depreciated_datasets
+
+
+def generate_depreciated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, List]:
+    """
+    Generate a dictionary of depreciated datasets and a list of non-auto-migrated datasets from private datasets.
+
+    :param base_url: The base URL for fetching private datasets.
+    :type base_url: str
+    :param diff_map: The map of organisms and their deprecated genes.
+    :type diff_map: dict
+
+    :return: A tuple containing the dictionary of depreciated datasets and the list of non-auto-migrated datasets.
+    :rtype: tuple
+    """
+    depreciated_datasets = {}
+    non_auto_migrated = []
+    for dataset in fetch_private_datasets(base_url):
+        is_deprecated_genes_found = compare_genes(dataset, diff_map, depreciated_datasets)
+        if is_deprecated_genes_found:
+            non_auto_migrated.append(dataset["collection_revision_id"])
+    return depreciated_datasets, non_auto_migrated
+
+
 def main():
-    datasets = get_datasets_dp()
-    failed = []
-    try:
-        for i, dataset in enumerate(datasets):
-            if i == 100:
-                break
-            # Thess calls can be run in parallel becuase they rely on network calls.
-            identifiers = [dataset.get("dataset_version_id"), dataset.get("dataset_id")]
-            [i["ontology_term_id"] for i in dataset["organism"]]
-            try:
-                # get_genes_with_explorer(identifiers[0])
-                get_genes_with_tiledb(identifiers, s3_uri=dataset["s3_uri"])
-            except Exception:
-                failed_string = (
-                    f"failed "
-                    f"dataset_version_id={dataset.get('dataset_version_id')}, "
-                    f"dataset_id={dataset.get('dataset_id')}, "
-                    f"collection_id={dataset.get('collection_id')}, "
-                    f"explorer_url={dataset.get('explorer_url')}, "
-                    f"title={dataset.get('title')}"
-                )
-                failed.append(failed_string)
-                logger.exception(failed_string)
-            else:
-                logger.info(f"success {identifiers[0]}")
-    finally:
-        if failed:
-            logging.info("failed Cases")
-            for fail in failed:
-                logging.info(f"\t{fail}")
-        log_tracking()
+    stage = "prod"
+    base_url = API_URL[stage]
+
+    report_data = {}
+    diff_map = get_diff_map()
+
+    report_data["depreciated_public"] = generate_deprecated_public(base_url, diff_map)
+    report_data["open_revisions"], report_data["non_auto_migrated"] = generate_depreciated_private(base_url, diff_map)
+
+    report = generate_report(report_data)
+    with open("ontologies-curator-report.txt", "w") as fp:
+        fp.write(report)
 
 
 if __name__ == "__main__":
