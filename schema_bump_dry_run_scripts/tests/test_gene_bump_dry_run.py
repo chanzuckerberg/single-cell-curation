@@ -1,7 +1,7 @@
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
-from gene_bump_dry_run import compare_genes, generate_report, get_diff_map
+from gene_bump_dry_run import compare_genes, generate_depreciated_private, generate_report, get_diff_map
 
 
 def test_get_diff_map():
@@ -122,10 +122,12 @@ def test_compare_genes__with_no_deprecated_genes(sample_diff_map, sample_depreci
     expected_is_deprecated_genes_found = False
 
     with patch("gene_bump_dry_run.get_genes", get_genes), patch("gene_bump_dry_run.logger") as mock_logger:
-        is_deprecated_genes_found = compare_genes(dataset, sample_diff_map, sample_depreciated_datasets)
+        actual_depreciated_datasets, is_deprecated_genes_found = compare_genes(
+            dataset, sample_diff_map, sample_depreciated_datasets
+        )
 
     mock_logger.info.assert_called_once_with("Dataset dataset1 has no deprecated genes")
-    assert sample_depreciated_datasets == expected_depreciated_datasets
+    assert actual_depreciated_datasets == expected_depreciated_datasets
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
 
@@ -140,10 +142,10 @@ def test_compare_genes__with_empty_diff_map(sample_depreciated_datasets):
     expected_is_deprecated_genes_found = False
 
     with patch("gene_bump_dry_run.get_genes", get_genes), patch("gene_bump_dry_run.logger") as mock_logger:
-        is_deprecated_genes_found = compare_genes(dataset, {}, sample_depreciated_datasets)
+        actual_depreciated_datasets, is_deprecated_genes_found = compare_genes(dataset, {}, sample_depreciated_datasets)
 
     mock_logger.info.assert_called_once_with("Dataset dataset3 has no deprecated genes")
-    assert sample_depreciated_datasets == expected_depreciated_datasets
+    assert actual_depreciated_datasets == expected_depreciated_datasets
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
 
@@ -159,10 +161,12 @@ def test_compare_genes__with_existing_collection_and_deprecated_genes(sample_dif
     }
     expected_is_deprecated_genes_found = True
     with patch("gene_bump_dry_run.get_genes", get_genes), patch("gene_bump_dry_run.logger") as mock_logger:
-        is_deprecated_genes_found = compare_genes(dataset, sample_diff_map, sample_depreciated_datasets)
+        actual_depreciated_datasets, is_deprecated_genes_found = compare_genes(
+            dataset, sample_diff_map, sample_depreciated_datasets
+        )
 
     mock_logger.info.assert_called_once_with("Dataset dataset2 has 3 deprecated genes")
-    assert sample_depreciated_datasets == expected_depreciated_datasets
+    assert actual_depreciated_datasets == expected_depreciated_datasets
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
 
@@ -179,10 +183,12 @@ def test_compare_genes__with_new_collection_and_deprecated_genes(sample_diff_map
     )
     expected_is_deprecated_genes_found = True
     with patch("gene_bump_dry_run.get_genes", get_genes), patch("gene_bump_dry_run.logger") as mock_logger:
-        is_deprecated_genes_found = compare_genes(dataset, sample_diff_map, sample_depreciated_datasets)
+        actual_depreciated_datasets, is_deprecated_genes_found = compare_genes(
+            dataset, sample_diff_map, sample_depreciated_datasets
+        )
 
     mock_logger.info.assert_called_once_with("Dataset dataset4 has 3 deprecated genes")
-    assert sample_depreciated_datasets == expected_depreciated_datasets
+    assert actual_depreciated_datasets == expected_depreciated_datasets
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
 
@@ -198,10 +204,12 @@ def test_compare_genes__with_multiple_organisms_and_deprecated_genes(sample_diff
     }
     expected_is_deprecated_genes_found = True
     with patch("gene_bump_dry_run.get_genes", get_genes), patch("gene_bump_dry_run.logger") as mock_logger:
-        is_deprecated_genes_found = compare_genes(dataset, sample_diff_map, sample_depreciated_datasets)
+        actual_depreciated_datasets, is_deprecated_genes_found = compare_genes(
+            dataset, sample_diff_map, sample_depreciated_datasets
+        )
 
     mock_logger.info.assert_called_once_with("Dataset dataset2 has 2 deprecated genes")
-    assert sample_depreciated_datasets == expected_depreciated_datasets
+    assert actual_depreciated_datasets == expected_depreciated_datasets
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
 
@@ -218,8 +226,61 @@ def test_compare_genes__with_new_collection_multiple_organisms_and_deprecated_ge
     expected_depreciated_datasets.update(collection2={"num_datasets": 1, "deprecated_terms": {"gene1-1", "gene2-2"}})
     expected_is_deprecated_genes_found = True
     with patch("gene_bump_dry_run.get_genes", get_genes), patch("gene_bump_dry_run.logger") as mock_logger:
-        is_deprecated_genes_found = compare_genes(dataset, sample_diff_map, sample_depreciated_datasets)
+        actual_depreciated_datasets, is_deprecated_genes_found = compare_genes(
+            dataset, sample_diff_map, sample_depreciated_datasets
+        )
 
     mock_logger.info.assert_called_once_with("Dataset dataset2 has 2 deprecated genes")
-    assert sample_depreciated_datasets == expected_depreciated_datasets
+    assert actual_depreciated_datasets == expected_depreciated_datasets
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
+
+
+def test_generate_depreciated_private(sample_diff_map):
+    # Mock data
+    base_url = "https://example.com"
+    dataset3 = {"dataset_id": "3", "collection_id": "collection2", "revision_of": "collection_public"}
+    dataset4 = {"dataset_id": "4", "collection_id": "collection3", "revision_of": None}
+
+    # Expected output
+    expected_depreciated_datasets = {"collection2": {"revision_of": "collection_public"}, "collection3": {}}
+    expected_non_auto_migrated = ["collection_public"]
+
+    fetch_private_datasets_mock = Mock(return_value=[(dataset3, "collection_public"), (dataset4, None)])
+    compare_genes_mock = Mock(
+        side_effect=[
+            ({"collection2": {}}, True),
+            ({"collection2": {"revision_of": "collection_public"}, "collection3": {}}, True),
+        ]
+    )
+    with patch("gene_bump_dry_run.fetch_private_datasets", fetch_private_datasets_mock), patch(
+        "gene_bump_dry_run.compare_genes", compare_genes_mock
+    ):
+        depreciated_datasets, non_auto_migrated = generate_depreciated_private(base_url, sample_diff_map)
+
+    # Assert the results
+    assert depreciated_datasets == expected_depreciated_datasets
+    assert non_auto_migrated == expected_non_auto_migrated
+    fetch_private_datasets_mock.assert_called_once_with(base_url)
+
+
+def test_generate_depreciated_private__with_datasets_in_same_collectoin(sample_diff_map):
+    # Mock data
+    base_url = "https://example.com"
+    dataset1 = {"dataset_id": "1", "collection_id": "collection1", "revision_of": None}
+    dataset2 = {"dataset_id": "2", "collection_id": "collection1", "revision_of": None}
+
+    # Expected output
+    expected_depreciated_datasets = {"collection1": {}}
+    expected_non_auto_migrated = []
+
+    fetch_private_datasets_mock = Mock(return_value=[(dataset1, None), (dataset2, None)])
+    compare_genes_mock = Mock(side_effect=[({"collection1": {}}, False), ({"collection1": {}}, True)])
+    with patch("gene_bump_dry_run.fetch_private_datasets", fetch_private_datasets_mock), patch(
+        "gene_bump_dry_run.compare_genes", compare_genes_mock
+    ):
+        depreciated_datasets, non_auto_migrated = generate_depreciated_private(base_url, sample_diff_map)
+
+    # Assert the results
+    assert depreciated_datasets == expected_depreciated_datasets
+    assert non_auto_migrated == expected_non_auto_migrated
+    fetch_private_datasets_mock.assert_called_once_with(base_url)

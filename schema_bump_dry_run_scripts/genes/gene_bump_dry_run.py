@@ -153,7 +153,7 @@ def compare_genes(
     else:
         logger.info(f"Dataset {dataset_id} has no deprecated genes")
 
-    return is_deprecated_genes_found
+    return depreciated_datasets, is_deprecated_genes_found
 
 
 def generate_deprecated_public(base_url: str, diff_map: Dict) -> Dict:
@@ -190,10 +190,12 @@ def generate_depreciated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, L
     private_depreciated_datasets = {}
     non_auto_migrated = []
     for dataset, revision_of in fetch_private_datasets(base_url):
-        is_deprecated_genes_found = compare_genes(dataset, diff_map, private_depreciated_datasets)
+        private_depreciated_datasets, is_deprecated_genes_found = compare_genes(
+            dataset, diff_map, private_depreciated_datasets
+        )
         if revision_of and revision_of not in non_auto_migrated and is_deprecated_genes_found:
             non_auto_migrated.append(revision_of)
-            private_depreciated_datasets[dataset["collection_id"]] = revision_of
+            private_depreciated_datasets[dataset["collection_id"]]["revision_of"] = revision_of
     return private_depreciated_datasets, non_auto_migrated
 
 
