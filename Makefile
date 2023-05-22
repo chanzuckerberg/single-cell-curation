@@ -13,10 +13,10 @@ unit-test:
 		&& coverage xml
 
 ontology-dry-run-tests:
-	cd schema_bump_dry_run_scripts/tests && pytest
+	cd schema_bump_dry_run_scripts/ontologies && pytest
 
 gene-dry-run-tests:
-	cd schema_bump_dry_run_scripts/genes/tests && pytest
+	cd schema_bump_dry_run_scripts/genes && pytest
 
 clean:
 	rm -rf cellxgene_schema_cli/build cellxgene_schema_cli/dist cellxgene_schema_cli/cellxgene_schema.egg-info

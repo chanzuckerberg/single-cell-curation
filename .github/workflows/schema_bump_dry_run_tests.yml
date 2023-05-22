@@ -1,4 +1,4 @@
-name: Ontology Bump Dry Run Test
+name: Schema Bump Dry Run Test
 
 on:
   push:
