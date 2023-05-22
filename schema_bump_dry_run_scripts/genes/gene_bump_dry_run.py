@@ -73,7 +73,11 @@ def get_genes(dataset: dict, stage: str) -> List[str]:
     )
     with tiledb.open(s3_path, "r") as var:
         var_df = var.df[:]
-        stored_genes = set(var_df["feature_name"].to_numpy(dtype=str))
+        suffix = 0
+        while f"name_{suffix}" not in var_df.columns:
+            suffix += 1
+        index_name = "name_{suffix}"
+        stored_genes = var_df[index_name].to_list()
     return stored_genes
 
 
