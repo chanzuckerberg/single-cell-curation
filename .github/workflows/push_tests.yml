@@ -37,7 +37,7 @@ jobs:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**cellxgene_schema_cli/requirements*.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pip-${{ hashFiles('**cellxgene_schema_cli/requirements*.txt') }}
+            ${{ runner.os }}-pip-
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
