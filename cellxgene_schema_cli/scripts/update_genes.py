@@ -1,7 +1,12 @@
+#!/usr/bin/env python
 import ftplib
+import os
+import sys
 
 import yaml
-from cellxgene_schema import env
+
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../cellxgene_schema"))
+import env
 
 
 def get_latest_release_from_gencode(species: str) -> str:

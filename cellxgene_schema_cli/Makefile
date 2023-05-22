@@ -11,7 +11,7 @@ gene-processing:
 
 .PHONY: genes-update
 genes-update:
-	python3 . /scripts/update_genes.py
+	python3 ./scripts/update_genes.py
 
 .PHONY: clean
 clean:
