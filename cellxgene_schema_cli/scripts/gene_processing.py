@@ -171,9 +171,9 @@ def process_gene_info(gene_info: dict) -> None:
     print("download", gene_info["description"])
     temp_file_path, _ = urllib.request.urlretrieve(gene_info["url"])
     previous_ref_filepath = os.path.join(env.ONTOLOGY_DIR, f"previous_{gene_info['description']}.csv.gz")
+    # temporarily backup previous processed csv
+    os.rename(gene_info["new_file"], previous_ref_filepath)
     try:
-        # temporarily backup previous processed csv
-        os.rename(gene_info["new_file"], previous_ref_filepath)
         print("process", gene_info["description"])
         gene_info["processor"](temp_file_path, gene_info["new_file"])
         print("generating gene reference diff for", gene_info["description"])
@@ -218,7 +218,7 @@ def main():
     with open(env.GENE_INFO_YAML, "r") as gene_info_handle:
         gene_infos: dict = yaml.safe_load(gene_info_handle)
 
-    ps = []
+    jobs = []
     for gene_info in gene_infos.values():
         gene_info["new_file"] = os.path.join(env.ONTOLOGY_DIR, f"genes_{gene_info['description']}.csv.gz")
         # determine how to process based on file type
@@ -232,12 +232,12 @@ def main():
         # add version to URL if needed
         if gene_info.get("version"):
             gene_info["url"] = gene_info["url"].format(version=gene_info["version"])
-        p = Process(target=process_gene_info, args=(gene_info,))
-        p.start()
-        ps.append(p)
+        job = Process(target=process_gene_info, args=(gene_info,))
+        job.start()
+        jobs.append(job)
 
-    for p in ps:
-        p.join()
+    for job in jobs:
+        job.join()
 
 
 if __name__ == "__main__":
