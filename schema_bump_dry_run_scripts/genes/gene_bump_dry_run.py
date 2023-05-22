@@ -56,7 +56,7 @@ Deprecated Terms:
     return report
 
 
-def get_genes(dataset: dict, stage: str) -> list[str]:
+def get_genes(dataset: dict, stage: str) -> List[str]:
     """
     Uses tiledb to get the genes for a dataset. This method is slower, but does not add a dependency on the explorer. It
     is also free if we run computer with in the same AWS region.
@@ -77,7 +77,7 @@ def get_genes(dataset: dict, stage: str) -> list[str]:
     return stored_genes
 
 
-def get_diff_map() -> dict[str, list[str]]:
+def get_diff_map() -> Dict[str, List[str]]:
     # list all of the files ending with diff.txt in the cellxgene_schema/ontology_files directory
     # for each file, open it and read the contents into a dictionary
     diff_map = {}
@@ -91,7 +91,7 @@ def get_diff_map() -> dict[str, list[str]]:
     return diff_map
 
 
-def fetch_private_datasets(base_url) -> Tuple[list[dict], Optional[str]]:
+def fetch_private_datasets(base_url) -> Tuple[List[dict], Optional[str]]:
     """
     Fetches all private collections and parses the datasets from the response.
     :param base_url:
