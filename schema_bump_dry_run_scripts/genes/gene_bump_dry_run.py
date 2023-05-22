@@ -113,19 +113,19 @@ def fetch_private_datasets(base_url) -> Tuple[list[dict], Optional[str]]:
 
 
 def compare_genes(
-    dataset: Dict[str, Any], diff_map: Dict[str, str], depreciated_datasets: Dict[str, Dict[str, str]]
+    dataset: Dict[str, Any], diff_map: Dict[str, str], deprecated_datasets: Dict[str, Dict[str, str]]
 ) -> Tuple[Dict, bool]:
     """
-    Compare genes in a dataset with the provided diff map and update the depreciated_datasets dictionary.
+    Compare genes in a dataset with the provided diff map and update the deprecated_datasets dictionary.
 
     :param dataset: The dataset to compare genes for.
     :type dataset: dict
     :param diff_map: The map of organisms and their deprecated genes.
     :type diff_map: dict
-    :param depreciated_datasets: The dictionary to store depreciated datasets.
-    :type depreciated_datasets: dict
+    :param deprecated_datasets: The dictionary to store deprecated datasets.
+    :type deprecated_datasets: dict
 
-    :return: A tuple containing the updated depreciated_datasets dictionary and a flag indicating if any deprecated
+    :return: A tuple containing the updated deprecated_datasets dictionary and a flag indicating if any deprecated
     genes were found.
     :rtype: tuple
     """
@@ -143,60 +143,60 @@ def compare_genes(
             is_deprecated_genes_found = True
 
     if is_deprecated_genes_found:
-        if collection_id not in depreciated_datasets:
-            depreciated_datasets[collection_id] = {"num_datasets": 0, "deprecated_terms": deprecated_genes_in_dataset}
+        if collection_id not in deprecated_datasets:
+            deprecated_datasets[collection_id] = {"num_datasets": 0, "deprecated_terms": deprecated_genes_in_dataset}
         else:
-            depreciated_datasets[collection_id]["deprecated_terms"].update(deprecated_genes_in_dataset)
-        depreciated_datasets[collection_id]["num_datasets"] += 1
+            deprecated_datasets[collection_id]["deprecated_terms"].update(deprecated_genes_in_dataset)
+        deprecated_datasets[collection_id]["num_datasets"] += 1
         num_deprecated_genes = len(deprecated_genes_in_dataset)
         logger.info(f"Dataset {dataset_id} has {num_deprecated_genes} deprecated genes")
     else:
         logger.info(f"Dataset {dataset_id} has no deprecated genes")
 
-    return depreciated_datasets, is_deprecated_genes_found
+    return deprecated_datasets, is_deprecated_genes_found
 
 
 def generate_deprecated_public(base_url: str, diff_map: Dict) -> Dict:
     """
-    Generate a dictionary of depreciated datasets from public datasets.
+    Generate a dictionary of deprecated datasets from public datasets.
 
     :param base_url: The base URL for fetching public datasets.
     :type base_url: str
     :param diff_map: The map of organisms and their deprecated genes.
     :type diff_map: dict
 
-    :return: A dictionary of depreciated datasets.
+    :return: A dictionary of deprecated datasets.
     :rtype: dict
     """
     datasets = fetch_public_datasets(base_url)
-    public_depreciated_datasets = {}
+    public_deprecated_datasets = {}
     for dataset in datasets:
-        compare_genes(dataset, diff_map, public_depreciated_datasets)
-    return public_depreciated_datasets
+        public_deprecated_datasets, _ = compare_genes(dataset, diff_map, public_deprecated_datasets)
+    return public_deprecated_datasets
 
 
-def generate_depreciated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, List]:
+def generate_deprecated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, List]:
     """
-    Generate a dictionary of depreciated private collections its datasets and a list of non-auto-migrated public
+    Generate a dictionary of deprecated private collections its datasets and a list of non-auto-migrated public
     collections.
 
     :param base_url: The base URL for fetching private datasets.
     :type base_url: str
     :param diff_map: The map of organisms and their deprecated genes.
     :type diff_map: dict
-    :return: A tuple containing the dictionary of depreciated datasets and the list of non-auto-migrated datasets
+    :return: A tuple containing the dictionary of deprecated datasets and the list of non-auto-migrated datasets
     :rtype: tuple
     """
-    private_depreciated_datasets = {}
+    private_deprecated_datasets = {}
     non_auto_migrated = []
     for dataset, revision_of in fetch_private_datasets(base_url):
-        private_depreciated_datasets, is_deprecated_genes_found = compare_genes(
-            dataset, diff_map, private_depreciated_datasets
+        private_deprecated_datasets, is_deprecated_genes_found = compare_genes(
+            dataset, diff_map, private_deprecated_datasets
         )
         if revision_of and revision_of not in non_auto_migrated and is_deprecated_genes_found:
             non_auto_migrated.append(revision_of)
-            private_depreciated_datasets[dataset["collection_id"]]["revision_of"] = revision_of
-    return private_depreciated_datasets, non_auto_migrated
+            private_deprecated_datasets[dataset["collection_id"]]["revision_of"] = revision_of
+    return private_deprecated_datasets, non_auto_migrated
 
 
 def main():
@@ -206,8 +206,8 @@ def main():
     report_data = {}
     diff_map = get_diff_map()
 
-    report_data["depreciated_public"] = generate_deprecated_public(base_url, diff_map)
-    report_data["open_revisions"], report_data["non_auto_migrated"] = generate_depreciated_private(base_url, diff_map)
+    report_data["deprecated_public"] = generate_deprecated_public(base_url, diff_map)
+    report_data["open_revisions"], report_data["non_auto_migrated"] = generate_deprecated_private(base_url, diff_map)
 
     report = generate_report(report_data)
     with open("ontologies-curator-report.txt", "w") as fp:
