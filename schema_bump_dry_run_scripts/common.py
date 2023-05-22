@@ -25,3 +25,10 @@ def get_headers(base_url):
     )
     access_token = response.json()["access_token"]
     return {"Authorization": f"Bearer {access_token}"}
+
+
+BASE_API = {
+    "prod": "https://api.cellxgene.cziscience.com",
+    "staging": "https://api.cellxgene.staging.single-cell.czi.technology",
+    "dev": "https://api.cellxgene.dev.single-cell.czi.technology",
+}

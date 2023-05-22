@@ -9,21 +9,17 @@ from jinja2 import Template
 from cellxgene_schema_cli.cellxgene_schema.env import ONTOLOGY_DIR
 from cellxgene_schema_cli.cellxgene_schema.ontology import SupportedOrganisms
 from schema_bump_dry_run_scripts.common import (
+    BASE_API,
     fetch_private_collections,
     fetch_private_dataset,
     fetch_public_datasets,
     get_headers,
 )
-from schema_bump_dry_run_scripts.genes.logger import configure_logging
+from schema_bump_dry_run_scripts.logger import configure_logging
 
 configure_logging()
 logger = logging.getLogger()
 
-API_URL = {
-    "prod": "https://api.cellxgene.cziscience.com",
-    "staging": "https://api.cellxgene.staging.single-cell.czi.technology",
-    "dev": "https://api.cellxgene.dev.single-cell.czi.technology",
-}
 ctx = tiledb.default_ctx({"vfs.s3.region": "us-west-2"})
 
 
@@ -199,8 +195,7 @@ def generate_deprecated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, Li
 
 
 def main():
-    stage = "prod"
-    base_url = API_URL[stage]
+    base_url = base_url = BASE_API[os.getenv("corpus_env", default="dev")]
 
     report_data = {}
     diff_map = get_diff_map()

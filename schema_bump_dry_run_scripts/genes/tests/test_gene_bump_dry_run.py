@@ -1,7 +1,8 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from gene_bump_dry_run import (
+
+from schema_bump_dry_run_scripts.genes.gene_bump_dry_run import (
     compare_genes,
     generate_deprecated_private,
     generate_deprecated_public,

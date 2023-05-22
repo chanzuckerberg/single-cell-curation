@@ -5,17 +5,12 @@ import os
 from collections import defaultdict
 
 from schema_bump_dry_run_scripts.common import (
+    BASE_API,
     fetch_private_collections,
     fetch_private_dataset,
     fetch_public_datasets,
     get_headers,
 )
-
-BASE_API = {
-    "prod": "api.cellxgene.cziscience.com",
-    "staging": "api.cellxgene.staging.single-cell.czi.technology",
-    "dev": "api.cellxgene.dev.single-cell.czi.technology",
-}
 
 # dataset metadata fields that contain ontology terms
 ONTOLOGY_TYPES = {
