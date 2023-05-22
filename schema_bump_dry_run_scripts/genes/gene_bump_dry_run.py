@@ -165,14 +165,14 @@ def generate_deprecated_public(base_url: str, diff_map: Dict) -> Dict:
     :param diff_map: The map of organisms and their deprecated genes.
     :type diff_map: dict
 
-    :return: A dictionary of deprecated datasets.
+    :return: A dictionary of public collections with datasets containing deprecated genes.
     :rtype: dict
     """
     datasets = fetch_public_datasets(base_url)
-    public_deprecated_datasets = {}
+    public_deprecated = {}
     for dataset in datasets:
-        public_deprecated_datasets, _ = compare_genes(dataset, diff_map, public_deprecated_datasets)
-    return public_deprecated_datasets
+        public_deprecated, _ = compare_genes(dataset, diff_map, public_deprecated)
+    return public_deprecated
 
 
 def generate_deprecated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, List]:
@@ -184,19 +184,18 @@ def generate_deprecated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, Li
     :type base_url: str
     :param diff_map: The map of organisms and their deprecated genes.
     :type diff_map: dict
-    :return: A tuple containing the dictionary of deprecated datasets and the list of non-auto-migrated datasets
+    :return: A tuple containing the dictionary of collections with datasets containing deprecated genes and the list
+        of non-auto-migrated public collections.
     :rtype: tuple
     """
-    private_deprecated_datasets = {}
+    private_deprecated = {}
     non_auto_migrated = []
     for dataset, revision_of in fetch_private_datasets(base_url):
-        private_deprecated_datasets, is_deprecated_genes_found = compare_genes(
-            dataset, diff_map, private_deprecated_datasets
-        )
+        private_deprecated, is_deprecated_genes_found = compare_genes(dataset, diff_map, private_deprecated)
         if revision_of and revision_of not in non_auto_migrated and is_deprecated_genes_found:
             non_auto_migrated.append(revision_of)
-            private_deprecated_datasets[dataset["collection_id"]]["revision_of"] = revision_of
-    return private_deprecated_datasets, non_auto_migrated
+            private_deprecated[dataset["collection_id"]]["revision_of"] = revision_of
+    return private_deprecated, non_auto_migrated
 
 
 def main():
@@ -210,7 +209,7 @@ def main():
     report_data["open_revisions"], report_data["non_auto_migrated"] = generate_deprecated_private(base_url, diff_map)
 
     report = generate_report(report_data)
-    with open("ontologies-curator-report.txt", "w") as fp:
+    with open("genes-curator-report.txt", "w") as fp:
         fp.write(report)
 
 
