@@ -28,7 +28,7 @@ def get_headers(base_url):
 
 
 BASE_API = {
-    "prod": "https://api.cellxgene.cziscience.com",
-    "staging": "https://api.cellxgene.staging.single-cell.czi.technology",
-    "dev": "https://api.cellxgene.dev.single-cell.czi.technology",
+    "prod": "api.cellxgene.cziscience.com",
+    "staging": "api.cellxgene.staging.single-cell.czi.technology",
+    "dev": "api.cellxgene.dev.single-cell.czi.technology",
 }
