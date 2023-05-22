@@ -52,10 +52,8 @@ jobs:
         if: ${{ steps.filter.outputs.gene_info == 'true' }}
         run: |
           make gene-processing -C cellxgene_schema_cli
-          git add ./cellxgene_schema_cli/cellxgene_schema/ontology_files/genes_ercc.csv.gz
-          git add ./cellxgene_schema_cli/cellxgene_schema/ontology_files/genes_sars_cov_2.csv.gz
-          git add ./cellxgene_schema_cli/cellxgene_schema/ontology_files/genes_homo_sapiens.csv.gz
-          git add ./cellxgene_schema_cli/cellxgene_schema/ontology_files/genes_mus_musculus.csv.gz
+          git add ./cellxgene_schema_cli/cellxgene_schema/ontology_files/genes_*.csv.gz
+          git add ./cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt
       - name: Commit
         if: ${{ steps.filter.outputs.gene_info == 'true'  || steps.filter.outputs.owl_info == 'true' }}
         run: |
