@@ -4,13 +4,13 @@ import json
 import os
 from collections import defaultdict
 
-import requests
-
-BASE_API = {
-    "prod": "api.cellxgene.cziscience.com",
-    "staging": "api.cellxgene.staging.single-cell.czi.technology",
-    "dev": "api.cellxgene.dev.single-cell.czi.technology",
-}
+from schema_bump_dry_run_scripts.common import (
+    BASE_API,
+    fetch_private_collections,
+    fetch_private_dataset,
+    fetch_public_datasets,
+    get_headers,
+)
 
 # dataset metadata fields that contain ontology terms
 ONTOLOGY_TYPES = {
@@ -31,29 +31,6 @@ def load_ontology_map():
     with gzip.open(ontologies, "rt") as f:
         onto_map = json.loads(f.read())
     return onto_map
-
-
-def fetch_public_datasets(base_url):
-    return requests.get(f"https://{base_url}/curation/v1/datasets").json()
-
-
-def fetch_private_collections(base_url, headers):
-    return requests.get(f"https://{base_url}/curation/v1/collections?visibility=PRIVATE", headers=headers).json()
-
-
-def fetch_private_dataset(base_url, headers, collection_id, dataset_id):
-    return requests.get(
-        f"https://{base_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}", headers=headers
-    ).json()
-
-
-def get_headers(base_url):
-    auth0_secrets = json.loads(os.getenv("AUTH0_SECRETS"))
-    response = requests.post(
-        f"https://{base_url}/curation/v1/auth/token", headers={"x-api-key": f"{auth0_secrets['super_curator_api_key']}"}
-    )
-    access_token = response.json()["access_token"]
-    return {"Authorization": f"Bearer {access_token}"}
 
 
 def map_deprecated_terms(
@@ -167,7 +144,7 @@ def dry_run(output_file: str) -> None:
     private_curator_report_entry_map = defaultdict(dict)
     for collection in private_collections:
         collection_id = collection["collection_id"]
-        if collection["revision_of"]:
+        if collection.get("revision_of"):
             revision_map[collection_id] = collection["revision_of"]
         for ds in collection["datasets"]:
             dataset_id = ds["dataset_id"]
