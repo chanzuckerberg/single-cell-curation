@@ -134,7 +134,9 @@ def test_compare_genes__with_no_deprecated_genes(sample_diff_map, sample_depreca
     expected_deprecated_datasets = sample_deprecated_datasets.copy()
     expected_is_deprecated_genes_found = False
 
-    with patch("gene_bump_dry_run.get_genes", get_genes), patch("gene_bump_dry_run.logger") as mock_logger:
+    with patch("schema_bump_dry_run_scripts.genes.gene_bump_dry_run.get_genes", get_genes), patch(
+        "schema_bump_dry_run_scripts.genes.gene_bump_dry_run.logger"
+    ) as mock_logger:
         actual_deprecated_datasets, is_deprecated_genes_found = compare_genes(
             dataset, sample_diff_map, sample_deprecated_datasets
         )
@@ -154,7 +156,9 @@ def test_compare_genes__with_empty_diff_map(sample_deprecated_datasets):
     expected_deprecated_datasets = sample_deprecated_datasets.copy()
     expected_is_deprecated_genes_found = False
 
-    with patch("gene_bump_dry_run.get_genes", get_genes), patch("gene_bump_dry_run.logger") as mock_logger:
+    with patch("schema_bump_dry_run_scripts.genes.gene_bump_dry_run.get_genes", get_genes), patch(
+        "schema_bump_dry_run_scripts.genes.gene_bump_dry_run.logger"
+    ) as mock_logger:
         actual_deprecated_datasets, is_deprecated_genes_found = compare_genes(dataset, {}, sample_deprecated_datasets)
 
     mock_logger.info.assert_called_once_with("Dataset dataset3 has no deprecated genes")
@@ -173,7 +177,9 @@ def test_compare_genes__with_existing_collection_and_deprecated_genes(sample_dif
         "collection1": {"num_datasets": 3, "deprecated_terms": {"gene1-1", "gene1-2", "gene1-3"}}
     }
     expected_is_deprecated_genes_found = True
-    with patch("gene_bump_dry_run.get_genes", get_genes), patch("gene_bump_dry_run.logger") as mock_logger:
+    with patch("schema_bump_dry_run_scripts.genes.gene_bump_dry_run.get_genes", get_genes), patch(
+        "schema_bump_dry_run_scripts.genes.gene_bump_dry_run.logger"
+    ) as mock_logger:
         actual_deprecated_datasets, is_deprecated_genes_found = compare_genes(
             dataset, sample_diff_map, sample_deprecated_datasets
         )
@@ -195,7 +201,9 @@ def test_compare_genes__with_new_collection_and_deprecated_genes(sample_diff_map
         collection2={"num_datasets": 1, "deprecated_terms": {"gene1-1", "gene1-2", "gene1-3"}}
     )
     expected_is_deprecated_genes_found = True
-    with patch("gene_bump_dry_run.get_genes", get_genes), patch("gene_bump_dry_run.logger") as mock_logger:
+    with patch("schema_bump_dry_run_scripts.genes.gene_bump_dry_run.get_genes", get_genes), patch(
+        "schema_bump_dry_run_scripts.genes.gene_bump_dry_run.logger"
+    ) as mock_logger:
         actual_deprecated_datasets, is_deprecated_genes_found = compare_genes(
             dataset, sample_diff_map, sample_deprecated_datasets
         )
@@ -216,7 +224,9 @@ def test_compare_genes__with_multiple_organisms_and_deprecated_genes(sample_diff
         "collection1": {"num_datasets": 3, "deprecated_terms": {"gene1-1", "gene1-2", "gene2-2"}}
     }
     expected_is_deprecated_genes_found = True
-    with patch("gene_bump_dry_run.get_genes", get_genes), patch("gene_bump_dry_run.logger") as mock_logger:
+    with patch("schema_bump_dry_run_scripts.genes.gene_bump_dry_run.get_genes", get_genes), patch(
+        "schema_bump_dry_run_scripts.genes.gene_bump_dry_run.logger"
+    ) as mock_logger:
         actual_deprecated_datasets, is_deprecated_genes_found = compare_genes(
             dataset, sample_diff_map, sample_deprecated_datasets
         )
@@ -238,7 +248,9 @@ def test_compare_genes__with_new_collection_multiple_organisms_and_deprecated_ge
     expected_deprecated_datasets = sample_deprecated_datasets.copy()
     expected_deprecated_datasets.update(collection2={"num_datasets": 1, "deprecated_terms": {"gene1-1", "gene2-2"}})
     expected_is_deprecated_genes_found = True
-    with patch("gene_bump_dry_run.get_genes", get_genes), patch("gene_bump_dry_run.logger") as mock_logger:
+    with patch("schema_bump_dry_run_scripts.genes.gene_bump_dry_run.get_genes", get_genes), patch(
+        "schema_bump_dry_run_scripts.genes.gene_bump_dry_run.logger"
+    ) as mock_logger:
         actual_deprecated_datasets, is_deprecated_genes_found = compare_genes(
             dataset, sample_diff_map, sample_deprecated_datasets
         )
@@ -265,9 +277,9 @@ def test_generate_deprecated_private(sample_diff_map):
             ({"collection2": {"revision_of": "collection_public"}, "collection3": {}}, True),
         ]
     )
-    with patch("gene_bump_dry_run.fetch_private_datasets", fetch_private_datasets_mock), patch(
-        "gene_bump_dry_run.compare_genes", compare_genes_mock
-    ):
+    with patch(
+        "schema_bump_dry_run_scripts.genes.gene_bump_dry_run.fetch_private_datasets", fetch_private_datasets_mock
+    ), patch("schema_bump_dry_run_scripts.genes.gene_bump_dry_run.compare_genes", compare_genes_mock):
         deprecated_datasets, non_auto_migrated = generate_deprecated_private(base_url, sample_diff_map)
 
     # Assert the results
@@ -288,9 +300,9 @@ def test_generate_deprecated_private__with_datasets_in_same_collectionn(sample_d
 
     fetch_private_datasets_mock = Mock(return_value=[(dataset1, None), (dataset2, None)])
     compare_genes_mock = Mock(side_effect=[({"collection1": {}}, False), ({"collection1": {}}, True)])
-    with patch("gene_bump_dry_run.fetch_private_datasets", fetch_private_datasets_mock), patch(
-        "gene_bump_dry_run.compare_genes", compare_genes_mock
-    ):
+    with patch(
+        "schema_bump_dry_run_scripts.genes.gene_bump_dry_run.fetch_private_datasets", fetch_private_datasets_mock
+    ), patch("schema_bump_dry_run_scripts.genes.gene_bump_dry_run.compare_genes", compare_genes_mock):
         deprecated_datasets, non_auto_migrated = generate_deprecated_private(base_url, sample_diff_map)
 
     # Assert the results
@@ -310,9 +322,9 @@ def test_generate_deprecated_public__with_datasets_in_same_collectionn(sample_di
 
     fetch_public_datasets_mock = Mock(return_value=[(dataset1, None), (dataset2, None)])
     compare_genes_mock = Mock(side_effect=[({"collection1": {}}, False), ({"collection1": {}}, True)])
-    with patch("gene_bump_dry_run.fetch_public_datasets", fetch_public_datasets_mock), patch(
-        "gene_bump_dry_run.compare_genes", compare_genes_mock
-    ):
+    with patch(
+        "schema_bump_dry_run_scripts.genes.gene_bump_dry_run.fetch_public_datasets", fetch_public_datasets_mock
+    ), patch("schema_bump_dry_run_scripts.genes.gene_bump_dry_run.compare_genes", compare_genes_mock):
         deprecated_datasets = generate_deprecated_public(base_url, sample_diff_map)
 
     # Assert the results
@@ -342,9 +354,9 @@ def test_generate_deprecated_public(sample_diff_map):
             ({"collection2": {}, "collection3": {}}, True),
         ]
     )
-    with patch("gene_bump_dry_run.fetch_public_datasets", fetch_public_datasets_mock), patch(
-        "gene_bump_dry_run.compare_genes", compare_genes_mock
-    ):
+    with patch(
+        "schema_bump_dry_run_scripts.genes.gene_bump_dry_run.fetch_public_datasets", fetch_public_datasets_mock
+    ), patch("schema_bump_dry_run_scripts.genes.gene_bump_dry_run.compare_genes", compare_genes_mock):
         deprecated_datasets = generate_deprecated_public(base_url, sample_diff_map)
 
     # Assert the results
