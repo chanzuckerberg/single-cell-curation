@@ -19,13 +19,15 @@ jobs:
         with:
           python-version: 3.8
       - name: Python cache
-        uses: actions/cache@v1
+        if: cache
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/schema_bump_dry_run_scripts/ontologies/requirements*.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-pip-${{ hashFiles('**/schema_bump_dry_run_scripts/ontologies/requirements*.txt') }}
       - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           pip install -r schema_bump_dry_run_scripts/ontologies/requirements.txt
           pip install pytest
