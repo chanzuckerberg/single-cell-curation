@@ -28,7 +28,7 @@ def sample_report_data():
     return {
         "deprecated_public": {
             "with multiple dataset groups": {
-                "dataset_group": [
+                "dataset_groups": [
                     {
                         "datasets": ["dataset_1", "dataset_2"],
                         "num_datasets": 2,
@@ -46,7 +46,7 @@ def sample_report_data():
                 ]
             },
             "with single dataset group": {
-                "dataset_group": [
+                "dataset_groups": [
                     {
                         "datasets": [
                             "dataset_4",
@@ -92,7 +92,7 @@ def sample_report_data():
         "open_revisions": {
             "with revision": {
                 "revision_of": "collection_id_1",
-                "dataset_group": [
+                "dataset_groups": [
                     {
                         "datasets": ["dataset_6"],
                         "num_datasets": 1,
@@ -103,7 +103,7 @@ def sample_report_data():
                 ],
             },
             "no revision": {
-                "dataset_group": [
+                "dataset_groups": [
                     {
                         "datasets": ["dataset_7", "dataset_8", "dataset_9"],
                         "num_datasets": 3,
@@ -278,7 +278,7 @@ def test_compare_genes__with_existing_collection_deprecated_genes_and_new_datase
     expected_deprecated_datasets = sample_deprecated_datasets.copy()
     dataset_group_key = ("deprecated:1-2", "deprecated:1-3", 4)
     expected_deprecated_datasets["existing_collection"]["dataset_groups"][dataset_group_key] = {
-        "dataset_ids": ["dataset2"],
+        "datasets": ["dataset2"],
         "deprecated_genes": {"deprecated:1-2", "deprecated:1-3"},
         "num_datasets": 1,
         "num_genes": 4,
@@ -314,7 +314,7 @@ def test_compare_genes__with_existing_collection_deprecated_genes_and_existing_d
     expected_deprecated_datasets = sample_deprecated_datasets.copy()
     dataset_group_key = ("deprecated:1-1", "deprecated:1-2", 4)
     expected_deprecated_datasets["existing_collection"]["dataset_groups"][dataset_group_key]["num_datasets"] += 1
-    expected_deprecated_datasets["existing_collection"]["dataset_groups"][dataset_group_key]["dataset_ids"].append(
+    expected_deprecated_datasets["existing_collection"]["dataset_groups"][dataset_group_key]["datasets"].append(
         "dataset2"
     )
     expected_is_deprecated_genes_found = True
@@ -347,7 +347,7 @@ def test_compare_genes__with_new_collection_and_deprecated_genes(sample_diff_map
         "new_collection": {
             "dataset_groups": {
                 dataset_group_key: {
-                    "dataset_ids": ["dataset1"],
+                    "datasets": ["dataset1"],
                     "num_datasets": 1,
                     "deprecated_genes": {"deprecated:1-2", "deprecated:1-3"},
                     "num_genes": 4,
@@ -384,7 +384,7 @@ def test_compare_genes__with_existing_collection_multiple_organisms_and_deprecat
     expected_deprecated_datasets = sample_deprecated_datasets.copy()
     dataset_group_key = ("deprecated:1-3", "deprecated:2-1", 4)
     expected_deprecated_datasets["existing_collection"][dataset_group_key] = {
-        "dataset_ids": ["dataset2"],
+        "datasets": ["dataset2"],
         "num_datasets": 1,
         "deprecated_genes": {"deprecated:1-3", "deprecated:2-1"},
         "num_genes": 4,
@@ -420,7 +420,7 @@ def test_compare_genes__with_new_collection_multiple_organisms_and_deprecated_ge
         "new_collection": {
             "dataset_groups": {
                 dataset_group_key: {
-                    "dataset_ids": ["dataset2"],
+                    "datasets": ["dataset2"],
                     "num_datasets": 1,
                     "deprecated_genes": {"deprecated:1-1", "deprecated:2-1"},
                     "num_genes": 4,

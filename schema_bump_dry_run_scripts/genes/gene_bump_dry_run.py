@@ -29,14 +29,14 @@ def generate_report(data) -> str:
 
 {% for collection in deprecated_public %}
 Collection ID: {{ collection }}
-    {% for dataset_group in deprecated_public[collection].dataset_group %}
+    {% for dataset_groups in deprecated_public[collection].dataset_groups %}
     Affected Datasets: 
-        {{ dataset_group.datasets  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
-    Number of Affected Datasets: {{ dataset_group.num_datasets }}
-    Number of Deprecated Terms in Group: {{ dataset_group.num_deprecated_genes }}
-    Number of Terms in Group: {{ dataset_group.num_genes }}
+        {{ dataset_groups.datasets  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
+    Number of Affected Datasets: {{ dataset_groups.num_datasets }}
+    Number of Deprecated Terms in Group: {{ dataset_groups.num_deprecated_genes }}
+    Number of Terms in Group: {{ dataset_groups.num_genes }}
     Deprecated Terms: 
-        {{ dataset_group.deprecated_terms  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
+        {{ dataset_groups.deprecated_terms  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
 
     {% endfor %}
 {% endfor %}
@@ -47,14 +47,14 @@ Collection ID: {{ collection}}
 {% if open_revisions[collection].revision_of %}
 Note--In A Revision of: {{ open_revisions[collection].revision_of }}
 {% endif %}
-    {% for dataset_group in open_revisions[collection].dataset_group %}
+    {% for dataset_groups in open_revisions[collection].dataset_groups %}
     Affected Datasets: 
-        {{ dataset_group.datasets  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
-    Number of Affected Datasets: {{ dataset_group.num_datasets }}
-    Number of Deprecated Terms in Group: {{ dataset_group.num_deprecated_genes }}
-    Number of Terms in Group: {{ dataset_group.num_genes }}
+        {{ dataset_groups.datasets  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
+    Number of Affected Datasets: {{ dataset_groups.num_datasets }}
+    Number of Deprecated Terms in Group: {{ dataset_groups.num_deprecated_genes }}
+    Number of Terms in Group: {{ dataset_groups.num_genes }}
     Deprecated Terms: 
-        {{ dataset_group.deprecated_terms  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
+        {{ dataset_groups.deprecated_terms  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
 
     {% endfor %}
 {% endfor %}
@@ -69,7 +69,7 @@ Note--In A Revision of: {{ open_revisions[collection].revision_of }}
     return report
 
 
-def get_genes(dataset: dict, stage: str) -> List[str]:
+def get_genes(dataset: dict) -> List[str]:
     """
     Uses tiledb to get the genes for a dataset. This method is slower, but does not add a dependency on the explorer. It
     is also free if we run computer with in the same AWS region.
@@ -78,18 +78,22 @@ def get_genes(dataset: dict, stage: str) -> List[str]:
     :param stage: prod, staging, or dev
     :return:
     """
-    dataset_version_id = dataset["dataset_version_id"]
-    s3_path = (
-        f"s3://hosted-cellxgene-{stage}/{dataset_version_id}.cxg/var"
-        if dataset.get("s3_uri")
-        else dataset["s3_uri"] + "/var"
-    )
+
+    if dataset.get("s3_uri"):
+        s3_path = dataset.get("s3_uri") + "/var"
+    elif dataset.get("dataset_assets"):
+        s3_path = [asset["s3_uri"] for asset in dataset["dataset_assets"] if asset["filetype"] == "CXG"][0] + "/var"
+    else:
+        dataset_version_id = dataset["dataset_version_id"]
+        stage = os.getenv("corpus_env", default="dev")
+        s3_path = f"s3://hosted-cellxgene-{stage}/{dataset_version_id}.cxg/var"
+
     with tiledb.open(s3_path, "r") as var:
         var_df = var.df[:]
         suffix = 0
         while f"name_{suffix}" not in var_df.columns:
             suffix += 1
-        index_name = "name_{suffix}"
+        index_name = f"name_{suffix}"
         stored_genes = var_df[index_name].to_list()
     return stored_genes
 
@@ -142,7 +146,7 @@ def compare_genes(
     genes were found.
     :rtype: tuple
     """
-    dataset_id = dataset["dataset_id"]
+    dataset_id = dataset.get("dataset_id") or dataset.get("id")
     collection_id = dataset["collection_id"]
     dataset_genes_to_compare = set(get_genes(dataset))
     organisms = [organism_info["ontology_term_id"] for organism_info in dataset["organism"]]
@@ -162,14 +166,14 @@ def compare_genes(
         collection = deprecated_datasets[collection_id]
         if dataset_group not in collection["dataset_groups"]:
             collection["dataset_groups"][dataset_group] = {
-                "dataset_ids": [],
+                "datasets": [],
                 "num_datasets": 0,
                 "deprecated_genes": deprecated_genes_in_dataset,
                 "num_genes": len(dataset_genes_to_compare),
             }
         group = collection["dataset_groups"][dataset_group]
         group["num_datasets"] += 1
-        group["dataset_ids"].append(dataset_id)
+        group["datasets"].append(dataset_id)
         logger.info(f"Dataset {dataset_id} has {len(deprecated_genes_in_dataset)} deprecated genes")
     else:
         logger.info(f"Dataset {dataset_id} has no deprecated genes")
@@ -228,8 +232,20 @@ def main():
     report_data = {}
     diff_map = get_diff_map()
 
-    report_data["deprecated_public"] = generate_deprecated_public(base_url, diff_map)
-    report_data["open_revisions"], report_data["non_auto_migrated"] = generate_deprecated_private(base_url, diff_map)
+    try:
+        report_data["deprecated_public"] = generate_deprecated_public(base_url, diff_map)
+    except Exception as e:
+        logger.error(f"Error generating deprecated public datasets report: {e}")
+        report_data["deprecated_public"] = {}
+
+    try:
+        report_data["open_revisions"], report_data["non_auto_migrated"] = generate_deprecated_private(
+            base_url, diff_map
+        )
+    except Exception as e:
+        logger.error(f"Error generating deprecated private datasets report: {e}")
+        report_data["open_revisions"] = {}
+        report_data["non_auto_migrated"] = []
 
     report = generate_report(report_data)
     with open("genes-curator-report.txt", "w") as fp:
