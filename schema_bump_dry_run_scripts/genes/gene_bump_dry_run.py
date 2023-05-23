@@ -29,6 +29,8 @@ def generate_report(data) -> str:
 {% for collection in deprecated_public %}
 Collection ID: {{ collection }}
 Number of Affected Datasets: {{ deprecated_public[collection].num_datasets }}
+Number of Deprecated Terms in Collection: {{ deprecated_public[collection].num_deprecated_genes }}
+Number of Terms in Collection: {{ deprecated_public[collection].num_genes }}
 Deprecated Terms: 
     {{ deprecated_public[collection].deprecated_terms  | join(', ') | wordwrap(78) | replace('\n', '\n    ')}}
 
@@ -41,6 +43,8 @@ Collection ID: {{ collection}}
 Note--In A Revision of: {{ open_revisions[collection].revision_of }}
 {% endif %}
 Number of Affected Datasets: {{ open_revisions[collection].num_datasets }}
+Number of Deprecated Terms in Collection: {{ open_revisions[collection].num_deprecated_genes }}
+Number of Terms in Collection: {{ open_revisions[collection].num_genes }}
 Deprecated Terms: 
     {{ open_revisions[collection].deprecated_terms | join(', ') | wordwrap(78) | replace('\n', '\n    ')}}
 
@@ -144,12 +148,12 @@ def compare_genes(
 
     if is_deprecated_genes_found:
         if collection_id not in deprecated_datasets:
-            deprecated_datasets[collection_id] = {"num_datasets": 0, "deprecated_terms": deprecated_genes_in_dataset}
-        else:
-            deprecated_datasets[collection_id]["deprecated_terms"].update(deprecated_genes_in_dataset)
-        deprecated_datasets[collection_id]["num_datasets"] += 1
-        num_deprecated_genes = len(deprecated_genes_in_dataset)
-        logger.info(f"Dataset {dataset_id} has {num_deprecated_genes} deprecated genes")
+            deprecated_datasets[collection_id] = {"num_datasets": 0, "deprecated_genes": set(), "genes": set()}
+        collection = deprecated_datasets[collection_id]
+        collection["genes"].update(dataset_genes_to_compare)
+        collection["deprecated_genes"].update(deprecated_genes_in_dataset)
+        collection["num_datasets"] += 1
+        logger.info(f"Dataset {dataset_id} has {len(deprecated_genes_in_dataset)} deprecated genes")
     else:
         logger.info(f"Dataset {dataset_id} has no deprecated genes")
 
