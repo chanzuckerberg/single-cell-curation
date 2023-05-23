@@ -314,17 +314,20 @@ def test_generate_deprecated_private(sample_diff_map):
     # Mock data
     base_url = "https://example.com"
     dataset3 = {"dataset_id": "3", "collection_id": "new_collection", "revision_of": "collection_public"}
-    dataset4 = {"dataset_id": "4", "collection_id": "collection3", "revision_of": None}
+    dataset4 = {"dataset_id": "4", "collection_id": "collection_with_revision", "revision_of": None}
 
     # Expected output
-    expected_deprecated_datasets = {"new_collection": {"revision_of": "collection_public"}, "collection3": {}}
+    expected_deprecated_datasets = {
+        "new_collection": {"revision_of": "collection_public"},
+        "collection_with_revision": {},
+    }
     expected_non_auto_migrated = ["collection_public"]
 
     fetch_private_datasets_mock = Mock(return_value=[(dataset3, "collection_public"), (dataset4, None)])
     compare_genes_mock = Mock(
         side_effect=[
             ({"new_collection": {}}, True),
-            ({"new_collection": {"revision_of": "collection_public"}, "collection3": {}}, True),
+            ({"new_collection": {"revision_of": "collection_public"}, "collection_with_revision": {}}, True),
         ]
     )
     with patch(
@@ -386,22 +389,22 @@ def test_generate_deprecated_public(sample_diff_map):
     # Mock data
     base_url = "https://example.com"
     dataset3 = {
-        "dataset_id": "3",
+        "dataset_id": "dataset3",
         "collection_id": "new_collection",
     }
     dataset4 = {
-        "dataset_id": "4",
-        "collection_id": "collection3",
+        "dataset_id": "dataset4",
+        "collection_id": "existing_collection",
     }
 
     # Expected output
-    expected_deprecated_datasets = {"new_collection": {}, "collection3": {}}
+    expected_deprecated_datasets = {"new_collection": {}, "existing_collection": {}}
 
     fetch_public_datasets_mock = Mock(return_value=[(dataset3, "collection_public"), (dataset4, None)])
     compare_genes_mock = Mock(
         side_effect=[
             ({"new_collection": {}}, True),
-            ({"new_collection": {}, "collection3": {}}, True),
+            ({"new_collection": {}, "existing_collection": {}}, True),
         ]
     )
     with patch(
