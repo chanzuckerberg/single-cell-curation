@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import logging
 import os
+from collections import defaultdict
 from typing import Any, Dict, List, Optional, Tuple
 
 import tiledb as tiledb
@@ -24,30 +25,38 @@ ctx = tiledb.default_ctx({"vfs.s3.region": "us-west-2"})
 
 
 def generate_report(data) -> str:
-    report = """## Deprecated Terms in Public Datasets:
+    report = """## Deprecated Terms in Public Collections:
 
 {% for collection in deprecated_public %}
 Collection ID: {{ collection }}
-Number of Affected Datasets: {{ deprecated_public[collection].num_datasets }}
-Number of Deprecated Terms in Collection: {{ deprecated_public[collection].num_deprecated_genes }}
-Number of Terms in Collection: {{ deprecated_public[collection].num_genes }}
-Deprecated Terms: 
-    {{ deprecated_public[collection].deprecated_terms  | join(', ') | wordwrap(78) | replace('\n', '\n    ')}}
+    {% for dataset_group in deprecated_public[collection].dataset_group %}
+    Affected Datasets: 
+        {{ dataset_group.datasets  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
+    Number of Affected Datasets: {{ dataset_group.num_datasets }}
+    Number of Deprecated Terms in Group: {{ dataset_group.num_deprecated_genes }}
+    Number of Terms in Group: {{ dataset_group.num_genes }}
+    Deprecated Terms: 
+        {{ dataset_group.deprecated_terms  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
 
+    {% endfor %}
 {% endfor %}
-## Deprecated Genes in Private Datasets:
+## Deprecated Genes in Private Collections:
 
 {% for collection in open_revisions %}
 Collection ID: {{ collection}}
 {% if open_revisions[collection].revision_of %}
 Note--In A Revision of: {{ open_revisions[collection].revision_of }}
 {% endif %}
-Number of Affected Datasets: {{ open_revisions[collection].num_datasets }}
-Number of Deprecated Terms in Collection: {{ open_revisions[collection].num_deprecated_genes }}
-Number of Terms in Collection: {{ open_revisions[collection].num_genes }}
-Deprecated Terms: 
-    {{ open_revisions[collection].deprecated_terms | join(', ') | wordwrap(78) | replace('\n', '\n    ')}}
+    {% for dataset_group in open_revisions[collection].dataset_group %}
+    Affected Datasets: 
+        {{ dataset_group.datasets  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
+    Number of Affected Datasets: {{ dataset_group.num_datasets }}
+    Number of Deprecated Terms in Group: {{ dataset_group.num_deprecated_genes }}
+    Number of Terms in Group: {{ dataset_group.num_genes }}
+    Deprecated Terms: 
+        {{ dataset_group.deprecated_terms  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
 
+    {% endfor %}
 {% endfor %}
 ## The Following Public Collections Will Not Be Auto-Migrated Due To Having an Open Revision:
 {% for collection in non_auto_migrated %}
@@ -117,7 +126,7 @@ def fetch_private_datasets(base_url) -> Tuple[List[dict], Optional[str]]:
 
 
 def compare_genes(
-    dataset: Dict[str, Any], diff_map: Dict[str, str], deprecated_datasets: Dict[str, Dict[str, str]]
+    dataset: Dict[str, Any], diff_map: Dict[str, str], deprecated_datasets: defaultdict(list)
 ) -> Tuple[Dict, bool]:
     """
     Compare genes in a dataset with the provided diff map and update the deprecated_datasets dictionary.
@@ -147,12 +156,20 @@ def compare_genes(
             is_deprecated_genes_found = True
 
     if is_deprecated_genes_found:
+        dataset_group = (*sorted(deprecated_genes_in_dataset), len(dataset_genes_to_compare))
         if collection_id not in deprecated_datasets:
-            deprecated_datasets[collection_id] = {"num_datasets": 0, "deprecated_genes": set(), "genes": set()}
+            deprecated_datasets[collection_id] = {"dataset_groups": {}}
         collection = deprecated_datasets[collection_id]
-        collection["genes"].update(dataset_genes_to_compare)
-        collection["deprecated_genes"].update(deprecated_genes_in_dataset)
-        collection["num_datasets"] += 1
+        if dataset_group not in collection["dataset_groups"]:
+            collection["dataset_groups"][dataset_group] = {
+                "dataset_ids": [],
+                "num_datasets": 0,
+                "deprecated_genes": deprecated_genes_in_dataset,
+                "num_genes": len(dataset_genes_to_compare),
+            }
+        group = collection["dataset_groups"][dataset_group]
+        group["num_datasets"] += 1
+        group["dataset_ids"].append(dataset_id)
         logger.info(f"Dataset {dataset_id} has {len(deprecated_genes_in_dataset)} deprecated genes")
     else:
         logger.info(f"Dataset {dataset_id} has no deprecated genes")
@@ -172,10 +189,11 @@ def generate_deprecated_public(base_url: str, diff_map: Dict) -> Dict:
     :return: A dictionary of public collections with datasets containing deprecated genes.
     :rtype: dict
     """
-    datasets = fetch_public_datasets(base_url)
     public_deprecated = {}
-    for dataset in datasets:
+    for dataset in fetch_public_datasets(base_url):
         public_deprecated, _ = compare_genes(dataset, diff_map, public_deprecated)
+    for collection in public_deprecated.values():
+        collection["dataset_groups"] = list(collection["dataset_groups"].values())
     return public_deprecated
 
 
@@ -192,13 +210,15 @@ def generate_deprecated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, Li
         of non-auto-migrated public collections.
     :rtype: tuple
     """
-    private_deprecated = {}
+    private_deprecated = dict()
     non_auto_migrated = []
     for dataset, revision_of in fetch_private_datasets(base_url):
         private_deprecated, is_deprecated_genes_found = compare_genes(dataset, diff_map, private_deprecated)
         if revision_of and revision_of not in non_auto_migrated and is_deprecated_genes_found:
             non_auto_migrated.append(revision_of)
             private_deprecated[dataset["collection_id"]]["revision_of"] = revision_of
+    for collection in private_deprecated.values():
+        collection["dataset_groups"] = list(collection["dataset_groups"].values())
     return private_deprecated, non_auto_migrated
 
 
