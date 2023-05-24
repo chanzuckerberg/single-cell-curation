@@ -128,18 +128,20 @@ def compare_genes(
             is_deprecated_genes_found = True
 
     if is_deprecated_genes_found:
-        dataset_group = (*sorted(deprecated_genes_in_dataset), len(dataset_genes_to_compare))
+        dataset_group_key = (*sorted(deprecated_genes_in_dataset), len(dataset_genes_to_compare))
+        # dataset_group_key is a unique key used to identify a group of datasets that have the same set of deprecated
+        # genes and the same number of genes. This is used to group datasets together in the report.
         if collection_id not in deprecated_datasets:
             deprecated_datasets[collection_id] = {"dataset_groups": {}}
         collection = deprecated_datasets[collection_id]
-        if dataset_group not in collection["dataset_groups"]:
-            collection["dataset_groups"][dataset_group] = {
+        if dataset_group_key not in collection["dataset_groups"]:
+            collection["dataset_groups"][dataset_group_key] = {
                 "datasets": [],
                 "num_datasets": 0,
                 "deprecated_genes": deprecated_genes_in_dataset,
                 "num_genes": len(dataset_genes_to_compare),
             }
-        group = collection["dataset_groups"][dataset_group]
+        group = collection["dataset_groups"][dataset_group_key]
         group["num_datasets"] += 1
         group["datasets"].append(dataset_id)
         logger.debug(f"Dataset {dataset_id} has {len(deprecated_genes_in_dataset)} deprecated genes")
@@ -165,6 +167,7 @@ def generate_deprecated_public(base_url: str, diff_map: Dict) -> Dict:
     for dataset in fetch_public_datasets(base_url):
         public_deprecated, _ = compare_genes(dataset, diff_map, public_deprecated)
     for collection in public_deprecated.values():
+        # convert dataset_groups from a dictionary to a list of its values.
         collection["dataset_groups"] = list(collection["dataset_groups"].values())
     return public_deprecated
 
