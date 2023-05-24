@@ -27,7 +27,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          pip install -r schema_bump_dry_run_scripts/genes/requirements.txt
+          pip install -r schema_bump_dry_run_scripts/ontologies/requirements.txt
           pip install pytest
       - name: Ontology Dry Run Unit Tests
         run: make ontology-dry-run-tests
@@ -52,5 +52,5 @@ jobs:
         run: |
           pip install -r schema_bump_dry_run_scripts/genes/requirements.txt
           pip install pytest
-      - name: Ontology Dry Run Unit Tests
+      - name: Gene Dry Run Unit Tests
         run: make gene-dry-run-tests

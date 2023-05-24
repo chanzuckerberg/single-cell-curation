@@ -47,7 +47,6 @@ jobs:
         run: python3 -m schema_bump_dry_run_scripts.genes.gene_bump_dry_run
         env:
           corpus_env: "dev" # TODO: Change to prod and make separate, manual dev workflow once ready for deploy
-      # TODO: temp upload while waiting to integrate with Slack
       - name: upload to slack
         run: |
           curl -F file=@genes-curator-report.txt -F "initial_comment=Gene Dry Run Report" -F channels=${{secrets
