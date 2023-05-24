@@ -132,9 +132,11 @@ def compare_genes(
         # dataset_group_key is a unique key used to identify a group of datasets that have the same set of deprecated
         # genes and the same number of genes. This is used to group datasets together in the report.
         if collection_id not in deprecated_datasets:
+            # add a collection_id to the dictionary if it does not exist
             deprecated_datasets[collection_id] = {"dataset_groups": {}}
         collection = deprecated_datasets[collection_id]
         if dataset_group_key not in collection["dataset_groups"]:
+            # add a dataset_group, this is used when generating the report.
             collection["dataset_groups"][dataset_group_key] = {
                 "datasets": [],
                 "num_datasets": 0,
