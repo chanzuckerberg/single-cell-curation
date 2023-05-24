@@ -188,11 +188,11 @@ def generate_deprecated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, Li
     :rtype: tuple
     """
     private_deprecated = dict()
-    non_auto_migrated = []
+    non_auto_migrated = set()
     for dataset, revision_of in fetch_private_datasets(base_url):
         private_deprecated, is_deprecated_genes_found = compare_genes(dataset, diff_map, private_deprecated)
         if revision_of and revision_of not in non_auto_migrated and is_deprecated_genes_found:
-            non_auto_migrated.append(revision_of)
+            non_auto_migrated.add(revision_of)
             private_deprecated[dataset["collection_id"]]["revision_of"] = revision_of
     for collection in private_deprecated.values():
         collection["dataset_groups"] = list(collection["dataset_groups"].values())
