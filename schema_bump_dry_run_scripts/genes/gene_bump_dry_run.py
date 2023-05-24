@@ -53,6 +53,7 @@ def get_genes(dataset: dict) -> List[str]:
         stage = os.getenv("corpus_env", default="dev")
         s3_path = f"s3://hosted-cellxgene-{stage}/{dataset_version_id}.cxg/var"
 
+    logger.debug(f"Fetching genes from {s3_path}")
     with tiledb.open(s3_path, "r") as var:
         var_df = var.df[:]
         suffix = 0
@@ -74,6 +75,7 @@ def get_diff_map() -> Dict[str, List[str]]:
             with open(f"{ONTOLOGY_DIR}/{file}") as fp:
                 organism = getattr(SupportedOrganisms, file.removesuffix(suffix).upper()).value
                 diff_map[organism] = fp.read().splitlines()
+    logger.info("organisms with deprecated genes: %s", diff_map.keys())
     return diff_map
 
 
@@ -139,9 +141,9 @@ def compare_genes(
         group = collection["dataset_groups"][dataset_group]
         group["num_datasets"] += 1
         group["datasets"].append(dataset_id)
-        logger.info(f"Dataset {dataset_id} has {len(deprecated_genes_in_dataset)} deprecated genes")
+        logger.debug(f"Dataset {dataset_id} has {len(deprecated_genes_in_dataset)} deprecated genes")
     else:
-        logger.info(f"Dataset {dataset_id} has no deprecated genes")
+        logger.debug(f"Dataset {dataset_id} has no deprecated genes")
 
     return deprecated_datasets, is_deprecated_genes_found
 
@@ -193,7 +195,7 @@ def generate_deprecated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, Li
 
 def main():
     base_url = base_url = BASE_API[os.getenv("corpus_env", default="dev")]
-
+    logger.info(f"Using base URL: {base_url}")
     report_data = {}
     diff_map = get_diff_map()
 
