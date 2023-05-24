@@ -44,6 +44,7 @@ def get_genes(dataset: dict) -> List[str]:
     :return:
     """
 
+    # TODO: remove different paths once we decide if we are using data portal or curation API.
     if dataset.get("s3_uri"):
         s3_path = dataset.get("s3_uri") + "/var"
     elif dataset.get("dataset_assets"):
