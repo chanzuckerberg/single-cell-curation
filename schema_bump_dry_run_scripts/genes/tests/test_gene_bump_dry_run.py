@@ -457,7 +457,7 @@ def test_generate_deprecated_private__with_revision_collection(sample_diff_map):
     expected_deprecated_datasets = {
         "collection_with_revision": {"dataset_groups": ["test"], "revision_of": "collection_public"},
     }
-    expected_non_auto_migrated = ["collection_public"]
+    expected_non_auto_migrated = {"collection_public"}
 
     with patch(
         "schema_bump_dry_run_scripts.genes.gene_bump_dry_run.fetch_private_datasets", fetch_private_datasets_mock
@@ -483,7 +483,7 @@ def test_generate_deprecated_private__with_datasets_in_same_collectionn(sample_d
 
     # Expected output
     expected_deprecated_datasets = {"existing_collection": {"dataset_groups": ["test", "test2"]}}
-    expected_non_auto_migrated = []
+    expected_non_auto_migrated = set()
 
     with patch(
         "schema_bump_dry_run_scripts.genes.gene_bump_dry_run.fetch_private_datasets", fetch_private_datasets_mock
