@@ -25,44 +25,9 @@ ctx = tiledb.default_ctx({"vfs.s3.region": "us-west-2"})
 
 
 def generate_report(data) -> str:
-    report = """## Deprecated Terms in Public Collections:
-
-{% for collection in deprecated_public %}
-Collection ID: {{ collection }}
-    {% for dataset_groups in deprecated_public[collection].dataset_groups %}
-    Affected Datasets: 
-        {{ dataset_groups.datasets  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
-    Number of Affected Datasets: {{ dataset_groups.num_datasets }}
-    Number of Deprecated Terms in Group: {{ dataset_groups.num_deprecated_genes }}
-    Number of Terms in Group: {{ dataset_groups.num_genes }}
-    Deprecated Terms: 
-        {{ dataset_groups.deprecated_terms  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
-
-    {% endfor %}
-{% endfor %}
-## Deprecated Genes in Private Collections:
-
-{% for collection in open_revisions %}
-Collection ID: {{ collection}}
-{% if open_revisions[collection].revision_of %}
-Note--In A Revision of: {{ open_revisions[collection].revision_of }}
-{% endif %}
-    {% for dataset_groups in open_revisions[collection].dataset_groups %}
-    Affected Datasets: 
-        {{ dataset_groups.datasets  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
-    Number of Affected Datasets: {{ dataset_groups.num_datasets }}
-    Number of Deprecated Terms in Group: {{ dataset_groups.num_deprecated_genes }}
-    Number of Terms in Group: {{ dataset_groups.num_genes }}
-    Deprecated Terms: 
-        {{ dataset_groups.deprecated_terms  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
-
-    {% endfor %}
-{% endfor %}
-## The Following Public Collections Will Not Be Auto-Migrated Due To Having an Open Revision:
-{% for collection in non_auto_migrated %}
-{{ collection }}
-{% endfor %}
-"""
+    file_path = os.path.dirname(os.path.realpath(__file__))
+    with open(os.path.join(file_path, "report_template.j2"), "r") as fp:
+        report = fp.read()
 
     j2_template = Template(report, trim_blocks=True, lstrip_blocks=True)
     report = j2_template.render(data)

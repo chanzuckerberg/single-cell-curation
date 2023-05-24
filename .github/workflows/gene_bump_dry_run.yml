@@ -1,4 +1,4 @@
-name: Ontology Bump Dry Run
+name: Gene Bump Dry Run
 
 on:
   push:

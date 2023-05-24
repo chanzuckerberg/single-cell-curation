@@ -189,7 +189,6 @@ def process_gene_info(gene_info: dict) -> None:
 
 def generate_gene_ref_diff(output_filename: str, current_ref_filepath: str, previous_ref_filepath: str) -> None:
     """
-    TODO: this files needs to be pushed to the branch before merging to main.
     Compare the previous gene reference CSV to the newest generated CSV. Report a text file with every
     Ensembl ID available in the previous gene reference CSV that is no longer found in the newest.
     :param output_filename: Filename for output diff textfile
