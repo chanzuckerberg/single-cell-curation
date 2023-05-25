@@ -24,6 +24,28 @@ logger = logging.getLogger()
 ctx = tiledb.default_ctx({"vfs.s3.region": "us-west-2"})
 
 
+class RunReporter:
+    def __init__(self):
+        self.public_datasets_processed = 0
+        self.public_deprecated_datasets = 0
+        self.public_errored_datasets = 0
+        self.private_datasets_processed = 0
+        self.private_deprecated_datasets = 0
+        self.private_errored_datasets = 0
+
+    def log_report(self):
+        logger.info("Run report:")
+        logger.info(f"  Public datasets processed: {self.public_datasets_processed}")
+        logger.info(f"  Public deprecated datasets: {self.public_deprecated_datasets}")
+        logger.info(f"  Public error datasets: {self.public_errored_datasets}")
+        logger.info(f"  Private datasets processed: {self.private_datasets_processed}")
+        logger.info(f"  Private deprecated datasets: {self.private_deprecated_datasets}")
+        logger.info(f"  Private error datasets: {self.private_errored_datasets}")
+
+
+run_reporter = RunReporter()
+
+
 def generate_report(data) -> str:
     file_path = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(file_path, "report_template.j2"), "r") as fp:
@@ -167,7 +189,16 @@ def generate_deprecated_public(base_url: str, diff_map: Dict) -> Dict:
     """
     public_deprecated = {}
     for dataset in fetch_public_datasets(base_url):
-        public_deprecated, _ = compare_genes(dataset, diff_map, public_deprecated)
+        run_reporter.public_datasets_processed += 1
+        try:
+            public_deprecated, is_deprecated_genes_found = compare_genes(dataset, diff_map, public_deprecated)
+            if is_deprecated_genes_found:
+                run_reporter.public_errored_datasets += 1
+        except Exception:
+            run_reporter.public_errored_datasets += 1
+            logger.exception(
+                f"Error processing public dataset {dataset['dataset_id']}, in collection " f"{dataset['collection_id']}"
+            )
     for collection in public_deprecated.values():
         # convert dataset_groups from a dictionary to a list of its values.
         collection["dataset_groups"] = list(collection["dataset_groups"].values())
@@ -190,10 +221,17 @@ def generate_deprecated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, Li
     private_deprecated = dict()
     non_auto_migrated = set()
     for dataset, revision_of in fetch_private_datasets(base_url):
-        private_deprecated, is_deprecated_genes_found = compare_genes(dataset, diff_map, private_deprecated)
-        if revision_of and revision_of not in non_auto_migrated and is_deprecated_genes_found:
-            non_auto_migrated.add(revision_of)
-            private_deprecated[dataset["collection_id"]]["revision_of"] = revision_of
+        run_reporter.private_datasets_processed += 1
+        try:
+            private_deprecated, is_deprecated_genes_found = compare_genes(dataset, diff_map, private_deprecated)
+            if is_deprecated_genes_found:
+                run_reporter.private_deprecated_datasets += 1
+                if revision_of and revision_of not in non_auto_migrated:
+                    non_auto_migrated.add(revision_of)
+                    private_deprecated[dataset["collection_id"]]["revision_of"] = revision_of
+        except Exception:
+            run_reporter.private_errored_datasets += 1
+            logger.exception("Error processing private dataset")
     for collection in private_deprecated.values():
         collection["dataset_groups"] = list(collection["dataset_groups"].values())
     return private_deprecated, non_auto_migrated
@@ -223,6 +261,8 @@ def main():
     report = generate_report(report_data)
     with open("genes-curator-report.txt", "w") as fp:
         fp.write(report)
+    logger.info("Curator Report generated")
+    run_reporter.log_report()
 
 
 if __name__ == "__main__":
