@@ -32,7 +32,6 @@ class RunReporter:
         self.private_datasets_processed = 0
         self.private_deprecated_datasets = 0
         self.private_errored_datasets = 0
-        self.exceptions = set()
 
     def log_report(self):
         logger.info("Run report:")
@@ -42,7 +41,6 @@ class RunReporter:
         logger.info(f"  Private datasets processed: {self.private_datasets_processed}")
         logger.info(f"  Private deprecated datasets: {self.private_deprecated_datasets}")
         logger.info(f"  Private errored datasets: {self.private_errored_datasets}")
-        logger.info(f"  Exceptions: {self.exceptions}")
 
 
 run_reporter = RunReporter()
@@ -80,10 +78,14 @@ def get_genes(dataset: dict) -> List[str]:
     logger.debug(f"Fetching genes from {s3_path}")
     with tiledb.open(s3_path, "r") as var:
         var_df = var.df[:]
+        prefix = "name_"
         suffix = 0
-        while f"name_{suffix}" not in var_df.columns:
+        filtered_columns = {i for i in var_df.columns if i.startswith(prefix)}
+        while filtered_columns and suffix < len(var_df.columns) and f"{prefix}{suffix}" not in var_df.columns:
             suffix += 1
-        index_name = f"name_{suffix}"
+        if suffix == len(var_df.columns) or not filtered_columns:
+            raise KeyError(f"No columns with matching prefix:'{prefix}' found in var_df")
+        index_name = f"{prefix}{suffix}"
         stored_genes = var_df[index_name].to_list()
     return stored_genes
 
@@ -114,6 +116,7 @@ def fetch_private_datasets(base_url) -> Tuple[List[dict], Optional[str]]:
         collection_id = collection["collection_id"]
         for ds in collection["datasets"]:
             dataset_metadata = fetch_private_dataset(base_url, auth_headers, collection_id, ds["dataset_id"])
+            dataset_metadata["collection_id"] = collection_id
             # only process uploaded datasets
             if "processing_status" not in dataset_metadata or dataset_metadata["processing_status"] != "SUCCESS":
                 continue
@@ -197,11 +200,9 @@ def generate_deprecated_public(base_url: str, diff_map: Dict) -> Dict:
                 run_reporter.public_deprecated_datasets += 1
         except Exception as e:
             run_reporter.public_errored_datasets += 1
-            run_reporter.exceptions.add(e)
             logger.error(
-                f"Error processing public dataset {dataset['dataset_id']}, in collection "
-                f""
-                f"{dataset['collection_id']}: {e}"
+                f"Error processing public dataset {dataset['dataset_id']}, in collection {dataset['collection_id']}: "
+                f"{e}"
             )
     for collection in public_deprecated.values():
         # convert dataset_groups from a dictionary to a list of its values.
@@ -235,8 +236,7 @@ def generate_deprecated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, Li
                     private_deprecated[dataset["collection_id"]]["revision_of"] = revision_of
         except Exception as e:
             run_reporter.private_errored_datasets += 1
-            run_reporter.exceptions.add(e)
-            logger.error("Error processing private dataset: {e}")
+            logger.error(f"Error processing private dataset: {e}")
     for collection in private_deprecated.values():
         collection["dataset_groups"] = list(collection["dataset_groups"].values())
     return private_deprecated, non_auto_migrated
@@ -250,16 +250,16 @@ def main():
 
     try:
         report_data["deprecated_public"] = generate_deprecated_public(base_url, diff_map)
-    except Exception as e:
-        logger.error(f"Error generating deprecated public datasets report: {e}")
+    except Exception:
+        logger.exception("Error generating deprecated public datasets report")
         report_data["deprecated_public"] = {}
 
     try:
         report_data["open_revisions"], report_data["non_auto_migrated"] = generate_deprecated_private(
             base_url, diff_map
         )
-    except Exception as e:
-        logger.error(f"Error generating deprecated private datasets report: {e}")
+    except Exception:
+        logger.exception("Error generating deprecated private datasets report")
         report_data["open_revisions"] = {}
         report_data["non_auto_migrated"] = []
 
