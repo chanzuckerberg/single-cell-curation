@@ -32,6 +32,7 @@ class RunReporter:
         self.private_datasets_processed = 0
         self.private_deprecated_datasets = 0
         self.private_errored_datasets = 0
+        self.exceptions = set()
 
     def log_report(self):
         logger.info("Run report:")
@@ -41,6 +42,7 @@ class RunReporter:
         logger.info(f"  Private datasets processed: {self.private_datasets_processed}")
         logger.info(f"  Private deprecated datasets: {self.private_deprecated_datasets}")
         logger.info(f"  Private errored datasets: {self.private_errored_datasets}")
+        logger.info(f"  Exceptions: {self.exceptions}")
 
 
 run_reporter = RunReporter()
@@ -62,7 +64,6 @@ def get_genes(dataset: dict) -> List[str]:
     is also free if we run computer with in the same AWS region.
 
     :param dataset: dataset metadata
-    :param stage: prod, staging, or dev
     :return:
     """
 
@@ -193,11 +194,14 @@ def generate_deprecated_public(base_url: str, diff_map: Dict) -> Dict:
         try:
             public_deprecated, is_deprecated_genes_found = compare_genes(dataset, diff_map, public_deprecated)
             if is_deprecated_genes_found:
-                run_reporter.public_errored_datasets += 1
-        except Exception:
+                run_reporter.public_deprecated_datasets += 1
+        except Exception as e:
             run_reporter.public_errored_datasets += 1
-            logger.exception(
-                f"Error processing public dataset {dataset['dataset_id']}, in collection " f"{dataset['collection_id']}"
+            run_reporter.exceptions.add(e)
+            logger.error(
+                f"Error processing public dataset {dataset['dataset_id']}, in collection "
+                f""
+                f"{dataset['collection_id']}: {e}"
             )
     for collection in public_deprecated.values():
         # convert dataset_groups from a dictionary to a list of its values.
@@ -229,9 +233,10 @@ def generate_deprecated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, Li
                 if revision_of and revision_of not in non_auto_migrated:
                     non_auto_migrated.add(revision_of)
                     private_deprecated[dataset["collection_id"]]["revision_of"] = revision_of
-        except Exception:
+        except Exception as e:
             run_reporter.private_errored_datasets += 1
-            logger.exception("Error processing private dataset")
+            run_reporter.exceptions.add(e)
+            logger.error("Error processing private dataset: {e}")
     for collection in private_deprecated.values():
         collection["dataset_groups"] = list(collection["dataset_groups"].values())
     return private_deprecated, non_auto_migrated
