@@ -37,10 +37,10 @@ class RunReporter:
         logger.info("Run report:")
         logger.info(f"  Public datasets processed: {self.public_datasets_processed}")
         logger.info(f"  Public deprecated datasets: {self.public_deprecated_datasets}")
-        logger.info(f"  Public error datasets: {self.public_errored_datasets}")
+        logger.info(f"  Public errored datasets: {self.public_errored_datasets}")
         logger.info(f"  Private datasets processed: {self.private_datasets_processed}")
         logger.info(f"  Private deprecated datasets: {self.private_deprecated_datasets}")
-        logger.info(f"  Private error datasets: {self.private_errored_datasets}")
+        logger.info(f"  Private errored datasets: {self.private_errored_datasets}")
 
 
 run_reporter = RunReporter()
