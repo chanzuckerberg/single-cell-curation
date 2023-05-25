@@ -1,11 +1,11 @@
-name: Ontology Bump Dry Run
+name: Gene Bump Dry Run
 
 on:
   push:
     branches:
       - main
     paths:
-      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
+      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz'
 
 permissions:
   id-token: write
@@ -17,10 +17,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Set up Python 3.8
+      - name: Set up Python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.8
+          python-version: 3.9
       - name: Python cache
         uses: actions/cache@v1
         with:
@@ -30,7 +30,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          pip install -r schema_bump_dry_run_scripts/ontologies/requirements.txt
+          pip install -r schema_bump_dry_run_scripts/genes/requirements.txt
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -44,10 +44,11 @@ jobs:
           secret-ids:
             AUTH0_SECRETS, corpora/backend/dev/auth0-secret
       - name: Run Dry-Run Script
-        run: python3 -m schema_bump_dry_run_scripts.ontologies.ontology_bump_dry_run
+        run: python3 -m schema_bump_dry_run_scripts.genes.gene_bump_dry_run
         env:
           corpus_env: "dev" # TODO: Change to prod and make separate, manual dev workflow once ready for deploy
       - name: upload to slack
         run: |
-          curl -F file=@ontologies-curator-report.txt -F "initial_comment=Ontology Dry Run Report" -F channels=${{secrets.SLACK_CURATOR_REPORTING_CHANNEL}} -H "Authorization: Bearer ${{secrets.SLACK_CURATOR_REPORTING_APP_AUTH}}" https://slack.com/api/files.upload
+          curl -F file=@genes-curator-report.txt -F "initial_comment=Gene Dry Run Report" -F channels=${{secrets
+          .SLACK_CURATOR_REPORTING_CHANNEL}} -H "Authorization: Bearer ${{secrets.SLACK_CURATOR_REPORTING_APP_AUTH}}" https://slack.com/api/files.upload
 
