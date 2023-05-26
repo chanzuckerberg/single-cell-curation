@@ -243,7 +243,7 @@ def generate_deprecated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, Li
 
 
 def main():
-    base_url = base_url = BASE_API[os.getenv("corpus_env", default="dev")]
+    base_url = BASE_API[os.getenv("corpus_env", default="dev")]
     logger.info(f"Using base URL: {base_url}")
     report_data = {}
     diff_map = get_diff_map()
