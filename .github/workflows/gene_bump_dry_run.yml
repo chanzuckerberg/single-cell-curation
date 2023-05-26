@@ -4,10 +4,8 @@ on:
   push:
     branches:
       - main
-      - tsmith/error_handling
     paths:
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz'
-      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt'
 
 permissions:
   id-token: write
