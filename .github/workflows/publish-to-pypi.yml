@@ -15,11 +15,16 @@ jobs:
     name: Build and publish Python distributions to TestPyPI
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.x"
+      - name: setup git
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
       - name: Bump PyPI release version
         run: |
           pip install bumpversion
