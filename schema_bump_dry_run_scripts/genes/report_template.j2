@@ -6,10 +6,10 @@ Collection ID: {{ collection }}
     Affected Datasets:
         {{ dataset_groups.datasets  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
     Number of Affected Datasets: {{ dataset_groups.num_datasets }}
-    Number of Deprecated Terms in Group: {{ dataset_groups.num_deprecated_genes }}
+    Number of Deprecated Terms in Group: {{ dataset_groups.deprecated_genes|length }}
     Number of Terms in Group: {{ dataset_groups.num_genes }}
     Deprecated Terms:
-        {{ dataset_groups.deprecated_terms  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
+        {{ dataset_groups.deprecated_genes  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
 
     {% endfor %}
 {% endfor %}
@@ -24,10 +24,10 @@ Note--In A Revision of: {{ open_revisions[collection].revision_of }}
     Affected Datasets:
         {{ dataset_groups.datasets  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
     Number of Affected Datasets: {{ dataset_groups.num_datasets }}
-    Number of Deprecated Terms in Group: {{ dataset_groups.num_deprecated_genes }}
+    Number of Deprecated Terms in Group: {{ dataset_groups.deprecated_genes|length  }}
     Number of Terms in Group: {{ dataset_groups.num_genes }}
     Deprecated Terms:
-        {{ dataset_groups.deprecated_terms  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
+        {{ dataset_groups.deprecated_genes  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
 
     {% endfor %}
 {% endfor %}
