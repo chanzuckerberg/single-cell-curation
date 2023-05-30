@@ -31,7 +31,6 @@ def get_schema_versions_supported() -> List[str]:
             version = file.replace("_", ".")
             version = version.replace(".yaml", "")
             versions.append(version)
-
     return versions
 
 
