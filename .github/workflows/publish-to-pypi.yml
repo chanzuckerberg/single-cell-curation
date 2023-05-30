@@ -4,12 +4,9 @@ on:
   push:
     branches:
       - main
-      - nayib/deploy-to-test-pypi # TODO: remove, just for testing
     paths:
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz'
-      - '**/.github/workflows/publish-to-pypi.yml' # TODO: remove, just for testing
-      - '**/cellxgene_schema_cli/setup.py' # TODO: remove, just for testing
 
 jobs:
   publish-to-pypi:
