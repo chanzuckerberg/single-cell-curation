@@ -11,6 +11,7 @@ setup(
     author="Chan Zuckerberg Initiative",
     author_email="cellxgene@chanzuckerberg.com",
     description="Tool for applying and validating cellxgene integration schema to single cell datasets",
+    long_description="Tool for applying and validating cellxgene integration schema to single cell datasets",
     install_requires=requirements,
     python_requires=">=3.8",
     packages=["cellxgene_schema"],
