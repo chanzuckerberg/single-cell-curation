@@ -10,7 +10,7 @@ For information/issues about cellxgene and its portal please refer to:
 - [single-cell-data-portal](https://github.com/chanzuckerberg/single-cell-data-portal)
 
 ## Installation
-
+ 
 The primary curation tool is the `cellxgene-schema` CLI. It enables curators to perform [schema](./schema/3.0.0/schema.md) validation for datasets to be hosted on the [cellxgene Data Portal](https://cellxgene.cziscience.com/).
 
 It requires Python >= 3.8. It is available through pip:
