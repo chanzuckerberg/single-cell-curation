@@ -32,16 +32,14 @@ def sample_report_data():
                     {
                         "datasets": ["dataset_1", "dataset_2"],
                         "num_datasets": 2,
-                        "num_deprecated_genes": 3,
                         "num_genes": 5,
-                        "deprecated_terms": ["term_1", "term_2", "term_3"],
+                        "deprecated_genes": ["term_1", "term_2", "term_3"],
                     },
                     {
                         "datasets": ["dataset_3"],
                         "num_datasets": 1,
-                        "num_deprecated_genes": 2,
                         "num_genes": 4,
-                        "deprecated_terms": ["term_4", "term_5"],
+                        "deprecated_genes": ["term_4", "term_5"],
                     },
                 ]
             },
@@ -67,9 +65,8 @@ def sample_report_data():
                             "dataset_5",
                         ],
                         "num_datasets": 16,
-                        "num_deprecated_genes": 14,
                         "num_genes": 50,
-                        "deprecated_terms": [
+                        "deprecated_genes": [
                             "term_6",
                             "term_6",
                             "term_6",
@@ -96,9 +93,8 @@ def sample_report_data():
                     {
                         "datasets": ["dataset_6"],
                         "num_datasets": 1,
-                        "num_deprecated_genes": 4,
                         "num_genes": 6,
-                        "deprecated_terms": ["term_7", "term_8", "term_9", "term_10"],
+                        "deprecated_genes": ["term_7", "term_8", "term_9", "term_10"],
                     }
                 ],
             },
@@ -107,9 +103,8 @@ def sample_report_data():
                     {
                         "datasets": ["dataset_7", "dataset_8", "dataset_9"],
                         "num_datasets": 3,
-                        "num_deprecated_genes": 0,
                         "num_genes": 2,
-                        "deprecated_terms": ["term1"],
+                        "deprecated_genes": ["term1"],
                     }
                 ]
             },
@@ -166,7 +161,7 @@ Collection ID: no revision
     Affected Datasets:
         dataset_7, dataset_8, dataset_9
     Number of Affected Datasets: 3
-    Number of Deprecated Terms in Group: 0
+    Number of Deprecated Terms in Group: 1
     Number of Terms in Group: 2
     Deprecated Terms:
         term1
