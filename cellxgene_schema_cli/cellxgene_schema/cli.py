@@ -80,8 +80,8 @@ def remove_labels(input_file, output_file):
 
 @click.command(
     name="convert",
-    short_help="Convert an h5ad from version 2.0.0 to version 3.0.0",
-    help="Convert an h5ad from version 2.0.0 to version 3.0.0. No validation will be performed on either"
+    short_help="Convert an h5ad to the latest version of the cellxgene schema.",
+    help="Convert an h5ad from its current version to the latest. No validation will be performed on either"
     "the input or the output file.",
 )
 @click.argument("input_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
