@@ -134,14 +134,15 @@ class Validator:
         version = self.adata.uns.get("schema_version")
         supported_versions = schema.get_schema_versions_supported()
         supported_versions.sort()
-        if version and version != supported_versions[-1]:
+        latest_version = supported_versions[-1]
+        if version and version != latest_version:
             logger.warning(
                 f"Schema version '{version}' is not supported. Current supported versions: {supported_versions}. "
-                f"Validating with latest version '{supported_versions[-1]}'."
+                f"Validating with latest version '{latest_version}'."
             )
         if not self.schema_version:
-            self.schema_version = supported_versions[-1]
-            self.schema_def = schema.get_schema_definition(self.schema_version)
+            self.schema_version = latest_version
+            self.schema_def = schema.get_schema_definition(latest_version)
 
     def _get_component_def(self, component: str) -> dict:
         """
