@@ -1,0 +1,52 @@
+name: Publish cellxgene_schema_cli to PyPI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
+      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz'
+
+jobs:
+  publish-to-pypi:
+    name: Build and publish Python distributions to PyPI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: setup git
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+      - name: Bump and tag release version
+        run: |
+          pip install bumpversion
+          pip install wheel
+          bumpversion --config-file .bumpversion.cfg minor --allow-dirty
+          bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
+          git push origin --tags
+      - name: Build dist
+        run: >-
+          make pydist
+      - name: Publish distribution to Test PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: cellxgene_schema_cli/dist/
+      - name: Install and Test Package from Test PyPI
+        run: |
+          pip install --index-url https://test.pypi.org/simple/ cellxgene-schema
+          cellxgene-schema validate cellxgene_schema_cli/tests/fixtures/h5ads/example_valid.h5ad
+# TODO: Uncomment once ready to release to prod PyPI
+#      - name: Publish distribution to PyPI
+#        if: startsWith(github.ref, 'refs/tags')
+#        uses: pypa/gh-action-pypi-publish@release/v1
+#        with:
+#          password: ${{ secrets.PYPI_API_TOKEN }}
+#          package-dir: cellxgene_schema_cli/
