@@ -9,6 +9,7 @@ from typing import Dict, List, Optional, Tuple, Union
 import anndata
 import numpy as np
 import pandas as pd
+import semver
 from pandas.core.computation.ops import UndefinedVariableError
 from scipy import sparse
 
@@ -134,15 +135,15 @@ class Validator:
         version = self.adata.uns.get("schema_version")
         supported_versions = schema.get_schema_versions_supported()
         supported_versions.sort()
-        latest_version = supported_versions[-1]
-        if version and version != latest_version:
+        latest_version: semver.Version = semver.Version.parse(supported_versions[-1])
+        if version and not semver.Version.parse(version).is_compatible(latest_version):
             logger.warning(
-                f"Schema version '{version}' is not supported. Current supported versions: {supported_versions}. "
+                f"Schema version '{version}' is not supported. Current supported versions: '{latest_version}'. "
                 f"Validating with latest version '{latest_version}'."
             )
         if not self.schema_version:
-            self.schema_version = latest_version
-            self.schema_def = schema.get_schema_definition(latest_version)
+            self.schema_version = str(latest_version)
+            self.schema_def = schema.get_schema_definition(self.schema_version)
 
     def _get_component_def(self, component: str) -> dict:
         """

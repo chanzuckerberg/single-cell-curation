@@ -1015,11 +1015,12 @@ class TestUns(BaseValidationTest):
     """
 
     def test_optional_fields_schema_version_is_old(self):
-        supported_versions = ["1.0.0"]
-        self.validator.adata.uns["schema_version"] = "0.0.1"
+        latest_version = "1.0.0"
+        old_version = "0.0.1"
+        self.validator.adata.uns["schema_version"] = old_version
         self.validator.schema_version = None
         with self.assertLogs(level="WARNING") as logs, patch(
-            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=supported_versions
+            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[latest_version]
         ) as mock_supported_versions, patch(
             "cellxgene_schema.validate.schema.get_schema_definition"
         ) as mock_get_schema_definition:
@@ -1027,47 +1028,48 @@ class TestUns(BaseValidationTest):
         self.assertEqual(
             logs.output,
             [
-                f"WARNING:cellxgene_schema.validate:Schema version '0.0.1' is not supported. Current supported "
-                f"versions: {supported_versions}. Validating with latest version '{supported_versions[0]}'."
+                f"WARNING:cellxgene_schema.validate:Schema version '{old_version}' is not supported. Current supported "
+                f"versions: '{latest_version}'. Validating with latest version '{latest_version}'."
             ],
         )
         mock_supported_versions.assert_called_once()
-        mock_get_schema_definition.assert_called_with(supported_versions[0])
+        mock_get_schema_definition.assert_called_with(latest_version)
 
     def test_optional_fields_schema_version_is_missing(self):
-        supported_versions = ["1.0.0"]
+        lastest_version = "1.0.0"
         self.validator.schema_version = None
         del self.validator.adata.uns["schema_version"]
         with patch(
-            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=supported_versions
+            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[lastest_version]
         ) as mock_supported_versions, patch(
             "cellxgene_schema.validate.schema.get_schema_definition"
         ) as mock_get_schema_definition:
             self.validator._set_schema_def()
         mock_supported_versions.assert_called_once()
-        mock_get_schema_definition.assert_called_with(supported_versions[0])
-        self.assertEqual(self.validator.schema_version, supported_versions[0])
+        mock_get_schema_definition.assert_called_with(lastest_version)
+        self.assertEqual(self.validator.schema_version, lastest_version)
 
     def test_optional_fields_schema_version_is_latest(self):
-        supported_versions = ["1.0.0"]
+        latest_version = "1.0.0"
         self.validator.schema_version = None
-        self.validator.adata.uns["schema_version"] = supported_versions[0]
+        self.validator.adata.uns["schema_version"] = latest_version
         with patch(
-            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=supported_versions
+            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[latest_version]
         ) as mock_supported_versions, patch(
             "cellxgene_schema.validate.schema.get_schema_definition"
         ) as mock_get_schema_definition:
             self.validator._set_schema_def()
         mock_supported_versions.assert_called_once()
-        mock_get_schema_definition.assert_called_with(supported_versions[0])
-        self.assertEqual(self.validator.schema_version, supported_versions[0])
+        mock_get_schema_definition.assert_called_with(latest_version)
+        self.assertEqual(self.validator.schema_version, latest_version)
 
     def test_optional_fields_schema_version_with_multiple_supported_versions(self):
-        supported_versions = ["0.0.2", "1.0.0"]
+        latest_version = "1.0.0"
+        old_version = "0.0.1"
         self.validator.schema_version = None
-        self.validator.adata.uns["schema_version"] = supported_versions[0]
+        self.validator.adata.uns["schema_version"] = old_version
         with self.assertLogs(level="WARNING") as logs, patch(
-            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=supported_versions
+            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[old_version, latest_version]
         ) as mock_supported_versions, patch(
             "cellxgene_schema.validate.schema.get_schema_definition"
         ) as mock_get_schema_definition:
@@ -1075,13 +1077,13 @@ class TestUns(BaseValidationTest):
         self.assertEqual(
             logs.output,
             [
-                f"WARNING:cellxgene_schema.validate:Schema version '0.0.2' is not supported. Current supported "
-                f"versions: {supported_versions}. Validating with latest version '{supported_versions[1]}'."
+                f"WARNING:cellxgene_schema.validate:Schema version '{old_version}' is not supported. Current supported "
+                f"versions: '{latest_version}'. Validating with latest version '{latest_version}'."
             ],
         )
         mock_supported_versions.assert_called_once()
-        mock_get_schema_definition.assert_called_with(supported_versions[1])
-        self.assertEqual(self.validator.schema_version, supported_versions[1])
+        mock_get_schema_definition.assert_called_with(latest_version)
+        self.assertEqual(self.validator.schema_version, latest_version)
 
     def test_required_fields_title(self):
         """

@@ -21,8 +21,8 @@ def get_schema_versions_supported() -> List[str]:
     """
     Retrieves a list of the schema versions supported by this version of the validator
     :param str version: Schema version
-    :return Path to yaml files
-    :rtype str
+    :return list of supported schema versions
+    :rtype list[str]
     """
 
     versions = []
@@ -31,7 +31,6 @@ def get_schema_versions_supported() -> List[str]:
             version = file.replace("_", ".")
             version = version.replace(".yaml", "")
             versions.append(version)
-
     return versions
 
 
