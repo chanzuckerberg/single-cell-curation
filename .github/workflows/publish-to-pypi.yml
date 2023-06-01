@@ -8,6 +8,9 @@ on:
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz'
 
+permissions:
+  contents: write
+
 jobs:
   publish-to-pypi:
     name: Build and publish Python distributions to PyPI
@@ -50,3 +53,9 @@ jobs:
 #        with:
 #          password: ${{ secrets.PYPI_API_TOKEN }}
 #          package-dir: cellxgene_schema_cli/
+      - name: Trigger rebuild of Data Portal Processing Image
+        run: |
+          curl -X POST https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/dispatches \
+          -H 'Accept: application/vnd.github.everest-preview+json' \
+          --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+          --data '{"event_type": "rebuild-processing"}'
