@@ -1,7 +1,9 @@
 import anndata as ad
+import numpy as np
 
 from . import utils
-
+from . import ontology
+from .remove_labels import AnnDataLabelRemover
 
 def convert(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
@@ -9,7 +11,7 @@ def convert(input_file, output_file, collection_id, dataset_id):
     dataset = ad.read_h5ad(input_file)
 
     # Set schema version
-    dataset.uns["schema_version"] = {% schema_version %}
+    dataset.uns["schema_version"] = "{{ schema_version }}"
 
     # ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
     # Initialization is AUTOMATED for newly deprecated terms that have 'Replaced By' terms in their ontology files
@@ -21,39 +23,43 @@ def convert(input_file, output_file, collection_id, dataset_id):
     # add them here.
     ontology_term_maps = {
         "assay": {
-            {% for assay in assay_ontology_update_map %}
-            "{{ assay }}": "{{ assay_ontology_update_map[assay] }}", # AUTOMATED
+            {% for old, new in ontology_term_map.assay.items() %}
+            "{{ old }}": "{{ new }}", # AUTOMATED
             {% endfor %}
         },
         "cell_type": {
-            {% for cell_type in cell_type_ontology_update_map %}
-            "{{ cell_type }}": "{{ cell_type_ontology_update_map[cell_type] }}", # AUTOMATED
+            {% for old, new in ontology_term_map.cell_type.items() %}
+            "{{ old }}": "{{ new }}", # AUTOMATED
             {% endfor %}
         },
-        "development_stage": {},
+        "development_stage": {
+            {% for old, new in ontology_term_map.development_stage.items() %}
+            "{{ old }}": "{{ new }}", # AUTOMATED
+            {% endfor %}
+        },
         "disease": {
-            {% for disease in disease_ontology_update_map %}
-            "{{ disease }}": "{{ disease_ontology_update_map[disease] }}", # AUTOMATED
+            {% for old, new in ontology_term_map.disease.items() %}
+            "{{ old }}": "{{ new }}", # AUTOMATED
             {% endfor %}
         },
         "organism": {
-            {% for organism in organism_ontology_update_map %}
-    "{{ organism }}": "{{ organism_ontology_update_map[organism] }}",  # AUTOMATED
-    {% endfor %}
+            {% for old, new in ontology_term_map.organism.items() %}
+            "{{ old }}": "{{ new }}", # AUTOMATED
+            {% endfor %}
         },
         "self_reported_ethnicity": {
-            {% for self_reported_ethnicity in self_reported_ethnicity_ontology_update_map %}
-            "{{ self_reported_ethnicity }}": "{{ self_reported_ethnicity_ontology_update_map[self_reported_ethnicity] }}",  # AUTOMATED
+            {% for old, new in ontology_term_map.self_reported_ethnicity.items() %}
+            "{{ old }}": "{{ new }}", # AUTOMATED
             {% endfor %}
         },
         "sex": {
-            {% for sex in sex_ontology_update_map %}
-            "{{ sex }}": "{{ sex_ontology_update_map[sex] }}",  # AUTOMATED
+            {% for old, new in ontology_term_map.sex.items() %}
+            "{{ old }}": "{{ new }}", # AUTOMATED
             {% endfor %}
         },
         "tissue": {
-            {% for tissue in tissue_ontology_update_map %}
-            "{{ tissue }}": "{{ tissue_ontology_update_map[tissue] }}",  # AUTOMATED
+            {% for old, new in ontology_term_map.tissue.items() %}
+            "{{ old }}": "{{ new }}", # AUTOMATED
             {% endfor %}
         },
     }
@@ -80,5 +86,6 @@ def convert(input_file, output_file, collection_id, dataset_id):
     # ...
 
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
+
 
     dataset.write(output_file, compression="gzip")

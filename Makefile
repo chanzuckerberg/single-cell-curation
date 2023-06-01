@@ -18,6 +18,10 @@ ontology-dry-run-tests:
 gene-dry-run-tests:
 	cd schema_bump_dry_run_scripts/genes/tests && pytest
 
+.PHONY: generate-conversion-script
+generate-conversion-script:
+	python3 ./migration_assistant/generate_script.py
+
 clean:
 	rm -rf cellxgene_schema_cli/build cellxgene_schema_cli/dist cellxgene_schema_cli/cellxgene_schema.egg-info
 
