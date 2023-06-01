@@ -37,4 +37,14 @@ jobs:
       - name: Run Conversion Script Generator
         run: |
           make generate-conversion-script
-
+      - name: lint changes
+        uses: pre-commit/action@v3.0.0
+      - name: Make new PR
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          # TODO create branch
+          git add ./cellxgene_schema_cli/cellxgene_schema/convert.py
+          git commit -m "AUTO: update ontologies"
+          git push
+          # TODO open new PR against branch
