@@ -3,9 +3,7 @@ import subprocess
 
 from jinja2 import Template
 
-schema_version = subprocess.run(
-    ["make", "show-current-version", "-C", "../"], capture_output=True, text=True
-).stdout.strip()
+schema_version = subprocess.run(["make", "show-current-version"], capture_output=True, text=True).stdout.strip()
 ontology_term_map = {
     "assay": {},
     "cell_type": {},

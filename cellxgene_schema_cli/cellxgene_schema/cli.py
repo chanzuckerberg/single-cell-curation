@@ -80,16 +80,18 @@ def remove_labels(input_file, output_file):
 
 @click.command(
     name="convert",
-    short_help="Convert an h5ad to the latest version of the cellxgene schema.",
-    help="Convert an h5ad from its current version to the latest. No validation will be performed on either"
+    short_help="Convert an h5ad to the latest schema version.",
+    help="Convert an h5ad to the latest schema version. No validation will be performed on either"
     "the input or the output file.",
 )
 @click.argument("input_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
 @click.argument("output_file", nargs=1, type=click.Path(exists=False, dir_okay=False))
-def convert(input_file, output_file):
+@click.option("--collection_id", default=None, type=str, help="Collection ID, if converting already published dataset")
+@click.option("--dataset_id", default=None, type=str, help="Dataset ID, if converting already published dataset")
+def convert(input_file, output_file, collection_id, dataset_id):
     from .convert import convert
 
-    convert(input_file, output_file)
+    convert(input_file, output_file, collection_id, dataset_id)
 
 
 schema_cli.add_command(schema_validate)
