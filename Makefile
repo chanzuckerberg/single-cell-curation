@@ -23,6 +23,9 @@ generate-conversion-script:
 	python3 ./migration_assistant/generate_script.py
 	make PART=patch create-release-candidate
 
+migration-assistant-tests:
+	cd migration_assistant/tests && pytest
+
 clean:
 	rm -rf cellxgene_schema_cli/build cellxgene_schema_cli/dist cellxgene_schema_cli/cellxgene_schema.egg-info
 
