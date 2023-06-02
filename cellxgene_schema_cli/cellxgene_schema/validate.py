@@ -9,6 +9,7 @@ from typing import Dict, List, Optional, Tuple, Union
 import anndata
 import numpy as np
 import pandas as pd
+import semver
 from pandas.core.computation.ops import UndefinedVariableError
 from scipy import sparse
 
@@ -31,6 +32,7 @@ class Validator:
         self.is_valid = False
         self.adata = anndata.AnnData()
         self.schema_def = dict()
+        self.schema_version = None
         self.h5ad_path = ""
         self.invalid_feature_ids = []
         self._raw_layer_exists = None
@@ -130,23 +132,18 @@ class Validator:
         """
         Sets schema dictionary from using information in adata. If there are any errors, it adds them to self.errors
         """
-        # Check if schema version slot is present
-        if "schema_version" not in self.adata.uns:
-            self.errors.append("adata has no schema definition in 'adata.uns'. Validation cannot be performed.")
-        else:
-            # Check if schema version is supported
-            version = self.adata.uns["schema_version"]
-            path = schema.get_schema_file_path(version)
-
-            if not os.path.isfile(path):
-                supported_versions = schema.get_schema_versions_supported()
-                self.errors.append(
-                    f"Schema version '{version}' is not supported. Current supported versions: '{supported_versions}'. "
-                    f"Validation cannot be performed."
-                )
-            else:
-                if not self.schema_def:
-                    self.schema_def = schema.get_schema_definition(version)
+        version = self.adata.uns.get("schema_version")
+        supported_versions = schema.get_schema_versions_supported()
+        supported_versions.sort()
+        latest_version: semver.Version = semver.Version.parse(supported_versions[-1])
+        if version and not semver.Version.parse(version).is_compatible(latest_version):
+            logger.warning(
+                f"Schema version '{version}' is not supported. Current supported versions: '{latest_version}'. "
+                f"Validating with latest version '{latest_version}'."
+            )
+        if not self.schema_version:
+            self.schema_version = str(latest_version)
+            self.schema_def = schema.get_schema_definition(self.schema_version)
 
     def _get_component_def(self, component: str) -> dict:
         """

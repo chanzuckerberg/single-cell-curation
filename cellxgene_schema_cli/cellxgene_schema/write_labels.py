@@ -332,6 +332,9 @@ class AnnDataLabelAppender:
         # Remove unused categories
         self._remove_categories_with_zero_values()
 
+        # Update version
+        self.adata.uns["schema_version"] = self.validator.schema_version
+
         # Write file
         try:
             self.adata.write_h5ad(add_labels_file, compression="gzip")
