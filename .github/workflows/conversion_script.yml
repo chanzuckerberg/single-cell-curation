@@ -4,10 +4,11 @@ on:
   push:
     branches:
       - main
-    paths:
-      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz'
-      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt'
-      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
+      - tsmith/4787-convert-boiler-plate
+#    paths:
+#      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz'
+#      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt'
+#      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
 
 
 permissions:
@@ -33,18 +34,24 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          pip install -r migratoin_assistant/requirements.txt
+          pip install -r migration_assistant/requirements.txt
       - name: Run Conversion Script Generator
         run: |
           make generate-conversion-script
+      - name: Get Version
+        id: get_version
+        run: |
+            echo ::set-output name=version::$(make show-current-version)
+            echo ::set-output name=release_branch::$(make show-release-branch)
       - name: lint changes
         uses: pre-commit/action@v3.0.0
-      - name: Make new PR
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          # TODO create branch
-          git add ./cellxgene_schema_cli/cellxgene_schema/convert.py
-          git commit -m "AUTO: update ontologies"
-          git push
-          # TODO open new PR against branch
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: 'AUTO: update convert.py to schema_version ${{ steps.get_version.outputs.version }}'
+          title: 'Release: ${{ steps.get_version.outputs.version }}'
+          body: 'This is an automated PR to update convert.py to schema_version ${{ steps.get_version.outputs.version }}.'
+          branch: ${{ steps.get_version.outputs.release_branch }}
+          reviewers: bento007
+          assignees: bento007
+

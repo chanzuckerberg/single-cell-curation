@@ -21,6 +21,7 @@ gene-dry-run-tests:
 .PHONY: generate-conversion-script
 generate-conversion-script:
 	python3 ./migration_assistant/generate_script.py
+	make PART=patch create-release-candidate
 
 clean:
 	rm -rf cellxgene_schema_cli/build cellxgene_schema_cli/dist cellxgene_schema_cli/cellxgene_schema.egg-info
@@ -32,16 +33,20 @@ pydist: clean
 
 # For displaying the current version
 current_version = $$(awk '/current_version =/ { print $$3 }' .bumpversion.cfg)
+release_branch = release-version-$$(awk '/current_version =/ { split($$3,v,"-"); print v[1] }' .bumpversion.cfg)
 
 # Show the current version
 show-current-version:
 	@echo $(current_version)
 
+show-release-branch:
+	@echo $(release_branch)
+
 # Create a release candidate version from a previously released version.  Commit then version change to a new release branch.
 # Set PART={major,minor,patch} as param to make the version bump happen automatically.
 create-release-candidate:
 	bumpversion --config-file .bumpversion.cfg $(PART) --allow-dirty
-	git checkout -b release-version-$$(awk '/current_version =/ { split($$3,v,"-"); print v[1] }' .bumpversion.cfg)
+	git checkout -b $(release_branch)
 	@echo "Version bumped part:$(PART) to "$(current_version)". Ready to commit and push"
 
 # Create another release candidate version from a previously created release candidate version, in case the previous release candidate had errors. Commit the version change to the current branch.
