@@ -5,7 +5,7 @@ from typing import List
 from jinja2 import Template
 
 file_path = os.path.dirname(os.path.realpath(__file__))
-convert_file_path = os.path.join(file_path, "../cellxgene_schema_cli/cellxgene_schema/convert.py")
+target_file = os.path.join(file_path, "../cellxgene_schema_cli/cellxgene_schema/convert.py")
 
 
 def get_current_version() -> str:
@@ -14,16 +14,16 @@ def get_current_version() -> str:
 
 def get_template() -> str:
     with open(os.path.join(file_path, "convertion_template.jinja"), "r") as fp:
-        template = fp.read()
-    j2_template = Template(template, trim_blocks=True, lstrip_blocks=True)
-    return j2_template
+        input_file = fp.read()
+    template = Template(input_file, trim_blocks=True, lstrip_blocks=True)
+    return template
 
 
 def generate_script(template: Template, schema_version: str, ontology_term_map: dict, gencode_term_map: dict):
     output = template.render(schema_version=schema_version, ontology_term_map=ontology_term_map, gencode_term_map=None)
 
     # Overwrite the existing convert.py file
-    with open(os.path.join(file_path, convert_file_path), "w") as fp:
+    with open(target_file, "w") as fp:
         fp.write(output)
 
 
