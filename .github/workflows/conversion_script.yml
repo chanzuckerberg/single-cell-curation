@@ -1,4 +1,4 @@
-name: Gene Bump Dry Run
+name: Generate Conversion Script
 
 on:
   push:
@@ -35,6 +35,10 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r migration_assistant/requirements.txt
+      - name: setup git
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
       - name: Run Conversion Script Generator
         run: |
           make generate-conversion-script
