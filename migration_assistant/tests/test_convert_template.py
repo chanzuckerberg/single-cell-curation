@@ -37,7 +37,6 @@ def test_generate_script(template, tmpdir):
     # Verify the output
     expected_output = """
 import anndata as ad
-import numpy as np
 
 from . import utils
 
@@ -99,7 +98,7 @@ def convert(input_file, output_file, collection_id, dataset_id):
     # ...
 
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
-	# No Changes
+    # No Changes
 
     dataset.write(output_file, compression="gzip")"""
     mock.patch("migration_assistant.generate_script.get_current_version", return_value=expected_output)
