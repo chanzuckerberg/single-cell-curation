@@ -45,10 +45,8 @@ jobs:
       - name: Get Version
         id: get_version
         run: |
-          VERSION=$(make show-current-version)
-          echo "version<<$VERSION" >> $GITHUB_ENV
-          RELEASE_BRANCH=$(make show-release-branch)
-          echo "release_branch<<$RELEASE_BRANCH" >> $GITHUB_ENV
+          echo "version=$(make show-current-version)" >> $GITHUB_ENV
+          echo "release_branch=$(make show-release-branch)" >> $GITHUB_ENV
       - name: lint changes
         uses: pre-commit/action@v3.0.0
       - name: Create Pull Request
