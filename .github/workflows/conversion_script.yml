@@ -4,11 +4,10 @@ on:
   push:
     branches:
       - main
-      - tsmith/4790-auto-pro # TODO remove
-#    paths: # TODO restore
-#      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz'
-#      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt'
-#      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
+    paths:
+      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz'
+      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt'
+      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
 
 
 permissions:
