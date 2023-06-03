@@ -14,6 +14,8 @@ on:
 permissions:
   id-token: write
   contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   dry-run:
@@ -52,7 +54,7 @@ jobs:
           commit-message: 'AUTO: update convert.py to schema_version ${{ env.version }}'
           title: 'AUTO: update convert.py to schema_version ${{ env.version }}'
           body: 'This is an automated PR to update convert.py to schema_version ${{ env.version }}.'
-          branch: gitbot/update-convert-py-to-${{ env.version }}
+          branch: auto/update-convert-py-to-${{ env.version }}
           reviewers: bento007
           assignees: bento007
 
