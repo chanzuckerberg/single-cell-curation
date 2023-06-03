@@ -45,17 +45,19 @@ jobs:
       - name: Get Version
         id: get_version
         run: |
-            echo ::set-output name=version::$(make show-current-version)
-            echo ::set-output name=release_branch::$(make show-release-branch)
+          VERSION=$(make show-current-version)
+          echo "version<<$VERSION" >> $GITHUB_ENV
+          RELEASE_BRANCH=$(make show-release-branch)
+          echo "release_branch<<$RELEASE_BRANCH" >> $GITHUB_ENV
       - name: lint changes
         uses: pre-commit/action@v3.0.0
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
-          commit-message: 'AUTO: update convert.py to schema_version ${{ steps.get_version.outputs.version }}'
-          title: 'Release: ${{ steps.get_version.outputs.version }}'
-          body: 'This is an automated PR to update convert.py to schema_version ${{ steps.get_version.outputs.version }}.'
-          branch: ${{ steps.get_version.outputs.release_branch }}
+          commit-message: 'AUTO: update convert.py to schema_version ${{ env.version }}'
+          title: 'Release: ${{ env.version }}'
+          body: 'This is an automated PR to update convert.py to schema_version ${{ env.version }}.'
+          branch: ${{ env.release_branch }}
           reviewers: bento007
           assignees: bento007
 
