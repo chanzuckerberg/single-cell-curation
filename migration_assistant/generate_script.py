@@ -9,7 +9,9 @@ target_file = os.path.join(file_path, "../cellxgene_schema_cli/cellxgene_schema/
 
 
 def get_current_version() -> str:
-    return subprocess.run(["make", "show-current-version"], capture_output=True, text=True).stdout.strip()
+    version = subprocess.run(["make", "show-current-version"], capture_output=True, text=True).stdout
+    version = version.strip().split("\n")[-1]
+    return version
 
 
 def get_template() -> str:
