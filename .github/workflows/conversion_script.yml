@@ -43,8 +43,6 @@ jobs:
         run: |
           echo "version=$(make show-current-version)" >> $GITHUB_ENV
           echo "release_branch=$(make show-release-branch)" >> $GITHUB_ENV
-      - name: lint changes
-        uses: pre-commit/action@v3.0.0
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
