@@ -1,5 +1,4 @@
 import anndata as ad
-import numpy as np
 
 from . import utils
 
@@ -85,14 +84,14 @@ def convert(input_file, output_file, collection_id, dataset_id):
     # ...
 
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
-	{% if gencode_term_map %}
-	gencode_term_map = {
-		{% for old, new in gencode_term_map.items() %}
-		"{{ old }}": "{{ new }}", # AUTOMATED
-		{% endfor %}
-	}
-	{% else %}
-	# No Changes
-	{% endif %}
+    {% if gencode_term_map %}
+    gencode_term_map = {
+    	{% for old, new in gencode_term_map.items() %}
+    	"{{ old }}": "{{ new }}", # AUTOMATED
+    	{% endfor %}
+    }
+    {% else %}
+    # No Changes
+    {% endif %}
 
     dataset.write(output_file, compression="gzip")
