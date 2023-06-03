@@ -21,7 +21,6 @@ gene-dry-run-tests:
 .PHONY: generate-conversion-script
 generate-conversion-script:
 	python3 ./migration_assistant/generate_script.py
-	make PART=patch create-release-candidate
 
 migration-assistant-tests:
 	cd migration_assistant/tests && pytest

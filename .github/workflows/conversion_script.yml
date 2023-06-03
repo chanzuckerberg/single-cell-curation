@@ -35,10 +35,6 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r migration_assistant/requirements.txt
-      - name: setup git
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
       - name: Run Conversion Script Generator
         run: |
           make generate-conversion-script
@@ -53,7 +49,7 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           commit-message: 'AUTO: update convert.py to schema_version ${{ env.version }}'
-          title: 'Release: ${{ env.version }}'
+          title: 'AUTO: update convert.py to schema_version ${{ env.version }}'
           body: 'This is an automated PR to update convert.py to schema_version ${{ env.version }}.'
           branch: ${{ env.release_branch }}
           reviewers: bento007
