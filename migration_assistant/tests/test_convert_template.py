@@ -29,7 +29,7 @@ def test_generate_script(template, tmpdir):
         "tissue": {},
     }
     gencode_term_map = []
-    mock_target_file = tmpdir + "/convert.py"
+    mock_target_file = tmpdir + "/migrate.py"
     with mock.patch("migration_assistant.generate_script.target_file", mock_target_file):
         # Execute the function
         generate_script(get_template(), schema_version, ontology_term_map, gencode_term_map)
@@ -41,13 +41,10 @@ import anndata as ad
 from . import utils
 
 
-def convert(input_file, output_file, collection_id, dataset_id):
+def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
 
     dataset = ad.read_h5ad(input_file)
-
-    # Set schema version
-    dataset.uns["schema_version"] = "1.0.0"
 
     # ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
     # Initialization is AUTOMATED for newly deprecated terms that have 'Replaced By' terms in their ontology files

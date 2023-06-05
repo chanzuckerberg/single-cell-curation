@@ -79,23 +79,23 @@ def remove_labels(input_file, output_file):
 
 
 @click.command(
-    name="convert",
+    name="migrate",
     short_help="Convert an h5ad to the latest schema version.",
-    help="Convert an h5ad to the latest schema version. No validation will be performed on either"
-    "the input or the output file.",
+    help="Convert an h5ad from the previous to latest minor schema version. No validation will be "
+    "performed on either the input or the output file.",
 )
 @click.argument("input_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
 @click.argument("output_file", nargs=1, type=click.Path(exists=False, dir_okay=False))
-@click.option("--collection_id", default=None, type=str, help="Collection ID, if converting already published dataset")
-@click.option("--dataset_id", default=None, type=str, help="Dataset ID, if converting already published dataset")
-def convert(input_file, output_file, collection_id, dataset_id):
-    from .convert import convert
+@click.option("--collection_id", default=None, type=str, help="Collection ID, if migrating already published dataset")
+@click.option("--dataset_id", default=None, type=str, help="Dataset ID, if migrating already published dataset")
+def migrate(input_file, output_file, collection_id, dataset_id):
+    from .migrate import migrate
 
-    convert(input_file, output_file, collection_id, dataset_id)
+    migrate(input_file, output_file, collection_id, dataset_id)
 
 
 schema_cli.add_command(schema_validate)
-schema_cli.add_command(convert)
+schema_cli.add_command(migrate)
 schema_cli.add_command(remove_labels)
 
 if __name__ == "__main__":
