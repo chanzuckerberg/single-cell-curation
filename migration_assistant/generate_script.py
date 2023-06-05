@@ -5,7 +5,7 @@ from typing import List
 from jinja2 import Template
 
 file_path = os.path.dirname(os.path.realpath(__file__))
-target_file = os.path.join(file_path, "../cellxgene_schema_cli/cellxgene_schema/convert.py")
+target_file = os.path.join(file_path, "../cellxgene_schema_cli/cellxgene_schema/migrate.py")
 
 
 def get_current_version() -> str:
@@ -24,7 +24,7 @@ def get_template() -> str:
 def generate_script(template: Template, schema_version: str, ontology_term_map: dict, gencode_term_map: dict):
     output = template.render(schema_version=schema_version, ontology_term_map=ontology_term_map, gencode_term_map=None)
 
-    # Overwrite the existing convert.py file
+    # Overwrite the existing migrate.py file
     with open(target_file, "w") as fp:
         fp.write(output)
 
