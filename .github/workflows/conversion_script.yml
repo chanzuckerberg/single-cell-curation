@@ -42,6 +42,10 @@ jobs:
         id: get_version
         run: |
           echo "old_version=$(make show-current-version)" >> $GITHUB_ENV
+      - name: setup git
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
       - name: Bump Version
         run: |
           pip install bumpversion
