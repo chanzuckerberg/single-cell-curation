@@ -15,7 +15,7 @@ def get_current_version() -> str:
 
 
 def get_template() -> str:
-    with open(os.path.join(file_path, "convertion_template.jinja"), "r") as fp:
+    with open(os.path.join(file_path, "migration_template.jinja"), "r") as fp:
         input_file = fp.read()
     template = Template(input_file, trim_blocks=True, lstrip_blocks=True)
     return template

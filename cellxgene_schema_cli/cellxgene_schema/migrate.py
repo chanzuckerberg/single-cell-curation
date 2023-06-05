@@ -5,7 +5,7 @@ from . import ontology
 from .remove_labels import AnnDataLabelRemover
 
 
-def convert(input_file, output_file):
+def migrate(input_file, output_file):
     print(f"Converting {input_file} into {output_file}")
 
     dataset = ad.read_h5ad(input_file)
