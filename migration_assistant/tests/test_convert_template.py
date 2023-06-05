@@ -41,7 +41,7 @@ import anndata as ad
 from . import utils
 
 
-def convert(input_file, output_file, collection_id, dataset_id):
+def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
 
     dataset = ad.read_h5ad(input_file)
