@@ -46,9 +46,6 @@ def convert(input_file, output_file, collection_id, dataset_id):
 
     dataset = ad.read_h5ad(input_file)
 
-    # Set schema version
-    dataset.uns["schema_version"] = "1.0.0"
-
     # ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
     # Initialization is AUTOMATED for newly deprecated terms that have 'Replaced By' terms in their ontology files
 
