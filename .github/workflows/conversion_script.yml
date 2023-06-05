@@ -43,6 +43,7 @@ jobs:
         run: |
           echo "old_version=$(make show-current-version)" >> $GITHUB_ENV
       - name: Bump Version
+        run: |
           pip install bumpversion
           pip install wheel
           bumpversion --config-file .bumpversion.cfg patch --allow-dirty
