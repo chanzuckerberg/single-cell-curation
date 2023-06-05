@@ -8,6 +8,10 @@ on:
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz'
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   publish-to-pypi:
     name: Build and publish Python distributions to PyPI
@@ -50,3 +54,53 @@ jobs:
 #        with:
 #          password: ${{ secrets.PYPI_API_TOKEN }}
 #          package-dir: cellxgene_schema_cli/
+
+  generate-conversion-script:
+    runs-on: ubuntu-latest
+    needs: publish-to-pypi
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.11
+      - name: Python cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          pip install -r migration_assistant/requirements.txt
+      - name: Run Conversion Script Generator
+        run: |
+          make generate-conversion-script
+      - name: Get Version
+        id: get_version
+        run: |
+          echo "old_version=$(make show-current-version)" >> $GITHUB_ENV
+      - name: setup git
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+      - name: Bump Version
+        run: |
+          pip install bumpversion
+          pip install wheel
+          bumpversion --config-file .bumpversion.cfg patch --allow-dirty
+          bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
+          echo "new_version=$(make show-current-version)" >> $GITHUB_ENV
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: 'AUTO: update migrate.py schema_version ${{ env.old_version }}->${{ env.new_version }}'
+          title: 'AUTO: update migrate.py schema_version ${{ env.old_version }}->${{ env.new_version }}'
+          body: 'This is an automated PR to update migrate.py from schema_version ${{ env.old_version }}->${{ env.new_version }}.'
+          branch: auto/update-convert-py-to-${{ env.new_version }}
+          base: main
+          reviewers: bento007 # TODO assign curators
