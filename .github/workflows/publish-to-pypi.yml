@@ -60,7 +60,7 @@ jobs:
         run: |
           curl -X POST https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/dispatches \
           -H 'Accept: application/vnd.github.everest-preview+json' \
-          --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+          --header 'authorization: Bearer ${{ secrets.CZIBUILDBOT_GITHUB_TOKEN }}' \
           --data '{"event_type": "rebuild-processing"}'
 
 #  generate-conversion-script:
