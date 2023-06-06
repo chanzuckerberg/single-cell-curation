@@ -1,4 +1,4 @@
-name: Publish cellxgene_schema_cli to PyPI
+name: Publish Minor Version of cellxgene_schema_cli to PyPI
 
 on:
   push:
@@ -104,3 +104,4 @@ jobs:
           branch: auto/update-convert-py-to-${{ env.new_version }}
           base: main
           reviewers: bento007 # TODO assign curators
+
