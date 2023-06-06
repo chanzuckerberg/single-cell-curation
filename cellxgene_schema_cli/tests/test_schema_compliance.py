@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 import fixtures.examples_validate as examples
 import numpy
@@ -1013,17 +1014,76 @@ class TestUns(BaseValidationTest):
     Fail cases in adata.uns
     """
 
-    def test_required_fields_schema_version(self):
-        """
-        Curators MUST annotate `schema_version` and values in uns (schema_version)
-        """
-
-        del self.validator.adata.uns["schema_version"]
-        self.validator.validate_adata()
+    def test_optional_fields_schema_version_is_old(self):
+        latest_version = "1.0.0"
+        old_version = "0.0.1"
+        self.validator.adata.uns["schema_version"] = old_version
+        self.validator.schema_version = None
+        with self.assertLogs(level="WARNING") as logs, patch(
+            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[latest_version]
+        ) as mock_supported_versions, patch(
+            "cellxgene_schema.validate.schema.get_schema_definition"
+        ) as mock_get_schema_definition:
+            self.validator._set_schema_def()
         self.assertEqual(
-            self.validator.errors,
-            ["ERROR: adata has no schema definition in 'adata.uns'. " "Validation cannot be performed."],
+            logs.output,
+            [
+                f"WARNING:cellxgene_schema.validate:Schema version '{old_version}' is not supported. Current supported "
+                f"versions: '{latest_version}'. Validating with latest version '{latest_version}'."
+            ],
         )
+        mock_supported_versions.assert_called_once()
+        mock_get_schema_definition.assert_called_with(latest_version)
+
+    def test_optional_fields_schema_version_is_missing(self):
+        lastest_version = "1.0.0"
+        self.validator.schema_version = None
+        del self.validator.adata.uns["schema_version"]
+        with patch(
+            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[lastest_version]
+        ) as mock_supported_versions, patch(
+            "cellxgene_schema.validate.schema.get_schema_definition"
+        ) as mock_get_schema_definition:
+            self.validator._set_schema_def()
+        mock_supported_versions.assert_called_once()
+        mock_get_schema_definition.assert_called_with(lastest_version)
+        self.assertEqual(self.validator.schema_version, lastest_version)
+
+    def test_optional_fields_schema_version_is_latest(self):
+        latest_version = "1.0.0"
+        self.validator.schema_version = None
+        self.validator.adata.uns["schema_version"] = latest_version
+        with patch(
+            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[latest_version]
+        ) as mock_supported_versions, patch(
+            "cellxgene_schema.validate.schema.get_schema_definition"
+        ) as mock_get_schema_definition:
+            self.validator._set_schema_def()
+        mock_supported_versions.assert_called_once()
+        mock_get_schema_definition.assert_called_with(latest_version)
+        self.assertEqual(self.validator.schema_version, latest_version)
+
+    def test_optional_fields_schema_version_with_multiple_supported_versions(self):
+        latest_version = "1.0.0"
+        old_version = "0.0.1"
+        self.validator.schema_version = None
+        self.validator.adata.uns["schema_version"] = old_version
+        with self.assertLogs(level="WARNING") as logs, patch(
+            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[old_version, latest_version]
+        ) as mock_supported_versions, patch(
+            "cellxgene_schema.validate.schema.get_schema_definition"
+        ) as mock_get_schema_definition:
+            self.validator._set_schema_def()
+        self.assertEqual(
+            logs.output,
+            [
+                f"WARNING:cellxgene_schema.validate:Schema version '{old_version}' is not supported. Current supported "
+                f"versions: '{latest_version}'. Validating with latest version '{latest_version}'."
+            ],
+        )
+        mock_supported_versions.assert_called_once()
+        mock_get_schema_definition.assert_called_with(latest_version)
+        self.assertEqual(self.validator.schema_version, latest_version)
 
     def test_required_fields_title(self):
         """
@@ -1063,31 +1123,6 @@ class TestUns(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             ["ERROR: 'There are   double   spaces' in 'uns['title']' is not valid, it contains double spaces."],
-        )
-
-    def test_schema_version(self):
-        """
-        Schema_version, This MUST be "3.0.0".
-        """
-
-        self.validator.adata.uns["schema_version"] = "1.0.0"
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            [
-                "ERROR: Schema version '1.0.0' is not supported. Current supported versions: '['3.0.0']'. "
-                "Validation cannot be performed."
-            ],
-        )
-
-        self.validator.adata.uns["schema_version"] = "2.0.0"
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            [
-                "ERROR: Schema version '2.0.0' is not supported. Current supported versions: '['3.0.0']'. "
-                "Validation cannot be performed."
-            ],
         )
 
     def test_title(self):

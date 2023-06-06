@@ -48,7 +48,7 @@ run_reporter = RunReporter()
 
 def generate_report(data) -> str:
     file_path = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(file_path, "report_template.j2"), "r") as fp:
+    with open(os.path.join(file_path, "report_template.jinja"), "r") as fp:
         report = fp.read()
 
     j2_template = Template(report, trim_blocks=True, lstrip_blocks=True)
