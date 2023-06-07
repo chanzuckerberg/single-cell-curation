@@ -34,12 +34,14 @@ def load_ontology_map():
 
 
 def map_deprecated_terms(
-    curator_report_entry_map: dict, dataset: dict, collection_id: str, onto_map: dict, non_deprecated_term_cache: set
+    curator_report_entry_map: dict, dataset: dict, collection_id: str, onto_map: dict, non_deprecated_term_cache: set,
+    replaced_by_map: dict
 ) -> None:
     """
     For a dataset, detects all deprecated ontology terms and, for each found, populates an entry in
     curator_report_entry_map with data required to report the deprecated term and any ontology-provided guidance
-    to replace it.
+    to replace it. If a Deprecated Term is detected with a single, same-ontology 'replaced by' term, it is also
+    added to the replaced_by_map.
     :param curator_report_entry_map: dict with information on deprecated terms detected in the data-portal corpus, and
     guidance from ontologies on how to replace them
     :param dataset: dict with dataset metadata
@@ -47,6 +49,8 @@ def map_deprecated_terms(
     :param onto_map: dict derived from processed ontology file, contains map of all ontology terms from all ontologies
     used in data-portal and metadata from their owl files
     :param non_deprecated_term_cache: set caching known terms that are not deprecated, used to skip re-processing
+    :param replaced_by_map: dict mapping deprecated terms to a single known same-ontology replacement terms,
+    updated in-place
     """
     for ontology_type in ONTOLOGY_TYPES:
         if ontology_type in dataset:
@@ -74,6 +78,9 @@ def map_deprecated_terms(
                             replacement_term_ontology = ontology["replaced_by"].split(":")[0]
                             if replacement_term_ontology != term_prefix:
                                 entry["needs_alert"] = True
+                            else:
+                                if ontology_index_id not in replaced_by_map[ontology_type]:
+                                    replaced_by_map[ontology_type][ontology_index_id] = replacement_term_ontology
                         else:
                             entry["needs_alert"] = True
                             if "consider" in ontology:
@@ -114,31 +121,36 @@ def write_to_curator_report(output_file: str, curator_report_entry_map: dict, re
                 f.write("\n")
 
 
-def dry_run(output_file: str) -> None:
+def dry_run(curator_report_filepath: str, replaced_by_filepath: str) -> None:
     """
-    main function which coordinates fetching information to populate a curator report and writing it to the output file
-    :param output_file: filepath to write curator report to
+    main function which coordinates fetching information to populate a curator report and writing it to the output file,
+    as well as writing a JSON file mapping any deprecated terms to known replacement terms in the same ontology.
+    :param curator_report_filepath: filepath to write curator report to
+    :param replaced_by_filepath: filepath to write replaced by JSON mapping to
     """
     onto_map = load_ontology_map()
 
     # cache terms we know are not deprecated to skip processing; init with special-case, non-ontology terms we use
     non_deprecated_term_cache = {"multiethnic", "unknown", "na"}
+    # map deprecated terms with known, deterministic 'replaced by' terms
+    replaced_by_map = dict.fromkeys(ONTOLOGY_TYPES, dict())
 
     base_url = BASE_API[os.getenv("corpus_env", default="dev")]
     datasets = fetch_public_datasets(base_url)
     public_curator_report_entry_map = defaultdict(dict)
-    with open(output_file, "w") as f:
+    with open(curator_report_filepath, "w") as f:
         # for every dataset, check its ontology term metadata to see if any terms are deprecated. If so, report.
         f.write("Deprecated Terms in Public Datasets:\n\n")
     for dataset in datasets:
         map_deprecated_terms(
-            public_curator_report_entry_map, dataset, dataset["collection_id"], onto_map, non_deprecated_term_cache
+            public_curator_report_entry_map, dataset, dataset["collection_id"], onto_map, non_deprecated_term_cache,
+            replaced_by_map
         )
-    write_to_curator_report(output_file, public_curator_report_entry_map)
+    write_to_curator_report(curator_report_filepath, public_curator_report_entry_map)
 
     headers = get_headers(base_url)
     private_collections = fetch_private_collections(base_url, headers)
-    with open(output_file, "a") as f:
+    with open(curator_report_filepath, "a") as f:
         f.write("\nDeprecated Terms in Private Datasets:\n\n")
     revision_map = dict()
     private_curator_report_entry_map = defaultdict(dict)
@@ -154,16 +166,20 @@ def dry_run(output_file: str) -> None:
             if "processing_status" not in dataset_metadata or dataset_metadata["processing_status"] != "SUCCESS":
                 continue
             map_deprecated_terms(
-                private_curator_report_entry_map, dataset_metadata, collection_id, onto_map, non_deprecated_term_cache
+                private_curator_report_entry_map, dataset_metadata, collection_id, onto_map, non_deprecated_term_cache,
+                replaced_by_map
             )
-    write_to_curator_report(output_file, private_curator_report_entry_map, revision_map)
+    write_to_curator_report(curator_report_filepath, private_curator_report_entry_map, revision_map)
 
     if revision_map:
-        with open(output_file, "a") as f:
+        with open(curator_report_filepath, "a") as f:
             f.write("\nThe Following Public Collections Will Not Be Auto-Migrated Due To Having an Open Revision:\n")
             for revision in revision_map.values():
                 f.write(f"{revision}\n")
 
+    with open(replaced_by_filepath, "w") as j:
+        json.dump(replaced_by_map, j)
+
 
 if __name__ == "__main__":
-    dry_run("ontologies-curator-report.txt")
+    dry_run("ontologies-curator-report.txt", "replaced-by.json")
