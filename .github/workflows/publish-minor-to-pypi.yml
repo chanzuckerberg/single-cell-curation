@@ -82,7 +82,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          pip install -r migration_assistant/requirements.txt
+          pip install -r scripts/migration_assistant/requirements.txt
       - name: Run Conversion Script Generator
         run: |
           make generate-conversion-script
