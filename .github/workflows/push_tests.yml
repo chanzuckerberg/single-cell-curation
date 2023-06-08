@@ -2,7 +2,7 @@ name: Push tests
 
 on:
   push:
-    branches: main
+    branches: demo
   pull_request:
     branches: "*"
 

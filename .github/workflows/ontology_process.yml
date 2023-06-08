@@ -6,7 +6,7 @@ on:
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/gene_info.yml'
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/owl_info.yml'
     branches-ignore:
-      - main
+      - demo
 
 jobs:
   ontology-processing:

@@ -3,7 +3,7 @@ name: Publish Patch Version of cellxgene_schema_cli to PyPI
 on:
   push:
     branches:
-      - main
+      - demo
     paths:
       - '**/cellxgene_schema_cli/cellxgene_schema/migrate.py'
 

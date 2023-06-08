@@ -3,7 +3,7 @@ name: Ontology Bump Dry Run
 on:
   push:
     branches:
-      - main
+      - demo
     paths:
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
 
