@@ -14,6 +14,19 @@ class SupportedOrganisms(enum.Enum):
     ERCC = "NCBITaxon:32630"
 
 
+def get_deprecated_genecode_terms() -> List[str]:
+    # return a list of deprecated feature ids.
+    diff_map = []
+    suffix = "_diff.txt"
+    files = os.listdir(env.ONTOLOGY_DIR)
+    for file in files:
+        if file.endswith(suffix):
+            with open(f"{env.ONTOLOGY_DIR}/{file}") as fp:
+                lines = fp.readlines()
+                diff_map.extend(lines)
+    return diff_map
+
+
 def get_organism_from_feature_id(
     feature_id: str,
 ) -> Union[SupportedOrganisms, None]:

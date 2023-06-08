@@ -1,7 +1,8 @@
 import os
-from typing import List
 
 from jinja2 import Template
+
+from cellxgene_schema_cli.cellxgene_schema.ontology import get_deprecated_genecode_terms
 
 file_path = os.path.dirname(os.path.realpath(__file__))
 target_file = os.path.join(file_path, "../../cellxgene_schema_cli/cellxgene_schema/migrate.py")
@@ -14,38 +15,24 @@ def get_template() -> str:
     return template
 
 
-def generate_script(template: Template, schema_version: str, ontology_term_map: dict, gencode_term_map: dict):
-    output = template.render(ontology_term_map=ontology_term_map, gencode_term_map=None)
+def generate_script(template: Template, ontology_term_map: dict, include_gencode_conversion: bool):
+    output = template.render(ontology_term_map=ontology_term_map, include_gencode_conversion=include_gencode_conversion)
 
     # Overwrite the existing migrate.py file
     with open(target_file, "w") as fp:
         fp.write(output)
 
 
-def get_ontology_term_map() -> dict:
+def get_ontology_term_map() -> bool:
     # TODO: read in the ontology term map
-    return {
-        "assay": {},
-        "cell_type": {},
-        "development_stage": {},
-        "disease": {},
-        "organism": {},
-        "self_reported_ethnicity": {},
-        "sex": {},
-        "tissue": {},
-    }
-
-
-def get_genecode_term_map() -> List[str]:
-    # TODO: read in the gencode term map
-    return []
+    return len(get_deprecated_genecode_terms()) > 1
 
 
 def main():
     template = get_template()
     ontology_term_map = get_ontology_term_map()
-    gencode_term_map = get_genecode_term_map()
-    generate_script(template, ontology_term_map, gencode_term_map)
+    include_gencode_conversion = len(get_deprecated_genecode_terms()) > 1
+    generate_script(template, ontology_term_map, include_gencode_conversion)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,7 @@
 import anndata as ad
+{% if include_gencode_conversion %}
+import pandas as pd
+{% endif %}
 
 from . import utils
 
@@ -81,12 +84,12 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     # ...
 
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
-    {% if gencode_term_map %}
-    gencode_term_map = {
-    	{% for old, new in gencode_term_map.items() %}
-    	"{{ old }}": "{{ new }}", # AUTOMATED
-    	{% endfor %}
-    }
+    {% if include_gencode_conversion %}
+    deprecated = ontology.get_deprecated_genecode_terms()
+	var_in_deprecated = dataset.var.index[~adata.var.index.isin(deprecated)].tolist()
+	var_to_keep = dataset.var.index.tolist()
+	var_to_keep = [e for e in var_to_keep if e not in var_in_deprecated]
+	dataset = dataset[:, var_to_keep]
     {% else %}
     # No Changes
     {% endif %}
