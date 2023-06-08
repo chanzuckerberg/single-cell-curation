@@ -9,14 +9,14 @@ from jinja2 import Template
 
 from cellxgene_schema_cli.cellxgene_schema.env import ONTOLOGY_DIR
 from cellxgene_schema_cli.cellxgene_schema.ontology import SupportedOrganisms
-from schema_bump_dry_run_scripts.common import (
+from scripts.common.thirdparty import (
     BASE_API,
     fetch_private_collections,
     fetch_private_dataset,
     fetch_public_datasets,
     get_headers,
 )
-from schema_bump_dry_run_scripts.logger import configure_logging
+from scripts.logger import configure_logging
 
 configure_logging()
 logger = logging.getLogger()

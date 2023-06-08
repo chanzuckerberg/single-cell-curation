@@ -2,7 +2,7 @@ from tempfile import NamedTemporaryFile
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
-from schema_bump_dry_run_scripts.ontologies import ontology_bump_dry_run
+from scripts.schema_bump_dry_run_ontologies import ontology_bump_dry_run
 
 
 class TestOntologyBumpDryRun(TestCase):
@@ -74,7 +74,7 @@ class TestOntologyBumpDryRun(TestCase):
             },
         ]
         self.patcher = patch.multiple(
-            "schema_bump_dry_run_scripts.ontologies.ontology_bump_dry_run",
+            "scripts.schema_bump_dry_run_ontologies.ontology_bump_dry_run",
             load_ontology_map=Mock(return_value=mock_onto_map),
             get_headers=Mock(),
             fetch_public_datasets=Mock(return_value=self.public_datasets),
