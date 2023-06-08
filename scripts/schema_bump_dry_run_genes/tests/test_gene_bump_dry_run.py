@@ -114,23 +114,23 @@ def sample_report_data():
 
 
 def test_generate_report(sample_report_data):
-    expected_report = """## Deprecated Terms in Public Collections:
+    expected_report = """## Deprecated Features in Public Collections:
 
 Collection ID: with multiple dataset groups
     Affected Datasets:
         dataset_1, dataset_2
     Number of Affected Datasets: 2
-    Number of Deprecated Terms in Group: 3
-    Number of Terms in Group: 5
-    Deprecated Terms:
+    Number of Deprecated Features in Group: 3
+    Number of Features in Group: 5
+    Deprecated Features:
         term_1, term_2, term_3
 
     Affected Datasets:
         dataset_3
     Number of Affected Datasets: 1
-    Number of Deprecated Terms in Group: 2
-    Number of Terms in Group: 4
-    Deprecated Terms:
+    Number of Deprecated Features in Group: 2
+    Number of Features in Group: 4
+    Deprecated Features:
         term_4, term_5
 
 Collection ID: with single dataset group
@@ -139,31 +139,31 @@ Collection ID: with single dataset group
         dataset_5, dataset_4, dataset_5, dataset_4, dataset_5, dataset_4, dataset_5,
         dataset_4, dataset_5
     Number of Affected Datasets: 16
-    Number of Deprecated Terms in Group: 14
-    Number of Terms in Group: 50
-    Deprecated Terms:
+    Number of Deprecated Features in Group: 14
+    Number of Features in Group: 50
+    Deprecated Features:
         term_6, term_6, term_6, term_6, term_6, term_6, term_6, term_6, term_6,
         term_6, term_6, term_6, term_6, term_6
 
-## Deprecated Genes in Private Collections:
+## Deprecated Features in Private Collections:
 
 Collection ID: with revision
 Note--In A Revision of: collection_id_1
     Affected Datasets:
         dataset_6
     Number of Affected Datasets: 1
-    Number of Deprecated Terms in Group: 4
-    Number of Terms in Group: 6
-    Deprecated Terms:
+    Number of Deprecated Features in Group: 4
+    Number of Features in Group: 6
+    Deprecated Features:
         term_7, term_8, term_9, term_10
 
 Collection ID: no revision
     Affected Datasets:
         dataset_7, dataset_8, dataset_9
     Number of Affected Datasets: 3
-    Number of Deprecated Terms in Group: 1
-    Number of Terms in Group: 2
-    Deprecated Terms:
+    Number of Deprecated Features in Group: 1
+    Number of Features in Group: 2
+    Deprecated Features:
         term1
 
 ## The Following Public Collections Will Not Be Auto-Migrated Due To Having an Open Revision:
@@ -176,9 +176,9 @@ collection_id_4
 
 def test_generate_report__with_empty_data():
     empty_data = {"deprecated_public": {}, "open_revisions": {}, "non_auto_migrated": []}
-    expected_report = """## Deprecated Terms in Public Collections:
+    expected_report = """## Deprecated Features in Public Collections:
 
-## Deprecated Genes in Private Collections:
+## Deprecated Features in Private Collections:
 
 ## The Following Public Collections Will Not Be Auto-Migrated Due To Having an Open Revision:
 """

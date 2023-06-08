@@ -1,4 +1,4 @@
-## Deprecated Terms in Public Collections:
+## Deprecated Features in Public Collections:
 
 {% for collection in deprecated_public %}
 Collection ID: {{ collection }}
@@ -6,14 +6,14 @@ Collection ID: {{ collection }}
     Affected Datasets:
         {{ dataset_groups.datasets  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
     Number of Affected Datasets: {{ dataset_groups.num_datasets }}
-    Number of Deprecated Terms in Group: {{ dataset_groups.deprecated_genes|length }}
-    Number of Terms in Group: {{ dataset_groups.num_genes }}
-    Deprecated Terms:
+    Number of Deprecated Features in Group: {{ dataset_groups.deprecated_genes|length }}
+    Number of Features in Group: {{ dataset_groups.num_genes }}
+    Deprecated Features:
         {{ dataset_groups.deprecated_genes  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
 
     {% endfor %}
 {% endfor %}
-## Deprecated Genes in Private Collections:
+## Deprecated Features in Private Collections:
 
 {% for collection in open_revisions %}
 Collection ID: {{ collection}}
@@ -24,9 +24,9 @@ Note--In A Revision of: {{ open_revisions[collection].revision_of }}
     Affected Datasets:
         {{ dataset_groups.datasets  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
     Number of Affected Datasets: {{ dataset_groups.num_datasets }}
-    Number of Deprecated Terms in Group: {{ dataset_groups.deprecated_genes|length  }}
-    Number of Terms in Group: {{ dataset_groups.num_genes }}
-    Deprecated Terms:
+    Number of Deprecated Features in Group: {{ dataset_groups.deprecated_genes|length  }}
+    Number of Features in Group: {{ dataset_groups.num_genes }}
+    Deprecated Features:
         {{ dataset_groups.deprecated_genes  | join(', ') | wordwrap(78) | replace('\n', '\n        ')}}
 
     {% endfor %}

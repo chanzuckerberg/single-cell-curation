@@ -1,12 +1,11 @@
-name: Publish cellxgene_schema_cli to PyPI
+name: Publish Patch Version of cellxgene_schema_cli to PyPI
 
 on:
   push:
     branches:
       - main
     paths:
-      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
-      - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz'
+      - '**/cellxgene_schema_cli/cellxgene_schema/migrate.py'
 
 jobs:
   publish-to-pypi:
@@ -19,17 +18,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.x"
-      - name: setup git
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-      - name: Bump and tag release version
-        run: |
-          pip install bumpversion
-          pip install wheel
-          bumpversion --config-file .bumpversion.cfg minor --allow-dirty
-          bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
-          git push origin --tags
       - name: Build dist
         run: >-
           make pydist

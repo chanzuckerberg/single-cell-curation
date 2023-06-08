@@ -18,6 +18,10 @@ ontology-dry-run-tests:
 gene-dry-run-tests:
 	cd scripts/schema_bump_dry_run_genes/tests && pytest
 
+.PHONY: generate-conversion-script
+generate-conversion-script:
+	python3 ./migration_assistant/generate_script.py
+
 migration-assistant-tests:
 	cd scripts/migration_assistant/tests && pytest
 
