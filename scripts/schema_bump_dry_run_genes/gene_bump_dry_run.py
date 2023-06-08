@@ -9,7 +9,7 @@ from jinja2 import Template
 
 from cellxgene_schema_cli.cellxgene_schema.env import ONTOLOGY_DIR
 from cellxgene_schema_cli.cellxgene_schema.ontology import SupportedOrganisms
-from scripts.common.thirdparty import (
+from scripts.common.thirdparty.discovery_api import (
     BASE_API,
     fetch_private_collections,
     fetch_private_dataset,
