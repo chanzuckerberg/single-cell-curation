@@ -234,7 +234,7 @@ def test_compare_genes__with_no_deprecated_genes(sample_diff_map, sample_depreca
         )
 
     # Assert the results
-    mock_logger.debug.assert_called_once_with("Dataset dataset1 has no deprecated schema_bump_dry_run_genes")
+    mock_logger.debug.assert_called_once_with("Dataset dataset1 has no deprecated genes")
     assert actual_deprecated_datasets == expected_deprecated_datasets
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
@@ -252,9 +252,7 @@ def test_compare_genes__with_empty_diff_map(sample_deprecated_datasets, sample_d
         )
 
     # Assert the results
-    mock_logger.debug.assert_called_once_with(
-        f"Dataset {sample_dataset['dataset_id']} has no deprecated schema_bump_dry_run_genes"
-    )
+    mock_logger.debug.assert_called_once_with(f"Dataset {sample_dataset['dataset_id']} has no deprecated genes")
     assert actual_deprecated_datasets == expected_deprecated_datasets
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
@@ -290,9 +288,7 @@ def test_compare_genes__with_existing_collection_deprecated_genes_and_new_datase
         )
 
     # Assert results
-    mock_logger.debug.assert_called_once_with(
-        f"Dataset {sample_dataset['dataset_id']} has 2 deprecated schema_bump_dry_run_genes"
-    )
+    mock_logger.debug.assert_called_once_with(f"Dataset {sample_dataset['dataset_id']} has 2 deprecated genes")
     assert actual_deprecated_datasets == expected_deprecated_datasets
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
@@ -326,9 +322,7 @@ def test_compare_genes__with_existing_collection_deprecated_genes_and_existing_d
         )
 
     # Assert the results
-    mock_logger.debug.assert_called_once_with(
-        f"Dataset {sample_dataset['dataset_id']} has 2 deprecated schema_bump_dry_run_genes"
-    )
+    mock_logger.debug.assert_called_once_with(f"Dataset {sample_dataset['dataset_id']} has 2 deprecated genes")
     assert actual_deprecated_datasets == expected_deprecated_datasets
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
@@ -363,9 +357,7 @@ def test_compare_genes__with_new_collection_and_deprecated_genes(sample_diff_map
         actual_deprecated_datasets, is_deprecated_genes_found = compare_genes(sample_dataset, sample_diff_map, {})
 
     # Assert the results
-    mock_logger.debug.assert_called_once_with(
-        f"Dataset {sample_dataset['dataset_id']} has 2 deprecated schema_bump_dry_run_genes"
-    )
+    mock_logger.debug.assert_called_once_with(f"Dataset {sample_dataset['dataset_id']} has 2 deprecated genes")
     assert actual_deprecated_datasets == expected_deprecated_datasets
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
@@ -401,9 +393,7 @@ def test_compare_genes__with_existing_collection_multiple_organisms_and_deprecat
         )
 
     # Assert the results
-    mock_logger.debug.assert_called_once_with(
-        f"Dataset {sample_dataset['dataset_id']} has 2 deprecated schema_bump_dry_run_genes"
-    )
+    mock_logger.debug.assert_called_once_with(f"Dataset {sample_dataset['dataset_id']} has 2 deprecated genes")
     assert actual_deprecated_datasets == expected_deprecated_datasets
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
@@ -441,9 +431,7 @@ def test_compare_genes__with_new_collection_multiple_organisms_and_deprecated_ge
         actual_deprecated_datasets, is_deprecated_genes_found = compare_genes(sample_dataset, sample_diff_map, {})
 
     # Assert the results
-    mock_logger.debug.assert_called_once_with(
-        f"Dataset {sample_dataset['dataset_id']} has 2 deprecated schema_bump_dry_run_genes"
-    )
+    mock_logger.debug.assert_called_once_with(f"Dataset {sample_dataset['dataset_id']} has 2 deprecated genes")
     assert actual_deprecated_datasets == expected_deprecated_datasets
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
