@@ -114,7 +114,7 @@ def sample_report_data():
 
 
 def test_generate_report(sample_report_data):
-    expected_report = """## Deprecated Genes in Public Collections:
+    expected_report = """## Deprecated Features in Public Collections:
 
 Collection ID: with multiple dataset groups
     Affected Datasets:
@@ -145,7 +145,7 @@ Collection ID: with single dataset group
         term_6, term_6, term_6, term_6, term_6, term_6, term_6, term_6, term_6,
         term_6, term_6, term_6, term_6, term_6
 
-## Deprecated Genes in Private Collections:
+## Deprecated Features in Private Collections:
 
 Collection ID: with revision
 Note--In A Revision of: collection_id_1
@@ -176,9 +176,9 @@ collection_id_4
 
 def test_generate_report__with_empty_data():
     empty_data = {"deprecated_public": {}, "open_revisions": {}, "non_auto_migrated": []}
-    expected_report = """## Deprecated Genes in Public Collections:
+    expected_report = """## Deprecated Features in Public Collections:
 
-## Deprecated Genes in Private Collections:
+## Deprecated Features in Private Collections:
 
 ## The Following Public Collections Will Not Be Auto-Migrated Due To Having an Open Revision:
 """
