@@ -81,7 +81,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     # ...
 
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
-    {% if include_gencode_conversion %}
+    {% if gencode_migrate %}
     dataset = utils.remove_deprecated_features(dataset)
     {% else %}
     # No Changes
