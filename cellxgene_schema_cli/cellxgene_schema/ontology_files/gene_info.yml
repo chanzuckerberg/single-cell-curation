@@ -12,3 +12,4 @@ mouse:
 sars_cov_2:
   description: sars_cov_2
   url: ftp://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz
+
