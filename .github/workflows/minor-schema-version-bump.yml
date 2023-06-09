@@ -180,21 +180,6 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-      - name: Install dependencies
-        run: |
-          pip install -r scripts/migration_assistant/requirements.txt
-      - name: Retrieve Replaced By Ontology Term Mapping
-        uses: actions/cache/restore@v3
-        with:
-          path: ./replaced-by.json
-          key: replaced-by-map
-      - name: Run Conversion Script Generator
-        run: |
-          make generate-conversion-script
-      - name: Get Version
-        id: get_version
-        run: |
-          echo "old_version=$(make show-current-version)" >> $GITHUB_ENV
       - name: setup git
         run: |
           git config user.name github-actions
@@ -206,6 +191,25 @@ jobs:
           bumpversion --config-file .bumpversion.cfg patch --allow-dirty
           bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
           echo "new_version=$(make show-current-version)" >> $GITHUB_ENV
+      - name: Install dependencies
+        run: |
+          pip install -r scripts/migration_assistant/requirements.txt
+      - name: Retrieve Replaced By Ontology Term Mapping
+        uses: actions/cache/restore@v3
+        with:
+          path: ./replaced-by.json
+          key: replaced-by-map
+      - name: Run Conversion Script Generator
+        run: |
+          make generate-conversion-script
+      - name: Commit migrate.py
+        run: |
+          git add cellxgene_schema_cli/cellxgene_schema/migrate.py
+          git commit -m "AUTO: update migrate.py schema_version ${{ env.old_version }}->${{ env.new_version }}"
+      - name: Get Version
+        id: get_version
+        run: |
+          echo "old_version=$(make show-current-version)" >> $GITHUB_ENV
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
