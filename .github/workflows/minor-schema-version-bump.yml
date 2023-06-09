@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - demo-e2e
     paths:
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz'
@@ -132,8 +133,7 @@ jobs:
           pip install bumpversion
           pip install wheel
           bumpversion --config-file .bumpversion.cfg minor --allow-dirty
-          bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
-          git push origin --tags
+          bumpversion --config-file .bumpversion.cfg prerelversion --allow-dirty
       - name: Build dist
         run: >-
           make pydist
