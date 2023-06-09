@@ -32,7 +32,7 @@ def test_generate_script(template, tmpdir):
     mock_target_file = tmpdir + "/migrate.py"
     with mock.patch("migration_assistant.generate_script.target_file", mock_target_file):
         # Execute the function
-        generate_script(get_template(), schema_version, ontology_term_map, gencode_term_map)
+        generate_script(get_template(), ontology_term_map, gencode_term_map)
 
     # Verify the output
     expected_output = """

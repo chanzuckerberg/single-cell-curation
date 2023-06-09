@@ -34,8 +34,12 @@ def load_ontology_map():
 
 
 def map_deprecated_terms(
-    curator_report_entry_map: dict, dataset: dict, collection_id: str, onto_map: dict, non_deprecated_term_cache: set,
-    replaced_by_map: dict
+    curator_report_entry_map: dict,
+    dataset: dict,
+    collection_id: str,
+    onto_map: dict,
+    non_deprecated_term_cache: set,
+    replaced_by_map: dict,
 ) -> None:
     """
     For a dataset, detects all deprecated ontology terms and, for each found, populates an entry in
@@ -80,7 +84,8 @@ def map_deprecated_terms(
                                 entry["needs_alert"] = True
                             else:
                                 if ontology_index_id not in replaced_by_map[ontology_type]:
-                                    replaced_by_map[ontology_type][ontology_index_id] = replacement_term_ontology
+                                    replaced_by_map[ontology_type][ontology_index_id] = ontology["replaced_by"]
+
                         else:
                             entry["needs_alert"] = True
                             if "consider" in ontology:
@@ -133,7 +138,7 @@ def dry_run(curator_report_filepath: str, replaced_by_filepath: str) -> None:
     # cache terms we know are not deprecated to skip processing; init with special-case, non-ontology terms we use
     non_deprecated_term_cache = {"multiethnic", "unknown", "na"}
     # map deprecated terms with known, deterministic 'replaced by' terms
-    replaced_by_map = dict.fromkeys(ONTOLOGY_TYPES, dict())
+    replaced_by_map = {ontology_type: dict() for ontology_type in ONTOLOGY_TYPES}
 
     base_url = BASE_API[os.getenv("corpus_env", default="dev")]
     datasets = fetch_public_datasets(base_url)
@@ -143,8 +148,12 @@ def dry_run(curator_report_filepath: str, replaced_by_filepath: str) -> None:
         f.write("Deprecated Terms in Public Datasets:\n\n")
     for dataset in datasets:
         map_deprecated_terms(
-            public_curator_report_entry_map, dataset, dataset["collection_id"], onto_map, non_deprecated_term_cache,
-            replaced_by_map
+            public_curator_report_entry_map,
+            dataset,
+            dataset["collection_id"],
+            onto_map,
+            non_deprecated_term_cache,
+            replaced_by_map,
         )
     write_to_curator_report(curator_report_filepath, public_curator_report_entry_map)
 
@@ -166,8 +175,12 @@ def dry_run(curator_report_filepath: str, replaced_by_filepath: str) -> None:
             if "processing_status" not in dataset_metadata or dataset_metadata["processing_status"] != "SUCCESS":
                 continue
             map_deprecated_terms(
-                private_curator_report_entry_map, dataset_metadata, collection_id, onto_map, non_deprecated_term_cache,
-                replaced_by_map
+                private_curator_report_entry_map,
+                dataset_metadata,
+                collection_id,
+                onto_map,
+                non_deprecated_term_cache,
+                replaced_by_map,
             )
     write_to_curator_report(curator_report_filepath, private_curator_report_entry_map, revision_map)
 
