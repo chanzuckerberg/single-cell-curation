@@ -3,10 +3,9 @@ from typing import List
 
 import anndata as ad
 import env
-import pandas as pd
 
 
-def replace_ontology_term(dataframe: pd.DataFrame, ontology_name: str, update_map: dict):
+def replace_ontology_term(dataframe, ontology_name, update_map):
     column_name = f"{ontology_name}_ontology_term_id"
     if dataframe[column_name].dtype != "category":
         dataframe[column_name] = dataframe[column_name].astype("category")
