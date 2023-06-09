@@ -180,7 +180,7 @@ good_obsm = {"X_umap": numpy.zeros([X.shape[0], 2])}
 
 # Valid anndata
 adata = anndata.AnnData(X=sparse.csr_matrix(X), obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var)
-adata.raw = adata
+adata.raw = adata.copy()
 adata.X = non_raw_X
 adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
 
@@ -192,7 +192,7 @@ adata_no_raw_values = anndata.AnnData(
     obsm=good_obsm,
     var=good_var,
 )
-adata_no_raw_values.raw = adata_no_raw_values
+adata_no_raw_values.raw = adata_no_raw_values.copy()
 adata_no_raw_values.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
 
 # Anndata with no obs nor var

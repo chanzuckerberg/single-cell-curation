@@ -21,13 +21,20 @@ def replace_ontology_term(dataframe: pd.DataFrame, ontology_name: str, update_ma
             dataframe[column_name] = dataframe[column_name].cat.remove_categories(old_term)
 
 
-def remove_deprecated_features(dataframe: ad.AnnData) -> ad.AnnData:
+def remove_deprecated_features(adata: ad.AnnData) -> ad.AnnData:
     deprecated = get_deprecated_features()
-    var_in_deprecated = dataframe.var.index[~dataframe.var.index.isin(deprecated)].tolist()
-    var_to_keep = dataframe.var.index.tolist()
-    var_to_keep = [e for e in var_to_keep if e not in var_in_deprecated]
-    dataframe = dataframe[:, var_to_keep]
-    return dataframe
+
+    # Filter out genes that don't appear in the approved annotation
+    var_to_keep = adata.var.index[~adata.var.index.isin(deprecated)].tolist()
+    adata = adata[:, var_to_keep]
+
+    # Repeat much of the same steps for the raw.var, if it exists
+    if adata.raw:
+        raw_adata = ad.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
+        var_to_keep = raw_adata.var.index[~raw_adata.var.index.isin(deprecated)].tolist()
+        raw_adata = raw_adata[:, var_to_keep]
+        adata.raw = raw_adata
+    return adata
 
 
 def get_deprecated_features() -> List[str]:
