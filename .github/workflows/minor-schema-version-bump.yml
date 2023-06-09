@@ -32,7 +32,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          pip install -r schema_bump_dry_run_scripts/ontologies/requirements.txt
+          pip install -r scripts/schema_bump_dry_run_ontologies/requirements.txt
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -52,7 +52,7 @@ jobs:
           files: cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz
       - name: Run Dry-Run Script
         if: steps.changed-files.outputs.any_changed == 'true'
-        run: python3 -m schema_bump_dry_run_scripts.ontologies.ontology_bump_dry_run
+        run: python3 -m scripts.schema_bump_dry_run_ontologies.ontology_bump_dry_run
         env:
           corpus_env: "dev" # TODO: Change to prod and make separate, manual dev workflow once ready for deploy
       - name: Store JSON with Replaced By Ontology Term Mappings
@@ -84,7 +84,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          pip install -r schema_bump_dry_run_scripts/genes/requirements.txt
+          pip install -r scripts/schema_bump_dry_run_genes/requirements.txt
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -104,7 +104,7 @@ jobs:
           files: cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz
       - name: Run Dry-Run Script
         if: steps.changed-files.outputs.any_changed == 'true'
-        run: python3 -m schema_bump_dry_run_scripts.genes.gene_bump_dry_run
+        run: python3 -m scripts.schema_bump_dry_run_genes.gene_bump_dry_run
         env:
           corpus_env: "dev" # TODO: Change to prod and make separate, manual dev workflow once ready for deploy
       - name: upload to slack
@@ -176,7 +176,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          pip install -r migration_assistant/requirements.txt
+          pip install -r scripts/migration_assistant/requirements.txt
       - name: Retrieve Replaced By Ontology Term Mapping
         uses: actions/cache/restore@v3
         with:
