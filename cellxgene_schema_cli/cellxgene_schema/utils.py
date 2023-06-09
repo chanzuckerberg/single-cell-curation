@@ -1,11 +1,12 @@
 import os
 from typing import List
 
+import anndata as ad
 import env
-import pandas
+import pandas as pd
 
 
-def replace_ontology_term(dataframe: pandas.DataFrame, ontology_name: str, update_map: dict):
+def replace_ontology_term(dataframe: pd.DataFrame, ontology_name: str, update_map: dict):
     column_name = f"{ontology_name}_ontology_term_id"
     if dataframe[column_name].dtype != "category":
         dataframe[column_name] = dataframe[column_name].astype("category")
@@ -20,13 +21,13 @@ def replace_ontology_term(dataframe: pandas.DataFrame, ontology_name: str, updat
             dataframe[column_name] = dataframe[column_name].cat.remove_categories(old_term)
 
 
-def remove_deprecated_features(dataframe: pandas.DataFrame):
+def remove_deprecated_features(dataframe: ad.AnnData) -> ad.AnnData:
     deprecated = get_deprecated_features()
     var_in_deprecated = dataframe.var.index[~dataframe.var.index.isin(deprecated)].tolist()
     var_to_keep = dataframe.var.index.tolist()
     var_to_keep = [e for e in var_to_keep if e not in var_in_deprecated]
-    dataset = dataframe[:, var_to_keep]
-    return dataset
+    dataframe = dataframe[:, var_to_keep]
+    return dataframe
 
 
 def get_deprecated_features() -> List[str]:
@@ -37,6 +38,6 @@ def get_deprecated_features() -> List[str]:
     for file in files:
         if file.endswith(suffix):
             with open(f"{env.ONTOLOGY_DIR}/{file}") as fp:
-                lines = fp.readlines()
+                lines = fp.read().splitlines()
                 diff_map.extend(lines)
     return diff_map
