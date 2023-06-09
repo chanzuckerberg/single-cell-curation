@@ -31,7 +31,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          pip install -r scripts/schema_bump_dry_run_/genes/requirements.txt
+          pip install -r scripts/schema_bump_dry_run_genes/requirements.txt
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
