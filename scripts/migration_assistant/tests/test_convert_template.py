@@ -125,7 +125,6 @@ def test_generate_script__with_gencode_changes(template, tmpdir):
     # Verify the output
     expected_output = """
 import anndata as ad
-import pandas as pd
 
 from . import utils
 
@@ -184,11 +183,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     # ...
 
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
-    deprecated = ontology.get_deprecated_genecode_terms()
-	var_in_deprecated = dataset.var.index[~adata.var.index.isin(deprecated)].tolist()
-	var_to_keep = dataset.var.index.tolist()
-	var_to_keep = [e for e in var_to_keep if e not in var_in_deprecated]
-	dataset = dataset[:, var_to_keep]
+    dataset = utils.remove_deprecated_features(dataset)
 
     dataset.write(output_file, compression="gzip")"""
     mock.patch("migration_assistant.generate_script.get_current_version", return_value=expected_output)
