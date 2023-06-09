@@ -4,7 +4,7 @@ import json
 import os
 from collections import defaultdict
 
-from schema_bump_dry_run_scripts.common import (
+from scripts.common.thirdparty.discovery_api import (
     BASE_API,
     fetch_private_collections,
     fetch_private_dataset,
