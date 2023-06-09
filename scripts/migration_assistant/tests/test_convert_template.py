@@ -5,7 +5,7 @@ import pytest
 from jinja2 import Template
 
 # Import the function to be tested
-from migration_assistant.generate_script import generate_script, get_template
+from scripts.migration_assistant.generate_script import generate_script, get_template
 
 
 # Define a fixture for the template
@@ -29,7 +29,7 @@ def test_generate_script(template, tmpdir):
     }
     gencode_term_map = []
     mock_target_file = tmpdir + "/migrate.py"
-    with mock.patch("migration_assistant.generate_script.target_file", mock_target_file):
+    with mock.patch("scripts.migration_assistant.generate_script.target_file", mock_target_file):
         # Execute the function
         generate_script(get_template(), ontology_term_map, gencode_term_map)
 

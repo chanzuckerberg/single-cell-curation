@@ -5,7 +5,7 @@ from typing import List
 from jinja2 import Template
 
 file_path = os.path.dirname(os.path.realpath(__file__))
-target_file = os.path.join(file_path, "../cellxgene_schema_cli/cellxgene_schema/migrate.py")
+target_file = os.path.join(file_path, "../../cellxgene_schema_cli/cellxgene_schema/migrate.py")
 
 
 def get_template() -> Template:
