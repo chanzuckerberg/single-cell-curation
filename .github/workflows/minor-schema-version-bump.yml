@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - demo-e2e
     paths:
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz'
@@ -133,7 +132,8 @@ jobs:
           pip install bumpversion
           pip install wheel
           bumpversion --config-file .bumpversion.cfg minor --allow-dirty
-          bumpversion --config-file .bumpversion.cfg prerelversion --allow-dirty
+          bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
+          git push origin --tags
       - name: Build dist
         run: >-
           make pydist
@@ -143,10 +143,10 @@ jobs:
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
           packages-dir: cellxgene_schema_cli/dist/
-#      - name: Install and Test Package from Test PyPI
-#        run: |
-#          pip install --index-url https://test.pypi.org/simple/ cellxgene-schema
-#          cellxgene-schema validate cellxgene_schema_cli/tests/fixtures/h5ads/example_valid.h5ad
+      - name: Install and Test Package from Test PyPI
+        run: |
+          pip install --index-url https://test.pypi.org/simple/ cellxgene-schema
+          cellxgene-schema validate cellxgene_schema_cli/tests/fixtures/h5ads/example_valid.h5ad
 # TODO: Uncomment once ready to release to prod PyPI
 #      - name: Publish distribution to PyPI
 #        if: startsWith(github.ref, 'refs/tags')
@@ -215,6 +215,3 @@ jobs:
           branch: auto/update-convert-py-to-${{ env.new_version }}
           base: main
           reviewers: bento007 # TODO assign curators
-          add-paths:
-            - '**/cellxgene_schema_cli/**'
-            - '**/.bumpversion.cfg'
