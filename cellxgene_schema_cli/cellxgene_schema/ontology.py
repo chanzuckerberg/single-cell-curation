@@ -267,3 +267,16 @@ class OntologyChecker:
                 f"The term id '{query_term_id}' is not a descendent of the term id '{target_term_id}'"
                 f" in the ontology '{ontology}'"
             )
+
+
+def get_deprecated_feature_ids() -> List[str]:
+    # return a list of deprecated feature ids.
+    diff_map = []
+    suffix = "_diff.txt"
+    files = os.listdir(env.ONTOLOGY_DIR)
+    for file in files:
+        if file.endswith(suffix):
+            with open(f"{env.ONTOLOGY_DIR}/{file}") as fp:
+                lines = fp.read().splitlines()
+                diff_map.extend(lines)
+    return diff_map

@@ -1,9 +1,6 @@
-import os
-from typing import List
-
 import anndata as ad
 
-from . import env
+from .ontology import get_deprecated_feature_ids
 
 
 def replace_ontology_term(dataframe, ontology_name, update_map):
@@ -22,7 +19,7 @@ def replace_ontology_term(dataframe, ontology_name, update_map):
 
 
 def remove_deprecated_features(adata: ad.AnnData) -> ad.AnnData:
-    deprecated = get_deprecated_features()
+    deprecated = get_deprecated_feature_ids()
 
     # Filter out genes that don't appear in the approved annotation
     var_to_keep = adata.var.index[~adata.var.index.isin(deprecated)].tolist()
@@ -35,16 +32,3 @@ def remove_deprecated_features(adata: ad.AnnData) -> ad.AnnData:
         raw_adata = raw_adata[:, var_to_keep]
         adata.raw = raw_adata
     return adata
-
-
-def get_deprecated_features() -> List[str]:
-    # return a list of deprecated feature ids.
-    diff_map = []
-    suffix = "_diff.txt"
-    files = os.listdir(env.ONTOLOGY_DIR)
-    for file in files:
-        if file.endswith(suffix):
-            with open(f"{env.ONTOLOGY_DIR}/{file}") as fp:
-                lines = fp.read().splitlines()
-                diff_map.extend(lines)
-    return diff_map

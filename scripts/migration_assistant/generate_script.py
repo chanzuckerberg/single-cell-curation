@@ -3,7 +3,7 @@ import os
 
 from jinja2 import Template
 
-from cellxgene_schema_cli.cellxgene_schema.utils import get_deprecated_features
+from cellxgene_schema_cli.cellxgene_schema.ontology import get_deprecated_feature_ids
 
 file_path = os.path.dirname(os.path.realpath(__file__))
 target_file = os.path.join(file_path, "../../cellxgene_schema_cli/cellxgene_schema/migrate.py")
@@ -32,7 +32,7 @@ def get_ontology_term_map(term_map_filepath) -> dict:
 
 
 def migrate_gencode() -> bool:
-    return len(get_deprecated_features()) > 1
+    return len(get_deprecated_feature_ids()) > 1
 
 
 def main():

@@ -285,10 +285,10 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
 
 def test_migrate_gencode__False():
-    with mock.patch("scripts.migration_assistant.generate_script.get_deprecated_features", return_value=[]):
+    with mock.patch("scripts.migration_assistant.generate_script.get_deprecated_feature_ids", return_value=[]):
         assert not migrate_gencode()
 
 
 def test_migrate_gencode__True():
-    with mock.patch("scripts.migration_assistant.generate_script.get_deprecated_features", return_value=[1, 2, 3]):
+    with mock.patch("scripts.migration_assistant.generate_script.get_deprecated_feature_ids", return_value=[1, 2, 3]):
         assert migrate_gencode()
