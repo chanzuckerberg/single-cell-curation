@@ -104,7 +104,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     assert actual_output == expected_output[1:]
 
 
-def test_generate_script_with_automated_replaced_by_map(template, tmpdir):
+def test_generate_script__with_automated_replaced_by_map(template, tmpdir):
     ontology_term_map = {
         "assay": {"EFO:0000002": "EFO:0000001"},
         "cell_type": {"CL:0000002": "CL:0000001", "CL:0000004": "CL:0000003"},
