@@ -2,7 +2,7 @@ import os
 
 from jinja2 import Template
 
-from cellxgene_schema_cli.cellxgene_schema.ontology import get_deprecated_genecode_terms
+from cellxgene_schema_cli.cellxgene_schema.utils import get_deprecated_features
 
 file_path = os.path.dirname(os.path.realpath(__file__))
 target_file = os.path.join(file_path, "../../cellxgene_schema_cli/cellxgene_schema/migrate.py")
@@ -25,13 +25,13 @@ def generate_script(template: Template, ontology_term_map: dict, include_gencode
 
 def get_ontology_term_map() -> bool:
     # TODO: read in the ontology term map
-    return len(get_deprecated_genecode_terms()) > 1
+    return len(get_deprecated_features()) > 1
 
 
 def main():
     template = get_template()
     ontology_term_map = get_ontology_term_map()
-    include_gencode_conversion = len(get_deprecated_genecode_terms()) > 1
+    include_gencode_conversion = len(get_deprecated_features()) > 1
     generate_script(template, ontology_term_map, include_gencode_conversion)
 
 
