@@ -12,7 +12,6 @@ from fixtures.examples_ontology_test import (
     valid_ontologies,
     valid_terms,
 )
-from ontology import get_deprecated_feature_ids
 
 # Tests for internal functions of the OntologyChecker and GeneChecker classes
 
@@ -104,7 +103,7 @@ def test_get_deprecated_features(tmp_path, organisms):
                 fp.write(feature_id + "\n")
             expected_deprecated_feature_ids.extend(organism_feature_ids)
     with patch("cellxgene_schema.utils.env.ONTOLOGY_DIR", tmp_path):
-        actual_deprecated_features = get_deprecated_feature_ids()
+        actual_deprecated_features = ontology.get_deprecated_feature_ids()
     expected_deprecated_feature_ids.sort()
     actual_deprecated_features.sort()
     assert expected_deprecated_feature_ids == actual_deprecated_features
@@ -112,7 +111,7 @@ def test_get_deprecated_features(tmp_path, organisms):
 
 def test_get_deprecated_features__no_files(tmp_path):
     with patch("cellxgene_schema.utils.env.ONTOLOGY_DIR", tmp_path):
-        actual_deprecated_features = get_deprecated_feature_ids()
+        actual_deprecated_features = ontology.get_deprecated_feature_ids()
     assert actual_deprecated_features == []
 
 
@@ -121,5 +120,5 @@ def test_get_deprecated_features__empty_feature_files(tmp_path, organisms):
         with open(f"{tmp_path}/{organism}_diff.txt", "w") as fp:
             fp.write("")
     with patch("cellxgene_schema.utils.env.ONTOLOGY_DIR", tmp_path):
-        actual_deprecated_features = get_deprecated_feature_ids()
+        actual_deprecated_features = ontology.get_deprecated_feature_ids()
     assert actual_deprecated_features == []
