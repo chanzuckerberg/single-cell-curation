@@ -121,7 +121,7 @@ def test_generate_script_with_automated_replaced_by_map(template, tmpdir):
         # Execute the function
         generate_script(get_template(), ontology_term_map, gencode_term_map)
 
-    # Verify the output
+        # Verify the output
         expected_output = """
 import anndata as ad
 
