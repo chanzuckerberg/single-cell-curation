@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - demo-e2e
+      - nayib-demo-e2e-2
     paths:
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz'
@@ -137,12 +137,12 @@ jobs:
       - name: Build dist
         run: >-
           make pydist
-      - name: Publish distribution to Test PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          repository-url: https://test.pypi.org/legacy/
-          packages-dir: cellxgene_schema_cli/dist/
+#      - name: Publish distribution to Test PyPI
+#        uses: pypa/gh-action-pypi-publish@release/v1
+#        with:
+#          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+#          repository-url: https://test.pypi.org/legacy/
+#          packages-dir: cellxgene_schema_cli/dist/
 #      - name: Install and Test Package from Test PyPI
 #        run: |
 #          pip install --index-url https://test.pypi.org/simple/ cellxgene-schema
