@@ -1,15 +1,8 @@
 from unittest.mock import patch
 
-import anndata as ad
 import pytest
 from cellxgene_schema.utils import remove_deprecated_features
 from fixtures.examples_validate import adata, adata_non_raw
-
-
-def test_remove_deprecated_features():
-    with patch("cellxgene_schema.utils.get_deprecated_features") as mock_get_deprecated_features:
-        mock_get_deprecated_features.return_value = ["apple:0", "apple:1", "dog:0", "dog:1"]
-        ad.AnnData()
 
 
 @pytest.fixture
@@ -29,7 +22,7 @@ def deprecated_features():
 
 def test_remove_deprecated_features__with_raw(adata_with_raw, deprecated_features):
     # Create a test AnnData object with some deprecated and non-deprecated features
-    with patch("cellxgene_schema.utils.get_deprecated_features") as mock_get_deprecated_features:
+    with patch("cellxgene_schema.utils.get_deprecated_feature_ids") as mock_get_deprecated_features:
         mock_get_deprecated_features.return_value = deprecated_features
         # Call the function under test
         result = remove_deprecated_features(adata_with_raw)
@@ -41,7 +34,7 @@ def test_remove_deprecated_features__with_raw(adata_with_raw, deprecated_feature
 
 def test_remove_deprecated_features__without_raw(adata_without_raw, deprecated_features):
     # Create a test AnnData object with some deprecated and non-deprecated features
-    with patch("cellxgene_schema.utils.get_deprecated_features") as mock_get_deprecated_features:
+    with patch("cellxgene_schema.utils.get_deprecated_feature_ids") as mock_get_deprecated_features:
         mock_get_deprecated_features.return_value = deprecated_features
         # Call the function under test
         result = remove_deprecated_features(adata_without_raw)
