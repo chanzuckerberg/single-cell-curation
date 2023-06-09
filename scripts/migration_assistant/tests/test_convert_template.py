@@ -5,7 +5,7 @@ import pytest
 from jinja2 import Template
 
 # Import the function to be tested
-from scripts.migration_assistant.generate_script import generate_script, get_template
+from scripts.migration_assistant.generate_script import generate_script, get_template, migrate_gencode
 
 
 # Define a fixture for the template
@@ -282,3 +282,13 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         actual_output = fp.read().strip()
 
     assert actual_output == expected_output[1:]
+
+
+def test_migrate_gencode__False():
+    with mock.patch("scripts.migration_assistant.generate_script.get_deprecated_features", return_value=[]):
+        assert not migrate_gencode()
+
+
+def test_migrate_gencode__True():
+    with mock.patch("scripts.migration_assistant.generate_script.get_deprecated_features", return_value=[1, 2, 3]):
+        assert migrate_gencode()

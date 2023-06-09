@@ -2,7 +2,8 @@ import os
 from typing import List
 
 import anndata as ad
-import env
+
+from . import env
 
 
 def replace_ontology_term(dataframe, ontology_name, update_map):

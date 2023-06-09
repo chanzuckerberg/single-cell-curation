@@ -32,7 +32,6 @@ def get_ontology_term_map(term_map_filepath) -> dict:
 
 
 def migrate_gencode() -> bool:
-    # TODO: read in the gencode term map
     return len(get_deprecated_features()) > 1
 
 
