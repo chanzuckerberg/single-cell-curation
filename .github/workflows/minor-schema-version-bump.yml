@@ -133,7 +133,7 @@ jobs:
           pip install wheel
           bumpversion --config-file .bumpversion.cfg minor --allow-dirty
           bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
-          git push origin --tags
+          git push origin --follow-tags
       - name: Build dist
         run: >-
           make pydist
@@ -215,3 +215,7 @@ jobs:
           branch: auto/update-convert-py-to-${{ env.new_version }}
           base: main
           reviewers: bento007 # TODO assign curators
+          add-paths: |
+            cellxgene_schema_cli/setup.py
+            cellxgene_schema_cli/cellxgene_schema/migrate.py
+            .bumpversion.cfg
