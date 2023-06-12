@@ -132,7 +132,6 @@ jobs:
         run: |
           pip install bumpversion
           pip install wheel
-          bumpversion --config-file .bumpversion.cfg minor --allow-dirty
           bumpversion --config-file .bumpversion.cfg prerelversion --allow-dirty
       - name: Build dist
         run: >-
