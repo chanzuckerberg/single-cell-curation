@@ -20,7 +20,7 @@ gene-dry-run-tests:
 
 .PHONY: generate-conversion-script
 generate-conversion-script:
-	python3 ./scripts/migration_assistant/generate_script.py
+	python3 -m scripts.migration_assistant.generate_script
 
 migration-assistant-tests:
 	cd scripts/migration_assistant/tests && pytest
