@@ -140,6 +140,7 @@ jobs:
           pip install bumpversion
           pip install wheel
           bumpversion --config-file .bumpversion.cfg prerelversion --allow-dirty
+          git push
       - name: Build dist
         run: >-
           make pydist
