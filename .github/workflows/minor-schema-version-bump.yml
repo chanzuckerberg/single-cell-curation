@@ -201,10 +201,6 @@ jobs:
       - name: Run Conversion Script Generator
         run: |
           make generate-conversion-script
-      - name: Commit migrate.py
-        run: |
-          git add cellxgene_schema_cli/cellxgene_schema/migrate.py
-          git commit -m "AUTO: update migrate.py schema_version ${{ env.old_version }}->${{ env.new_version }}"
       - name: Get Version
         id: get_version
         run: |
@@ -218,3 +214,6 @@ jobs:
           branch: auto/update-convert-py-to-${{ env.new_version }}
           base: main
           reviewers: bento007 # TODO assign curators
+          add-paths:
+            - '**/cellxgene_schema_cli/**'
+            - '**/.bumpversion.cfg'
