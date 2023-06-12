@@ -104,13 +104,6 @@ jobs:
         uses: tj-actions/changed-files@v36
         with:
           files: cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz
-      - name: Remove diff files if No GENCODE Changes
-        if: steps.changed-files.outputs.any_changed == 'false'
-        run: |
-          echo "" >| cellxgene_schema_cli/cellxgene_schema/ontology_files/homo_sapiens_diff.txt
-          echo "" >| cellxgene_schema_cli/cellxgene_schema/ontology_files/mus_musculus_diff.txt
-          echo "" >| cellxgene_schema_cli/cellxgene_schema/ontology_files/sars_cov_2_diff.txt
-          echo "" >| cellxgene_schema_cli/cellxgene_schema/ontology_files/ercc_diff.txt
       - name: Run Dry-Run Script
         if: steps.changed-files.outputs.any_changed == 'true'
         run: python3 -m scripts.schema_bump_dry_run_genes.gene_bump_dry_run
@@ -141,7 +134,7 @@ jobs:
           pip install bumpversion
           pip install wheel
           bumpversion --config-file .bumpversion.cfg prerelversion --allow-dirty
-          git push
+          git push origin --follow-tags
       - name: Build dist
         run: >-
           make pydist
@@ -210,6 +203,7 @@ jobs:
       - name: Run Conversion Script Generator
         run: |
           make generate-conversion-script
+          rm ./cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt
       - name: Get Version
         id: get_version
         run: |
@@ -226,4 +220,5 @@ jobs:
           add-paths: |
             cellxgene_schema_cli/setup.py
             cellxgene_schema_cli/cellxgene_schema/migrate.py
+            cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt
             .bumpversion.cfg

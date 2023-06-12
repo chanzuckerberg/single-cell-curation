@@ -4,6 +4,8 @@ from typing import List
 
 from jinja2 import Template
 
+from cellxgene_schema_cli.cellxgene_schema import env
+
 file_path = os.path.dirname(os.path.realpath(__file__))
 target_file = os.path.join(file_path, "../../cellxgene_schema_cli/cellxgene_schema/migrate.py")
 
@@ -15,8 +17,8 @@ def get_template() -> Template:
     return template
 
 
-def generate_script(template: Template, ontology_term_map: dict, gencode_term_map: list):
-    output = template.render(ontology_term_map=ontology_term_map, gencode_term_map=None)
+def generate_script(template: Template, ontology_term_map: dict, deprecated_feature_ids: List[str]):
+    output = template.render(ontology_term_map=ontology_term_map, deprecated_feature_ids=deprecated_feature_ids)
 
     # Overwrite the existing migrate.py file
     with open(target_file, "w") as fp:
@@ -30,16 +32,24 @@ def get_ontology_term_map(term_map_filepath) -> dict:
         return replaced_by_map
 
 
-def get_genecode_term_map() -> List[str]:
-    # TODO: read in the gencode term map
-    return []
+def get_deprecated_feature_ids() -> List[str]:
+    # return a list of deprecated feature ids.
+    diff_list = []
+    suffix = "_diff.txt"
+    files = os.listdir(env.ONTOLOGY_DIR)
+    for file in files:
+        if file.endswith(suffix):
+            with open(f"{env.ONTOLOGY_DIR}/{file}") as fp:
+                lines = fp.read().splitlines()
+                diff_list.extend(lines)
+    return diff_list
 
 
 def main():
     template = get_template()
     ontology_term_map = get_ontology_term_map("replaced-by.json")
-    gencode_term_map = get_genecode_term_map()
-    generate_script(template, ontology_term_map, gencode_term_map)
+    deprecated_feature_ids = get_deprecated_feature_ids()
+    generate_script(template, ontology_term_map, deprecated_feature_ids)
 
 
 if __name__ == "__main__":
