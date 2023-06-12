@@ -2,10 +2,10 @@ import os
 from unittest import mock
 
 import pytest
-from jinja2 import Template
 
 # Import the function to be tested
-from scripts.migration_assistant.generate_script import generate_script, get_template, migrate_gencode
+from generate_script import generate_script, get_deprecated_feature_ids, get_template
+from jinja2 import Template
 
 
 # Define a fixture for the template
@@ -29,7 +29,7 @@ def test_generate_script__without_gencode_changes(template, tmpdir):
     }
     gencode_term_map = []
     mock_target_file = tmpdir + "/migrate.py"
-    with mock.patch("scripts.migration_assistant.generate_script.target_file", mock_target_file):
+    with mock.patch("generate_script.target_file", mock_target_file):
         # Execute the function
         generate_script(get_template(), ontology_term_map, gencode_term_map)
 
@@ -117,7 +117,7 @@ def test_generate_script__with_automated_replaced_by_map(template, tmpdir):
     }
     gencode_term_map = []
     mock_target_file = tmpdir + "/migrate.py"
-    with mock.patch("scripts.migration_assistant.generate_script.target_file", mock_target_file):
+    with mock.patch("generate_script.target_file", mock_target_file):
         # Execute the function
         generate_script(get_template(), ontology_term_map, gencode_term_map)
 
@@ -208,9 +208,16 @@ def test_generate_script__with_gencode_changes(template, tmpdir):
         "tissue": {},
     }
     mock_target_file = tmpdir + "/migrate.py"
-    with mock.patch("scripts.migration_assistant.generate_script.target_file", mock_target_file):
+    with mock.patch("generate_script.target_file", mock_target_file):
         # Execute the function
-        generate_script(get_template(), ontology_term_map, True)
+        generate_script(
+            get_template(),
+            ontology_term_map,
+            [
+                "ENSG00000223972",
+                "ENSG00000227232",
+            ],
+        )
 
     # Verify the output
     expected_output = """
@@ -273,7 +280,13 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     # ...
 
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
-    dataset = utils.remove_deprecated_features(dataset)
+    # fmt: off
+    deprecated_features_ids = [
+        "ENSG00000223972",
+        "ENSG00000227232",
+    ]
+    # fmt: on
+    dataset = utils.remove_deprecated_features(dataset, deprecated_features_ids)
 
     dataset.write(output_file, compression="gzip")"""
     mock.patch("migration_assistant.generate_script.get_current_version", return_value=expected_output)
@@ -284,11 +297,36 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     assert actual_output == expected_output[1:]
 
 
-def test_migrate_gencode__False():
-    with mock.patch("scripts.migration_assistant.generate_script.get_deprecated_feature_ids", return_value=[]):
-        assert not migrate_gencode()
+@pytest.fixture
+def organisms():
+    return ["apple", "dog", "mouse"]
 
 
-def test_migrate_gencode__True():
-    with mock.patch("scripts.migration_assistant.generate_script.get_deprecated_feature_ids", return_value=[1, 2, 3]):
-        assert migrate_gencode()
+def test_get_deprecated_feature_ids(tmp_path, organisms):
+    expected_deprecated_feature_ids = []
+    for organism in organisms:
+        with open(f"{tmp_path}/{organism}_diff.txt", "w") as fp:
+            organism_feature_ids = [f"{organism}:{i}" for i in range(4)]
+            for feature_id in organism_feature_ids:
+                fp.write(feature_id + "\n")
+            expected_deprecated_feature_ids.extend(organism_feature_ids)
+    with mock.patch("generate_script.env.ONTOLOGY_DIR", tmp_path):
+        actual_deprecated_features = get_deprecated_feature_ids()
+    expected_deprecated_feature_ids.sort()
+    actual_deprecated_features.sort()
+    assert expected_deprecated_feature_ids == actual_deprecated_features
+
+
+def test_get_deprecated_feature_ids__no_files(tmp_path):
+    with mock.patch("generate_script.env.ONTOLOGY_DIR", tmp_path):
+        actual_deprecated_features = get_deprecated_feature_ids()
+    assert actual_deprecated_features == []
+
+
+def test_get_deprecated_feature_ids__empty_feature_files(tmp_path, organisms):
+    for organism in organisms:
+        with open(f"{tmp_path}/{organism}_diff.txt", "w") as fp:
+            fp.write("")
+    with mock.patch("generate_script.env.ONTOLOGY_DIR", tmp_path):
+        actual_deprecated_features = get_deprecated_feature_ids()
+    assert actual_deprecated_features == []

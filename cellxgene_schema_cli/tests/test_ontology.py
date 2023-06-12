@@ -1,7 +1,5 @@
 import unittest
-from unittest.mock import patch
 
-import pytest
 from cellxgene_schema import ontology
 from fixtures.examples_ontology_test import (
     invalid_genes,
@@ -87,38 +85,3 @@ class TestOntologyChecker(unittest.TestCase):
                 self.assertFalse(self.ontologyChecker.is_valid_term_id(ontology_id, term_id))
                 with self.assertRaises(ValueError):
                     self.ontologyChecker.assert_term_id(ontology_id, term_id)
-
-
-@pytest.fixture
-def organisms():
-    return ["apple", "dog", "mouse"]
-
-
-def test_get_deprecated_feature_ids(tmp_path, organisms):
-    expected_deprecated_feature_ids = []
-    for organism in organisms:
-        with open(f"{tmp_path}/{organism}_diff.txt", "w") as fp:
-            organism_feature_ids = [f"{organism}:{i}" for i in range(4)]
-            for feature_id in organism_feature_ids:
-                fp.write(feature_id + "\n")
-            expected_deprecated_feature_ids.extend(organism_feature_ids)
-    with patch("cellxgene_schema.ontology.env.ONTOLOGY_DIR", tmp_path):
-        actual_deprecated_features = ontology.get_deprecated_feature_ids()
-    expected_deprecated_feature_ids.sort()
-    actual_deprecated_features.sort()
-    assert expected_deprecated_feature_ids == actual_deprecated_features
-
-
-def test_get_deprecated_feature_ids__no_files(tmp_path):
-    with patch("cellxgene_schema.ontology.env.ONTOLOGY_DIR", tmp_path):
-        actual_deprecated_features = ontology.get_deprecated_feature_ids()
-    assert actual_deprecated_features == []
-
-
-def test_get_deprecated_feature_ids__empty_feature_files(tmp_path, organisms):
-    for organism in organisms:
-        with open(f"{tmp_path}/{organism}_diff.txt", "w") as fp:
-            fp.write("")
-    with patch("cellxgene_schema.ontology.env.ONTOLOGY_DIR", tmp_path):
-        actual_deprecated_features = ontology.get_deprecated_feature_ids()
-    assert actual_deprecated_features == []

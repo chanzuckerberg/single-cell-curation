@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 import pytest
 from cellxgene_schema.utils import remove_deprecated_features
 from fixtures.examples_validate import adata, adata_non_raw
@@ -21,11 +19,8 @@ def deprecated_features():
 
 
 def test_remove_deprecated_features__with_raw(adata_with_raw, deprecated_features):
-    # Create a test AnnData object with some deprecated and non-deprecated features
-    with patch("cellxgene_schema.utils.get_deprecated_feature_ids") as mock_get_deprecated_features:
-        mock_get_deprecated_features.return_value = deprecated_features
-        # Call the function under test
-        result = remove_deprecated_features(adata_with_raw)
+    # Call the function under test
+    result = remove_deprecated_features(adata_with_raw, deprecated_features)
 
     # Check if the deprecated features are removed
     assert result.var_names.tolist() == ["ENSMUSG00000059552", "ENSSASG00005000004"]
@@ -33,11 +28,8 @@ def test_remove_deprecated_features__with_raw(adata_with_raw, deprecated_feature
 
 
 def test_remove_deprecated_features__without_raw(adata_without_raw, deprecated_features):
-    # Create a test AnnData object with some deprecated and non-deprecated features
-    with patch("cellxgene_schema.utils.get_deprecated_feature_ids") as mock_get_deprecated_features:
-        mock_get_deprecated_features.return_value = deprecated_features
-        # Call the function under test
-        result = remove_deprecated_features(adata_without_raw)
+    # Call the function under test
+    result = remove_deprecated_features(adata_without_raw, deprecated_features)
 
     # Check if the deprecated features are removed
     assert result.var_names.tolist() == ["ENSMUSG00000059552", "ENSSASG00005000004"]

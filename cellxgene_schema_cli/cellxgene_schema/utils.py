@@ -1,6 +1,6 @@
-import anndata as ad
+from typing import List
 
-from .ontology import get_deprecated_feature_ids
+import anndata as ad
 
 
 def replace_ontology_term(dataframe, ontology_name, update_map):
@@ -18,9 +18,7 @@ def replace_ontology_term(dataframe, ontology_name, update_map):
             dataframe[column_name] = dataframe[column_name].cat.remove_categories(old_term)
 
 
-def remove_deprecated_features(adata: ad.AnnData) -> ad.AnnData:
-    deprecated = get_deprecated_feature_ids()
-
+def remove_deprecated_features(adata: ad.AnnData, deprecated: List[str]) -> ad.AnnData:
     # Filter out genes that don't appear in the approved annotation
     var_to_keep = adata.var.index[~adata.var.index.isin(deprecated)].tolist()
     adata = adata[:, var_to_keep]
