@@ -133,7 +133,7 @@ jobs:
           pip install wheel
           bumpversion --config-file .bumpversion.cfg minor --allow-dirty
           bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
-          git push origin --tags
+          git push origin --follow-tags
       - name: Build dist
         run: >-
           make pydist
