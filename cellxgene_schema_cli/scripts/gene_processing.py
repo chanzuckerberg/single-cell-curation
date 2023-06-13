@@ -209,9 +209,12 @@ def generate_gene_ref_diff(output_filename: str, current_ref_filepath: str, prev
                 removed_gene_ids.append(gene_id)
 
     diff_filepath = os.path.join(env.ONTOLOGY_DIR, f"{output_filename}_diff.txt")
-    with open(diff_filepath, "w") as f:
-        for gene_id in removed_gene_ids:
-            f.write(f"{gene_id}\n")
+    if removed_gene_ids:
+        with open(diff_filepath, "w") as f:
+            for gene_id in removed_gene_ids:
+                f.write(f"{gene_id}\n")
+    else:
+        print(f"No genes removed from {output_filename} reference. No diff created.")
 
 
 def main():
