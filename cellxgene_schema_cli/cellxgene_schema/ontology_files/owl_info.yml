@@ -6,9 +6,8 @@ CL:
     2021-08-10: https://github.com/obophenotype/cell-ontology/raw/v2021-08-10/cl.owl
     2021-06-21: https://github.com/obophenotype/cell-ontology/raw/v2021-06-21/cl.owl
 EFO:
-  latest: 2023-05-15 EFO 3.54.0
+  latest: 2022-09-15 EFO 3.46.0
   urls:
-    2023-05-15 EFO 3.54.0: https://github.com/EBISPOT/efo/releases/download/v3.54.0/efo.owl
     2022-09-15 EFO 3.46.0: https://github.com/EBISPOT/efo/releases/download/v3.46.0/efo.owl
     2022-07-18 EFO 3.44.0: https://github.com/EBISPOT/efo/releases/download/v3.44.0/efo.owl
     2021-08-16 EFO 3.33.0: https://github.com/EBISPOT/efo/releases/download/v3.33.0/efo.owl
