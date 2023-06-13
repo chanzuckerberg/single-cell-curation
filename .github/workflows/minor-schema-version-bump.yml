@@ -203,7 +203,9 @@ jobs:
       - name: Run Conversion Script Generator
         run: |
           make generate-conversion-script
-          rm ./cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt
+      - name: remove diff files
+        run: |
+          git rm ./cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt
       - name: Get Version
         id: get_version
         run: |
@@ -220,5 +222,4 @@ jobs:
           add-paths: |
             cellxgene_schema_cli/setup.py
             cellxgene_schema_cli/cellxgene_schema/migrate.py
-            cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt
             .bumpversion.cfg
