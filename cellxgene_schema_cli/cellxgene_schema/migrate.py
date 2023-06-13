@@ -1,151 +1,104 @@
 import anndata as ad
-import numpy as np
 
-from . import ontology
-from .remove_labels import AnnDataLabelRemover
+from . import utils
 
 
-def migrate(input_file, output_file):
+def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
 
     dataset = ad.read_h5ad(input_file)
 
-    # Rename ethnicity_ontology_term_id field
-    dataset.obs.rename(
-        columns={"ethnicity_ontology_term_id": "self_reported_ethnicity_ontology_term_id"},
-        inplace=True,
-    )
+    # ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
+    # Initialization is AUTOMATED for newly deprecated terms that have 'Replaced By' terms in their ontology files
 
-    # Set schema version to 3.0.0
-    dataset.uns["schema_version"] = "3.0.0"
+    # Curators should review the monthly 'Curator Report' and add deprecated term replacements to corresponding map if
+    # 'Replaced By' is not available for a deprecated term.
 
-    # Remove Deprecated uns Fields
-    deprecated_uns_fields = [
-        "X_normalization",
-        "default_field",
-        "layer_descriptions",
-        "tags",
-        "version",
-        "contributors",
-        "preprint_doi",
-        "project_description",
-        "project_links",
-        "project_name",
-        "publication_doi",
+    # If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
+    # add them here.
+    ontology_term_maps = {
+        "assay": {
+        },
+        "cell_type": {
+        },
+        "development_stage": {
+        },
+        "disease": {
+        },
+        "organism": {
+        },
+        "self_reported_ethnicity": {
+        },
+        "sex": {
+        },
+        "tissue": {
+        },
+    }
+
+    # AUTOMATED, DO NOT CHANGE
+    for ontology_name, deprecated_term_map in ontology_term_maps.items():
+        utils.replace_ontology_term(dataset.obs, ontology_name, deprecated_term_map)
+
+    # CURATOR-DEFINED, DATASET-SPECIFIC UPDATES
+    # Use the template below to define dataset and collection specific ontology changes. Will only apply to dataset
+    # if it matches a condition.
+    # If no such changes are needed, leave blank
+    # Examples:
+    # if dataset_id == "<dataset_1_id>":
+    #   <no further logic necessary>
+    #   utils.replace_ontology_term(df, <ontology_name>, {"term_to_replace": "replacement_term", ...})
+    # elif dataset_id == "<dataset_2_id>":
+    #   <custom transformation logic beyond scope of util functions>
+    # elif collection_id == "<collection_1_id>":
+    #   <no further logic necessary>
+    #   utils.replace_ontology_term(df, <ontology_name>, {"term_to_replace": "replacement_term", ...})
+    # elif collection_id == "<collection_2_id>":
+    #   <custom transformation logic beyond scope of replace_ontology_term>
+    # ...
+
+    # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
+    # fmt: off
+    deprecated_features_ids = [
+        "ENSG00000256374",
+        "ENSG00000263464",
+        "ENSG00000203812",
+        "ENSG00000272196",
+        "ENSG00000237133",
+        "ENSG00000284741",
+        "ENSG00000237838",
+        "ENSG00000286699",
+        "ENSG00000280250",
+        "ENSG00000272370",
+        "ENSG00000272354",
+        "ENSG00000288639",
+        "ENSG00000286228",
+        "ENSG00000237513",
+        "ENSG00000225932",
+        "ENSG00000244693",
+        "ENSG00000226403",
+        "ENSG00000261534",
+        "ENSG00000237548",
+        "ENSG00000224745",
+        "ENSG00000261438",
+        "ENSG00000231575",
+        "ENSG00000256863",
+        "ENSG00000287388",
+        "ENSG00000277077",
+        "ENSG00000259444",
+        "ENSG00000244952",
+        "ENSG00000288630",
+        "ENSG00000261963",
+        "ENSG00000286065",
+        "ENSG00000225178",
+        "ENSG00000288593",
+        "ENSG00000288546",
+        "ENSG00000278198",
+        "ENSG00000273496",
+        "ENSG00000277666",
+        "ENSG00000278782",
+        "ENSG00000277761",
     ]
-    for field in deprecated_uns_fields:
-        if field in dataset.uns:
-            del dataset.uns[field]
+    # fmt: on
+    dataset = utils.remove_deprecated_features(dataset, deprecated_features_ids)
 
-    # remove labels that are meant to be added by data portal
-    anndata_label_remover = AnnDataLabelRemover(dataset)
-    anndata_label_remover.remove_labels()
-    dataset = anndata_label_remover.adata
-
-    # remove 'ethnicity' label (needs to be done separately since its no longer in the schema definition)
-    if "ethnicity" in dataset.obs:
-        del dataset.obs["ethnicity"]
-
-    # Update deprecated ontologies with known direct replacements
-    disease_ontology_update_map = {
-        "MONDO:0008345": "MONDO:0800029",
-        "MONDO:0004553": "MONDO:0017853",
-    }
-    cell_type_ontology_update_map = {
-        "CL:0002609": "CL:0010012",
-        "CL:0011107": "CL:0000636",
-    }
-    assay_ontology_update_map = {
-        "EFO:0030002 (BD Rhapsody)": "EFO:0700003",
-        "EFO:0010183 (BD Rhapsody)": "EFO:0700003",
-    }
-
-    def update_categorical_column_vals(dataframe, column_name, update_map):
-        if dataframe[column_name].dtype != "category":
-            dataframe[column_name] = dataframe[column_name].astype("category")
-        for deprecated_term, new_term in update_map.items():
-            if deprecated_term in dataframe[column_name].cat.categories:
-                # add new one if not already in category, else continue
-                if new_term not in dataframe[column_name].cat.categories:
-                    dataframe[column_name] = dataframe[column_name].cat.add_categories(new_term)
-                # replace in dataset
-                dataframe.loc[dataframe[column_name] == deprecated_term, column_name] = new_term
-                # remove deprecated_term from category
-                dataframe[column_name] = dataframe[column_name].cat.remove_categories(deprecated_term)
-
-    update_categorical_column_vals(dataset.obs, "disease_ontology_term_id", disease_ontology_update_map)
-    update_categorical_column_vals(dataset.obs, "cell_type_ontology_term_id", cell_type_ontology_update_map)
-    update_categorical_column_vals(dataset.obs, "assay_ontology_term_id", assay_ontology_update_map)
-
-    # Set suspension type
-
-    # mappings of assays (or assays + child term assays) to corresponding suspension_type
-    # valid assays with multiple possible suspension_types shown but commented out
-    match_assays = {
-        # 'EFO:0010010': ['cell', 'nucleus'],
-        "EFO:0008720": "nucleus",
-        # 'EFO:0008722': ['cell', 'nucleus'], ,
-        "EFO:0030002": "cell",
-        "EFO:0008853": "cell",
-        "EFO:0030026": "nucleus",
-        # 'EFO:0010550': ['cell', 'nucleus'],
-        "EFO:0008919": "cell",
-        "EFO:0008939": "nucleus",
-        "EFO:0030027": "nucleus",
-    }
-
-    match_assays_or_children = {
-        # 'EFO:0030080': ['cell', 'nucleus'],
-        "EFO:0007045": "nucleus",
-        "EFO:0009294": "cell",
-        # 'EFO:0010184': ['cell', 'nucleus'],
-        "EFO:0009918": "na",
-        "EFO:0700000": "na",
-        "EFO:0030005": "na",
-    }
-
-    ontology_checker = ontology.OntologyChecker()
-
-    def assign_suspension_type(item):
-        if item in match_assays:
-            return match_assays[item]
-        else:
-            for k, v in match_assays_or_children.items():
-                try:
-                    if k == item or ontology_checker.is_descendent_of("EFO", item, k):
-                        return v
-                except Exception:
-                    return np.nan
-        return np.nan
-
-    if "suspension_type" not in dataset.obs:
-        print("column 'suspension_type' not found in obs. Adding column and auto-assigning value where possible.")
-        suspension_type_map = {}
-        if dataset.obs["assay_ontology_term_id"].dtype != "category":
-            dataset.obs.loc[:, ["assay_ontology_term_id"]] = dataset.obs.astype("category")
-        for item in dataset.obs["assay_ontology_term_id"].cat.categories:
-            suspension_type_map[item] = assign_suspension_type(item)
-            if np.isnan(suspension_type_map[item]):
-                print(
-                    f"Dataset contains row(s) with assay_ontology_term_id {item}. These cannot be auto-assigned a "
-                    f"suspension type, please assign a suspension_type manually and validate."
-                )
-            else:
-                print(
-                    f"Dataset contains row(s) with assay_ontology_term_id {item}. "
-                    f"Automatically assigned suspension_type {suspension_type_map[item]}"
-                )
-        dataset.obs["suspension_type"] = dataset.obs.apply(
-            lambda row: suspension_type_map.get(row.assay_ontology_term_id), axis=1
-        )
-        dataset.obs.loc[:, ["suspension_type"]] = dataset.obs.astype("category")
-    else:
-        if dataset.obs["suspension_type"].dtype != "category":
-            dataset.obs.loc[:, ["suspension_type"]] = dataset.obs.astype("category")
-        print(f"suspension_type already exists in obs, with categories {dataset.obs['suspension_type'].cat.categories}")
-
-    print(
-        f"Automatable conversions completed. Please run 'cellxgene-schema validate {output_file}' to check for "
-        f"required manual changes, if any."
-    )
     dataset.write(output_file, compression="gzip")
