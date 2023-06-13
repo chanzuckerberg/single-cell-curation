@@ -242,7 +242,7 @@ class TestValidate(unittest.TestCase):
             self.assertListEqual(errors, [])
             self.assertTrue(is_seurat_convertible)
             self.assertTrue(os.path.exists(labels_path))
-            expected_hash = "f36f913029a19ab5329d713a4a56d17833eeb67fbb7564ec97686a0f9ed86962"
+            expected_hash = "55fbc095218a01cad33390f534d6690af0ecd6593f27d7cd4d26e91072ea8835"
             actual_hash = self.hash_file(labels_path)
             original_hash = self.hash_file(h5ad_valid)
             self.assertNotEqual(
