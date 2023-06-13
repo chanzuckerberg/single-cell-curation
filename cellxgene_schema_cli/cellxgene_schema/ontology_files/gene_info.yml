@@ -8,7 +8,7 @@ human:
 mouse:
   description: mus_musculus
   url: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_{version}/gencode.v{version}.primary_assembly.annotation.gtf.gz
-  version: M28
+  version: M29
 sars_cov_2:
   description: sars_cov_2
   url: ftp://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz
