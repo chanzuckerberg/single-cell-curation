@@ -1,5 +1,4 @@
 import unittest
-
 from tempfile import NamedTemporaryFile
 
 from cellxgene_schema.migrate import migrate
