@@ -17,22 +17,14 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     # If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
     # add them here.
     ontology_term_maps = {
-        "assay": {
-        },
-        "cell_type": {
-        },
-        "development_stage": {
-        },
-        "disease": {
-        },
-        "organism": {
-        },
-        "self_reported_ethnicity": {
-        },
-        "sex": {
-        },
-        "tissue": {
-        },
+        "assay": {},
+        "cell_type": {},
+        "development_stage": {},
+        "disease": {},
+        "organism": {},
+        "self_reported_ethnicity": {},
+        "sex": {},
+        "tissue": {},
     }
 
     # AUTOMATED, DO NOT CHANGE
