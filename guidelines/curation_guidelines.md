@@ -27,4 +27,4 @@ As with Publishing new Collections, the curator should email the [Lattice team](
 Deleting Published Datasets
 ----------------
 Removing Data that have been publicly available should be avoided, but it is possible.
-Please [create an issue in this repo] (https://github.com/chanzuckerberg/single-cell-curation/issues/new) with any Deletion requests along with a thorough justification for the removal. The issue will need to be approved by the Lattice team prior to data removal by CELLxGENE developers.
+Please [create an issue in this repo](https://github.com/chanzuckerberg/single-cell-curation/issues/new) with any Deletion requests along with a thorough justification for the removal. The issue will need to be approved by the Lattice team prior to data removal by CELLxGENE developers.
