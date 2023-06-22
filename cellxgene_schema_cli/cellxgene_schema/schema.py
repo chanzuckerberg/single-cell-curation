@@ -1,6 +1,8 @@
+import pkg_resources
 import os
 from typing import List
 
+import semver
 import yaml
 
 from . import env
@@ -48,3 +50,9 @@ def get_schema_definition(version: str) -> dict:
         raise ValueError(f"No definition for version '{version}' found.")
     with open(path) as fp:
         return yaml.load(fp, Loader=yaml.FullLoader)
+
+
+def get_current_schema_version() -> str:
+    pkg_version = pkg_resources.get_distribution("cellxgene-schema").version
+    current_version: semver.Version = semver.Version.parse(pkg_version)
+    return f"{str(current_version.major)}.{str(current_version.minor)}.0"
