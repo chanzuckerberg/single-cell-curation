@@ -1,11 +1,10 @@
-import pkg_resources
 import os
 from typing import List
 
 import semver
 import yaml
 
-from . import env
+from . import env, __version__
 
 
 def get_schema_file_path(version: str) -> str:
@@ -53,6 +52,5 @@ def get_schema_definition(version: str) -> dict:
 
 
 def get_current_schema_version() -> str:
-    pkg_version = pkg_resources.get_distribution("cellxgene-schema").version
-    current_version: semver.Version = semver.Version.parse(pkg_version)
+    current_version: semver.Version = semver.Version.parse(__version__)
     return f"{str(current_version.major)}.{str(current_version.minor)}.0"
