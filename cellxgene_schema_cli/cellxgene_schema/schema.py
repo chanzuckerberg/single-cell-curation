@@ -4,7 +4,7 @@ from typing import List
 import semver
 import yaml
 
-from . import env, __version__
+from . import __version__, env
 
 
 def get_schema_file_path(version: str) -> str:

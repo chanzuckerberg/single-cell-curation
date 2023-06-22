@@ -1,5 +1,4 @@
 import semver
-
 from cellxgene_schema import schema
 
 

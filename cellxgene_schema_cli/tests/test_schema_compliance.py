@@ -1023,7 +1023,7 @@ class TestUns(BaseValidationTest):
             "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[latest_version]
         ) as mock_supported_versions, patch(
             "cellxgene_schema.validate.schema.get_current_schema_version", return_value=latest_version
-        ) as mock_get_current_schema, patch(
+        ), patch(
             "cellxgene_schema.validate.schema.get_schema_definition"
         ) as mock_get_schema_definition:
             self.validator._set_schema_def()
