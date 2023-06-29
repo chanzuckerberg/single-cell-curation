@@ -1,6 +1,7 @@
 CL:
-  latest: 2022-09-15
+  latest: 2023-06-22
   urls:
+    2023-06-22: https://github.com/obophenotype/cell-ontology/releases/download/2023-06-22/cl.owl
     2022-09-15: https://github.com/obophenotype/cell-ontology/raw/v2022-09-15/cl.owl
     2022-06-18: https://github.com/obophenotype/cell-ontology/raw/v2022-06-18/cl.owl
     2021-08-10: https://github.com/obophenotype/cell-ontology/raw/v2021-08-10/cl.owl
