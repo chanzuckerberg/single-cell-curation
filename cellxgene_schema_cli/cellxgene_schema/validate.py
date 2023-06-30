@@ -32,7 +32,7 @@ class Validator:
         self.is_valid = False
         self.adata = anndata.AnnData()
         self.schema_def = dict()
-        self.schema_version = None
+        self.schema_version: str = None
         self.h5ad_path = ""
         self.invalid_feature_ids = []
         self._raw_layer_exists = None
