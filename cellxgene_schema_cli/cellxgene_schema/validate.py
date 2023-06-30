@@ -133,17 +133,17 @@ class Validator:
         Sets schema dictionary from using information in adata. If there are any errors, it adds them to self.errors
         """
         version = self.adata.uns.get("schema_version")
-        supported_versions = schema.get_schema_versions_supported()
-        supported_versions.sort()
-        latest_version: semver.Version = semver.Version.parse(supported_versions[-1])
-        if version and not semver.Version.parse(version).is_compatible(latest_version):
+        supported_major_versions = schema.get_schema_versions_supported()
+        supported_major_versions.sort()
+        latest_major_version: semver.Version = semver.Version.parse(supported_major_versions[-1])
+        if version and not semver.Version.parse(version).is_compatible(latest_major_version):
             logger.warning(
-                f"Schema version '{version}' is not supported. Current supported versions: '{latest_version}'. "
-                f"Validating with latest version '{latest_version}'."
+                f"Schema version '{version}' is not supported. Current supported versions: '{latest_major_version}'. "
+                f"Validating with latest version '{latest_major_version}'."
             )
         if not self.schema_version:
-            self.schema_version = str(latest_version)
-            self.schema_def = schema.get_schema_definition(self.schema_version)
+            self.schema_version = schema.get_current_schema_version()
+            self.schema_def = schema.get_schema_definition(str(latest_major_version))
 
     def _get_component_def(self, component: str) -> dict:
         """

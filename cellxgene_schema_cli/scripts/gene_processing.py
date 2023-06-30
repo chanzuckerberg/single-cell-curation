@@ -1,5 +1,6 @@
 import csv
 import gzip
+import hashlib
 import os
 import sys
 import urllib.request
@@ -11,6 +12,30 @@ import yaml
 
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../cellxgene_schema"))
 import env
+
+
+def write_gzip(data: str, output_filename: str):
+    """
+    Writes data to a gziped file. The date modified is not written to the gzip file. This allows
+    comparing the hashed contents of two gziped files to determine if they are the same.
+
+    :param str data: data to write
+    :param str output_file: path to output file
+
+    :rtype: None
+    """
+    with open(output_filename, "wb") as fileobj, gzip.GzipFile(mode="wb", fileobj=fileobj, mtime=0) as myzip:
+        myzip.write(data.encode("utf-8"))
+
+
+def digest(file_name: str) -> str:
+    with open(file_name, "rb") as f:
+        # Read the contents of the file in chunks
+        chunk_size = 1024
+        hasher = hashlib.sha256()
+        while chunk := f.read(chunk_size):
+            hasher.update(chunk)
+    return hasher.hexdigest()
 
 
 def _parse_gtf(gtf_path: str, output_file: str):
@@ -80,8 +105,7 @@ def _parse_gtf(gtf_path: str, output_file: str):
 
             output_to_print += ",".join(target_features + [str(current_length)]) + "\n"
 
-    with gzip.open(output_file, "wt") as output:
-        output.write(output_to_print)
+    write_gzip(output_to_print, output_file)
 
 
 def _get_gene_lengths_from_gtf(gtf_path: str) -> Dict[str, int]:
@@ -159,8 +183,7 @@ def _process_ercc(ercc_path: str, output_file: str):
             errc_version = "1"
             output_to_print += ",".join([ercc_id, ercc_id + " (spike-in control)", errc_version, errc_length]) + "\n"
 
-    with gzip.open(output_file, "wt") as output:
-        output.write(output_to_print)
+    write_gzip(output_to_print, output_file)
 
 
 def process_gene_info(gene_info: dict) -> None:
@@ -168,22 +191,36 @@ def process_gene_info(gene_info: dict) -> None:
     Download the gene_info and convert it into a csv
     :param gene_info: context to download and process the gene information.
     """
+    print("Start", gene_info["description"])
+    # determine how to process based on file type
+    if gene_info["url"].endswith("gtf.gz"):
+        processer = _parse_gtf
+    elif gene_info["url"].endswith("txt"):
+        processer = _process_ercc
+    else:
+        raise TypeError(f"unknown file type: {gene_info['file_type']}")
+
+    # add version to URL if needed
+    url = gene_info["url"].format(version=gene_info["version"]) if gene_info.get("version") else gene_info["url"]
+
+    new_file = os.path.join(env.ONTOLOGY_DIR, f"new_genes_{gene_info['description']}.csv.gz")
+
     print("download", gene_info["description"])
-    temp_file_path, _ = urllib.request.urlretrieve(gene_info["url"])
-    previous_ref_filepath = os.path.join(env.ONTOLOGY_DIR, f"previous_{gene_info['description']}.csv.gz")
-    # temporarily backup previous processed csv
-    os.rename(gene_info["new_file"], previous_ref_filepath)
+    temp_file_path, _ = urllib.request.urlretrieve(url)
+    previous_ref_filepath = os.path.join(env.ONTOLOGY_DIR, f"genes_{gene_info['description']}.csv.gz")
     try:
         print("process", gene_info["description"])
-        gene_info["processor"](temp_file_path, gene_info["new_file"])
-        print("generating gene reference diff for", gene_info["description"])
-        generate_gene_ref_diff(gene_info["description"], gene_info["new_file"], previous_ref_filepath)
+        processer(temp_file_path, new_file)
+        if digest(new_file) == digest(previous_ref_filepath):
+            print("New gene reference is identical to previous gene reference", gene_info["description"])
+            os.remove(new_file)
+        else:
+            print("generating gene reference diff for", gene_info["description"])
+            generate_gene_ref_diff(gene_info["description"], new_file, previous_ref_filepath)
+            os.replace(new_file, previous_ref_filepath)
     except Exception as e:
-        print("processing failed, reverting", gene_info["description"])
-        os.replace(previous_ref_filepath, gene_info["new_file"])
+        print("processing failed. Using previous version.", gene_info["description"])
         raise e
-    # remove previous processed csv once diff is complete
-    os.remove(previous_ref_filepath)
     print("finish", gene_info["description"])
 
 
@@ -209,9 +246,12 @@ def generate_gene_ref_diff(output_filename: str, current_ref_filepath: str, prev
                 removed_gene_ids.append(gene_id)
 
     diff_filepath = os.path.join(env.ONTOLOGY_DIR, f"{output_filename}_diff.txt")
-    with open(diff_filepath, "w") as f:
-        for gene_id in removed_gene_ids:
-            f.write(f"{gene_id}\n")
+    if removed_gene_ids:
+        with open(diff_filepath, "w") as f:
+            for gene_id in removed_gene_ids:
+                f.write(f"{gene_id}\n")
+    else:
+        print(f"No genes removed from {output_filename} reference. No diff created.")
 
 
 def main():
@@ -220,18 +260,6 @@ def main():
 
     jobs = []
     for gene_info in gene_infos.values():
-        gene_info["new_file"] = os.path.join(env.ONTOLOGY_DIR, f"genes_{gene_info['description']}.csv.gz")
-        # determine how to process based on file type
-        if gene_info["url"].endswith("gtf.gz"):
-            gene_info["processor"] = _parse_gtf
-        elif gene_info["url"].endswith("txt"):
-            gene_info["processor"] = _process_ercc
-        else:
-            raise TypeError(f"unknown file type: {gene_info['file_type']}")
-
-        # add version to URL if needed
-        if gene_info.get("version"):
-            gene_info["url"] = gene_info["url"].format(version=gene_info["version"])
         job = Process(target=process_gene_info, args=(gene_info,))
         job.start()
         jobs.append(job)

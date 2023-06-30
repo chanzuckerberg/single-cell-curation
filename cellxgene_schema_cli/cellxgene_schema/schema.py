@@ -1,9 +1,10 @@
 import os
 from typing import List
 
+import semver
 import yaml
 
-from . import env
+from . import __version__, env
 
 
 def get_schema_file_path(version: str) -> str:
@@ -48,3 +49,8 @@ def get_schema_definition(version: str) -> dict:
         raise ValueError(f"No definition for version '{version}' found.")
     with open(path) as fp:
         return yaml.load(fp, Loader=yaml.FullLoader)
+
+
+def get_current_schema_version() -> str:
+    current_version: semver.Version = semver.Version.parse(__version__)
+    return f"{str(current_version.major)}.{str(current_version.minor)}.0"
