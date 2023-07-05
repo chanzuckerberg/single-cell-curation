@@ -51,7 +51,7 @@ def test_replace_ontology_term__with_replacement(adata_with_raw, deprecated_term
 
     expected = ["EFO:0009918", "EFO:0000001"]
     actual = adata_with_raw.obs["assay_ontology_term_id"].dtype.categories
-    assert all([a == b for a, b in zip(actual, expected)])
+    assert all(a == b for a, b in zip(actual, expected))
 
 
 def test_replace_ontology_term__no_replacement(adata_with_raw, deprecated_term_map_no_replacement_match):
@@ -59,4 +59,4 @@ def test_replace_ontology_term__no_replacement(adata_with_raw, deprecated_term_m
 
     expected = ["EFO:0009899", "EFO:0009918"]
     actual = adata_with_raw.obs["assay_ontology_term_id"].dtype.categories
-    assert all([a == b for a, b in zip(actual, expected)])
+    assert all(a == b for a, b in zip(actual, expected))

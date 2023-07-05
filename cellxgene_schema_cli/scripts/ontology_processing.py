@@ -150,6 +150,8 @@ def _parse_owls(
             if onto_class.deprecated and onto_class.deprecated.first():
                 # if deprecated, include information to determine replacement term(s)
                 onto_dict[onto.name][term_id]["deprecated"] = True
+                if onto_class.comment:
+                    onto_dict[onto.name][term_id]["comments"] = [str(c) for c in onto_class.comment]
                 if onto_class.IAO_0100001 and onto_class.IAO_0100001.first():
                     # url --> term
                     ontology_term = re.findall(r"[^\W_]+", str(onto_class.IAO_0100001[0]))
@@ -157,8 +159,6 @@ def _parse_owls(
                 else:
                     if hasattr(onto_class, "consider") and onto_class.consider:
                         onto_dict[onto.name][term_id]["consider"] = [str(c) for c in onto_class.consider]
-                    if onto_class.comment:
-                        onto_dict[onto.name][term_id]["comments"] = [str(c) for c in onto_class.comment]
             # Gets ancestors
             ancestors = _get_ancestors(onto_class, onto.name)
 
