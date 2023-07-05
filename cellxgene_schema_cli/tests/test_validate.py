@@ -236,9 +236,7 @@ class TestValidate(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
 
-            validator = Validator(ignore_labels=False)
-            validator.schema_version = "3.0.0"
-            success, errors, is_seurat_convertible = validate(h5ad_valid, labels_path, validator=validator)
+            success, errors, is_seurat_convertible = validate(h5ad_valid, labels_path)
 
             self.assertTrue(success)
             self.assertListEqual(errors, [])
