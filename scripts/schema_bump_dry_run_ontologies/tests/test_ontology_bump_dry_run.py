@@ -58,7 +58,7 @@ class TestOntologyBumpDryRun(TestCase):
                     "deprecated": True,
                     "consider": ["EFO:0000090"],
                     "term_tracker": "www.fake-github-link.com/repo/example-2",
-                }
+                },
             }
         }
         self.public_datasets = [
