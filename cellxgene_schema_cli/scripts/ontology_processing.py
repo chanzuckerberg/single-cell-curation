@@ -153,7 +153,7 @@ def _parse_owls(
                 if onto_class.comment:
                     onto_dict[onto.name][term_id]["comments"] = [str(c) for c in onto_class.comment]
                 # stores term tracking URL, such as a github issue discussing deprecated term
-                if onto_class.IAO_0000233 and onto_class.IAO_0000233.first():
+                if hasattr(onto_class, "IAO_0000233") and onto_class.IAO_0000233:
                     onto_dict[onto.name][term_id]["term_tracker"] = str(onto_class.IAO_0000233[0])
 
                 # only need to record replaced_by OR considers
