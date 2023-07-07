@@ -51,9 +51,9 @@ def _download_owls(owl_info_yml: str = env.OWL_INFO_YAML, output_dir: str = env.
         try:
             urllib.request.urlopen(url)
         except HTTPError as e:
-            raise Exception(f"{ontology} with pinned URL {url} returns status code {e.code}")
+            raise Exception(f"{ontology} with pinned URL {url} returns status code {e.code}") from e
         except URLError as e:
-            raise Exception(f"{ontology} with pinned URL {url} fails due to {e.reason}")
+            raise Exception(f"{ontology} with pinned URL {url} fails due to {e.reason}") from e
 
         t = Thread(target=download, args=(ontology,))
         t.start()
