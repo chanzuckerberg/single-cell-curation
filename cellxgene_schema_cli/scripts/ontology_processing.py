@@ -5,6 +5,7 @@ import re
 import sys
 import urllib.request
 from threading import Thread
+from urllib.error import HTTPError, URLError
 
 import owlready2
 import yaml
@@ -29,28 +30,32 @@ def _download_owls(owl_info_yml: str = env.OWL_INFO_YAML, output_dir: str = env.
     with open(owl_info_yml, "r") as owl_info_handle:
         owl_info = yaml.safe_load(owl_info_handle)
 
-    def download(_ontology):
+    def download(_ontology, _url):
         print(f"Start Downloading {_ontology}")
-
-        # Get owl info
-        latest_version = owl_info[_ontology]["latest"]
-        url = owl_info[_ontology]["urls"][latest_version]
-
         # Format of owl (handles cases where they are compressed)
-        download_format = url.split(".")[-1]
+        download_format = _url.split(".")[-1]
 
         output_file = os.path.join(output_dir, _ontology + ".owl")
         if download_format == "gz":
-            urllib.request.urlretrieve(url, output_file + ".gz")
+            urllib.request.urlretrieve(_url, output_file + ".gz")
             _decompress(output_file + ".gz", output_file)
             os.remove(output_file + ".gz")
         else:
-            urllib.request.urlretrieve(url, output_file)
+            urllib.request.urlretrieve(_url, output_file)
         print(f"Finish Downloading {_ontology}")
 
     threads = []
     for ontology, _ in owl_info.items():
-        t = Thread(target=download, args=(ontology,))
+        latest_version = owl_info[ontology]["latest"]
+        url = owl_info[ontology]["urls"][latest_version]
+        try:
+            urllib.request.urlopen(url)
+        except HTTPError as e:
+            raise Exception(f"{ontology} with pinned URL {url} returns status code {e.code}") from e
+        except URLError as e:
+            raise Exception(f"{ontology} with pinned URL {url} fails due to {e.reason}") from e
+
+        t = Thread(target=download, args=(ontology, url))
         t.start()
         threads.append(t)
 
