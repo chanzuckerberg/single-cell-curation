@@ -48,6 +48,14 @@ def _download_owls(owl_info_yml: str = env.OWL_INFO_YAML, output_dir: str = env.
             urllib.request.urlretrieve(url, output_file)
         print(f"Finish Downloading {_ontology}")
 
+    # check that pinned URLs are valid before spinning off threads
+    for ontology, _ in owl_info.items():
+        latest_version = owl_info[ontology]["latest"]
+        url = owl_info[ontology]["urls"][latest_version]
+        res = urllib.request.urlopen(url)
+        if res.getcode() != 200:
+            raise Exception(f"{url} returns status code {res.getcode()}, exiting before processing files")
+
     threads = []
     for ontology, _ in owl_info.items():
         t = Thread(target=download, args=(ontology,))
