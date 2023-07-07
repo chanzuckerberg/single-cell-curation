@@ -1,0 +1,28 @@
+Deprecated Terms in Public Datasets:
+
+Collection ID: public_coll_0
+# of Affected Datasets: 1
+Deprecated Term: EFO:0000008
+Replaced By: EFO:0000080
+Term Tracker: www.fake-github-link.com/repo/example-1
+
+
+Deprecated Terms in Private Datasets:
+
+ALERT: Requires Manual Curator Intervention
+Collection ID: private_coll_0
+# of Affected Datasets: 1
+Deprecated Term: EFO:0000009
+Consider: ['EFO:0000090']
+Term Tracker: www.fake-github-link.com/repo/example-2
+
+Collection ID: public_coll_0_revision
+Note--In A Revision of: public_coll_0
+# of Affected Datasets: 1
+Deprecated Term: EFO:0000008
+Replaced By: EFO:0000080
+Term Tracker: www.fake-github-link.com/repo/example-1
+
+
+The Following Public Collections Will Not Be Auto-Migrated Due To Having an Open Revision:
+public_coll_0
