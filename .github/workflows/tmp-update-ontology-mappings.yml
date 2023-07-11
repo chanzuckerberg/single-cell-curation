@@ -1,0 +1,47 @@
+name: Test update ontology mappings
+
+on:
+  push:
+    branches:
+      - nayib/run-fe-filter-scripts
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-ontology-mappings:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+      - name: install requirements
+        run: |
+          pip install jupyter==1.0.0
+          pip install awscli==1.29.1
+      - name: Generate Ontology Scripts
+        run: |
+          jupyter nbconvert --execute scripts/compute_tissue_and_cell_type_mappings.ipynb --to python
+          jupyter nbconvert --execute scripts/compute_ancestor_mapping.ipynb --to python
+      - name: Push Updated Ontology Mappings to S3
+        run: |
+          aws s3 sync --exclude="*" --include="*ontology_mapping.json" scripts s3://cellxgene-schema-ref-files-dev/ontology-mappings/backend
+          aws s3 sync --exclude="*" --include="*descendants.json" scripts s3://cellxgene-schema-ref-files-dev/ontology-mappings/frontend
+          aws s3 sync --exclude="*" --include="*.gz" cellxgene_schema_cli/cellxgene_schema/ontology_files s3://cellxgene-schema-ref-files-dev/ontology-mappings/gzips
+      - name: Trigger Data Portal to pull latest ontology mappings
+        run: |
+          curl -X POST https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/dispatches \
+          -H 'Accept: application/vnd.github.everest-preview+json' \
+          --header 'authorization: Bearer ${{ secrets.CZIBUILDBOT_GITHUB_TOKEN }}' \
+          --data '{"event_type": "pull-ontology-mappings"}'
