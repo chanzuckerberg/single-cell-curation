@@ -162,7 +162,7 @@ jobs:
           --data '{"event_type": "rebuild-processing"}'
 
   update-ontology-mappings:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -175,19 +175,27 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.9
+          python-version: 3.11
+      - name: Python cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: install homebrew requirements
+        run: brew install graphviz
       - name: install requirements
         run: |
-          pip install jupyter==1.0.0
-          pip install awscli==1.29.1
+          pip install -r scripts/compute_mappings/requirements.txt
       - name: Generate Ontology Scripts
         run: |
-          jupyter nbconvert --execute scripts/compute_tissue_and_cell_type_mappings.ipynb --to python
-          jupyter nbconvert --execute scripts/compute_ancestor_mapping.ipynb --to python
+          jupyter nbconvert --execute scripts/compute_mappings/compute_tissue_and_cell_type_mappings.ipynb --to python
+          jupyter nbconvert --execute scripts/compute_mappings/compute_ancestor_mapping.ipynb --to python
       - name: Push Updated Ontology Mappings to S3
         run: |
-          aws s3 sync --exclude="*" --include="*ontology_mapping.json" scripts s3://cellxgene-schema-ref-files-prod/ontology-mappings/backend
-          aws s3 sync --exclude="*" --include="*descendants.json" scripts s3://cellxgene-schema-ref-files-prod/ontology-mappings/frontend
+          aws s3 sync --exclude="*" --include="*ontology_mapping.json" scripts/compute_mappings s3://cellxgene-schema-ref-files-prod/ontology-mappings/backend
+          aws s3 sync --exclude="*" --include="*descendants.json" scripts/compute_mappings s3://cellxgene-schema-ref-files-prod/ontology-mappings/frontend
           aws s3 sync --exclude="*" --include="*.gz" cellxgene_schema_cli/cellxgene_schema/ontology_files s3://cellxgene-schema-ref-files-prod/ontology-mappings/gzips
       - name: Trigger Data Portal to pull latest ontology mappings
         run: |

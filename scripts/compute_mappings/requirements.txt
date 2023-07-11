@@ -1,0 +1,5 @@
+awscli==1.29.1
+jupyter==1.0.0
+owlready2==0.38
+pygraphviz==1.11 --global-option=build_ext --global-option="-I$(brew --prefix graphviz)/include" --global-option="-L$(brew --prefix graphviz)/lib"
+requests==2.31.0
