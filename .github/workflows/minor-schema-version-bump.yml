@@ -190,8 +190,8 @@ jobs:
           pip install -r scripts/compute_mappings/requirements.txt
       - name: Generate Ontology Scripts
         run: |
-          jupyter nbconvert --execute scripts/compute_mappings/compute_tissue_and_cell_type_mappings.ipynb --to python
-          jupyter nbconvert --execute scripts/compute_mappings/compute_ancestor_mapping.ipynb --to python
+          ./scripts/compute_mappings/compute_tissue_and_cell_type_mappings.py
+          ./scripts/compute_mappings/compute_ancestor_mapping.py
       - name: Push Updated Ontology Mappings to S3
         run: |
           aws s3 sync --exclude="*" --include="*ontology_mapping.json" scripts/compute_mappings s3://cellxgene-schema-ref-files-prod/ontology-mappings/backend
