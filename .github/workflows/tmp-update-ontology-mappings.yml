@@ -18,7 +18,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
           role-duration-seconds: 1800
       - name: Checkout
         uses: actions/checkout@v3
@@ -44,9 +44,9 @@ jobs:
           ./scripts/compute_mappings/compute_ancestor_mapping.py
       - name: Push Updated Ontology Mappings to S3
         run: |
-          aws s3 sync --exclude="*" --include="*ontology_mapping.json" scripts/compute_mappings s3://cellxgene-schema-ref-files-dev/ontology-mappings/backend
-          aws s3 sync --exclude="*" --include="*descendants.json" scripts/compute_mappings s3://cellxgene-schema-ref-files-dev/ontology-mappings/frontend
-          aws s3 sync --exclude="*" --include="*.gz" cellxgene_schema_cli/cellxgene_schema/ontology_files s3://cellxgene-schema-ref-files-dev/ontology-mappings/gzips
+          aws s3 sync --exclude="*" --include="*ontology_mapping.json" scripts/compute_mappings s3://cellxgene-schema-ref-files-prod/ontology-mappings/backend
+          aws s3 sync --exclude="*" --include="*descendants.json" scripts/compute_mappings s3://cellxgene-schema-ref-files-prod/ontology-mappings/frontend
+          aws s3 sync --exclude="*" --include="*.gz" cellxgene_schema_cli/cellxgene_schema/ontology_files s3://cellxgene-schema-ref-files-prod/ontology-mappings/gzips
       - name: Trigger Data Portal to pull latest ontology mappings
         run: |
           curl -X POST https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/dispatches \
