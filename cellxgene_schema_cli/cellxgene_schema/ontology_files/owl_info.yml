@@ -15,8 +15,9 @@ EFO:
     2021-08-16 EFO 3.33.0: https://github.com/EBISPOT/efo/releases/download/v3.33.0/efo.owl
     2021-06-15 EFO 3.31.0: https://github.com/EBISPOT/efo/releases/download/v3.31.0/efo.owl
 HANCESTRO:
-  latest: 2022-07-18 (2.6)
+  latest: 2.8
   urls:
+    2.8: https://github.com/EBISPOT/ancestro/raw/2.8/hancestro.owl
     2022-07-18 (2.6): https://github.com/EBISPOT/ancestro/raw/2.6/hancestro.owl
     2021-01-04 (2.5): https://github.com/EBISPOT/ancestro/raw/2.5/hancestro.owl
 HsapDv:
