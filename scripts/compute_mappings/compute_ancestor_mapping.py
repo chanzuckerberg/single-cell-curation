@@ -171,4 +171,3 @@ with open("development_stage_ontology_mapping.json", "w") as f:
     d.update(m_mouse)
     d.update(m_uberon)
     json.dump(d, f)
-
