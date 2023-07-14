@@ -263,5 +263,6 @@ jobs:
           reviewers: bento007 # TODO assign curators
           add-paths: |
             cellxgene_schema_cli/setup.py
+            cellxgene_schema_cli/cellxgene_schema/__init__.py
             cellxgene_schema_cli/cellxgene_schema/migrate.py
             .bumpversion.cfg
