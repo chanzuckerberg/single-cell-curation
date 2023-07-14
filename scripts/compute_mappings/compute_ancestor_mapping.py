@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # coding: utf-8
-# flake8: noqa
 
 # # Ontology ancestors mapping
 # This notebook can be used to compute mappings between nodes in an ontology files and their ancestors.
@@ -12,7 +11,7 @@
 # 1. Create mappings from each node to its ancestors
 # 1. Write a json file with these mappings (a dictionary of lists)
 
-# In[1]:
+# In[ ]:
 
 
 from owlready2 import get_ontology  # noqa
@@ -20,10 +19,10 @@ import json
 import yaml
 
 
-# In[2]:
+# In[ ]:
 
 
-def get_ancestors(class_name):
+def get_ancestors(onto, class_name):
     z = onto.search_one(iri=f"http://purl.obolibrary.org/obo/{class_name}")
 
     def recurse(x):
@@ -41,13 +40,13 @@ def get_ancestors(class_name):
     yield from recurse(z)
 
 
-# In[3]:
+# In[ ]:
 
 
-def create_mapping(classes, prefix=None):
+def create_mapping(onto, classes, prefix=None):
     x = dict()
     for cls in classes:
-        for a in get_ancestors(cls.name):
+        for a in get_ancestors(onto, cls.name):
             if prefix and not a[1].startswith(prefix):
                 continue
             if cls.name in x:
@@ -57,50 +56,50 @@ def create_mapping(classes, prefix=None):
     return x
 
 
-# In[4]:
+# In[ ]:
 
 
 # Load owl.info to grab latest ontology sources
-owl_info_yml = "cellxgene_schema_cli/cellxgene_schema/ontology_files/owl_info.yml"
+owl_info_yml = "../../cellxgene_schema_cli/cellxgene_schema/ontology_files/owl_info.yml"
 with open(owl_info_yml, "r") as owl_info_handle:
     owl_info = yaml.safe_load(owl_info_handle)
 
 
-# In[5]:
+# In[ ]:
 
 
 human_latest_key = owl_info["HsapDv"]["latest"]
 human_ontology = owl_info["HsapDv"]["urls"][human_latest_key]
 
-onto = get_ontology(human_ontology)
-onto.load()
+human_onto = get_ontology(human_ontology)
+human_onto.load()
 
-m_human = create_mapping(onto.classes(), "HsapDv")
+m_human = create_mapping(human_onto, human_onto.classes(), "HsapDv")
 
 
-# In[6]:
+# In[ ]:
 
 
 mouse_latest_key = owl_info["MmusDv"]["latest"]
 mouse_ontology = owl_info["MmusDv"]["urls"][mouse_latest_key]
 
-onto = get_ontology(mouse_ontology)
-onto.load()
+mouse_onto = get_ontology(mouse_ontology)
+mouse_onto.load()
 
-m_mouse = create_mapping(onto.classes(), "MmusDv")
+m_mouse = create_mapping(mouse_onto, mouse_onto.classes(), "MmusDv")
 
 
-# In[7]:
+# In[ ]:
 
 
 uberon_latest_key = owl_info["UBERON"]["latest"]
 uberon_ontology = owl_info["UBERON"]["urls"][uberon_latest_key]
 
-onto = get_ontology(uberon_ontology)
-onto.load()
+tissue_onto = get_ontology(uberon_ontology)
+tissue_onto.load()
 
 
-# In[8]:
+# In[ ]:
 
 
 uberon_classes = [
@@ -155,20 +154,21 @@ uberon_classes = [
 ]
 
 
-# In[9]:
+# In[ ]:
 
 
-uc = [onto.search_one(iri=f"http://purl.obolibrary.org/obo/{c}") for c in uberon_classes]
+uc = [tissue_onto.search_one(iri=f"http://purl.obolibrary.org/obo/{c}") for c in uberon_classes]
 
-m_uberon = create_mapping(uc, "UBERON")
-
-
-# In[10]:
+m_uberon = create_mapping(tissue_onto, uc, "UBERON")
 
 
-with open("scripts/compute_mappings/development_stage_ontology_mapping.json", "w") as f:
+# In[ ]:
+
+
+with open("development_stage_ontology_mapping.json", "w") as f:
     d = {}
     d.update(m_human)
     d.update(m_mouse)
     d.update(m_uberon)
     json.dump(d, f)
+
