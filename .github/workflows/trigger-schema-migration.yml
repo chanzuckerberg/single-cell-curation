@@ -1,4 +1,4 @@
-name: Publish Patch Version of cellxgene_schema_cli to PyPI
+name: Trigger Schema Migration
 
 on:
   push:
@@ -38,3 +38,9 @@ jobs:
 #        with:
 #          password: ${{ secrets.PYPI_API_TOKEN }}
 #          package-dir: cellxgene_schema_cli/
+      - name: Trigger rebuild of Data Portal Processing Image and Schema Migration
+        run: |
+          curl -X POST https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/dispatches \
+          -H 'Accept: application/vnd.github.everest-preview+json' \
+          --header 'authorization: Bearer ${{ secrets.CZIBUILDBOT_GITHUB_TOKEN }}' \
+          --data '{"event_type": "schema-migration"}'
