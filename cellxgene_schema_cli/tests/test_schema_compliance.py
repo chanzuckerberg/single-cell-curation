@@ -615,9 +615,16 @@ class TestObs(BaseValidationTest):
             "EFO:0008853": ["cell"],
             "EFO:0030026": ["nucleus"],
             "EFO:0010550": ["cell", "nucleus"],
-            "EFO:0008919": ["cell"],
             "EFO:0008939": ["nucleus"],
             "EFO:0030027": ["nucleus"],
+            "EFO:0008796": ["cell"],
+            "EFO:0700003": ["cell"],
+            "EFO:0700004": ["cell"],
+            "EFO:0008780": ["cell", "nucleus"],
+            "EFO:0008953": ["cell"],
+            "EFO:0700010": ["cell", "nucleus"],
+            "EFO:0700011": ["cell", "nucleus"],
+            "EFO:0009919": ["cell", "nucleus"],
         }
 
         for assay, suspension_types in match_assays.items():
@@ -655,7 +662,8 @@ class TestObs(BaseValidationTest):
             "EFO:0010184": ["cell", "nucleus"],
             "EFO:0009918": ["na"],
             "EFO:0700000": ["na"],
-            "EFO:0030005": ["na"],
+            "EFO:0008994": ["na"],
+            "EFO:0008919": ["cell"],
         }
         for assay, suspension_types in match_assays_or_children.items():
             with self.subTest(assay=assay):
@@ -665,7 +673,7 @@ class TestObs(BaseValidationTest):
                 self.validator.warnings = []
 
                 invalid_suspension_type = "na"
-                if assay in {"EFO:0009918", "EFO:0700000", "EFO:0030005"}:
+                if assay in {"EFO:0009918", "EFO:0700000", "EFO:0008994"}:
                     invalid_suspension_type = "nucleus"
                     self.validator.adata.obs["suspension_type"] = self.validator.adata.obs[
                         "suspension_type"
@@ -722,7 +730,7 @@ class TestObs(BaseValidationTest):
         suspension_id categorical with str categories. This field MUST be "cell", "nucleus", or "na". The allowed
         values depend on the assay_ontology_term_id. MUST warn if the corresponding assay is not recognized.
         """
-        self.validator.adata.obs.loc[self.validator.adata.obs.index[1], "assay_ontology_term_id"] = "EFO:0010183"
+        self.validator.adata.obs.loc[self.validator.adata.obs.index[1], "assay_ontology_term_id"] = "EFO:0030005"
         self.validator.validate_adata()
         with self.subTest("no errors"):
             self.assertEqual(self.validator.errors, [])
