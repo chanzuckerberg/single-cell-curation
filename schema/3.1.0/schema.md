@@ -553,73 +553,105 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           </thead>
           <tbody>
             <tr>
-              <td><i>10x transcription profiling</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030080"><code>EFO:0030080</code></a>] and its children</td>
+              <td><i>10x transcription profiling</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0030080"><code>EFO:0030080</code></a>] and its children</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr> 
             <tr>
-              <td><i>ATAC-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0007045"><code>EFO:0007045</code></a>] and its children</td>
+              <td><i>ATAC-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0007045"><code>EFO:0007045</code></a>] and its children</td>
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>CEL-seq2</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0010010"><code>EFO:0010010</code></a>]</td>
-              <td><code>"cell"</code> or <code>"nucleus"</code></td>
-           </tr>
-            <tr>
-              <td><i>CITE-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0009294"><code>EFO:0009294</code></a>] and its children</td>
+              <td><i>BD Rhapsody Whole Transcriptome Analysis</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0700003"><code>EFO:0700003</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>DroNc-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008720"><code>EFO:0008720</code></a>]</td>
-              <td><code>"nucleus"</code></td>
+              <td><i>BD Rhapsody Targeted mRNA</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0700004"><code>EFO:0700004</code></a>]</td>
+              <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>Drop-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008722"><code>EFO:0008722</code></a>]</td>
+              <td><i>CEL-seq2</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0010010"><code>EFO:0010010</code></a>]</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>microwell-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030002"><code>EFO:0030002</code></a>]</td>
+              <td><i>CITE-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0009294"><code>EFO:0009294</code></a>] and its children</td>
+              <td><code>"cell"</code></td>
+           </tr>
+            <tr>
+              <td><i>DroNc-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008720"><code>EFO:0008720</code></a>]</td>
+              <td><code>"nucleus"</code></td>
+           </tr>
+            <tr>
+              <td><i>Drop-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008722"><code>EFO:0008722</code></a>]</td>
+              <td><code>"cell"</code> or <code>"nucleus"</code></td>
+           </tr>
+            <tr>
+              <td><i>GEXSCOPE technology</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0700011"><code>EFO:0700011</code></a>]</td>
+              <td><code>"cell"</code> or <code>"nucleus"</code></td>
+           </tr> 
+            <tr>
+              <td><i>inDrop</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008780"><code>EFO:0008780</code></a>]</td>
+              <td><code>"cell"</code> or <code>"nucleus"</code></td>
+           </tr>
+            <tr>
+              <td><i>MARS-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008796"><code>EFO:0008796</code></a>]</td>
+              <td><code>"cell"</code></td>
+           </tr>
+            <tr>
+              <td><i>microwell-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0030002"><code>EFO:0030002</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>    
             <tr>
-              <td><i>Patch-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008853"><code>EFO:0008853</code></a>]</td>
+              <td><i>Patch-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008853"><code>EFO:0008853</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>sci-Plex</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030026"><code>EFO:0030026</code></a>]</td>
+              <td><i>sci-Plex</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0030026"><code>EFO:0030026</code></a>]</td>
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>sci-RNA-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0010550"><code>EFO:0010550</code></a>]</td>
+              <td><i>sci-RNA-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0010550"><code>EFO:0010550</code></a>]</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>Seq-Well</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008919"><code>EFO:0008919</code></a>]</td>
+              <td><i>Seq-Well</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008919"><code>EFO:0008919</code></a>] and its children</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>Smart-like</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0010184"><code>EFO:0010184</code></a>] and its children</td>
+              <td><i>Smart-like</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0010184"><code>EFO:0010184</code></a>] and its children</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>smFISH</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0009918"><code>EFO:0009918</code></a>] and its children</td>
+              <td><i>smFISH</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0009918"><code>EFO:0009918</code></a>] and its children</td>
               <td><code>"na"</code></td>
            </tr>   
             <tr>
-              <td><i>snmC-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008939"><code>EFO:0008939</code></a>]</td>
+              <td><i>snmC-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008939"><code>EFO:0008939</code></a>]</td>
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>snmC-seq2</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030027"><code>EFO:0030027</code></a>]</td>
+              <td><i>snmC-seq2</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0030027"><code>EFO:0030027</code></a>]</td>
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>spatial proteomics</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0700000"><code>EFO:0700000</code></a>] and its children</td>
+              <td><i>spatial proteomics</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0700000"><code>EFO:0700000</code></a>] and its children</td>
               <td><code>"na"</code></td>
            </tr>
             <tr>
-              <td><i>spatial transcriptomics by high-throughput sequencing</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030005"><code>EFO:0030005</code></a>] and its children</td>
+              <td><i>spatial transcriptomics</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008994"><code>EFO:0008994</code></a>] and its children</td>
               <td><code>"na"</code></td>
-           </tr>    
+           </tr> 
+            <tr>
+              <td><i>SPLiT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0009919"><code>EFO:0009919</code></a>]</td>
+              <td><code>"cell"</code> or <code>"nucleus"</code></td>
+           </tr> 
+            <tr>
+              <td><i>STRT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008953"><code>EFO:0008953</code></a>]</td>
+              <td><code>"cell"</code></td>
+           </tr>
+            <tr>
+              <td><i>TruDrop</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0700010"><code>EFO:0700010</code></a>]</td>
+              <td><code>"cell"</code> or <code>"nucleus"</code></td>
+           </tr> 
           </tbody></table>
           <br>If the assay does not appear in this table, the most appropriate value MUST be selected and <a href="mailto:cellxgene@chanzuckerberg.com">the curation team informed</a> during submission so that the assay can be added to the table.<br>
         </td>
@@ -1097,6 +1129,18 @@ schema v3.1.0
 * Required Gene Annotations
   * Updated GENCODE (Human) to Human reference GRCh38.p13 (GENCODE v43/Ensembl 109) 
   * Updated GENCODE (Mouse) to Mouse reference GRCm39 (GENCODE vM32/Ensembl 109)
+* obs (Cell metadata)
+  * `suspension_type`
+    * Added MARS-seq
+    * Added BD Rhapsody Whole Transcriptome Analysis
+    * Added BD Rhapsody Targeted mRNA
+    * Added inDrop
+    * Added STRT-seq
+    * Added TruDrop
+    * Added GEXSCOPE technology
+    * Added SPLiT-seq
+    * Changed spatial transcriptomics by high-throughput sequencing [EFO:0030005] and its children to spatial transcriptomics [EFO:0008994] and its children
+    * Updated Seq-Well [EFO:0008919] to Seq-Well [EFO:0008919] and its children
 
 
 schema v3.0.0
