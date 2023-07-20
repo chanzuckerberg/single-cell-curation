@@ -1023,7 +1023,7 @@ class TestUns(BaseValidationTest):
         self.validator.adata.uns["schema_version"] = old_version
         self.validator.schema_version = None
         with self.assertLogs(level="WARNING") as logs, patch(
-                "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[latest_version]
+            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[latest_version]
         ) as mock_supported_versions, patch(
             "cellxgene_schema.validate.schema.get_current_schema_version", return_value=latest_version
         ), patch(
@@ -1045,7 +1045,7 @@ class TestUns(BaseValidationTest):
         self.validator.schema_version = None
         del self.validator.adata.uns["schema_version"]
         with patch(
-                "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[latest_version]
+            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[latest_version]
         ) as mock_supported_versions, patch(
             "cellxgene_schema.validate.schema.get_current_schema_version", return_value=latest_version
         ) as mock_get_current_schema, patch(
@@ -1062,7 +1062,7 @@ class TestUns(BaseValidationTest):
         self.validator.schema_version = None
         self.validator.adata.uns["schema_version"] = latest_version
         with patch(
-                "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[latest_version]
+            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[latest_version]
         ) as mock_supported_versions, patch(
             "cellxgene_schema.validate.schema.get_current_schema_version", return_value=latest_version
         ) as mock_get_current_schema, patch(
@@ -1080,8 +1080,7 @@ class TestUns(BaseValidationTest):
         self.validator.schema_version = None
         self.validator.adata.uns["schema_version"] = old_version
         with self.assertLogs(level="WARNING") as logs, patch(
-                "cellxgene_schema.validate.schema.get_schema_versions_supported",
-                return_value=[old_version, latest_version]
+            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[old_version, latest_version]
         ) as mock_supported_versions, patch(
             "cellxgene_schema.validate.schema.get_current_schema_version", return_value=latest_version
         ) as mock_get_current_schema, patch(
