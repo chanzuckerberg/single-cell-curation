@@ -7,7 +7,6 @@ import pandas as pd
 from cellxgene_schema.validate import Validator
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 
-
 # Tests for schema compliance of an AnnData object
 
 
