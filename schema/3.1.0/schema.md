@@ -280,12 +280,12 @@ Curators MUST annotate the following columns in the `obs` dataframe:
       <th>Value</th>
         <td>categorical with <code>str</code> categories. This MUST be an EFO term and either:<br><br>
           <ul><li>
-            <a href="http://www.ebi.ac.uk/efo/EFO_0002772"><code>"EFO:0002772"</code></a> for <i>assay by molecule</i> or <b>preferably</b> its most accurate child
+            <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0002772"><code>"EFO:0002772"</code></a> for <i>assay by molecule</i> or <b>preferably</b> its most accurate child
           </li>
           <li>
-            <a href="http://www.ebi.ac.uk/efo/EFO_0010183"><code>"EFO:0010183"</code></a>  for <i>single cell library construction</i> or <b>preferably</b> its most accurate child
+            <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0010183"><code>"EFO:0010183"</code></a>  for <i>single cell library construction</i> or <b>preferably</b> its most accurate child
           </li></ul>
-        An assay based on 10X Genomics products SHOULD either be <a href="http://www.ebi.ac.uk/efo/EFO_0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i> or <b>preferably</b> its most accurate child. An assay based on <i>SMART (Switching Mechanism at the 5' end of the RNA Template) or SMARTer technology</i> SHOULD either be <a href="http://www.ebi.ac.uk/efo/EFO_0010184"><code>"EFO:0010184"</code></a> for <i>Smart-like</i> or preferably its most accurate child.<br><br>
+        An assay based on 10X Genomics products SHOULD either be <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i> or <b>preferably</b> its most accurate child. An assay based on <i>SMART (Switching Mechanism at the 5' end of the RNA Template) or SMARTer technology</i> SHOULD either be <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0010184"><code>"EFO:0010184"</code></a> for <i>Smart-like</i> or preferably its most accurate child.<br><br>
        <br>Recommended values for specific assays:
           <br><br>
           <table>
@@ -298,27 +298,27 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <tbody>
             <tr>
               <td><i>10x 3' v2</i></td>
-              <td><a href="http://www.ebi.ac.uk/efo/EFO_0009899"><code>"EFO:0009899"</code></a></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0009899"><code>"EFO:0009899"</code></a></td>
             </tr>
             <tr>
               <td><i>10x 3' v3</i></td>
-              <td><a href="http://www.ebi.ac.uk/efo/EFO_0009922"><code>"EFO:0009922"</code></a></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0009922"><code>"EFO:0009922"</code></a></td>
             </tr>
             <tr>
               <td><i>10x 5' v1</i></td>
-              <td><a href="http://www.ebi.ac.uk/efo/EFO_0011025"><code>"EFO:0011025"</code></a></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0011025"><code>"EFO:0011025"</code></a></td>
             </tr>
             <tr>
               <td><i>10x 5' v2</i></td>
-              <td><a href="http://www.ebi.ac.uk/efo/EFO_0009900"><code>"EFO:0009900"</code></a></td>
-            </tr>
-            <tr>
-              <td><i>Smart-seq</i></td>
-              <td><a href="http://www.ebi.ac.uk/efo/EFO_0008930"><code>"EFO:0008930"</code></a></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0009900"><code>"EFO:0009900"</code></a></td>
             </tr>
             <tr>
               <td><i>Smart-seq2</i></td>
-              <td><a href="http://www.ebi.ac.uk/efo/EFO_0008931"><code>"EFO:0008931"</code></a></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0008931"><code>"EFO:0008931"</code></a></td>
+            </tr>
+            <tr>
+              <td><i>Visium Spatial Gene Expression</i></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0010961"><code>"EFO:0010961"</code></a></td>
             </tr>
           </tbody></table>
         </td>
@@ -1130,6 +1130,9 @@ schema v3.1.0
   * Updated GENCODE (Human) to Human reference GRCh38.p13 (GENCODE v43/Ensembl 109) 
   * Updated GENCODE (Mouse) to Mouse reference GRCm39 (GENCODE vM32/Ensembl 109)
 * obs (Cell metadata)
+  * `assay_ontology_term_id`
+    * Added Visium Spatial Gene Expression to recommended values
+    * Removed Smart-seq from recommended values
   * `suspension_type`
     * Added MARS-seq
     * Added BD Rhapsody Whole Transcriptome Analysis
