@@ -11,13 +11,13 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## Background
 
-cellxgene aims to support the publication, sharing, and exploration of single-cell datasets. Building on those published datasets, cellxgene seeks to create references of the phenotypes and composition of cells that make up human tissues.
+CELLxGENE aims to support the publication, sharing, and exploration of single-cell datasets. Building on those published datasets, CELLxGENE seeks to create references of the phenotypes and composition of cells that make up human tissues.
 
-Creating references from multiple datasets requires some harmonization of metadata and features in the cellxgene Data Portal. But if that harmonization is too onerous, it will burden the goal of rapid data sharing. cellxgene balances publishing and reference creation needs by requiring datasets hosted in the cellxgene Data Portal to include a small set of metadata readily available from data submitters.
+Creating references from multiple datasets requires some harmonization of metadata and features, but if that harmonization is too onerous, it will burden the goal of rapid data sharing. CELLxGENE balances publishing and reference creation needs by requiring datasets hosted by CELLxGENE Discover to include a small set of metadata readily available from data submitters.
 
-This document describes the schema, a type of contract, that cellxgene requires all datasets to adhere to so that it can enable searching, filtering, and integration of datasets it hosts.
+This document describes the schema, a type of contract, that CELLxGENE requires all datasets to adhere to so that it can enable searching, filtering, and integration of datasets it hosts.
 
-Note that the requirements in the schema are just the minimum required information. Datasets often have additional metadata, which is preserved in datasets submitted to the cellxgene Data Portal.
+Note that the requirements in the schema are just the minimum required information. Datasets often have additional metadata, which is preserved in datasets submitted to CELLxGENE Discover.
 
 ## Overview
 
@@ -36,9 +36,9 @@ This document is organized by:
 
 ## General Requirements
 
-**AnnData.** The canonical data format for the cellxgene Data Portal is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.8 of the anndata library.  Part of the rationale for selecting this format is to allow cellxgene to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `raw.var`, `obsm`, and `uns` attributes are described below.
+**AnnData.** The canonical data format for CELLxGENE Discover is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.8 of the anndata library.  Part of the rationale for selecting this format is to allow CELLxGENE to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `raw.var`, `obsm`, and `uns` attributes are described below.
 
-All data submitted to the cellxgene Data Portal is automatically converted to a Seurat V4 object that can be loaded by the R package Seurat. See the [Seurat encoding](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/seurat_encoding.md) for further information.
+All data submitted to CELLxGENE Discover is automatically converted to a Seurat V4 object that can be loaded by the R package Seurat. See the [Seurat encoding](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/seurat_encoding.md) for further information.
 
 **Organisms**. Data MUST be from a Metazoan organism or SARS-COV-2 and defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the pinned Human and Mouse gene annotations.
 
@@ -130,7 +130,7 @@ Reserved Names from previous schema versions that have since been deprecated MUS
 
 **Redundant Metadata**. It is STRONGLY RECOMMENDED to avoid multiple metadata fields containing identical or similar information.
 
-**No Personal Identifiable Information (PII)**.  This is not strictly enforced by validation because it is difficult for software to predict what is and is not PII; however, curators MUST agree to the data submission policies of the cellxgene Data Portal on behalf of data submitters which includes this requirement:
+**No Personal Identifiable Information (PII)**.  This is not strictly enforced by validation because it is difficult for software to predict what is and is not PII; however, curators MUST agree to the data submission policies of CELLxGENE Discover on behalf of data submitters which includes this requirement:
 
 > It is my responsibility to ensure that this data is not identifiable. In particular, I commit that I will remove any [direct personal identifiers](https://docs.google.com/document/d/1sboOmbafvMh3VYjK1-3MAUt0I13UUJfkQseq8ANLPl8/edit) in the metadata portions of the data, and that CZI may further contact me if it believes more work is needed to de-identify it.
 
@@ -141,11 +141,11 @@ The types below are python3 types. Note that a python3 `str` is a sequence of Un
 
 ## `X` (Matrix Layers)
 
-The data stored in the `X` data matrix is the data that is viewable in cellxgene Explorer. cellxgene does not impose any additional constraints on the `X` data matrix.
+The data stored in the `X` data matrix is the data that is viewable in CELLxGENE Explorer. CELLxGENE does not impose any additional constraints on the `X` data matrix.
 
 In any layer, if a matrix has 50% or more values that are zeros, it is STRONGLY RECOMMENDED that the matrix be encoded as a [`scipy.sparse.csr_matrix`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.html).
 
-cellxgene's matrix layer requirements are tailored to optimize data reuse. Because each assay has different characteristics, the requirements differ by assay type. In general, cellxgene requires submission of "raw" data suitable for computational reuse when a standard raw matrix format exists for an assay. It is STRONGLY RECOMMENDED to also include a "normalized" matrix with processed values ready for data analysis and suitable for visualization in cellxgene Explorer. So that cellxgene's data can be provided in download formats suitable for both R and Python, the schema imposes the following requirements:
+CELLxGENE's matrix layer requirements are tailored to optimize data reuse. Because each assay has different characteristics, the requirements differ by assay type. In general, CELLxGENE requires submission of "raw" data suitable for computational reuse when a standard raw matrix format exists for an assay. It is STRONGLY RECOMMENDED to also include a "normalized" matrix with processed values ready for data analysis and suitable for visualization in CELLxGENE Explorer. So that CELLxGENE's data can be provided in download formats suitable for both R and Python, the schema imposes the following requirements:
 
 *   All matrix layers MUST have the same shape, and have the same cell labels and gene labels.
 *   Because it is impractical to retain all barcodes in raw and normalized matrices, any cell filtering MUST be applied to both.
@@ -165,7 +165,7 @@ The following table describes the matrix data and layers requirements that are *
 
 ## Integration Metadata
 
-cellxgene requires ontology terms to enable search, comparison, and integration of data.
+CELLxGENE requires ontology terms to enable search, comparison, and integration of data.
 Ontology terms for cell metadata MUST use [OBO-format identifiers](http://www.obofoundry.org/id-policy.html), meaning a CURIE (prefixed identifier) of the form **Ontology:Identifier**.
 For example, [EFO:0000001](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0000001) is a term in the Experimental Factor Ontology (EFO).
 
@@ -173,7 +173,7 @@ The most accurate ontology term MUST always be used. If an exact or approximate 
 
 - For the [Cell Ontology], data submitters may [suggest a new term](https://github.com/obophenotype/cell-ontology/issues/new?assignees=bvarner-ebi&labels=new+term+request%2C+cellxgene&template=a_adding_term_cellxgene.md&title=%5BNTR-cxg%5D) and [notify the curation team](mailto:cellxgene@chanzuckerberg.com) of the pending term request, so that the datasets can be updated once the term is available.
 
-  To meet cellxgene schema requirements, the most accurate available CL term MUST be used until the new term is available. For example if `cell_type_ontology_term_id` describes a relay interneuron, but the most accurate available term in the CL ontology is [CL:0000099](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000099) for *interneuron*, then the interneuron term can be used to fulfill this requirement and ensures that users searching for "neuron" are able to find these data. If no appropriate high-level term can be found or the cell type is unknown, then the most accurate term is [CL:0000003](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000003) for *native cell*. Users will still be able to access more specific cell type annotations that have been submitted with the dataset (but aren't required by the schema).
+  To meet CELLxGENE schema requirements, the most accurate available CL term MUST be used until the new term is available. For example if `cell_type_ontology_term_id` describes a relay interneuron, but the most accurate available term in the CL ontology is [CL:0000099](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000099) for *interneuron*, then the interneuron term can be used to fulfill this requirement and ensures that users searching for "neuron" are able to find these data. If no appropriate high-level term can be found or the cell type is unknown, then the most accurate term is [CL:0000003](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000003) for *native cell*. Users will still be able to access more specific cell type annotations that have been submitted with the dataset (but aren't required by the schema).
 
    
 - For all other ontologies, data submitters may submit a [request to the curation team](mailto:cellxgene@chanzuckerberg.com) during the submission process.
@@ -233,7 +233,7 @@ The following ontology dependencies are *pinned* for this version of the schema.
 
 ### Required Gene Annotations
 
-cellxgene requires ENSEMBL identifiers for genes and [External RNA Controls Consortium (ERCC)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4978944/) identifiers for [RNA Spike-In Control Mixes] to ensure that all datasets it stores measure the same features and can therefore be integrated.
+ENSEMBL identifiers are required for genes and [External RNA Controls Consortium (ERCC)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4978944/) identifiers for [RNA Spike-In Control Mixes] to ensure that all datasets measure the same features and can therefore be integrated.
 
 The following gene annotation dependencies are *pinned* for this version of the schema. For multi-organism experiments, cells from any Metazoan organism are allowed as long as orthologs from the following organism annotations are used.
 
@@ -446,7 +446,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
       <th>Value</th>
         <td>categorical with <code>str</code> categories. This MUST be free-text that identifies a unique individual that data were derived from. It is STRONGLY RECOMMENDED that this identifier be designed so that it is unique to:<br><br>
           <ul><li>a given individual within the collection of datasets that includes this dataset</li>
-          <li>a given individual across all collections in the cellxgene Data Portal</li></ul><br>
+          <li>a given individual across all collections in CELLxGENE Discover</li></ul><br>
           It is STRONGLY RECOMMENDED that <code>"pooled"</code> be used  for observations from a sample of multiple individuals that were not confidently assigned to a single individual through demultiplexing.<br><br>It is STRONGLY RECOMMENDED that <code>"unknown"</code> ONLY be used for observations in a dataset when it is not known which observations are from the same individual.<br><br>
         </td>
     </tr>
@@ -675,7 +675,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
 </tbody></table>
 <br>
 
-When a dataset is uploaded, the cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding ontology term to the `obs` dataframe. Curators MUST NOT annotate the following columns.
+When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matching human-readable name for the corresponding ontology term to the `obs` dataframe. Curators MUST NOT annotate the following columns.
 
 ### assay
 
@@ -875,7 +875,7 @@ Curators MUST annotate the following column only in the `var` dataframe. This co
 <br>
 
 
-When a dataset is uploaded, cellxgene Data Portal MUST automatically add the matching human-readable name for the corresponding feature biotype, identifier, and the NCBITaxon term for the reference organism to the `var` and `raw.var` dataframes. Curators MUST NOT annotate the following columns:
+When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matching human-readable name for the corresponding feature biotype, identifier, and the NCBITaxon term for the reference organism to the `var` and `raw.var` dataframes. Curators MUST NOT annotate the following columns:
 
 ### feature_biotype
 
@@ -965,14 +965,14 @@ When a dataset is uploaded, cellxgene Data Portal MUST automatically add the mat
 
 For each `str` key, `obsm` stores a `numpy.ndarray` of shape `(n_obs, m)`, where `n_obs` is the number of rows in `X` and `m >= 1`.
 
-To display a dataset in cellxgene Explorer, Curators MUST annotate **one or more** two-dimensional (`m >= 2`) embeddings (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`. The keys for these embedding MUST be prefixed with `"X_"`. The text that follows this prefix is presented to users in the *Embedding Choice* selector in cellxgene Explorer.
+To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more** two-dimensional (`m >= 2`) embeddings (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`. The keys for these embedding MUST be prefixed with `"X_"`. The text that follows this prefix is presented to users in the *Embedding Choice* selector in CELLxGENE Explorer.
 
 To illustrate, the [Krasnow Lab Human Lung Cell Atlas, 10X dataset](https://cellxgene.cziscience.com/e/krasnow_lab_human_lung_cell_atlas_10x-1-remixed.cxg/) in the [A molecular cell atlas of the human lung from single cell RNA sequencing collection](https://cellxgene.cziscience.com/collections/5d445965-6f1a-4b68-ba3a-b8f765155d3a) defines two embeddings in `obsm`:
 
 * `"X_Compartment_tSNE"`
 * `"X_tSNE"`
 
-Users can then choose which embedding is visualized in cellxgene Explorer:
+Users can then choose which embedding is visualized in CELLxGENE Explorer:
 
 ![Embeddings Illustration](images/embeddings.png
 )
@@ -1017,7 +1017,7 @@ See also `default_embedding` in `uns`.
     <tr>
       <th>Value</th>
         <td>
-          <code>str</code>. This text describes and differentiates the dataset from other datasets in the same collection. It is displayed on a page in the cellxgene Data Portal that also has the collection name. To illustrate, the first dataset name in the <a href="https://cellxgene.cziscience.com/collections/b52eb423-5d0d-4645-b217-e1c6d38b2e72">Cells of the adult human heart collection</a> is "All — Cells of the adult human heart".<br><br>It is STRONGLY RECOMMENDED that each dataset <code>title</code> in a collection is unique and does not depend on other metadata such as a different  <code>assay</code> to disambiguate it from other datasets in the collection.
+          <code>str</code>. This text describes and differentiates the dataset from other datasets in the same collection. It is displayed on a page in CELLxGENE Discover that also has the collection name. To illustrate, the first dataset name in the <a href="https://cellxgene.cziscience.com/collections/b52eb423-5d0d-4645-b217-e1c6d38b2e72">Cells of the adult human heart collection</a> is "All — Cells of the adult human heart".<br><br>It is STRONGLY RECOMMENDED that each dataset <code>title</code> in a collection is unique and does not depend on other metadata such as a different  <code>assay</code> to disambiguate it from other datasets in the collection.
         </td>
     </tr>
 </tbody></table>
@@ -1059,7 +1059,7 @@ See also `default_embedding` in `uns`.
     <tr>
       <th>Value</th>
         <td>
-          <code>str</code>. The value MUST match a key to an embedding in <code>obsm</code> for the embedding to display by default in cellxgene Explorer.
+          <code>str</code>. The value MUST match a key to an embedding in <code>obsm</code> for the embedding to display by default in CELLxGENE Explorer.
         </td>
     </tr>
 </tbody></table>
@@ -1079,7 +1079,7 @@ See also `default_embedding` in `uns`.
     <tr>
       <th>Value</th>
         <td>
-          <code>str</code>. cellxgene runs a heuristic to detect the approximate distribution of the data in X so that it can accurately calculate statistical properties of the data. This field enables the curator to override this heuristic and specify the data distribution explicitly. The value MUST be <code>"count"</code> (for data whose distributions are best approximated by counting distributions like Poisson, Binomial, or Negative Binomial) or <code>"normal"</code> (for data whose distributions are best approximated by the Gaussian distribution.)
+          <code>str</code>. CELLxGENE Discover runs a heuristic to detect the approximate distribution of the data in X so that it can accurately calculate statistical properties of the data. This field enables the curator to override this heuristic and specify the data distribution explicitly. The value MUST be <code>"count"</code> (for data whose distributions are best approximated by counting distributions like Poisson, Binomial, or Negative Binomial) or <code>"normal"</code> (for data whose distributions are best approximated by the Gaussian distribution.)
         </td>
     </tr>
 </tbody></table>
@@ -1115,14 +1115,14 @@ schema v2.0.0 substantially *remodeled* schema v1.1.0:
 
 * "must", "should", and select other words have a defined, standard meaning.
 
-* Curators are responsible for annotating ontology and gene identifiers. The cellxgene Data Portal adds the assigned human-readable names for all identifiers.
+* Curators are responsible for annotating ontology and gene identifiers. CELLxGENE Discover adds the assigned human-readable names for all identifiers.
 
 * Documented and *pinned* the required versions of ontologies and gene annotations used in schema validation.
 
 * General Requirements
   * AnnData is now the canonical data format. The schema outline and descriptions are AnnData-centric.
 
-  * Metazoan multi-organism data is accepted by the cellxgene Data Portal. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the Human and Mouse gene annotations. 
+  * Metazoan multi-organism data is accepted by CELLxGene Discover. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the Human and Mouse gene annotations. 
 
   * Policies for reserved names and redundant metadata are documented.
 
