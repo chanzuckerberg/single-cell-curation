@@ -11,7 +11,6 @@ from cellxgene_schema.write_labels import AnnDataLabelAppender
 
 
 class TestValidAnndata(unittest.TestCase):
-
     """
     Tests a valid AnnData object. Most other tests below modify this AnnData object and test for failure cases.
 
@@ -28,7 +27,6 @@ class TestValidAnndata(unittest.TestCase):
 
 
 class TestH5adValidation(unittest.TestCase):
-
     """
     Checks that validation from h5ad works, only does one invalid example as extensive testing is done in the classes
     below
@@ -59,7 +57,6 @@ class BaseValidationTest(unittest.TestCase):
 
 
 class TestExpressionMatrix(BaseValidationTest):
-
     """
     Fail cases for expression matrices (anndata.X and anndata.raw.X)
     """
@@ -148,7 +145,6 @@ class TestExpressionMatrix(BaseValidationTest):
 
 
 class TestObs(BaseValidationTest):
-
     """
     Fail cases in adata.uns
     """
@@ -615,9 +611,16 @@ class TestObs(BaseValidationTest):
             "EFO:0008853": ["cell"],
             "EFO:0030026": ["nucleus"],
             "EFO:0010550": ["cell", "nucleus"],
-            "EFO:0008919": ["cell"],
             "EFO:0008939": ["nucleus"],
             "EFO:0030027": ["nucleus"],
+            "EFO:0008796": ["cell"],
+            "EFO:0700003": ["cell"],
+            "EFO:0700004": ["cell"],
+            "EFO:0008780": ["cell", "nucleus"],
+            "EFO:0008953": ["cell"],
+            # "EFO:0700010": ["cell", "nucleus"],  TODO: Uncomment once EFO.owl is updated in 3.1.0
+            # "EFO:0700011": ["cell", "nucleus"],  TODO: Uncomment once EFO.owl is updated in 3.1.0
+            "EFO:0009919": ["cell", "nucleus"],
         }
 
         for assay, suspension_types in match_assays.items():
@@ -655,7 +658,8 @@ class TestObs(BaseValidationTest):
             "EFO:0010184": ["cell", "nucleus"],
             "EFO:0009918": ["na"],
             "EFO:0700000": ["na"],
-            "EFO:0030005": ["na"],
+            "EFO:0008994": ["na"],
+            "EFO:0008919": ["cell"],
         }
         for assay, suspension_types in match_assays_or_children.items():
             with self.subTest(assay=assay):
@@ -665,7 +669,7 @@ class TestObs(BaseValidationTest):
                 self.validator.warnings = []
 
                 invalid_suspension_type = "na"
-                if assay in {"EFO:0009918", "EFO:0700000", "EFO:0030005"}:
+                if assay in {"EFO:0009918", "EFO:0700000", "EFO:0008994"}:
                     invalid_suspension_type = "nucleus"
                     self.validator.adata.obs["suspension_type"] = self.validator.adata.obs[
                         "suspension_type"
@@ -789,7 +793,6 @@ class TestObs(BaseValidationTest):
 
 
 class TestVar(BaseValidationTest):
-
     """
     Fail cases in adata.var and adata.raw.var
     """
@@ -1009,7 +1012,6 @@ class TestVar(BaseValidationTest):
 
 
 class TestUns(BaseValidationTest):
-
     """
     Fail cases in adata.uns
     """
@@ -1273,7 +1275,6 @@ class TestUns(BaseValidationTest):
 
 
 class TestObsm(BaseValidationTest):
-
     """
     Fail cases for adata.obsm
     """
@@ -1328,7 +1329,6 @@ class TestObsm(BaseValidationTest):
 
 
 class TestAddingLabels(unittest.TestCase):
-
     """
     Tests the addition of labels from IDs based on schema specification. The test is done by comparing manually
     created dataframes (positive control) against the ones produced by the validator
