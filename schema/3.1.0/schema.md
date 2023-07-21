@@ -716,7 +716,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Data Portal</td>
+      <td>CELLxGENE Discover</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -735,7 +735,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Data Portal</td>
+      <td>CELLxGENE Discover</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -754,7 +754,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Data Portal</td>
+      <td>CELLxGENE Discover</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -773,7 +773,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Data Portal</td>
+      <td>CELLxGENE Discover</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -792,7 +792,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Data Portal</td>
+      <td>CELLxGENE Discover</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -811,7 +811,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Data Portal</td>
+      <td>CELLxGENE Discover</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -830,7 +830,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Data Portal</td>
+      <td>CELLxGENE Discover</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -849,7 +849,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Data Portal</td>
+      <td>CELLxGENE Discover</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -916,7 +916,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Data Portal</td>
+      <td>CELLxGENE Discover</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -935,7 +935,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Data Portal</td>
+      <td>CELLxGENE Discover</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -954,7 +954,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Data Portal</td>
+      <td>CELLxGENE Discover</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1012,26 +1012,6 @@ See also `default_embedding` in `uns`.
 ## `uns` (Dataset Metadata)
 
 `uns` is a ordered dictionary with a `str` key. Curators MUST annotate the following keys and values in `uns`:
-
-### schema_version
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>schema_version</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Curator</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>
-          This MUST be <code>"3.0.0"</code>.
-        </td>
-    </tr>
-</tbody></table>
-<br>
 
 ### title
 
@@ -1115,6 +1095,29 @@ See also `default_embedding` in `uns`.
 </tbody></table>
 <br>
 
+Curators MUST NOT annotate the following keys and values in `uns`. 
+
+When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schema_version` key and its value to `uns`. If `schema_version` is already defined, then its value MUST be overwritten. 
+
+### schema_version
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>schema_version</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>CELLxGENE Discover</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          This MUST be <code>"3.1.0"</code>.
+        </td>
+    </tr>
+</tbody></table>
+
 ## Appendix A. Changelog
 
 schema v3.1.0
@@ -1144,6 +1147,9 @@ schema v3.1.0
     * Added SPLiT-seq
     * Changed spatial transcriptomics by high-throughput sequencing [EFO:0030005] and its children to spatial transcriptomics [EFO:0008994] and its children
     * Updated Seq-Well [EFO:0008919] to Seq-Well [EFO:0008919] and its children
+* uns (Dataset metadata)
+  * `schema_version`
+    * Must must be annotated by CELLxGENE Discover and not the Curator.
 
 
 schema v3.0.0
@@ -1160,7 +1166,7 @@ schema v3.0.0
   * Renamed `ethnicity` to `self_reported_ethnicity`. Added `"multiethnic"` value.
   * Added `suspension_type`
 * var and raw.var (Gene metadata)
-  * `feature_biotype` must be annotated by the Data Portal and not the Curator.
+  * `feature_biotype` must be annotated by CELLxGENE Discover and not the Curator.
 * uns (Dataset metadata)
   * Updated `schema_version`
   * Deprecated `X_normalization`
