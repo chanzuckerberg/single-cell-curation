@@ -186,24 +186,24 @@ The following ontology dependencies are *pinned* for this version of the schema.
 
 | Ontology | OBO Prefix | Release | Download |
 |:--|:--|:--|:--|
-| [Cell Ontology] | CL |  [2022-09-15] | [cl.owl]|
-| [Experimental Factor Ontology] | EFO | [2022-09-15 EFO 3.46.0] | [efo.owl]
+| [Cell Ontology] | CL |  [2023-07-20] | [cl.owl]|
+| [Experimental Factor Ontology] | EFO | [2023-07-17 EFO 3.56.0] | [efo.owl]
 | [Human Ancestry Ontology] | HANCESTRO | [2022-07-18 (2.6)] | [hancestro.owl] |
 | [Human Developmental Stages] |  HsapDv | 2020-03-10 | [hsapdv.owl] |
-| [Mondo Disease Ontology] | MONDO | [2022-09-06] | [mondo.owl] |
+| [Mondo Disease Ontology] | MONDO | [2023-07-03] | [mondo.owl] |
 | [Mouse Developmental Stages]| MmusDv | 2020-03-10 | [mmusdv.owl] |
-| [NCBI organismal classification] |  NCBITaxon | [2022-06-28] | [ncbitaxon.owl] |
-| [Phenotype And Trait Ontology] | PATO | [2022-08-10] | [pato.owl]  |
-| [Uberon multi-species anatomy ontology] |  UBERON | [2022-08-19] | [uberon.owl] |
+| [NCBI organismal classification] |  NCBITaxon | [2023-06-20] | [ncbitaxon.owl] |
+| [Phenotype And Trait Ontology] | PATO | [2023-05-18] | [pato.owl]  |
+| [Uberon multi-species anatomy ontology] |  UBERON | [2023-06-28] | [uberon.owl] |
 | | | | |
 
 [Cell Ontology]: http://obofoundry.org/ontology/cl.html
-[2022-09-15]: https://github.com/obophenotype/cell-ontology/releases/tag/v2022-09-15
-[cl.owl]: https://github.com/obophenotype/cell-ontology/raw/v2022-09-15/cl.owl
+[2023-07-20]: https://github.com/obophenotype/cell-ontology/releases/tag/v2023-07-20
+[cl.owl]: https://github.com/obophenotype/cell-ontology/releases/download/v2023-07-20/cl.owl
 
 [Experimental Factor Ontology]: http://www.ebi.ac.uk/efo
-[2022-09-15 EFO 3.46.0]: https://github.com/EBISPOT/efo/releases/tag/v3.46.0
-[efo.owl]: https://github.com/EBISPOT/efo/releases/download/v3.46.0/efo.owl
+[2023-07-17 EFO 3.56.0]: https://github.com/EBISPOT/efo/releases/tag/v3.56.0
+[efo.owl]: https://github.com/EBISPOT/efo/releases/download/v3.56.0/efo.owl
 
 [Human Ancestry Ontology]: http://www.obofoundry.org/ontology/hancestro.html
 [2022-07-18 (2.6)]: https://github.com/EBISPOT/ancestro/releases/tag/2.6
@@ -213,23 +213,23 @@ The following ontology dependencies are *pinned* for this version of the schema.
 [hsapdv.owl]: http://purl.obolibrary.org/obo/hsapdv.owl
 
 [Mondo Disease Ontology]: http://obofoundry.org/ontology/mondo.html
-[2022-09-06]: https://github.com/monarch-initiative/mondo/releases/tag/v2022-09-06
-[mondo.owl]: https://github.com/monarch-initiative/mondo/releases/download/v2022-09-06/mondo.owl
+[2023-07-03]: https://github.com/monarch-initiative/mondo/releases/tag/v2023-07-03
+[mondo.owl]: https://github.com/monarch-initiative/mondo/releases/download/v2023-07-03/mondo.owl
 
 [Mouse Developmental Stages]: http://obofoundry.org/ontology/mmusdv.html
 [mmusdv.owl]: http://purl.obolibrary.org/obo/mmusdv.owl
 
 [NCBI organismal classification]: http://obofoundry.org/ontology/ncbitaxon.html
-[2022-06-28]: https://github.com/obophenotype/ncbitaxon/releases/tag/v2022-06-28
-[ncbitaxon.owl]: https://github.com/obophenotype/ncbitaxon/releases/download/v2022-06-28/ncbitaxon.owl.gz
+[2023-06-20]: https://github.com/obophenotype/ncbitaxon/releases/tag/v2023-06-20
+[ncbitaxon.owl]: https://github.com/obophenotype/ncbitaxon/releases/download/v2023-06-20/ncbitaxon.owl.gz
 
 [Phenotype And Trait Ontology]: http://www.obofoundry.org/ontology/pato.html
-[2022-08-10]: https://github.com/pato-ontology/pato/releases/tag/v2022-08-10
-[pato.owl]: https://github.com/pato-ontology/pato/raw/v2022-08-10/pato.owl
+[2023-05-18]: https://github.com/pato-ontology/pato/releases/tag/v2023-05-18
+[pato.owl]: https://github.com/pato-ontology/pato/blob/v2023-05-18/pato.owl
 
 [Uberon multi-species anatomy ontology]: http://www.obofoundry.org/ontology/uberon.html
-[2022-08-19]: https://github.com/obophenotype/uberon/releases/tag/v2022-08-19
-[uberon.owl]: https://github.com/obophenotype/uberon/releases/download/v2022-08-19/uberon.owl
+[2023-06-28]: https://github.com/obophenotype/uberon/releases/tag/v2023-06-28
+[uberon.owl]: https://github.com/obophenotype/uberon/releases/download/v2023-06-28/uberon.owl
 
 ### Required Gene Annotations
 
@@ -239,20 +239,18 @@ The following gene annotation dependencies are *pinned* for this version of the 
 
 | Source | Required version | Download |
 |:--|:--|:--|
-| [GENCODE (Human)] | Human reference GRCh38 (GENCODE v38/Ensembl 104) | [gencode.v38.primary_assembly.annotation.gtf] |
-| [GENCODE (Mouse)] | Mouse reference GRCm39 (GENCODE vM27/Ensembl 104) | [gencode.vM27.primary_assembly.annotation.gtf] |
+| [GENCODE (Human)] | Human reference GRCh38.p13 (GENCODE v43/Ensembl 109) | [gencode.v43.primary_assembly.annotation.gtf] |
+| [GENCODE (Mouse)] | Mouse reference GRCm39 (GENCODE vM32/Ensembl 109) | [gencode.vM32.primary_assembly.annotation.gtf] |
 | [ENSEMBL (COVID-19)] | SARS-CoV-2 reference (ENSEMBL assembly: ASM985889v3) | [Sars\_cov\_2.ASM985889v3.101.gtf] |
 | [ThermoFisher ERCC Spike-Ins] | ThermoFisher ERCC RNA Spike-In Control Mixes (Cat # 4456740, 4456739) | [cms_095047.txt] |
 
 [RNA Spike-In Control Mixes]: https://www.thermofisher.com/document-connect/document-connect.html?url=https%3A%2F%2Fassets.thermofisher.com%2FTFS-Assets%2FLSG%2Fmanuals%2Fcms_086340.pdf&title=VXNlciBHdWlkZTogRVJDQyBSTkEgU3Bpa2UtSW4gQ29udHJvbCBNaXhlcyAoRW5nbGlzaCAp
 
 [GENCODE (Human)]: https://www.gencodegenes.org/human/
-[gencode.v38.primary_assembly.annotation.gtf]: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_38/gencode.v38.primary_assembly.annotation.gtf.gz
+[gencode.v43.primary_assembly.annotation.gtf]: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_43/gencode.v43.primary_assembly.annotation.gtf.gz
 
 [GENCODE (Mouse)]: https://www.gencodegenes.org/mouse/
-[gencode.vM27.primary_assembly.annotation.gtf]: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M27/gencode.vM27.primary_assembly.annotation.gtf.gz
-
-[cellranger 2020-A (July 7, 2020) release]: https://support.10xgenomics.com/single-cell-gene-expression/software/release-notes/build
+[gencode.vM32.primary_assembly.annotation.gtf]: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M32/gencode.vM32.primary_assembly.annotation.gtf.gz
 
 [ENSEMBL (COVID-19)]: https://covid-19.ensembl.org/index.html
 [Sars\_cov\_2.ASM985889v3.101.gtf]: https://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz
@@ -282,12 +280,12 @@ Curators MUST annotate the following columns in the `obs` dataframe:
       <th>Value</th>
         <td>categorical with <code>str</code> categories. This MUST be an EFO term and either:<br><br>
           <ul><li>
-            <a href="http://www.ebi.ac.uk/efo/EFO_0002772"><code>"EFO:0002772"</code></a> for <i>assay by molecule</i> or <b>preferably</b> its most accurate child
+            <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0002772"><code>"EFO:0002772"</code></a> for <i>assay by molecule</i> or <b>preferably</b> its most accurate child
           </li>
           <li>
-            <a href="http://www.ebi.ac.uk/efo/EFO_0010183"><code>"EFO:0010183"</code></a>  for <i>single cell library construction</i> or <b>preferably</b> its most accurate child
+            <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0010183"><code>"EFO:0010183"</code></a>  for <i>single cell library construction</i> or <b>preferably</b> its most accurate child
           </li></ul>
-        An assay based on 10X Genomics products SHOULD either be <a href="http://www.ebi.ac.uk/efo/EFO_0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i> or <b>preferably</b> its most accurate child. An assay based on <i>SMART (Switching Mechanism at the 5' end of the RNA Template) or SMARTer technology</i> SHOULD either be <a href="http://www.ebi.ac.uk/efo/EFO_0010184"><code>"EFO:0010184"</code></a> for <i>Smart-like</i> or preferably its most accurate child.<br><br>
+        An assay based on 10X Genomics products SHOULD either be <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i> or <b>preferably</b> its most accurate child. An assay based on <i>SMART (Switching Mechanism at the 5' end of the RNA Template) or SMARTer technology</i> SHOULD either be <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0010184"><code>"EFO:0010184"</code></a> for <i>Smart-like</i> or preferably its most accurate child.<br><br>
        <br>Recommended values for specific assays:
           <br><br>
           <table>
@@ -300,27 +298,27 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <tbody>
             <tr>
               <td><i>10x 3' v2</i></td>
-              <td><a href="http://www.ebi.ac.uk/efo/EFO_0009899"><code>"EFO:0009899"</code></a></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0009899"><code>"EFO:0009899"</code></a></td>
             </tr>
             <tr>
               <td><i>10x 3' v3</i></td>
-              <td><a href="http://www.ebi.ac.uk/efo/EFO_0009922"><code>"EFO:0009922"</code></a></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0009922"><code>"EFO:0009922"</code></a></td>
             </tr>
             <tr>
               <td><i>10x 5' v1</i></td>
-              <td><a href="http://www.ebi.ac.uk/efo/EFO_0011025"><code>"EFO:0011025"</code></a></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0011025"><code>"EFO:0011025"</code></a></td>
             </tr>
             <tr>
               <td><i>10x 5' v2</i></td>
-              <td><a href="http://www.ebi.ac.uk/efo/EFO_0009900"><code>"EFO:0009900"</code></a></td>
-            </tr>
-            <tr>
-              <td><i>Smart-seq</i></td>
-              <td><a href="http://www.ebi.ac.uk/efo/EFO_0008930"><code>"EFO:0008930"</code></a></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0009900"><code>"EFO:0009900"</code></a></td>
             </tr>
             <tr>
               <td><i>Smart-seq2</i></td>
-              <td><a href="http://www.ebi.ac.uk/efo/EFO_0008931"><code>"EFO:0008931"</code></a></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0008931"><code>"EFO:0008931"</code></a></td>
+            </tr>
+            <tr>
+              <td><i>Visium Spatial Gene Expression</i></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0010961"><code>"EFO:0010961"</code></a></td>
             </tr>
           </tbody></table>
         </td>
@@ -555,73 +553,105 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           </thead>
           <tbody>
             <tr>
-              <td><i>10x transcription profiling</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030080"><code>EFO:0030080</code></a>] and its children</td>
+              <td><i>10x transcription profiling</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0030080"><code>EFO:0030080</code></a>] and its children</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr> 
             <tr>
-              <td><i>ATAC-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0007045"><code>EFO:0007045</code></a>] and its children</td>
+              <td><i>ATAC-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0007045"><code>EFO:0007045</code></a>] and its children</td>
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>CEL-seq2</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0010010"><code>EFO:0010010</code></a>]</td>
-              <td><code>"cell"</code> or <code>"nucleus"</code></td>
-           </tr>
-            <tr>
-              <td><i>CITE-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0009294"><code>EFO:0009294</code></a>] and its children</td>
+              <td><i>BD Rhapsody Whole Transcriptome Analysis</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0700003"><code>EFO:0700003</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>DroNc-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008720"><code>EFO:0008720</code></a>]</td>
-              <td><code>"nucleus"</code></td>
+              <td><i>BD Rhapsody Targeted mRNA</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0700004"><code>EFO:0700004</code></a>]</td>
+              <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>Drop-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008722"><code>EFO:0008722</code></a>]</td>
+              <td><i>CEL-seq2</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0010010"><code>EFO:0010010</code></a>]</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>microwell-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030002"><code>EFO:0030002</code></a>]</td>
+              <td><i>CITE-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0009294"><code>EFO:0009294</code></a>] and its children</td>
+              <td><code>"cell"</code></td>
+           </tr>
+            <tr>
+              <td><i>DroNc-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008720"><code>EFO:0008720</code></a>]</td>
+              <td><code>"nucleus"</code></td>
+           </tr>
+            <tr>
+              <td><i>Drop-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008722"><code>EFO:0008722</code></a>]</td>
+              <td><code>"cell"</code> or <code>"nucleus"</code></td>
+           </tr>
+            <tr>
+              <td><i>GEXSCOPE technology</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0700011"><code>EFO:0700011</code></a>]</td>
+              <td><code>"cell"</code> or <code>"nucleus"</code></td>
+           </tr> 
+            <tr>
+              <td><i>inDrop</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008780"><code>EFO:0008780</code></a>]</td>
+              <td><code>"cell"</code> or <code>"nucleus"</code></td>
+           </tr>
+            <tr>
+              <td><i>MARS-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008796"><code>EFO:0008796</code></a>]</td>
+              <td><code>"cell"</code></td>
+           </tr>
+            <tr>
+              <td><i>microwell-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0030002"><code>EFO:0030002</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>    
             <tr>
-              <td><i>Patch-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008853"><code>EFO:0008853</code></a>]</td>
+              <td><i>Patch-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008853"><code>EFO:0008853</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>sci-Plex</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030026"><code>EFO:0030026</code></a>]</td>
+              <td><i>sci-Plex</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0030026"><code>EFO:0030026</code></a>]</td>
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>sci-RNA-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0010550"><code>EFO:0010550</code></a>]</td>
+              <td><i>sci-RNA-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0010550"><code>EFO:0010550</code></a>]</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>Seq-Well</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008919"><code>EFO:0008919</code></a>]</td>
+              <td><i>Seq-Well</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008919"><code>EFO:0008919</code></a>] and its children</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>Smart-like</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0010184"><code>EFO:0010184</code></a>] and its children</td>
+              <td><i>Smart-like</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0010184"><code>EFO:0010184</code></a>] and its children</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>smFISH</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0009918"><code>EFO:0009918</code></a>] and its children</td>
+              <td><i>smFISH</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0009918"><code>EFO:0009918</code></a>] and its children</td>
               <td><code>"na"</code></td>
            </tr>   
             <tr>
-              <td><i>snmC-seq</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0008939"><code>EFO:0008939</code></a>]</td>
+              <td><i>snmC-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008939"><code>EFO:0008939</code></a>]</td>
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>snmC-seq2</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030027"><code>EFO:0030027</code></a>]</td>
+              <td><i>snmC-seq2</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0030027"><code>EFO:0030027</code></a>]</td>
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>spatial proteomics</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0700000"><code>EFO:0700000</code></a>] and its children</td>
+              <td><i>spatial proteomics</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0700000"><code>EFO:0700000</code></a>] and its children</td>
               <td><code>"na"</code></td>
            </tr>
             <tr>
-              <td><i>spatial transcriptomics by high-throughput sequencing</i> [<a href="http://www.ebi.ac.uk/efo/EFO_0030005"><code>EFO:0030005</code></a>] and its children</td>
+              <td><i>spatial transcriptomics</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008994"><code>EFO:0008994</code></a>] and its children</td>
               <td><code>"na"</code></td>
-           </tr>    
+           </tr> 
+            <tr>
+              <td><i>SPLiT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0009919"><code>EFO:0009919</code></a>]</td>
+              <td><code>"cell"</code> or <code>"nucleus"</code></td>
+           </tr> 
+            <tr>
+              <td><i>STRT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008953"><code>EFO:0008953</code></a>]</td>
+              <td><code>"cell"</code></td>
+           </tr>
+            <tr>
+              <td><i>TruDrop</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0700010"><code>EFO:0700010</code></a>]</td>
+              <td><code>"cell"</code> or <code>"nucleus"</code></td>
+           </tr> 
           </tbody></table>
           <br>If the assay does not appear in this table, the most appropriate value MUST be selected and <a href="mailto:cellxgene@chanzuckerberg.com">the curation team informed</a> during submission so that the assay can be added to the table.<br>
         </td>
@@ -1089,7 +1119,31 @@ See also `default_embedding` in `uns`.
 
 schema v3.1.0
 
-*
+* Required Ontologies
+  * Updated CL to the 2023-07-20 release
+  * Updated EFO to the 2023-07-17 EFO 3.56.0 release
+  * Updated MONDO to the 2023-07-03 release
+  * Updated NCBITaxon to the 2023-06-20 release
+  * Updated PATO to the 2023-05-18 release
+  * Updated UBERON to the 2023-06-28 release
+* Required Gene Annotations
+  * Updated GENCODE (Human) to Human reference GRCh38.p13 (GENCODE v43/Ensembl 109) 
+  * Updated GENCODE (Mouse) to Mouse reference GRCm39 (GENCODE vM32/Ensembl 109)
+* obs (Cell metadata)
+  * `assay_ontology_term_id`
+    * Added Visium Spatial Gene Expression to recommended values
+    * Removed Smart-seq from recommended values
+  * `suspension_type`
+    * Added MARS-seq
+    * Added BD Rhapsody Whole Transcriptome Analysis
+    * Added BD Rhapsody Targeted mRNA
+    * Added inDrop
+    * Added STRT-seq
+    * Added TruDrop
+    * Added GEXSCOPE technology
+    * Added SPLiT-seq
+    * Changed spatial transcriptomics by high-throughput sequencing [EFO:0030005] and its children to spatial transcriptomics [EFO:0008994] and its children
+    * Updated Seq-Well [EFO:0008919] to Seq-Well [EFO:0008919] and its children
 
 
 schema v3.0.0
