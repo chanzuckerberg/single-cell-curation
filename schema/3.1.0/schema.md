@@ -9,6 +9,25 @@ Version: 3.1.0
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED" "MAY", and "OPTIONAL" in this document are to be interpreted as described in [BCP 14](https://tools.ietf.org/html/bcp14), [RFC2119](https://www.rfc-editor.org/rfc/rfc2119.txt), and [RFC8174](https://www.rfc-editor.org/rfc/rfc8174.txt) when, and only when, they appear in all capitals, as shown here.
 
+## Schema versioning
+
+The CELLxGENE schema version is based on [Semantic Versioning](https://semver.org/).
+
+**Major version** is incremented when schema updates are incompatible with the AnnData and Seurat data encodings or CELLxGENE API(s). Examples include:
+  * Renaming metadata fields
+  * Deprecating metadata fields
+  * Changing the type or format of a metadata field
+ 
+**Minor version** is incremented when schema updates may require changes only to the `cellxgene-schema` CLI or the curation process. Examples include:
+  * Adding metadata fields
+  * Updating pinned ontologies or gene references
+  * Changing the validation requirements for a metadata field
+  
+**Patch version** is incremented for editorial updates to the schema.
+
+All changes are documented in the schema [Changelog](#appendix-a-changelog).
+
+
 ## Background
 
 CELLxGENE aims to support the publication, sharing, and exploration of single-cell datasets. Building on those published datasets, CELLxGENE seeks to create references of the phenotypes and composition of cells that make up human tissues.
@@ -1122,6 +1141,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 
 schema v3.1.0
 
+* Added section for Schema versioning
 * Required Ontologies
   * Updated CL to the 2023-07-20 release
   * Updated EFO to the 2023-07-17 EFO 3.56.0 release
