@@ -705,19 +705,19 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <tbody>
             <tr>
               <td>Tissue</td>
-              <td>STRONGLY RECOMMENDED to be an UBERON term (e.g. <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0008930"><code>"UBERON:0008930"</code></a> for a <i>sematosensory cortex</i> tissue sample)</td>
+              <td>STRONGLY RECOMMENDED to be an UBERON term<br>(e.g. <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0008930"><code>"UBERON:0008930"</code></a> for a <i>sematosensory cortex</i> tissue sample)</td>
             </tr>
             <tr>
               <td>Cell Culture</td>
-              <td>MUST be a CL term appended with <code>" (cell culture)"</code> (e.g. <code><a href="https://www.ebi.ac.uk/ols4/ontologies/cl/classes?obo_id=CL%3A0000057">"CL:0000057</a> (cell culture)"</code> for the <i>WTC-11 cell line</i>)</td>
+              <td>MUST be a CL term appended with <code>" (cell culture)"</code><br>(e.g. <code><a href="https://www.ebi.ac.uk/ols4/ontologies/cl/classes?obo_id=CL%3A0000057">"CL:0000057</a> (cell culture)"</code> for the <i>WTC-11 cell line</i>)</td>
             </tr>
             <tr>
               <td>Organoid</td>
-              <td>MUST be an UBERON term appended with <code>" (organoid)"</code> (e.g. <code><a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000955">"UBERON:0000955</a> (organoid)"</code> for a <i>brain organoid</i>)</td>
+              <td>MUST be an UBERON term appended with <code>" (organoid)"</code><br>(e.g. <code><a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000955">"UBERON:0000955</a> (organoid)"</code> for a <i>brain organoid</i>)</td>
             </tr>
             <tr>
               <td>Enriched,<br>Sorted,or<br>Isolated<br>Cells from<br>a Tissue</td>
-              <td>MUST be an UBERON or CL term and SHOULD NOT use terms that do not capture the tissue of origin<br>(e.g. In the case of <i>CD3+ kidney cells</i>, use <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0002113"><code>"UBERON:0002113"</code></a> for <i>kidney</i> instead of <a href="https://www.ebi.ac.uk/ols4/ontologies/cl/classes?obo_id=CL%3A0000084"><code>"CL:000084"</code></a> for <i>T cell</i>. However, in the case of <i>EPCAM+ cervical cells</i>, use <a href="https://www.ebi.ac.uk/ols4/ontologies/cl/classes?obo_id=CL%3A0000066"><code>"CL:000066"</code></a> for <i>epithelial cell</i> of the cervix.)
+              <td>MUST be an UBERON or CL term and SHOULD NOT use terms that do not capture<br>the tissue of origin<<br>(e.g. In the case of <i>CD3+ kidney cells</i>, use <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0002113"><code>"UBERON:0002113"</code></a> for <i>kidney</i> <br>instead of <a href="https://www.ebi.ac.uk/ols4/ontologies/cl/classes?obo_id=CL%3A0000084"><code>"CL:000084"</code></a> for <i>T cell</i>. However, in the case of <i>EPCAM+ cervical cells</i>,<br>use <a href="https://www.ebi.ac.uk/ols4/ontologies/cl/classes?obo_id=CL%3A0000066"><code>"CL:000066"</code></a> for <i>epithelial cell</i> of the cervix.)
               </td>
             </tr>
           </tbody></table>
