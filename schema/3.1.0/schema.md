@@ -186,18 +186,18 @@ The following table describes the matrix data and layers requirements that are *
 
 CELLxGENE requires ontology terms to enable search, comparison, and integration of data.
 Ontology terms for cell metadata MUST use [OBO-format identifiers](http://www.obofoundry.org/id-policy.html), meaning a CURIE (prefixed identifier) of the form **Ontology:Identifier**.
-For example, [EFO:0000001](https://www.ebi.ac.uk/ols/ontologies/efo/terms?short_form=EFO_0000001) is a term in the Experimental Factor Ontology (EFO).
+For example, [EFO:0000001](https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0000001) is a term in the Experimental Factor Ontology (EFO).
 
 The most accurate ontology term MUST always be used. If an exact or approximate ontology term is not available, a new term may be requested:
 
 - For the [Cell Ontology], data submitters may [suggest a new term](https://github.com/obophenotype/cell-ontology/issues/new?assignees=bvarner-ebi&labels=new+term+request%2C+cellxgene&template=a_adding_term_cellxgene.md&title=%5BNTR-cxg%5D) and [notify the curation team](mailto:cellxgene@chanzuckerberg.com) of the pending term request, so that the datasets can be updated once the term is available.
 
-  To meet CELLxGENE schema requirements, the most accurate available CL term MUST be used until the new term is available. For example if `cell_type_ontology_term_id` describes a relay interneuron, but the most accurate available term in the CL ontology is [CL:0000099](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000099) for *interneuron*, then the interneuron term can be used to fulfill this requirement and ensures that users searching for "neuron" are able to find these data. If no appropriate high-level term can be found or the cell type is unknown, then the most accurate term is [CL:0000003](https://www.ebi.ac.uk/ols/ontologies/cl/terms?obo_id=CL:0000003) for *native cell*. Users will still be able to access more specific cell type annotations that have been submitted with the dataset (but aren't required by the schema).
+  To meet CELLxGENE schema requirements, the most accurate available CL term MUST be used until the new term is available. For example if `cell_type_ontology_term_id` describes a relay interneuron, but the most accurate available term in the CL ontology is [CL:0000099](https://www.ebi.ac.uk/ols4/ontologies/cl/classes?obo_id=CL%3A0000099) for *interneuron*, then the interneuron term can be used to fulfill this requirement and ensures that users searching for "neuron" are able to find these data. If no appropriate high-level term can be found or the cell type is unknown, then the most accurate term is [CL:0000003](https://www.ebi.ac.uk/ols4/ontologies/cl/classes?obo_id=CL%3A0000003) for *native cell*. Users will still be able to access more specific cell type annotations that have been submitted with the dataset (but aren't required by the schema).
 
    
 - For all other ontologies, data submitters may submit a [request to the curation team](mailto:cellxgene@chanzuckerberg.com) during the submission process.
 
-Terms documented as obsolete in an ontology MUST NOT be used. For example, [EFO:0009310](http://www.ebi.ac.uk/efo/EFO_0009310) for *obsolete_10x v2* was marked as obsolete in EFO version 3.31.0 and replaced by [EFO:0009899](http://www.ebi.ac.uk/efo/EFO_0009899) for *10x 3' v2*.
+Terms documented as obsolete in an ontology MUST NOT be used. For example, [EFO:0009310](https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0009310) for *obsolete_10x v2* was marked as obsolete in EFO version 3.31.0 and replaced by [EFO:0009899](https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0009899) for *10x 3' v2*.
 
 ### Required Ontologies
 
@@ -299,12 +299,12 @@ Curators MUST annotate the following columns in the `obs` dataframe:
       <th>Value</th>
         <td>categorical with <code>str</code> categories. This MUST be an EFO term and either:<br><br>
           <ul><li>
-            <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0002772"><code>"EFO:0002772"</code></a> for <i>assay by molecule</i> or <b>preferably</b> its most accurate child
+            <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0002772"><code>"EFO:0002772"</code></a> for <i>assay by molecule</i> or <b>preferably</b> its most accurate child
           </li>
           <li>
-            <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0010183"><code>"EFO:0010183"</code></a>  for <i>single cell library construction</i> or <b>preferably</b> its most accurate child
+            <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010183"><code>"EFO:0010183"</code></a>  for <i>single cell library construction</i> or <b>preferably</b> its most accurate child
           </li></ul>
-        An assay based on 10X Genomics products SHOULD either be <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i> or <b>preferably</b> its most accurate child. An assay based on <i>SMART (Switching Mechanism at the 5' end of the RNA Template) or SMARTer technology</i> SHOULD either be <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0010184"><code>"EFO:0010184"</code></a> for <i>Smart-like</i> or preferably its most accurate child.<br><br>
+        An assay based on 10X Genomics products SHOULD either be <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i> or <b>preferably</b> its most accurate child. An assay based on <i>SMART (Switching Mechanism at the 5' end of the RNA Template) or SMARTer technology</i> SHOULD either be <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010184"><code>"EFO:0010184"</code></a> for <i>Smart-like</i> or preferably its most accurate child.<br><br>
        <br>Recommended values for specific assays:
           <br><br>
           <table>
@@ -317,27 +317,27 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <tbody>
             <tr>
               <td><i>10x 3' v2</i></td>
-              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0009899"><code>"EFO:0009899"</code></a></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0009899"><code>"EFO:0009899"</code></a></td>
             </tr>
             <tr>
               <td><i>10x 3' v3</i></td>
-              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0009922"><code>"EFO:0009922"</code></a></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0009922"><code>"EFO:0009922"</code></a></td>
             </tr>
             <tr>
               <td><i>10x 5' v1</i></td>
-              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0011025"><code>"EFO:0011025"</code></a></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0011025"><code>"EFO:0011025"</code></a></td>
             </tr>
             <tr>
               <td><i>10x 5' v2</i></td>
-              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0009900"><code>"EFO:0009900"</code></a></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0009900"><code>"EFO:0009900"</code></a></td>
             </tr>
             <tr>
               <td><i>Smart-seq2</i></td>
-              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0008931"><code>"EFO:0008931"</code></a></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008931"><code>"EFO:0008931"</code></a></td>
             </tr>
             <tr>
               <td><i>Visium Spatial Gene Expression</i></td>
-              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes/http%253A%252F%252Fwww.ebi.ac.uk%252Fefo%252FEFO_0010961"><code>"EFO:0010961"</code></a></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a></td>
             </tr>
           </tbody></table>
         </td>
@@ -377,7 +377,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If unavailable, this MUST be <code>"unknown".</code> <br><br>If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be the most<br>accurate HsapDv term with the following STRONGLY RECOMMENDED:
+        <td>categorical with <code>str</code> categories. If unavailable, this MUST be <code>"unknown".</code> <br><br>If <code>organism_ontolology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9606"><code>"NCBITaxon:9606"</code></a> for <i>Homo sapiens</i>, this MUST be the most accurate HsapDv term with the following STRONGLY RECOMMENDED:
           <br><br>
           <table>
           <thead>
@@ -389,22 +389,23 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <tbody>
             <tr>
               <td>Embryonic stage</td>
-              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=carnegie&submit=Search+terms">Carnegie stages 1-23</a><br>(up to 8 weeks after conception; e.g. <a href="http://purl.obolibrary.org/obo/HsapDv_0000003">HsapDv:0000003</a>)</td>
+              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=carnegie&submit=Search+terms">Carnegie stages 1-23</a><br>(up to 8 weeks after conception; e.g. <a href="https://www.ebi.ac.uk/ols4/ontologies/hsapdv/classes?obo_id=HsapDv%3A0000003">HsapDv:0000003</a>)</td>
             </tr>
             <tr>
               <td>Fetal development</td>
-              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=post-fertilization&submit=Search+terms">9 to 38 week post-fertilization human stages</a><br>(9 weeks after conception and before birth; e.g. <a href="http://purl.obolibrary.org/obo/HsapDv_0000046">HsapDv:0000046</a>)</td>
+              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=post-fertilization&submit=Search+terms">9 to 38 week post-fertilization human stages</a><br>(9 weeks after conception and before birth; e.g. <a href="https://www.ebi.ac.uk/ols4/ontologies/hsapdv/classes?obo_id=HsapDv%3A0000046">HsapDv:0000046</a>)</td>
             </tr>
             <tr>
               <td>After birth for the<br>first 12 months</td>
-              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=month-old&submit=Search+terms">1 to 12 month-old human stages</a><br>(e.g. <a href="http://purl.obolibrary.org/obo/HsapDv_0000174">HsapDv:0000174)</a></td>
+              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=month-old&submit=Search+terms">1 to 12 month-old human stages</a><br>(e.g. <a href="https://www.ebi.ac.uk/ols4/ontologies/hsapdv/classes?obo_id=HsapDv%3A">HsapDv:0000174)</a></td>
             </tr>
             <tr>
               <td>After the first 12<br>months post-birth</td>
-              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=year-old&submit=Search+terms">year-old human stages</a><br>(e.g. <a href="http://purl.obolibrary.org/obo/HsapDv_0000246">HsapDv:0000246)</a></td>
+              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=year-old&submit=Search+terms">year-old human stages</a><br>(e.g. <a href="https://www.ebi.ac.uk/ols4/ontologies/hsapdv/classes?obo_id=HsapDv%3A0000246">HsapDv:0000246)</a></td>
             </tr>
           </tbody></table>
-          <br>If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i></code>, this MUST be the most<br>accurate MmusDv term with the following STRONGLY RECOMMENDED:
+          <br>If <code>organism_ontolology_term_id</code> is 
+          <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A10090"><code>"NCBITaxon:10090"</code></a> for <i>Mus musculus</i>, this MUST be the most accurate MmusDv term with the following STRONGLY RECOMMENDED:
           <br><br>
           <table>
           <thead>
@@ -416,14 +417,14 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <tbody>
             <tr>
               <td>From the time of conception<br>to 1 month after birth</td>
-              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=theiler+stage&submit=Search+terms">Theiler stages</a><br>(e.g. <a href="http://purl.obolibrary.org/obo/MmusDv_0000003">MmusDv:0000003</a>)</td>
+              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=theiler+stage&submit=Search+terms">Theiler stages</a><br>(e.g. <a href="https://www.ebi.ac.uk/ols4/ontologies/mmusdv/classes?obo_id=MmusDv%3A0000003">MmusDv:0000003</a>)</td>
             </tr>
             <tr>
               <td>From 2 months after birth</td>
-              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=month-old&submit=Search+terms"> month-old stages</a><br>(e.g. <a href="http://purl.obolibrary.org/obo/MmusDv_0000062">MmusDv:0000062)</a></td>
+              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=month-old&submit=Search+terms"> month-old stages</a><br>(e.g. <a href="https://www.ebi.ac.uk/ols4/ontologies/mmusdv/classes?obo_id=MmusDv%3A0000062">MmusDv:0000062)</a></td>
             </tr>
           </tbody></table>
-          <br> Otherwise, for all other organisms this MUST be the most accurate child of <a href="http://purl.obolibrary.org/obo/UBERON_0000105"<code>UBERON:0000105</code></a> for <i>life cycle stage</i>, excluding <a href="http://purl.obolibrary.org/obo/UBERON_0000071"<code>UBERON:0000071</code></a> for <i>death stage</i>.
+          <br> Otherwise, for all other organisms this MUST be the most accurate child of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000105"<code>UBERON:0000105</code></a> for <i>life cycle stage</i>, excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000071"<code>UBERON:0000071</code></a> for <i>death stage</i>.
         </td>
     </tr>
 </tbody></table>
@@ -442,7 +443,8 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be a MONDO term or <a href="http://purl.obolibrary.org/obo/PATO_0000461"><code>"PATO:0000461"</code></a> for <i>normal</i> or <i>healthy</i>.
+        <td>categorical with <code>str</code> categories. This MUST be a MONDO term or <a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A
+0000461"><code>"PATO:0000461"</code></a> for <i>normal</i> or <i>healthy</i>.
         </td>
     </tr>
 </tbody></table>
@@ -502,7 +504,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be a child of <a href="http://purl.obolibrary.org/obo/NCBITaxon_33208"<code>NCBITaxon:33208</code></a> for <i>Metazoa</i>.
+        <td>categorical with <code>str</code> categories. This MUST be a child of <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A33208"<code>NCBITaxon:33208</code></a> for <i>Metazoa</i>.
         </td>
     </tr>
 </tbody></table>
@@ -521,7 +523,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be either a HANCESTRO term, <code>"multiethnic"</code> if more than one ethnicity is reported, or <code>"unknown"</code> if unavailable. <br><br>Otherwise, for all other organisms this MUST be <code>"na"</code>.
+        <td>categorical with <code>str</code> categories. If <code>organism_ontolology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9606"><code>"NCBITaxon:9606"</code></a> for <i>Homo sapiens</i>, this MUST be either a HANCESTRO term, <code>"multiethnic"</code> if more than one ethnicity is reported, or <code>"unknown"</code> if unavailable. <br><br>Otherwise, for all other organisms this MUST be <code>"na"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -540,7 +542,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be a child of <a href="http://purl.obolibrary.org/obo/PATO_0001894">PATO:0001894</a> for  <i>phenotypic sex</i> or <code>"unknown"</code> if unavailable.
+        <td>categorical with <code>str</code> categories. This MUST be a child of <a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0001894">PATO:0001894</a> for  <i>phenotypic sex</i> or <code>"unknown"</code> if unavailable.
         </td>
     </tr>
 </tbody></table>
@@ -572,103 +574,103 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           </thead>
           <tbody>
             <tr>
-              <td><i>10x transcription profiling</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0030080"><code>EFO:0030080</code></a>] and its children</td>
+              <td><i>10x transcription profiling</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030080"><code>EFO:0030080</code></a>] and its children</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr> 
             <tr>
-              <td><i>ATAC-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0007045"><code>EFO:0007045</code></a>] and its children</td>
+              <td><i>ATAC-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0007045"><code>EFO:0007045</code></a>] and its children</td>
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>BD Rhapsody Whole Transcriptome Analysis</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0700003"><code>EFO:0700003</code></a>]</td>
+              <td><i>BD Rhapsody Whole Transcriptome Analysis</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0700003"><code>EFO:0700003</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>BD Rhapsody Targeted mRNA</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0700004"><code>EFO:0700004</code></a>]</td>
+              <td><i>BD Rhapsody Targeted mRNA</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0700004"><code>EFO:0700004</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>CEL-seq2</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0010010"><code>EFO:0010010</code></a>]</td>
+              <td><i>CEL-seq2</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010010"><code>EFO:0010010</code></a>]</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>CITE-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0009294"><code>EFO:0009294</code></a>] and its children</td>
+              <td><i>CITE-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0009294"><code>EFO:0009294</code></a>] and its children</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>DroNc-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008720"><code>EFO:0008720</code></a>]</td>
+              <td><i>DroNc-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008720"><code>EFO:0008720</code></a>]</td>
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>Drop-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008722"><code>EFO:0008722</code></a>]</td>
+              <td><i>Drop-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008722"><code>EFO:0008722</code></a>]</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>GEXSCOPE technology</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0700011"><code>EFO:0700011</code></a>]</td>
+              <td><i>GEXSCOPE technology</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0700011"><code>EFO:0700011</code></a>]</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr> 
             <tr>
-              <td><i>inDrop</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008780"><code>EFO:0008780</code></a>]</td>
+              <td><i>inDrop</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008780"><code>EFO:0008780</code></a>]</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>MARS-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008796"><code>EFO:0008796</code></a>]</td>
+              <td><i>MARS-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008796"><code>EFO:0008796</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>microwell-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0030002"><code>EFO:0030002</code></a>]</td>
+              <td><i>microwell-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030002"><code>EFO:0030002</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>    
             <tr>
-              <td><i>Patch-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008853"><code>EFO:0008853</code></a>]</td>
+              <td><i>Patch-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008853"><code>EFO:0008853</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>sci-Plex</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0030026"><code>EFO:0030026</code></a>]</td>
+              <td><i>sci-Plex</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030026"><code>EFO:0030026</code></a>]</td>
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>sci-RNA-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0010550"><code>EFO:0010550</code></a>]</td>
+              <td><i>sci-RNA-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010550"><code>EFO:0010550</code></a>]</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>Seq-Well</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008919"><code>EFO:0008919</code></a>] and its children</td>
+              <td><i>Seq-Well</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008919"><code>EFO:0008919</code></a>] and its children</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>Smart-like</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0010184"><code>EFO:0010184</code></a>] and its children</td>
+              <td><i>Smart-like</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010184"><code>EFO:0010184</code></a>] and its children</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>smFISH</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0009918"><code>EFO:0009918</code></a>] and its children</td>
+              <td><i>smFISH</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0009918"><code>EFO:0009918</code></a>] and its children</td>
               <td><code>"na"</code></td>
            </tr>   
             <tr>
-              <td><i>snmC-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008939"><code>EFO:0008939</code></a>]</td>
+              <td><i>snmC-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008939"><code>EFO:0008939</code></a>]</td>
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>snmC-seq2</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0030027"><code>EFO:0030027</code></a>]</td>
+              <td><i>snmC-seq2</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030027"><code>EFO:0030027</code></a>]</td>
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>spatial proteomics</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0700000"><code>EFO:0700000</code></a>] and its children</td>
+              <td><i>spatial proteomics</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0700000"><code>EFO:0700000</code></a>] and its children</td>
               <td><code>"na"</code></td>
            </tr>
             <tr>
-              <td><i>spatial transcriptomics</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008994"><code>EFO:0008994</code></a>] and its children</td>
+              <td><i>spatial transcriptomics</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008994"><code>EFO:0008994</code></a>] and its children</td>
               <td><code>"na"</code></td>
            </tr> 
             <tr>
-              <td><i>SPLiT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0009919"><code>EFO:0009919</code></a>]</td>
+              <td><i>SPLiT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0009919"><code>EFO:0009919</code></a>]</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr> 
             <tr>
-              <td><i>STRT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0008953"><code>EFO:0008953</code></a>]</td>
+              <td><i>STRT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008953"><code>EFO:0008953</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>TruDrop</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?short_form=EFO_0700010"><code>EFO:0700010</code></a>]</td>
+              <td><i>TruDrop</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0700010"><code>EFO:0700010</code></a>]</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr> 
           </tbody></table>
@@ -703,19 +705,19 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <tbody>
             <tr>
               <td>Tissue</td>
-              <td>STRONGLY RECOMMENDED to be an UBERON term<br>(e.g. <a href="http://purl.obolibrary.org/obo/UBERON_0008930"><code>"UBERON:0008930"</code></a> for a <i>sematosensory cortex</i> tissue sample)</td>
+              <td>STRONGLY RECOMMENDED to be an UBERON term (e.g. <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0008930"><code>"UBERON:0008930"</code></a> for a <i>sematosensory cortex</i> tissue sample)</td>
             </tr>
             <tr>
               <td>Cell Culture</td>
-              <td>MUST be a CL term appended with <code>" (cell culture)"</code><br>(e.g. <code><a href="http://purl.obolibrary.org/obo/CL_0000057">"CL:0000057</a> (cell culture)"</code> for the <i>WTC-11 cell line</i>)</td>
+              <td>MUST be a CL term appended with <code>" (cell culture)"</code> (e.g. <code><a href="https://www.ebi.ac.uk/ols4/ontologies/cl/classes?obo_id=CL%3A0000057">"CL:0000057</a> (cell culture)"</code> for the <i>WTC-11 cell line</i>)</td>
             </tr>
             <tr>
               <td>Organoid</td>
-              <td>MUST be an UBERON term appended with <code>" (organoid)"</code><br>(e.g. <code><a href="http://purl.obolibrary.org/obo/UBERON_0000955">"UBERON:0000955</a> (organoid)"</code> for a <i>brain organoid</i>)</td>
+              <td>MUST be an UBERON term appended with <code>" (organoid)"</code> (e.g. <code><a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000955">"UBERON:0000955</a> (organoid)"</code> for a <i>brain organoid</i>)</td>
             </tr>
             <tr>
               <td>Enriched,<br>Sorted,or<br>Isolated<br>Cells from<br>a Tissue</td>
-              <td>MUST be an UBERON or CL term and SHOULD NOT use terms that do not capture<br> the tissue of origin<br>(e.g. In the case of <i>CD3+ kidney cells</i>, use <a href="https://www.ebi.ac.uk/ols/ontologies/uberon/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FUBERON_0002113"><code>"UBERON:0002113"</code></a> for <i>kidney</i><br> instead of <a href="https://www.ebi.ac.uk/ols/ontologies/cl/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FCL_0000084"><code>"CL:000084"</code></a> for <i>T cell</i>. However, in the case of <i>EPCAM+ cervical cells</i>,<br>use <a href="https://www.ebi.ac.uk/ols/ontologies/cl/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FCL_0000066"><code>"CL:000066"</code></a> for <i>epithelial cell</i> of the cervix.)
+              <td>MUST be an UBERON or CL term and SHOULD NOT use terms that do not capture the tissue of origin<br>(e.g. In the case of <i>CD3+ kidney cells</i>, use <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0002113"><code>"UBERON:0002113"</code></a> for <i>kidney</i> instead of <a href="https://www.ebi.ac.uk/ols4/ontologies/cl/classes?obo_id=CL%3A0000084"><code>"CL:000084"</code></a> for <i>T cell</i>. However, in the case of <i>EPCAM+ cervical cells</i>, use <a href="https://www.ebi.ac.uk/ols4/ontologies/cl/classes?obo_id=CL%3A0000066"><code>"CL:000066"</code></a> for <i>epithelial cell</i> of the cervix.)
               </td>
             </tr>
           </tbody></table>
@@ -989,20 +991,19 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
           <tbody>
             <tr>
               <td><i>Homo sapiens</i></td>
-              <td><code>"NCBITaxon:9606"
-              </code></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9606"><code>"NCBITaxon:9606"</code></a></td>
             </tr>
             <tr>
               <td><i>Mus musculus</i></td>
-              <td><code>"NCBITaxon:10090"</code></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A10090"><code>"NCBITaxon:10090"</code></a></td>
             </tr>
             <tr>
               <td><i>SARS-CoV-2</i></td>
-              <td><code>"NCBITaxon:2697049"</code></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A2697049"><code>"NCBITaxon:2697049"</code></a></td>
             </tr>
             <tr>
               <td><i>ERCC Spike-Ins</i></td>
-              <td><code>"NCBITaxon:32630"</code></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A32630"><code>"NCBITaxon:32630"</code></a></td>
             </tr>
           </tbody></table>
         </td>
