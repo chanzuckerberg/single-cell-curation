@@ -10,7 +10,7 @@ Schema version: 3.1.0
 
 ## Overview
 
-All data submitted to the [cellxgene Data Portal](https://cellxgene.cziscience.com/) is automatically converted to a Seurat V4 object that can be loaded by the R package [Seurat](https://satijalab.org/seurat/).
+All data submitted to [CELLxGENE Discover](https://cellxgene.cziscience.com/) is automatically converted to a Seurat V4 object that can be loaded by the R package [Seurat](https://satijalab.org/seurat/).
 
 This document describes the Seurat encoding for the converted data. <u><strong>Readers should be familiar with the [schema](./schema.md).</strong></u>
 
