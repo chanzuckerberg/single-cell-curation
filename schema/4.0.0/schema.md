@@ -358,8 +358,16 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be a CL term.
-        </td>
+        <td>categorical with <code>str</code> categories. This MUST be a CL term.<br><br>If no appropriate high-level term can be found or the cell type is unknown, then it is STRONGLY RECOMMENDED to use <a href="https://www.ebi.ac.uk/ols4/ontologies/cl/terms?obo_id=CL:0000003"><code>"CL:0000003"</code></a> for <i>native cell</i>. The following terms MUST NOT be used:
+        <ul><li>
+          <a href="https://www.ebi.ac.uk/ols4/ontologies/cl/terms?obo_id=CL:0000255"><code>"CL:0000255"</code></a> for <i>eukaryotic cell</i>
+        </li>
+        <li>
+          <a href="https://www.ebi.ac.uk/ols4/ontologies/cl/terms?obo_id=CL:0000257"><code>"CL:0000257"</code></a> for <i>Eumycetozoan cell</i>
+        </li>
+        <li>
+            <a href="https://www.ebi.ac.uk/ols4/ontologies/cl/terms?obo_id=CL:0000548"><code>"CL:0000548"</code></a> for <i>animal cell</i>
+         </li></ul>
     </tr>
 </tbody></table>
 <br>
@@ -1157,6 +1165,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 schema v4.0.0
 
 * obs (Cell metadata)
+  * Updated the requirements for `cell_type_ontology_term_id`
   * Added `tissue_type`
   * Updated the requirements for `tissue`
   * Updated the requirements for `tissue_ontology_term_id`
