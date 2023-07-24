@@ -1134,7 +1134,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
     <tr>
       <th>Value</th>
         <td>
-          This MUST be <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.0.0/schema.md"</code>
+          This MUST be <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.0.0/schema.md"</code>.
         </td>
     </tr>
 </tbody></table>
