@@ -174,6 +174,10 @@ This `data.frame` will have the following columns required by the schema. There 
       <td>tissue</td>
       <td><code>character</code></td>
     </tr>
+        <tr>
+      <td>tissue_type</td>
+      <td><code>character</code></td>
+    </tr>
 </tbody></table>
 <br>
 
