@@ -39,6 +39,25 @@ class TestOntologyBumpDryRun(TestCase):
                     "label": "obsolete term with replacement from a different ontology",
                     "deprecated": True,
                     "replaced_by": "CL:0000006",
+                    "comments": ["Comment adding context to replacement"],
+                },
+                "EFO:0000007": {
+                    "label": "obsolete term with replacement and comment",
+                    "deprecated": True,
+                    "replaced_by": "EFO:0000070",
+                    "comments": ["Comment adding context to replacement"],
+                },
+                "EFO:0000008": {
+                    "label": "obsolete term with replacement and term tracker",
+                    "deprecated": True,
+                    "replaced_by": "EFO:0000080",
+                    "term_tracker": "www.fake-github-link.com/repo/example-1",
+                },
+                "EFO:0000009": {
+                    "label": "obsolete term with considers and term tracker",
+                    "deprecated": True,
+                    "consider": ["EFO:0000090"],
+                    "term_tracker": "www.fake-github-link.com/repo/example-2",
                 },
             }
         }
@@ -121,10 +140,13 @@ class TestOntologyBumpDryRun(TestCase):
             self.assertDictEqual(self.expected_replaced_by_map, json.load(tmp_json))
 
     def test_with_replaced_by(self):
-        self.public_datasets[0]["assay"].append({"ontology_term_id": "EFO:0000002"})
+        self.public_datasets[0]["assay"].extend(
+            [{"ontology_term_id": "EFO:0000002"}, {"ontology_term_id": "EFO:0000007"}]
+        )
         self.private_collections[0]["datasets"][0]["assay"].append({"ontology_term_id": "EFO:0000002"})
         self.private_collections[1]["datasets"][0]["assay"].append({"ontology_term_id": "EFO:0000002"})
         self.expected_replaced_by_map["assay"]["EFO:0000002"] = "EFO:0000001"
+        self.expected_replaced_by_map["assay"]["EFO:0000007"] = "EFO:0000070"
         with NamedTemporaryFile() as tmp, NamedTemporaryFile() as tmp_json, open(
             "fixtures/with_replaced_by_expected", "rb"
         ) as expected:
@@ -182,6 +204,18 @@ class TestOntologyBumpDryRun(TestCase):
         self.expected_replaced_by_map["assay"]["EFO:0000002"] = "EFO:0000001"
         with NamedTemporaryFile() as tmp, NamedTemporaryFile() as tmp_json, open(
             "fixtures/group_datasets_by_collection_expected", "rb"
+        ) as expected:
+            ontology_bump_dry_run.dry_run(tmp.name, tmp_json.name)
+            self.assertListEqual(list(expected), list(tmp))
+            self.assertDictEqual(self.expected_replaced_by_map, json.load(tmp_json))
+
+    def test_term_tracker(self):
+        self.public_datasets[0]["assay"].append({"ontology_term_id": "EFO:0000008"})
+        self.private_collections[0]["datasets"][0]["assay"].append({"ontology_term_id": "EFO:0000009"})
+        self.private_collections[1]["datasets"][0]["assay"].append({"ontology_term_id": "EFO:0000008"})
+        self.expected_replaced_by_map["assay"]["EFO:0000008"] = "EFO:0000080"
+        with NamedTemporaryFile() as tmp, NamedTemporaryFile() as tmp_json, open(
+            "fixtures/with_term_tracker_expected", "rb"
         ) as expected:
             ontology_bump_dry_run.dry_run(tmp.name, tmp_json.name)
             self.assertListEqual(list(expected), list(tmp))

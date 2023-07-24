@@ -11,7 +11,6 @@ from cellxgene_schema.write_labels import AnnDataLabelAppender
 
 
 class TestValidAnndata(unittest.TestCase):
-
     """
     Tests a valid AnnData object. Most other tests below modify this AnnData object and test for failure cases.
 
@@ -28,7 +27,6 @@ class TestValidAnndata(unittest.TestCase):
 
 
 class TestH5adValidation(unittest.TestCase):
-
     """
     Checks that validation from h5ad works, only does one invalid example as extensive testing is done in the classes
     below
@@ -59,7 +57,6 @@ class BaseValidationTest(unittest.TestCase):
 
 
 class TestExpressionMatrix(BaseValidationTest):
-
     """
     Fail cases for expression matrices (anndata.X and anndata.raw.X)
     """
@@ -148,7 +145,6 @@ class TestExpressionMatrix(BaseValidationTest):
 
 
 class TestObs(BaseValidationTest):
-
     """
     Fail cases in adata.uns
     """
@@ -615,9 +611,16 @@ class TestObs(BaseValidationTest):
             "EFO:0008853": ["cell"],
             "EFO:0030026": ["nucleus"],
             "EFO:0010550": ["cell", "nucleus"],
-            "EFO:0008919": ["cell"],
             "EFO:0008939": ["nucleus"],
             "EFO:0030027": ["nucleus"],
+            "EFO:0008796": ["cell"],
+            "EFO:0700003": ["cell"],
+            "EFO:0700004": ["cell"],
+            "EFO:0008780": ["cell", "nucleus"],
+            "EFO:0008953": ["cell"],
+            # "EFO:0700010": ["cell", "nucleus"],  TODO: Uncomment once EFO.owl is updated in 3.1.0
+            # "EFO:0700011": ["cell", "nucleus"],  TODO: Uncomment once EFO.owl is updated in 3.1.0
+            "EFO:0009919": ["cell", "nucleus"],
         }
 
         for assay, suspension_types in match_assays.items():
@@ -655,7 +658,8 @@ class TestObs(BaseValidationTest):
             "EFO:0010184": ["cell", "nucleus"],
             "EFO:0009918": ["na"],
             "EFO:0700000": ["na"],
-            "EFO:0030005": ["na"],
+            "EFO:0008994": ["na"],
+            "EFO:0008919": ["cell"],
         }
         for assay, suspension_types in match_assays_or_children.items():
             with self.subTest(assay=assay):
@@ -665,7 +669,7 @@ class TestObs(BaseValidationTest):
                 self.validator.warnings = []
 
                 invalid_suspension_type = "na"
-                if assay in {"EFO:0009918", "EFO:0700000", "EFO:0030005"}:
+                if assay in {"EFO:0009918", "EFO:0700000", "EFO:0008994"}:
                     invalid_suspension_type = "nucleus"
                     self.validator.adata.obs["suspension_type"] = self.validator.adata.obs[
                         "suspension_type"
@@ -789,7 +793,6 @@ class TestObs(BaseValidationTest):
 
 
 class TestVar(BaseValidationTest):
-
     """
     Fail cases in adata.var and adata.raw.var
     """
@@ -1009,7 +1012,6 @@ class TestVar(BaseValidationTest):
 
 
 class TestUns(BaseValidationTest):
-
     """
     Fail cases in adata.uns
     """
@@ -1022,6 +1024,8 @@ class TestUns(BaseValidationTest):
         with self.assertLogs(level="WARNING") as logs, patch(
             "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[latest_version]
         ) as mock_supported_versions, patch(
+            "cellxgene_schema.validate.schema.get_current_schema_version", return_value=latest_version
+        ), patch(
             "cellxgene_schema.validate.schema.get_schema_definition"
         ) as mock_get_schema_definition:
             self.validator._set_schema_def()
@@ -1036,18 +1040,21 @@ class TestUns(BaseValidationTest):
         mock_get_schema_definition.assert_called_with(latest_version)
 
     def test_optional_fields_schema_version_is_missing(self):
-        lastest_version = "1.0.0"
+        latest_version = "1.0.0"
         self.validator.schema_version = None
         del self.validator.adata.uns["schema_version"]
         with patch(
-            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[lastest_version]
+            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[latest_version]
         ) as mock_supported_versions, patch(
+            "cellxgene_schema.validate.schema.get_current_schema_version", return_value=latest_version
+        ) as mock_get_current_schema, patch(
             "cellxgene_schema.validate.schema.get_schema_definition"
         ) as mock_get_schema_definition:
             self.validator._set_schema_def()
         mock_supported_versions.assert_called_once()
-        mock_get_schema_definition.assert_called_with(lastest_version)
-        self.assertEqual(self.validator.schema_version, lastest_version)
+        mock_get_current_schema.assert_called_once()
+        mock_get_schema_definition.assert_called_with(latest_version)
+        self.assertEqual(self.validator.schema_version, latest_version)
 
     def test_optional_fields_schema_version_is_latest(self):
         latest_version = "1.0.0"
@@ -1056,10 +1063,13 @@ class TestUns(BaseValidationTest):
         with patch(
             "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[latest_version]
         ) as mock_supported_versions, patch(
+            "cellxgene_schema.validate.schema.get_current_schema_version", return_value=latest_version
+        ) as mock_get_current_schema, patch(
             "cellxgene_schema.validate.schema.get_schema_definition"
         ) as mock_get_schema_definition:
             self.validator._set_schema_def()
         mock_supported_versions.assert_called_once()
+        mock_get_current_schema.assert_called_once()
         mock_get_schema_definition.assert_called_with(latest_version)
         self.assertEqual(self.validator.schema_version, latest_version)
 
@@ -1071,6 +1081,8 @@ class TestUns(BaseValidationTest):
         with self.assertLogs(level="WARNING") as logs, patch(
             "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[old_version, latest_version]
         ) as mock_supported_versions, patch(
+            "cellxgene_schema.validate.schema.get_current_schema_version", return_value=latest_version
+        ) as mock_get_current_schema, patch(
             "cellxgene_schema.validate.schema.get_schema_definition"
         ) as mock_get_schema_definition:
             self.validator._set_schema_def()
@@ -1082,6 +1094,7 @@ class TestUns(BaseValidationTest):
             ],
         )
         mock_supported_versions.assert_called_once()
+        mock_get_current_schema.assert_called_once()
         mock_get_schema_definition.assert_called_with(latest_version)
         self.assertEqual(self.validator.schema_version, latest_version)
 
@@ -1262,7 +1275,6 @@ class TestUns(BaseValidationTest):
 
 
 class TestObsm(BaseValidationTest):
-
     """
     Fail cases for adata.obsm
     """
@@ -1317,7 +1329,6 @@ class TestObsm(BaseValidationTest):
 
 
 class TestAddingLabels(unittest.TestCase):
-
     """
     Tests the addition of labels from IDs based on schema specification. The test is done by comparing manually
     created dataframes (positive control) against the ones produced by the validator
