@@ -1117,6 +1117,31 @@ See also `default_embedding` in `uns`.
 
 Curators MUST NOT annotate the following keys and values in `uns`. 
 
+
+When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schema_reference` key and set its value to the permanent URL of this document. 
+
+### schema_reference
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>schema_reference</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>CELLxGENE Discover</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          This MUST be <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.0.0/schema.md"</code>
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+---
+
 When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schema_version` key and its value to `uns`. If `schema_version` is already defined, then its value MUST be overwritten. 
 
 ### schema_version
@@ -1141,7 +1166,8 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 ## Appendix A. Changelog
 
 schema v4.0.0
-* TBD
+* uns (Dataset metadata)
+  * Added `schema_reference`
 
 schema v3.1.0
 
