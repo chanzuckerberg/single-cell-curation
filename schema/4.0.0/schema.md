@@ -258,18 +258,18 @@ The following gene annotation dependencies are *pinned* for this version of the 
 
 | Source | Required version | Download |
 |:--|:--|:--|
-| [GENCODE (Human)] | Human reference GRCh38.p13 (GENCODE v43/Ensembl 109) | [gencode.v43.primary_assembly.annotation.gtf] |
-| [GENCODE (Mouse)] | Mouse reference GRCm39 (GENCODE vM32/Ensembl 109) | [gencode.vM32.primary_assembly.annotation.gtf] |
+| [GENCODE (Human)] | Human reference GRCh38 (GENCODE v38/Ensembl 104) | [gencode.v38.primary_assembly.annotation.gtf] |
+| [GENCODE (Mouse)] | Mouse reference GRCm39 (GENCODE vM27/Ensembl 104) | [gencode.vM27.primary_assembly.annotation.gtf] |
 | [ENSEMBL (COVID-19)] | SARS-CoV-2 reference (ENSEMBL assembly: ASM985889v3) | [Sars\_cov\_2.ASM985889v3.101.gtf] |
 | [ThermoFisher ERCC Spike-Ins] | ThermoFisher ERCC RNA Spike-In Control Mixes (Cat # 4456740, 4456739) | [cms_095047.txt] |
 
 [RNA Spike-In Control Mixes]: https://www.thermofisher.com/document-connect/document-connect.html?url=https%3A%2F%2Fassets.thermofisher.com%2FTFS-Assets%2FLSG%2Fmanuals%2Fcms_086340.pdf&title=VXNlciBHdWlkZTogRVJDQyBSTkEgU3Bpa2UtSW4gQ29udHJvbCBNaXhlcyAoRW5nbGlzaCAp
 
 [GENCODE (Human)]: https://www.gencodegenes.org/human/
-[gencode.v43.primary_assembly.annotation.gtf]: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_43/gencode.v43.primary_assembly.annotation.gtf.gz
+[gencode.v38.primary_assembly.annotation.gtf]: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_38/gencode.v38.primary_assembly.annotation.gtf.gz
 
 [GENCODE (Mouse)]: https://www.gencodegenes.org/mouse/
-[gencode.vM32.primary_assembly.annotation.gtf]: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M32/gencode.vM32.primary_assembly.annotation.gtf.gz
+[gencode.vM27.primary_assembly.annotation.gtf]: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M27/gencode.vM27.primary_assembly.annotation.gtf.gz
 
 [ENSEMBL (COVID-19)]: https://covid-19.ensembl.org/index.html
 [Sars\_cov\_2.ASM985889v3.101.gtf]: https://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz
@@ -1206,9 +1206,6 @@ schema v3.1.0
   * Updated NCBITaxon to the 2023-06-20 release
   * Updated PATO to the 2023-05-18 release
   * Updated UBERON to the 2023-06-28 release
-* Required Gene Annotations
-  * Updated GENCODE (Human) to Human reference GRCh38.p13 (GENCODE v43/Ensembl 109) 
-  * Updated GENCODE (Mouse) to Mouse reference GRCm39 (GENCODE vM32/Ensembl 109)
 * obs (Cell metadata)
   * `assay_ontology_term_id`
     * Added Visium Spatial Gene Expression to recommended values
