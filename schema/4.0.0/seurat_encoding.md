@@ -218,6 +218,10 @@ This `data.frame` will have the following columns required by the schema. There 
       <td><code>logical</code></td>
     </tr>
     <tr>
+      <td>feature_length</td>
+      <td><code>integer</code></td>
+    </tr>
+    <tr>
       <td>feature_name</td>
       <td><code>character</code></td>
     </tr>

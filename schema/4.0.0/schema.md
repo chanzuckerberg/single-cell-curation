@@ -922,8 +922,10 @@ Curators MUST annotate the following column only in the `var` dataframe. This co
 </tbody></table>
 <br>
 
+Curators MUST NOT annotate the following columns in the `var` dataframe and if present, the `raw.var` dataframe.
 
-When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matching human-readable name for the corresponding feature biotype, identifier, and the NCBITaxon term for the reference organism to the `var` and `raw.var` dataframes. Curators MUST NOT annotate the following columns:
+When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matching human-readable name for the corresponding feature biotype, identifier, and the NCBITaxon term for the reference organism to the `var` and `raw.var` dataframes. In addition, it MUST
+add the feature length. 
 
 ### feature_biotype
 
@@ -940,6 +942,26 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
       <th>Value</th>
         <td>This MUST be <code>"gene"</code> or <code>"spike-in"</code>.  
         </td>
+    </tr>
+</tbody></table>
+<br>
+
+### feature_length
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>feature_length</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>CELLxGENE Discover</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+        <code>uint</code> number of base-pairs (bps). If the <code>feature_biotype</code> is <code>"gene"</code>, then the value is calculated by creating non-overlapping concatenated exons across all isoforms of the gene, and then adding up their length in base-pairs. This approach is modeled on the "length of merged exons of isoforms of a gene" from <a href="https://doi.org/10.1093/bioinformatics/btac561">GTFtools: a software package for analyzing various features of gene models.</a><br><br> If <code>feature_biotype</code> is NOT <code>"gene"</code> then the value MUST be set to 0.
+      </td>
     </tr>
 </tbody></table>
 <br>
@@ -1171,6 +1193,8 @@ schema v4.0.0
   * Updated the requirements for `tissue_ontology_term_id`
 * uns (Dataset metadata)
   * Added `schema_reference`
+* var and raw.var (Gene metadata)
+  * Added `feature_length`
 
 schema v3.1.0
 
