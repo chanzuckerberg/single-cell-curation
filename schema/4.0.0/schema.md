@@ -1134,7 +1134,50 @@ See also `default_embedding` in `uns`.
 </tbody></table>
 <br>
 
-Curators MUST NOT annotate the following keys and values in `uns`. 
+Curators MUST NOT annotate the following keys and values in `uns`.
+
+When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `citation` key and set its value.
+
+### citation
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>citation</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>CELLxGENE Discover</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>str</code>. Its format MUST use the following template:
+          <br><br>
+          <table>
+          <thead>
+          <tr>
+          <th>Citation Element</th>
+          <th>Value</th>
+          </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><i><code>"Publication: "</code></i></td>
+              <td>Publication DOI url for the collection<br><br> This element MUST only be present if a<br> Publication DOI is defined for the collection;<br> otherwise, it MUST NOT be present.</td>
+            </tr>
+            <tr>
+              <td><i><code>"Dataset Version: "</code></i></td>
+              <td>Permanent url to this version of the dataset</td>
+            </tr>
+              <td><i><code>" curated and distributed by<br> CZ CELLxGENE Discover in Collection: "</code> </i></td>
+              <td>Permanent url to the collection</td>
+            </tr>
+          </tbody></table>
+          A citation for a H5AD dataset with a Publication DOI:<br><br>"<code><b>Publication:</b> https://doi.org/10.1126/science.abl4896 <b>Dataset Version:</b> https://datasets.cellxgene.cziscience.com/dbd8b789-3efa-4a63-9243-90cff64f2045.h5ad <b>curated and distributed by CZ CELLxGENE Discover in Collection:</b> https://cellxgene.cziscience.com/collections/e5f58829-1a66-40b5-a624-9046778e74f5"</code><br><br>
+          A citation for a RDS dataset without a Publication DOI:<br><br><code>"<b>Dataset Version:</b> https://datasets.cellxgene.cziscience.com/08ea16dc-3f4e-4c84-8692-74d70be22d12.rds <b>curated and distributed by CZ CELLxGENE Discover in Collection:</b> https://cellxgene.cziscience.com/collections/10bf5c50-8d85-4c5f-94b4-22c1363d9f31"</code><br><br>
+        </td>
+    </tr>
+</tbody></table>
 
 
 When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schema_reference` key and set its value to the permanent URL of this document. 
@@ -1192,6 +1235,7 @@ schema v4.0.0
   * Updated the requirements for `tissue`
   * Updated the requirements for `tissue_ontology_term_id`
 * uns (Dataset metadata)
+  * Added `citation`
   * Added `schema_reference`
 * var and raw.var (Gene metadata)
   * Added `feature_length`

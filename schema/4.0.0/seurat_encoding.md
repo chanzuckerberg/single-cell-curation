@@ -276,6 +276,11 @@ Only fields defined in the [schema](./schema.md/#uns-dataset-metadata) are trans
       <th>Value</th>
       <th>Optional</th>
     </tr>
+     <tr>
+      <td>citation</td>
+      <td><code>character</code></td>
+      <td>No</td>
+    </tr>
     <tr>
       <td>schema_reference</td>
       <td><code>character</code></td>
