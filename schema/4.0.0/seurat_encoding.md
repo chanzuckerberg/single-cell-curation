@@ -99,15 +99,11 @@ This `data.frame` will have the following columns required by the schema. There 
       <th>Value</th>
     </tr>
     <tr>
-      <td>assay_ontology_term_id</td>
-      <td><code>character</code></td>
-    </tr>
-    <tr>
       <td>assay</td>
       <td><code>character</code></td>
     </tr>
     <tr>
-      <td>cell_type_ontology_term_id</td>
+      <td>assay_ontology_term_id</td>
       <td><code>character</code></td>
     </tr>
     <tr>
@@ -115,7 +111,7 @@ This `data.frame` will have the following columns required by the schema. There 
       <td><code>character</code></td>
     </tr>
     <tr>
-      <td>development_stage_ontology_term_id</td>
+      <td>cell_type_ontology_term_id</td>
       <td><code>character</code></td>
     </tr>
     <tr>
@@ -123,7 +119,7 @@ This `data.frame` will have the following columns required by the schema. There 
       <td><code>character</code></td>
     </tr>
     <tr>
-      <td>disease_ontology_term_id</td>
+      <td>development_stage_ontology_term_id</td>
       <td><code>character</code></td>
     </tr>
     <tr>
@@ -131,15 +127,11 @@ This `data.frame` will have the following columns required by the schema. There 
       <td><code>character</code></td>
     </tr>
     <tr>
+      <td>disease_ontology_term_id</td>
+      <td><code>character</code></td>
+    </tr>
+    <tr>
       <td>donor_id</td>
-      <td><code>character</code></td>
-    </tr>
-    <tr>
-      <td>self_reported_ethnicity_ontology_term_id</td>
-      <td><code>character</code></td>
-    </tr>
-    <tr>
-      <td>self_reported_ethnicity</td>
       <td><code>character</code></td>
     </tr>
     <tr>
@@ -147,11 +139,23 @@ This `data.frame` will have the following columns required by the schema. There 
       <td><code>logical</code></td>
     </tr>
     <tr>
+      <td>organism</td>
+      <td><code>character</code></td>
+    </tr>
+    <tr>
       <td>organism_ontology_term_id</td>
       <td><code>character</code></td>
     </tr>
     <tr>
-      <td>organism</td>
+      <td>self_reported_ethnicity</td>
+      <td><code>character</code></td>
+    </tr>
+    <tr>
+      <td>self_reported_ethnicity_ontology_term_id</td>
+      <td><code>character</code></td>
+    </tr>
+   <tr>
+      <td>sex</td>
       <td><code>character</code></td>
     </tr>
     <tr>
@@ -159,23 +163,19 @@ This `data.frame` will have the following columns required by the schema. There 
       <td><code>character</code></td>
     </tr>
     <tr>
-      <td>sex</td>
-      <td><code>character</code></td>
-    </tr>
-    <tr>
       <td>suspension_type</td>
-      <td><code>character</code></td>
-    </tr>
-    <tr>
-      <td>tissue_ontology_term_id</td>
       <td><code>character</code></td>
     </tr>
     <tr>
       <td>tissue</td>
       <td><code>character</code></td>
     </tr>
-        <tr>
+     <tr>
       <td>tissue_type</td>
+      <td><code>character</code></td>
+    </tr>
+    <tr>
+      <td>tissue_ontology_term_id</td>
       <td><code>character</code></td>
     </tr>
 </tbody></table>
@@ -276,10 +276,20 @@ Only fields defined in the [schema](./schema.md/#uns-dataset-metadata) are trans
       <th>Value</th>
       <th>Optional</th>
     </tr>
+    <tr>
+      <td>batch_condition</td>
+      <td><code>list[character]</code></td>
+      <td>Yes</td>
+    </tr>
      <tr>
       <td>citation</td>
       <td><code>character</code></td>
       <td>No</td>
+    </tr>
+    <tr>
+      <td>default_embedding</td>
+      <td><code>character</code></td>
+      <td>Yes</td>
     </tr>
     <tr>
       <td>schema_reference</td>
@@ -295,16 +305,6 @@ Only fields defined in the [schema](./schema.md/#uns-dataset-metadata) are trans
       <td>title</td>
       <td><code>character</code></td>
       <td>No</td>
-    </tr>
-    <tr>
-      <td>batch_condition</td>
-      <td><code>list[character]</code></td>
-      <td>Yes</td>
-    </tr>
-    <tr>
-      <td>default_embedding</td>
-      <td><code>character</code></td>
-      <td>Yes</td>
     </tr>
     <tr>
       <td>X_approximate_distribution</td>
