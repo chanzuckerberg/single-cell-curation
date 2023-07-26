@@ -284,6 +284,24 @@ The following gene annotation dependencies are *pinned* for this version of the 
 
 Curators MUST annotate the following columns in the `obs` dataframe:
 
+### index of pandas.DataFrame
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>index of <code>pandas.DataFrame</code></td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>str</code>. The index of the pandas.DataFrame MUST contain unique identifiers for observations.<br><br></td>
+    </tr>
+</tbody></table>
+<br>
+
 ### assay_ontology_term_id
 
 <table><tbody>
@@ -1231,6 +1249,7 @@ schema v4.0.0
 
 * obs (Cell metadata)
   * Updated the requirements for `cell_type_ontology_term_id`
+  * Added `index`
   * Added `tissue_type`
   * Updated the requirements for `tissue`
   * Updated the requirements for `tissue_ontology_term_id`
