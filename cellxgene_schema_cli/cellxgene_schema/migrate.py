@@ -12,7 +12,9 @@ DEPRECATED_FEATURE_IDS = [
 def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
 
-    dataset = ad.read_h5ad(input_file)
+    dataset = ad.read_h5ad(input_file, backed="r")
+    if dataset.raw:
+        dataset = dataset.to_memory()
 
     # ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
     # Initialization is AUTOMATED for newly deprecated terms that have 'Replaced By' terms in their ontology files
