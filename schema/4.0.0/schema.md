@@ -1174,7 +1174,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `citat
             </tr>
           </tbody></table>
           A citation for a H5AD dataset with a Publication DOI:<br><br>"<code><b>Publication:</b> https://doi.org/10.1126/science.abl4896 <b>Dataset Version:</b> https://datasets.cellxgene.cziscience.com/dbd8b789-3efa-4a63-9243-90cff64f2045.h5ad <b>curated and distributed by CZ CELLxGENE Discover in Collection:</b> https://cellxgene.cziscience.com/collections/e5f58829-1a66-40b5-a624-9046778e74f5"</code><br><br>
-          A citation for a RDS dataset without a Publication DOI:<br><br><code>"<b>Dataset Version:</b> https://datasets.cellxgene.cziscience.com/08ea16dc-3f4e-4c84-8692-74d70be22d12.rds <b>curated and distributed by CZ CELLxGENE Discover in Collection:</b> https://cellxgene.cziscience.com/collections/10bf5c50-8d85-4c5f-94b4-22c1363d9f31"<br><br>
+          A citation for a RDS dataset without a Publication DOI:<br><br><code>"<b>Dataset Version:</b> https://datasets.cellxgene.cziscience.com/08ea16dc-3f4e-4c84-8692-74d70be22d12.rds <b>curated and distributed by CZ CELLxGENE Discover in Collection:</b> https://cellxgene.cziscience.com/collections/10bf5c50-8d85-4c5f-94b4-22c1363d9f31"</code><br><br>
         </td>
     </tr>
 </tbody></table>
