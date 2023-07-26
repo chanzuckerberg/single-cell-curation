@@ -6,6 +6,7 @@ import numpy
 import pandas as pd
 from cellxgene_schema.validate import Validator
 from cellxgene_schema.write_labels import AnnDataLabelAppender
+from utils import getattr_anndata
 
 # Tests for schema compliance of an AnnData object
 
@@ -803,7 +804,7 @@ class TestVar(BaseValidationTest):
         """
 
         # Swap first row for second one
-        var = Validator.getattr_anndata(self.validator.adata, "var")
+        var = getattr_anndata(self.validator.adata, "var")
 
         # First swap the index
         new_index = list(var.index)
@@ -836,7 +837,7 @@ class TestVar(BaseValidationTest):
                 self.validator.errors = []
 
                 # Duplicate 1st row in var and assign it to 2nd
-                component = Validator.getattr_anndata(self.validator.adata, component_name)
+                component = getattr_anndata(self.validator.adata, component_name)
                 new_index = list(component.index)
                 new_index[1] = new_index[0]
                 component.set_index(pd.Index(new_index), inplace=True)
@@ -865,7 +866,7 @@ class TestVar(BaseValidationTest):
                     self.validator.errors = []
                     self.validator.adata = examples.adata.copy()
 
-                    component = Validator.getattr_anndata(self.validator.adata, component_name)
+                    component = getattr_anndata(self.validator.adata, component_name)
                     component.drop(column, axis=1, inplace=True)
 
                     self.validator.validate_adata()
@@ -934,7 +935,7 @@ class TestVar(BaseValidationTest):
                 self.validator.adata = examples.adata.copy()
                 self.validator.errors = []
 
-                component = Validator.getattr_anndata(self.validator.adata, component_name)
+                component = getattr_anndata(self.validator.adata, component_name)
 
                 new_index = list(component.index)
                 new_index[0] = "ENSEBML_NOGENE"
@@ -962,7 +963,7 @@ class TestVar(BaseValidationTest):
                 self.validator.adata = examples.adata.copy()
                 self.validator.errors = []
 
-                component = Validator.getattr_anndata(self.validator.adata, component_name)
+                component = getattr_anndata(self.validator.adata, component_name)
 
                 new_index = list(component.index)
                 new_index[0] = "ENSG000"
@@ -987,7 +988,7 @@ class TestVar(BaseValidationTest):
                 self.validator.adata = examples.adata.copy()
                 self.validator.errors = []
 
-                component = Validator.getattr_anndata(self.validator.adata, component_name)
+                component = getattr_anndata(self.validator.adata, component_name)
 
                 new_index = list(component.index)
                 new_index[0] = "ERCC-000000"

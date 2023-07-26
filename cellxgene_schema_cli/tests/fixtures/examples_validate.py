@@ -152,6 +152,23 @@ var_expected = pd.DataFrame(
     ],
 )
 
+var_unmigrated = pd.DataFrame(
+    [
+        ["spike-in", False, "ERCC-00002 (spike-in control)", "NCBITaxon:32630"],
+        ["gene", False, "MACF1", "NCBITaxon:9606"],
+        ["gene", False, "Trp53", "NCBITaxon:10090"],
+        ["gene", False, "S", "NCBITaxon:2697049"],
+        ["dummy", False, "dummy", "dummy"],
+    ],
+    index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004", "DUMMY"],
+    columns=[
+        "feature_biotype",
+        "feature_is_filtered",
+        "feature_name",
+        "feature_reference",
+    ],
+)
+
 # ---
 # 3. Creating individual uns component
 good_uns = {
@@ -168,6 +185,7 @@ good_uns = {
 X = numpy.zeros([good_obs.shape[0], good_var.shape[0]], dtype=numpy.float32)
 non_raw_X = sparse.csr_matrix(X.copy())
 non_raw_X[0, 0] = 1.5
+
 
 # ---
 # 5.Creating valid obsm
@@ -215,3 +233,20 @@ adata_with_labels = anndata.AnnData(
     uns=good_uns,
     obsm=good_obsm,
 )
+
+
+# X for testing with deprecated genes
+unmigrated_X = numpy.zeros([good_obs.shape[0], var_unmigrated.shape[0]], dtype=numpy.float32)
+unmigrated_non_raw_X = sparse.csr_matrix(unmigrated_X.copy())
+unmigrated_non_raw_X[0, 0] = 1.5
+
+adata_with_lables_unmigrated = anndata.AnnData(
+    X=sparse.csr_matrix(unmigrated_X),
+    obs=pd.concat([good_obs, obs_expected], axis=1),
+    var=var_unmigrated,
+    uns=good_uns,
+    obsm=good_obsm,
+)
+adata_with_lables_unmigrated.raw = adata_with_lables_unmigrated.copy()
+adata_with_lables_unmigrated.X = unmigrated_non_raw_X
+adata_with_lables_unmigrated.raw.var.drop("feature_is_filtered", axis=1, inplace=True)

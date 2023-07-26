@@ -39,6 +39,12 @@ import anndata as ad
 from . import utils
 
 
+# fmt: off
+DEPRECATED_FEATURE_IDS = [
+]
+# fmt: on
+
+
 def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
 
@@ -93,7 +99,8 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     # ...
 
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
-    # No Changes
+    if DEPRECATED_FEATURE_IDS:
+        dataset = utils.remove_deprecated_features(dataset, DEPRECATED_FEATURE_IDS)
 
     dataset.write(output_file, compression="gzip")"""
 
@@ -125,6 +132,12 @@ def test_generate_script__with_automated_replaced_by_map(template, tmpdir):
 import anndata as ad
 
 from . import utils
+
+
+# fmt: off
+DEPRECATED_FEATURE_IDS = [
+]
+# fmt: on
 
 
 def migrate(input_file, output_file, collection_id, dataset_id):
@@ -184,7 +197,8 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     # ...
 
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
-    # No Changes
+    if DEPRECATED_FEATURE_IDS:
+        dataset = utils.remove_deprecated_features(dataset, DEPRECATED_FEATURE_IDS)
 
     dataset.write(output_file, compression="gzip")"""
 
@@ -223,6 +237,14 @@ def test_generate_script__with_gencode_changes(template, tmpdir):
 import anndata as ad
 
 from . import utils
+
+
+# fmt: off
+DEPRECATED_FEATURE_IDS = [
+    "ENSG00000223972",
+    "ENSG00000227232",
+]
+# fmt: on
 
 
 def migrate(input_file, output_file, collection_id, dataset_id):
@@ -279,13 +301,8 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     # ...
 
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
-    # fmt: off
-    deprecated_features_ids = [
-        "ENSG00000223972",
-        "ENSG00000227232",
-    ]
-    # fmt: on
-    dataset = utils.remove_deprecated_features(dataset, deprecated_features_ids)
+    if DEPRECATED_FEATURE_IDS:
+        dataset = utils.remove_deprecated_features(dataset, DEPRECATED_FEATURE_IDS)
 
     dataset.write(output_file, compression="gzip")"""
     mock.patch("scripts.migration_assistant.generate_script.get_current_version", return_value=expected_output)

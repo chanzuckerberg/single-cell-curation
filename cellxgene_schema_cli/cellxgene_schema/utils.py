@@ -1,6 +1,13 @@
-from typing import List
+import logging
+import os
+import sys
+from typing import List, Union
 
 import anndata as ad
+import numpy as np
+from scipy import sparse
+
+logger = logging.getLogger(__name__)
 
 
 def replace_ontology_term(dataframe, ontology_name, update_map):
@@ -29,4 +36,78 @@ def remove_deprecated_features(adata: ad.AnnData, deprecated: List[str]) -> ad.A
         var_to_keep = raw_adata.var.index[~raw_adata.var.index.isin(deprecated)].tolist()
         raw_adata = raw_adata[:, var_to_keep]
         adata.raw = raw_adata
+    return adata
+
+
+def get_matrix_format(adata: ad.AnnData, matrix: Union[np.ndarray, sparse.spmatrix]) -> str:
+    """
+    Given a matrix, returns the format as one of: csc, csr, coo, dense
+    or unknown.
+
+    This mimics the scipy.sparse `format` property, but extends it to
+    support ndarray and other classes AnnData may proxy the matrix with.
+    """
+
+    # Note: the AnnData proxy classes DO support the `format_str` property, but
+    # doing a slice seemed safer, if less performant.  Using `format_str`, which
+    # currently works, uses private API:
+    #
+    # >>> return getattr(matrix, "format_str", "dense)
+    #
+    format = "unknown"
+    if adata.n_obs == 0 or adata.n_vars == 0:
+        format = "dense"
+    else:
+        matrix_slice = matrix[0:1, 0:1]
+        if isinstance(matrix_slice, sparse.spmatrix):
+            format = matrix_slice.format
+        elif isinstance(matrix_slice, np.ndarray):
+            format = "dense"
+
+    assert format in ["unknown", "csr", "csc", "coo", "dense"]
+    return format
+
+
+def getattr_anndata(adata: ad.AnnData, attr: str = None):
+    """
+    same as getattr but handles the special case of "raw.var" for an anndata.AndData object
+
+    :param anndata.AnnData adata: the anndata.AnnData object from which to extract an attribute
+    :param str attr: name of the attribute to extract
+
+    :return the attribute or none if it does not exist
+    """
+
+    if attr == "raw.var":
+        if adata.raw:
+            return adata.raw.var
+        else:
+            return None
+    else:
+        return getattr(adata, attr)
+
+
+def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
+    """
+    Reads h5ad into adata
+    :params Union[str, bytes, os.PathLike] h5ad_path: path to h5ad to read
+
+    :rtype None
+    """
+    try:
+        adata = ad.read_h5ad(h5ad_path, backed="r")
+
+        # This code, and AnnData in general, is optimized for row access.
+        # Running backed, with CSC, is prohibitively slow. Read the entire
+        # AnnData into memory if it is CSC.
+        if (get_matrix_format(adata, adata.X) == "csc") or (
+            (adata.raw is not None) and (get_matrix_format(adata, adata.raw.X) == "csc")
+        ):
+            logger.warning("Matrices are in CSC format; loading entire dataset into memory.")
+            adata = adata.to_memory()
+
+    except (OSError, TypeError):
+        logger.info(f"Unable to open '{h5ad_path}' with AnnData")
+        sys.exit(1)
+
     return adata

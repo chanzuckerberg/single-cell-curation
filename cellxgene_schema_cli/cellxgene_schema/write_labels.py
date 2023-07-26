@@ -3,6 +3,7 @@ import traceback
 from typing import Dict, List, Optional
 
 import pandas as pd
+from utils import getattr_anndata
 
 from cellxgene_schema import ontology
 from cellxgene_schema.validate import ONTOLOGY_CHECKER, Validator
@@ -224,7 +225,7 @@ class AnnDataLabelAppender:
         """
 
         # Set variables for readability
-        current_df = Validator.getattr_anndata(self.adata, component)
+        current_df = getattr_anndata(self.adata, component)
 
         if column == "index":
             original_column = pd.Series(current_df.index)
@@ -295,7 +296,7 @@ class AnnDataLabelAppender:
         """
         for component in ["obs", "var", "raw.var"]:
             # If the component does not exist, skip (this is for raw.var)
-            if Validator.getattr_anndata(self.adata, component) is None:
+            if getattr_anndata(self.adata, component) is None:
                 continue
 
             # Doing it for columns

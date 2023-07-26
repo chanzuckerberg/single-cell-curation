@@ -3,6 +3,15 @@ import anndata as ad
 from . import utils
 
 
+# fmt: off
+DEPRECATED_FEATURE_IDS = [
+	{% for feature in deprecated_feature_ids %}
+    "{{ feature }}",
+	{% endfor %}
+]
+# fmt: on
+
+
 def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
 
@@ -81,17 +90,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     # ...
 
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
-    {% if deprecated_feature_ids %}
-    # fmt: off
-    deprecated_features_ids = [
-        {% for feature in deprecated_feature_ids %}
-        "{{ feature }}",
-        {% endfor %}
-    ]
-    # fmt: on
-    dataset = utils.remove_deprecated_features(dataset, deprecated_features_ids)
-    {% else %}
-    # No Changes
-    {% endif %}
+    if DEPRECATED_FEATURE_IDS:
+    	dataset = utils.remove_deprecated_features(dataset, DEPRECATED_FEATURE_IDS)
 
     dataset.write(output_file, compression="gzip")

@@ -3,9 +3,9 @@ import os
 
 import anndata as ad
 from pandas import DataFrame
+from utils import getattr_anndata
 
 from . import schema
-from .validate import Validator
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class AnnDataLabelRemover:
         """
         for component_name in ["obs", "var", "raw.var"]:
             # If the component does not exist, skip (this is for raw.var)
-            component = Validator.getattr_anndata(self.adata, component_name)
+            component = getattr_anndata(self.adata, component_name)
             if component is None:
                 continue
 
