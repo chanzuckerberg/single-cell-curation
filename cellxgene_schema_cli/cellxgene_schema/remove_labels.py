@@ -3,9 +3,9 @@ import os
 
 import anndata as ad
 from pandas import DataFrame
-from utils import getattr_anndata
 
 from . import schema
+from .utils import getattr_anndata
 
 logger = logging.getLogger(__name__)
 

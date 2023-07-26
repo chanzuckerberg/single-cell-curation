@@ -11,9 +11,9 @@ import pandas as pd
 import semver
 from pandas.core.computation.ops import UndefinedVariableError
 from scipy import sparse
-from utils import get_matrix_format, getattr_anndata, read_h5ad
 
 from . import env, ontology, schema
+from .utils import get_matrix_format, getattr_anndata, read_h5ad
 
 logger = logging.getLogger(__name__)
 

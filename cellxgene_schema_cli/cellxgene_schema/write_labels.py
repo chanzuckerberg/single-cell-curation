@@ -3,10 +3,11 @@ import traceback
 from typing import Dict, List, Optional
 
 import pandas as pd
-from utils import getattr_anndata
 
 from cellxgene_schema import ontology
 from cellxgene_schema.validate import ONTOLOGY_CHECKER, Validator
+
+from .utils import getattr_anndata
 
 logger = logging.getLogger(__name__)
 
