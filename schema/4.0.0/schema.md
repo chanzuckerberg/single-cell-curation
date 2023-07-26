@@ -1163,7 +1163,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `citat
           <tbody>
             <tr>
               <td><i>Publication:</i></td>
-              <td>Publication DOI for the collection<br><br> This element MUST be present<br> if a Publication DOI is defined for the Collection;<br> otherwise, it MUST NOT be present.</td>
+              <td>Publication DOI url for the collection<br><br> This element MUST only be present if a<br> Publication DOI is defined for the collection;<br> otherwise, it MUST NOT be present.</td>
             </tr>
             <tr>
               <td><i>Dataset Version:</i></td>
