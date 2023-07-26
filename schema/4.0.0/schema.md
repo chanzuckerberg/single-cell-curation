@@ -1162,14 +1162,14 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `citat
           </thead>
           <tbody>
             <tr>
-              <td><i>Publication:</i></td>
+              <td><i><code>"Publication: "</code></i></td>
               <td>Publication DOI url for the collection<br><br> This element MUST only be present if a<br> Publication DOI is defined for the collection;<br> otherwise, it MUST NOT be present.</td>
             </tr>
             <tr>
-              <td><i>Dataset Version:</i></td>
+              <td><i><code>"Dataset Version: "</code></i></td>
               <td>Permanent url to this version of the dataset</td>
             </tr>
-              <td><i>curated and distributed by<br> CZ CELLxGENE Discover in Collection: </i></td>
+              <td><i><code>" curated and distributed by<br> CZ CELLxGENE Discover in Collection: "</code> </i></td>
               <td>Permanent url to the collection</td>
             </tr>
           </tbody></table>
