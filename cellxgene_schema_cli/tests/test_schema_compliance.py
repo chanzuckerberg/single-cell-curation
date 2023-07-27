@@ -4,9 +4,9 @@ from unittest.mock import patch
 import fixtures.examples_validate as examples
 import numpy
 import pandas as pd
+from cellxgene_schema.utils import getattr_anndata
 from cellxgene_schema.validate import Validator
 from cellxgene_schema.write_labels import AnnDataLabelAppender
-from cellxgene_schema.utils import getattr_anndata
 
 # Tests for schema compliance of an AnnData object
 
