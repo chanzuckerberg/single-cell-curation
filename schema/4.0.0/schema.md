@@ -1112,6 +1112,71 @@ See also `default_embedding` in `uns`.
 </tbody></table>
 <br>
 
+
+### {category}_colors
+
+<table><tbody>
+  <tr>
+    <th>Key</th>
+      <td>
+        {category}_colors where {category} MUST be the name of a <code>category</code> data type column in <code>obs</code> that<br> is annotated by the data submitter or curator. The following columns that are annotated by CELLxGENE<br> Discover MUST NOT be specified as {category}:<br><br>
+      <ul>
+        <li>assay</li>
+        <li>cell_type</li>
+        <li>development_stage</li>
+        <li>disease</li>
+        <li>organism</li>
+        <li>self_reported_ethnicity</li>
+        <li>sex</li>
+        <li>tissue</li>       
+      </ul><br>
+    </td>
+  </tr>
+  <tr>
+    <th>Annotator</th>
+    <td>Curator</td>
+  </tr>
+  <tr>
+    <th>Value</th>
+      <td>
+        <code>numpy.ndarray</code>. This MUST be a 1-D array of shape <code>(, c)</code>, where <code>c</code> is greater than or equal to the<br> number of unique categories in the {category} column as calculated by:<br><br>
+           <samp>len(anndata.obs.{category}.unique())</samp><br><br>
+        The color code at the Nth position in the <code>ndarray</code> corresponds to the Nth category of <samp>anndata.obs.{category}.unique()</samp>.<br><br>For example, if <code>cell_type_ontology_term_id</code> includes two unique categories:<br><br>
+        <samp>anndata.obs.cell_type_ontology_term_id.unique()</samp><br><br>
+        <samp>['CL:0000057', 'CL:0000115']<br>Categories (2, object): ['CL:0000057', 'CL:0000115']</samp><br><br>then <code>cell-type_ontology_term_id_colors</code> MUST contain two or more colors such as:<br><br>
+        <samp>['aqua' 'blueviolet']</samp><br><br>where <code>'aqua'</code> is the color assigned to <code>'CL:0000057'</code> and <code>'blueviolet'</code> is the color assigned to<br> <code>'CL:0000115'</code>.<br><br>All elements in the <code>ndarray</code> MUST use the same color model, limited to:<br><br>
+          <table>
+          <thead>
+            <tr>
+              <th>Color Model</th>
+              <th>Element Format</th>
+            </tr>
+          </thead><tbody>
+            <tr>
+              <td>
+              <a
+              href="https://www.w3.org/TR/css-color-4/#named-colors"
+              ><i>Named Colors </i>
+              </a>
+            </td>
+              <td><code>str</code>. MUST be a case-insensitive CSS4 color name with no spaces such as<br> <code>"aliceblue"</code>
+            </td>
+            </tr>
+            <tr>
+             <td>
+              <a
+              href="https://www.w3.org/TR/css-color-4/#hex-notation"
+              ><i>Hex Triplet</i>
+              </a>
+            </td>
+              <td><code>str</code>. MUST start with <code>"#"</code> immediately followed by six case-insensitive hexadecimal<br> characters as in <code>"#08c0ff"</code></td>
+            </tr>
+          </tbody></table>
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
 ### default_embedding
 
 <table><tbody>
