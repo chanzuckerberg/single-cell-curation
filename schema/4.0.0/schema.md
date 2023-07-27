@@ -1119,7 +1119,7 @@ See also `default_embedding` in `uns`.
   <tr>
     <th>Key</th>
       <td>
-        {column}_colors where {column} MUST be the name of a <code>category</code> data type column in <code>obs</code> that<br> is annotated by the data submitter or curator. The following columns that are annotated by CELLxGENE<br> Discover MUST NOT be specified as {category}:<br><br>
+        {column}_colors where {column} MUST be the name of a <code>category</code> data type column in <code>obs</code> that<br> is annotated by the data submitter or curator. The following columns that are annotated by CELLxGENE<br> Discover MUST NOT be specified as {column}:<br><br>
       <ul>
         <li>assay</li>
         <li>cell_type</li>
@@ -1141,8 +1141,8 @@ See also `default_embedding` in `uns`.
     <th>Value</th>
       <td>
         <code>numpy.ndarray</code>. This MUST be a 1-D array of shape <code>(, c)</code>, where <code>c</code> is greater than or equal to the<br> number of unique categories in the {column} as calculated by:<br><br>
-           <samp>len(anndata.obs.{category}.unique())</samp><br><br>
-        The color code at the Nth position in the <code>ndarray</code> corresponds to the Nth category of <samp>anndata.obs.{category}.unique()</samp>.<br><br>For example, if <code>cell_type_ontology_term_id</code> includes two unique categories:<br><br>
+           <samp>len(anndata.obs.{column}.unique())</samp><br><br>
+        The color code at the Nth position in the <code>ndarray</code> corresponds to the Nth category of <samp>anndata.obs.{column}.unique()</samp>.<br><br>For example, if <code>cell_type_ontology_term_id</code> includes two unique categories:<br><br>
         <samp>anndata.obs.cell_type_ontology_term_id.unique()</samp><br><br>
         <samp>['CL:0000057', 'CL:0000115']<br>Categories (2, object): ['CL:0000057', 'CL:0000115']</samp><br><br>then <code>cell-type_ontology_term_id_colors</code> MUST contain two or more colors such as:<br><br>
         <samp>['aqua' 'blueviolet']</samp><br><br>where <code>'aqua'</code> is the color assigned to <code>'CL:0000057'</code> and <code>'blueviolet'</code> is the color assigned to<br> <code>'CL:0000115'</code>.<br><br>All elements in the <code>ndarray</code> MUST use the same color model, limited to:<br><br>
