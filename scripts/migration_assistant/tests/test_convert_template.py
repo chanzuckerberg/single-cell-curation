@@ -146,7 +146,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
 
     dataset = ad.read_h5ad(input_file, backed="r")
-    if dataset.raw and DEPRECATED_FEATURE_IDS:
+    if dataset.raw is not None and DEPRECATED_FEATURE_IDS:
         dataset =  dataset.to_memory()
 
     # ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
