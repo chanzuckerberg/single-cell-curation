@@ -38,8 +38,34 @@ import anndata as ad
 
 from . import utils
 
-
 # fmt: off
+# ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
+# Initialization is AUTOMATED for newly deprecated terms that have 'Replaced By' terms in their ontology files
+
+# Curators should review the monthly 'Curator Report' and add deprecated term replacements to corresponding map if
+# 'Replaced By' is not available for a deprecated term.
+
+# If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
+# add them here.
+ONTOLOGY_TERM_MAPS = {
+    "assay": {
+    },
+    "cell_type": {
+    },
+    "development_stage": {
+    },
+    "disease": {
+    },
+    "organism": {
+    },
+    "self_reported_ethnicity": {
+    },
+    "sex": {
+    },
+    "tissue": {
+    },
+}
+
 DEPRECATED_FEATURE_IDS = [
 ]
 # fmt: on
@@ -50,37 +76,10 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     dataset = ad.read_h5ad(input_file, backed="r")
     if dataset.raw is not None and DEPRECATED_FEATURE_IDS:
-        dataset =  dataset.to_memory()
-
-    # ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
-    # Initialization is AUTOMATED for newly deprecated terms that have 'Replaced By' terms in their ontology files
-
-    # Curators should review the monthly 'Curator Report' and add deprecated term replacements to corresponding map if
-    # 'Replaced By' is not available for a deprecated term.
-
-    # If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
-    # add them here.
-    ontology_term_maps = {
-        "assay": {
-        },
-        "cell_type": {
-        },
-        "development_stage": {
-        },
-        "disease": {
-        },
-        "organism": {
-        },
-        "self_reported_ethnicity": {
-        },
-        "sex": {
-        },
-        "tissue": {
-        },
-    }
+        dataset = dataset.to_memory()
 
     # AUTOMATED, DO NOT CHANGE
-    for ontology_name, deprecated_term_map in ontology_term_maps.items():
+    for ontology_name, deprecated_term_map in ONTOLOGY_TERM_MAPS.items():
         utils.replace_ontology_term(dataset.obs, ontology_name, deprecated_term_map)
 
     # CURATOR-DEFINED, DATASET-SPECIFIC UPDATES
@@ -135,8 +134,37 @@ import anndata as ad
 
 from . import utils
 
-
 # fmt: off
+# ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
+# Initialization is AUTOMATED for newly deprecated terms that have 'Replaced By' terms in their ontology files
+
+# Curators should review the monthly 'Curator Report' and add deprecated term replacements to corresponding map if
+# 'Replaced By' is not available for a deprecated term.
+
+# If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
+# add them here.
+ONTOLOGY_TERM_MAPS = {
+    "assay": {
+        "EFO:0000002": "EFO:0000001", # AUTOMATED
+    },
+    "cell_type": {
+        "CL:0000002": "CL:0000001", # AUTOMATED
+        "CL:0000004": "CL:0000003", # AUTOMATED
+    },
+    "development_stage": {
+    },
+    "disease": {
+    },
+    "organism": {
+    },
+    "self_reported_ethnicity": {
+    },
+    "sex": {
+    },
+    "tissue": {
+    },
+}
+
 DEPRECATED_FEATURE_IDS = [
 ]
 # fmt: on
@@ -147,40 +175,10 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     dataset = ad.read_h5ad(input_file, backed="r")
     if dataset.raw is not None and DEPRECATED_FEATURE_IDS:
-        dataset =  dataset.to_memory()
-
-    # ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
-    # Initialization is AUTOMATED for newly deprecated terms that have 'Replaced By' terms in their ontology files
-
-    # Curators should review the monthly 'Curator Report' and add deprecated term replacements to corresponding map if
-    # 'Replaced By' is not available for a deprecated term.
-
-    # If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
-    # add them here.
-    ontology_term_maps = {
-        "assay": {
-            "EFO:0000002": "EFO:0000001", # AUTOMATED
-        },
-        "cell_type": {
-            "CL:0000002": "CL:0000001", # AUTOMATED
-            "CL:0000004": "CL:0000003", # AUTOMATED
-        },
-        "development_stage": {
-        },
-        "disease": {
-        },
-        "organism": {
-        },
-        "self_reported_ethnicity": {
-        },
-        "sex": {
-        },
-        "tissue": {
-        },
-    }
+        dataset = dataset.to_memory()
 
     # AUTOMATED, DO NOT CHANGE
-    for ontology_name, deprecated_term_map in ontology_term_maps.items():
+    for ontology_name, deprecated_term_map in ONTOLOGY_TERM_MAPS.items():
         utils.replace_ontology_term(dataset.obs, ontology_name, deprecated_term_map)
 
     # CURATOR-DEFINED, DATASET-SPECIFIC UPDATES
@@ -242,8 +240,34 @@ import anndata as ad
 
 from . import utils
 
-
 # fmt: off
+# ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
+# Initialization is AUTOMATED for newly deprecated terms that have 'Replaced By' terms in their ontology files
+
+# Curators should review the monthly 'Curator Report' and add deprecated term replacements to corresponding map if
+# 'Replaced By' is not available for a deprecated term.
+
+# If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
+# add them here.
+ONTOLOGY_TERM_MAPS = {
+    "assay": {
+    },
+    "cell_type": {
+    },
+    "development_stage": {
+    },
+    "disease": {
+    },
+    "organism": {
+    },
+    "self_reported_ethnicity": {
+    },
+    "sex": {
+    },
+    "tissue": {
+    },
+}
+
 DEPRECATED_FEATURE_IDS = [
     "ENSG00000223972",
     "ENSG00000227232",
@@ -256,37 +280,10 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     dataset = ad.read_h5ad(input_file, backed="r")
     if dataset.raw is not None and DEPRECATED_FEATURE_IDS:
-        dataset =  dataset.to_memory()
-
-    # ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
-    # Initialization is AUTOMATED for newly deprecated terms that have 'Replaced By' terms in their ontology files
-
-    # Curators should review the monthly 'Curator Report' and add deprecated term replacements to corresponding map if
-    # 'Replaced By' is not available for a deprecated term.
-
-    # If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
-    # add them here.
-    ontology_term_maps = {
-        "assay": {
-        },
-        "cell_type": {
-        },
-        "development_stage": {
-        },
-        "disease": {
-        },
-        "organism": {
-        },
-        "self_reported_ethnicity": {
-        },
-        "sex": {
-        },
-        "tissue": {
-        },
-    }
+        dataset = dataset.to_memory()
 
     # AUTOMATED, DO NOT CHANGE
-    for ontology_name, deprecated_term_map in ontology_term_maps.items():
+    for ontology_name, deprecated_term_map in ONTOLOGY_TERM_MAPS.items():
         utils.replace_ontology_term(dataset.obs, ontology_name, deprecated_term_map)
 
     # CURATOR-DEFINED, DATASET-SPECIFIC UPDATES

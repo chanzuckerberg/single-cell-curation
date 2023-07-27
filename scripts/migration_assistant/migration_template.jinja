@@ -2,12 +2,62 @@ import anndata as ad
 
 from . import utils
 
-
 # fmt: off
+# ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
+# Initialization is AUTOMATED for newly deprecated terms that have 'Replaced By' terms in their ontology files
+
+# Curators should review the monthly 'Curator Report' and add deprecated term replacements to corresponding map if
+# 'Replaced By' is not available for a deprecated term.
+
+# If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
+# add them here.
+ONTOLOGY_TERM_MAPS = {
+    "assay": {
+        {% for old, new in ontology_term_map.assay.items() %}
+        "{{ old }}": "{{ new }}", # AUTOMATED
+        {% endfor %}
+    },
+    "cell_type": {
+        {% for old, new in ontology_term_map.cell_type.items() %}
+        "{{ old }}": "{{ new }}", # AUTOMATED
+        {% endfor %}
+    },
+    "development_stage": {
+        {% for old, new in ontology_term_map.development_stage.items() %}
+        "{{ old }}": "{{ new }}", # AUTOMATED
+        {% endfor %}
+    },
+    "disease": {
+        {% for old, new in ontology_term_map.disease.items() %}
+        "{{ old }}": "{{ new }}", # AUTOMATED
+        {% endfor %}
+    },
+    "organism": {
+        {% for old, new in ontology_term_map.organism.items() %}
+        "{{ old }}": "{{ new }}", # AUTOMATED
+        {% endfor %}
+    },
+    "self_reported_ethnicity": {
+        {% for old, new in ontology_term_map.self_reported_ethnicity.items() %}
+        "{{ old }}": "{{ new }}", # AUTOMATED
+        {% endfor %}
+    },
+    "sex": {
+        {% for old, new in ontology_term_map.sex.items() %}
+        "{{ old }}": "{{ new }}", # AUTOMATED
+        {% endfor %}
+    },
+    "tissue": {
+        {% for old, new in ontology_term_map.tissue.items() %}
+        "{{ old }}": "{{ new }}", # AUTOMATED
+        {% endfor %}
+    },
+}
+
 DEPRECATED_FEATURE_IDS = [
-	{% for feature in deprecated_feature_ids %}
+    {% for feature in deprecated_feature_ids %}
     "{{ feature }}",
-	{% endfor %}
+    {% endfor %}
 ]
 # fmt: on
 
@@ -17,61 +67,10 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     dataset = ad.read_h5ad(input_file, backed="r")
     if dataset.raw is not None and DEPRECATED_FEATURE_IDS:
-        dataset =  dataset.to_memory()
-
-    # ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
-    # Initialization is AUTOMATED for newly deprecated terms that have 'Replaced By' terms in their ontology files
-
-    # Curators should review the monthly 'Curator Report' and add deprecated term replacements to corresponding map if
-    # 'Replaced By' is not available for a deprecated term.
-
-    # If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
-    # add them here.
-    ontology_term_maps = {
-        "assay": {
-            {% for old, new in ontology_term_map.assay.items() %}
-            "{{ old }}": "{{ new }}", # AUTOMATED
-            {% endfor %}
-        },
-        "cell_type": {
-            {% for old, new in ontology_term_map.cell_type.items() %}
-            "{{ old }}": "{{ new }}", # AUTOMATED
-            {% endfor %}
-        },
-        "development_stage": {
-            {% for old, new in ontology_term_map.development_stage.items() %}
-            "{{ old }}": "{{ new }}", # AUTOMATED
-            {% endfor %}
-        },
-        "disease": {
-            {% for old, new in ontology_term_map.disease.items() %}
-            "{{ old }}": "{{ new }}", # AUTOMATED
-            {% endfor %}
-        },
-        "organism": {
-            {% for old, new in ontology_term_map.organism.items() %}
-            "{{ old }}": "{{ new }}", # AUTOMATED
-            {% endfor %}
-        },
-        "self_reported_ethnicity": {
-            {% for old, new in ontology_term_map.self_reported_ethnicity.items() %}
-            "{{ old }}": "{{ new }}", # AUTOMATED
-            {% endfor %}
-        },
-        "sex": {
-            {% for old, new in ontology_term_map.sex.items() %}
-            "{{ old }}": "{{ new }}", # AUTOMATED
-            {% endfor %}
-        },
-        "tissue": {
-            {% for old, new in ontology_term_map.tissue.items() %}
-            "{{ old }}": "{{ new }}", # AUTOMATED
-            {% endfor %}
-        },
-    }
+        dataset = dataset.to_memory()
 
     # AUTOMATED, DO NOT CHANGE
-    for ontology_name, deprecated_term_map in ontology_term_maps.items():
+    for ontology_name, deprecated_term_map in ONTOLOGY_TERM_MAPS.items():
         utils.replace_ontology_term(dataset.obs, ontology_name, deprecated_term_map)
 
     # CURATOR-DEFINED, DATASET-SPECIFIC UPDATES

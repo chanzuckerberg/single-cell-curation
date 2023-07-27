@@ -2,8 +2,34 @@ import anndata as ad
 
 from . import utils
 
-# AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
 # fmt: off
+# ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
+# Initialization is AUTOMATED for newly deprecated terms that have 'Replaced By' terms in their ontology files
+
+# Curators should review the monthly 'Curator Report' and add deprecated term replacements to corresponding map if
+# 'Replaced By' is not available for a deprecated term.
+
+# If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
+# add them here.
+ONTOLOGY_TERM_MAPS = {
+    "assay": {
+    },
+    "cell_type": {
+    },
+    "development_stage": {
+    },
+    "disease": {
+    },
+    "organism": {
+    },
+    "self_reported_ethnicity": {
+    },
+    "sex": {
+    },
+    "tissue": {
+    },
+}
+
 DEPRECATED_FEATURE_IDS = [
 ]
 # fmt: on
@@ -16,27 +42,8 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     if dataset.raw is not None and DEPRECATED_FEATURE_IDS:
         dataset = dataset.to_memory()
 
-    # ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
-    # Initialization is AUTOMATED for newly deprecated terms that have 'Replaced By' terms in their ontology files
-
-    # Curators should review the monthly 'Curator Report' and add deprecated term replacements to corresponding map if
-    # 'Replaced By' is not available for a deprecated term.
-
-    # If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
-    # add them here.
-    ontology_term_maps = {
-        "assay": {},
-        "cell_type": {},
-        "development_stage": {},
-        "disease": {},
-        "organism": {},
-        "self_reported_ethnicity": {},
-        "sex": {},
-        "tissue": {},
-    }
-
     # AUTOMATED, DO NOT CHANGE
-    for ontology_name, deprecated_term_map in ontology_term_maps.items():
+    for ontology_name, deprecated_term_map in ONTOLOGY_TERM_MAPS.items():
         utils.replace_ontology_term(dataset.obs, ontology_name, deprecated_term_map)
 
     # CURATOR-DEFINED, DATASET-SPECIFIC UPDATES
