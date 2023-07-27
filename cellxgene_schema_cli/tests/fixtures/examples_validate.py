@@ -152,23 +152,6 @@ var_expected = pd.DataFrame(
     ],
 )
 
-var_unmigrated = pd.DataFrame(
-    [
-        ["spike-in", False, "ERCC-00002 (spike-in control)", "NCBITaxon:32630"],
-        ["gene", False, "MACF1", "NCBITaxon:9606"],
-        ["gene", False, "Trp53", "NCBITaxon:10090"],
-        ["gene", False, "S", "NCBITaxon:2697049"],
-        ["dummy", False, "dummy", "dummy"],
-    ],
-    index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004", "DUMMY"],
-    columns=[
-        "feature_biotype",
-        "feature_is_filtered",
-        "feature_name",
-        "feature_reference",
-    ],
-)
-
 # ---
 # 3. Creating individual uns component
 good_uns = {
@@ -235,18 +218,59 @@ adata_with_labels = anndata.AnnData(
 )
 
 
-# X for testing with deprecated genes
-unmigrated_X = numpy.zeros([good_obs.shape[0], var_unmigrated.shape[0]], dtype=numpy.float32)
-unmigrated_non_raw_X = sparse.csr_matrix(unmigrated_X.copy())
-unmigrated_non_raw_X[0, 0] = 1.5
+# anndata for testing migration
+umigrated_obs = pd.DataFrame(
+    [
+        [
+            "cell_type:1",
+            "assay:1",
+            "disease:1",
+            "organism:1",
+            "sex:1",
+            "tissue:1",
+            "sre:1",
+            "development_stage:1",
+        ],
+        [
+            "cell_type:1",
+            "assay:1",
+            "disease:1",
+            "organism:1",
+            "sex:1",
+            "tissue:1",
+            "sre:1",
+            "development_stage:1",
+        ],
+    ],
+    index=["X", "Y"],
+    columns=[
+        "cell_type_ontology_term_id",
+        "assay_ontology_term_id",
+        "disease_ontology_term_id",
+        "organism_ontology_term_id",
+        "sex_ontology_term_id",
+        "tissue_ontology_term_id",
+        "self_reported_ethnicity_ontology_term_id",
+        "development_stage_ontology_term_id",
+    ],
+)
 
+var_unmigrated = pd.DataFrame(
+    [
+        [False],
+        [False],
+    ],
+    index=["ENSSASG00005000004", "DUMMY"],
+    columns=[
+        "feature_is_filtered",
+    ],
+)
+
+unmigrated_X = numpy.zeros([good_obs.shape[0], var_unmigrated.shape[0]], dtype=numpy.float32)
 adata_with_lables_unmigrated = anndata.AnnData(
     X=sparse.csr_matrix(unmigrated_X),
-    obs=pd.concat([good_obs, obs_expected], axis=1),
+    obs=umigrated_obs,
     var=var_unmigrated,
-    uns=good_uns,
-    obsm=good_obsm,
+    obsm={"X_umap": numpy.zeros([unmigrated_X.shape[0], 2])},
 )
 adata_with_lables_unmigrated.raw = adata_with_lables_unmigrated.copy()
-adata_with_lables_unmigrated.X = unmigrated_non_raw_X
-adata_with_lables_unmigrated.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
