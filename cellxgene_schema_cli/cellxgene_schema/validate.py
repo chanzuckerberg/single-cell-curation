@@ -2,7 +2,6 @@ import logging
 import math
 import os
 import re
-import sys
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -14,6 +13,7 @@ from pandas.core.computation.ops import UndefinedVariableError
 from scipy import sparse
 
 from . import env, ontology, schema
+from .utils import get_matrix_format, getattr_anndata, read_h5ad
 
 logger = logging.getLogger(__name__)
 
@@ -74,50 +74,6 @@ class Validator:
                         return stripped_term_id, id_suffix
 
         return term_id, id_suffix
-
-    @staticmethod
-    def getattr_anndata(adata: anndata.AnnData, attr: str = None):
-        """
-        same as getattr but handles the special case of "raw.var" for an anndata.AndData object
-
-        :param anndata.AnnData adata: the anndata.AnnData object from which to extract an attribute
-        :param str attr: name of the attribute to extract
-
-        :return the attribute or none if it does not exist
-        """
-
-        if attr == "raw.var":
-            if adata.raw:
-                return adata.raw.var
-            else:
-                return None
-        else:
-            return getattr(adata, attr)
-
-    def _read_h5ad(self, h5ad_path: Union[str, bytes, os.PathLike]):
-        """
-        Reads h5ad into self.adata
-        :params Union[str, bytes, os.PathLike] h5ad_path: path to h5ad to read
-
-        :rtype None
-        """
-        try:
-            self.adata = anndata.read_h5ad(h5ad_path, backed="r")
-
-            # This code, and AnnData in general, is optimized for row access.
-            # Running backed, with CSC, is prohibitively slow. Read the entire
-            # AnnData into memory if it is CSC.
-            if (self._get_matrix_format(self.adata.X) == "csc") or (
-                (self.adata.raw is not None) and (self._get_matrix_format(self.adata.raw.X) == "csc")
-            ):
-                logger.warning("Matrices are in CSC format; loading entire dataset into memory.")
-                self.adata = self.adata.to_memory()
-
-        except (OSError, TypeError):
-            logger.info(f"Unable to open '{h5ad_path}' with AnnData")
-            sys.exit(1)
-
-        self.h5ad_path = h5ad_path
 
     def _validate_encoding_version(self):
         import h5py
@@ -344,34 +300,6 @@ class Validator:
 
         return
 
-    def _get_matrix_format(self, matrix: Union[np.ndarray, sparse.spmatrix]) -> str:
-        """
-        Given a matrix, returns the format as one of: csc, csr, coo, dense
-        or unknown.
-
-        This mimics the scipy.sparse `format` property, but extends it to
-        support ndarray and other classes AnnData may proxy the matrix with.
-        """
-
-        # Note: the AnnData proxy classes DO support the `format_str` property, but
-        # doing a slice seemed safer, if less performant.  Using `format_str`, which
-        # currently works, uses private API:
-        #
-        # >>> return getattr(matrix, "format_str", "dense)
-        #
-        format = "unknown"
-        if self.adata.n_obs == 0 or self.adata.n_vars == 0:
-            format = "dense"
-        else:
-            matrix_slice = matrix[0:1, 0:1]
-            if isinstance(matrix_slice, sparse.spmatrix):
-                format = matrix_slice.format
-            elif isinstance(matrix_slice, np.ndarray):
-                format = "dense"
-
-        assert format in ["unknown", "csr", "csc", "coo", "dense"]
-        return format
-
     def _chunk_matrix(
         self,
         matrix: Union[np.ndarray, sparse.spmatrix],
@@ -404,7 +332,7 @@ class Validator:
         logger.debug(f"Counting non-zero values in {matrix_name}")
 
         nnz = 0
-        format = self._get_matrix_format(matrix)
+        format = get_matrix_format(self.adata, matrix)
         for matrix_chunk, _, _ in self._chunk_matrix(matrix):
             nnz += matrix_chunk.count_nonzero() if format != "dense" else np.count_nonzero(matrix_chunk)
 
@@ -429,7 +357,7 @@ class Validator:
         if sum(column) > 0:
             n_nonzero = 0
 
-            X_format = self._get_matrix_format(self.adata.X)
+            X_format = get_matrix_format(self.adata, self.adata.X)
             if X_format in ["csc", "csr", "coo"]:
                 n_nonzero = self.adata.X[:, column].count_nonzero()
 
@@ -741,7 +669,7 @@ class Validator:
         :rtype None
         """
 
-        df = self.getattr_anndata(self.adata, df_name)
+        df = getattr_anndata(self.adata, df_name)
         df_definition = self._get_component_def(df_name)
 
         # Validate index if needed
@@ -819,7 +747,7 @@ class Validator:
 
         # Check sparsity
         for x, x_name in to_validate:
-            matrix_format = self._get_matrix_format(x)
+            matrix_format = get_matrix_format(self.adata, x)
             if matrix_format == "csr":
                 continue
             assert format != "unknown"
@@ -853,7 +781,7 @@ class Validator:
             to_validate.append((self.adata.raw.X, "raw.X"))
         # Check length of component arrays
         for matrix, matrix_name in to_validate:
-            format = self._get_matrix_format(matrix)
+            format = get_matrix_format(self.adata, matrix)
             if format in ["csc", "csr", "coo"]:
                 effective_r_array_size = self._count_matrix_nonzero(matrix_name, matrix)
                 is_sparse = True
@@ -989,7 +917,7 @@ class Validator:
             x = self.adata.raw.X if raw_loc == "raw.X" else self.adata.X
 
             num_values_checked = 0
-            format = self._get_matrix_format(x)
+            format = get_matrix_format(self.adata, x)
             assert format != "unknown"
             self._raw_layer_exists = True
             for matrix_chunk, _, _ in self._chunk_matrix(x):
@@ -1088,7 +1016,7 @@ class Validator:
         for label_def in add_labels_def:
             reserved_name = label_def["to_column"]
 
-            if reserved_name in self.getattr_anndata(self.adata, component):
+            if reserved_name in getattr_anndata(self.adata, component):
                 self.errors.append(
                     f"Add labels error: Column '{reserved_name}' is a reserved column name "
                     f"of '{component}'. Remove it from h5ad and try again."
@@ -1103,7 +1031,7 @@ class Validator:
         for component, component_def in self.schema_def["components"].items():
             if "deprecated_columns" in component_def:
                 for column in component_def["deprecated_columns"]:
-                    if column in self.getattr_anndata(self.adata, component):
+                    if column in getattr_anndata(self.adata, component):
                         self.errors.append(f"The field '{column}' is present in '{component}', but it is deprecated.")
 
     def _check_invalid_columns(self):
@@ -1114,7 +1042,7 @@ class Validator:
         :rtype none
         """
         for component, _ in self.schema_def["components"].items():
-            df = self.getattr_anndata(self.adata, component)
+            df = getattr_anndata(self.adata, component)
             if df is None:
                 continue
             for column in df:
@@ -1137,13 +1065,13 @@ class Validator:
                 continue
 
             # Skip if component does not exist
-            if self.getattr_anndata(self.adata, component) is None:
+            if getattr_anndata(self.adata, component) is None:
                 continue
 
             # Do it for columns that are forbidden
             if "forbidden_columns" in component_def:
                 for column in component_def["forbidden_columns"]:
-                    if column in self.getattr_anndata(self.adata, component):
+                    if column in getattr_anndata(self.adata, component):
                         self.errors.append(f"Column '{column}' must not be present in '{component}'.")
 
             # If ignore_labels is set, we will skip all the subsequent label checks
@@ -1190,7 +1118,7 @@ class Validator:
         for component, component_def in self.schema_def["components"].items():
             logger.debug(f"Validating component: {component}")
             # Skip if component does not exist: only useful for adata.raw.var
-            if self.getattr_anndata(self.adata, component) is None:
+            if getattr_anndata(self.adata, component) is None:
                 if "required" in component_def:
                     self.errors.append(f"'{component}' is missing from adata and it's required.")
                 continue
@@ -1231,7 +1159,8 @@ class Validator:
 
         if h5ad_path:
             logger.debug("Reading the h5ad file...")
-            self._read_h5ad(h5ad_path)
+            self.adata = read_h5ad(h5ad_path)
+            self.h5ad_path = h5ad_path
             self._validate_encoding_version()
             logger.debug("Successfully read the h5ad file")
 
