@@ -246,7 +246,7 @@ jobs:
           git config user.email github-actions@github.com
       - name: remove diff files
         run: |
-          git rm ./cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt
+          git rm --ignore-unmatch ./cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt
       - name: Bump Version
         run: |
           pip install bumpversion
