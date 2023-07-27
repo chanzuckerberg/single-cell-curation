@@ -38,9 +38,28 @@ DEPRECATED_FEATURE_IDS = [
 def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
 
-    dataset = ad.read_h5ad(input_file, backed="r")
-    if dataset.raw is not None and DEPRECATED_FEATURE_IDS:
-        dataset = dataset.to_memory()
+    # If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
+    # add them here.
+    ontology_term_maps = {
+        "assay": {
+        },
+        "cell_type": {
+            "CL:0000663": "CL:1000147", # AUTOMATED
+            "CL:0000391": "CL:0000394", # AUTOMATED
+        },
+        "development_stage": {
+        },
+        "disease": {
+        },
+        "organism": {
+        },
+        "self_reported_ethnicity": {
+        },
+        "sex": {
+        },
+        "tissue": {
+        },
+    }
 
     # AUTOMATED, DO NOT CHANGE
     for ontology_name, deprecated_term_map in ONTOLOGY_TERM_MAPS.items():
