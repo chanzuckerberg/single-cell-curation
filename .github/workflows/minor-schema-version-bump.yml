@@ -122,7 +122,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.x"
       - name: setup git
         run: |
           git config user.name github-actions
@@ -145,6 +145,7 @@ jobs:
           packages-dir: cellxgene_schema_cli/dist/
       - name: Install and Test Package from Test PyPI
         run: |
+          pip install -r cellxgene_schema_cli/requirements.txt
           pip install --index-url https://test.pypi.org/simple/ cellxgene-schema
           cellxgene-schema validate cellxgene_schema_cli/tests/fixtures/h5ads/example_valid.h5ad
 # TODO: Uncomment once ready to release to prod PyPI
