@@ -1319,6 +1319,7 @@ schema v4.0.0
   * Updated the requirements for `tissue`
   * Updated the requirements for `tissue_ontology_term_id`
 * uns (Dataset metadata)
+  * Added `{category}_colors`
   * Added `citation`
   * Added `schema_reference`
 * var and raw.var (Gene metadata)
