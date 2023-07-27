@@ -1113,13 +1113,13 @@ See also `default_embedding` in `uns`.
 <br>
 
 
-### {category}_colors
+### {column}_colors
 
 <table><tbody>
   <tr>
     <th>Key</th>
       <td>
-        {category}_colors where {category} MUST be the name of a <code>category</code> data type column in <code>obs</code> that<br> is annotated by the data submitter or curator. The following columns that are annotated by CELLxGENE<br> Discover MUST NOT be specified as {category}:<br><br>
+        {column}_colors where {column} MUST be the name of a <code>category</code> data type column in <code>obs</code> that<br> is annotated by the data submitter or curator. The following columns that are annotated by CELLxGENE<br> Discover MUST NOT be specified as {category}:<br><br>
       <ul>
         <li>assay</li>
         <li>cell_type</li>
@@ -1130,6 +1130,7 @@ See also `default_embedding` in `uns`.
         <li>sex</li>
         <li>tissue</li>       
       </ul><br>
+      Instead annotate {column}_ontology_term_id_colors for these columns such as <code>assay_ontology_term_id</code>.<br><br>
     </td>
   </tr>
   <tr>
@@ -1139,7 +1140,7 @@ See also `default_embedding` in `uns`.
   <tr>
     <th>Value</th>
       <td>
-        <code>numpy.ndarray</code>. This MUST be a 1-D array of shape <code>(, c)</code>, where <code>c</code> is greater than or equal to the<br> number of unique categories in the {category} column as calculated by:<br><br>
+        <code>numpy.ndarray</code>. This MUST be a 1-D array of shape <code>(, c)</code>, where <code>c</code> is greater than or equal to the<br> number of unique categories in the {column} as calculated by:<br><br>
            <samp>len(anndata.obs.{category}.unique())</samp><br><br>
         The color code at the Nth position in the <code>ndarray</code> corresponds to the Nth category of <samp>anndata.obs.{category}.unique()</samp>.<br><br>For example, if <code>cell_type_ontology_term_id</code> includes two unique categories:<br><br>
         <samp>anndata.obs.cell_type_ontology_term_id.unique()</samp><br><br>
@@ -1319,8 +1320,8 @@ schema v4.0.0
   * Updated the requirements for `tissue`
   * Updated the requirements for `tissue_ontology_term_id`
 * uns (Dataset metadata)
-  * Added `{category}_colors`
   * Added `citation`
+  * Added `{column}_colors`
   * Added `schema_reference`
 * var and raw.var (Gene metadata)
   * Added `feature_length`
