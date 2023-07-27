@@ -8,6 +8,7 @@ on:
     paths:
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz'
+      - '**/.github/workflows/minor-schema-version-bump.yml'
 
 permissions:
   id-token: write
@@ -128,22 +129,22 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-      - name: Bump and tag release version
-        run: |
-          pip install bumpversion
-          pip install wheel
-          bumpversion --config-file .bumpversion.cfg minor --allow-dirty
-          bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
-          git push origin --follow-tags
+#       - name: Bump and tag release version
+#         run: |
+#           pip install bumpversion
+#           pip install wheel
+#           bumpversion --config-file .bumpversion.cfg minor --allow-dirty
+#           bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
+#           git push origin --follow-tags
       - name: Build dist
         run: >-
           make pydist
-      - name: Publish distribution to Test PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          repository-url: https://test.pypi.org/legacy/
-          packages-dir: cellxgene_schema_cli/dist/
+#       - name: Publish distribution to Test PyPI
+#         uses: pypa/gh-action-pypi-publish@release/v1
+#         with:
+#           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+#           repository-url: https://test.pypi.org/legacy/
+#           packages-dir: cellxgene_schema_cli/dist/
       - name: Install and Test Package from Test PyPI
         run: |
           pip install --index-url https://test.pypi.org/simple/ cellxgene-schema
@@ -155,12 +156,12 @@ jobs:
 #        with:
 #          password: ${{ secrets.PYPI_API_TOKEN }}
 #          package-dir: cellxgene_schema_cli/
-      - name: Trigger rebuild of Data Portal Processing Image
-        run: |
-          curl -X POST https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/dispatches \
-          -H 'Accept: application/vnd.github.everest-preview+json' \
-          --header 'authorization: Bearer ${{ secrets.CZIBUILDBOT_GITHUB_TOKEN }}' \
-          --data '{"event_type": "rebuild-processing"}'
+#       - name: Trigger rebuild of Data Portal Processing Image
+#         run: |
+#           curl -X POST https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/dispatches \
+#           -H 'Accept: application/vnd.github.everest-preview+json' \
+#           --header 'authorization: Bearer ${{ secrets.CZIBUILDBOT_GITHUB_TOKEN }}' \
+#           --data '{"event_type": "rebuild-processing"}'
 
   update-ontology-mappings:
     runs-on: macos-latest
