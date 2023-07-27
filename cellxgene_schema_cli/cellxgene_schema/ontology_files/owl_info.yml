@@ -56,7 +56,7 @@ UBERON:
 PATO:
   latest: 2023-05-18
   urls:
-    2023-05-18: https://github.com/pato-ontology/pato/blob/v2023-05-18/pato.owl
+    2023-05-18: https://github.com/pato-ontology/pato/raw/v2023-05-18/pato.owl
     2022-08-10: https://github.com/pato-ontology/pato/raw/v2022-08-10/pato.owl
     2022-07-21: https://github.com/pato-ontology/pato/raw/v2022-07-21/pato.owl
     2021-08-06: https://github.com/pato-ontology/pato/raw/v2021-08-06/pato.owl
