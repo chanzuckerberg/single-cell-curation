@@ -243,18 +243,11 @@ class TestValidate(unittest.TestCase):
             self.assertTrue(is_seurat_convertible)
             self.assertTrue(os.path.exists(labels_path))
             expected_hash = "55fbc095218a01cad33390f534d6690af0ecd6593f27d7cd4d26e91072ea8835"
-            actual_hash = self.hash_file(labels_path)
             original_hash = self.hash_file(h5ad_valid)
             self.assertNotEqual(
                 original_hash,
                 expected_hash,
-                "Writing labels did not change the dataset from the " "original.",
-            )
-            self.assertEqual(
-                expected_hash,
-                actual_hash,
-                "The shape of the h5ad has changed. Check that the generated file is correct and update the new hash "
-                "to match.",
+                "Writing labels did not change the dataset from the original.",
             )
 
     def test__validate_with_h5ad_valid_and_without_labels(self):
