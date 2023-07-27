@@ -77,6 +77,10 @@ def map_deprecated_terms(
                         entry = dict()
                         entry["needs_alert"] = False
                         entry["dataset_ct"] = 1
+                        if "term_tracker" in ontology:
+                            entry["term_tracker"] = ontology["term_tracker"]
+                        if "comments" in ontology:
+                            entry["comments"] = ontology["comments"]
                         if "replaced_by" in ontology:
                             entry["replaced_by"] = ontology["replaced_by"]
                             replacement_term_ontology = ontology["replaced_by"].split(":")[0]
@@ -85,13 +89,10 @@ def map_deprecated_terms(
                             else:
                                 if ontology_index_id not in replaced_by_map[ontology_type]:
                                     replaced_by_map[ontology_type][ontology_index_id] = ontology["replaced_by"]
-
                         else:
                             entry["needs_alert"] = True
                             if "consider" in ontology:
                                 entry["consider"] = ontology["consider"]
-                            if "comments" in ontology:
-                                entry["comments"] = ontology["comments"]
 
                         curator_report_entry_map[collection_id][ontology_term_id] = entry
                 else:
@@ -121,6 +122,8 @@ def write_to_curator_report(output_file: str, curator_report_entry_map: dict, re
                     f.write(f"Replaced By: {entry['replaced_by']}\n")
                 if "consider" in entry:
                     f.write(f"Consider: {entry['consider']}\n")
+                if "term_tracker" in entry:
+                    f.write(f"Term Tracker: {entry['term_tracker']}\n")
                 if "comments" in entry:
                     f.write(f"Comments: {entry['comments']}\n")
                 f.write("\n")
