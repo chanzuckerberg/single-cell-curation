@@ -33,6 +33,7 @@ def map_ontology_term(dataframe, ontology_name, map_from_column, update_map):
         if new_term not in dataframe[column_name].cat.categories:
             dataframe[column_name] = dataframe[column_name].cat.add_categories(new_term)
         dataframe.loc[dataframe[map_from_column] == map_value, column_name] = new_term
+    dataframe[column_name] = dataframe[column_name].cat.remove_unused_categories()
 
 
 def remove_deprecated_features(adata: ad.AnnData, deprecated: List[str]) -> ad.AnnData:
