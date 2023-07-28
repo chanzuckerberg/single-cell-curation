@@ -1,5 +1,5 @@
 import pytest
-from cellxgene_schema.utils import remove_deprecated_features, replace_ontology_term
+from cellxgene_schema.utils import map_ontology_term, remove_deprecated_features, replace_ontology_term
 from fixtures.examples_validate import adata, adata_non_raw
 
 
@@ -56,7 +56,18 @@ def test_replace_ontology_term__with_replacement(adata_with_raw, deprecated_term
 
 def test_replace_ontology_term__no_replacement(adata_with_raw, deprecated_term_map_no_replacement_match):
     replace_ontology_term(adata_with_raw.obs, "assay", deprecated_term_map_no_replacement_match)
-
     expected = ["EFO:0009899", "EFO:0009918"]
     actual = adata_with_raw.obs["assay_ontology_term_id"].dtype.categories
     assert all(a == b for a, b in zip(actual, expected))
+
+
+def test_map_ontology_term__(adata_without_raw):
+    update_map = {"donor_1": "CL:0000001", "donor_2": "CL:0000002"}
+    map_ontology_term(adata_without_raw.obs, "cell_type", "donor_id", update_map)
+    expected = ["CL:0000001", "CL:0000002"]
+    actual = adata_without_raw.obs["cell_type_ontology_term_id"].dtype.categories
+    assert all(a == b for a, b in zip(actual, expected))
+    donor_1_rows = adata_without_raw.obs.loc[adata_without_raw.obs["donor_id"] == "donor_1"]
+    assert all(a == "CL:0000001" for a in donor_1_rows["cell_type_ontology_term_id"])
+    donor_2_rows = adata_without_raw.obs.loc[adata_without_raw.obs["donor_id"] == "donor_2"]
+    assert all(a == "CL:0000002" for a in donor_2_rows["cell_type_ontology_term_id"])
