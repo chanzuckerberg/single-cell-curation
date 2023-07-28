@@ -133,7 +133,6 @@ jobs:
           pip install wheel
           bumpversion --config-file .bumpversion.cfg minor --allow-dirty
           bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
-          git push origin --follow-tags
       - name: Build dist
         run: >-
           make pydist
@@ -145,6 +144,7 @@ jobs:
           packages-dir: cellxgene_schema_cli/dist/
       - name: Install and Test Package from Test PyPI
         run: |
+          pip install -r cellxgene_schema_cli/requirements.txt
           pip install --index-url https://test.pypi.org/simple/ cellxgene-schema
           cellxgene-schema validate cellxgene_schema_cli/tests/fixtures/h5ads/example_valid.h5ad
 # TODO: Uncomment once ready to release to prod PyPI
@@ -154,6 +154,9 @@ jobs:
 #        with:
 #          password: ${{ secrets.PYPI_API_TOKEN }}
 #          package-dir: cellxgene_schema_cli/
+      - name: Push tags
+        run: |
+          git push origin --follow-tags
       - name: Trigger rebuild of Data Portal Processing Image
         run: |
           curl -X POST https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/dispatches \
@@ -211,7 +214,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref }} # checking out the lasted commit to this branch
+          ref: ${{ github.event.pull_request.head.ref }} # checking out the last commit to this branch
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
@@ -244,7 +247,7 @@ jobs:
           git config user.email github-actions@github.com
       - name: remove diff files
         run: |
-          git rm ./cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt
+          git rm --ignore-unmatch ./cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt
       - name: Bump Version
         run: |
           pip install bumpversion

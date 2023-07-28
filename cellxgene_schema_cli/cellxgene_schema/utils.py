@@ -25,6 +25,17 @@ def replace_ontology_term(dataframe, ontology_name, update_map):
             dataframe[column_name] = dataframe[column_name].cat.remove_categories(old_term)
 
 
+def map_ontology_term(dataframe, ontology_name, map_from_column, update_map):
+    column_name = f"{ontology_name}_ontology_term_id"
+    if dataframe[column_name].dtype != "category":
+        dataframe[column_name] = dataframe[column_name].astype("category")
+    for map_value, new_term in update_map.items():
+        if new_term not in dataframe[column_name].cat.categories:
+            dataframe[column_name] = dataframe[column_name].cat.add_categories(new_term)
+        dataframe.loc[dataframe[map_from_column] == map_value, column_name] = new_term
+    dataframe[column_name] = dataframe[column_name].cat.remove_unused_categories()
+
+
 def remove_deprecated_features(adata: ad.AnnData, deprecated: List[str]) -> ad.AnnData:
     # Filter out genes that don't appear in the approved annotation
     var_to_keep = adata.var.index[~adata.var.index.isin(deprecated)].tolist()
