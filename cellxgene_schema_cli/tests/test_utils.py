@@ -67,7 +67,7 @@ def test_map_ontology_term__(adata_without_raw):
     expected = ["CL:0000001", "CL:0000002"]
     actual = adata_without_raw.obs["cell_type_ontology_term_id"].dtype.categories
     assert all(a == b for a, b in zip(actual, expected))
-    donor_1_rows = adata_without_raw.obs.loc[adata_without_raw.obs['donor_id'] == "donor_1"]
+    donor_1_rows = adata_without_raw.obs.loc[adata_without_raw.obs["donor_id"] == "donor_1"]
     assert all(a == "CL:0000001" for a in donor_1_rows["cell_type_ontology_term_id"])
-    donor_2_rows = adata_without_raw.obs.loc[adata_without_raw.obs['donor_id'] == "donor_2"]
+    donor_2_rows = adata_without_raw.obs.loc[adata_without_raw.obs["donor_id"] == "donor_2"]
     assert all(a == "CL:0000002" for a in donor_2_rows["cell_type_ontology_term_id"])
