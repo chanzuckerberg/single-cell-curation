@@ -29,7 +29,7 @@ def map_ontology_term(dataframe, ontology_name, map_from_column, update_map):
     column_name = f"{ontology_name}_ontology_term_id"
     if dataframe[column_name].dtype != "category":
         dataframe[column_name] = dataframe[column_name].astype("category")
-    for map_value,new_term in update_map.items():
+    for map_value, new_term in update_map.items():
         if new_term not in dataframe[column_name].cat.categories:
             dataframe[column_name] = dataframe[column_name].cat.add_categories(new_term)
         dataframe.loc[dataframe[map_from_column] == map_value, column_name] = new_term
