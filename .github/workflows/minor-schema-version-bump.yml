@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - migration-dev-run
     paths:
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz'
+      - '**/.github/workflows/minor-schema-version-bump.yml'
 
 permissions:
   id-token: write
@@ -127,26 +129,26 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-      - name: Bump and tag release version
-        run: |
-          pip install bumpversion
-          pip install wheel
-          bumpversion --config-file .bumpversion.cfg minor --allow-dirty
-          bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
-          git push origin --follow-tags
-      - name: Build dist
-        run: >-
-          make pydist
-      - name: Publish distribution to Test PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          repository-url: https://test.pypi.org/legacy/
-          packages-dir: cellxgene_schema_cli/dist/
-      - name: Install and Test Package from Test PyPI
-        run: |
-          pip install --index-url https://test.pypi.org/simple/ cellxgene-schema
-          cellxgene-schema validate cellxgene_schema_cli/tests/fixtures/h5ads/example_valid.h5ad
+#       - name: Bump and tag release version
+#         run: |
+#           pip install bumpversion
+#           pip install wheel
+#           bumpversion --config-file .bumpversion.cfg minor --allow-dirty
+#           bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
+#           git push origin --follow-tags
+#       - name: Build dist
+#         run: >-
+#           make pydist
+#       - name: Publish distribution to Test PyPI
+#         uses: pypa/gh-action-pypi-publish@release/v1
+#         with:
+#           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+#           repository-url: https://test.pypi.org/legacy/
+#           packages-dir: cellxgene_schema_cli/dist/
+#       - name: Install and Test Package from Test PyPI
+#         run: |
+#           pip install --index-url https://test.pypi.org/simple/ cellxgene-schema
+#           cellxgene-schema validate cellxgene_schema_cli/tests/fixtures/h5ads/example_valid.h5ad
 # TODO: Uncomment once ready to release to prod PyPI
 #      - name: Publish distribution to PyPI
 #        if: startsWith(github.ref, 'refs/tags')
@@ -154,12 +156,12 @@ jobs:
 #        with:
 #          password: ${{ secrets.PYPI_API_TOKEN }}
 #          package-dir: cellxgene_schema_cli/
-      - name: Trigger rebuild of Data Portal Processing Image
-        run: |
-          curl -X POST https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/dispatches \
-          -H 'Accept: application/vnd.github.everest-preview+json' \
-          --header 'authorization: Bearer ${{ secrets.CZIBUILDBOT_GITHUB_TOKEN }}' \
-          --data '{"event_type": "rebuild-processing"}'
+#       - name: Trigger rebuild of Data Portal Processing Image
+#         run: |
+#           curl -X POST https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/dispatches \
+#           -H 'Accept: application/vnd.github.everest-preview+json' \
+#           --header 'authorization: Bearer ${{ secrets.CZIBUILDBOT_GITHUB_TOKEN }}' \
+#           --data '{"event_type": "rebuild-processing"}'
 
   update-ontology-mappings:
     runs-on: macos-latest
@@ -168,7 +170,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1800
       - name: Checkout
         uses: actions/checkout@v3
@@ -194,9 +196,9 @@ jobs:
           ./scripts/compute_mappings/compute_ancestor_mapping.py
       - name: Push Updated Ontology Mappings to S3
         run: |
-          aws s3 sync --exclude="*" --include="*ontology_mapping.json" scripts/compute_mappings s3://cellxgene-schema-ref-files-prod/ontology-mappings/backend
-          aws s3 sync --exclude="*" --include="*descendants.json" scripts/compute_mappings s3://cellxgene-schema-ref-files-prod/ontology-mappings/frontend
-          aws s3 sync --exclude="*" --include="*.gz" cellxgene_schema_cli/cellxgene_schema/ontology_files s3://cellxgene-schema-ref-files-prod/ontology-mappings/gzips
+          aws s3 sync --exclude="*" --include="*ontology_mapping.json" scripts/compute_mappings s3://cellxgene-schema-ref-files-dev/ontology-mappings/backend
+          aws s3 sync --exclude="*" --include="*descendants.json" scripts/compute_mappings s3://cellxgene-schema-ref-files-dev/ontology-mappings/frontend
+          aws s3 sync --exclude="*" --include="*.gz" cellxgene_schema_cli/cellxgene_schema/ontology_files s3://cellxgene-schema-ref-files-dev/ontology-mappings/gzips
       - name: Trigger Data Portal to pull latest ontology mappings
         run: |
           curl -X POST https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/dispatches \
@@ -244,7 +246,7 @@ jobs:
           git config user.email github-actions@github.com
       - name: remove diff files
         run: |
-          git rm ./cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt
+          git rm --ignore-unmatch ./cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt
       - name: Bump Version
         run: |
           pip install bumpversion
