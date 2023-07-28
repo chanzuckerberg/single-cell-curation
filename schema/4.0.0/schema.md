@@ -1513,8 +1513,8 @@ schema v4.0.0
 * obs (Cell metadata)
   * Updated the requirements for `cell_type_ontology_term_id`
   * Added `index`
-  * Updated the requirements for `self_reported_ethnicity_ontology_term_id`
   * Updated the requirements for `self_reported_ethnicity`
+  * Updated the requirements for `self_reported_ethnicity_ontology_term_id`
   * Added `tissue_type`
   * Updated the requirements for `tissue`
   * Updated the requirements for `tissue_ontology_term_id`
