@@ -538,7 +538,8 @@ Curators MUST annotate the following columns in the `obs` dataframe:
 
 ### self_reported_ethnicity_ontology_term_id
 
-<table><tbody>
+<table>
+  <tbody>
     <tr>
       <th>Key</th>
       <td>self_reported_ethnicity_ontology_term_id</td>
@@ -549,11 +550,207 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If <code>organism_ontolology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9606"><code>"NCBITaxon:9606"</code></a> for <i>Homo sapiens</i>, this MUST be either a HANCESTRO term, <code>"multiethnic"</code> if more than one ethnicity is reported, or <code>"unknown"</code> if unavailable. <br><br>Otherwise, for all other organisms this MUST be <code>"na"</code>.
-        </td>
+      <td>
+        categorical with <code>str</code> categories. If
+        <code>organism_ontolology_term_id</code> is
+        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>,
+        the value MUST be formatted as one or more comma-separated (with no leading or trailing spaces) HANCESTRO
+        terms in ascending lexical order or <code>"unknown"</code> if unavailable.<br><br>For example, if the terms are <code>"HANCESTRO:0014</code> and <code>HANCESTRO:0005"</code> then the value of <code>self_reported_ethnicity_ontology_term_id</code> MUST be <code>"HANCESTRO:0005,HANCESTRO:0014"</code>.<br><br>The following terms MUST NOT be used:<br /><br />
+        <ul>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0002?lang=en"
+              ><code>"HANCESTRO:0002"</code></a
+            >
+            for <i>regions</i> and its children
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0003?lang=en"
+              ><code>"HANCESTRO:0003"</code></a
+            >
+            for <i>country</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0004?lang=en"
+              ><code>"HANCESTRO:0004"</code></a
+            >
+            for <i>ancestry category</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0018?lang=en"
+              ><code>"HANCESTRO:0018"</code></a
+            >
+            for <i>uncategorised population</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0290?lang=en"
+              ><code>"HANCESTRO:0290"</code></a
+            >
+            for <i>genetically isolated population</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0304?lang=en"
+              ><code>"HANCESTRO:0304"</code></a
+            >
+            for <i>ancestry status</i> and its children
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0323?lang=en"
+              ><code>"HANCESTRO:0323"</code></a
+            >
+            for <i>Finnish founder</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0324?lang=en"
+              ><code>"HANCESTRO:0324"</code></a
+            >
+            for <i>Dutch founder</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0551?lang=en"
+              ><code>"HANCESTRO:0551"</code></a
+            >
+            for <i>genetically homogenous Irish</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0554?lang=en"
+              ><code>"HANCESTRO:0554"</code></a
+            >
+            for <i>Silk Road founder</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0555?lang=en"
+              ><code>"HANCESTRO:0555"</code></a
+            >
+            for <i>Arab Israeli founder</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0557?lang=en"
+              ><code>"HANCESTRO:0557"</code></a
+            >
+            for <i>Costa Rican founder</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0558?lang=en"
+              ><code>"HANCESTRO:0558"</code></a
+            >
+            for <i>French Canadian founder</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0559?lang=en"
+              ><code>"HANCESTRO:0559"</code></a
+            >
+            for <i>Italian founder</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0560?lang=en"
+              ><code>"HANCESTRO:0560"</code></a
+            >
+            for <i>Northern Finnish founder</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0561?lang=en"
+              ><code>"HANCESTRO:0561"</code></a
+            >
+            for <i>Romanian founder</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0564?lang=en"
+              ><code>"HANCESTRO:0564"</code></a
+            >
+            for <i>Vis founder</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0565?lang=en"
+              ><code>"HANCESTRO:0565"</code></a
+            >
+            for <i>Split founder</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0566?lang=en"
+              ><code>"HANCESTRO:0566"</code></a
+            >
+            for <i>undefined ancestry population</i>
+          </li>
+          <li>
+            The imported GEO term
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FGEO_000000374?lang=en"
+              ><code>"GEO:000000374"</code></a
+            >
+            for <i>continent</i> and its children:
+            <ul>
+              <li>
+                <a
+                  href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0029?lang=en"
+                  ><code>"HANCESTRO:0029"</code></a
+                >
+                for <i>Africa</i>
+              </li>
+              <li>
+                <a
+                  href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0030?lang=en"
+                  ><code>"HANCESTRO:0030"</code></a
+                >
+                for <i>Asia</i>
+              </li>
+              <li>
+                <a
+                  href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0031?lang=en"
+                  ><code>"HANCESTRO:0031"</code></a
+                >
+                for <i>Europe</i>
+              </li>
+              <li>
+                <a
+                  href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0032?lang=en"
+                  ><code>"HANCESTRO:0032"</code></a
+                >
+                for <i>Oceania</i>
+              </li>
+              <li>
+                <a
+                  href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0033?lang=en"
+                  ><code>"HANCESTRO:0033"</code></a
+                >
+                for <i>Latin America and the Caribbean</i>
+              </li>
+              <li>
+                <a
+                  href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0034?lang=en"
+                  ><code>"HANCESTRO:0034"</code></a
+                >
+                for <i>Northern America</i>
+              </li>
+            </ul>
+          </li>
+        </ul>
+        <br />Otherwise, for all other organisms the
+        <code>str</code> value MUST be <code>"na"</code>.
+      </td>
     </tr>
-</tbody></table>
-<br>
+  </tbody>
+</table>
+<br />
+
 
 ### sex_ontology_term_id
 
@@ -852,7 +1049,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code>, <code>"multiethnic"</code>, or <code>"unknown"</code> if set in <code>self_reported_ethnicity_ontology_term_id</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>self_reported_ethnicity_ontology_term_id</code>.
+        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code> or <code>"unknown"</code> if set in <code>self_reported_ethnicity_ontology_term_id</code>; otherwise, this MUST be one or more comma-separated (with no leading or trailing spaces) human-readable names for the terms in <code>self_reported_ethnicity_ontology_term_id</code> in the same order.<br><br> For example, if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"HANCESTRO:0005,HANCESTRO:0014"</code> then the value of <code>self_reported_ethnicity</code> is <code>"European,Hispanic or Latin American"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -1316,6 +1513,8 @@ schema v4.0.0
 * obs (Cell metadata)
   * Updated the requirements for `cell_type_ontology_term_id`
   * Added `index`
+  * Updated the requirements for `self_reported_ethnicity`
+  * Updated the requirements for `self_reported_ethnicity_ontology_term_id`
   * Added `tissue_type`
   * Updated the requirements for `tissue`
   * Updated the requirements for `tissue_ontology_term_id`
