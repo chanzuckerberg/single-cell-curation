@@ -48,7 +48,7 @@ NCBITaxon:
 UBERON:
   latest: 2023-07-25
   urls:
-    2023-07-25: https://github.com/obophenotype/uberon/releases/download/2023-07-25/uberon.owl
+    2023-07-25: https://github.com/obophenotype/uberon/releases/download/v2023-07-25/uberon.owl
     2022-08-19: https://github.com/obophenotype/uberon/releases/download/v2022-08-19/uberon.owl
     2022-06-30: https://github.com/obophenotype/uberon/releases/download/v2022-06-30/uberon.owl
     2021-07-27: https://github.com/obophenotype/uberon/raw/v2021-07-27/uberon.owl
