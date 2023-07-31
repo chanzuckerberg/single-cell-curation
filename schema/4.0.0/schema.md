@@ -1252,7 +1252,7 @@ To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>X_{suffix} where {suffix } MUST be at least one character long. The {suffix} is presented as text to users in the <b>Embedding Choice</b> selector in CELLxGENE Explorer so it is STRONGLY RECOMMENDED that it be descriptive.</td>
+      <td>X_{suffix} where {suffix} MUST be at least one character long. The {suffix} is presented as text to users in the <b>Embedding Choice</b> selector in CELLxGENE Explorer so it is STRONGLY RECOMMENDED that it be descriptive.</td>
     </tr>
     <tr>
       <th>Annotator</th>
