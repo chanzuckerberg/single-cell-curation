@@ -1245,9 +1245,11 @@ add the feature length.
 </tbody></table>
 <br>
 
-To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more** embeddings of at least two-dimensions (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`. 
-
 ## `obsm` (Embeddings)
+
+To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more** embeddings of at least two-dimensions (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`.<br><br>
+
+### X_{suffix}
 
 <table><tbody>
     <tr>
@@ -1271,7 +1273,6 @@ values</li></ul>
     </tr>
 </tbody></table>
 <br>
-
 
 See also `default_embedding` in `uns`.
 
