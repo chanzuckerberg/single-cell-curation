@@ -60,7 +60,7 @@ def create_mapping(onto, classes, prefix=None):
 
 
 # Load owl.info to grab latest ontology sources
-owl_info_yml = "../../cellxgene_schema_cli/cellxgene_schema/ontology_files/owl_info.yml"
+owl_info_yml = "cellxgene_schema_cli/cellxgene_schema/ontology_files/owl_info.yml"
 with open(owl_info_yml, "r") as owl_info_handle:
     owl_info = yaml.safe_load(owl_info_handle)
 
