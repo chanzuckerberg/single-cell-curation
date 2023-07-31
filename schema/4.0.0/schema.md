@@ -1245,21 +1245,33 @@ add the feature length.
 </tbody></table>
 <br>
 
+To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more** embeddings of at least two-dimensions (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`. 
+
 ## `obsm` (Embeddings)
 
-For each `str` key, `obsm` stores a `numpy.ndarray` of shape `(n_obs, m)`, where `n_obs` is the number of rows in `X` and `m >= 1`.
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>X_{suffix} where {suffix } MUST be at least one character long. The {suffix} is presented as text to users in the <b>Embedding Choice</b> selector in CELLxGENE Explorer so it is STRONGLY RECOMMENDED that it be descriptive.</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>numpy.ndarray</code> with the following requirements<br><br>
+          <ul>
+          <li>MUST have the same number of rows as <code>X</code> and MUST include at least two columns</li>
+            <li>MUST have a data type of float, integer, or unsigned integer of any precision (8, 16, 32, or 64 bits)</li>
+          <li>MUST NOT contain any <a href="https://numpy.org/devdocs/reference/constants.html#numpy.inf">positive infinity (<code>numpy.inf</code>)</a> or <a href="https://numpy.org/devdocs/reference/constants.html#numpy.NINF">negative infinity (<code>numpy.NINF</code>)</a> values </li>
+          <li>MUST NOT contain all <a href="https://numpy.org/devdocs/reference/constants.html#numpy.nan">Not a Number (<code>numpy.nan</code>) </a>
+values</li></ul>
+        </td>
+    </tr>
+</tbody></table>
+<br>
 
-To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more** two-dimensional (`m >= 2`) embeddings (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`. The keys for these embedding MUST be prefixed with `"X_"`. The text that follows this prefix is presented to users in the *Embedding Choice* selector in CELLxGENE Explorer.
-
-To illustrate, the [Krasnow Lab Human Lung Cell Atlas, 10X dataset](https://cellxgene.cziscience.com/e/krasnow_lab_human_lung_cell_atlas_10x-1-remixed.cxg/) in the [A molecular cell atlas of the human lung from single cell RNA sequencing collection](https://cellxgene.cziscience.com/collections/5d445965-6f1a-4b68-ba3a-b8f765155d3a) defines two embeddings in `obsm`:
-
-* `"X_Compartment_tSNE"`
-* `"X_tSNE"`
-
-Users can then choose which embedding is visualized in CELLxGENE Explorer:
-
-![Embeddings Illustration](images/embeddings.png
-)
 
 See also `default_embedding` in `uns`.
 
@@ -1518,6 +1530,8 @@ schema v4.0.0
   * Added `tissue_type`
   * Updated the requirements for `tissue`
   * Updated the requirements for `tissue_ontology_term_id`
+* obsm (Embeddings)
+  * Updated requirements for `X_{suffix}`
 * uns (Dataset metadata)
   * Added `citation`
   * Added `{column}_colors`
