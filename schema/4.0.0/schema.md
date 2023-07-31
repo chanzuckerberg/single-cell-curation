@@ -1017,6 +1017,26 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
 </tbody></table>
 <br>
 
+When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observation identifier for each cell. Curators MUST NOT annotate the following column.
+
+### observation_joinid
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>observation_joinid</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>CELLxGENE Discover</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>str</code>
+    </tr>
+</tbody></table>
+<br>
+
 ### organism
 
 <table><tbody>
@@ -1524,6 +1544,7 @@ schema v4.0.0
 * obs (Cell metadata)
   * Updated the requirements for `cell_type_ontology_term_id`
   * Added `index`
+  * Added `observation_joinid`
   * Updated the requirements for `self_reported_ethnicity`
   * Updated the requirements for `self_reported_ethnicity_ontology_term_id`
   * Added `tissue_type`
