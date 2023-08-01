@@ -139,6 +139,10 @@ This `data.frame` will have the following columns required by the schema. There 
       <td><code>logical</code></td>
     </tr>
     <tr>
+      <td>observation_joinid</td>
+      <td><code>character</code></td>
+    </tr>
+    <tr>
       <td>organism</td>
       <td><code>character</code></td>
     </tr>
