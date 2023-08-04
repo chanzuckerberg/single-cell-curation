@@ -57,6 +57,7 @@ def create_mapping(onto, classes, prefix=None):
                 x[key] = [val]
     return x
 
+
 # In[ ]:
 
 
