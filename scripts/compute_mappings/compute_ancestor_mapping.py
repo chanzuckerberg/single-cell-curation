@@ -49,12 +49,13 @@ def create_mapping(onto, classes, prefix=None):
         for a in get_ancestors(onto, cls.name):
             if prefix and not a[1].startswith(prefix):
                 continue
-            if cls.name in x:
-                x[cls.name].append(a[1])
+            key = cls.name.replace("_", ":")
+            val = a[1].replace("_", ":")
+            if key in x:
+                x[key].append(val)
             else:
-                x[cls.name] = [a[1]]
+                x[key] = [val]
     return x
-
 
 # In[ ]:
 
