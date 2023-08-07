@@ -339,9 +339,9 @@ class AnnDataLabelAppender:
 
         # Sort X and raw.X indices if matrices
         if get_matrix_format(self.adata, self.adata.X) in ['csc', 'csr']:
-            self.adata.X.to_backed.sort_indices()
+            self.adata.X.to_backed().sort_indices()
             if self.adata.raw is not None:
-                self.adata.raw.X.to_backed.sort_indices()
+                self.adata.raw.X.to_backed().sort_indices()
 
         # Write file
         try:
