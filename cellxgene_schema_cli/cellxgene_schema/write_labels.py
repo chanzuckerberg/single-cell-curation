@@ -7,7 +7,7 @@ import pandas as pd
 from cellxgene_schema import ontology
 from cellxgene_schema.validate import ONTOLOGY_CHECKER, Validator
 
-from .utils import getattr_anndata
+from .utils import getattr_anndata, get_matrix_format
 
 logger = logging.getLogger(__name__)
 
@@ -336,6 +336,12 @@ class AnnDataLabelAppender:
 
         # Update version
         self.adata.uns["schema_version"] = self.validator.schema_version
+
+        # Sort X and raw.X indices if matrices
+        if get_matrix_format(self.adata, self.adata.X) in ['csc', 'csr']:
+            self.adata.X.to_backed.sort_indices()
+            if self.adata.raw is not None:
+                self.adata.raw.X.to_backed.sort_indices()
 
         # Write file
         try:
