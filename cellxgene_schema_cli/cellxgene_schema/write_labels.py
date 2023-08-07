@@ -338,12 +338,11 @@ class AnnDataLabelAppender:
         self.adata.uns["schema_version"] = self.validator.schema_version
 
         # Sort X and raw.X indices if matrices
-        if get_matrix_format(self.adata, self.adata.X) in ['csc', 'csr']:
-            self.adata.X = self.adata.X.to_backed()
+        if get_matrix_format(self.adata, self.adata.X) in ['csr'] and not self.adata.X.to_backed().has_sorted_indices:
+            self.adata = self.adata.to_memory()
             self.adata.X.sort_indices()
             if self.adata.raw is not None:
-                self.adata.raw.X = self.adata.raw.X.to_backed()
-                self.adata.raw.sort_indices()
+                self.adata.raw.X.sort_indices()
         # Write file
         try:
             self.adata.write_h5ad(add_labels_file, compression="gzip")
