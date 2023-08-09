@@ -337,6 +337,12 @@ class AnnDataLabelAppender:
         # Update version
         self.adata.uns["schema_version"] = self.validator.schema_version
 
+        # enforce for canonical
+        if getattr(self.adata.X, "has_canonical_format", False):
+            self.adata.X.sum_duplicates()
+        if getattr(self.adata.raw.X, "has_canonical_format", False):
+            self.adata.X.sum_duplicates()
+
         # Write file
         try:
             self.adata.write_h5ad(add_labels_file, compression="gzip")
