@@ -338,10 +338,13 @@ class AnnDataLabelAppender:
         self.adata.uns["schema_version"] = self.validator.schema_version
 
         # enforce for canonical
+        logger.info("enforce canonical format")
         if getattr(self.adata.X, "has_canonical_format", False):
+            logger.info("X")
             self.adata.X.sum_duplicates()
         if getattr(self.adata.raw.X, "has_canonical_format", False):
-            self.adata.X.sum_duplicates()
+            logger.info("raw.X")
+            self.adata.raw.X.sum_duplicates()
 
         # Write file
         try:
