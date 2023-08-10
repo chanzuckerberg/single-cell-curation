@@ -339,11 +339,13 @@ class AnnDataLabelAppender:
 
         # enforce for canonical
         logger.info("enforce canonical format")
-        if getattr(self.adata.X, "has_canonical_format", False):
-            logger.info("X")
+        X_canonical = getattr(self.adata.X, "has_canonical_format", None)
+        if X_canonical is False:
+            logger.info("X not canonical")
             self.adata.X.sum_duplicates()
-        if getattr(self.adata.raw.X, "has_canonical_format", False):
-            logger.info("raw.X")
+        raw_X_canonical = getattr(self.adata.raw.X, "has_canonical_format", None)
+        if raw_X_canonical is False:
+            logger.info("raw.X not canonical")
             self.adata.raw.X.sum_duplicates()
 
         # Write file
