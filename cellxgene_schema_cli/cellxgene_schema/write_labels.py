@@ -7,7 +7,7 @@ import pandas as pd
 from cellxgene_schema import ontology
 from cellxgene_schema.validate import ONTOLOGY_CHECKER, Validator
 
-from .utils import getattr_anndata
+from .utils import getattr_anndata, read_h5ad
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class AnnDataLabelAppender:
                 "Validate AnnData first before attempting to write labels"
             )
 
-        self.adata = validator.adata
+        self.adata = read_h5ad(validator.h5ad_path)
         self.validator = validator
         self.schema_def = validator.schema_def
         self.errors = []
