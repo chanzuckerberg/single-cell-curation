@@ -7,7 +7,7 @@ import pandas as pd
 from cellxgene_schema import ontology
 from cellxgene_schema.validate import ONTOLOGY_CHECKER, Validator
 
-from .utils import getattr_anndata, read_h5ad
+from .utils import enforce_canonical_format, getattr_anndata
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class AnnDataLabelAppender:
                 "Validate AnnData first before attempting to write labels"
             )
 
-        self.adata = read_h5ad(validator.h5ad_path)
+        self.adata = validator.adata.to_memory()
         self.validator = validator
         self.schema_def = validator.schema_def
         self.errors = []
@@ -339,14 +339,7 @@ class AnnDataLabelAppender:
 
         # enforce for canonical
         logger.info("enforce canonical format")
-        X_canonical = getattr(self.adata.X, "has_canonical_format", None)
-        if X_canonical is False:
-            logger.info("X not canonical")
-            self.adata.X.sum_duplicates()
-        raw_X_canonical = getattr(self.adata.raw.X, "has_canonical_format", None)
-        if raw_X_canonical is False:
-            logger.info("raw.X not canonical")
-            self.adata.raw.X.sum_duplicates()
+        enforce_canonical_format(self.adata)
 
         # Write file
         try:
