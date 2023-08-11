@@ -125,14 +125,10 @@ def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
 
 
 def enforce_canonical_format(adata: ad.AnnData):
-    def _enforce_canonical_format(df):
-        X = df.X
-        canonical = getattr(X, "has_canonical_format", None)
-        if canonical is False:
-            X.sum_duplicates()
-        return X
-
-    # enforce for canonical
-    logger.info("enforce canonical format")
-    _enforce_canonical_format(adata.raw)
-    _enforce_canonical_format(adata)
+    if getattr(adata.X, "has_canonical_format", None) is False:
+        adata.X.sum_duplicates()
+    if adata.raw:
+        adata_raw = ad.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
+        if getattr(adata_raw.X, "has_canonical_format", None) is False:
+            adata_raw.X.sum_duplicates()
+            adata.raw = adata_raw
