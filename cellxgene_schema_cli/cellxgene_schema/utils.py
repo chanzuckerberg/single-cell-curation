@@ -122,13 +122,3 @@ def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
         sys.exit(1)
 
     return adata
-
-
-def enforce_canonical_format(adata: ad.AnnData):
-    if getattr(adata.X, "has_canonical_format", None) is False:
-        adata.X.sum_duplicates()
-    if adata.raw:
-        adata_raw = ad.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
-        if getattr(adata_raw.X, "has_canonical_format", None) is False:
-            adata_raw.X.sum_duplicates()
-            adata.raw = adata_raw
