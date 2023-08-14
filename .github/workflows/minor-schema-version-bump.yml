@@ -150,7 +150,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
-          package-dir: cellxgene_schema_cli/dist/
+          packages-dir: cellxgene_schema_cli/dist/
       - name: Push tags
         run: |
           git push origin --follow-tags
