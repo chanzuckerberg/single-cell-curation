@@ -15,6 +15,8 @@ ONTOLOGY_TERM_MAPS = {
     "assay": {
     },
     "cell_type": {
+        "CL:0000663": "CL:1000147", # AUTOMATED
+        "CL:0000391": "CL:0000394", # AUTOMATED
     },
     "development_stage": {
     },
