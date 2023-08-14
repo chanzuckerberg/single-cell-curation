@@ -146,11 +146,11 @@ jobs:
       #     pip install -r cellxgene_schema_cli/requirements.txt
       #     pip install --index-url https://test.pypi.org/simple/ cellxgene-schema
       #     cellxgene-schema validate cellxgene_schema_cli/tests/fixtures/h5ads/example_valid.h5ad
-      - name: Publish distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
-          packages-dir: cellxgene_schema_cli/dist/
+      # - name: Publish distribution to PyPI
+      #   uses: pypa/gh-action-pypi-publish@release/v1
+      #   with:
+      #     password: ${{ secrets.PYPI_API_TOKEN }}
+      #     packages-dir: cellxgene_schema_cli/dist/
       - name: Push tags
         run: |
           git push origin --follow-tags
