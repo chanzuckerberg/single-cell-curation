@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - '**/cellxgene_schema_cli/cellxgene_schema/migrate.py'
+      - '**/.github/workflows/trigger-schema-migration.yml'
 
 jobs:
   publish-to-pypi:
@@ -20,6 +21,7 @@ jobs:
           python-version: "3.x"
       - name: Build dist
         run: >-
+          pip install wheel
           make pydist
       - name: Publish distribution to Test PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
