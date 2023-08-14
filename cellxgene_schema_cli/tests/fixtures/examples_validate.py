@@ -270,6 +270,7 @@ unmigrated_X = numpy.zeros([good_obs.shape[0], var_unmigrated.shape[0]], dtype=n
 adata_with_lables_unmigrated = anndata.AnnData(
     X=sparse.csr_matrix(unmigrated_X),
     obs=umigrated_obs,
+    uns=good_uns,
     var=var_unmigrated,
     obsm={"X_umap": numpy.zeros([unmigrated_X.shape[0], 2])},
 )

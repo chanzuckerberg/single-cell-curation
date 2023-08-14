@@ -34,7 +34,6 @@ ONTOLOGY_TERM_MAPS = {
 
 DEPRECATED_FEATURE_IDS = [
 ]
-# fmt: on
 
 
 def migrate(input_file, output_file, collection_id, dataset_id):
@@ -107,3 +106,4 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         dataset = utils.remove_deprecated_features(dataset, DEPRECATED_FEATURE_IDS)
 
     dataset.write(output_file, compression="gzip")
+# fmt: on
