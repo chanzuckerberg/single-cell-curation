@@ -205,7 +205,7 @@ The following ontology dependencies are *pinned* for this version of the schema.
 
 | Ontology | OBO Prefix | Release | Download |
 |:--|:--|:--|:--|
-| [Cell Ontology] | CL |  [2023-07-20] | [cl.owl]|
+| [Cell Ontology] | CL |  [2023-06-22] | [cl.owl]|
 | [Experimental Factor Ontology] | EFO | [2023-07-17 EFO 3.56.0] | [efo.owl]
 | [Human Ancestry Ontology] | HANCESTRO | [2022-07-18 (2.6)] | [hancestro.owl] |
 | [Human Developmental Stages] |  HsapDv | 2020-03-10 | [hsapdv.owl] |
@@ -217,8 +217,8 @@ The following ontology dependencies are *pinned* for this version of the schema.
 | | | | |
 
 [Cell Ontology]: http://obofoundry.org/ontology/cl.html
-[2023-07-20]: https://github.com/obophenotype/cell-ontology/releases/tag/v2023-07-20
-[cl.owl]: https://github.com/obophenotype/cell-ontology/releases/download/v2023-07-20/cl.owl
+[2023-06-22]: https://github.com/obophenotype/cell-ontology/releases/tag/v2023-06-22
+[cl.owl]: https://github.com/obophenotype/cell-ontology/releases/download/v2023-06-22/cl.owl
 
 [Experimental Factor Ontology]: http://www.ebi.ac.uk/efo
 [2023-07-17 EFO 3.56.0]: https://github.com/EBISPOT/efo/releases/tag/v3.56.0
