@@ -36,7 +36,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
-          package-dir: cellxgene_schema_cli/
+          packages-dir: cellxgene_schema_cli/dist/
       - name: Trigger rebuild of Data Portal Processing Image and Schema Migration
         run: |
           curl -X POST https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/dispatches \
