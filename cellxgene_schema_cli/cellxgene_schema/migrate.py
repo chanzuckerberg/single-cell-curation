@@ -57,12 +57,13 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000677": "CL:4030026"})
     elif collection_id == "edb893ee-4066-4128-9aec-5eb2b03f8287":
         utils.replace_ontology_term(dataset.obs, "assay", {"EFO:0010183": "EFO:0700011"})
-    elif collection_id == "48259aa8-f168-4bf5-b797-af8e88da6637":
-        utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0011026": "CL:0009116"})
+    elif collection_id == "48259aa8-f168-4bf5-b797-af8e88da6637" and dataset_id in [\
+            "0ba636a1-4754-4786-a8be-7ab3cf760fd6", "975e13b6-bec1-4eed-b46a-9be1f1357373"]:
+            utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0011026": "CL:0009116"})
     elif dataset.uns["title"] == "Single nucleus transcriptomic profiling of human healthy hamstring tendon":
         utils.replace_ontology_term(dataset.obs, "tissue", {"UBERON:0000043": "UBERON:8480009"}) #remove coll link in git
-    elif collection_id == "1d1c7275-476a-49e2-9022-ad1b1c793594":
-        if dataset_id == "5cdbb2ea-c622-466d-9ead-7884ad8cb99f":
+    elif collection_id == "1d1c7275-476a-49e2-9022-ad1b1c793594" and dataset_id == \
+            "5cdbb2ea-c622-466d-9ead-7884ad8cb99f":
             utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000561": "CL:4030027", "CL:1001509": "CL:4030028"})
     elif collection_id == "939769a8-d8d2-4d01-abfc-55699893fd49":
         if dataset_id == "f8c77961-67a7-4161-b8c2-61c3f917b54f":
@@ -92,12 +93,12 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         'A single-cell multi-omic atlas spanning the adult rhesus macaque brain (cell class "vascular cells" subset)',
         ]:
         utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0002319": "CL:4023072"})
-    elif collection_id == "e3aa612b-0d7d-4d3f-bbea-b8972a74dd4b":
-        if dataset_id == "812fa7bd-db15-4357-b2c9-efc8e1eb0450":
+    elif collection_id == "e3aa612b-0d7d-4d3f-bbea-b8972a74dd4b" and dataset_id == \
+            "812fa7bd-db15-4357-b2c9-efc8e1eb0450":
             utils.replace_ontology_term(dataset.obs, "tissue", {"UBERON:0000956": "UBERON:8440075"})
             utils.replace_ontology_term(dataset.obs, "assay", {"EFO:0010184": "EFO:0700016"})
-    elif collection_id == "9d63fcf1-5ca0-4006-8d8f-872f3327dbe9":
-        if dataset_id in ["c05e6940-729c-47bd-a2a6-6ce3730c4919","12194ced-8086-458e-84a8-e2ab935d8db1"]:
+    elif collection_id == "9d63fcf1-5ca0-4006-8d8f-872f3327dbe9" and dataset_id in [\
+            "c05e6940-729c-47bd-a2a6-6ce3730c4919","12194ced-8086-458e-84a8-e2ab935d8db1"]:
             update_map = {"COP_A": "CL:4023059", "COP_B": "CL:4023059", "COP_C": "CL:4023059"}
             utils.map_ontology_term(dataset.obs, "cell_type", "author_cell_type", update_map)
 
