@@ -7,6 +7,7 @@ on:
     paths:
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz'
       - '**/cellxgene_schema_cli/cellxgene_schema/ontology_files/*.csv.gz'
+      - '**/.github/workflows/minor-schema-version-bump.yml'
 
 permissions:
   id-token: write
@@ -88,7 +89,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
       - name: Pull AWS Secrets
         uses: aws-actions/aws-secretsmanager-get-secrets@v1
@@ -140,16 +141,16 @@ jobs:
       #     password: ${{ secrets.TEST_PYPI_API_TOKEN }}
       #     repository-url: https://test.pypi.org/legacy/
       #     packages-dir: cellxgene_schema_cli/dist/
-      - name: Install and Test Package from Test PyPI
-        run: |
-          pip install -r cellxgene_schema_cli/requirements.txt
-          pip install --index-url https://test.pypi.org/simple/ cellxgene-schema
-          cellxgene-schema validate cellxgene_schema_cli/tests/fixtures/h5ads/example_valid.h5ad
+      # - name: Install and Test Package from Test PyPI
+      #   run: |
+      #     pip install -r cellxgene_schema_cli/requirements.txt
+      #     pip install --index-url https://test.pypi.org/simple/ cellxgene-schema
+      #     cellxgene-schema validate cellxgene_schema_cli/tests/fixtures/h5ads/example_valid.h5ad
       - name: Publish distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
-          package-dir: cellxgene_schema_cli/
+          package-dir: cellxgene_schema_cli/dist/
       - name: Push tags
         run: |
           git push origin --follow-tags
