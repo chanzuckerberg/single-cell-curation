@@ -36,8 +36,6 @@ components:
         keys:
             schema_version:
                 type: string
-                # If "required" is present, then the key/value are required
-                required: null
             title:
                 type: string
                 required: null
