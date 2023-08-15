@@ -155,6 +155,13 @@ var_expected = pd.DataFrame(
 # ---
 # 3. Creating individual uns component
 good_uns = {
+    "title": "A title",
+    "default_embedding": "X_umap",
+    "X_approximate_distribution": "normal",
+    "batch_condition": ["is_primary_data"],
+}
+
+good_uns_with_labels = {
     "schema_version": SCHEMA_VERSION,
     "title": "A title",
     "default_embedding": "X_umap",
@@ -213,7 +220,7 @@ adata_with_labels = anndata.AnnData(
     X=sparse.csr_matrix(X),
     obs=pd.concat([good_obs, obs_expected], axis=1),
     var=var_expected,
-    uns=good_uns,
+    uns=good_uns_with_labels,
     obsm=good_obsm,
 )
 
@@ -270,7 +277,7 @@ unmigrated_X = numpy.zeros([good_obs.shape[0], var_unmigrated.shape[0]], dtype=n
 adata_with_lables_unmigrated = anndata.AnnData(
     X=sparse.csr_matrix(unmigrated_X),
     obs=umigrated_obs,
-    uns=good_uns,
+    uns=good_uns_with_labels,
     var=var_unmigrated,
     obsm={"X_umap": numpy.zeros([unmigrated_X.shape[0], 2])},
 )
