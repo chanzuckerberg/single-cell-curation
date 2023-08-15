@@ -1043,7 +1043,6 @@ class TestUns(BaseValidationTest):
     def test_optional_fields_schema_version_is_missing(self):
         latest_version = "1.0.0"
         self.validator.schema_version = None
-        del self.validator.adata.uns["schema_version"]
         with patch(
             "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[latest_version]
         ) as mock_supported_versions, patch(
