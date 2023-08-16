@@ -20,7 +20,6 @@ from fixtures.examples_validate import (
     good_obsm,
     good_uns,
     good_var,
-    h5ad_dir,
     h5ad_invalid,
     h5ad_valid,
 )
@@ -235,10 +234,9 @@ class TestValidate(unittest.TestCase):
 
     def test__validate_with_h5ad_valid_and_labels(self):
         with tempfile.TemporaryDirectory() as temp_dir:
-            file = h5ad_dir + "/migrated.h5ad"
             labels_path = "/".join([temp_dir, "labels.h5ad"])
 
-            success, errors, is_seurat_convertible = validate(file, labels_path)
+            success, errors, is_seurat_convertible = validate(h5ad_valid, labels_path)
 
             import anndata as ad
 
