@@ -7,7 +7,7 @@ import pandas as pd
 from cellxgene_schema import ontology
 from cellxgene_schema.validate import ONTOLOGY_CHECKER, Validator
 
-from .utils import getattr_anndata
+from .utils import enforce_canonical_format, getattr_anndata
 
 logger = logging.getLogger(__name__)
 
@@ -342,6 +342,10 @@ class AnnDataLabelAppender:
 
         # Update version
         self.adata.uns["schema_version"] = self.validator.schema_version
+
+        # enforce for canonical
+        logger.info("enforce canonical format")
+        enforce_canonical_format(self.adata)
 
         # Write file
         try:
