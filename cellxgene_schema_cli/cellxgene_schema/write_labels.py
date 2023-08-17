@@ -31,14 +31,13 @@ class AnnDataLabelAppender:
                 "AnnData object is not valid or hasn't been run through validation. "
                 "Validate AnnData first before attempting to write labels"
             )
-
-        if validator.adata.isbacked:
-            try:
-                self.adata = validator.adata.to_memory()
-            except ValueError:
-                self.adata = validator.adata
-        else:
-            self.adata = validator.adata.copy()
+        try:
+            # Always reading into memory because the canonical enforcement requires the X matrix to be in memory. Do
+            # this early to make other label writing operation faster.
+            self.adata = validator.adata.to_memory()
+        except ValueError:
+            # already in memory
+            self.adata = validator.adata
         self.validator = validator
         self.schema_def = validator.schema_def
         self.errors = []
