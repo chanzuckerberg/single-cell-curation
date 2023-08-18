@@ -136,7 +136,6 @@ def enforce_canonical_format(adata: ad.AnnData):
         canonical = getattr(X, "has_canonical_format", None)
         if canonical is False:
             X.sum_duplicates()
-        return X
 
     # enforce for canonical
     logger.info("enforce canonical format")
