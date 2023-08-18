@@ -40,7 +40,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r cellxgene_schema_cli/requirements.txt
-          pip install pytest
+          pip install pytest coverage
       - name: cellxgene_schema_cli Unit tests
         run: make unit-test
       - name: Upload coverage results as an artifact
@@ -71,7 +71,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r scripts/migration_assistant/requirements.txt
-          pip install pytest
+          pip install pytest coverage
       - name: migration_assistant Unit tests
         run: make migration-assistant-tests
       - name: Upload coverage results as an artifact
@@ -100,7 +100,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r scripts/schema_bump_dry_run_ontologies/requirements.txt
-          pip install pytest
+          pip install pytest coverage
       - name: Ontology Dry Run Unit Tests
         run: make ontology-dry-run-tests
       - name: Upload coverage results as an artifact
@@ -129,7 +129,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r scripts/schema_bump_dry_run_genes/requirements.txt
-          pip install pytest
+          pip install pytest coverage
       - name: Gene Dry Run Unit Tests
         run: make gene-dry-run-tests
       - name: Upload coverage results as an artifact
