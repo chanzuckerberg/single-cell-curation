@@ -8,25 +8,44 @@ lint:
 install:
 	cd cellxgene_schema_cli/ && pip install -r requirements.txt && pip install .
 
-unit-test:
-	cd cellxgene_schema_cli && coverage run --source=cellxgene_schema -m pytest --log-level=INFO ./tests  \
-		&& coverage xml
+clean:
+	rm -rf cellxgene_schema_cli/build cellxgene_schema_cli/dist cellxgene_schema_cli/cellxgene_schema.egg-info
 
-ontology-dry-run-tests:
-	cd scripts/schema_bump_dry_run_ontologies/tests && pytest
-
-gene-dry-run-tests:
-	cd scripts/schema_bump_dry_run_genes/tests && pytest
-
+### Migration ###
 .PHONY: generate-conversion-script
 generate-conversion-script:
 	python3 -m scripts.migration_assistant.generate_script
 
-migration-assistant-tests:
-	cd scripts/migration_assistant/tests && pytest
+### Unit Tests ###
+COVERAGE_DATA_FILE=.coverage.$(shell git rev-parse --short HEAD)
+export COVERAGE_RUN_ARGS:=--data-file=$(COVERAGE_DATA_FILE) --parallel-mode
 
-clean:
-	rm -rf cellxgene_schema_cli/build cellxgene_schema_cli/dist cellxgene_schema_cli/cellxgene_schema.egg-info
+unit-test:
+	cd cellxgene_schema_cli && coverage run $(COVERAGE_RUN_ARGS) --source=cellxgene_schema -m pytest --log-level=INFO \
+	 ./tests
+	mv ./cellxgene_schema_cli/$(COVERAGE_DATA_FILE)* ./$(COVERAGE_DATA_FILE).cellxgene_schema_cli
+
+ontology-dry-run-tests:
+	coverage run $(COVERAGE_RUN_ARGS) -m pytest --log-level=INFO scripts/schema_bump_dry_run_ontologies/tests
+
+gene-dry-run-tests:
+	coverage run $(COVERAGE_RUN_ARGS) -m pytest --log-level=INFO scripts/schema_bump_dry_run_genes/tests
+
+migration-assistant-tests:
+	coverage run $(COVERAGE_RUN_ARGS) -m pytest --log-level=INFO scripts/migration_assistant/tests
+
+### Test Reporting ###
+.PHONY: coverage/combine
+coverage/combine:
+	coverage combine --data-file=$(COVERAGE_DATA_FILE)
+
+.PHONY: coverage/report
+coverage/report-xml: coverage/combine
+	coverage xml --data-file=$(COVERAGE_DATA_FILE) -i --skip-empty
+
+.PHONY: coverage/report
+coverage/report-html: coverage/combine
+	coverage html --data-file=$(COVERAGE_DATA_FILE) -i --skip-empty
 
 ### RELEASE HELPERS ###
 
