@@ -47,7 +47,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: coverage
-          path: .coverage*
+          path: ./.coverage*
           retention-days: 3
 
   unit-tests-migration-assistant:
@@ -78,7 +78,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: coverage
-          path: .coverage*
+          path: ./.coverage*
           retention-days: 3
 
   unit-test-ontology-dry-run:
@@ -107,7 +107,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: coverage
-          path: .coverage*
+          path: ./.coverage*
           retention-days: 3
 
   unit-test-genes-dry-run:
@@ -136,7 +136,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: coverage
-          path: .coverage*
+          path: ./.coverage*
           retention-days: 3
 
   submit-codecoverage:
