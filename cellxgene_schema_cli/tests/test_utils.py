@@ -1,6 +1,14 @@
+import numpy as np
 import pytest
-from cellxgene_schema.utils import map_ontology_term, remove_deprecated_features, replace_ontology_term
+from anndata import AnnData
+from cellxgene_schema.utils import (
+    enforce_canonical_format,
+    map_ontology_term,
+    remove_deprecated_features,
+    replace_ontology_term,
+)
 from fixtures.examples_validate import adata, adata_non_raw
+from scipy.sparse import coo_matrix
 
 
 @pytest.fixture
@@ -71,3 +79,31 @@ def test_map_ontology_term__(adata_without_raw):
     assert all(a == "CL:0000001" for a in donor_1_rows["cell_type_ontology_term_id"])
     donor_2_rows = adata_without_raw.obs.loc[adata_without_raw.obs["donor_id"] == "donor_2"]
     assert all(a == "CL:0000002" for a in donor_2_rows["cell_type_ontology_term_id"])
+
+
+@pytest.fixture
+def noncanonical_matrix():
+    array = np.array([[1, 0, 1], [3, 2, 3], [4, 5, 4]])
+    return coo_matrix((array[0], (array[1], array[2])))
+
+
+class TestEnforceCanonical:
+    def test_adata_with_noncanonical_X_and_raw_X(self, noncanonical_matrix):
+        assert noncanonical_matrix.has_canonical_format is False
+        adata = AnnData(noncanonical_matrix)
+        enforce_canonical_format(adata)
+        assert adata.X.has_canonical_format is True
+
+    def test_adata_with_noncanonical_raw_X(self, noncanonical_matrix):
+        assert noncanonical_matrix.has_canonical_format is False
+        adata = AnnData(raw=AnnData(noncanonical_matrix))
+        enforce_canonical_format(adata)
+        assert adata.raw.X.has_canonical_format is True
+
+    def test_adata_with_canonical_raw_X(self, adata_with_raw):
+        enforce_canonical_format(adata)
+        assert adata_with_raw.raw.X.has_canonical_format is True
+
+    def test_adata_with_canonical_X(self, adata_without_raw):
+        enforce_canonical_format(adata)
+        assert adata_without_raw.X.has_canonical_format is True

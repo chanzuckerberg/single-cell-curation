@@ -7,7 +7,7 @@ import pandas as pd
 from cellxgene_schema import ontology
 from cellxgene_schema.validate import ONTOLOGY_CHECKER, Validator
 
-from .utils import getattr_anndata
+from .utils import enforce_canonical_format, getattr_anndata
 
 logger = logging.getLogger(__name__)
 
@@ -31,14 +31,13 @@ class AnnDataLabelAppender:
                 "AnnData object is not valid or hasn't been run through validation. "
                 "Validate AnnData first before attempting to write labels"
             )
-
-        if validator.adata.isbacked:
-            try:
-                self.adata = validator.adata.to_memory()
-            except ValueError:
-                self.adata = validator.adata
-        else:
-            self.adata = validator.adata.copy()
+        try:
+            # Always reading into memory because the canonical enforcement requires the X matrix to be in memory. Do
+            # this early to make other label writing operation faster.
+            self.adata = validator.adata.to_memory()
+        except ValueError:
+            # already in memory
+            self.adata = validator.adata
         self.validator = validator
         self.schema_def = validator.schema_def
         self.errors = []
@@ -342,6 +341,8 @@ class AnnDataLabelAppender:
 
         # Update version
         self.adata.uns["schema_version"] = self.validator.schema_version
+
+        enforce_canonical_format(self.adata)
 
         # Write file
         try:

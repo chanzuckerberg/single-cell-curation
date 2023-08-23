@@ -238,6 +238,11 @@ class TestValidate(unittest.TestCase):
 
             success, errors, is_seurat_convertible = validate(h5ad_valid, labels_path)
 
+            import anndata as ad
+
+            adata = ad.read_h5ad(labels_path)
+            self.assertTrue(adata.X.has_canonical_format)
+            self.assertTrue(adata.raw.X.has_canonical_format)
             self.assertTrue(success)
             self.assertListEqual(errors, [])
             self.assertTrue(is_seurat_convertible)
