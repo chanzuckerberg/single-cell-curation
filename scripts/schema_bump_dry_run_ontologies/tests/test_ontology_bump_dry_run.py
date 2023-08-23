@@ -1,9 +1,12 @@
 import json
+import os
 from tempfile import NamedTemporaryFile
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
 from scripts.schema_bump_dry_run_ontologies import ontology_bump_dry_run
+
+FIXTURES_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
 class TestOntologyBumpDryRun(TestCase):
@@ -125,7 +128,7 @@ class TestOntologyBumpDryRun(TestCase):
     def test_no_deprecated_terms_no_revisions(self):
         self.private_collections.pop()
         with NamedTemporaryFile() as tmp, NamedTemporaryFile() as tmp_json, open(
-            "fixtures/no_deprecated_terms_no_revisions_expected", "rb"
+            f"{FIXTURES_ROOT}/no_deprecated_terms_no_revisions_expected", "rb"
         ) as expected:
             ontology_bump_dry_run.dry_run(tmp.name, tmp_json.name)
             self.assertListEqual(list(expected), list(tmp))
@@ -133,7 +136,7 @@ class TestOntologyBumpDryRun(TestCase):
 
     def test_no_deprecated_terms_with_open_revisions(self):
         with NamedTemporaryFile() as tmp, NamedTemporaryFile() as tmp_json, open(
-            "fixtures/no_deprecated_terms_with_open_revisions", "rb"
+            f"{FIXTURES_ROOT}/no_deprecated_terms_with_open_revisions", "rb"
         ) as expected:
             ontology_bump_dry_run.dry_run(tmp.name, tmp_json.name)
             self.assertListEqual(list(expected), list(tmp))
@@ -148,7 +151,7 @@ class TestOntologyBumpDryRun(TestCase):
         self.expected_replaced_by_map["assay"]["EFO:0000002"] = "EFO:0000001"
         self.expected_replaced_by_map["assay"]["EFO:0000007"] = "EFO:0000070"
         with NamedTemporaryFile() as tmp, NamedTemporaryFile() as tmp_json, open(
-            "fixtures/with_replaced_by_expected", "rb"
+            f"{FIXTURES_ROOT}/with_replaced_by_expected", "rb"
         ) as expected:
             ontology_bump_dry_run.dry_run(tmp.name, tmp_json.name)
             self.assertListEqual(list(expected), list(tmp))
@@ -159,7 +162,7 @@ class TestOntologyBumpDryRun(TestCase):
         self.private_collections[0]["datasets"][0]["assay"].append({"ontology_term_id": "EFO:0000004"})
         self.private_collections[1]["datasets"][0]["assay"].append({"ontology_term_id": "EFO:0000005"})
         with NamedTemporaryFile() as tmp, NamedTemporaryFile() as tmp_json, open(
-            "fixtures/with_comments_and_considers_expected", "rb"
+            f"{FIXTURES_ROOT}/with_comments_and_considers_expected", "rb"
         ) as expected:
             ontology_bump_dry_run.dry_run(tmp.name, tmp_json.name)
             self.assertListEqual(list(expected), list(tmp))
@@ -170,7 +173,7 @@ class TestOntologyBumpDryRun(TestCase):
         self.private_collections[0]["datasets"][0]["assay"].append({"ontology_term_id": "EFO:0000006"})
         self.private_collections[1]["datasets"][0]["assay"].append({"ontology_term_id": "EFO:0000006"})
         with NamedTemporaryFile() as tmp, NamedTemporaryFile() as tmp_json, open(
-            "fixtures/with_replaced_by_diff_ontology_expected", "rb"
+            f"{FIXTURES_ROOT}/with_replaced_by_diff_ontology_expected", "rb"
         ) as expected:
             ontology_bump_dry_run.dry_run(tmp.name, tmp_json.name)
             self.assertListEqual(list(expected), list(tmp))
@@ -203,7 +206,7 @@ class TestOntologyBumpDryRun(TestCase):
         )
         self.expected_replaced_by_map["assay"]["EFO:0000002"] = "EFO:0000001"
         with NamedTemporaryFile() as tmp, NamedTemporaryFile() as tmp_json, open(
-            "fixtures/group_datasets_by_collection_expected", "rb"
+            f"{FIXTURES_ROOT}/group_datasets_by_collection_expected", "rb"
         ) as expected:
             ontology_bump_dry_run.dry_run(tmp.name, tmp_json.name)
             self.assertListEqual(list(expected), list(tmp))
@@ -215,7 +218,7 @@ class TestOntologyBumpDryRun(TestCase):
         self.private_collections[1]["datasets"][0]["assay"].append({"ontology_term_id": "EFO:0000008"})
         self.expected_replaced_by_map["assay"]["EFO:0000008"] = "EFO:0000080"
         with NamedTemporaryFile() as tmp, NamedTemporaryFile() as tmp_json, open(
-            "fixtures/with_term_tracker_expected", "rb"
+            f"{FIXTURES_ROOT}/with_term_tracker_expected", "rb"
         ) as expected:
             ontology_bump_dry_run.dry_run(tmp.name, tmp_json.name)
             self.assertListEqual(list(expected), list(tmp))

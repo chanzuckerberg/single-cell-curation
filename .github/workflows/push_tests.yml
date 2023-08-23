@@ -40,11 +40,15 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r cellxgene_schema_cli/requirements.txt
-          pip install pytest
+          pip install pytest coverage
       - name: cellxgene_schema_cli Unit tests
         run: make unit-test
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
+      - name: Upload coverage results as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: ./.coverage*
+          retention-days: 3
 
   unit-tests-migration-assistant:
     runs-on: ubuntu-latest
@@ -67,15 +71,23 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r scripts/migration_assistant/requirements.txt
-          pip install pytest
+          pip install pytest coverage
       - name: migration_assistant Unit tests
         run: make migration-assistant-tests
+      - name: Upload coverage results as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: ./.coverage*
+          retention-days: 3
 
   unit-test-ontology-dry-run:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
@@ -90,15 +102,23 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r scripts/schema_bump_dry_run_ontologies/requirements.txt
-          pip install pytest
+          pip install pytest coverage
       - name: Ontology Dry Run Unit Tests
         run: make ontology-dry-run-tests
+      - name: Upload coverage results as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: ./.coverage*
+          retention-days: 3
 
   unit-test-genes-dry-run:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
@@ -113,7 +133,47 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r scripts/schema_bump_dry_run_genes/requirements.txt
-          pip install pytest
+          pip install pytest coverage
       - name: Gene Dry Run Unit Tests
         run: make gene-dry-run-tests
+      - name: Upload coverage results as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: ./.coverage*
+          retention-days: 3
 
+  submit-codecoverage:
+    needs:
+      - unit-test-genes-dry-run
+      - unit-test-ontology-dry-run
+      - unit-tests-migration-assistant
+      - unit-tests-cli
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref:
+            ${{ github.event.pull_request.head.ref }}
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.10.12
+      - name: Install dependencies
+        run: |
+          pip install coverage
+      - uses: actions/download-artifact@v3
+        with:
+          name: coverage
+          path: .
+      - name: coverage report
+        run: |
+          make coverage/report-xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          env_vars: OS,PYTHON
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
