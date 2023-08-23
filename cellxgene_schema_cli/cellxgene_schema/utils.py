@@ -135,10 +135,12 @@ def enforce_canonical_format(adata: ad.AnnData):
         X = df.X
         if hasattr(X, "has_canonical_format") and not X.has_canonical_format:
             # this enforces canonical form; see https://docs.scipy.org/doc/scipy/tutorial/sparse.html#canonical-formats
+            logger.warning("noncanonical data found in X; converting to canonical format.")
             X.sum_duplicates()
 
     # enforce for canonical
-    logger.info("enforce canonical format")
+    logger.info("enforce canonical format in X")
     _enforce_canonical_format(adata)
     if adata.raw:
+        logger.info("enforce canonical format in raw.X")
         _enforce_canonical_format(adata.raw)
