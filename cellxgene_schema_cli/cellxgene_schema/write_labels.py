@@ -342,7 +342,6 @@ class AnnDataLabelAppender:
         # Update version
         self.adata.uns["schema_version"] = self.validator.schema_version
 
-        # enforce for canonical
         enforce_canonical_format(self.adata)
 
         # Write file

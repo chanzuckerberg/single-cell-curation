@@ -127,14 +127,14 @@ def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
 def enforce_canonical_format(adata: ad.AnnData):
     """
     Enforce canonical format for anndata X and raw.X. All operation are done inplace.
+    Canonical Format is required to support h5ad to Seurat file conversion.
     :param adata:
-    :return:
     """
 
     def _enforce_canonical_format(df):
         X = df.X
-        canonical = getattr(X, "has_canonical_format", None)
-        if canonical is False:
+        if hasattr(X, "has_canonical_format") and not X.has_canonical_format:
+            # this enforces canonical form; see https://docs.scipy.org/doc/scipy/tutorial/sparse.html#canonical-formats
             X.sum_duplicates()
 
     # enforce for canonical
