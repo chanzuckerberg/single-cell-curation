@@ -49,8 +49,11 @@ This document is organized by:
 * [General requirements](#general-requirements)
 * [`X` (Matrix layers)](#x-matrix-layers), which describe the data required for different assays
 * [`obs` (Cell metadata)](#obs-cell-metadata), which describe each cell in the dataset
-* [`var` and `raw.var` (Gene metadata)](#var-and-rawvar-gene-metadata), which describe each gene in the dataset
 * [`obsm` (Embeddings)](#obsm-embeddings), which describe each embedding in the dataset
+* [`obsp`](#obsp), which describe pairwise annotation of observations
+* [`var` and `raw.var` (Gene metadata)](#var-and-rawvar-gene-metadata), which describe each gene in the dataset
+* [`varm`](#varm), which describe multi-dimensional annotation of variables/features
+* [`varp`](#varp), which describe pairwise annotation of variables/features
 * [`uns` (Dataset metadata)](#uns-dataset-metadata), which describe the dataset as a whole
 
 ## General Requirements
@@ -1113,6 +1116,44 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
 </tbody></table>
 <br>
 
+## `obsm` (Embeddings)
+
+
+The size of the ndarray stored for a key in `obsm` MUST NOT be zero.
+
+
+To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more** embeddings of at least two-dimensions (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`.<br><br>
+
+### X_{suffix}
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>X_{suffix} where {suffix} MUST be at least one character long. The {suffix} is presented as text to users in the <b>Embedding Choice</b> selector in CELLxGENE Explorer so it is STRONGLY RECOMMENDED that it be descriptive.<br><br>See also <code>default_embedding</code> in <code>uns</code>.</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>numpy.ndarray</code> with the following requirements<br><br>
+          <ul>
+          <li>MUST have the same number of rows as <code>X</code> and MUST include at least two columns</li>
+            <li>MUST have a data type of float, integer, or unsigned integer of any precision (8, 16, 32, or 64 bits)</li>
+          <li>MUST NOT contain any <a href="https://numpy.org/devdocs/reference/constants.html#numpy.inf">positive infinity (<code>numpy.inf</code>)</a> or <a href="https://numpy.org/devdocs/reference/constants.html#numpy.NINF">negative infinity (<code>numpy.NINF</code>)</a> values </li>
+          <li>MUST NOT contain all <a href="https://numpy.org/devdocs/reference/constants.html#numpy.nan">Not a Number (<code>numpy.nan</code>) </a>
+values</li></ul>
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+## `obsp`
+
+The size of the ndarray stored for a key in `obsp` MUST NOT be zero.
+<br>
+
 ## `var` and `raw.var` (Gene Metadata)
 
 `var` and `raw.var` are both of type [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html).
@@ -1265,33 +1306,13 @@ add the feature length.
 </tbody></table>
 <br>
 
-## `obsm` (Embeddings)
+## `varm`
 
-To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more** embeddings of at least two-dimensions (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`.<br><br>
+The size of the ndarray stored for a key in `varm` MUST NOT be zero.
+<br>
 
-### X_{suffix}
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>X_{suffix} where {suffix} MUST be at least one character long. The {suffix} is presented as text to users in the <b>Embedding Choice</b> selector in CELLxGENE Explorer so it is STRONGLY RECOMMENDED that it be descriptive.<br><br>See also <code>default_embedding</code> in <code>uns</code>.</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Curator</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td><code>numpy.ndarray</code> with the following requirements<br><br>
-          <ul>
-          <li>MUST have the same number of rows as <code>X</code> and MUST include at least two columns</li>
-            <li>MUST have a data type of float, integer, or unsigned integer of any precision (8, 16, 32, or 64 bits)</li>
-          <li>MUST NOT contain any <a href="https://numpy.org/devdocs/reference/constants.html#numpy.inf">positive infinity (<code>numpy.inf</code>)</a> or <a href="https://numpy.org/devdocs/reference/constants.html#numpy.NINF">negative infinity (<code>numpy.NINF</code>)</a> values </li>
-          <li>MUST NOT contain all <a href="https://numpy.org/devdocs/reference/constants.html#numpy.nan">Not a Number (<code>numpy.nan</code>) </a>
-values</li></ul>
-        </td>
-    </tr>
-</tbody></table>
+## `varp`
+The size of the ndarray stored for a key in `varp` MUST NOT be zero.
 <br>
 
 ## `uns` (Dataset Metadata)
@@ -1551,13 +1572,20 @@ schema v4.0.0
   * Updated the requirements for `tissue`
   * Updated the requirements for `tissue_ontology_term_id`
 * obsm (Embeddings)
+  * Prohibited ndarrays with a size of zero
   * Updated requirements for `X_{suffix}`
+* obsp
+  * Added section and prohibited ndarrays with a size of zero
 * uns (Dataset metadata)
   * Added `citation`
   * Added `{column}_colors`
   * Added `schema_reference`
 * var and raw.var (Gene metadata)
   * Added `feature_length`
+* varm
+  * Added section and prohibited ndarrays with a size of zero
+* varp
+  * Added section and prohibited ndarrays with a size of zero
 
 schema v3.1.0
 
