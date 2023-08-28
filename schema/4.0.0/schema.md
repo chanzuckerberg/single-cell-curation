@@ -1537,7 +1537,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 
 ---
 
-When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schema_version` key and its value to `uns`. If `schema_version` is already defined, then its value MUST be overwritten. 
+When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schema_version` key and its value to `uns`.
 
 ### schema_version
 
@@ -1580,6 +1580,7 @@ schema v4.0.0
   * Added `citation`
   * Added `{column}_colors`
   * Added `schema_reference`
+  * Updated the requirements for `schema_version` to be annotated by CELLxGENE Discover and not the curator
 * var and raw.var (Gene metadata)
   * Added `feature_length`
 * varm
