@@ -180,8 +180,8 @@ The following table describes the matrix data and layers requirements that are *
 
 | Assay | "raw" required? | "raw" location | "normalized" required? | "normalized" location |
 |-|-|-|-|-|
-| scRNA-seq (UMI, e.g. 10x v3) | REQUIRED. Values MUST be de-duplicated molecule counts. Each cell MUST contain at least one non-zero value. All non-zero values MUST be positive integers converted to `float`.| `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
-| scRNA-seq (non-UMI, e.g. SS2) | REQUIRED. Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM). Each cell MUST contain at least one non-zero value. All non-zero values MUST be positive integers converted to `float`. | `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
+| scRNA-seq (UMI, e.g. 10x v3) | REQUIRED. Values MUST be de-duplicated molecule counts. Each cell MUST contain at least one non-zero value. All non-zero values MUST be positive integers stored as `numpy.float32`.| `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
+| scRNA-seq (non-UMI, e.g. SS2) | REQUIRED. Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM). Each cell MUST contain at least one non-zero value. All non-zero values MUST be positive integers stored as `numpy.float32`. | `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
 | Accessibility (e.g. ATAC-seq, mC-seq) | NOT REQUIRED | | REQUIRED | `AnnData.X` | STRONGLY RECOMMENDED |
 |||||
 
