@@ -208,35 +208,35 @@ The following ontology dependencies are *pinned* for this version of the schema.
 
 | Ontology | OBO Prefix | Release | Download |
 |:--|:--|:--|:--|
-| [Cell Ontology] | CL |  [2023-07-20] | [cl.owl]|
-| [Experimental Factor Ontology] | EFO | [2023-07-17 EFO 3.56.0] | [efo.owl]
-| [Human Ancestry Ontology] | HANCESTRO | [2022-07-18 (2.6)] | [hancestro.owl] |
+| [Cell Ontology] | CL |  [2023-08-24] | [cl.owl]|
+| [Experimental Factor Ontology] | EFO | [2023-08-15 EFO 3.57.0] | [efo.owl]
+| [Human Ancestry Ontology] | HANCESTRO | [3.0] | [hancestro-base.owl] |
 | [Human Developmental Stages] |  HsapDv | 2020-03-10 | [hsapdv.owl] |
-| [Mondo Disease Ontology] | MONDO | [2023-07-03] | [mondo.owl] |
+| [Mondo Disease Ontology] | MONDO | [2023-08-02] | [mondo.owl] |
 | [Mouse Developmental Stages]| MmusDv | 2020-03-10 | [mmusdv.owl] |
 | [NCBI organismal classification] |  NCBITaxon | [2023-06-20] | [ncbitaxon.owl] |
 | [Phenotype And Trait Ontology] | PATO | [2023-05-18] | [pato.owl]  |
-| [Uberon multi-species anatomy ontology] |  UBERON | [2023-06-28] | [uberon.owl] |
+| [Uberon multi-species anatomy ontology] |  UBERON | [2023-09-05] | [uberon.owl] |
 | | | | |
 
 [Cell Ontology]: http://obofoundry.org/ontology/cl.html
-[2023-07-20]: https://github.com/obophenotype/cell-ontology/releases/tag/v2023-07-20
-[cl.owl]: https://github.com/obophenotype/cell-ontology/releases/download/v2023-07-20/cl.owl
+[2023-08-24]: https://github.com/obophenotype/cell-ontology/releases/tag/v2023-08-24
+[cl.owl]: https://github.com/obophenotype/cell-ontology/releases/download/v2023-08-24/cl.owl
 
 [Experimental Factor Ontology]: http://www.ebi.ac.uk/efo
-[2023-07-17 EFO 3.56.0]: https://github.com/EBISPOT/efo/releases/tag/v3.56.0
-[efo.owl]: https://github.com/EBISPOT/efo/releases/download/v3.56.0/efo.owl
+[2023-08-15 EFO 3.57.0]: https://github.com/EBISPOT/efo/releases/tag/v3.57.0
+[efo.owl]: https://github.com/EBISPOT/efo/releases/download/v3.57.0/efo.owl
 
 [Human Ancestry Ontology]: http://www.obofoundry.org/ontology/hancestro.html
-[2022-07-18 (2.6)]: https://github.com/EBISPOT/ancestro/releases/tag/2.6
-[hancestro.owl]: https://github.com/EBISPOT/ancestro/raw/2.6/hancestro.owl
+[3.0]: https://github.com/EBISPOT/hancestro/releases/tag/3.0
+[hancestro-base.owl]: https://github.com/EBISPOT/hancestro/blob/3.0/hancestro-base.owl
 
 [Human Developmental Stages]: http://obofoundry.org/ontology/hsapdv.html
 [hsapdv.owl]: http://purl.obolibrary.org/obo/hsapdv.owl
 
 [Mondo Disease Ontology]: http://obofoundry.org/ontology/mondo.html
-[2023-07-03]: https://github.com/monarch-initiative/mondo/releases/tag/v2023-07-03
-[mondo.owl]: https://github.com/monarch-initiative/mondo/releases/download/v2023-07-03/mondo.owl
+[2023-08-02]: https://github.com/monarch-initiative/mondo/releases/tag/v2023-08-02
+[mondo.owl]: https://github.com/monarch-initiative/mondo/releases/download/v2023-08-02/mondo.owl
 
 [Mouse Developmental Stages]: http://obofoundry.org/ontology/mmusdv.html
 [mmusdv.owl]: http://purl.obolibrary.org/obo/mmusdv.owl
@@ -250,8 +250,8 @@ The following ontology dependencies are *pinned* for this version of the schema.
 [pato.owl]: https://github.com/pato-ontology/pato/blob/v2023-05-18/pato.owl
 
 [Uberon multi-species anatomy ontology]: http://www.obofoundry.org/ontology/uberon.html
-[2023-06-28]: https://github.com/obophenotype/uberon/releases/tag/v2023-06-28
-[uberon.owl]: https://github.com/obophenotype/uberon/releases/download/v2023-06-28/uberon.owl
+[2023-09-05]: https://github.com/obophenotype/uberon/releases/tag/v2023-09-05
+[uberon.owl]: https://github.com/obophenotype/uberon/releases/download/v2023-09-05/uberon.owl
 
 ### Required Gene Annotations
 
@@ -1562,6 +1562,12 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 
 schema v4.0.0
 
+* Required Ontologies
+  * Updated CL to the 2023-08-24 release
+  * Updated EFO to the 2023-08-15 EFO 3.57.0 release
+  * Updated HANCESTRO to the 3.0 release
+  * Updated MONDO to the 2023-08-02 release
+  * Updated UBERON to the 2023-09-05 release
 * obs (Cell metadata)
   * Updated the requirements for `cell_type_ontology_term_id`
   * Added `index`
