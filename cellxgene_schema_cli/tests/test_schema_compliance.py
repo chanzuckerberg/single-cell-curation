@@ -1025,8 +1025,13 @@ class TestUns(BaseValidationTest):
             with self.subTest(column=reserved_column):
                 self.validator.adata.uns[reserved_column] = "dummy_value"
                 self.validator.validate_adata()
-                self.assertEqual(self.validator.errors, [f"ERROR: Column '{reserved_column}' is a reserved column name "
-                                                         f"of 'uns'. Remove it from h5ad and try again."])
+                self.assertEqual(
+                    self.validator.errors,
+                    [
+                        f"ERROR: Column '{reserved_column}' is a reserved column name "
+                        f"of 'uns'. Remove it from h5ad and try again."
+                    ],
+                )
 
     def test_required_fields_title(self):
         """

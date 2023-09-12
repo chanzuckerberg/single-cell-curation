@@ -1,5 +1,4 @@
 import logging
-import os
 
 import anndata as ad
 from pandas import DataFrame
