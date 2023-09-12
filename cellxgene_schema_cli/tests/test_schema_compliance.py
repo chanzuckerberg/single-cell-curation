@@ -1,5 +1,4 @@
 import unittest
-from unittest.mock import patch
 
 import fixtures.examples_validate as examples
 import numpy

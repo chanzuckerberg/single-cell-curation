@@ -85,8 +85,10 @@ class Validator:
         """
         Sets schema dictionary
         """
-        self.schema_version = schema.get_current_schema_version()
-        self.schema_def = schema.get_schema_definition()
+        if not self.schema_version:
+            self.schema_version = schema.get_current_schema_version()
+        if not self.schema_def:
+            self.schema_def = schema.get_schema_definition()
 
     def _get_component_def(self, component: str) -> dict:
         """

@@ -12,7 +12,6 @@ from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.validate import Validator, validate
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 from fixtures.examples_validate import (
-    SCHEMA_VERSION,
     adata,
     adata_minimal,
     adata_with_labels,
