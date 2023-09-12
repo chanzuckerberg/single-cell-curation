@@ -31,17 +31,14 @@ class AnnDataLabelRemover:
         else:
             # Check if schema version is supported
             version = self.adata.uns["schema_version"]
-            path = schema.get_schema_file_path(version)
-
-            if not os.path.isfile(path):
-                supported_versions = schema.get_schema_versions_supported()
+            adata_major_version = version.split(".")[0]
+            supported_major_version = schema.get_current_schema_version().split(".")[0]
+            if adata_major_version != supported_major_version:
                 logger.error(
-                    f"Schema version '{version}' is not supported. Current supported versions: '{supported_versions}'. "
-                    f"Label removal cannot be performed."
+                    f"Schema version '{version}' is not supported. Current supported major version: "
+                    f"'{supported_major_version}'. Label removal cannot be performed."
                 )
-            else:
-                if not self.schema_def:
-                    self.schema_def = schema.get_schema_definition(version)
+            self.schema_def = schema.get_schema_definition()
 
     def remove_labels(self):
         """

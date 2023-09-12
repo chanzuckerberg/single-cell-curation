@@ -147,7 +147,7 @@ class TestExpressionMatrix(BaseValidationTest):
 
 class TestObs(BaseValidationTest):
     """
-    Fail cases in adata.uns
+    Fail cases in adata.obs
     """
 
     def test_column_presence(self):
@@ -619,8 +619,8 @@ class TestObs(BaseValidationTest):
             "EFO:0700004": ["cell"],
             "EFO:0008780": ["cell", "nucleus"],
             "EFO:0008953": ["cell"],
-            # "EFO:0700010": ["cell", "nucleus"],  TODO: Uncomment once EFO.owl is updated in 3.1.0
-            # "EFO:0700011": ["cell", "nucleus"],  TODO: Uncomment once EFO.owl is updated in 3.1.0
+            "EFO:0700010": ["cell", "nucleus"],
+            "EFO:0700011": ["cell", "nucleus"],
             "EFO:0009919": ["cell", "nucleus"],
         }
 
@@ -1017,86 +1017,17 @@ class TestUns(BaseValidationTest):
     Fail cases in adata.uns
     """
 
-    def test_optional_fields_schema_version_is_old(self):
-        latest_version = "1.0.0"
-        old_version = "0.0.1"
-        self.validator.adata.uns["schema_version"] = old_version
-        self.validator.schema_version = None
-        with self.assertLogs(level="WARNING") as logs, patch(
-            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[latest_version]
-        ) as mock_supported_versions, patch(
-            "cellxgene_schema.validate.schema.get_current_schema_version", return_value=latest_version
-        ), patch(
-            "cellxgene_schema.validate.schema.get_schema_definition"
-        ) as mock_get_schema_definition:
-            self.validator._set_schema_def()
-        self.assertEqual(
-            logs.output,
-            [
-                f"WARNING:cellxgene_schema.validate:Schema version '{old_version}' is not supported. Current supported "
-                f"versions: '{latest_version}'. Validating with latest version '{latest_version}'."
-            ],
-        )
-        mock_supported_versions.assert_called_once()
-        mock_get_schema_definition.assert_called_with(latest_version)
+    def test_reserved_columns_presence(self):
+        """
+        Reserved columns must NOT be used in uns
+        """
 
-    def test_optional_fields_schema_version_is_missing(self):
-        latest_version = "1.0.0"
-        self.validator.schema_version = None
-        with patch(
-            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[latest_version]
-        ) as mock_supported_versions, patch(
-            "cellxgene_schema.validate.schema.get_current_schema_version", return_value=latest_version
-        ) as mock_get_current_schema, patch(
-            "cellxgene_schema.validate.schema.get_schema_definition"
-        ) as mock_get_schema_definition:
-            self.validator._set_schema_def()
-        mock_supported_versions.assert_called_once()
-        mock_get_current_schema.assert_called_once()
-        mock_get_schema_definition.assert_called_with(latest_version)
-        self.assertEqual(self.validator.schema_version, latest_version)
-
-    def test_optional_fields_schema_version_is_latest(self):
-        latest_version = "1.0.0"
-        self.validator.schema_version = None
-        self.validator.adata.uns["schema_version"] = latest_version
-        with patch(
-            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[latest_version]
-        ) as mock_supported_versions, patch(
-            "cellxgene_schema.validate.schema.get_current_schema_version", return_value=latest_version
-        ) as mock_get_current_schema, patch(
-            "cellxgene_schema.validate.schema.get_schema_definition"
-        ) as mock_get_schema_definition:
-            self.validator._set_schema_def()
-        mock_supported_versions.assert_called_once()
-        mock_get_current_schema.assert_called_once()
-        mock_get_schema_definition.assert_called_with(latest_version)
-        self.assertEqual(self.validator.schema_version, latest_version)
-
-    def test_optional_fields_schema_version_with_multiple_supported_versions(self):
-        latest_version = "1.0.0"
-        old_version = "0.0.1"
-        self.validator.schema_version = None
-        self.validator.adata.uns["schema_version"] = old_version
-        with self.assertLogs(level="WARNING") as logs, patch(
-            "cellxgene_schema.validate.schema.get_schema_versions_supported", return_value=[old_version, latest_version]
-        ) as mock_supported_versions, patch(
-            "cellxgene_schema.validate.schema.get_current_schema_version", return_value=latest_version
-        ) as mock_get_current_schema, patch(
-            "cellxgene_schema.validate.schema.get_schema_definition"
-        ) as mock_get_schema_definition:
-            self.validator._set_schema_def()
-        self.assertEqual(
-            logs.output,
-            [
-                f"WARNING:cellxgene_schema.validate:Schema version '{old_version}' is not supported. Current supported "
-                f"versions: '{latest_version}'. Validating with latest version '{latest_version}'."
-            ],
-        )
-        mock_supported_versions.assert_called_once()
-        mock_get_current_schema.assert_called_once()
-        mock_get_schema_definition.assert_called_with(latest_version)
-        self.assertEqual(self.validator.schema_version, latest_version)
+        for reserved_column in self.validator.schema_def["components"]["uns"]["reserved_columns"]:
+            with self.subTest(column=reserved_column):
+                self.validator.adata.uns[reserved_column] = "dummy_value"
+                self.validator.validate_adata()
+                self.assertEqual(self.validator.errors, [f"ERROR: Column '{reserved_column}' is a reserved column name "
+                                                         f"of 'uns'. Remove it from h5ad and try again."])
 
     def test_required_fields_title(self):
         """

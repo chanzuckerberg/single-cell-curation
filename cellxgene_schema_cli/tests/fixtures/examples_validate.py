@@ -7,7 +7,7 @@ from scipy import sparse
 
 # -----------------------------------------------------------------#
 # General example information
-SCHEMA_VERSION = "3.0.0"
+SCHEMA_VERSION = "4.0.0"
 FIXTURES_ROOT = os.path.join(os.path.dirname(__file__))
 
 # -----------------------------------------------------------------#
@@ -162,7 +162,7 @@ good_uns = {
 }
 
 good_uns_with_labels = {
-    "schema_version": SCHEMA_VERSION,
+    "schema_version": "1.0.0",
     "title": "A title",
     "default_embedding": "X_umap",
     "X_approximate_distribution": "normal",

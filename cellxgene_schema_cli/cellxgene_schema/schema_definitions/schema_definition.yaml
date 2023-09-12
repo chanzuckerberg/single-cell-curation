@@ -1,4 +1,4 @@
-title: Corpora schema version 3.X.X
+title: Corpora schema version 4.X.X
 type: anndata
 # If sparsity of any expression matrix is greater than this and not csr sparse matrix, then there will be warning.
 sparsity: 0.5
@@ -21,6 +21,8 @@ components:
     uns:
         type: dict
         required: null # Means it's required
+        reserved_columns:
+            - schema_version
         deprecated_columns:
             - X_normalization
             - default_field
@@ -34,8 +36,6 @@ components:
             - project_name
             - publication_doi
         keys:
-            schema_version:
-                type: string
             title:
                 type: string
                 required: null
