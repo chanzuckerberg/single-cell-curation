@@ -814,7 +814,7 @@ class Validator:
 
     def _validate_embedding_dict(self):
         """
-        Validates the embedding dictionary -- it checks that all values of adata.obms are numpy arrays with the correct
+        Validates the embedding dictionary -- it checks that all values of adata.obsm are numpy arrays with the correct
         dimension. Adds errors to self.errors if any. Checks that the keys start with "X_"
 
         :rtype none
@@ -836,7 +836,17 @@ class Validator:
             if key.startswith("X_"):
                 obsm_with_x_prefix += 1
 
-                if len(value.shape) < 2 or value.shape[0] != self.adata.n_obs or value.shape[1] < 2:
+                if not (np.issubdtype(value.dtype, np.integer) or
+                        np.issubdtype(value.dtype, np.floating)):
+                    self.errors.append(
+                        f"adata.obsm['{key}'] has an invalid data type. It should be "
+                        "float, integer, or unsigned integer of any precision (8, 16, 32, or 64 bits)."
+                    )
+                elif np.isinf(value).any() or np.isnan(value).any():
+                    self.errors.append(
+                        f"adata.obsm['{key}'] contains positive infinity, negative infinity, or NaN values."
+                    )
+                elif len(value.shape) < 2 or value.shape[0] != self.adata.n_obs or value.shape[1] < 2:
                     self.errors.append(
                         f"All embeddings must have as many rows as cells, and at least two columns."
                         f"'adata.obsm['{key}']' has shape of '{value.shape}'."
