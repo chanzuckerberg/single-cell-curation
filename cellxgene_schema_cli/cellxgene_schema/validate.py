@@ -841,11 +841,11 @@ class Validator:
                         f"adata.obsm['{key}'] has an invalid data type. It should be "
                         "float, integer, or unsigned integer of any precision (8, 16, 32, or 64 bits)."
                     )
-                elif np.isinf(value).any() or np.isnan(value).any():
+                if np.isinf(value).any() or np.isnan(value).any():
                     self.errors.append(
                         f"adata.obsm['{key}'] contains positive infinity, negative infinity, or NaN values."
                     )
-                elif len(value.shape) < 2 or value.shape[0] != self.adata.n_obs or value.shape[1] < 2:
+                if len(value.shape) < 2 or value.shape[0] != self.adata.n_obs or value.shape[1] < 2:
                     self.errors.append(
                         f"All embeddings must have as many rows as cells, and at least two columns."
                         f"'adata.obsm['{key}']' has shape of '{value.shape}'."
