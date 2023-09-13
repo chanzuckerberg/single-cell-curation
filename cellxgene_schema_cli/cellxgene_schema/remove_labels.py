@@ -17,34 +17,14 @@ class AnnDataLabelRemover:
 
     def __init__(self, adata: ad.AnnData = None):
         self.adata = adata
-        self.schema_def = dict()
-        self._set_schema_def()
-
-    def _set_schema_def(self):
-        """
-        Sets schema dictionary from using information in adata.
-        """
-        # Check if schema version slot is present
-        if "schema_version" not in self.adata.uns:
-            logger.error("adata has no schema definition in 'adata.uns'. Cannot remove labels.")
-        else:
-            # Check if schema version is supported
-            version = self.adata.uns["schema_version"]
-            adata_major_version = version.split(".")[0]
-            supported_major_version = schema.get_current_schema_version().split(".")[0]
-            if adata_major_version != supported_major_version:
-                logger.error(
-                    f"Schema version '{version}' is not supported. Current supported major version: "
-                    f"'{supported_major_version}'. Label removal cannot be performed."
-                )
-            self.schema_def = schema.get_schema_definition()
+        self.schema_def = schema.get_schema_definition()
 
     def remove_labels(self):
         """
         From a valid (per cellxgene's schema) adata, this function parses the associated schema definition for
         'add_labels.to_column' annotations, and removes specified columns from self.adata
         """
-        for component_name in ["obs", "var", "raw.var"]:
+        for component_name in ["obs", "var", "raw.var", "uns"]:
             # If the component does not exist, skip (this is for raw.var)
             component = getattr_anndata(self.adata, component_name)
             if component is None:
@@ -56,10 +36,16 @@ class AnnDataLabelRemover:
                     if "add_labels" in column_def:
                         self._remove_columns(component, column_def)
 
+            # Remove automatically annotated columns
+            if "reserved_columns" in self.schema_def["components"][component_name]:
+                for field in self.schema_def["components"][component_name]["reserved_columns"]:
+                    del component[field]
+
             # Doing it for index
-            index_def = self.schema_def["components"][component_name]["index"]
-            if "add_labels" in index_def:
-                self._remove_columns(component, index_def)
+            if "index" in self.schema_def["components"][component_name]:
+                index_def = self.schema_def["components"][component_name]["index"]
+                if "add_labels" in index_def:
+                    self._remove_columns(component, index_def)
 
     def _remove_columns(self, component: DataFrame, subcomponent_definition: dict):
         """
