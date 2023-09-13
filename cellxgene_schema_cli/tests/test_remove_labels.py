@@ -21,6 +21,7 @@ class TestRemoveLabels(unittest.TestCase):
         assert_frame_equal(adata_labels_removed.obs, self.adata_no_labels.obs)
         assert_frame_equal(adata_labels_removed.var, self.adata_no_labels.var)
         assert_frame_equal(adata_labels_removed.raw.var, self.adata_no_labels.raw.var)
+        self.assertDictEqual(dict(adata_labels_removed.uns), dict(self.adata_no_labels.uns))
 
     def test_remove_labels_no_raw(self):
         self.anndata_label_remover.remove_labels()
@@ -29,3 +30,4 @@ class TestRemoveLabels(unittest.TestCase):
         self.assertIsNone(adata_labels_removed.raw)
         assert_frame_equal(adata_labels_removed.obs, self.adata_no_labels.obs)
         assert_frame_equal(adata_labels_removed.var, self.adata_no_labels.var)
+        self.assertDictEqual(dict(adata_labels_removed.uns), dict(self.adata_no_labels.uns))

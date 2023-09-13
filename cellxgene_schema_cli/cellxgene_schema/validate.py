@@ -8,11 +8,10 @@ from typing import Dict, List, Optional, Tuple, Union
 import anndata
 import numpy as np
 import pandas as pd
-import semver
 from pandas.core.computation.ops import UndefinedVariableError
 from scipy import sparse
 
-from . import env, ontology, schema
+from . import ontology, schema
 from .utils import get_matrix_format, getattr_anndata, read_h5ad
 
 logger = logging.getLogger(__name__)
@@ -22,8 +21,6 @@ ONTOLOGY_CHECKER = ontology.OntologyChecker()
 
 class Validator:
     """Handles validation of AnnData"""
-
-    schema_definitions_dir = env.SCHEMA_DEFINITIONS_DIR
 
     def __init__(self, ignore_labels=False):
         # Set initial state
@@ -86,20 +83,12 @@ class Validator:
 
     def _set_schema_def(self):
         """
-        Sets schema dictionary from using information in adata. If there are any errors, it adds them to self.errors
+        Sets schema dictionary
         """
-        version = self.adata.uns.get("schema_version")
-        supported_major_versions = schema.get_schema_versions_supported()
-        supported_major_versions.sort()
-        latest_major_version: semver.Version = semver.Version.parse(supported_major_versions[-1])
-        if version and not semver.Version.parse(version).is_compatible(latest_major_version):
-            logger.warning(
-                f"Schema version '{version}' is not supported. Current supported versions: '{latest_major_version}'. "
-                f"Validating with latest version '{latest_major_version}'."
-            )
         if not self.schema_version:
             self.schema_version = schema.get_current_schema_version()
-            self.schema_def = schema.get_schema_definition(str(latest_major_version))
+        if not self.schema_def:
+            self.schema_def = schema.get_schema_definition()
 
     def _get_component_def(self, component: str) -> dict:
         """
@@ -1062,17 +1051,13 @@ class Validator:
 
     def _check_column_availability(self):
         """
-        This method will check for columns that are reserved in self.adata.obs or
-        self.adata.var already exist
+        This method will check for columns that are reserved in components and validate that they are
+         available as expected
 
         :rtype none
         """
 
         for component, component_def in self.schema_def["components"].items():
-            # If not a dataframe we don't need to check for columns
-            if component_def["type"] != "dataframe":
-                continue
-
             # Skip if component does not exist
             if getattr_anndata(self.adata, component) is None:
                 continue
@@ -1087,7 +1072,16 @@ class Validator:
             if self.ignore_labels:
                 continue
 
-            # Do it for columns that map to columns
+            # Do it for metadata columns that are reserved for annotation after data portal upload
+            if "reserved_columns" in component_def:
+                for column in component_def["reserved_columns"]:
+                    if column in getattr_anndata(self.adata, component):
+                        self.errors.append(
+                            f"Column '{column}' is a reserved column name "
+                            f"of '{component}'. Remove it from h5ad and try again."
+                        )
+
+            # Do it for columns that map to other columns, for post-upload annotation
             if "columns" in component_def:
                 for _column, columns_def in component_def["columns"].items():
                     if "add_labels" in columns_def:
@@ -1173,7 +1167,7 @@ class Validator:
             self._validate_encoding_version()
             logger.debug("Successfully read the h5ad file")
 
-        # Fetches schema def from anndata if schema version is not found in AnnData, this fails
+        # Fetches schema def for latest major schema version
         self._set_schema_def()
 
         if not self.errors:

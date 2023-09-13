@@ -339,7 +339,7 @@ class AnnDataLabelAppender:
         # Remove unused categories
         self._remove_categories_with_zero_values()
 
-        # Update version
+        # Set version
         self.adata.uns["schema_version"] = self.validator.schema_version
 
         enforce_canonical_format(self.adata)

@@ -12,7 +12,6 @@ from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.validate import Validator, validate
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 from fixtures.examples_validate import (
-    SCHEMA_VERSION,
     adata,
     adata_minimal,
     adata_with_labels,
@@ -31,7 +30,7 @@ from scipy import sparse
 class TestFieldValidation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.schema_def = get_schema_definition(SCHEMA_VERSION)
+        cls.schema_def = get_schema_definition()
         cls.OntologyChecker = OntologyChecker()
 
     def setUp(self):
@@ -88,7 +87,7 @@ class TestAddLabelFunctions(unittest.TestCase):
         # Set up test data
         self.test_adata = adata.copy()
         self.test_adata_with_labels = adata_with_labels
-        self.schema_def = get_schema_definition(SCHEMA_VERSION)
+        self.schema_def = get_schema_definition()
 
         validator = Validator()
         validator.adata = self.test_adata
