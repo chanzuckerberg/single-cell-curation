@@ -836,8 +836,7 @@ class Validator:
             if key.startswith("X_"):
                 obsm_with_x_prefix += 1
 
-                if not (np.issubdtype(value.dtype, np.integer) or
-                        np.issubdtype(value.dtype, np.floating)):
+                if not (np.issubdtype(value.dtype, np.integer) or np.issubdtype(value.dtype, np.floating)):
                     self.errors.append(
                         f"adata.obsm['{key}'] has an invalid data type. It should be "
                         "float, integer, or unsigned integer of any precision (8, 16, 32, or 64 bits)."
