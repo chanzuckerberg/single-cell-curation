@@ -842,13 +842,9 @@ class Validator:
                         "float, integer, or unsigned integer of any precision (8, 16, 32, or 64 bits)."
                     )
                 if np.isinf(value).any() or np.isnan(value).any():
-                    self.errors.append(
-                        f"adata.obsm['{key}'] contains positive infinity or negative infinity values."
-                    )
+                    self.errors.append(f"adata.obsm['{key}'] contains positive infinity or negative infinity values.")
                 if np.isnan(value).any():
-                    self.errors.append(
-                        f"adata.obsm['{key}'] contains NaN values."
-                    )
+                    self.errors.append(f"adata.obsm['{key}'] contains NaN values.")
                 if len(value.shape) < 2 or value.shape[0] != self.adata.n_obs or value.shape[1] < 2:
                     self.errors.append(
                         f"All embeddings must have as many rows as cells, and at least two columns."
