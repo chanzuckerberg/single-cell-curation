@@ -50,6 +50,14 @@ def remove_deprecated_features(adata: ad.AnnData, deprecated: List[str]) -> ad.A
     return adata
 
 
+def get_num_vars_in_raw_matrix(adata: ad.AnnData) -> int:
+    return adata.raw.X.shape[1]
+
+
+def get_num_vars_in_raw_var(adata: ad.AnnData) -> int:
+    return adata.raw.var.shape[0]
+
+
 def get_matrix_format(adata: ad.AnnData, matrix: Union[np.ndarray, sparse.spmatrix]) -> str:
     """
     Given a matrix, returns the format as one of: csc, csr, coo, dense

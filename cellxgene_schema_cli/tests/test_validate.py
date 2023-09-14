@@ -319,3 +319,17 @@ class TestSeuratConvertibility(unittest.TestCase):
         self.validator._validate_seurat_convertibility()
         self.assertTrue(len(self.validator.warnings) == 0)
         self.assertTrue(self.validator.is_seurat_convertible)
+
+    @mock.patch("cellxgene_schema.validate.get_num_vars_in_raw_var")
+    @mock.patch("cellxgene_schema.validate.get_num_vars_in_raw_matrix")
+    def test_seurat_raw_matrix_and_var_dimensionality(self, get_num_vars_in_raw_matrix_mock, get_num_vars_in_raw_var_mock):
+        # h5ad where raw matrix variable count != length of raw var variables array is not Seurat-convertible
+        get_num_vars_in_raw_matrix_mock.return_value = 2
+        get_num_vars_in_raw_var_mock.return_value = 1
+
+        validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata
+        validator._validate_seurat_convertibility()
+        assert len(validator.warnings) == 1
+        assert not validator.is_seurat_convertible
