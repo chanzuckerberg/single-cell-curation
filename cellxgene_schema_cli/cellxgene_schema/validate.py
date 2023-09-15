@@ -43,35 +43,6 @@ class Validator:
         # Matrix (e.g., X, raw.X, ...) number non-zero cache
         self.number_non_zero = dict()
 
-    @staticmethod
-    def _curie_remove_suffix(term_id: str, suffix_def: dict) -> Tuple[str, str]:
-        """
-        Remove suffix from a curie term id, if none present return it unmodified
-
-        :param str term_id: the curie term id to validate
-        :param dict{str: list[str], ...} suffix_def: dictionary whose keys are ontology term ids and values
-        are list of allowed suffixes
-
-        :rtype Tuple[str, str]
-        :return the term_id with suffixed stripped, and the suffix
-        """
-
-        id_suffix = ""
-
-        for ontology_name, suffixes in suffix_def.items():
-            for suffix in suffixes:
-                suffix = suffix.replace("(", r"\(")
-                suffix = suffix.replace(")", r"\)")
-                search_results = re.search(r"%s$" % suffix, term_id)
-                if search_results:
-                    stripped_term_id = re.sub(r"%s$" % suffix, "", term_id)
-                    if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, stripped_term_id):
-                        id_suffix = search_results.group(0)
-
-                        return stripped_term_id, id_suffix
-
-        return term_id, id_suffix
-
     def _validate_encoding_version(self):
         import h5py
 
@@ -228,7 +199,7 @@ class Validator:
 
         # If there are forbidden terms
         if "forbidden" in curie_constraints and term_id in curie_constraints["forbidden"]:
-            self.errors.append(f"'{term_id}' in '{column_name}' is not allowed'.")
+            self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
             return
 
         # If NA is found in allowed ontologies, it means only exceptions should be found. If no exceptions were found
@@ -236,10 +207,6 @@ class Validator:
         if curie_constraints["ontologies"] == ["NA"]:
             self.errors.append(f"'{term_id}' in '{column_name}' is not a valid value of '{column_name}'.")
             return
-
-        # Check if there are any allowed suffixes and remove them if needed
-        if "suffixes" in curie_constraints:
-            term_id, suffix = self._curie_remove_suffix(term_id, curie_constraints["suffixes"])
 
         # Check that term id belongs to allowed ontologies
         self._validate_curie_ontology(term_id, column_name, curie_constraints["ontologies"])
@@ -436,15 +403,9 @@ class Validator:
                 self.errors.append(f"Column '{column_name}' in dataframe '{df_name}' must not contain NaN values.")
                 return
 
-            if "curie_constraints" not in column_def:
-                raise ValueError(f"Corrupt schema definition, no 'curie_constraints' were found for '{column_name}'")
-            if "ontologies" not in column_def["curie_constraints"]:
-                raise ValueError(
-                    f"allowed 'ontologies' must be specified under 'curie constraints' for '{column_name}'"
-                )
-
-            for term_id in column.drop_duplicates():
-                self._validate_curie(term_id, column_name, column_def["curie_constraints"])
+            if "curie_constraints" in column_def:
+                for term_id in column.drop_duplicates():
+                    self._validate_curie(term_id, column_name, column_def["curie_constraints"])
 
         # Add error suffix to errors found here
         if "error_message_suffix" in column_def:

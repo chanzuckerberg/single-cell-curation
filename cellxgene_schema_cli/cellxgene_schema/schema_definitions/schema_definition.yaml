@@ -554,8 +554,6 @@ components:
                             - "nucleus"
             tissue_type:
                 type: categorical
-                error_message_suffix: >-
-                    Only 'cell culture', 'organoid', or 'tissue' are allowed.
                 enum:
                     - "cell culture"
                     - "organoid"

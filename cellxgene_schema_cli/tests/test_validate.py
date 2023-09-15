@@ -52,21 +52,29 @@ class TestFieldValidation(unittest.TestCase):
         # Check that any columns in obs that are "curie" have "curie_constraints" and "ontologies" under the constraints
         for i in self.schema_def["components"]["obs"]["columns"]:
             self.assertTrue("type" in self.schema_def["components"]["obs"]["columns"][i])
-            if i == "curie":
-                self.assertIsInstance(
-                    self.schema_def["components"]["obs"]["columns"][i]["curie_constraints"],
-                    dict,
-                )
-                self.assertIsInstance(
-                    self.schema_def["components"]["obs"]["columns"][i]["curie_constraints"]["ontolgies"],
-                    list,
-                )
+            if self.schema_def["components"]["obs"]["columns"][i]["type"] == "curie":
+                if "curie_constraints" in self.schema_def["components"]["obs"]["columns"][i]:
+                    self.assertIsInstance(
+                        self.schema_def["components"]["obs"]["columns"][i]["curie_constraints"],
+                        dict,
+                    )
+                    self.assertIsInstance(
+                        self.schema_def["components"]["obs"]["columns"][i]["curie_constraints"]["ontologies"],
+                        list,
+                    )
 
-                # Check that the allowed ontologies are in the ontology checker
-                for ontology_name in self.schema_def["components"]["obs"]["columns"][i]["curie_constraints"][
-                    "ontolgies"
-                ]:
-                    self.assertTrue(self.OntologyChecker.is_valid_ontology(ontology_name))
+                    # Check that the allowed ontologies are in the ontology checker or 'NA' (special case)
+                    for ontology_name in self.schema_def["components"]["obs"]["columns"][i]["curie_constraints"][
+                        "ontologies"
+                    ]:
+                        if ontology_name != "NA":
+                            self.assertTrue(self.OntologyChecker.is_valid_ontology(ontology_name))
+                else:
+                    # if no curie_constraints in top-level for type curie, assert that 'dependencies' list exists
+                    self.assertIsInstance(
+                        self.schema_def["components"]["obs"]["columns"][i]["dependencies"],
+                        list,
+                    )
 
     def test_validate_ontology_good(self):
         self.validator._validate_curie("CL:0000066", self.column_name, self.curie_constraints)
@@ -325,7 +333,7 @@ class TestSeuratConvertibility(unittest.TestCase):
         # h5ad where raw matrix variable count != length of raw var variables array is not Seurat-convertible
         matrix = sparse.csr_matrix(np.zeros([good_obs.shape[0], good_var.shape[0]], dtype=np.float32))
         raw = anndata.AnnData(X=matrix, var=good_var)
-        raw.var.drop('ENSSASG00005000004', axis=0, inplace=True)
+        raw.var.drop("ENSSASG00005000004", axis=0, inplace=True)
         self.validation_helper(matrix, raw)
         self.validator._validate_seurat_convertibility()
         self.assertTrue(len(self.validator.warnings) == 1)
