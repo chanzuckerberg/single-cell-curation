@@ -66,8 +66,9 @@ class GeneChecker:
                 gene = gene.rstrip().split(",")
                 gene_id = gene[0]
                 gene_label = gene[1]
+                gene_length = int(gene[3])
 
-                self.gene_dict[gene_id] = gene_label
+                self.gene_dict[gene_id] = (gene_label, gene_length)
 
                 # Keeps track of duplicated gene labels
                 if gene_label in gene_labels:
@@ -76,9 +77,9 @@ class GeneChecker:
                     gene_labels.add(gene_label)
 
             # Makes gene labels unique
-            for gene_id, gene_label in self.gene_dict.items():
+            for gene_id, (gene_label, gene_length) in self.gene_dict.items():
                 if gene_label in duplicated_gene_labels:
-                    self.gene_dict[gene_id] = gene_label + "_" + gene_id
+                    self.gene_dict[gene_id] = (gene_label + "_" + gene_id, gene_length)
 
     def is_valid_id(self, gene_id: str) -> bool:
         """
@@ -105,7 +106,22 @@ class GeneChecker:
         if not self.is_valid_id(gene_id):
             raise ValueError(f"The id '{gene_id}' is not a valid ENSEMBL id for '{self.species}'")
 
-        return self.gene_dict[gene_id]
+        return self.gene_dict[gene_id][0]
+
+    def get_length(self, gene_id) -> int:
+        """
+        Gets feature length associated to the ENSEBML id
+
+        :param str gene_id: ENSEMBL gene id
+
+        :rtype int
+        :return A gene length
+        """
+
+        if not self.is_valid_id(gene_id):
+            raise ValueError(f"The id '{gene_id}' is not a valid ENSEMBL id for '{self.species}'")
+
+        return self.gene_dict[gene_id][1]
 
 
 class OntologyChecker:

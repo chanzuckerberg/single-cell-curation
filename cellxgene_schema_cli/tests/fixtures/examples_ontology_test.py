@@ -4,13 +4,13 @@ from cellxgene_schema import ontology
 invalid_species = ["Caenorhabditis elegans"]
 
 valid_genes = {
-    ontology.SupportedOrganisms.HOMO_SAPIENS: {"ENSG00000141510": "TP53"},
-    ontology.SupportedOrganisms.MUS_MUSCULUS: {"ENSMUSG00000059552": "Trp53"},
+    ontology.SupportedOrganisms.HOMO_SAPIENS: {"ENSG00000141510": ("TP53", 5676)},
+    ontology.SupportedOrganisms.MUS_MUSCULUS: {"ENSMUSG00000059552": ("Trp53", 4045)},
 }
 
 invalid_genes = {
-    ontology.SupportedOrganisms.HOMO_SAPIENS: ["ENSMUSG00000059552", "GENE"],
-    ontology.SupportedOrganisms.MUS_MUSCULUS: ["ENSG00000141510", "GENE"],
+    ontology.SupportedOrganisms.HOMO_SAPIENS: ["ENSMUSG00000059552", ("GENE", 1000)],
+    ontology.SupportedOrganisms.MUS_MUSCULUS: ["ENSG00000141510", ("GENE", 200)],
 }
 
 # For ontology checker
