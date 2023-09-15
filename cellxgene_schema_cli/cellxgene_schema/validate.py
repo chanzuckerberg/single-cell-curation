@@ -667,6 +667,22 @@ class Validator:
                 column_def = self._get_column_def(df_name, column_name)
                 column = getattr(df, column_name)
 
+                # Validate that {column}_colors exists)
+                colors_column = getattr(df, f"{column_name}_colors")
+                if colors_column.get("type") != "categorical":
+                    self.errors.append(f"Column '{column_name}_colors' must be of type categorical")
+                if len(colors_column.unique()) < len(column.unique()):
+                    self.errors.append(
+                        f"Column '{column_name}' has {len(column.unique)} unique values and {len(colors_column.unique())} "
+                        f"colors present. The number of colors must be equal to or greater than the number of unique values"
+                    )
+                for color in column.unique():
+                    if not self._validate_color(color):
+                        self.errors.append(
+                            f"Color '{color}' in '{column_name}_colors' is not a valid color. Must be either a CSS4 named "
+                            f"color or a 6-digit HEX value, such as aliceblue or #08c0ff."
+                        )
+
                 # First check if there are dependencies with other columns and work with a subset of the data if so
                 if "dependencies" in column_def:
                     column = self._validate_column_dependencies(df, df_name, column_name, column_def["dependencies"])
@@ -676,6 +692,45 @@ class Validator:
                     if "warning_message" in column_def:
                         self.warnings.append(column_def["warning_message"])
                     self._validate_column(column, column_name, df_name, column_def)
+    
+    def _validate_color(self, color: str) -> bool:
+        css4_named_colors = [
+            "aliceblue", "antiquewhite", "aqua", "aquamarine", "azure",
+            "beige", "bisque", "black", "blanchedalmond", "blue",
+            "blueviolet", "brown", "burlywood",
+            "cadetblue", "chartreuse", "chocolate", "coral", "cornflowerblue",
+            "cornsilk", "crimson", "cyan",
+            "darkblue", "darkcyan", "darkgoldenrod", "darkgray", "darkgreen",
+            "darkkhaki", "darkmagenta", "darkolivegreen", "darkorange", "darkorchid",
+            "darkred", "darksalmon", "darkseagreen", "darkslateblue", "darkslategray",
+            "darkturquoise", "darkviolet", "deeppink", "deepskyblue", "dimgray", "dodgerblue",
+            "firebrick", "floralwhite", "forestgreen", "fuchsia",
+            "gainsboro", "ghostwhite", "gold", "goldenrod", "gray", "green", "greenyellow",
+            "grey", "honeydew", "hotpink",
+            "indianred", "indigo", "ivory",
+            "khaki",
+            "lavender", "lavenderblush", "lawngreen", "lemonchiffon", "lightblue", "lightcoral",
+            "lightcyan", "lightgoldenrodyellow", "lightgray", "lightgreen", "lightpink", "lightsalmon",
+            "lightseagreen", "lightskyblue", "lightslategray", "lightsteelblue", "lightyellow", "lime",
+            "limegreen", "linen",
+            "magenta", "maroon", "mediumaquamarine", "mediumblue", "mediumorchid",
+            "mediumpurple", "mediumseagreen", "mediumslateblue", "mediumspringgreen", "mediumturquoise",
+            "mediumvioletred", "midnightblue", "mintcream", "mistyrose", "moccasin",
+            "navajowhite", "navy",
+            "oldlace", "olive", "olivedrab", "orange", "orangered", "orchid",
+            "palegoldenrod", "palegreen", "paleturquoise", "palevioletred", "papayawhip",
+            "peachpuff", "peru", "pink", "plum", "powderblue", "purple",
+            "rebeccapurple", "red", "rosybrown", "royalblue",
+            "saddlebrown", "salmon", "sandybrown", "seagreen", "seashell", "sienna",
+            "silver", "skyblue", "slateblue", "slategray", "snow", "springgreen", "steelblue",
+            "tan", "teal", "thistle", "tomato", "turquoise",
+            "violet",
+            "wheat", "white", "whitesmoke",
+            "yellow", "yellowgreen"
+        ]
+        if color in css4_named_colors:
+            return True
+        return re.match(r"^#([0-9a-fA-F]{6})$", color)
 
     def _validate_sparsity(self):
         """
