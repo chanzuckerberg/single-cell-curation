@@ -1010,6 +1010,28 @@ class TestVar(BaseValidationTest):
             ["WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix."],
         )
 
+    def test_add_label_fields_are_reserved(self):
+        """
+        Raise an error if column names flagged as 'add_label' -> 'to_column' in the schema definition are not available.
+        """
+        for df in ["var", "raw.var"]:
+            for i in self.validator.schema_def["components"][df]["index"]["add_labels"]:
+                column = i["to_column"]
+                with self.subTest(column=column, df=df):
+                    # Resetting validator
+                    self.validator.adata = examples.adata.copy()
+                    self.validator.errors = []
+                    component = getattr_anndata(self.validator.adata, df)
+                    component[column] = "dummy_value"
+                    self.validator.validate_adata()
+                    self.assertEqual(
+                        self.validator.errors,
+                        [
+                            f"ERROR: Add labels error: Column '{column}' is a reserved column name "
+                            f"of '{df}'. Remove it from h5ad and try again."
+                        ],
+                    )
+
 
 class TestUns(BaseValidationTest):
     """
@@ -1275,32 +1297,22 @@ class TestAddingLabels(unittest.TestCase):
         cls.adata_with_labels = examples.adata_with_labels
 
         # Validate test data
-        validator = Validator()
-        validator.adata = examples.adata.copy()
-        validator.validate_adata()
+        cls.validator = Validator()
+        cls.validator.adata = examples.adata.copy()
+        cls.validator.validate_adata()
 
         # Add labels through validator
-        cls.label_writer = AnnDataLabelAppender(validator)
+        cls.label_writer = AnnDataLabelAppender(cls.validator)
         cls.label_writer._add_labels()
 
     def test_var_added_labels(self):
         """
         When a dataset is uploaded, cellxgene Data Portal MUST automatically add the matching human-readable
         name for the corresponding feature identifier and the inferred NCBITaxon term for the reference organism
-        to the var dataframe. Curators MUST NOT annotate the following columns:
-
-            - feature_name. this MUST be a human-readable ENSEMBL gene name or a ERCC Spike-In identifier
-            appended with " spike-in control", corresponding to the feature_id
-            - feature_reference. This MUST be the reference organism for a feature:
-                Homo sapiens	"NCBITaxon:9606"
-                Mus musculus	"NCBITaxon:10090"
-                SARS-CoV-2	"NCBITaxon:2697049"
-                ERCC Spike-Ins	"NCBITaxon:32630"
-            - feature_biotype. This MUST be "gene" if the feature_id is an ENSEMBL gene, or "spike-in" if the feature_id
-            is an ERCC Spike-In identifier.
+        to the var dataframe. Curators MUST NOT annotate the columns below:
         """
-
-        for column in ["feature_name", "feature_reference", "feature_biotype"]:
+        for i in self.validator.schema_def["components"]["var"]["index"]["add_labels"]:
+            column = i["to_column"]
             expected_column = self.adata_with_labels.var[column]
             obtained_column = self.label_writer.adata.var[column]
 
