@@ -493,43 +493,54 @@ class TestObs(BaseValidationTest):
         """
 
         self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "tissue_ontology_term_id"] = "EFO:0000001"
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            ["ERROR: 'EFO:0000001' in 'tissue_ontology_term_id' is not a " "valid ontology term id of 'UBERON, CL'."],
-        )
-
-    def test_tissue_ontology_term_id_cell_culture(self):
-        """
-        Cell Culture - MUST be a CL term appended with " (cell culture)"
-        """
-
-        self.validator.adata.obs.loc[
-            self.validator.adata.obs.index[0], "tissue_ontology_term_id"
-        ] = "CL:0000057 (CELL culture)"
+        self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "tissue_type"] = "tissue"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'CL:0000057 (CELL culture)' in 'tissue_ontology_term_id' is "
-                "not a valid ontology term id of 'UBERON, CL'."
+                "ERROR: 'EFO:0000001' in 'tissue_ontology_term_id' is not a valid ontology term id of "
+                "'UBERON'. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' MUST be a "
+                "child term id of 'UBERON:0001062' (anatomical entity)."
+            ],
+        )
+
+    def test_tissue_ontology_term_id_cell_culture(self):
+        """
+        Cell Culture - must not accept suffixes like "(cell culture)"
+        """
+
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0], "tissue_ontology_term_id"
+        ] = "CL:0000057 (cell culture)"
+        self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "tissue_type"] = "cell culture"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: 'CL:0000057 (cell culture)' in 'tissue_ontology_term_id' is not a valid ontology term id of "
+                "'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be a CL term "
+                "and it can not be 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
+                "nor 'CL:0000548' (animal cell)."
             ],
         )
 
     def test_tissue_ontology_term_id_organoid(self):
         """
-        Organoid - MUST be an UBERON term appended with " (organoid)"
+        Organoid - must not accept suffixes like "(organoid)"
         """
 
         self.validator.adata.obs.loc[
             self.validator.adata.obs.index[0], "tissue_ontology_term_id"
-        ] = "CL:0000057 (ORGANOID)"
+        ] = "UBERON:0000057 (organoid)"
+        self.validator.adata.obs.tissue_type = self.validator.adata.obs.tissue_type.cat.add_categories(["organoid"])
+        self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "tissue_type"] = "organoid"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'CL:0000057 (ORGANOID)' in 'tissue_ontology_term_id' is "
-                "not a valid ontology term id of 'UBERON, CL'."
+                "ERROR: 'UBERON:0000057 (organoid)' in 'tissue_ontology_term_id' is not a valid ontology term id of "
+                "'UBERON'. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' MUST be a "
+                "child term id of 'UBERON:0001062' (anatomical entity)."
             ],
         )
 
