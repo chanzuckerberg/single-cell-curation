@@ -801,8 +801,7 @@ class Validator:
 
                 self.is_seurat_convertible = False
 
-        # Check to make sure raw.var has the same dimensionality as raw.X
-        if get_num_vars_in_raw_matrix(self.adata) != get_num_vars_in_raw_var(self.adata):
+        if self.adata.raw and self.adata.raw.X.shape[1] != self.adata.raw.var.shape[0]:
             self.warnings.append(
                 f"This dataset cannot be converted to the .rds (Seurat v4) format. "
                 f"There is a mismatch in the number of variables in the raw matrix and the raw var key-indexed "

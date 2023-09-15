@@ -54,16 +54,16 @@ class TestFieldValidation(unittest.TestCase):
             self.assertTrue("type" in self.schema_def["components"]["obs"]["columns"][i])
             if i == "curie":
                 self.assertIsInstance(
-                    self.schema_def["components"]["obs"]["columns"][i]["curie_constrains"],
+                    self.schema_def["components"]["obs"]["columns"][i]["curie_constraints"],
                     dict,
                 )
                 self.assertIsInstance(
-                    self.schema_def["components"]["obs"]["columns"][i]["curie_constrains"]["ontolgies"],
+                    self.schema_def["components"]["obs"]["columns"][i]["curie_constraints"]["ontolgies"],
                     list,
                 )
 
                 # Check that the allowed ontologies are in the ontology checker
-                for ontology_name in self.schema_def["components"]["obs"]["columns"][i]["curie_constrains"][
+                for ontology_name in self.schema_def["components"]["obs"]["columns"][i]["curie_constraints"][
                     "ontolgies"
                 ]:
                     self.assertTrue(self.OntologyChecker.is_valid_ontology(ontology_name))
@@ -281,8 +281,10 @@ class TestValidate(unittest.TestCase):
 
 
 class TestSeuratConvertibility(unittest.TestCase):
-    def validation_helper(self, matrix):
+    def validation_helper(self, matrix, raw=None):
         data = anndata.AnnData(X=matrix, obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var)
+        if raw:
+            data.raw = raw
         self.validator: Validator = Validator()
         self.validator._set_schema_def()
         self.validator.schema_def["max_size_for_seurat"] = 2**3 - 1  # Reduce size required to fail (faster tests)
@@ -320,16 +322,11 @@ class TestSeuratConvertibility(unittest.TestCase):
         self.assertTrue(len(self.validator.warnings) == 0)
         self.assertTrue(self.validator.is_seurat_convertible)
 
-    @mock.patch("cellxgene_schema.validate.get_num_vars_in_raw_var")
-    @mock.patch("cellxgene_schema.validate.get_num_vars_in_raw_matrix")
-    def test_seurat_raw_matrix_and_var_dimensionality(self, get_num_vars_in_raw_matrix_mock, get_num_vars_in_raw_var_mock):
         # h5ad where raw matrix variable count != length of raw var variables array is not Seurat-convertible
-        get_num_vars_in_raw_matrix_mock.return_value = 2
-        get_num_vars_in_raw_var_mock.return_value = 1
-
-        validator = Validator()
-        validator._set_schema_def()
-        validator.adata = adata
-        validator._validate_seurat_convertibility()
-        assert len(validator.warnings) == 1
-        assert not validator.is_seurat_convertible
+        matrix = sparse.csr_matrix(np.zeros([good_obs.shape[0], good_var.shape[0]], dtype=np.float32))
+        raw = anndata.AnnData(X=matrix, var=good_var)
+        raw.var.drop('ENSSASG00005000004', axis=0, inplace=True)
+        self.validation_helper(matrix, raw)
+        self.validator._validate_seurat_convertibility()
+        self.assertTrue(len(self.validator.warnings) == 1)
+        self.assertFalse(self.validator.is_seurat_convertible)
