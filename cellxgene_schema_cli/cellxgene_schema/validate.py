@@ -803,9 +803,9 @@ class Validator:
 
         if self.adata.raw and self.adata.raw.X.shape[1] != self.adata.raw.var.shape[0]:
             self.warnings.append(
-                f"This dataset cannot be converted to the .rds (Seurat v4) format. "
-                f"There is a mismatch in the number of variables in the raw matrix and the raw var key-indexed "
-                f"variables."
+                "This dataset cannot be converted to the .rds (Seurat v4) format. "
+                "There is a mismatch in the number of variables in the raw matrix and the raw var key-indexed "
+                "variables."
             )
             self.is_seurat_convertible = False
 

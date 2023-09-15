@@ -325,7 +325,7 @@ class TestSeuratConvertibility(unittest.TestCase):
         # h5ad where raw matrix variable count != length of raw var variables array is not Seurat-convertible
         matrix = sparse.csr_matrix(np.zeros([good_obs.shape[0], good_var.shape[0]], dtype=np.float32))
         raw = anndata.AnnData(X=matrix, var=good_var)
-        raw.var.drop('ENSSASG00005000004', axis=0, inplace=True)
+        raw.var.drop("ENSSASG00005000004", axis=0, inplace=True)
         self.validation_helper(matrix, raw)
         self.validator._validate_seurat_convertibility()
         self.assertTrue(len(self.validator.warnings) == 1)
