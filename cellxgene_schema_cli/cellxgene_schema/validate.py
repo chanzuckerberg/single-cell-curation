@@ -12,7 +12,7 @@ from pandas.core.computation.ops import UndefinedVariableError
 from scipy import sparse
 
 from . import ontology, schema
-from .utils import get_matrix_format, getattr_anndata, read_h5ad, get_num_vars_in_raw_var, get_num_vars_in_raw_matrix
+from .utils import get_matrix_format, getattr_anndata, read_h5ad
 
 logger = logging.getLogger(__name__)
 
