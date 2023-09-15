@@ -1021,6 +1021,7 @@ class TestVar(BaseValidationTest):
                     # Resetting validator
                     self.validator.adata = examples.adata.copy()
                     self.validator.errors = []
+
                     component = getattr_anndata(self.validator.adata, df)
                     component[column] = "dummy_value"
                     self.validator.validate_adata()
