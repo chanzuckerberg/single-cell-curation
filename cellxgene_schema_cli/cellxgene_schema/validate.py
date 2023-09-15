@@ -12,7 +12,7 @@ from pandas.core.computation.ops import UndefinedVariableError
 from scipy import sparse
 
 from . import ontology, schema
-from .utils import get_matrix_format, getattr_anndata, read_h5ad, get_num_vars_in_raw_var, get_num_vars_in_raw_matrix
+from .utils import get_matrix_format, getattr_anndata, read_h5ad
 
 logger = logging.getLogger(__name__)
 
@@ -801,8 +801,7 @@ class Validator:
 
                 self.is_seurat_convertible = False
 
-        # Check to make sure raw.var has the same dimensionality as raw.X
-        if self.adata.raw and get_num_vars_in_raw_matrix(self.adata) != get_num_vars_in_raw_var(self.adata):
+        if self.adata.raw and self.adata.raw.X.shape[1] != self.adata.raw.var.shape[0]:
             self.warnings.append(
                 f"This dataset cannot be converted to the .rds (Seurat v4) format. "
                 f"There is a mismatch in the number of variables in the raw matrix and the raw var key-indexed "
