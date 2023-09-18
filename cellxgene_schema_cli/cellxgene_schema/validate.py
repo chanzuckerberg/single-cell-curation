@@ -1,9 +1,8 @@
 import logging
 import math
 import os
-import re
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union
 
 import anndata
 import numpy as np
@@ -761,13 +760,6 @@ class Validator:
                     )
 
                 self.is_seurat_convertible = False
-        if self.adata.raw and self.adata.raw.X.shape[1] != self.adata.raw.var.shape[0]:
-            self.warnings.append(
-                f"This dataset cannot be converted to the .rds (Seurat v4) format. "
-                f"There is a mismatch in the number of variables in the raw matrix and the raw var key-indexed "
-                f"variables."
-            )
-            self.is_seurat_convertible = False
 
         if self.adata.raw and self.adata.raw.X.shape[1] != self.adata.raw.var.shape[0]:
             self.warnings.append(
