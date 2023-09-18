@@ -2,14 +2,13 @@ import logging
 import traceback
 from typing import Dict, List, Optional
 
-import numpy as np
 import pandas as pd
 
 from cellxgene_schema import ontology
 from cellxgene_schema.env import SCHEMA_REFERENCE_BASE_URL, SCHEMA_REFERENCE_FILE_NAME
 from cellxgene_schema.validate import ONTOLOGY_CHECKER, Validator
 
-from .utils import enforce_canonical_format, getattr_anndata, get_hash_digest_column
+from .utils import enforce_canonical_format, get_hash_digest_column, getattr_anndata
 
 logger = logging.getLogger(__name__)
 
@@ -327,17 +326,6 @@ class AnnDataLabelAppender:
 
     def _build_schema_reference_url(self, schema_version: str):
         return f"{SCHEMA_REFERENCE_BASE_URL}/{schema_version}/{SCHEMA_REFERENCE_FILE_NAME}"
-
-    def _get_observation_joinid_column(self):
-        """
-        Set column with unique join ID for each row in obs dataframe.
-        """
-        return (
-            self.adata.obs.index.to_series()
-            .map(xxh3_64_intdigest)
-            .astype(np.uint64)
-            .apply(lambda v: b85encode(v.to_bytes(8, "big")).decode("ascii"))
-        )
 
     def write_labels(self, add_labels_file: str):
         """
