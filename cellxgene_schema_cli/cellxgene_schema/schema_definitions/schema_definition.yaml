@@ -23,6 +23,7 @@ components:
         required: null # Means it's required
         reserved_columns:
             - schema_version
+            - schema_reference
         deprecated_columns:
             - X_normalization
             - default_field

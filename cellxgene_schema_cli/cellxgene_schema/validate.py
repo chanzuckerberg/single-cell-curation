@@ -769,6 +769,14 @@ class Validator:
             )
             self.is_seurat_convertible = False
 
+        if self.adata.raw and self.adata.raw.X.shape[1] != self.adata.raw.var.shape[0]:
+            self.warnings.append(
+                "This dataset cannot be converted to the .rds (Seurat v4) format. "
+                "There is a mismatch in the number of variables in the raw matrix and the raw var key-indexed "
+                "variables."
+            )
+            self.is_seurat_convertible = False
+
     def _validate_embedding_dict(self):
         """
         Validates the embedding dictionary -- it checks that all values of adata.obsm are numpy arrays with the correct

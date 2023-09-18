@@ -1126,6 +1126,10 @@ class TestUns(BaseValidationTest):
 
         for reserved_column in self.validator.schema_def["components"]["uns"]["reserved_columns"]:
             with self.subTest(column=reserved_column):
+                # Resetting validator
+                self.validator.adata = examples.adata.copy()
+                self.validator.errors = []
+
                 self.validator.adata.uns[reserved_column] = "dummy_value"
                 self.validator.validate_adata()
                 self.assertEqual(

@@ -166,6 +166,7 @@ good_uns = {
 
 good_uns_with_labels = {
     "schema_version": "4.0.0",
+    "schema_reference": "https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.0.0/schema.md",
     "title": "A title",
     "default_embedding": "X_umap",
     "X_approximate_distribution": "normal",
