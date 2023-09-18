@@ -3,9 +3,8 @@ import pandas as pd
 import numpy
 import anndata
 import os
-from base64 import b85encode
 from scipy import sparse
-from xxhash import xxh3_64_intdigest
+from cellxgene_schema.utils import get_hash_digest_column
 
 # -----------------------------------------------------------------#
 # General example information
@@ -120,12 +119,7 @@ obs_expected = pd.DataFrame(
     ],
 )
 
-obs_expected["observation_joinid"] = (
-    obs_expected.index.to_series()
-    .map(xxh3_64_intdigest)
-    .astype(numpy.uint64)
-    .apply(lambda v: b85encode(v.to_bytes(8, "big")).decode("ascii"))
-)
+obs_expected["observation_joinid"] = get_hash_digest_column(obs_expected)
 
 # ---
 # 2. Creating individual var components: valid object and valid object and with labels

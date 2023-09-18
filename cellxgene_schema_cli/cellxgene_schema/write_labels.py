@@ -1,17 +1,15 @@
 import logging
 import traceback
-from base64 import b85encode
 from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
-from xxhash import xxh3_64_intdigest
 
 from cellxgene_schema import ontology
 from cellxgene_schema.env import SCHEMA_REFERENCE_BASE_URL, SCHEMA_REFERENCE_FILE_NAME
 from cellxgene_schema.validate import ONTOLOGY_CHECKER, Validator
 
-from .utils import enforce_canonical_format, getattr_anndata
+from .utils import enforce_canonical_format, getattr_anndata, get_hash_digest_column
 
 logger = logging.getLogger(__name__)
 
@@ -361,7 +359,7 @@ class AnnDataLabelAppender:
 
         self.adata.uns["schema_version"] = self.validator.schema_version
         self.adata.uns["schema_reference"] = self._build_schema_reference_url(self.validator.schema_version)
-        self.adata.obs["observation_joinid"] = self._get_observation_joinid_column()
+        self.adata.obs["observation_joinid"] = get_hash_digest_column(self.adata.obs)
 
         enforce_canonical_format(self.adata)
 

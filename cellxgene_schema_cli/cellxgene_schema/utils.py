@@ -1,11 +1,13 @@
 import logging
 import os
 import sys
+from base64 import b85encode
 from typing import List, Union
 
 import anndata as ad
 import numpy as np
 from scipy import sparse
+from xxhash import xxh3_64_intdigest
 
 logger = logging.getLogger(__name__)
 
@@ -144,3 +146,16 @@ def enforce_canonical_format(adata: ad.AnnData):
     if adata.raw:
         logger.info("enforce canonical format in raw.X")
         _enforce_canonical_format(adata.raw)
+
+
+def get_hash_digest_column(dataframe):
+    """
+    Get column with hash digest for each row in dataframe.
+    """
+
+    return (
+        dataframe.index.to_series()
+        .map(xxh3_64_intdigest)
+        .astype(np.uint64)
+        .apply(lambda v: b85encode(v.to_bytes(8, "big")).decode("ascii"))
+    )
