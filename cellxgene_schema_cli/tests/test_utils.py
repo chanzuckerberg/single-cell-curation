@@ -1,5 +1,4 @@
 import numpy as np
-from pandas import Series
 import pytest
 from anndata import AnnData
 from cellxgene_schema.utils import (
@@ -10,6 +9,7 @@ from cellxgene_schema.utils import (
     replace_ontology_term,
 )
 from fixtures.examples_validate import adata, adata_non_raw
+from pandas import Series
 from scipy.sparse import coo_matrix
 
 
@@ -117,4 +117,4 @@ class TestGetHashDigestColumn:
         assert isinstance(hash_digest_column, Series)
         for val in hash_digest_column:
             assert isinstance(val, str)
-            assert len(val) == 10   # 5 ASCII chars / 4 bytes, each ID is 8 bytes
+            assert len(val) == 10  # 5 ASCII chars / 4 bytes, each ID is 8 bytes
