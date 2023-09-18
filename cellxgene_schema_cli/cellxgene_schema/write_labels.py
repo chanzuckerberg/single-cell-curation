@@ -1,10 +1,10 @@
 import logging
 import traceback
+from base64 import b85encode
 from typing import Dict, List, Optional
 
-from base64 import b85encode
-import pandas as pd
 import numpy as np
+import pandas as pd
 from xxhash import xxh3_64_intdigest
 
 from cellxgene_schema import ontology
