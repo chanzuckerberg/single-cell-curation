@@ -3,7 +3,9 @@ import pandas as pd
 import numpy
 import anndata
 import os
+from base64 import b85encode
 from scipy import sparse
+from xxhash import xxh3_64_intdigest
 
 # -----------------------------------------------------------------#
 # General example information
@@ -116,6 +118,13 @@ obs_expected = pd.DataFrame(
         "self_reported_ethnicity",
         "development_stage",
     ],
+)
+
+obs_expected["observation_joinid"] = (
+    obs_expected.index.to_series()
+    .map(xxh3_64_intdigest)
+    .astype(numpy.uint64)
+    .apply(lambda v: b85encode(v.to_bytes(8, "big")).decode("ascii"))
 )
 
 # ---

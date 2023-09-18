@@ -2,7 +2,10 @@ import logging
 import traceback
 from typing import Dict, List, Optional
 
+from base64 import b85encode
 import pandas as pd
+import numpy as np
+from xxhash import xxh3_64_intdigest
 
 from cellxgene_schema import ontology
 from cellxgene_schema.env import SCHEMA_REFERENCE_BASE_URL, SCHEMA_REFERENCE_FILE_NAME
@@ -327,6 +330,17 @@ class AnnDataLabelAppender:
     def _build_schema_reference_url(self, schema_version: str):
         return f"{SCHEMA_REFERENCE_BASE_URL}/{schema_version}/{SCHEMA_REFERENCE_FILE_NAME}"
 
+    def _get_observation_joinid_column(self):
+        """
+        Set column with unique join ID for each row in obs dataframe.
+        """
+        return (
+            self.adata.obs.index.to_series()
+            .map(xxh3_64_intdigest)
+            .astype(np.uint64)
+            .apply(lambda v: b85encode(v.to_bytes(8, "big")).decode("ascii"))
+        )
+
     def write_labels(self, add_labels_file: str):
         """
         From a valid (per cellxgene's schema) h5ad, this function writes a new h5ad file with ontology/gene labels added
@@ -337,16 +351,17 @@ class AnnDataLabelAppender:
         :rtype None
         """
         logger.info("Writing labels")
-        # Add labels in obs
+        # Add columns to dataset dataframes based on values in other columns, as defined in schema definition yaml
         self._add_labels()
 
         # Remove unused categories
         self._remove_categories_with_zero_values()
 
-        # Set version
+        # Annotate Reserved Columns
+
         self.adata.uns["schema_version"] = self.validator.schema_version
-        # Set schema reference URL
         self.adata.uns["schema_reference"] = self._build_schema_reference_url(self.validator.schema_version)
+        self.adata.obs["observation_joinid"] = self._get_observation_joinid_column()
 
         enforce_canonical_format(self.adata)
 
