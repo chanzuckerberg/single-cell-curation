@@ -321,7 +321,7 @@ class AnnDataLabelAppender:
 
     def _add_labels(self):
         """
-        Add columns in dataset dataframes where annotated by schema definition yaml.
+        Add columns to dataset dataframes based on values in other columns, as defined in schema definition yaml.
         """
         for component in ["obs", "var", "raw.var"]:
             # If the component does not exist, skip (this is for raw.var)
