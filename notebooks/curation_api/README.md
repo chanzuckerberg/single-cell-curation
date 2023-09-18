@@ -2,7 +2,7 @@
 
 The Discover API notebooks are pre-baked scripts to facilitate use of the 
 [Discover API](https://api.cellxgene.cziscience.com/curation/ui/#/), which itself supports 
-curation flow interactions with the [CZ CELLxGENE](https://cellxgene.cziscience.com/) tool.
+curation flow interactions with the [CZ CELLxGENE Discover](https://cellxgene.cziscience.com/) tool.
 
 ## Notebook usage
 
