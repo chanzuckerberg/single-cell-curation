@@ -1,13 +1,12 @@
 # Discover API notebooks
 
 The Discover API notebooks are pre-baked scripts to facilitate use of the 
-[Discover API](https://api.cellxgene.cziscience.com/curation/ui/#/) (formerly known as the Curation API), which itself supports 
+[Discover API](https://api.cellxgene.cziscience.com/curation/ui/#/), which itself supports 
 curation flow interactions with the [CZ CELLxGENE](https://cellxgene.cziscience.com/) tool.
 
 ## Notebook usage
 
-Many notebooks have a few fields that require user input, such as the relevant Collection id or Dataset id. For 
-privileged user interactions (mutations), be sure to provide the path to your API key where specified in the notebook.
+Many notebooks have a few fields that require user input, such as the relevant Collection id or Dataset id.
 
 ### Python notebooks: `python/`
 
