@@ -5,6 +5,7 @@ from typing import Dict, List, Optional
 import pandas as pd
 
 from cellxgene_schema import ontology
+from cellxgene_schema.env import SCHEMA_REFERENCE_BASE_URL, SCHEMA_REFERENCE_FILE_NAME
 from cellxgene_schema.validate import ONTOLOGY_CHECKER, Validator
 
 from .utils import enforce_canonical_format, getattr_anndata
@@ -323,6 +324,9 @@ class AnnDataLabelAppender:
             if col.dtype == "category":
                 df[column] = col.cat.remove_unused_categories()
 
+    def _build_schema_reference_url(self, schema_version: str):
+        return f"{SCHEMA_REFERENCE_BASE_URL}/{schema_version}/{SCHEMA_REFERENCE_FILE_NAME}"
+
     def write_labels(self, add_labels_file: str):
         """
         From a valid (per cellxgene's schema) h5ad, this function writes a new h5ad file with ontology/gene labels added
@@ -341,6 +345,8 @@ class AnnDataLabelAppender:
 
         # Set version
         self.adata.uns["schema_version"] = self.validator.schema_version
+        # Set schema reference URL
+        self.adata.uns["schema_reference"] = self._build_schema_reference_url(self.validator.schema_version)
 
         enforce_canonical_format(self.adata)
 
