@@ -11,7 +11,7 @@ Many notebooks have a few fields that require user input, such as the relevant C
 ### Python notebooks: `python/`
 
 These notebooks are the most user-friendly; start here if you're unsure. All access token generation, url construction, and response 
-handling is abstracted away from the user. Unitary interactions such as getting a Dataset, getting   a Collection, etc., 
+handling is abstracted away from the user. Unitary interactions such as getting a Dataset, getting a Collection, etc., 
 are each handled by single function calls.
 
 ### "Raw" Python notebooks: `python_raw/`
