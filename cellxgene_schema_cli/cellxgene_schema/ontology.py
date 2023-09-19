@@ -93,7 +93,7 @@ class GeneChecker:
 
         return gene_id in self.gene_dict
 
-    def get_symbol(self, gene_id) -> str:
+    def get_symbol(self, gene_id: str) -> str:
         """
         Gets symbol associated to the ENSEBML id
 
@@ -103,12 +103,12 @@ class GeneChecker:
         :return A gene symbol
         """
 
-        if not self.is_valid_id(gene_id):
+        if self.is_valid_id(gene_id):
+            return self.gene_dict[gene_id][0]
+        else:
             raise ValueError(f"The id '{gene_id}' is not a valid ENSEMBL id for '{self.species}'")
 
-        return self.gene_dict[gene_id][0]
-
-    def get_length(self, gene_id) -> int:
+    def get_length(self, gene_id: str) -> int:
         """
         Gets feature length associated to the ENSEBML id
 
@@ -118,10 +118,10 @@ class GeneChecker:
         :return A gene length
         """
 
-        if not self.is_valid_id(gene_id):
+        if self.is_valid_id(gene_id):
+            return self.gene_dict[gene_id][1]
+        else:
             raise ValueError(f"The id '{gene_id}' is not a valid ENSEMBL id for '{self.species}'")
-
-        return self.gene_dict[gene_id][1]
 
 
 class OntologyChecker:
