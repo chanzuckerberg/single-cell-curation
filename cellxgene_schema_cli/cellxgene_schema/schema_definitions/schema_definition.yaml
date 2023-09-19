@@ -57,7 +57,6 @@ components:
         index:
             unique: true
             type: feature_id
-            # Using IDs add two columns: feature_id, and feature_reference
             add_labels:
                 -
                     type: feature_id
@@ -68,6 +67,9 @@ components:
                 -
                     type: feature_biotype
                     to_column: feature_biotype
+                -
+                    type: feature_length
+                    to_column: feature_length
         # All columns are required
         columns:
             feature_is_filtered:
@@ -79,7 +81,6 @@ components:
         index:
             unique: true
             type: feature_id
-            # Using IDs add two columns: feature_id, and feature_reference
             add_labels:
                 -
                     type: feature_id
@@ -90,6 +91,9 @@ components:
                 -
                     type: feature_biotype
                     to_column: feature_biotype
+                -
+                    type: feature_length
+                    to_column: feature_length
     obs:
         type: dataframe
         required: null # Means it's required

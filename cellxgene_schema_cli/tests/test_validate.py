@@ -117,7 +117,6 @@ class TestAddLabelFunctions(unittest.TestCase):
 
         # Bad
         ids = ["NO_GENE"]
-        expected_dict = dict(zip(ids, labels))
         with self.assertRaises(KeyError):
             self.writer._get_mapping_dict_feature_id(ids)
 
@@ -140,7 +139,29 @@ class TestAddLabelFunctions(unittest.TestCase):
 
         # Bad
         ids = ["NO_GENE"]
-        expected_dict = dict(zip(ids, labels))
+        with self.assertRaises(KeyError):
+            self.writer._get_mapping_dict_feature_id(ids)
+
+    def test_get_dictionary_mapping_feature_length(self):
+        # Good
+        ids = [
+            "ERCC-00002",
+            "ENSG00000127603",
+            "ENSMUSG00000059552",
+            "ENSSASG00005000004",
+        ]
+        # values derived from csv
+        gene_lengths = [
+            0,  # non-gene feature, so set to 0 regardless of csv value
+            42738,
+            4045,
+            3822,
+        ]
+        expected_dict = dict(zip(ids, gene_lengths))
+        self.assertEqual(self.writer._get_mapping_dict_feature_length(ids), expected_dict)
+
+        # Bad
+        ids = ["NO_GENE"]
         with self.assertRaises(KeyError):
             self.writer._get_mapping_dict_feature_id(ids)
 
@@ -332,8 +353,9 @@ class TestSeuratConvertibility(unittest.TestCase):
         raw.var.drop("ENSSASG00005000004", axis=0, inplace=True)
         self.validation_helper(matrix, raw)
         self.validator._validate_seurat_convertibility()
-        self.assertTrue(len(self.validator.warnings) == 1)
+        self.assertTrue(len(self.validator.errors) == 1)
         self.assertFalse(self.validator.is_seurat_convertible)
+        self.assertFalse(self.validator.is_valid)
 
 
 class TestIsRaw:
