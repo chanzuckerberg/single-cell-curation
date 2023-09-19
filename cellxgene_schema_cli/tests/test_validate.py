@@ -328,5 +328,6 @@ class TestSeuratConvertibility(unittest.TestCase):
         raw.var.drop("ENSSASG00005000004", axis=0, inplace=True)
         self.validation_helper(matrix, raw)
         self.validator._validate_seurat_convertibility()
-        self.assertTrue(len(self.validator.warnings) == 1)
+        self.assertTrue(len(self.validator.errors) == 1)
         self.assertFalse(self.validator.is_seurat_convertible)
+        self.assertFalse(self.validator.is_valid)
