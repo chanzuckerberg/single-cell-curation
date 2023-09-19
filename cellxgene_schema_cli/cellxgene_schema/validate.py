@@ -823,9 +823,7 @@ class Validator:
         obsm_with_x_prefix = 0
         for key, value in self.adata.obsm.items():
             if " " in key:
-                self.errors.append(
-                    f"Embedding key {key} has whitespace in it, please remove it."
-                )
+                self.errors.append(f"Embedding key {key} has whitespace in it, please remove it.")
 
             if not isinstance(value, np.ndarray):
                 self.errors.append(
@@ -854,7 +852,9 @@ class Validator:
                 else:
                     # Check for inf/NaN values only if the dtype is numeric
                     if np.isinf(value).any():
-                        self.errors.append(f"adata.obsm['{key}'] contains positive infinity or negative infinity values.")
+                        self.errors.append(
+                            f"adata.obsm['{key}'] contains positive infinity or negative infinity values."
+                        )
                     if np.all(np.isnan(value)):
                         self.errors.append(f"adata.obsm['{key}'] contains all NaN values.")
 

@@ -1257,18 +1257,16 @@ class TestObsm(BaseValidationTest):
                 "'adata.obsm['X_tsne']' is <class 'pandas.core.frame.DataFrame'>')."
             ],
         )
-    
+
     def test_obsm_values_infinity(self):
         """
         values in obsm cannot have any infinity values
         """
-        self.validator.adata.obsm['X_umap'][0:100,1] = numpy.inf
+        self.validator.adata.obsm["X_umap"][0:100, 1] = numpy.inf
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
-            [
-                "ERROR: adata.obsm['X_umap'] contains positive infinity or negative infinity values."
-            ],
+            ["ERROR: adata.obsm['X_umap'] contains positive infinity or negative infinity values."],
         )
 
     def test_obsm_values_nan(self):
@@ -1277,13 +1275,13 @@ class TestObsm(BaseValidationTest):
         """
 
         # It's okay if only one value is NaN
-        self.validator.adata.obsm['X_umap'][0:100,1] = numpy.nan
+        self.validator.adata.obsm["X_umap"][0:100, 1] = numpy.nan
         self.validator.validate_adata()
         self.assertEqual(self.validator.errors, [])
 
         # It's not okay if all values are NaN
-        all_nan = numpy.full(self.validator.adata.obsm['X_umap'].shape, numpy.nan)
-        self.validator.adata.obsm['X_umap'] = all_nan
+        all_nan = numpy.full(self.validator.adata.obsm["X_umap"].shape, numpy.nan)
+        self.validator.adata.obsm["X_umap"] = all_nan
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -1314,7 +1312,7 @@ class TestObsm(BaseValidationTest):
             self.validator.errors,
             ["ERROR: Embedding key in 'adata.obsm' X_ must have a suffix more than one character long."],
         )
-    
+
     def test_obsm_key_name_valid(self):
         """
         Embedding keys with whitespace are not valid
