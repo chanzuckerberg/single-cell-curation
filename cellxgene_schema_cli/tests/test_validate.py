@@ -3,10 +3,12 @@ import hashlib
 import os
 import tempfile
 import unittest
+from typing import Union
 from unittest import mock
 
 import anndata
 import numpy as np
+import pytest
 from cellxgene_schema.ontology import OntologyChecker
 from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.validate import Validator, validate
@@ -22,7 +24,9 @@ from fixtures.examples_validate import (
     h5ad_invalid,
     h5ad_valid,
 )
+from numpy import ndarray
 from scipy import sparse
+from scipy.sparse import spmatrix
 
 # Tests for internal functions of the Validator and LabelWriter classes.
 
@@ -330,3 +334,49 @@ class TestSeuratConvertibility(unittest.TestCase):
         self.validator._validate_seurat_convertibility()
         self.assertTrue(len(self.validator.warnings) == 1)
         self.assertFalse(self.validator.is_seurat_convertible)
+
+
+class TestIsRaw:
+    @staticmethod
+    def create_validator(data: Union[ndarray, spmatrix], format: str) -> Validator:
+        """
+        Create a sample AnnData instance with the given data and format.
+
+        :param data: The data matrix.
+        :param format: The format of the data matrix (e.g., "dense", "csr", "csc").
+
+        :return anndata.AnnData: An AnnData instance with the specified data and format.
+        """
+        validator = Validator()
+
+        adata = anndata.AnnData(X=data)
+        adata.obsm["X_" + format] = data
+
+        validator.adata = adata
+        return validator
+
+    @pytest.mark.parametrize(
+        "data, format, expected_result",
+        [
+            # Test case with integer values in a dense matrix
+            (np.array([[1, 2, 3], [4, 5, 6]], dtype=int), "dense", True),
+            # Test case with float values in a dense matrix
+            (np.array([[1.1, 2.2, 3.3], [4.4, 5.5, 6.6]]), "dense", False),
+            # Test case with integer values in a sparse matrix (CSR format)
+            (sparse.csr_matrix([[1, 0, 3], [0, 5, 0]], dtype=int), "csr", True),
+            # Test case with float values in a sparse matrix (CSC format)
+            (sparse.csc_matrix([[1.1, 0, 3.3], [0, 5.5, 0]]), "csc", False),
+            # Test case with mixed integer and float values in a dense matrix
+            (np.array([[1, 2.2, 3], [4.4, 5, 6.6]]), "dense", False),
+        ],
+    )
+    def test_is_raw(self, data, format, expected_result):
+        validator = self.create_validator(data, format)
+        assert validator._is_raw() == expected_result
+
+    @mock.patch("cellxgene_schema.validate.get_matrix_format", return_value="unknown")
+    def test_is_raw_with_unknown_format(self, mock_get_matrix_format):
+        data = np.array([[1, 2, 3], [4, 5, 6]], dtype=int)
+        validator = self.create_validator(data, "unknown")
+        with pytest.raises(AssertionError):
+            validator._is_raw()
