@@ -289,8 +289,8 @@ class Validator:
 
         return
 
+    @staticmethod
     def _chunk_matrix(
-        self,
         matrix: Union[np.ndarray, sparse.spmatrix],
         obs_chunk_size: Optional[int] = 10_000,
     ):
@@ -898,17 +898,15 @@ class Validator:
         else:
             return "X"
 
-    def _is_raw(self, max_values_to_check: int = 5000, force: bool = False) -> bool:
+    def _is_raw(self, force: bool = False) -> bool:
         """
-        Checks if the first non-zero "max_values_to_check" in the best guess for the raw matrix (adata.X or adata.raw.X)
+        Checks if the non-zero values for the raw matrix (adata.X or adata.raw.X)
         are integers. Returns False if at least one value is not an integer,
 
         True otherwise.
 
         Since this process is memory intensive, it will return a cache value if this function has been called before.
         If calculation needs to be repeated use `force = True`
-
-        :param int max_values_to_check: total values to check, default set to 5000 due to performance concerns.
 
         :rtype bool
         :return False if at least one value is not an integer, True otherwise
@@ -921,7 +919,6 @@ class Validator:
             raw_loc = self._get_raw_x_loc()
             x = self.adata.raw.X if raw_loc == "raw.X" else self.adata.X
 
-            num_values_checked = 0
             format = get_matrix_format(self.adata, x)
             assert format != "unknown"
             self._raw_layer_exists = True
@@ -929,10 +926,6 @@ class Validator:
                 data = matrix_chunk if isinstance(matrix_chunk, np.ndarray) else matrix_chunk.data
                 if (data % 1 > 0).any():
                     self._raw_layer_exists = False
-                    break
-
-                num_values_checked += matrix_chunk.nnz if format != "dense" else np.count_nonzero(matrix_chunk)
-                if num_values_checked > max_values_to_check:
                     break
 
         return self._raw_layer_exists
