@@ -1278,8 +1278,10 @@ class TestObsm(BaseValidationTest):
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
-            ["ERROR: adata.obsm['X_umap'] has an invalid data type. It should be float, integer, or unsigned "
-             "integer of any precision (8, 16, 32, or 64 bits)."],
+            [
+                "ERROR: adata.obsm['X_umap'] has an invalid data type. It should be float, integer, or unsigned "
+                "integer of any precision (8, 16, 32, or 64 bits)."
+            ],
         )
 
     def test_obsm_values_nan(self):
