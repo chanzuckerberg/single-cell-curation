@@ -1269,6 +1269,19 @@ class TestObsm(BaseValidationTest):
             ["ERROR: adata.obsm['X_umap'] contains positive infinity or negative infinity values."],
         )
 
+    def test_obsm_values_str(self):
+        """
+        values in obsm must be numerical types, strings are not valid
+        """
+        all_string = numpy.full(self.validator.adata.obsm["X_umap"].shape, "test")
+        self.validator.adata.obsm["X_umap"] = all_string
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: adata.obsm['X_umap'] has an invalid data type. It should be float, integer, or unsigned "
+             "integer of any precision (8, 16, 32, or 64 bits)."],
+        )
+
     def test_obsm_values_nan(self):
         """
         values in obsm cannot all be NaN
@@ -1310,7 +1323,7 @@ class TestObsm(BaseValidationTest):
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
-            ["ERROR: Embedding key in 'adata.obsm' X_ must have a suffix more than one character long."],
+            ["ERROR: Embedding key in 'adata.obsm' X_ must have a suffix at least one character long."],
         )
 
     def test_obsm_key_name_valid(self):

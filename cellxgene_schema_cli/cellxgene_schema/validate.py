@@ -837,7 +837,7 @@ class Validator:
 
                 if len(key) <= 3:
                     self.errors.append(
-                        f"Embedding key in 'adata.obsm' {key} must have a suffix more than one character long."
+                        f"Embedding key in 'adata.obsm' {key} must have a suffix at least one character long."
                     )
                 if len(value.shape) < 2 or value.shape[0] != self.adata.n_obs or value.shape[1] < 2:
                     self.errors.append(
