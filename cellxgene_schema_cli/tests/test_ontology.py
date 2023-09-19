@@ -32,10 +32,12 @@ class TestGeneChecker(unittest.TestCase):
         for species in self.valid_genes:
             geneChecker = ontology.GeneChecker(species)
             for gene_id in self.valid_genes[species]:
-                gene_label = self.valid_genes[species][gene_id]
+                gene_label = self.valid_genes[species][gene_id][0]
+                gene_length = self.valid_genes[species][gene_id][1]
 
                 self.assertTrue(geneChecker.is_valid_id(gene_id))
                 self.assertEqual(geneChecker.get_symbol(gene_id), gene_label)
+                self.assertEqual(geneChecker.get_length(gene_id), gene_length)
 
     def test_invalid_genes(self):
         for species in self.invalid_genes:
@@ -44,6 +46,8 @@ class TestGeneChecker(unittest.TestCase):
                 self.assertFalse(geneChecker.is_valid_id(gene_id))
                 with self.assertRaises(ValueError):
                     geneChecker.get_symbol(gene_id)
+                with self.assertRaises(ValueError):
+                    geneChecker.get_length(gene_id)
 
 
 class TestOntologyChecker(unittest.TestCase):

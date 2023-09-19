@@ -210,6 +210,27 @@ class AnnDataLabelAppender:
 
         return mapping_dict
 
+    def _get_mapping_dict_feature_length(self, ids: List[str]) -> Dict[str, int]:
+        """
+        Creates a mapping dictionary of feature IDs and feature length, fetching from pre-calculated gene info CSVs
+        derived from GENCODE mappings for supported organisms. Set to 0 for non-gene features.
+
+        :param list[str] ids: feature IDs use for mapping
+
+        :return a mapping dictionary: {id: <int>, id: 0, ...}
+        :rtype dict
+        """
+        mapping_dict = {}
+
+        for i in ids:
+            if i.startswith("ENS"):
+                organism = ontology.get_organism_from_feature_id(i)
+                mapping_dict[i] = self.validator.gene_checkers[organism].get_length(i)
+            else:
+                mapping_dict[i] = 0
+
+        return mapping_dict
+
     def _get_labels(
         self,
         component: str,
@@ -263,6 +284,9 @@ class AnnDataLabelAppender:
         elif label_type == "feature_biotype":
             mapping_dict = self._get_mapping_dict_feature_biotype(ids=ids)
 
+        elif label_type == "feature_length":
+            mapping_dict = self._get_mapping_dict_feature_length(ids=ids)
+
         else:
             raise TypeError(f"'{label_type}' is not supported in 'add-labels' functionality")
 
@@ -287,9 +311,9 @@ class AnnDataLabelAppender:
             new_column = self._get_labels(component, column, column_definition, label_def["type"])
             new_column_name = label_def["to_column"]
 
-            # The sintax below is a programtic way to access obs and var in adata:
+            # The syntax below is a programmatic way to access obs and var in adata:
             # adata.__dict__["_obs"] is adata.obs
-            # "raw.var" requires to levels of programtic access
+            # "raw.var" requires to levels of programmatic access
             if "." in component:
                 [first_elem, second_elem] = component.split(".")
                 self.adata.__dict__["_" + first_elem].__dict__["_" + second_elem][new_column_name] = new_column
@@ -298,8 +322,7 @@ class AnnDataLabelAppender:
 
     def _add_labels(self):
         """
-        From a valid (per cellxgene's schema) adata, this function adds to self.adata ontology/gene labels
-        to adata.obs, adata.var, and adata.raw.var respectively
+        Add columns to dataset dataframes based on values in other columns, as defined in schema definition yaml.
         """
         for component in ["obs", "var", "raw.var"]:
             # If the component does not exist, skip (this is for raw.var)
