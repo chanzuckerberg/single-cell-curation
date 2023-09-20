@@ -264,7 +264,7 @@ class TestObs(BaseValidationTest):
             self.validator.errors,
             [
                 "ERROR: 'EFO:0000001' in 'assay_ontology_term_id' is not a "
-                "child term id of '[['EFO:0002772', 'EFO:0010183']]'."
+                "child term id of ['EFO:0002772', 'EFO:0010183']."
             ],
         )
 
@@ -603,7 +603,7 @@ class TestObs(BaseValidationTest):
                 self.validator.errors,
                 [
                     "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not a child term id of "
-                    "'[['UBERON:0001062']]'. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' "
+                    "'UBERON:0001062'. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' "
                     "MUST be a child term id of 'UBERON:0001062' (anatomical entity)."
                 ],
             )
@@ -616,7 +616,7 @@ class TestObs(BaseValidationTest):
                 self.validator.errors,
                 [
                     "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not a child term id of "
-                    "'[['UBERON:0001062']]'. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' "
+                    "'UBERON:0001062'. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' "
                     "MUST be a child term id of 'UBERON:0001062' (anatomical entity)."
                 ],
             )

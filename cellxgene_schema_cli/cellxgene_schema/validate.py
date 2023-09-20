@@ -147,8 +147,11 @@ class Validator:
 
         if True not in checks:
             if errors:
-                all_ancestors = list(allowed_ancestors.values())
-                self.errors.append(f"'{term_id}' in '{column_name}' is not a child term id of '{all_ancestors}'.")
+                all_ancestors = [ancestor for ancestors in allowed_ancestors.values() for ancestor in ancestors]
+                # print ancestor as string with single-quotes if only 1 entry
+                if len(all_ancestors) == 1:
+                    all_ancestors = f"'{all_ancestors[0]}'"
+                self.errors.append(f"'{term_id}' in '{column_name}' is not a child term id of {all_ancestors}.")
             return False
         return True
 
