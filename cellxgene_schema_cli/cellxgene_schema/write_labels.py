@@ -123,31 +123,21 @@ class AnnDataLabelAppender:
         mapping_dict = {}
         allowed_ontologies = curie_constraints["ontologies"]
 
-        # Remove any suffixes if any
-        # original_ids will have untouched ids which will be used for mapping
-        # id_suffixes will save suffixes if any, these will be used to append to labels
-        # ids will have the ids without suffixes
-        original_ids = ids.copy()
-        id_suffixes = [""] * len(ids)
-
-        if "suffixes" in curie_constraints:
-            for i in range(len(ids)):
-                ids[i], id_suffixes[i] = Validator._curie_remove_suffix(ids[i], curie_constraints["suffixes"])
-
-        for original_id, id, id_suffix in zip(original_ids, ids, id_suffixes):
+        # Map term_ids to their human-readable ontology labels
+        for term_id in ids:
             # If there are exceptions the label should be the same as the id
-            if "exceptions" in curie_constraints and original_id in curie_constraints["exceptions"]:
-                mapping_dict[original_id] = original_id
+            if "exceptions" in curie_constraints and term_id in curie_constraints["exceptions"]:
+                mapping_dict[term_id] = term_id
                 continue
 
             for ontology_name in allowed_ontologies:
                 if ontology_name == "NA":
                     continue
-                if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, id):
-                    mapping_dict[original_id] = ONTOLOGY_CHECKER.get_term_label(ontology_name, id) + id_suffix
+                if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id):
+                    mapping_dict[term_id] = ONTOLOGY_CHECKER.get_term_label(ontology_name, term_id)
 
         # Check that all ids got a mapping. All ids should be found if adata was validated
-        for id in original_ids:
+        for id in ids:
             if id not in mapping_dict:
                 raise ValueError(f"Add labels error: Unable to get label for '{id}'")
 
