@@ -1361,6 +1361,51 @@ class TestObsm(BaseValidationTest):
             ],
         )
 
+    def test_obsm_values_infinity(self):
+        """
+        values in obsm cannot have any infinity values
+        """
+        self.validator.adata.obsm["X_umap"][0:100, 1] = numpy.inf
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: adata.obsm['X_umap'] contains positive infinity or negative infinity values."],
+        )
+
+    def test_obsm_values_str(self):
+        """
+        values in obsm must be numerical types, strings are not valid
+        """
+        all_string = numpy.full(self.validator.adata.obsm["X_umap"].shape, "test")
+        self.validator.adata.obsm["X_umap"] = all_string
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: adata.obsm['X_umap'] has an invalid data type. It should be float, integer, or unsigned "
+                "integer of any precision (8, 16, 32, or 64 bits)."
+            ],
+        )
+
+    def test_obsm_values_nan(self):
+        """
+        values in obsm cannot all be NaN
+        """
+
+        # It's okay if only one value is NaN
+        self.validator.adata.obsm["X_umap"][0:100, 1] = numpy.nan
+        self.validator.validate_adata()
+        self.assertEqual(self.validator.errors, [])
+
+        # It's not okay if all values are NaN
+        all_nan = numpy.full(self.validator.adata.obsm["X_umap"].shape, numpy.nan)
+        self.validator.adata.obsm["X_umap"] = all_nan
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: adata.obsm['X_umap'] contains all NaN values."],
+        )
+
     def test_obsm_values_at_least_one_X(self):
         """
         At least one key for the embedding MUST be prefixed with "X_"
@@ -1375,7 +1420,29 @@ class TestObsm(BaseValidationTest):
             ["ERROR: At least one embedding in 'obsm' has to have a " "key with an 'X_' prefix."],
         )
 
-    def test_obsm_shape(self):
+    def test_obsm_suffix_name_valid(self):
+        """
+        Suffix after X_ must be at least 1 character long
+        """
+        self.validator.adata.obsm["X_"] = self.validator.adata.obsm["X_umap"]
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: Embedding key in 'adata.obsm' X_ must have a suffix at least one character long."],
+        )
+
+    def test_obsm_key_name_valid(self):
+        """
+        Embedding keys with whitespace are not valid
+        """
+        self.validator.adata.obsm["X_ umap"] = self.validator.adata.obsm["X_umap"]
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: Embedding key X_ umap has whitespace in it, please remove it."],
+        )
+
+    def test_obsm_shape_one_column(self):
         """
         Curators MUST annotate one or more two-dimensional (m >= 2) embeddings
         """
@@ -1391,6 +1458,19 @@ class TestObsm(BaseValidationTest):
                 "of '(2, 1)'."
             ],
         )
+
+    def test_obsm_shape_same_rows_and_columns(self):
+        """
+        The number of rows must be equal to the number of columns
+        """
+        # Create a 3 row array
+        arr1 = numpy.array([0, 0])
+        arr2 = numpy.array([0, 0])
+        arr3 = numpy.array([0, 0])
+        three_row_array = numpy.vstack((arr1, arr2, arr3))
+        with self.assertRaises(ValueError):
+            self.validator.adata.obsm["X_umap"] = three_row_array
+            self.validator.validate_adata()
 
 
 class TestAddingLabels(unittest.TestCase):
