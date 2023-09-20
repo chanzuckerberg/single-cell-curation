@@ -1339,7 +1339,7 @@ class TestObsm(BaseValidationTest):
             ["ERROR: Embedding key X_ umap has whitespace in it, please remove it."],
         )
 
-    def test_obsm_shape(self):
+    def test_obsm_shape_one_column(self):
         """
         Curators MUST annotate one or more two-dimensional (m >= 2) embeddings
         """
@@ -1355,6 +1355,19 @@ class TestObsm(BaseValidationTest):
                 "of '(2, 1)'."
             ],
         )
+
+    def test_obsm_shape_same_rows_and_columns(self):
+        """
+        The number of rows must be equal to the number of columns
+        """
+        # Create a 3 row array
+        arr1 = numpy.array([0, 0])
+        arr2 = numpy.array([0, 0])
+        arr3 = numpy.array([0, 0])
+        three_row_array = numpy.vstack((arr1, arr2, arr3))
+        with self.assertRaises(ValueError):
+            self.validator.adata.obsm["X_umap"] = three_row_array
+            self.validator.validate_adata()
 
 
 class TestAddingLabels(unittest.TestCase):
