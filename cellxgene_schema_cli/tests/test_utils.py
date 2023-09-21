@@ -1,8 +1,10 @@
 import numpy as np
+import pandas as pd
 import pytest
 from anndata import AnnData
 from cellxgene_schema.utils import (
     enforce_canonical_format,
+    get_hash_digest_column,
     map_ontology_term,
     read_h5ad,
     remove_deprecated_features,
@@ -108,6 +110,13 @@ class TestEnforceCanonical:
     def test_adata_with_canonical_X(self, adata_without_raw):
         enforce_canonical_format(adata)
         assert adata_without_raw.X.has_canonical_format is True
+
+
+class TestGetHashDigestColumn:
+    def test_get_hash_digest_column(self, adata_with_raw):
+        hash_digest_column = get_hash_digest_column(adata_with_raw.obs)
+        expected_column = pd.Series(["ab6yl9v%fZ", "f-dZLjjiRl"], index=["X", "Y"])
+        pd.testing.assert_series_equal(hash_digest_column, expected_column)
 
 
 class TestReadH5AD:

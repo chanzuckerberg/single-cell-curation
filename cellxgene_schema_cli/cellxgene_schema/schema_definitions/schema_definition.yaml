@@ -102,6 +102,8 @@ components:
         deprecated_columns:
             - ethnicity
             - ethnicity_ontology_term_id
+        reserved_columns:
+            - observation_joinid
         columns:
             cell_type_ontology_term_id:
                 type: curie

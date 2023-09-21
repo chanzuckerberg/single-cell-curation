@@ -224,6 +224,27 @@ class TestObs(BaseValidationTest):
             ],
         )
 
+    def test_obs_reserved_columns_presence(self):
+        """
+        Reserved columns must NOT be used in obs
+        """
+
+        for reserved_column in self.validator.schema_def["components"]["obs"]["reserved_columns"]:
+            with self.subTest(column=reserved_column):
+                # Resetting validator
+                self.validator.adata = examples.adata.copy()
+                self.validator.errors = []
+
+                self.validator.adata.obs[reserved_column] = "dummy_value"
+                self.validator.validate_adata()
+                self.assertEqual(
+                    self.validator.errors,
+                    [
+                        f"ERROR: Column '{reserved_column}' is a reserved column name "
+                        f"of 'obs'. Remove it from h5ad and try again."
+                    ],
+                )
+
     def test_obsolete_term_id(self):
         """
         Terms documented as obsolete in an ontology MUST NOT be used. For example, EFO:0009310

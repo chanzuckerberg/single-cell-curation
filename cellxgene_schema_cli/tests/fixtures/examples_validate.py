@@ -4,6 +4,7 @@ import numpy
 import anndata
 import os
 from scipy import sparse
+from cellxgene_schema.utils import get_hash_digest_column
 
 # -----------------------------------------------------------------#
 # General example information
@@ -121,6 +122,8 @@ obs_expected = pd.DataFrame(
         "development_stage",
     ],
 )
+
+obs_expected["observation_joinid"] = get_hash_digest_column(obs_expected)
 
 # ---
 # 2. Creating individual var components: valid object and valid object and with labels

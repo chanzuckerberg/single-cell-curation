@@ -8,7 +8,7 @@ from cellxgene_schema import ontology
 from cellxgene_schema.env import SCHEMA_REFERENCE_BASE_URL, SCHEMA_REFERENCE_FILE_NAME
 from cellxgene_schema.validate import ONTOLOGY_CHECKER, Validator
 
-from .utils import enforce_canonical_format, getattr_anndata
+from .utils import enforce_canonical_format, get_hash_digest_column, getattr_anndata
 
 logger = logging.getLogger(__name__)
 
@@ -350,16 +350,17 @@ class AnnDataLabelAppender:
         :rtype None
         """
         logger.info("Writing labels")
-        # Add labels in obs
+        # Add columns to dataset dataframes based on values in other columns, as defined in schema definition yaml
         self._add_labels()
 
         # Remove unused categories
         self._remove_categories_with_zero_values()
 
-        # Set version
+        # Annotate Reserved Columns
+
         self.adata.uns["schema_version"] = self.validator.schema_version
-        # Set schema reference URL
         self.adata.uns["schema_reference"] = self._build_schema_reference_url(self.validator.schema_version)
+        self.adata.obs["observation_joinid"] = get_hash_digest_column(self.adata.obs)
 
         enforce_canonical_format(self.adata)
 
