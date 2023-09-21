@@ -676,7 +676,7 @@ class Validator:
                     if "warning_message" in column_def:
                         self.warnings.append(column_def["warning_message"])
                     self._validate_column(column, column_name, df_name, column_def)
-    
+
     def _validate_colors_in_uns_dict(self, uns_dict: dict) -> None:
         df = getattr_anndata(self.adata, "obs")
         df_definition = self._get_component_def("obs")
@@ -689,7 +689,7 @@ class Validator:
                 if column_name not in df.columns:
                     # Skip this, dataframe validation should already append an error for this
                     continue
-                
+
                 column = getattr(df, column_name)
                 if column.get("type") == "categorical":
                     category_mapping[column_name] = len(column.unique)
@@ -707,7 +707,6 @@ class Validator:
                         f"Color {color} is not valid. Colors must be a valid hex code (#08c0ff) or a CSS4"
                         f"named color"
                     )
-
 
     def _validate_color(self, color: str) -> bool:
         css4_named_colors = [
@@ -1304,7 +1303,7 @@ class Validator:
                 "Validation of raw layer was not performed due to current errors, try again after "
                 "fixing current errors."
             )
-        
+
         # Make sure that {column}_colors exists
         self._validate_colors_in_uns_dict(uns_dict)
 
