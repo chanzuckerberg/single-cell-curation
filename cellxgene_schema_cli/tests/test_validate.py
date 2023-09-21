@@ -3,10 +3,12 @@ import hashlib
 import os
 import tempfile
 import unittest
+from typing import Union
 from unittest import mock
 
 import anndata
 import numpy as np
+import pytest
 from cellxgene_schema.ontology import OntologyChecker
 from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.validate import Validator, validate
@@ -22,7 +24,9 @@ from fixtures.examples_validate import (
     h5ad_invalid,
     h5ad_valid,
 )
+from numpy import ndarray
 from scipy import sparse
+from scipy.sparse import spmatrix
 
 # Tests for internal functions of the Validator and LabelWriter classes.
 
@@ -52,21 +56,29 @@ class TestFieldValidation(unittest.TestCase):
         # Check that any columns in obs that are "curie" have "curie_constraints" and "ontologies" under the constraints
         for i in self.schema_def["components"]["obs"]["columns"]:
             self.assertTrue("type" in self.schema_def["components"]["obs"]["columns"][i])
-            if i == "curie":
-                self.assertIsInstance(
-                    self.schema_def["components"]["obs"]["columns"][i]["curie_constraints"],
-                    dict,
-                )
-                self.assertIsInstance(
-                    self.schema_def["components"]["obs"]["columns"][i]["curie_constraints"]["ontolgies"],
-                    list,
-                )
+            if self.schema_def["components"]["obs"]["columns"][i]["type"] == "curie":
+                if "curie_constraints" in self.schema_def["components"]["obs"]["columns"][i]:
+                    self.assertIsInstance(
+                        self.schema_def["components"]["obs"]["columns"][i]["curie_constraints"],
+                        dict,
+                    )
+                    self.assertIsInstance(
+                        self.schema_def["components"]["obs"]["columns"][i]["curie_constraints"]["ontologies"],
+                        list,
+                    )
 
-                # Check that the allowed ontologies are in the ontology checker
-                for ontology_name in self.schema_def["components"]["obs"]["columns"][i]["curie_constraints"][
-                    "ontolgies"
-                ]:
-                    self.assertTrue(self.OntologyChecker.is_valid_ontology(ontology_name))
+                    # Check that the allowed ontologies are in the ontology checker or 'NA' (special case)
+                    for ontology_name in self.schema_def["components"]["obs"]["columns"][i]["curie_constraints"][
+                        "ontologies"
+                    ]:
+                        if ontology_name != "NA":
+                            self.assertTrue(self.OntologyChecker.is_valid_ontology(ontology_name))
+                else:
+                    # if no curie_constraints in top-level for type curie, assert that 'dependencies' list exists
+                    self.assertIsInstance(
+                        self.schema_def["components"]["obs"]["columns"][i]["dependencies"],
+                        list,
+                    )
 
     def test_validate_ontology_good(self):
         self.validator._validate_curie("CL:0000066", self.column_name, self.curie_constraints)
@@ -113,7 +125,6 @@ class TestAddLabelFunctions(unittest.TestCase):
 
         # Bad
         ids = ["NO_GENE"]
-        expected_dict = dict(zip(ids, labels))
         with self.assertRaises(KeyError):
             self.writer._get_mapping_dict_feature_id(ids)
 
@@ -136,7 +147,29 @@ class TestAddLabelFunctions(unittest.TestCase):
 
         # Bad
         ids = ["NO_GENE"]
-        expected_dict = dict(zip(ids, labels))
+        with self.assertRaises(KeyError):
+            self.writer._get_mapping_dict_feature_id(ids)
+
+    def test_get_dictionary_mapping_feature_length(self):
+        # Good
+        ids = [
+            "ERCC-00002",
+            "ENSG00000127603",
+            "ENSMUSG00000059552",
+            "ENSSASG00005000004",
+        ]
+        # values derived from csv
+        gene_lengths = [
+            0,  # non-gene feature, so set to 0 regardless of csv value
+            42738,
+            4045,
+            3822,
+        ]
+        expected_dict = dict(zip(ids, gene_lengths))
+        self.assertEqual(self.writer._get_mapping_dict_feature_length(ids), expected_dict)
+
+        # Bad
+        ids = ["NO_GENE"]
         with self.assertRaises(KeyError):
             self.writer._get_mapping_dict_feature_id(ids)
 
@@ -328,5 +361,52 @@ class TestSeuratConvertibility(unittest.TestCase):
         raw.var.drop("ENSSASG00005000004", axis=0, inplace=True)
         self.validation_helper(matrix, raw)
         self.validator._validate_seurat_convertibility()
-        self.assertTrue(len(self.validator.warnings) == 1)
+        self.assertTrue(len(self.validator.errors) == 1)
         self.assertFalse(self.validator.is_seurat_convertible)
+        self.assertFalse(self.validator.is_valid)
+
+
+class TestIsRaw:
+    @staticmethod
+    def create_validator(data: Union[ndarray, spmatrix], format: str) -> Validator:
+        """
+        Create a sample AnnData instance with the given data and format.
+
+        :param data: The data matrix.
+        :param format: The format of the data matrix (e.g., "dense", "csr", "csc").
+
+        :return anndata.AnnData: An AnnData instance with the specified data and format.
+        """
+        validator = Validator()
+
+        adata = anndata.AnnData(X=data)
+        adata.obsm["X_" + format] = data
+
+        validator.adata = adata
+        return validator
+
+    @pytest.mark.parametrize(
+        "data, format, expected_result",
+        [
+            # Test case with integer values in a dense matrix
+            (np.array([[1, 2, 3], [4, 5, 6]], dtype=int), "dense", True),
+            # Test case with float values in a dense matrix
+            (np.array([[1.1, 2.2, 3.3], [4.4, 5.5, 6.6]]), "dense", False),
+            # Test case with integer values in a sparse matrix (CSR format)
+            (sparse.csr_matrix([[1, 0, 3], [0, 5, 0]], dtype=int), "csr", True),
+            # Test case with float values in a sparse matrix (CSC format)
+            (sparse.csc_matrix([[1.1, 0, 3.3], [0, 5.5, 0]]), "csc", False),
+            # Test case with mixed integer and float values in a dense matrix
+            (np.array([[1, 2.2, 3], [4.4, 5, 6.6]]), "dense", False),
+        ],
+    )
+    def test_is_raw(self, data, format, expected_result):
+        validator = self.create_validator(data, format)
+        assert validator._is_raw() == expected_result
+
+    @mock.patch("cellxgene_schema.validate.get_matrix_format", return_value="unknown")
+    def test_is_raw_with_unknown_format(self, mock_get_matrix_format):
+        data = np.array([[1, 2, 3], [4, 5, 6]], dtype=int)
+        validator = self.create_validator(data, "unknown")
+        with pytest.raises(AssertionError):
+            validator._is_raw()

@@ -1,9 +1,8 @@
 import logging
 import math
 import os
-import re
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union
 
 import anndata
 import numpy as np
@@ -42,35 +41,6 @@ class Validator:
 
         # Matrix (e.g., X, raw.X, ...) number non-zero cache
         self.number_non_zero = dict()
-
-    @staticmethod
-    def _curie_remove_suffix(term_id: str, suffix_def: dict) -> Tuple[str, str]:
-        """
-        Remove suffix from a curie term id, if none present return it unmodified
-
-        :param str term_id: the curie term id to validate
-        :param dict{str: list[str], ...} suffix_def: dictionary whose keys are ontology term ids and values
-        are list of allowed suffixes
-
-        :rtype Tuple[str, str]
-        :return the term_id with suffixed stripped, and the suffix
-        """
-
-        id_suffix = ""
-
-        for ontology_name, suffixes in suffix_def.items():
-            for suffix in suffixes:
-                suffix = suffix.replace("(", r"\(")
-                suffix = suffix.replace(")", r"\)")
-                search_results = re.search(r"%s$" % suffix, term_id)
-                if search_results:
-                    stripped_term_id = re.sub(r"%s$" % suffix, "", term_id)
-                    if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, stripped_term_id):
-                        id_suffix = search_results.group(0)
-
-                        return stripped_term_id, id_suffix
-
-        return term_id, id_suffix
 
     def _validate_encoding_version(self):
         import h5py
@@ -177,8 +147,11 @@ class Validator:
 
         if True not in checks:
             if errors:
-                all_ancestors = list(allowed_ancestors.values())
-                self.errors.append(f"'{term_id}' in '{column_name}' is not a child term id of '{all_ancestors}'.")
+                all_ancestors = [ancestor for ancestors in allowed_ancestors.values() for ancestor in ancestors]
+                # print ancestor as string with single-quotes if only 1 entry
+                if len(all_ancestors) == 1:
+                    all_ancestors = f"'{all_ancestors[0]}'"
+                self.errors.append(f"'{term_id}' in '{column_name}' is not a child term id of {all_ancestors}.")
             return False
         return True
 
@@ -228,7 +201,7 @@ class Validator:
 
         # If there are forbidden terms
         if "forbidden" in curie_constraints and term_id in curie_constraints["forbidden"]:
-            self.errors.append(f"'{term_id}' in '{column_name}' is not allowed'.")
+            self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
             return
 
         # If NA is found in allowed ontologies, it means only exceptions should be found. If no exceptions were found
@@ -236,10 +209,6 @@ class Validator:
         if curie_constraints["ontologies"] == ["NA"]:
             self.errors.append(f"'{term_id}' in '{column_name}' is not a valid value of '{column_name}'.")
             return
-
-        # Check if there are any allowed suffixes and remove them if needed
-        if "suffixes" in curie_constraints:
-            term_id, suffix = self._curie_remove_suffix(term_id, curie_constraints["suffixes"])
 
         # Check that term id belongs to allowed ontologies
         self._validate_curie_ontology(term_id, column_name, curie_constraints["ontologies"])
@@ -289,8 +258,8 @@ class Validator:
 
         return
 
+    @staticmethod
     def _chunk_matrix(
-        self,
         matrix: Union[np.ndarray, sparse.spmatrix],
         obs_chunk_size: Optional[int] = 10_000,
     ):
@@ -436,15 +405,9 @@ class Validator:
                 self.errors.append(f"Column '{column_name}' in dataframe '{df_name}' must not contain NaN values.")
                 return
 
-            if "curie_constraints" not in column_def:
-                raise ValueError(f"Corrupt schema definition, no 'curie_constraints' were found for '{column_name}'")
-            if "ontologies" not in column_def["curie_constraints"]:
-                raise ValueError(
-                    f"allowed 'ontologies' must be specified under 'curie constraints' for '{column_name}'"
-                )
-
-            for term_id in column.drop_duplicates():
-                self._validate_curie(term_id, column_name, column_def["curie_constraints"])
+            if "curie_constraints" in column_def:
+                for term_id in column.drop_duplicates():
+                    self._validate_curie(term_id, column_name, column_def["curie_constraints"])
 
         # Add error suffix to errors found here
         if "error_message_suffix" in column_def:
@@ -802,10 +765,9 @@ class Validator:
                 self.is_seurat_convertible = False
 
         if self.adata.raw and self.adata.raw.X.shape[1] != self.adata.raw.var.shape[0]:
-            self.warnings.append(
-                "This dataset cannot be converted to the .rds (Seurat v4) format. "
-                "There is a mismatch in the number of variables in the raw matrix and the raw var key-indexed "
-                "variables."
+            self.errors.append(
+                "This dataset has a mismatch between 1) the number of variables in the raw matrix and 2) the number of "
+                "raw var key-indexed variables. These counts must be identical."
             )
             self.is_seurat_convertible = False
 
@@ -823,6 +785,9 @@ class Validator:
 
         obsm_with_x_prefix = 0
         for key, value in self.adata.obsm.items():
+            if " " in key:
+                self.errors.append(f"Embedding key {key} has whitespace in it, please remove it.")
+
             if not isinstance(value, np.ndarray):
                 self.errors.append(
                     f"All embeddings have to be of 'numpy.ndarray' type, " f"'adata.obsm['{key}']' is {type(value)}')."
@@ -833,20 +798,28 @@ class Validator:
             if key.startswith("X_"):
                 obsm_with_x_prefix += 1
 
-                if not (np.issubdtype(value.dtype, np.integer) or np.issubdtype(value.dtype, np.floating)):
+                if len(key) <= 3:
                     self.errors.append(
-                        f"adata.obsm['{key}'] has an invalid data type. It should be "
-                        "float, integer, or unsigned integer of any precision (8, 16, 32, or 64 bits)."
+                        f"Embedding key in 'adata.obsm' {key} must have a suffix at least one character long."
                     )
-                if np.isinf(value).any() or np.isnan(value).any():
-                    self.errors.append(f"adata.obsm['{key}'] contains positive infinity or negative infinity values.")
-                if np.isnan(value).any():
-                    self.errors.append(f"adata.obsm['{key}'] contains NaN values.")
                 if len(value.shape) < 2 or value.shape[0] != self.adata.n_obs or value.shape[1] < 2:
                     self.errors.append(
                         f"All embeddings must have as many rows as cells, and at least two columns."
                         f"'adata.obsm['{key}']' has shape of '{value.shape}'."
                     )
+                if not (np.issubdtype(value.dtype, np.integer) or np.issubdtype(value.dtype, np.floating)):
+                    self.errors.append(
+                        f"adata.obsm['{key}'] has an invalid data type. It should be "
+                        "float, integer, or unsigned integer of any precision (8, 16, 32, or 64 bits)."
+                    )
+                else:
+                    # Check for inf/NaN values only if the dtype is numeric
+                    if np.isinf(value).any():
+                        self.errors.append(
+                            f"adata.obsm['{key}'] contains positive infinity or negative infinity values."
+                        )
+                    if np.all(np.isnan(value)):
+                        self.errors.append(f"adata.obsm['{key}'] contains all NaN values.")
 
         if obsm_with_x_prefix == 0:
             self.errors.append("At least one embedding in 'obsm' has to have a key with an 'X_' prefix.")
@@ -899,17 +872,15 @@ class Validator:
         else:
             return "X"
 
-    def _is_raw(self, max_values_to_check: int = 5000, force: bool = False) -> bool:
+    def _is_raw(self, force: bool = False) -> bool:
         """
-        Checks if the first non-zero "max_values_to_check" in the best guess for the raw matrix (adata.X or adata.raw.X)
+        Checks if the non-zero values for the raw matrix (adata.X or adata.raw.X)
         are integers. Returns False if at least one value is not an integer,
 
         True otherwise.
 
         Since this process is memory intensive, it will return a cache value if this function has been called before.
         If calculation needs to be repeated use `force = True`
-
-        :param int max_values_to_check: total values to check, default set to 5000 due to performance concerns.
 
         :rtype bool
         :return False if at least one value is not an integer, True otherwise
@@ -922,7 +893,6 @@ class Validator:
             raw_loc = self._get_raw_x_loc()
             x = self.adata.raw.X if raw_loc == "raw.X" else self.adata.X
 
-            num_values_checked = 0
             format = get_matrix_format(self.adata, x)
             assert format != "unknown"
             self._raw_layer_exists = True
@@ -930,10 +900,6 @@ class Validator:
                 data = matrix_chunk if isinstance(matrix_chunk, np.ndarray) else matrix_chunk.data
                 if (data % 1 > 0).any():
                     self._raw_layer_exists = False
-                    break
-
-                num_values_checked += matrix_chunk.nnz if format != "dense" else np.count_nonzero(matrix_chunk)
-                if num_values_checked > max_values_to_check:
                     break
 
         return self._raw_layer_exists
@@ -1154,12 +1120,13 @@ class Validator:
                 "fixing current errors."
             )
 
-    def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None) -> bool:
+    def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None, to_memory: bool = False) -> bool:
         """
         Validates adata
 
         :params Union[str, bytes, os.PathLike] h5ad_path: path to h5ad to validate, if None it will try to validate
         from self.adata
+        :param to_memory: indicate if the h5ad should be read into memory.
 
         :return True if successful validation, False otherwise
         :rtype bool
@@ -1170,7 +1137,7 @@ class Validator:
 
         if h5ad_path:
             logger.debug("Reading the h5ad file...")
-            self.adata = read_h5ad(h5ad_path)
+            self.adata = read_h5ad(h5ad_path, to_memory)
             self.h5ad_path = h5ad_path
             self._validate_encoding_version()
             logger.debug("Successfully read the h5ad file")
@@ -1224,8 +1191,11 @@ def validate(
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO, format="%(message)s")
-    validator = Validator(ignore_labels=ignore_labels)
-    validator.validate_adata(h5ad_path)
+    validator = Validator(
+        ignore_labels=ignore_labels,
+    )
+    to_memory = add_labels_file is not None
+    validator.validate_adata(h5ad_path, to_memory=to_memory)
     logger.info(f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}")
 
     # Stop if validation was unsuccessful

@@ -42,6 +42,7 @@ good_obs = pd.DataFrame(
             "NCBITaxon:9606",
             "PATO:0000383",
             "UBERON:0002048",
+            "tissue",
             True,
             "HANCESTRO:0575",
             "HsapDv:0000003",
@@ -54,7 +55,8 @@ good_obs = pd.DataFrame(
             "PATO:0000461",
             "NCBITaxon:10090",
             "unknown",
-            "CL:0000192 (cell culture)",
+            "CL:0000192",
+            "cell culture",
             False,
             "na",
             "MmusDv:0000003",
@@ -70,6 +72,7 @@ good_obs = pd.DataFrame(
         "organism_ontology_term_id",
         "sex_ontology_term_id",
         "tissue_ontology_term_id",
+        "tissue_type",
         "is_primary_data",
         "self_reported_ethnicity_ontology_term_id",
         "development_stage_ontology_term_id",
@@ -80,6 +83,7 @@ good_obs = pd.DataFrame(
 
 good_obs.loc[:, ["donor_id"]] = good_obs.astype("category")
 good_obs.loc[:, ["suspension_type"]] = good_obs.astype("category")
+good_obs.loc[:, ["tissue_type"]] = good_obs.astype("category")
 
 # Expected obs, this is what the obs above should look like after adding the necessary columns with the validator,
 # these columns are defined in the schema
@@ -101,7 +105,7 @@ obs_expected = pd.DataFrame(
             "normal",
             "Mus musculus",
             "unknown",
-            "smooth muscle cell (cell culture)",
+            "smooth muscle cell",
             "na",
             "Theiler stage 01",
         ],
@@ -140,10 +144,10 @@ good_var = pd.DataFrame(
 # these columns are defined in the schema
 var_expected = pd.DataFrame(
     [
-        ["spike-in", False, "ERCC-00002 (spike-in control)", "NCBITaxon:32630"],
-        ["gene", False, "MACF1", "NCBITaxon:9606"],
-        ["gene", False, "Trp53", "NCBITaxon:10090"],
-        ["gene", False, "S", "NCBITaxon:2697049"],
+        ["spike-in", False, "ERCC-00002 (spike-in control)", "NCBITaxon:32630", 0],
+        ["gene", False, "MACF1", "NCBITaxon:9606", 42738],
+        ["gene", False, "Trp53", "NCBITaxon:10090", 4045],
+        ["gene", False, "S", "NCBITaxon:2697049", 3822],
     ],
     index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"],
     columns=[
@@ -151,6 +155,7 @@ var_expected = pd.DataFrame(
         "feature_is_filtered",
         "feature_name",
         "feature_reference",
+        "feature_length",
     ],
 )
 

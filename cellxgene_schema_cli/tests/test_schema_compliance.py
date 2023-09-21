@@ -285,7 +285,7 @@ class TestObs(BaseValidationTest):
             self.validator.errors,
             [
                 "ERROR: 'EFO:0000001' in 'assay_ontology_term_id' is not a "
-                "child term id of '[['EFO:0002772', 'EFO:0010183']]'."
+                "child term id of ['EFO:0002772', 'EFO:0010183']."
             ],
         )
 
@@ -302,16 +302,31 @@ class TestObs(BaseValidationTest):
 
     def test_cell_type_ontology_term_id(self):
         """
-        cell_type_ontology_term_id categorical with str categories. This MUST be a CL term.
+        cell_type_ontology_term_id categorical with str categories. This MUST be a CL term, and must NOT match forbidden
+        columns defined in schema
         """
 
         # Not a valid term
-        self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "cell_type_ontology_term_id"] = "EFO:0000001"
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            ["ERROR: 'EFO:0000001' in 'cell_type_ontology_term_id' is not a valid " "ontology term id of 'CL'."],
-        )
+        with self.subTest(forbidden_term="EFO:0000001"):
+            self.validator.adata.obs.loc[
+                self.validator.adata.obs.index[0], "cell_type_ontology_term_id"
+            ] = "EFO:0000001"
+            self.validator.validate_adata()
+            self.assertEqual(
+                self.validator.errors,
+                ["ERROR: 'EFO:0000001' in 'cell_type_ontology_term_id' is not a valid " "ontology term id of 'CL'."],
+            )
+
+        for term in self.validator.schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"][
+            "curie_constraints"
+        ]["forbidden"]:
+            with self.subTest(forbidden_term=term):
+                self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "cell_type_ontology_term_id"] = term
+                self.validator.validate_adata()
+                self.assertEqual(
+                    self.validator.errors,
+                    [f"ERROR: '{term}' in 'cell_type_ontology_term_id' is not allowed."],
+                )
 
     def test_development_stage_ontology_term_id_human(self):
         """
@@ -398,7 +413,7 @@ class TestObs(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'UBERON:0000071' in 'development_stage_ontology_term_id' is not allowed'. When "
+                "ERROR: 'UBERON:0000071' in 'development_stage_ontology_term_id' is not allowed. When "
                 "'organism_ontology_term_id' is not 'NCBITaxon:10090' "
                 "nor 'NCBITaxon:9606', 'development_stage_ontology_term_id' MUST be a child term id of "
                 "'UBERON:0000105' excluding 'UBERON:0000071', or unknown.",
@@ -514,43 +529,131 @@ class TestObs(BaseValidationTest):
         """
 
         self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "tissue_ontology_term_id"] = "EFO:0000001"
+        self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "tissue_type"] = "tissue"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
-            ["ERROR: 'EFO:0000001' in 'tissue_ontology_term_id' is not a " "valid ontology term id of 'UBERON, CL'."],
+            [
+                "ERROR: 'EFO:0000001' in 'tissue_ontology_term_id' is not a valid ontology term id of "
+                "'UBERON'. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' MUST be a "
+                "child term id of 'UBERON:0001062' (anatomical entity)."
+            ],
         )
 
     def test_tissue_ontology_term_id_cell_culture(self):
         """
-        Cell Culture - MUST be a CL term appended with " (cell culture)"
+        Cell Culture - must be a valid CL term other than forbidden columns in schema definition. Can NOT include
+        suffixes.
         """
+        self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "tissue_type"] = "cell culture"
 
-        self.validator.adata.obs.loc[
-            self.validator.adata.obs.index[0], "tissue_ontology_term_id"
-        ] = "CL:0000057 (CELL culture)"
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            [
-                "ERROR: 'CL:0000057 (CELL culture)' in 'tissue_ontology_term_id' is "
-                "not a valid ontology term id of 'UBERON, CL'."
-            ],
-        )
+        with self.subTest(case="error, suffix in term ID"):
+            self.validator.adata.obs.loc[
+                self.validator.adata.obs.index[0], "tissue_ontology_term_id"
+            ] = "CL:0000057 (cell culture)"
+            self.validator.validate_adata()
+            self.assertEqual(
+                self.validator.errors,
+                [
+                    "ERROR: 'CL:0000057 (cell culture)' in 'tissue_ontology_term_id' is not a valid ontology term id "
+                    "of 'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be a CL term "
+                    "and it can not be 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
+                    "nor 'CL:0000548' (animal cell)."
+                ],
+            )
+
+        with self.subTest(case="error, not a CL term"):
+            self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "tissue_ontology_term_id"] = "EFO:0000001"
+            self.validator.validate_adata()
+            self.assertEqual(
+                self.validator.errors,
+                [
+                    "ERROR: 'EFO:0000001' in 'tissue_ontology_term_id' is not a valid ontology term id of "
+                    "'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be a CL term "
+                    "and it can not be 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
+                    "nor 'CL:0000548' (animal cell)."
+                ],
+            )
+
+        for term in self.validator.schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"][
+            "curie_constraints"
+        ]["forbidden"]:
+            with self.subTest(case="error", forbidden_term=term):
+                self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "tissue_ontology_term_id"] = term
+                self.validator.validate_adata()
+                self.assertEqual(
+                    self.validator.errors,
+                    [
+                        f"ERROR: '{term}' in 'tissue_ontology_term_id' is not allowed. When 'tissue_type' is "
+                        f"'cell culture', 'tissue_ontology_term_id' MUST be a CL term "
+                        "and it can not be 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
+                        "nor 'CL:0000548' (animal cell)."
+                    ],
+                )
 
     def test_tissue_ontology_term_id_organoid(self):
         """
-        Organoid - MUST be an UBERON term appended with " (organoid)"
+        Organoid - must not accept suffixes like "(organoid)"
         """
 
         self.validator.adata.obs.loc[
             self.validator.adata.obs.index[0], "tissue_ontology_term_id"
-        ] = "CL:0000057 (ORGANOID)"
+        ] = "UBERON:0000057 (organoid)"
+        self.validator.adata.obs.tissue_type = self.validator.adata.obs.tissue_type.cat.add_categories(["organoid"])
+        self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "tissue_type"] = "organoid"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'CL:0000057 (ORGANOID)' in 'tissue_ontology_term_id' is "
-                "not a valid ontology term id of 'UBERON, CL'."
+                "ERROR: 'UBERON:0000057 (organoid)' in 'tissue_ontology_term_id' is not a valid ontology term id of "
+                "'UBERON'. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' MUST be a "
+                "child term id of 'UBERON:0001062' (anatomical entity)."
+            ],
+        )
+
+    def test_tissue_ontology_term_id_child_of_anatomical_entity(self):
+        """
+        Tissue ontology term ID must be a CHILD TERM of 'UBERON:0001062' (anatomical entity) if tissue_type is
+        organoid or tissue.
+        """
+        self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "tissue_ontology_term_id"] = "UBERON:0001062"
+        with self.subTest(tissue_type="tissue"):
+            self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "tissue_type"] = "tissue"
+            self.validator.validate_adata()
+            self.assertEqual(
+                self.validator.errors,
+                [
+                    "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not a child term id of "
+                    "'UBERON:0001062'. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' "
+                    "MUST be a child term id of 'UBERON:0001062' (anatomical entity)."
+                ],
+            )
+
+        with self.subTest(tissue_type="organoid"):
+            self.validator.adata.obs.tissue_type = self.validator.adata.obs.tissue_type.cat.add_categories(["organoid"])
+            self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "tissue_type"] = "organoid"
+            self.validator.validate_adata()
+            self.assertEqual(
+                self.validator.errors,
+                [
+                    "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not a child term id of "
+                    "'UBERON:0001062'. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' "
+                    "MUST be a child term id of 'UBERON:0001062' (anatomical entity)."
+                ],
+            )
+
+    def test_tissue_type(self):
+        """
+        tissue_type must be one of 'cell culture', 'tissue', or 'organoid'
+        """
+        self.validator.adata.obs.tissue_type = self.validator.adata.obs.tissue_type.cat.add_categories(["organ"])
+        self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "tissue_type"] = "organ"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Column 'tissue_type' in dataframe 'obs' contains invalid values "
+                "'['organ']'. Values must be one of ['cell culture', 'organoid', 'tissue']"
             ],
         )
 
@@ -1031,6 +1134,29 @@ class TestVar(BaseValidationTest):
             ["WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix."],
         )
 
+    def test_add_label_fields_are_reserved(self):
+        """
+        Raise an error if column names flagged as 'add_label' -> 'to_column' in the schema definition are not available.
+        """
+        for df in ["var", "raw.var"]:
+            for i in self.validator.schema_def["components"][df]["index"]["add_labels"]:
+                column = i["to_column"]
+                with self.subTest(column=column, df=df):
+                    # Resetting validator
+                    self.validator.adata = examples.adata.copy()
+                    self.validator.errors = []
+
+                    component = getattr_anndata(self.validator.adata, df)
+                    component[column] = "dummy_value"
+                    self.validator.validate_adata()
+                    self.assertEqual(
+                        self.validator.errors,
+                        [
+                            f"ERROR: Add labels error: Column '{column}' is a reserved column name "
+                            f"of '{df}'. Remove it from h5ad and try again."
+                        ],
+                    )
+
 
 class TestUns(BaseValidationTest):
     """
@@ -1256,6 +1382,51 @@ class TestObsm(BaseValidationTest):
             ],
         )
 
+    def test_obsm_values_infinity(self):
+        """
+        values in obsm cannot have any infinity values
+        """
+        self.validator.adata.obsm["X_umap"][0:100, 1] = numpy.inf
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: adata.obsm['X_umap'] contains positive infinity or negative infinity values."],
+        )
+
+    def test_obsm_values_str(self):
+        """
+        values in obsm must be numerical types, strings are not valid
+        """
+        all_string = numpy.full(self.validator.adata.obsm["X_umap"].shape, "test")
+        self.validator.adata.obsm["X_umap"] = all_string
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: adata.obsm['X_umap'] has an invalid data type. It should be float, integer, or unsigned "
+                "integer of any precision (8, 16, 32, or 64 bits)."
+            ],
+        )
+
+    def test_obsm_values_nan(self):
+        """
+        values in obsm cannot all be NaN
+        """
+
+        # It's okay if only one value is NaN
+        self.validator.adata.obsm["X_umap"][0:100, 1] = numpy.nan
+        self.validator.validate_adata()
+        self.assertEqual(self.validator.errors, [])
+
+        # It's not okay if all values are NaN
+        all_nan = numpy.full(self.validator.adata.obsm["X_umap"].shape, numpy.nan)
+        self.validator.adata.obsm["X_umap"] = all_nan
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: adata.obsm['X_umap'] contains all NaN values."],
+        )
+
     def test_obsm_values_at_least_one_X(self):
         """
         At least one key for the embedding MUST be prefixed with "X_"
@@ -1270,7 +1441,29 @@ class TestObsm(BaseValidationTest):
             ["ERROR: At least one embedding in 'obsm' has to have a " "key with an 'X_' prefix."],
         )
 
-    def test_obsm_shape(self):
+    def test_obsm_suffix_name_valid(self):
+        """
+        Suffix after X_ must be at least 1 character long
+        """
+        self.validator.adata.obsm["X_"] = self.validator.adata.obsm["X_umap"]
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: Embedding key in 'adata.obsm' X_ must have a suffix at least one character long."],
+        )
+
+    def test_obsm_key_name_valid(self):
+        """
+        Embedding keys with whitespace are not valid
+        """
+        self.validator.adata.obsm["X_ umap"] = self.validator.adata.obsm["X_umap"]
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: Embedding key X_ umap has whitespace in it, please remove it."],
+        )
+
+    def test_obsm_shape_one_column(self):
         """
         Curators MUST annotate one or more two-dimensional (m >= 2) embeddings
         """
@@ -1287,6 +1480,19 @@ class TestObsm(BaseValidationTest):
             ],
         )
 
+    def test_obsm_shape_same_rows_and_columns(self):
+        """
+        The number of rows must be equal to the number of columns
+        """
+        # Create a 3 row array
+        arr1 = numpy.array([0, 0])
+        arr2 = numpy.array([0, 0])
+        arr3 = numpy.array([0, 0])
+        three_row_array = numpy.vstack((arr1, arr2, arr3))
+        with self.assertRaises(ValueError):
+            self.validator.adata.obsm["X_umap"] = three_row_array
+            self.validator.validate_adata()
+
 
 class TestAddingLabels(unittest.TestCase):
     """
@@ -1300,32 +1506,22 @@ class TestAddingLabels(unittest.TestCase):
         cls.adata_with_labels = examples.adata_with_labels
 
         # Validate test data
-        validator = Validator()
-        validator.adata = examples.adata.copy()
-        validator.validate_adata()
+        cls.validator = Validator()
+        cls.validator.adata = examples.adata.copy()
+        cls.validator.validate_adata()
 
         # Add labels through validator
-        cls.label_writer = AnnDataLabelAppender(validator)
+        cls.label_writer = AnnDataLabelAppender(cls.validator)
         cls.label_writer._add_labels()
 
     def test_var_added_labels(self):
         """
         When a dataset is uploaded, cellxgene Data Portal MUST automatically add the matching human-readable
         name for the corresponding feature identifier and the inferred NCBITaxon term for the reference organism
-        to the var dataframe. Curators MUST NOT annotate the following columns:
-
-            - feature_name. this MUST be a human-readable ENSEMBL gene name or a ERCC Spike-In identifier
-            appended with " spike-in control", corresponding to the feature_id
-            - feature_reference. This MUST be the reference organism for a feature:
-                Homo sapiens	"NCBITaxon:9606"
-                Mus musculus	"NCBITaxon:10090"
-                SARS-CoV-2	"NCBITaxon:2697049"
-                ERCC Spike-Ins	"NCBITaxon:32630"
-            - feature_biotype. This MUST be "gene" if the feature_id is an ENSEMBL gene, or "spike-in" if the feature_id
-            is an ERCC Spike-In identifier.
+        to the var dataframe. Curators MUST NOT annotate the columns below:
         """
-
-        for column in ["feature_name", "feature_reference", "feature_biotype"]:
+        for i in self.validator.schema_def["components"]["var"]["index"]["add_labels"]:
+            column = i["to_column"]
             expected_column = self.adata_with_labels.var[column]
             obtained_column = self.label_writer.adata.var[column]
 
