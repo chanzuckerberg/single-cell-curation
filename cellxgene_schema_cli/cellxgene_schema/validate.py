@@ -581,9 +581,8 @@ class Validator:
 
         for key, value_def in dict_def["keys"].items():
             logger.debug(f"Validating uns dict for key: {key}")
-            if key not in dictionary:
-                if "required" in value_def:
-                    self.errors.append(f"'{key}' in '{dict_name}' is not present.")
+            if key not in dictionary and "required" in value_def:
+                self.errors.append(f"'{key}' in '{dict_name}' is not present.")
 
             if re.match(r"__", key):  # re.match matches strictly from beginning of str
                 self.errors.append(f"The key '{key}' in '{dict_name}' is not valid; keys must not have a '__' prefix.")
@@ -683,8 +682,10 @@ class Validator:
         # Validate user-provided column names
         for column in df.columns:
             if re.match(r"__", column):  # re.match matches strictly from beginning of str
-                self.errors.append(f"The column '{column}' in dataframe '{df_name}' is not valid; columns must not "
-                                   f"have a '__' prefix.")
+                self.errors.append(
+                    f"The column '{column}' in dataframe '{df_name}' is not valid; columns must not "
+                    f"have a '__' prefix."
+                )
 
     def _validate_sparsity(self):
         """
