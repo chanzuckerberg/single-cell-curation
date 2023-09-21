@@ -766,8 +766,8 @@ class Validator:
 
         if self.adata.raw and self.adata.raw.X.shape[1] != self.adata.raw.var.shape[0]:
             self.errors.append(
-                "This dataset has a mismatch between 1) the number of variables in the raw matrix and 2) the number of "
-                "raw var key-indexed variables. These counts must be identical."
+                "This dataset has a mismatch between 1) the number of features in raw.X and 2) the number of features "
+                "in raw.var. These counts must be identical."
             )
             self.is_seurat_convertible = False
 
