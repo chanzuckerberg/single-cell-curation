@@ -98,7 +98,7 @@ def getattr_anndata(adata: ad.AnnData, attr: str = None):
         return getattr(adata, attr)
 
 
-def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
+def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike], to_memory=False) -> ad.AnnData:
     """
     Reads h5ad into adata
     :params Union[str, bytes, os.PathLike] h5ad_path: path to h5ad to read
@@ -115,6 +115,8 @@ def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
             (adata.raw is not None) and (get_matrix_format(adata, adata.raw.X) == "csc")
         ):
             logger.warning("Matrices are in CSC format; loading entire dataset into memory.")
+            adata = adata.to_memory()
+        elif to_memory:
             adata = adata.to_memory()
 
     except (OSError, TypeError):

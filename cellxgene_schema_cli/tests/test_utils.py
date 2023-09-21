@@ -4,10 +4,11 @@ from anndata import AnnData
 from cellxgene_schema.utils import (
     enforce_canonical_format,
     map_ontology_term,
+    read_h5ad,
     remove_deprecated_features,
     replace_ontology_term,
 )
-from fixtures.examples_validate import adata, adata_non_raw
+from fixtures.examples_validate import adata, adata_non_raw, h5ad_valid
 from scipy.sparse import coo_matrix
 
 
@@ -107,3 +108,18 @@ class TestEnforceCanonical:
     def test_adata_with_canonical_X(self, adata_without_raw):
         enforce_canonical_format(adata)
         assert adata_without_raw.X.has_canonical_format is True
+
+
+class TestReadH5AD:
+    def test_read_h5ad(self):
+        h5ad_path = h5ad_valid
+        adata = read_h5ad(h5ad_path)
+        assert isinstance(adata, AnnData)
+        assert adata.isbacked
+
+    def test_read_h5ad_to_memory(self):
+        # Provide a valid h5ad path or a valid object resembling a path
+        h5ad_path = h5ad_valid
+        adata = read_h5ad(h5ad_path, to_memory=True)
+        assert isinstance(adata, AnnData)
+        assert not adata.isbacked
