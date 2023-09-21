@@ -115,6 +115,5 @@ class TestGetHashDigestColumn:
     def test_get_hash_digest_column(self, adata_with_raw):
         hash_digest_column = get_hash_digest_column(adata_with_raw.obs)
         assert isinstance(hash_digest_column, Series)
-        for val in hash_digest_column:
-            assert isinstance(val, str)
-            assert len(val) == 10  # 5 ASCII chars / 4 bytes, each ID is 8 bytes
+        assert hash_digest_column["X"] == "ab6yl9v%fZ"
+        assert hash_digest_column["Y"] == "f-dZLjjiRl"
