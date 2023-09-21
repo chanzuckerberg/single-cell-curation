@@ -111,7 +111,7 @@ class TestEnforceCanonical:
         enforce_canonical_format(adata)
         assert adata_without_raw.X.has_canonical_format is True
 
- 
+
 class TestGetHashDigestColumn:
     def test_get_hash_digest_column(self, adata_with_raw):
         hash_digest_column = get_hash_digest_column(adata_with_raw.obs)
