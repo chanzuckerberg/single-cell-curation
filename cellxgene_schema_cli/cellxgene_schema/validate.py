@@ -681,13 +681,13 @@ class Validator:
         df = getattr_anndata(self.adata, "obs")
         df_definition = self._get_component_def("obs")
 
-        # Mapping from obs column name to number of unique categorical values
+        # Mapping from obs categorical column names to number of unique categorical values
         category_mapping = {}
 
         if "columns" in df_definition:
             for column_name in df_definition["columns"]:
                 if column_name not in df.columns:
-                    # Skip this, dataframe validation should already append an error for this
+                    # Skip this, dataframe validation should already add an error for this
                     continue
 
                 column = getattr(df, column_name)
@@ -1271,8 +1271,6 @@ class Validator:
         logger.debug("Validating Seurat convertibility...")
         self._validate_seurat_convertibility()
 
-        uns_dict: dict = None
-
         # Checks each component
         for component, component_def in self.schema_def["components"].items():
             logger.debug(f"Validating component: {component}")
@@ -1288,7 +1286,7 @@ class Validator:
                 dictionary = getattr(self.adata, component)
                 self._validate_dict(dictionary, component, component_def)
                 if component == "uns":
-                    uns_dict = dictionary
+                    self._validate_colors_in_uns_dict(dictionary)
             elif component_def["type"] == "embedding_dict":
                 self._validate_embedding_dict()
             else:
@@ -1304,10 +1302,8 @@ class Validator:
                 "fixing current errors."
             )
 
-        # Make sure that {column}_colors exists
-        self._validate_colors_in_uns_dict(uns_dict)
 
-    def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None, to_memory: bool = False) -> bool:
+    def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None) -> bool:
         """
         Validates adata
 
