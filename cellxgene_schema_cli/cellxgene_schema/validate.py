@@ -1,7 +1,6 @@
 import logging
 import math
 import os
-import re
 from datetime import datetime
 from typing import Dict, List, Optional, Union
 
@@ -584,9 +583,6 @@ class Validator:
             if key not in dictionary and "required" in value_def:
                 self.errors.append(f"'{key}' in '{dict_name}' is not present.")
 
-            if re.match(r"__", key):  # re.match matches strictly from beginning of str
-                self.errors.append(f"The key '{key}' in '{dict_name}' is not valid; keys must not have a '__' prefix.")
-
             value = dictionary[key]
 
             if value_def["type"] == "string":
@@ -678,14 +674,6 @@ class Validator:
                     if "warning_message" in column_def:
                         self.warnings.append(column_def["warning_message"])
                     self._validate_column(column, column_name, df_name, column_def)
-
-        # Validate user-provided column names
-        for column in df.columns:
-            if re.match(r"__", column):  # re.match matches strictly from beginning of str
-                self.errors.append(
-                    f"The column '{column}' in dataframe '{df_name}' is not valid; columns must not "
-                    f"have a '__' prefix."
-                )
 
     def _validate_sparsity(self):
         """
