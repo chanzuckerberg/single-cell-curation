@@ -667,22 +667,6 @@ class Validator:
                 column_def = self._get_column_def(df_name, column_name)
                 column = getattr(df, column_name)
 
-                # Validate that {column}_colors exists)
-                colors_column = getattr(df, f"{column_name}_colors")
-                if colors_column.get("type") != "categorical":
-                    self.errors.append(f"Column '{column_name}_colors' must be of type categorical")
-                if len(colors_column.unique()) < len(column.unique()):
-                    self.errors.append(
-                        f"Column '{column_name}' has {len(column.unique)} unique values and {len(colors_column.unique())} "
-                        f"colors present. The number of colors must be equal to or greater than the number of unique values"
-                    )
-                for color in column.unique():
-                    if not self._validate_color(color):
-                        self.errors.append(
-                            f"Color '{color}' in '{column_name}_colors' is not a valid color. Must be either a CSS4 named "
-                            f"color or a 6-digit HEX value, such as aliceblue or #08c0ff."
-                        )
-
                 # First check if there are dependencies with other columns and work with a subset of the data if so
                 if "dependencies" in column_def:
                     column = self._validate_column_dependencies(df, df_name, column_name, column_def["dependencies"])
@@ -692,6 +676,38 @@ class Validator:
                     if "warning_message" in column_def:
                         self.warnings.append(column_def["warning_message"])
                     self._validate_column(column, column_name, df_name, column_def)
+    
+    def _validate_colors_in_uns_dict(self, uns_dict: dict) -> None:
+        df = getattr_anndata(self.adata, "obs")
+        df_definition = self._get_component_def("obs")
+
+        # Mapping from obs column name to number of unique categorical values
+        category_mapping = {}
+
+        if "columns" in df_definition:
+            for column_name in df_definition["columns"]:
+                if column_name not in df.columns:
+                    # Skip this, dataframe validation should already append an error for this
+                    continue
+                
+                column = getattr(df, column_name)
+                if column.get("type") == "categorical":
+                    category_mapping[column_name] = len(column.unique)
+
+        for column_name, num_unique_vals in category_mapping.items():
+            colors_options = uns_dict.get(f"{column}_colors", [])
+            if len(colors_options) != num_unique_vals:
+                self.errors.append(
+                    f"Annotated categorical field {column_name} must have {num_unique_vals} color options "
+                    f"in uns[{column_name}_colors]. Found: {colors_options}"
+                )
+            for color in colors_options:
+                if not self._validate_color(color):
+                    self.errors.append(
+                        f"Color {color} is not valid. Colors must be a valid hex code (#08c0ff) or a CSS4"
+                        f"named color"
+                    )
+
 
     def _validate_color(self, color: str) -> bool:
         css4_named_colors = [
@@ -1256,6 +1272,8 @@ class Validator:
         logger.debug("Validating Seurat convertibility...")
         self._validate_seurat_convertibility()
 
+        uns_dict: dict = None
+
         # Checks each component
         for component, component_def in self.schema_def["components"].items():
             logger.debug(f"Validating component: {component}")
@@ -1270,6 +1288,8 @@ class Validator:
             elif component_def["type"] == "dict":
                 dictionary = getattr(self.adata, component)
                 self._validate_dict(dictionary, component, component_def)
+                if component == "uns":
+                    uns_dict = dictionary
             elif component_def["type"] == "embedding_dict":
                 self._validate_embedding_dict()
             else:
@@ -1284,6 +1304,9 @@ class Validator:
                 "Validation of raw layer was not performed due to current errors, try again after "
                 "fixing current errors."
             )
+        
+        # Make sure that {column}_colors exists
+        self._validate_colors_in_uns_dict(uns_dict)
 
     def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None, to_memory: bool = False) -> bool:
         """
