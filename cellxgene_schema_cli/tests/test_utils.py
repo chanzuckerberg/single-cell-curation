@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pytest
 from anndata import AnnData
 from cellxgene_schema.utils import (
@@ -9,7 +10,6 @@ from cellxgene_schema.utils import (
     replace_ontology_term,
 )
 from fixtures.examples_validate import adata, adata_non_raw
-from pandas import Series
 from scipy.sparse import coo_matrix
 
 
@@ -114,6 +114,5 @@ class TestEnforceCanonical:
 class TestGetHashDigestColumn:
     def test_get_hash_digest_column(self, adata_with_raw):
         hash_digest_column = get_hash_digest_column(adata_with_raw.obs)
-        assert isinstance(hash_digest_column, Series)
-        assert hash_digest_column["X"] == "ab6yl9v%fZ"
-        assert hash_digest_column["Y"] == "f-dZLjjiRl"
+        expected_column = pd.Series(["ab6yl9v%fZ", "f-dZLjjiRl"], index=["X", "Y"])
+        pd.testing.assert_series_equal(hash_digest_column, expected_column)
