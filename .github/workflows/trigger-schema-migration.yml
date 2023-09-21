@@ -1,12 +1,7 @@
 name: Trigger Schema Migration
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - '**/cellxgene_schema_cli/cellxgene_schema/migrate.py'
-      - '**/.github/workflows/trigger-schema-migration.yml'
+  workflow_dispatch
 
 jobs:
   publish-to-pypi:
