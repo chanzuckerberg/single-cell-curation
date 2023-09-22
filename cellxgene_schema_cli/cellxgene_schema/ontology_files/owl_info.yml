@@ -9,7 +9,7 @@ EFO:
 HANCESTRO:
   latest: 3.0
   urls:
-    3.0: https://github.com/obophenotype/uberon/releases/download/v2023-09-05/uberon.owl
+    3.0: https://github.com/EBISPOT/hancestro/raw/3.0/hancestro-base.owl
 HsapDv:
   latest: 2020-03-10
   urls:
