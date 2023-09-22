@@ -1215,7 +1215,7 @@ def validate(
     )
     to_memory = (
         add_labels_file is not None or write_check
-    )  # if we're adding labels or doing a full validation, read to memory
+    )  # if we're adding labels or doing a write_check, then read to memory
     validator.validate_adata(h5ad_path, to_memory=to_memory, write_check=write_check)
     logger.info(f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}")
 

@@ -324,7 +324,7 @@ class TestValidate(unittest.TestCase):
     @mock.patch("cellxgene_schema.validate.read_h5ad", wraps=read_h5ad)
     @mock.patch("cellxgene_schema.validate.Validator.write_check")
     def test__validate_with_write_check_true(self, mock_write_check, mock_read_h5ad):
-        validate(h5ad_valid, full=True)
+        validate(h5ad_valid, write_check=True)
         mock_write_check.assert_called_once()
         mock_read_h5ad.assert_called_with(h5ad_valid, True)
 
