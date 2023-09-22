@@ -1,23 +1,23 @@
 CL:
-  latest: 2023-06-22
+  latest: 2023-08-24
   urls:
-    2023-06-22: https://github.com/obophenotype/cell-ontology/releases/download/v2023-06-22/cl.owl
+    2023-08-24: https://github.com/obophenotype/cell-ontology/releases/download/v2023-08-24/cl.owl
 EFO:
-  latest: 2023-07-17 EFO 3.56.0
+  latest: 2023-08-15 EFO 3.57.0
   urls:
-    2023-07-17 EFO 3.56.0: https://github.com/EBISPOT/efo/releases/download/v3.56.0/efo.owl
+    2023-08-15 EFO 3.57.0: https://github.com/EBISPOT/efo/releases/download/v3.57.0/efo.owl
 HANCESTRO:
-  latest: 2022-07-18 (2.6)
+  latest: 3.0
   urls:
-    2022-07-18 (2.6): https://github.com/EBISPOT/ancestro/raw/2.6/hancestro.owl
+    3.0: https://github.com/EBISPOT/hancestro/blob/3.0/hancestro-base.owl
 HsapDv:
   latest: 2020-03-10
   urls:
     2020-03-10: http://purl.obolibrary.org/obo/hsapdv.owl
 MONDO:
-  latest: 2023-07-03
+  latest: 2023-08-02
   urls:
-    2023-07-03: https://github.com/monarch-initiative/mondo/releases/download/v2023-07-03/mondo.owl
+    2023-08-02: https://github.com/monarch-initiative/mondo/releases/download/v2023-08-02/mondo.owl
 MmusDv:
   latest: 2020-03-10
   urls:
@@ -29,9 +29,9 @@ NCBITaxon:
   children_of:
     - NCBITaxon:33208
 UBERON:
-  latest: 2023-06-28
+  latest: 2023-09-05
   urls:
-    2023-06-28: https://github.com/obophenotype/uberon/releases/download/v2023-06-28/uberon.owl
+    2023-09-05: https://github.com/obophenotype/uberon/releases/download/v2023-09-05/uberon.owl
 PATO:
   latest: 2023-05-18
   urls:
