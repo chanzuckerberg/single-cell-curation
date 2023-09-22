@@ -1120,13 +1120,16 @@ class Validator:
                 "fixing current errors."
             )
 
-    def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None, to_memory: bool = False) -> bool:
+    def validate_adata(
+        self, h5ad_path: Union[str, bytes, os.PathLike] = None, to_memory: bool = False, write_check: bool = False
+    ) -> bool:
         """
         Validates adata
 
         :params Union[str, bytes, os.PathLike] h5ad_path: path to h5ad to validate, if None it will try to validate
         from self.adata
         :param to_memory: indicate if the h5ad should be read into memory.
+        :param write_check: indicate if write_check should be performed.
 
         :return True if successful validation, False otherwise
         :rtype bool
@@ -1148,6 +1151,9 @@ class Validator:
         if not self.errors:
             self._deep_check()
 
+        if write_check:
+            self.write_check()
+
         # Print warnings if any
         if self.warnings:
             self.warnings = ["WARNING: " + i for i in self.warnings]
@@ -1165,12 +1171,25 @@ class Validator:
 
         return self.is_valid
 
+    def write_check(self):
+        """Check that the h5ad can be written back out."""
+        logger.warning("Checking that the h5ad can be written back out. This may take a while.")
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = os.path.join(tmpdir, "validated.h5ad")
+            try:
+                self.adata.write(tmp_path)
+            except Exception as e:
+                self.errors.append(f"Unable to write back to h5ad: {e}")
+
 
 def validate(
     h5ad_path: Union[str, bytes, os.PathLike],
     add_labels_file: str = None,
     ignore_labels: bool = False,
     verbose: bool = False,
+    write_check: bool = False,
 ) -> (bool, list, bool):
     from .write_labels import AnnDataLabelAppender
 
@@ -1194,8 +1213,10 @@ def validate(
     validator = Validator(
         ignore_labels=ignore_labels,
     )
-    to_memory = add_labels_file is not None
-    validator.validate_adata(h5ad_path, to_memory=to_memory)
+    to_memory = (
+        add_labels_file is not None or write_check
+    )  # if we're adding labels or doing a full validation, read to memory
+    validator.validate_adata(h5ad_path, to_memory=to_memory, write_check=write_check)
     logger.info(f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}")
 
     # Stop if validation was unsuccessful
