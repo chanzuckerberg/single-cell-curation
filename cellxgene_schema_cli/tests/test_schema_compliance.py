@@ -2,6 +2,7 @@ import unittest
 
 import fixtures.examples_validate as examples
 import numpy
+import pytest
 import pandas as pd
 from cellxgene_schema.utils import getattr_anndata
 from cellxgene_schema.validate import Validator
@@ -36,6 +37,7 @@ class TestH5adValidation(unittest.TestCase):
         self.h5ad_valid_file = examples.h5ad_valid
         self.h5ad_invalid_file = examples.h5ad_invalid
         self.validator = Validator()
+        self.validator.adata = examples.adata.copy()
 
     def test_validate(self):
         # Valid h5ad
@@ -1356,6 +1358,37 @@ class TestUns(BaseValidationTest):
                 "ERROR: The field 'project_links' is present in 'uns', but it is deprecated.",
                 "ERROR: The field 'project_name' is present in 'uns', but it is deprecated.",
                 "ERROR: The field 'publication_doi' is present in 'uns', but it is deprecated.",
+            ],
+        )
+
+    def test_not_enough_color_options(self):
+        self.validator.adata.uns["suspension_type_colors"] = ["green"]
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Annotated categorical field suspension_type must have 2 color options in uns[suspension_type_colors]. Found: ['green']"
+            ],
+        )
+    
+    def test_too_many_color_options(self):
+        self.validator.adata.uns["suspension_type_colors"] = ["green", "blue", "purple"]
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Annotated categorical field suspension_type must have 2 color options in uns[suspension_type_colors]. Found: ['green', 'blue', 'purple]"
+            ],
+        )
+    
+    def invalid_color_options(self):
+        self.validator.adata.uns["suspension_type_colors"] = ["#000", "pynk"]
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Color #000 in uns[suspension_type_colors] is not valid. Colors must be a valid hex code (#08c0ff) or a CSS4 named color",
+                "ERROR: Color pynk in uns[suspension_type_colors] is not valid. Colors must be a valid hex code (#08c0ff) or a CSS4 named color",
             ],
         )
 

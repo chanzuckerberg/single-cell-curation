@@ -1,6 +1,7 @@
 import logging
 import math
 import os
+import re
 from datetime import datetime
 from typing import Dict, List, Optional, Union
 
@@ -680,22 +681,28 @@ class Validator:
     def _validate_colors_in_uns_dict(self, uns_dict: dict) -> None:
         df = getattr_anndata(self.adata, "obs")
         df_definition = self._get_component_def("obs")
+        print(f"df columns: {df.columns}")
+        print(f"df def: {df_definition}")
+        print(f"uns dict: {uns_dict}")
 
-        # Mapping from obs categorical column names to number of unique categorical values
+        # Mapping from obs column name to number of unique categorical values
         category_mapping = {}
 
         if "columns" in df_definition:
-            for column_name in df_definition["columns"]:
+            for column_name, column_def in df_definition["columns"].items():
                 if column_name not in df.columns:
-                    # Skip this, dataframe validation should already add an error for this
+                    # Skip this, dataframe validation should already append an error for this
                     continue
 
-                column = getattr(df, column_name)
-                if column.get("type") == "categorical":
-                    category_mapping[column_name] = len(column.unique)
+                if column_def.get("type") == "categorical":
+                    column = getattr(df, column_name)
+                    category_mapping[column_name] = df[column_name].nunique()
+                    print(f"category mapping: {category_mapping}")
 
         for column_name, num_unique_vals in category_mapping.items():
-            colors_options = uns_dict.get(f"{column}_colors", [])
+            colors_options = uns_dict.get(f"{column_name}_colors", [])
+            color_column = f"{column}_colors"
+            print(f"column name: {column_name} # unique: {num_unique_vals} colors options: {colors_options}")
             if len(colors_options) != num_unique_vals:
                 self.errors.append(
                     f"Annotated categorical field {column_name} must have {num_unique_vals} color options "
@@ -704,8 +711,8 @@ class Validator:
             for color in colors_options:
                 if not self._validate_color(color):
                     self.errors.append(
-                        f"Color {color} is not valid. Colors must be a valid hex code (#08c0ff) or a CSS4"
-                        f"named color"
+                        f"Color {color} in uns[{column_name}_colors] is not valid. Colors must be a valid hex "
+                        f"code (#08c0ff) or a CSS4 named color"
                     )
 
     def _validate_color(self, color: str) -> bool:
@@ -1302,8 +1309,7 @@ class Validator:
                 "fixing current errors."
             )
 
-
-    def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None) -> bool:
+    def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None, to_memory: bool = False) -> bool:
         """
         Validates adata
 
