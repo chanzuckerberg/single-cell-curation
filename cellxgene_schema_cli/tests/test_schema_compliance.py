@@ -2,7 +2,6 @@ import unittest
 
 import fixtures.examples_validate as examples
 import numpy
-import pytest
 import pandas as pd
 from cellxgene_schema.utils import getattr_anndata
 from cellxgene_schema.validate import Validator
@@ -1370,7 +1369,7 @@ class TestUns(BaseValidationTest):
                 "ERROR: Annotated categorical field suspension_type must have 2 color options in uns[suspension_type_colors]. Found: ['green']"
             ],
         )
-    
+
     def test_too_many_color_options(self):
         self.validator.adata.uns["suspension_type_colors"] = ["green", "blue", "purple"]
         self.validator.validate_adata()
@@ -1380,7 +1379,7 @@ class TestUns(BaseValidationTest):
                 "ERROR: Annotated categorical field suspension_type must have 2 color options in uns[suspension_type_colors]. Found: ['green', 'blue', 'purple]"
             ],
         )
-    
+
     def invalid_color_options(self):
         self.validator.adata.uns["suspension_type_colors"] = ["#000", "pynk"]
         self.validator.validate_adata()

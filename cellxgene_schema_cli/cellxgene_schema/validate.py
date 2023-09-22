@@ -695,13 +695,12 @@ class Validator:
                     continue
 
                 if column_def.get("type") == "categorical":
-                    column = getattr(df, column_name)
+                    getattr(df, column_name)
                     category_mapping[column_name] = df[column_name].nunique()
                     print(f"category mapping: {category_mapping}")
 
         for column_name, num_unique_vals in category_mapping.items():
             colors_options = uns_dict.get(f"{column_name}_colors", [])
-            color_column = f"{column}_colors"
             print(f"column name: {column_name} # unique: {num_unique_vals} colors options: {colors_options}")
             if len(colors_options) != num_unique_vals:
                 self.errors.append(
