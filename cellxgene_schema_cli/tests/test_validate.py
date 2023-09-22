@@ -12,6 +12,7 @@ import pandas as pd
 import pytest
 from cellxgene_schema.ontology import OntologyChecker
 from cellxgene_schema.schema import get_schema_definition
+from cellxgene_schema.utils import read_h5ad
 from cellxgene_schema.validate import Validator, validate
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 from fixtures.examples_validate import (
@@ -28,7 +29,6 @@ from fixtures.examples_validate import (
 from numpy import ndarray
 from scipy import sparse
 from scipy.sparse import spmatrix
-from utils import read_h5ad
 
 # Tests for internal functions of the Validator and LabelWriter classes.
 
