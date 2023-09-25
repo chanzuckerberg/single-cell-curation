@@ -123,6 +123,7 @@ class TestExpressionMatrix(BaseValidationTest):
         self.validator.errors = []
         self.validator.adata.obs["assay_ontology_term_id"] = "EFO:0010891"
         self.validator.adata.obs["suspension_type"] = "nucleus"
+        self.validator.adata.uns["suspension_type_colors"] = ["red"]
         self.validator.adata.obs.loc[:, ["suspension_type"]] = self.validator.adata.obs.astype("category")
         self.validator.validate_adata()
         self.assertEqual(self.validator.errors, [])
@@ -547,6 +548,7 @@ class TestObs(BaseValidationTest):
         suffixes.
         """
         self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "tissue_type"] = "cell culture"
+        self.validator.adata.uns["tissue_type_colors"] = ["red"]
 
         with self.subTest(case="error, suffix in term ID"):
             self.validator.adata.obs.loc[
@@ -699,6 +701,7 @@ class TestObs(BaseValidationTest):
         """
 
         self.validator.adata.obs["donor_id"] = "NA"
+        self.validator.adata.uns["donor_id_colors"] = ["red"]
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -716,6 +719,7 @@ class TestObs(BaseValidationTest):
 
     def test_donor_id_must_not_be_nan(self):
         self.validator.adata.obs["donor_id"][0] = numpy.nan
+        self.validator.adata.uns["donor_id_colors"] = ["red"]
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
@@ -799,6 +803,7 @@ class TestObs(BaseValidationTest):
                     self.validator.adata.obs["suspension_type"] = self.validator.adata.obs[
                         "suspension_type"
                     ].cat.remove_unused_categories()
+                    self.validator.adata.uns["suspension_type_colors"] = ["red"]
                 self.validator.adata.obs.loc[self.validator.adata.obs.index[1], "assay_ontology_term_id"] = assay
                 self.validator.adata.obs.loc[
                     self.validator.adata.obs.index[1], "suspension_type"
@@ -1376,7 +1381,7 @@ class TestUns(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: Annotated categorical field suspension_type must have 2 color options in uns[suspension_type_colors]. Found: ['green', 'blue', 'purple]"
+                "ERROR: Annotated categorical field suspension_type must have 2 color options in uns[suspension_type_colors]. Found: ['green', 'blue', 'purple']"
             ],
         )
 

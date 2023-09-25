@@ -692,7 +692,6 @@ class Validator:
                     continue
 
                 if column_def.get("type") == "categorical":
-                    getattr(df, column_name)
                     category_mapping[column_name] = df[column_name].nunique()
 
         for column_name, num_unique_vals in category_mapping.items():
