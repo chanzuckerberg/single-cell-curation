@@ -696,9 +696,9 @@ class Validator:
 
         for column_name, num_unique_vals in category_mapping.items():
             colors_options = uns_dict.get(f"{column_name}_colors", [])
-            if len(colors_options) != num_unique_vals:
+            if len(colors_options) < num_unique_vals:
                 self.errors.append(
-                    f"Annotated categorical field {column_name} must have {num_unique_vals} color options "
+                    f"Annotated categorical field {column_name} must have at least {num_unique_vals} color options "
                     f"in uns[{column_name}_colors]. Found: {colors_options}"
                 )
             for color in colors_options:
