@@ -33,11 +33,12 @@ def schema_cli():
 @click.option("-i", "--ignore-labels", help="Ignore ontology labels when validating", is_flag=True)
 @click.option("-v", "--verbose", help="When present will set logging level to debug", is_flag=True)
 @click.option(
+    "-w",
     "--write-check",
     help="When present will run write_check on of the data. This check if the dataset "
     "can be written back out with added labels. This is a slower, more memory and "
     "disk intensive operation. It is not recommended to run this on dataset that will "
-    "not fit in memory.",
+    "not fit in memory. This check will no longer be required with anndata 0.10.0.",
     is_flag=True,
 )
 def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose, write_check):

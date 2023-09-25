@@ -395,7 +395,7 @@ class TestValidatorWriteCheck:
 
     def test_success(self):
         validator = Validator()
-        validator.adata = h5ad_valid
+        validator.adata = adata_minimal.copy()
 
         validator.write_check()
         assert len(validator.errors) == 0
