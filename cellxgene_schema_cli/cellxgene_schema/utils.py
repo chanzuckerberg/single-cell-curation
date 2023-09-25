@@ -154,9 +154,10 @@ def get_hash_digest_column(dataframe):
     """
     Get column with hash digest for each row in dataframe.
     """
-
+    df_index = dataframe.index.to_series()
+    assert df_index.is_unique
     return (
-        dataframe.index.to_series()
+        df_index
         .map(xxh3_64_intdigest)
         .astype(np.uint64)
         .apply(lambda v: b85encode(v.to_bytes(8, "big")).decode("ascii"))
