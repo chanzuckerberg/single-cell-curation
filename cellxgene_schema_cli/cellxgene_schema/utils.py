@@ -157,8 +157,7 @@ def get_hash_digest_column(dataframe):
     df_index = dataframe.index.to_series()
     assert df_index.is_unique
     return (
-        df_index
-        .map(xxh3_64_intdigest)
+        df_index.map(xxh3_64_intdigest)
         .astype(np.uint64)
         .apply(lambda v: b85encode(v.to_bytes(8, "big")).decode("ascii"))
     )
