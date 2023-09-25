@@ -36,7 +36,6 @@ class TestH5adValidation(unittest.TestCase):
         self.h5ad_valid_file = examples.h5ad_valid
         self.h5ad_invalid_file = examples.h5ad_invalid
         self.validator = Validator()
-        self.validator.adata = examples.adata.copy()
 
     def test_validate(self):
         # Valid h5ad
