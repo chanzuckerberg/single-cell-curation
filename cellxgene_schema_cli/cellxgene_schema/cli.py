@@ -35,9 +35,8 @@ def schema_cli():
 @click.option(
     "-w",
     "--write-check",
-    help="When present will run write_check on of the data. This check if the dataset "
-    "can be written back out with added labels. This is a slower, more memory and "
-    "disk intensive operation. It is not recommended to run this on dataset that will "
+    help="This checks if the dataset can be written with added labels. This is a slower operation which requires more memory and "
+    "disk space. It is not recommended to run this on dataset that will "
     "not fit in memory. This check will no longer be required with anndata 0.10.0.",
     is_flag=True,
 )

@@ -646,6 +646,7 @@ class Validator:
         for column_name in df.columns:
             column = df[column_name]
             if column.dtype != "category":
+                # Check for columns with mixed values.
                 value_types = {type(x) for x in column.values}
                 if len(value_types) != 1:
                     self.errors.append(
@@ -660,6 +661,7 @@ class Validator:
                                 f"Column '{column_name}' in dataframe '{df_name}' contains a category '{category}' with "
                                 f"zero observations. These categories will be removed when `--add-labels` flag is present."
                             )
+                # Check for columns that have none string catagories
                 catagory_types = {type(x) for x in column.dtype.categories.values}
                 if len(catagory_types) > 1 or str not in catagory_types:
                     self.errors.append(
