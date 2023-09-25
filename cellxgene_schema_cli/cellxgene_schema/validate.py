@@ -643,18 +643,28 @@ class Validator:
                     f"Features SHOULD NOT be filtered from expression matrix."
                 )
 
-        # Check for columns that have a category defined 0 times (obs only)
-        if df_name == "obs":
-            for column in df.columns:
-                col = df[column]
-                if col.dtype != "category":
-                    continue
-                for category in col.dtype.categories:
-                    if category not in col.values:
-                        self.warnings.append(
-                            f"Column '{column}' in dataframe '{df_name}' contains a category '{category}' with "
-                            f"zero observations. These categories will be removed when `--add-labels` flag is present."
-                        )
+        for column_name in df.columns:
+            column = df[column_name]
+            if column.dtype != "category":
+                value_types = {type(x) for x in column.values}
+                if len(value_types) != 1:
+                    self.errors.append(
+                        f"Column '{column_name}' in dataframe '{df_name}' cannot contained mixed types. Found {value_types}."
+                    )
+            else:
+                # Check for columns that have a category defined 0 times (obs only)
+                if df_name == "obs":
+                    for category in column.dtype.categories:
+                        if category not in column.values:
+                            self.warnings.append(
+                                f"Column '{column_name}' in dataframe '{df_name}' contains a category '{category}' with "
+                                f"zero observations. These categories will be removed when `--add-labels` flag is present."
+                            )
+                catagory_types = {type(x) for x in column.dtype.categories.values}
+                if len(catagory_types) > 1 or str not in catagory_types:
+                    self.errors.append(
+                        f"Column '{column_name}' in dataframe '{df_name}' must only contain string catagories. Found {catagory_types}."
+                    )
 
         # Validate columns
         if "columns" in df_definition:

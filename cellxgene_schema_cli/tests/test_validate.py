@@ -16,7 +16,9 @@ from cellxgene_schema.utils import read_h5ad
 from cellxgene_schema.validate import Validator, validate
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 from fixtures.examples_validate import (
-    adata,
+    adata as adata_valid,
+)
+from fixtures.examples_validate import (
     adata_minimal,
     adata_with_labels,
     good_obs,
@@ -99,7 +101,7 @@ class TestFieldValidation(unittest.TestCase):
 class TestAddLabelFunctions(unittest.TestCase):
     def setUp(self):
         # Set up test data
-        self.test_adata = adata.copy()
+        self.test_adata = adata_valid.copy()
         self.test_adata_with_labels = adata_with_labels
         self.schema_def = get_schema_definition()
 
@@ -237,7 +239,7 @@ class TestAddLabelFunctions(unittest.TestCase):
 class TestIgnoreLabelFunctions(unittest.TestCase):
     def setUp(self):
         # Set up test data
-        self.test_adata = adata
+        self.test_adata = adata_valid.copy()
         self.test_adata_with_labels = adata_with_labels
 
     def test_validating_labeled_h5ad_should_fail_if_no_flag_set(self):
@@ -270,7 +272,9 @@ class TestValidate(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
 
-            success, errors, is_seurat_convertible = validate(h5ad_valid, labels_path)
+            success, errors, is_seurat_convertible = validate(
+                "/Users/trentsmith/workspace/single-cell-curation/example_addlabelsFail.h5ad", labels_path
+            )
 
             import anndata as ad
 
@@ -380,6 +384,29 @@ class TestSeuratConvertibility(unittest.TestCase):
         self.assertTrue(len(self.validator.errors) == 1)
         self.assertFalse(self.validator.is_seurat_convertible)
         self.assertFalse(self.validator.is_valid)
+
+
+class TestValidatorValidateDataFrame:
+    def test_fail_catagory_not_string(self):
+        validator = Validator()
+        validator._set_schema_def()
+        adata = adata_valid.copy()
+        t = pd.CategoricalDtype(categories=[True, False])
+        adata.obs["not_string"] = pd.Series(data=[True, False], index=["X", "Y"], dtype=t)
+        validator.adata = adata
+
+        validator._validate_dataframe("obs")
+        assert "must only contain string catagories." in validator.errors[0]
+
+    def test_fail_mixed_column_types(self):
+        validator = Validator()
+        validator._set_schema_def()
+        adata = adata_valid.copy()
+        adata.obs["mixed"] = pd.Series(data=["1234", 0], index=["X", "Y"])
+        validator.adata = adata
+
+        validator._validate_dataframe("obs")
+        assert "cannot contained mixed types." in validator.errors[0]
 
 
 class TestValidatorWriteCheck:
