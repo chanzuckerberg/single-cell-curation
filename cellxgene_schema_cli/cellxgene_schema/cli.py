@@ -35,9 +35,9 @@ def schema_cli():
 @click.option(
     "-w",
     "--write-check",
-    help="This checks if the dataset can be written with added labels. This is a slower operation which requires more memory and "
-    "disk space. It is not recommended to run this on dataset that will "
-    "not fit in memory. This check will no longer be required with anndata 0.10.0.",
+    help="This checks if the dataset can be written with added labels. This is a slower operation which requires more "
+    "memory and disk space. It is not recommended to run this on dataset that will not fit in memory. This check "
+    "will no longer be required with anndata 0.10.0.",
     is_flag=True,
 )
 def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose, write_check):
