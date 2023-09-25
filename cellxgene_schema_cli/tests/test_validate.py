@@ -272,9 +272,7 @@ class TestValidate(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
 
-            success, errors, is_seurat_convertible = validate(
-                "/Users/trentsmith/workspace/single-cell-curation/example_addlabelsFail.h5ad", labels_path
-            )
+            success, errors, is_seurat_convertible = validate(h5ad_valid, labels_path)
 
             import anndata as ad
 
