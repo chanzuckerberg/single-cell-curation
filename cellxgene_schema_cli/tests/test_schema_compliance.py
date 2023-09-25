@@ -1384,7 +1384,7 @@ class TestUns(BaseValidationTest):
             ],
         )
 
-    def invalid_color_options(self):
+    def test_invalid_color_options(self):
         self.validator.adata.uns["suspension_type_colors"] = ["#000", "pynk"]
         self.validator.validate_adata()
         self.assertEqual(
