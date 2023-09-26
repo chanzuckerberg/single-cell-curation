@@ -13,7 +13,7 @@ HANCESTRO:
 HsapDv:
   latest: 2020-03-10
   urls:
-    2020-03-10: http://purl.obolibrary.org/obo/hsapdv.owl
+    2020-03-10: http://aber-owl.net/media/ontologies/HSAPDV/11/hsapdv.owl
 MONDO:
   latest: 2023-08-02
   urls:
@@ -21,7 +21,7 @@ MONDO:
 MmusDv:
   latest: 2020-03-10
   urls:
-    2020-03-10: http://purl.obolibrary.org/obo/mmusdv.owl
+    2020-03-10: http://aber-owl.net/media/ontologies/MMUSDV/9/mmusdv.owl
 NCBITaxon:
   latest: 2023-06-20
   urls:
