@@ -215,15 +215,45 @@ components:
                         rule: "organism_ontology_term_id == 'NCBITaxon:9606'"
                         error_message_suffix: >-
                             When 'organism_ontology_term_id' is 'NCBITaxon:9606' (Homo sapiens),
-                            self_reported_ethnicity_ontology_term_id MUST be either: a term id of 'HANCESTRO',
-                            'multiethnic' if more than one ethnicity is reported, or 'unknown' if unavailable.
+                            self_reported_ethnicity_ontology_term_id MUST be formatted as one
+                            or more comma-separated (with no leading or trailing spaces) HANCESTRO
+                            terms in ascending lexical order, or 'unknown' if unavailable. Cannot
+                            match any forbidden HANCESTRO terms listed in schema definition.
                         type: curie
                         curie_constraints:
                             ontologies:
                                 - HANCESTRO
                             exceptions:
                                 - unknown
-                                - multiethnic
+                            forbidden:
+                                - HANCESTRO:0002
+                                - HANCESTRO:0003
+                                - HANCESTRO:0004
+                                - HANCESTRO:0018
+                                - HANCESTRO:0029
+                                - HANCESTRO:0030
+                                - HANCESTRO:0031
+                                - HANCESTRO:0032
+                                - HANCESTRO:0033
+                                - HANCESTRO:0034
+                                - HANCESTRO:0290
+                                - HANCESTRO:0304
+                                - HANCESTRO:0323
+                                - HANCESTRO:0324
+                                - HANCESTRO:0551
+                                - HANCESTRO:0554
+                                - HANCESTRO:0555
+                                - HANCESTRO:0557
+                                - HANCESTRO:0558
+                                - HANCESTRO:0559
+                                - HANCESTRO:0560
+                                - HANCESTRO:0561
+                                - HANCESTRO:0564
+                                - HANCESTRO:0565
+                                - HANCESTRO:0566
+                            multi_term:
+                                term_delimiter: ","
+                                sorted: True
                 # If organism is not Human
                 error_message_suffix: >-
                     When 'organism_ontology_term_id' is NOT 'NCBITaxon:9606' (Homo sapiens),

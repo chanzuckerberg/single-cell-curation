@@ -182,6 +182,39 @@ class Validator:
                 f"'{term_id}' in '{column_name}' is not a valid ontology term id of '{', '.join(allowed_ontologies)}'."
             )
 
+    def _validate_curie_str(self, term_str: str, column_name, curie_constraints: dict):
+        """
+        Validate a curie str based on some constraints. If there are any errors, it adds them to self.errors
+
+        :param str term_str: the curie term str to validate
+        :param str column_name: Name of the column in the dataframe
+        :param dict curie_constraints: constraints for the curie term to be validated,
+        this part of the schema definition
+
+        :rtype None
+        """
+        # If there are exceptions and this is one then skip to end
+        if "exceptions" in curie_constraints and term_str in curie_constraints["exceptions"]:
+            return
+
+        # If NA is found in allowed ontologies, it means only exceptions should be found. If no exceptions were found
+        # then return error
+        if curie_constraints["ontologies"] == ["NA"]:
+            self.errors.append(f"'{term_str}' in '{column_name}' is not a valid value of '{column_name}'.")
+            return
+
+        # if multi_term is defined, split str into individual ontology terms and validate each
+        if curie_constraints.get("multi_term", None):
+            delimiter = curie_constraints["multi_term"]["term_delimiter"]
+            term_ids = term_str.split(delimiter)
+            if curie_constraints["multi_term"].get("sorted", False) and len(term_ids) > 1:
+                if not all(term_ids[i] <= term_ids[i + 1] for i in range(len(term_ids) - 1)):
+                    self.errors.append(f"'{term_str}' in '{column_name}' is not in ascending lexical order.")
+            for term_id in term_ids:
+                self._validate_curie(term_id, column_name, curie_constraints)
+        else:
+            self._validate_curie(term_str, column_name, curie_constraints)
+
     def _validate_curie(self, term_id: str, column_name: str, curie_constraints: dict):
         """
         Validate a single curie term id based on some constraints.
@@ -195,19 +228,9 @@ class Validator:
         :rtype None
         """
 
-        # If there are exceptions and this is one then skip to end
-        if "exceptions" in curie_constraints and term_id in curie_constraints["exceptions"]:
-            return
-
         # If there are forbidden terms
         if "forbidden" in curie_constraints and term_id in curie_constraints["forbidden"]:
             self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
-            return
-
-        # If NA is found in allowed ontologies, it means only exceptions should be found. If no exceptions were found
-        # then return error
-        if curie_constraints["ontologies"] == ["NA"]:
-            self.errors.append(f"'{term_id}' in '{column_name}' is not a valid value of '{column_name}'.")
             return
 
         # Check that term id belongs to allowed ontologies
@@ -406,8 +429,8 @@ class Validator:
                 return
 
             if "curie_constraints" in column_def:
-                for term_id in column.drop_duplicates():
-                    self._validate_curie(term_id, column_name, column_def["curie_constraints"])
+                for term_str in column.drop_duplicates():
+                    self._validate_curie_str(term_str, column_name, column_def["curie_constraints"])
 
         # Add error suffix to errors found here
         if "error_message_suffix" in column_def:

@@ -449,16 +449,13 @@ class TestObs(BaseValidationTest):
             ],
         )
 
-    def test_self_reported_ethnicity_ontology_term_id(self):
+    def test_self_reported_ethnicity_ontology_term_id__single_term(self):
         """
-        self_reported_ethnicity_ontology_term_id categorical with str categories.
-        If organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens,
-        this MUST be either a HANCESTRO term, "multiethnic", or "unknown" if unavailable.
-        Otherwise, for all other organisms this MUST be "na".
+        self_reported_ethnicity_ontology_term_id categorical with str categories. Tests invalid scenarios involving
+        single term values (no comma-delimited list)
         """
 
-        # If organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens,
-        # this MUST be either a HANCESTRO term, "multiethnic", or "unknown" if unavailable.
+        # Test condition if organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens
         self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:9606"
         self.validator.adata.obs.loc[
             self.validator.adata.obs.index[0],
@@ -469,9 +466,11 @@ class TestObs(BaseValidationTest):
             self.validator.errors,
             [
                 "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is "
-                "not a valid ontology term id of 'HANCESTRO'. When 'organism_ontology_term_id' is 'NCBITaxon:9606' "
-                "(Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be either: a term id of 'HANCESTRO', "
-                "'multiethnic' if more than one ethnicity is reported, or 'unknown' if unavailable."
+                "not a valid ontology term id of 'HANCESTRO'. When 'organism_ontology_term_id' "
+                "is 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST "
+                "be formatted as one or more comma-separated (with no leading or trailing spaces) "
+                "HANCESTRO terms in ascending lexical order, or 'unknown' if unavailable. Cannot "
+                "match any forbidden HANCESTRO terms listed in schema definition."
             ],
         )
 
@@ -496,6 +495,42 @@ class TestObs(BaseValidationTest):
                 "'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be 'na'."
             ],
         )
+
+    def test_self_reported_ethnicity_ontology_term_id__multi_term(self):
+        """
+        self_reported_ethnicity_ontology_term_id categorical with str categories. Tests invalid scenarios involving
+        multiple delimited terms in a single str
+        """
+        # TODO: Test 'unknown' among list of otherwise valid ontology terms
+        self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:9606"
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "HANCESTRO:"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is "
+                "not a valid ontology term id of 'HANCESTRO'. When 'organism_ontology_term_id' "
+                "is 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST "
+                "be formatted as one or more comma-separated (with no leading or trailing spaces) "
+                "HANCESTRO terms in ascending lexical order, or 'unknown' if unavailable. Cannot "
+                "match any forbidden HANCESTRO terms listed in schema definition."
+            ],
+        )
+
+        # TODO: Test valid term list but not in ascending lexical order
+        # TODO: Test invalid delimiters (i.e. extra whitespace)
+        # TODO: Test two invalid terms among otherwise valid terms (prints two statements)
+
+    def test_self_reported_ethnicity_ontology_term_id__forbidden_terms(self):
+        """
+        self_reported_ethnicity_ontology_term_id categorical with str categories. Tests invalid scenarios involving
+        forbidden terms
+        """
+        # TODO: forbidden term on its own
+        # TODO: forbidden terms in multi-term str
 
     def test_organism_ontology_term_id(self):
         """
