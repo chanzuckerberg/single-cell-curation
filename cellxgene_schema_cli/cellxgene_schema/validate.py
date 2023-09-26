@@ -2,7 +2,7 @@ import logging
 import math
 import os
 from datetime import datetime
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Mapping, Optional, Union
 
 import anndata
 import numpy as np
@@ -771,7 +771,7 @@ class Validator:
             )
             self.is_seurat_convertible = False
 
-    def _validate_embedding_dict(self):
+    def _validate_obsm(self):
         """
         Validates the embedding dictionary -- it checks that all values of adata.obsm are numpy arrays with the correct
         dimension. Adds errors to self.errors if any. Checks that the keys start with "X_"
@@ -823,6 +823,14 @@ class Validator:
 
         if obsm_with_x_prefix == 0:
             self.errors.append("At least one embedding in 'obsm' has to have a key with an 'X_' prefix.")
+
+    def _validate_annotation_mapping(self, component_name: str, component: Mapping):
+        for key, value in component.items():
+            # Check for empty ndarrays
+            if isinstance(value, np.ndarray) and not value.size:
+                self.errors.append(
+                    f"The size of the ndarray stored for a 'adata.{component_name}['{key}']' MUST NOT be zero."
+                )
 
     def _are_children_of(self, component: str, column: str, ontology_name: str, ancestors: List[str]) -> bool:
         """
@@ -1092,23 +1100,28 @@ class Validator:
         self._validate_seurat_convertibility()
 
         # Checks each component
-        for component, component_def in self.schema_def["components"].items():
-            logger.debug(f"Validating component: {component}")
-            # Skip if component does not exist: only useful for adata.raw.var
-            if getattr_anndata(self.adata, component) is None:
-                if "required" in component_def:
-                    self.errors.append(f"'{component}' is missing from adata and it's required.")
-                continue
+        for component_name, component_def in self.schema_def["components"].items():
+            logger.debug(f"Validating component: {component_name}")
+            component = getattr_anndata(self.adata, component_name)
 
-            if component_def["type"] == "dataframe":
-                self._validate_dataframe(component)
+            # Skip if component does not exist: only useful for adata.raw.var
+            if component is None:
+                # Check for required components
+                if "required" in component_def:
+                    pass
+                continue
+            elif component_def["type"] == "dataframe":
+                self._validate_dataframe(component_name)
             elif component_def["type"] == "dict":
-                dictionary = getattr(self.adata, component)
-                self._validate_dict(dictionary, component, component_def)
-            elif component_def["type"] == "embedding_dict":
-                self._validate_embedding_dict()
+                self._validate_dict(component, component_name, component_def)
+            elif component_def["type"] == "annotation_mapping":
+                self._validate_annotation_mapping(component_name, component)
             else:
-                raise ValueError(f"Unexpected component type '{component['type']}'")
+                raise ValueError(f"Unexpected component type '{component_def['type']}'")
+
+            if component_name == "obsm":
+                self._validate_obsm()
+
         # Checks for raw only if there are no errors, because it depends on the
         # existence of adata.obs["assay_ontology_term_id"]
         if not self.errors and "raw" in self.schema_def:
