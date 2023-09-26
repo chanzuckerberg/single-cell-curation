@@ -199,6 +199,14 @@ class TestAddLabelFunctions(unittest.TestCase):
         expected_dict = dict(zip(ids, labels))
         self.assertEqual(self.writer._get_mapping_dict_curie(ids, curie_constraints), expected_dict)
 
+        ids = ["HANCESTRO:0005", "HANCESTRO:0014", "HANCESTRO:0005,HANCESTRO:0014", "unknown"]
+        labels = ["European", "Hispanic or Latin American", "European,Hispanic or Latin American", "unknown"]
+        curie_constraints = self.schema_def["components"]["obs"]["columns"]["self_reported_ethnicity_ontology_term_id"][
+            "dependencies"
+        ][0]["curie_constraints"]
+        expected_dict = dict(zip(ids, labels))
+        self.assertEqual(self.writer._get_mapping_dict_curie(ids, curie_constraints), expected_dict)
+
         # Bad
         curie_constraints = self.schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"][
             "curie_constraints"

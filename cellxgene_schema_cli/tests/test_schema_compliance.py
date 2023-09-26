@@ -627,7 +627,7 @@ class TestObs(BaseValidationTest):
                 "is 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST "
                 "be formatted as one or more comma-separated (with no leading or trailing spaces) "
                 "HANCESTRO terms in ascending lexical order, or 'unknown' if unavailable. Cannot "
-                "match any forbidden HANCESTRO terms listed in schema definition."
+                "match any forbidden HANCESTRO terms listed in schema definition.",
             ],
         )
 
