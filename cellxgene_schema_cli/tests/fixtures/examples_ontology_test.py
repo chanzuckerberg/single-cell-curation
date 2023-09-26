@@ -37,7 +37,7 @@ valid_terms = {
     },
     "MONDO": {"MONDO:0100096": "COVID-19"},
     "MmusDv": {
-        "MmusDv:0000062": "2-month-old stage",
+        "MmusDv:0000062": "2 month-old stage",
         "MmusDv:0000003": "Theiler stage 01",
     },
     "NCBITaxon": {
