@@ -1296,7 +1296,7 @@ class Validator:
                 self._validate_dataframe(component_name)
             elif component_def["type"] == "dict":
                 self._validate_dict(component, component_name, component_def)
-                if component == "uns":
+                if component_name == "uns":
                     self._validate_colors_in_uns_dict(component)
             elif component_def["type"] == "annotation_mapping":
                 self._validate_annotation_mapping(component_name, component)
