@@ -662,11 +662,11 @@ class Validator:
                                 f"Column '{column_name}' in dataframe '{df_name}' contains a category '{category}' with "
                                 f"zero observations. These categories will be removed when `--add-labels` flag is present."
                             )
-                # Check for columns that have none string catagories
-                catagory_types = {type(x) for x in column.dtype.categories.values}
-                if len(catagory_types) > 1 or str not in catagory_types:
+                # Check for columns that have none string categories
+                category_types = {type(x) for x in column.dtype.categories.values}
+                if len(category_types) > 1 or str not in category_types:
                     self.errors.append(
-                        f"Column '{column_name}' in dataframe '{df_name}' must only contain string catagories. Found {catagory_types}."
+                        f"Column '{column_name}' in dataframe '{df_name}' must only contain string categories. Found {category_types}."
                     )
 
         # Validate columns

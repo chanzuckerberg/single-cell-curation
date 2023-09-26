@@ -385,7 +385,7 @@ class TestSeuratConvertibility(unittest.TestCase):
 
 
 class TestValidatorValidateDataFrame:
-    def test_fail_catagory_not_string(self):
+    def test_fail_category_not_string(self):
         validator = Validator()
         validator._set_schema_def()
         adata = adata_valid.copy()
@@ -394,7 +394,7 @@ class TestValidatorValidateDataFrame:
         validator.adata = adata
 
         validator._validate_dataframe("obs")
-        assert "must only contain string catagories." in validator.errors[0]
+        assert "must only contain string categories." in validator.errors[0]
 
     def test_fail_mixed_column_types(self):
         validator = Validator()
