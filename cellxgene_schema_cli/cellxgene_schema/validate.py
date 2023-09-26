@@ -696,17 +696,19 @@ class Validator:
 
         for column_name, num_unique_vals in category_mapping.items():
             colors_options = uns_dict.get(f"{column_name}_colors", [])
-            if len(colors_options) < num_unique_vals:
-                self.errors.append(
-                    f"Annotated categorical field {column_name} must have at least {num_unique_vals} color options "
-                    f"in uns[{column_name}_colors]. Found: {colors_options}"
-                )
-            for color in colors_options:
-                if not self._validate_color(color):
+            # If there are no colors specified, that's fine. We only want to validate this field if it's set
+            if len(colors_options) > 0:
+                if len(colors_options) < num_unique_vals:
                     self.errors.append(
-                        f"Color {color} in uns[{column_name}_colors] is not valid. Colors must be a valid hex "
-                        f"code (#08c0ff) or a CSS4 named color"
+                        f"Annotated categorical field {column_name} must have at least {num_unique_vals} color options "
+                        f"in uns[{column_name}_colors]. Found: {colors_options}"
                     )
+                for color in colors_options:
+                    if not self._validate_color(color):
+                        self.errors.append(
+                            f"Color {color} in uns[{column_name}_colors] is not valid. Colors must be a valid hex "
+                            f"code (#08c0ff) or a CSS4 named color"
+                        )
 
     def _validate_color(self, color: str) -> bool:
         css4_named_colors = [
