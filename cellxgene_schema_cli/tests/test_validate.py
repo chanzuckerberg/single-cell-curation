@@ -404,7 +404,9 @@ class TestValidatorValidateDataFrame:
         validator.adata = adata
 
         validator._validate_dataframe("obs")
-        assert "cannot contained mixed types." in validator.errors[0]
+        assert [
+            "Column 'mixed' in dataframe 'obs' cannot contain mixed types. Found {<class 'int'>, " "<class 'str'>}."
+        ] == validator.errors
 
 
 class TestValidatorWriteCheck:
