@@ -1359,7 +1359,7 @@ class TestUns(BaseValidationTest):
                 "ERROR: The field 'publication_doi' is present in 'uns', but it is deprecated.",
             ],
         )
-    
+
     def test_no_colors_should_pass(self):
         del self.validator.adata.uns["suspension_type_colors"]
         self.assertTrue(self.validator.validate_adata())
