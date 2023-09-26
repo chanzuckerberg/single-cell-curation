@@ -651,7 +651,7 @@ class Validator:
                 value_types = {type(x) for x in column.values}
                 if len(value_types) != 1:
                     self.errors.append(
-                        f"Column '{column_name}' in dataframe '{df_name}' cannot contained mixed types. Found {value_types}."
+                        f"Column '{column_name}' in dataframe '{df_name}' cannot contain mixed types. Found {value_types}."
                     )
             else:
                 # Check for columns that have a category defined 0 times (obs only)
