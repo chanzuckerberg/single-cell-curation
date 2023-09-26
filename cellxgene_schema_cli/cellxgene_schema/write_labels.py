@@ -110,10 +110,13 @@ class AnnDataLabelAppender:
 
     def _get_ontology_term_label(self, term_id: str, allowed_ontologies: List[str]) -> str:
         """
-        TODO:
-        :param term_id:
-        :param allowed_ontoogies:
-        :return: str
+        Fetches human-readable label corresponding to a single ontology term_id, if it is a term_id defined in one of the
+         allowed_ontologies. Raises ValueError if no ontology term label is found (should've triggered validation
+         error if term_id is not valid).
+
+        :param term_id: str single ontology term ID
+        :param allowed_ontologies: List[str] list of onotlogies to check for term_id label in
+        :return: str term label
         """
         for ontology_name in allowed_ontologies:
             if ontology_name == "NA":
