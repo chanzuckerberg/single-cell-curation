@@ -570,4 +570,3 @@ components:
                 enum:
                     - "cell culture"
                     - "organoid"
-                    - "tissue"
