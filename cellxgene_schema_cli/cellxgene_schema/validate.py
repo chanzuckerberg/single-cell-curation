@@ -695,9 +695,9 @@ class Validator:
                     category_mapping[column_name] = df[column_name].nunique()
 
         for column_name, num_unique_vals in category_mapping.items():
-            colors_options = uns_dict.get(f"{column_name}_colors", [])
+            colors_options = uns_dict.get(f"{column_name}_colors")
             # If there are no colors specified, that's fine. We only want to validate this field if it's set
-            if len(colors_options) > 0:
+            if colors_options is not None:
                 if len(colors_options) < num_unique_vals:
                     self.errors.append(
                         f"Annotated categorical field {column_name} must have at least {num_unique_vals} color options "
