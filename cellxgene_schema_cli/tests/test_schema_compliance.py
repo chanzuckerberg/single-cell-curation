@@ -1360,6 +1360,10 @@ class TestUns(BaseValidationTest):
             ],
         )
 
+    def test_no_colors_should_pass(self):
+        del self.validator.adata.uns["suspension_type_colors"]
+        self.assertTrue(self.validator.validate_adata())
+
     def test_not_enough_color_options(self):
         self.validator.adata.uns["suspension_type_colors"] = ["green"]
         self.validator.validate_adata()
