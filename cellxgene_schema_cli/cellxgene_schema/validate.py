@@ -3,7 +3,7 @@ import math
 import os
 import re
 from datetime import datetime
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Mapping, Optional, Union
 
 import anndata
 import numpy as np
@@ -582,7 +582,7 @@ class Validator:
         for key, value_def in dict_def["keys"].items():
             logger.debug(f"Validating uns dict for key: {key}")
             if key not in dictionary:
-                if "required" in value_def:
+                if value_def.get("required", False):
                     self.errors.append(f"'{key}' in '{dict_name}' is not present.")
                 continue
 
@@ -953,7 +953,7 @@ class Validator:
             )
             self.is_seurat_convertible = False
 
-    def _validate_embedding_dict(self):
+    def _validate_obsm(self):
         """
         Validates the embedding dictionary -- it checks that all values of adata.obsm are numpy arrays with the correct
         dimension. Adds errors to self.errors if any. Checks that the keys start with "X_"
@@ -1005,6 +1005,14 @@ class Validator:
 
         if obsm_with_x_prefix == 0:
             self.errors.append("At least one embedding in 'obsm' has to have a key with an 'X_' prefix.")
+
+    def _validate_annotation_mapping(self, component_name: str, component: Mapping):
+        for key, value in component.items():
+            # Check for empty ndarrays
+            if isinstance(value, np.ndarray) and not value.size:
+                self.errors.append(
+                    f"The size of the ndarray stored for a 'adata.{component_name}['{key}']' MUST NOT be zero."
+                )
 
     def _are_children_of(self, component: str, column: str, ontology_name: str, ancestors: List[str]) -> bool:
         """
@@ -1274,25 +1282,29 @@ class Validator:
         self._validate_seurat_convertibility()
 
         # Checks each component
-        for component, component_def in self.schema_def["components"].items():
-            logger.debug(f"Validating component: {component}")
+        for component_name, component_def in self.schema_def["components"].items():
+            logger.debug(f"Validating component: {component_name}")
+            component = getattr_anndata(self.adata, component_name)
+
             # Skip if component does not exist: only useful for adata.raw.var
-            if getattr_anndata(self.adata, component) is None:
-                if "required" in component_def:
+            if component is None:
+                # Check for required components
+                if component_def.get("required", False):
                     self.errors.append(f"'{component}' is missing from adata and it's required.")
                 continue
-
-            if component_def["type"] == "dataframe":
-                self._validate_dataframe(component)
+            elif component_def["type"] == "dataframe":
+                self._validate_dataframe(component_name)
             elif component_def["type"] == "dict":
-                dictionary = getattr(self.adata, component)
-                self._validate_dict(dictionary, component, component_def)
-                if component == "uns":
-                    self._validate_colors_in_uns_dict(dictionary)
-            elif component_def["type"] == "embedding_dict":
-                self._validate_embedding_dict()
+                self._validate_dict(component, component_name, component_def)
+                if component_name == "uns":
+                    self._validate_colors_in_uns_dict(component)
+            elif component_def["type"] == "annotation_mapping":
+                self._validate_annotation_mapping(component_name, component)
+                if component_name == "obsm":
+                    self._validate_obsm()
             else:
-                raise ValueError(f"Unexpected component type '{component['type']}'")
+                raise ValueError(f"Unexpected component type '{component_def['type']}'")
+
         # Checks for raw only if there are no errors, because it depends on the
         # existence of adata.obs["assay_ontology_term_id"]
         if not self.errors and "raw" in self.schema_def:

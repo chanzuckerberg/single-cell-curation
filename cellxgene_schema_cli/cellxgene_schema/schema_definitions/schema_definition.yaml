@@ -15,12 +15,9 @@ raw:
                         - EFO:0000751 # methylation profiling
                         - EFO:0008939 # snmC-seq
 components:
-    obsm:
-        type: embedding_dict
-        required: null # Means it's required
     uns:
         type: dict
-        required: null # Means it's required
+        required: True
         reserved_columns:
             - schema_version
             - schema_reference
@@ -40,7 +37,7 @@ components:
         keys:
             title:
                 type: string
-                required: null
+                required: True
             batch_condition:
                 type: list
                 element_type: match_obs_columns
@@ -53,7 +50,7 @@ components:
                     - normal
     var:
         type: dataframe
-        required: null # Means it's required
+        required: True
         warn_if_less_than_rows: 20000
         index:
             unique: true
@@ -75,6 +72,15 @@ components:
         columns:
             feature_is_filtered:
                 type: feature_is_filtered
+    varm:
+        type: annotation_mapping
+    varp:
+        type: annotation_mapping
+    obsm:
+        type: annotation_mapping
+        required: True
+    obsp:
+        type: annotation_mapping
     raw.var:
         type: dataframe
         forbidden_columns: # These columns must not be present in the dataframe
@@ -97,7 +103,7 @@ components:
                     to_column: feature_length
     obs:
         type: dataframe
-        required: null # Means it's required
+        required: True
         index:
             unique: true
         deprecated_columns:

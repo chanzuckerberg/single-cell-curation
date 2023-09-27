@@ -1,5 +1,7 @@
+import tempfile
 import unittest
 
+import anndata
 import fixtures.examples_validate as examples
 import numpy
 import pandas as pd
@@ -54,6 +56,16 @@ class BaseValidationTest(unittest.TestCase):
 
         # lower threshold for low gene count warning
         self.validator.schema_def["components"]["var"]["warn_if_less_than_rows"] = 1
+
+    def save_and_read_adata(self, adata: anndata.AnnData) -> anndata.AnnData:
+        """
+        Saves adata to a temporary file and reads it back. Used to test read/write errors.
+        :param adata: AnnData object
+        :return: AnnData object
+        """
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            return anndata.read(f.name)
 
 
 class TestExpressionMatrix(BaseValidationTest):
@@ -1518,6 +1530,64 @@ class TestObsm(BaseValidationTest):
         with self.assertRaises(ValueError):
             self.validator.adata.obsm["X_umap"] = three_row_array
             self.validator.validate_adata()
+
+    def test_obsm_size_zero(self):
+        """
+        size of obsm an key cannot be zero.
+        """
+        adata = self.validator.adata
+        adata.obsm["badsize"] = numpy.empty((2, 0))
+        self.validator.adata = self.save_and_read_adata(adata)
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: The size of the ndarray stored for a 'adata.obsm['badsize']' MUST NOT be zero."],
+        )
+
+
+class TestObsp(BaseValidationTest):
+    def test_obsp_size_zero(self):
+        """
+        size of obsp an key cannot be zero.
+        """
+        adata = self.validator.adata
+        adata.obsp["badsize"] = numpy.empty((2, 2, 0))
+        self.validator.adata = self.save_and_read_adata(adata)
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: The size of the ndarray stored for a 'adata.obsp['badsize']' MUST NOT be zero."],
+        )
+
+
+class TestVarm(BaseValidationTest):
+    def test_varm_size_zero(self):
+        """
+        size of varm an key cannot be zero.
+        """
+        adata = self.validator.adata
+        adata.varm["badsize"] = numpy.empty((4, 0))
+        self.validator.adata = self.save_and_read_adata(adata)
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: The size of the ndarray stored for a 'adata.varm['badsize']' MUST NOT be zero."],
+        )
+
+
+class TestVarp(BaseValidationTest):
+    def test_varp_size_zero(self):
+        """
+        size of varp an key cannot be zero.
+        """
+        adata = self.validator.adata
+        adata.varp["badsize"] = numpy.empty((4, 4, 0))
+        self.validator.adata = self.save_and_read_adata(adata)
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: The size of the ndarray stored for a 'adata.varp['badsize']' MUST NOT be zero."],
+        )
 
 
 class TestAddingLabels(unittest.TestCase):
