@@ -467,9 +467,9 @@ class TestObs(BaseValidationTest):
         """
         Test 'unknown' self_reported_ethnicity_ontology_term is invalid when used in multi-term comma-delimited str
         """
-        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"]["self_reported_ethnicity_ontology_term_id"][
-            "dependencies"
-        ][0]["error_message_suffix"]
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
 
         self.validator.adata.obs.loc[
             self.validator.adata.obs.index[0],
@@ -491,9 +491,9 @@ class TestObs(BaseValidationTest):
         """
         Test self_reported_ethnicity_ontology_term error message when passed a valid term from an invalid ontology
         """
-        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"]["self_reported_ethnicity_ontology_term_id"][
-            "dependencies"
-        ][0]["error_message_suffix"]
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
         self.validator.adata.obs.loc[
             self.validator.adata.obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
@@ -515,9 +515,9 @@ class TestObs(BaseValidationTest):
         Test self_reported_ethnicity_ontology_term error message when passed an explicitly forbidden ontology term that
         is otherwise valid
         """
-        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"]["self_reported_ethnicity_ontology_term_id"][
-            "dependencies"
-        ][0]["error_message_suffix"]
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
 
         self.validator.adata.obs.loc[
             self.validator.adata.obs.index[0],
@@ -539,9 +539,9 @@ class TestObs(BaseValidationTest):
         Test error message for self_reported_ethnicity_ontology_term_id involving a forbidden term among an otherwise
         valid comma-delimited str of multiple terms
         """
-        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"]["self_reported_ethnicity_ontology_term_id"][
-            "dependencies"
-        ][0]["error_message_suffix"]
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
 
         self.validator.adata.obs.loc[
             self.validator.adata.obs.index[0],
@@ -562,9 +562,9 @@ class TestObs(BaseValidationTest):
         """
         Test self_reported_ethnicity_ontology_term error message if term is not 'na' for a non-human organism
         """
-        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"]["self_reported_ethnicity_ontology_term_id"][
-            "error_message_suffix"
-        ]
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["error_message_suffix"]
         # Mouse organism ID
         self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:10090"
         # Required to set to avoid development_stage_ontology_term_id errors
@@ -592,9 +592,9 @@ class TestObs(BaseValidationTest):
         Test error message for self_reported_ethnicity_ontology_term_id with valid comma-delimited terms in a str,
          but NOT in ascending lexical order
         """
-        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"]["self_reported_ethnicity_ontology_term_id"][
-            "dependencies"
-        ][0]["error_message_suffix"]
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
 
         self.validator.adata.obs.loc[
             self.validator.adata.obs.index[0],
@@ -617,9 +617,9 @@ class TestObs(BaseValidationTest):
         Test error message for self_reported_ethnicity_ontology_term_id involving
         delimiters that are not specified in the schema definition yaml, such as whitespace
         """
-        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"]["self_reported_ethnicity_ontology_term_id"][
-            "dependencies"
-        ][0]["error_message_suffix"]
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
 
         self.validator.adata.obs.loc[
             self.validator.adata.obs.index[0],
@@ -642,9 +642,9 @@ class TestObs(BaseValidationTest):
         Test that multiple distinct error messages are reported for self_reported_ethnicity_ontology_term_id with
         multiple different error types in a comma-delimited multi term str
         """
-        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"]["self_reported_ethnicity_ontology_term_id"][
-            "dependencies"
-        ][0]["error_message_suffix"]
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
 
         self.validator.adata.obs.loc[
             self.validator.adata.obs.index[0],
