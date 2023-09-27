@@ -174,6 +174,9 @@ good_uns = {
 good_uns_with_labels = {
     "schema_version": "4.0.0",
     "schema_reference": "https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.0.0/schema.md",
+    "citation": "Publication: <doi> Dataset Version: "
+    "https://datasets.cellxgene.cziscience.com/<dataset_version_id>.h5ad curated and distributed by CZ "
+    "CELLxGENE Discover in Collection: https://cellxgene.cziscience.com/collections/<collection_id>",
     "title": "A title",
     "default_embedding": "X_umap",
     "X_approximate_distribution": "normal",
