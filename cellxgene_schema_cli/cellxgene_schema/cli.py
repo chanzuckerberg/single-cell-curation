@@ -32,15 +32,7 @@ def schema_cli():
 )
 @click.option("-i", "--ignore-labels", help="Ignore ontology labels when validating", is_flag=True)
 @click.option("-v", "--verbose", help="When present will set logging level to debug", is_flag=True)
-@click.option(
-    "-w",
-    "--write-check",
-    help="This checks if the dataset can be written with added labels. This is a slower operation which requires more "
-    "memory and disk space. It is not recommended to run this on dataset that will not fit in memory. This check "
-    "will no longer be required with anndata 0.10.0.",
-    is_flag=True,
-)
-def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose, write_check):
+def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose):
     # Imports are very slow so we defer loading until Click arg validation has passed
 
     print("Loading dependencies")
@@ -52,9 +44,7 @@ def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose, write_ch
     print("Loading validator modules")
     from .validate import validate
 
-    is_valid, _, _ = validate(
-        h5ad_file, add_labels_file, ignore_labels=ignore_labels, verbose=verbose, write_check=write_check
-    )
+    is_valid, _, _ = validate(h5ad_file, add_labels_file, ignore_labels=ignore_labels, verbose=verbose)
     if is_valid:
         sys.exit(0)
     else:

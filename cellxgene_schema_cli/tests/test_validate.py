@@ -12,7 +12,6 @@ import pandas as pd
 import pytest
 from cellxgene_schema.ontology import OntologyChecker
 from cellxgene_schema.schema import get_schema_definition
-from cellxgene_schema.utils import read_h5ad
 from cellxgene_schema.validate import Validator, validate
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 from fixtures.examples_validate import (
@@ -316,20 +315,6 @@ class TestValidate(unittest.TestCase):
         self.assertTrue(errors)
         self.assertTrue(is_seurat_convertible)
 
-    @mock.patch("cellxgene_schema.validate.read_h5ad", wraps=read_h5ad)
-    @mock.patch("cellxgene_schema.validate.Validator.write_check")
-    def test__validate_with_write_check_false(self, mock_write_check, mock_read_h5ad):
-        validate(h5ad_valid)
-        mock_write_check.assert_not_called()
-        mock_read_h5ad.assert_called_with(h5ad_valid, False)
-
-    @mock.patch("cellxgene_schema.validate.read_h5ad", wraps=read_h5ad)
-    @mock.patch("cellxgene_schema.validate.Validator.write_check")
-    def test__validate_with_write_check_true(self, mock_write_check, mock_read_h5ad):
-        validate(h5ad_valid, write_check=True)
-        mock_write_check.assert_called_once()
-        mock_read_h5ad.assert_called_with(h5ad_valid, True)
-
 
 class TestSeuratConvertibility(unittest.TestCase):
     def validation_helper(self, matrix, raw=None):
@@ -405,25 +390,6 @@ class TestValidatorValidateDataFrame:
 
         validator._validate_dataframe("obs")
         assert "Column 'mixed' in dataframe 'obs' cannot contain mixed types." in validator.errors[0]
-
-
-class TestValidatorWriteCheck:
-    def test_fail(self):
-        validator = Validator()
-        X = np.array([[0, 1, 0], [0, 1, 0], [0, 1, 0]])
-        obs = pd.DataFrame([["red", 1, 0.22222], ["blue", 0, np.nan], ["orange", 1, 0.1]])
-        adata = anndata.AnnData(X=X, obs=obs)
-        validator.adata = adata
-
-        validator.write_check()
-        assert "Unable to write back to h5ad" in validator.errors[0]
-
-    def test_success(self):
-        validator = Validator()
-        validator.adata = adata_minimal.copy()
-
-        validator.write_check()
-        assert len(validator.errors) == 0
 
 
 class TestIsRaw:
