@@ -150,9 +150,7 @@ class AnnDataLabelAppender:
                 continue
 
             if delimiter is not None:
-                labels = [
-                    self._get_ontology_term_label(term, allowed_ontologies) for term in term_id.split(delimiter)
-                ]
+                labels = [self._get_ontology_term_label(term, allowed_ontologies) for term in term_id.split(delimiter)]
                 mapping_dict[term_id] = delimiter.join(labels)
             else:
                 mapping_dict[term_id] = self._get_ontology_term_label(term_id, allowed_ontologies)

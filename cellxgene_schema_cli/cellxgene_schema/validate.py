@@ -209,9 +209,12 @@ class Validator:
             term_ids = term_str.split(delimiter)
             for term_id in term_ids:
                 self._validate_curie(term_id, column_name, curie_constraints)
-            if curie_constraints["multi_term"].get("sorted", False) and len(term_ids) > 1:
-                if not all(term_ids[i].strip() <= term_ids[i + 1].strip() for i in range(len(term_ids) - 1)):
-                    self.errors.append(f"'{term_str}' in '{column_name}' is not in ascending lexical order.")
+            if (
+                curie_constraints["multi_term"].get("sorted", False)
+                and len(term_ids) > 1
+                and not all(term_ids[i].strip() <= term_ids[i + 1].strip() for i in range(len(term_ids) - 1))
+            ):
+                self.errors.append(f"'{term_str}' in '{column_name}' is not in ascending lexical order.")
         else:
             self._validate_curie(term_str, column_name, curie_constraints)
 
