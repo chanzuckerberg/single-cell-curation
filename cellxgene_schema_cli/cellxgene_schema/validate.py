@@ -111,6 +111,33 @@ class Validator:
             all_allowed = list(terms.values())
             self.errors.append(f"'{term_id}' in '{column_name}' is not an allowed term: '{all_allowed}'.")
 
+    def _has_forbidden_curie_ancestor(
+        self, term_id: str, column_name: str, forbidden_def: Dict[str, List[str]], inclusive: bool
+    ) -> bool:
+        """
+        Validate if a single curie term id is a child term of any forbidden ancestors.
+        If there is a forbidden ancestor detected, it adds it to self.errors.
+
+        :param str term_id: the curie term id to validate
+        :param str column_name: original column name in adata where the term_id comes from (used for error messages)
+        :param Dict[str, List[str] forbidden_def: mapping of ontologies to list of ancestor terms to validate against
+        :param bool inclusive:  if True then the ancestors themselves are allowed
+
+        :returns bool
+        """
+        for ontology in forbidden_def:
+            for ancestor in forbidden_def[ontology]:
+                if inclusive and term_id == ancestor:
+                    self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
+                    return True
+                elif ONTOLOGY_CHECKER.is_descendent_of(ontology, term_id, ancestor):
+                    self.errors.append(
+                        f"'{term_id}' in '{column_name}' is not allowed. Child terms of "
+                        f"'{ancestor}' are not allowed."
+                    )
+                    return True
+        return False
+
     def _validate_curie_ancestors(
         self,
         term_id: str,
@@ -156,7 +183,7 @@ class Validator:
             return False
         return True
 
-    def _validate_curie_ontology(self, term_id: str, column_name: str, allowed_ontologies: List[str]):
+    def _validate_curie_ontology(self, term_id: str, column_name: str, allowed_ontologies: List[str]) -> bool:
         """
         Validate a single curie term id belongs to specified ontologies. If it does belong to an allowed ontology
         verifies that it is not deprecated (obsolete).
@@ -166,7 +193,7 @@ class Validator:
         :param str column_name: original column name in adata where the term_id comes from (used for error messages)
         :param List[str] allowed_ontologies: allowed ontologies
 
-        :rtype None
+        :rtype bool
         """
 
         checks = []
@@ -177,11 +204,14 @@ class Validator:
 
             if is_valid and ONTOLOGY_CHECKER.is_term_id_deprecated(ontology_name, term_id):
                 self.errors.append(f"'{term_id}' in '{column_name}' is a deprecated term id of '{ontology_name}'.")
+                return False
 
         if sum(checks) == 0:
             self.errors.append(
                 f"'{term_id}' in '{column_name}' is not a valid ontology term id of '{', '.join(allowed_ontologies)}'."
             )
+            return False
+        return True
 
     def _validate_curie_str(self, term_str: str, column_name, curie_constraints: dict):
         """
@@ -203,6 +233,12 @@ class Validator:
             self.errors.append(f"'{term_str}' in '{column_name}' is not a valid value of '{column_name}'.")
             return
 
+        if not isinstance(term_str, str):
+            self.errors.append(
+                f"'{term_str}' in '{column_name}' is not a valid ontology term value, " f"it must be a string."
+            )
+            return
+
         # if multi_term is defined, split str into individual ontology terms and validate each
         if "multi_term" in curie_constraints:
             delimiter = curie_constraints["multi_term"]["delimiter"]
@@ -215,6 +251,8 @@ class Validator:
                 and not all(term_ids[i].strip() <= term_ids[i + 1].strip() for i in range(len(term_ids) - 1))
             ):
                 self.errors.append(f"'{term_str}' in '{column_name}' is not in ascending lexical order.")
+            if len(set(term_ids)) != len(term_ids):
+                self.errors.append(f"'{term_str}' in '{column_name}' contains duplicates.")
         else:
             self._validate_curie(term_str, column_name, curie_constraints)
 
@@ -230,20 +268,30 @@ class Validator:
 
         :rtype None
         """
-
-        # If there are forbidden terms
-        if "forbidden" in curie_constraints and term_id in curie_constraints["forbidden"]:
-            self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
-            return
-
         # Check that term id belongs to allowed ontologies
-        self._validate_curie_ontology(term_id, column_name, curie_constraints["ontologies"])
+        is_valid_term = self._validate_curie_ontology(term_id, column_name, curie_constraints["ontologies"])
 
         # If the term id does not belong to an allowed ontology, the subsequent checks are redundant
-        if self.errors:
+        if not is_valid_term:
             return
 
-        # If there are specified ancestors then make sure that this id is a valid child
+        # Check if term_id is forbidden by schema definition despite being a valid ontology term
+        if "forbidden" in curie_constraints:
+            if "terms" in curie_constraints["forbidden"] and term_id in curie_constraints["forbidden"]["terms"]:
+                self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
+                return
+            if "ancestors" in curie_constraints["forbidden"]:
+                if self._has_forbidden_curie_ancestor(
+                    term_id, column_name, curie_constraints["forbidden"]["ancestors"], False
+                ):
+                    return
+            if "ancestors_inclusive" in curie_constraints["forbidden"]:
+                if self._has_forbidden_curie_ancestor(
+                    term_id, column_name, curie_constraints["forbidden"]["ancestors_inclusive"], True
+                ):
+                    return
+
+        # If there are specified valid ancestors then make sure that this id is a valid child
         if "ancestors" in curie_constraints:
             self._validate_curie_ancestors(term_id, column_name, curie_constraints["ancestors"], False)
 

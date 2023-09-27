@@ -111,9 +111,10 @@ components:
                     ontologies:
                         - CL
                     forbidden:
-                        - CL:0000255
-                        - CL:0000257
-                        - CL:0000548
+                        terms:
+                            - CL:0000255
+                            - CL:0000257
+                            - CL:0000548
                 add_labels:
                     -
                         type: curie
@@ -200,9 +201,10 @@ components:
                             ontologies:
                                 - CL
                             forbidden:
-                                - CL:0000255
-                                - CL:0000257
-                                - CL:0000548
+                                terms:
+                                    - CL:0000255
+                                    - CL:0000257
+                                    - CL:0000548
                 add_labels:
                     -
                         type: curie
@@ -226,31 +228,34 @@ components:
                             exceptions:
                                 - unknown
                             forbidden:
-                                - HANCESTRO:0002
-                                - HANCESTRO:0003
-                                - HANCESTRO:0004
-                                - HANCESTRO:0018
-                                - HANCESTRO:0029
-                                - HANCESTRO:0030
-                                - HANCESTRO:0031
-                                - HANCESTRO:0032
-                                - HANCESTRO:0033
-                                - HANCESTRO:0034
-                                - HANCESTRO:0290
-                                - HANCESTRO:0304
-                                - HANCESTRO:0323
-                                - HANCESTRO:0324
-                                - HANCESTRO:0551
-                                - HANCESTRO:0554
-                                - HANCESTRO:0555
-                                - HANCESTRO:0557
-                                - HANCESTRO:0558
-                                - HANCESTRO:0559
-                                - HANCESTRO:0560
-                                - HANCESTRO:0561
-                                - HANCESTRO:0564
-                                - HANCESTRO:0565
-                                - HANCESTRO:0566
+                                terms:
+                                    - HANCESTRO:0003
+                                    - HANCESTRO:0004
+                                    - HANCESTRO:0018
+                                    - HANCESTRO:0029
+                                    - HANCESTRO:0030
+                                    - HANCESTRO:0031
+                                    - HANCESTRO:0032
+                                    - HANCESTRO:0033
+                                    - HANCESTRO:0034
+                                    - HANCESTRO:0290
+                                    - HANCESTRO:0323
+                                    - HANCESTRO:0324
+                                    - HANCESTRO:0551
+                                    - HANCESTRO:0554
+                                    - HANCESTRO:0555
+                                    - HANCESTRO:0557
+                                    - HANCESTRO:0558
+                                    - HANCESTRO:0559
+                                    - HANCESTRO:0560
+                                    - HANCESTRO:0561
+                                    - HANCESTRO:0564
+                                    - HANCESTRO:0565
+                                    - HANCESTRO:0566
+                                ancestors_inclusive:    # these terms AND their children are forbidden
+                                    HANCESTRO:
+                                        - HANCESTRO:0002
+                                        - HANCESTRO:0304
                             multi_term:
                                 delimiter: ","
                                 sorted: True
@@ -308,7 +313,8 @@ components:
                     exceptions:
                         - unknown
                     forbidden:
-                        - UBERON:0000071
+                        terms:
+                            - UBERON:0000071
                 add_labels:
                     -
                         type: curie
