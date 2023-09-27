@@ -582,7 +582,7 @@ class Validator:
         for key, value_def in dict_def["keys"].items():
             logger.debug(f"Validating uns dict for key: {key}")
             if key not in dictionary:
-                if "required" in value_def:
+                if value_def.get("required", False):
                     self.errors.append(f"'{key}' in '{dict_name}' is not present.")
                 continue
 
@@ -1289,7 +1289,7 @@ class Validator:
             # Skip if component does not exist: only useful for adata.raw.var
             if component is None:
                 # Check for required components
-                if "required" in component_def:
+                if component_def.get("required", False):
                     pass
                 continue
             elif component_def["type"] == "dataframe":
