@@ -112,7 +112,7 @@ class Validator:
             self.errors.append(f"'{term_id}' in '{column_name}' is not an allowed term: '{all_allowed}'.")
 
     def _has_forbidden_curie_ancestor(
-        self, term_id: str, column_name: str, forbidden_def: Dict[str, List[str]], inclusive: bool
+            self, term_id: str, column_name: str, forbidden_def: Dict[str, List[str]], inclusive: bool
     ) -> bool:
         """
         Validate if a single curie term id is a child term of any forbidden ancestors.
@@ -139,12 +139,12 @@ class Validator:
         return False
 
     def _validate_curie_ancestors(
-        self,
-        term_id: str,
-        column_name: str,
-        allowed_ancestors: Dict[str, List[str]],
-        inclusive: bool,
-        errors=True,
+            self,
+            term_id: str,
+            column_name: str,
+            allowed_ancestors: Dict[str, List[str]],
+            inclusive: bool,
+            errors=True,
     ):
         """
         Validate a single curie term id is a valid children of any of allowed ancestors
@@ -246,9 +246,9 @@ class Validator:
             for term_id in term_ids:
                 self._validate_curie(term_id, column_name, curie_constraints)
             if (
-                curie_constraints["multi_term"].get("sorted", False)
-                and len(term_ids) > 1
-                and not all(term_ids[i].strip() <= term_ids[i + 1].strip() for i in range(len(term_ids) - 1))
+                    curie_constraints["multi_term"].get("sorted", False)
+                    and len(term_ids) > 1
+                    and not all(term_ids[i].strip() <= term_ids[i + 1].strip() for i in range(len(term_ids) - 1))
             ):
                 self.errors.append(f"'{term_str}' in '{column_name}' is not in ascending lexical order.")
             if len(set(term_ids)) != len(term_ids):
@@ -280,16 +280,14 @@ class Validator:
             if "terms" in curie_constraints["forbidden"] and term_id in curie_constraints["forbidden"]["terms"]:
                 self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
                 return
-            if "ancestors" in curie_constraints["forbidden"]:
-                if self._has_forbidden_curie_ancestor(
+            if "ancestors" in curie_constraints["forbidden"] and self._has_forbidden_curie_ancestor(
                     term_id, column_name, curie_constraints["forbidden"]["ancestors"], False
-                ):
-                    return
-            if "ancestors_inclusive" in curie_constraints["forbidden"]:
-                if self._has_forbidden_curie_ancestor(
+            ):
+                return
+            if "ancestors_inclusive" in curie_constraints["forbidden"] and self._has_forbidden_curie_ancestor(
                     term_id, column_name, curie_constraints["forbidden"]["ancestors_inclusive"], True
-                ):
-                    return
+            ):
+                return
 
         # If there are specified valid ancestors then make sure that this id is a valid child
         if "ancestors" in curie_constraints:
@@ -334,8 +332,8 @@ class Validator:
 
     @staticmethod
     def _chunk_matrix(
-        matrix: Union[np.ndarray, sparse.spmatrix],
-        obs_chunk_size: Optional[int] = 10_000,
+            matrix: Union[np.ndarray, sparse.spmatrix],
+            obs_chunk_size: Optional[int] = 10_000,
     ):
         """
         Iterator which chunks the _named_ or _specified_ matrix by the
@@ -350,7 +348,7 @@ class Validator:
         start = 0
         n = matrix.shape[0]
         for i in range(int(n // obs_chunk_size)):
-            logger.debug(f"_chunk_matrix [{i} of {math.ceil(n/obs_chunk_size)}]")
+            logger.debug(f"_chunk_matrix [{i} of {math.ceil(n / obs_chunk_size)}]")
             end = start + obs_chunk_size
             yield (matrix[start:end], start, end)
             start = end
@@ -490,7 +488,7 @@ class Validator:
                 self.errors[i] = self.errors[i] + " " + column_def["error_message_suffix"]
 
     def _validate_column_dependencies(
-        self, df: pd.DataFrame, df_name: str, column_name: str, dependencies: List[dict]
+            self, df: pd.DataFrame, df_name: str, column_name: str, dependencies: List[dict]
     ) -> pd.Series:
         """
         Validates subset of columns based on dependecies, for instance development_stage_ontology_term_id has
@@ -559,10 +557,10 @@ class Validator:
             ancestor_list.append(val)
 
         def is_ancestor_match(
-            term_id: str,
-            ontologies: List[str],
-            ancestors: List[str],
-            ancestor_inclusive: bool,
+                term_id: str,
+                ontologies: List[str],
+                ancestors: List[str],
+                ancestor_inclusive: bool,
         ) -> bool:
             allowed_ancestors = dict(zip(ontologies, ancestors))
             return validate_curie_ancestors_vectorized(term_id, "", allowed_ancestors, ancestor_inclusive, False)
@@ -1424,10 +1422,10 @@ class Validator:
 
 
 def validate(
-    h5ad_path: Union[str, bytes, os.PathLike],
-    add_labels_file: str = None,
-    ignore_labels: bool = False,
-    verbose: bool = False,
+        h5ad_path: Union[str, bytes, os.PathLike],
+        add_labels_file: str = None,
+        ignore_labels: bool = False,
+        verbose: bool = False,
 ) -> (bool, list, bool):
     from .write_labels import AnnDataLabelAppender
 
