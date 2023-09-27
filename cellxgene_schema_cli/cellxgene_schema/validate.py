@@ -644,18 +644,32 @@ class Validator:
                     f"Features SHOULD NOT be filtered from expression matrix."
                 )
 
-        # Check for columns that have a category defined 0 times (obs only)
-        if df_name == "obs":
-            for column in df.columns:
-                col = df[column]
-                if col.dtype != "category":
-                    continue
-                for category in col.dtype.categories:
-                    if category not in col.values:
-                        self.warnings.append(
-                            f"Column '{column}' in dataframe '{df_name}' contains a category '{category}' with "
-                            f"zero observations. These categories will be removed when `--add-labels` flag is present."
-                        )
+        for column_name in df.columns:
+            column = df[column_name]
+            if column.dtype != "category":
+                # Check for columns with mixed values, which is not supported by anndata 0.8.0
+                # TODO: check if this can be removed after upgading to anndata 0.10.0
+                value_types = {type(x) for x in column.values}
+                if len(value_types) != 1:
+                    self.errors.append(
+                        f"Column '{column_name}' in dataframe '{df_name}' cannot contain mixed types. Found {value_types}."
+                    )
+            else:
+                # Check for columns that have a category defined 0 times (obs only)
+                if df_name == "obs":
+                    for category in column.dtype.categories:
+                        if category not in column.values:
+                            self.warnings.append(
+                                f"Column '{column_name}' in dataframe '{df_name}' contains a category '{category}' with "
+                                f"zero observations. These categories will be removed when `--add-labels` flag is present."
+                            )
+                # Check for columns that have none string categories, which is not supported by anndata 0.8.0
+                # TODO: check if this can be removed after upgading to anndata 0.10.0
+                category_types = {type(x) for x in column.dtype.categories.values}
+                if len(category_types) > 1 or str not in category_types:
+                    self.errors.append(
+                        f"Column '{column_name}' in dataframe '{df_name}' must only contain string categories. Found {category_types}."
+                    )
 
         # Validate columns
         if "columns" in df_definition:
