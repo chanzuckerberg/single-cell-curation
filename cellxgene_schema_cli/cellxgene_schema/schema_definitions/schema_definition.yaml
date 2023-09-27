@@ -252,7 +252,7 @@ components:
                                 - HANCESTRO:0565
                                 - HANCESTRO:0566
                             multi_term:
-                                term_delimiter: ","
+                                delimiter: ","
                                 sorted: True
                 # If organism is not Human
                 error_message_suffix: >-

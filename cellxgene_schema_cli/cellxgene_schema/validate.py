@@ -194,7 +194,6 @@ class Validator:
 
         :rtype None
         """
-        # If there are exceptions and this is one then skip to end
         if "exceptions" in curie_constraints and term_str in curie_constraints["exceptions"]:
             return
 
@@ -205,8 +204,8 @@ class Validator:
             return
 
         # if multi_term is defined, split str into individual ontology terms and validate each
-        if curie_constraints.get("multi_term", None):
-            delimiter = curie_constraints["multi_term"]["term_delimiter"]
+        if "multi_term" in curie_constraints:
+            delimiter = curie_constraints["multi_term"]["delimiter"]
             term_ids = term_str.split(delimiter)
             for term_id in term_ids:
                 self._validate_curie(term_id, column_name, curie_constraints)
