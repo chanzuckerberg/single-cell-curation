@@ -125,12 +125,12 @@ class Validator:
 
         :returns bool
         """
-        for ontology in forbidden_def:
-            for ancestor in forbidden_def[ontology]:
+        for ontology_name in forbidden_def:
+            for ancestor in forbidden_def[ontology_name]:
                 if inclusive and term_id == ancestor:
                     self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
                     return True
-                elif ONTOLOGY_CHECKER.is_descendent_of(ontology, term_id, ancestor):
+                elif ONTOLOGY_CHECKER.is_descendent_of(ontology_name, term_id, ancestor):
                     self.errors.append(
                         f"'{term_id}' in '{column_name}' is not allowed. Child terms of "
                         f"'{ancestor}' are not allowed."
