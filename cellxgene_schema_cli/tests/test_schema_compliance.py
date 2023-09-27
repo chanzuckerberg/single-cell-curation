@@ -680,6 +680,7 @@ class TestObs(BaseValidationTest):
         suffixes.
         """
         self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "tissue_type"] = "cell culture"
+        self.validator.adata.uns["tissue_type_colors"] = ["red"]
 
         with self.subTest(case="error, suffix in term ID"):
             self.validator.adata.obs.loc[
@@ -1490,6 +1491,31 @@ class TestUns(BaseValidationTest):
                 "ERROR: The field 'project_links' is present in 'uns', but it is deprecated.",
                 "ERROR: The field 'project_name' is present in 'uns', but it is deprecated.",
                 "ERROR: The field 'publication_doi' is present in 'uns', but it is deprecated.",
+            ],
+        )
+
+    def test_no_colors_should_pass(self):
+        del self.validator.adata.uns["suspension_type_colors"]
+        self.assertTrue(self.validator.validate_adata())
+
+    def test_not_enough_color_options(self):
+        self.validator.adata.uns["suspension_type_colors"] = ["green"]
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns[suspension_type_colors]. Found: ['green']"
+            ],
+        )
+
+    def test_invalid_color_options(self):
+        self.validator.adata.uns["suspension_type_colors"] = ["#000", "pynk"]
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Color #000 in uns[suspension_type_colors] is not valid. Colors must be a valid hex code (#08c0ff) or a CSS4 named color",
+                "ERROR: Color pynk in uns[suspension_type_colors] is not valid. Colors must be a valid hex code (#08c0ff) or a CSS4 named color",
             ],
         )
 

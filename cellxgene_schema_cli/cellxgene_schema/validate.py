@@ -1,6 +1,7 @@
 import logging
 import math
 import os
+import re
 from datetime import datetime
 from typing import Dict, List, Optional, Union
 
@@ -700,6 +701,187 @@ class Validator:
                         self.warnings.append(column_def["warning_message"])
                     self._validate_column(column, column_name, df_name, column_def)
 
+    def _validate_colors_in_uns_dict(self, uns_dict: dict) -> None:
+        df = getattr_anndata(self.adata, "obs")
+        df_definition = self._get_component_def("obs")
+
+        # Mapping from obs column name to number of unique categorical values
+        category_mapping = {}
+
+        if "columns" in df_definition:
+            for column_name, column_def in df_definition["columns"].items():
+                if column_name not in df.columns:
+                    # Skip this, dataframe validation should already append an error for this
+                    continue
+
+                if column_def.get("type") == "categorical":
+                    category_mapping[column_name] = df[column_name].nunique()
+
+        for column_name, num_unique_vals in category_mapping.items():
+            colors_options = uns_dict.get(f"{column_name}_colors")
+            # If there are no colors specified, that's fine. We only want to validate this field if it's set
+            if colors_options is not None:
+                if len(colors_options) < num_unique_vals:
+                    self.errors.append(
+                        f"Annotated categorical field {column_name} must have at least {num_unique_vals} color options "
+                        f"in uns[{column_name}_colors]. Found: {colors_options}"
+                    )
+                for color in colors_options:
+                    if not self._validate_color(color):
+                        self.errors.append(
+                            f"Color {color} in uns[{column_name}_colors] is not valid. Colors must be a valid hex "
+                            f"code (#08c0ff) or a CSS4 named color"
+                        )
+
+    def _validate_color(self, color: str) -> bool:
+        css4_named_colors = [
+            "aliceblue",
+            "antiquewhite",
+            "aqua",
+            "aquamarine",
+            "azure",
+            "beige",
+            "bisque",
+            "black",
+            "blanchedalmond",
+            "blue",
+            "blueviolet",
+            "brown",
+            "burlywood",
+            "cadetblue",
+            "chartreuse",
+            "chocolate",
+            "coral",
+            "cornflowerblue",
+            "cornsilk",
+            "crimson",
+            "cyan",
+            "darkblue",
+            "darkcyan",
+            "darkgoldenrod",
+            "darkgray",
+            "darkgreen",
+            "darkkhaki",
+            "darkmagenta",
+            "darkolivegreen",
+            "darkorange",
+            "darkorchid",
+            "darkred",
+            "darksalmon",
+            "darkseagreen",
+            "darkslateblue",
+            "darkslategray",
+            "darkturquoise",
+            "darkviolet",
+            "deeppink",
+            "deepskyblue",
+            "dimgray",
+            "dodgerblue",
+            "firebrick",
+            "floralwhite",
+            "forestgreen",
+            "fuchsia",
+            "gainsboro",
+            "ghostwhite",
+            "gold",
+            "goldenrod",
+            "gray",
+            "green",
+            "greenyellow",
+            "grey",
+            "honeydew",
+            "hotpink",
+            "indianred",
+            "indigo",
+            "ivory",
+            "khaki",
+            "lavender",
+            "lavenderblush",
+            "lawngreen",
+            "lemonchiffon",
+            "lightblue",
+            "lightcoral",
+            "lightcyan",
+            "lightgoldenrodyellow",
+            "lightgray",
+            "lightgreen",
+            "lightpink",
+            "lightsalmon",
+            "lightseagreen",
+            "lightskyblue",
+            "lightslategray",
+            "lightsteelblue",
+            "lightyellow",
+            "lime",
+            "limegreen",
+            "linen",
+            "magenta",
+            "maroon",
+            "mediumaquamarine",
+            "mediumblue",
+            "mediumorchid",
+            "mediumpurple",
+            "mediumseagreen",
+            "mediumslateblue",
+            "mediumspringgreen",
+            "mediumturquoise",
+            "mediumvioletred",
+            "midnightblue",
+            "mintcream",
+            "mistyrose",
+            "moccasin",
+            "navajowhite",
+            "navy",
+            "oldlace",
+            "olive",
+            "olivedrab",
+            "orange",
+            "orangered",
+            "orchid",
+            "palegoldenrod",
+            "palegreen",
+            "paleturquoise",
+            "palevioletred",
+            "papayawhip",
+            "peachpuff",
+            "peru",
+            "pink",
+            "plum",
+            "powderblue",
+            "purple",
+            "rebeccapurple",
+            "red",
+            "rosybrown",
+            "royalblue",
+            "saddlebrown",
+            "salmon",
+            "sandybrown",
+            "seagreen",
+            "seashell",
+            "sienna",
+            "silver",
+            "skyblue",
+            "slateblue",
+            "slategray",
+            "snow",
+            "springgreen",
+            "steelblue",
+            "tan",
+            "teal",
+            "thistle",
+            "tomato",
+            "turquoise",
+            "violet",
+            "wheat",
+            "white",
+            "whitesmoke",
+            "yellow",
+            "yellowgreen",
+        ]
+        if color in css4_named_colors:
+            return True
+        return re.match(r"^#([0-9a-fA-F]{6})$", color)
+
     def _validate_sparsity(self):
         """
         calculates sparsity of x and raw.x, if bigger than indicated in the schema and not a scipy sparse matrix, then
@@ -1128,6 +1310,8 @@ class Validator:
             elif component_def["type"] == "dict":
                 dictionary = getattr(self.adata, component)
                 self._validate_dict(dictionary, component, component_def)
+                if component == "uns":
+                    self._validate_colors_in_uns_dict(dictionary)
             elif component_def["type"] == "embedding_dict":
                 self._validate_embedding_dict()
             else:
