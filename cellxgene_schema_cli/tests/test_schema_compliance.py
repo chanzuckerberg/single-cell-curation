@@ -7,7 +7,6 @@ from cellxgene_schema.utils import getattr_anndata
 from cellxgene_schema.validate import Validator
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 
-
 # Tests for schema compliance of an AnnData object
 
 
@@ -450,6 +449,16 @@ class TestObs(BaseValidationTest):
             ],
         )
 
+    def get_format_error_message(self, detail: str) -> str:
+        error_message_suffix = (
+            "When 'organism_ontology_term_id' is 'NCBITaxon:9606' (Homo sapiens), "
+            "self_reported_ethnicity_ontology_term_id MUST be formatted as one "
+            "or more comma-separated (with no leading or trailing spaces) HANCESTRO "
+            "terms in ascending lexical order, or 'unknown' if unavailable. Cannot "
+            "match any forbidden HANCESTRO terms listed in schema definition."
+        )
+        return detail + " " + error_message_suffix
+
     def test_self_reported_ethnicity_ontology_term_id__single_term(self):
         """
         self_reported_ethnicity_ontology_term_id categorical with str categories. Tests invalid scenarios involving
@@ -475,12 +484,9 @@ class TestObs(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is "
-                "not a valid ontology term id of 'HANCESTRO'. When 'organism_ontology_term_id' "
-                "is 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST "
-                "be formatted as one or more comma-separated (with no leading or trailing spaces) "
-                "HANCESTRO terms in ascending lexical order, or 'unknown' if unavailable. Cannot "
-                "match any forbidden HANCESTRO terms listed in schema definition."
+                self.get_format_error_message(
+                    "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id of 'HANCESTRO'."
+                )
             ],
         )
 
@@ -494,12 +500,9 @@ class TestObs(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'HANCESTRO:0002' in 'self_reported_ethnicity_ontology_term_id' is "
-                "not allowed. When 'organism_ontology_term_id' "
-                "is 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST "
-                "be formatted as one or more comma-separated (with no leading or trailing spaces) "
-                "HANCESTRO terms in ascending lexical order, or 'unknown' if unavailable. Cannot "
-                "match any forbidden HANCESTRO terms listed in schema definition."
+                self.get_format_error_message(
+                    "ERROR: 'HANCESTRO:0002' in 'self_reported_ethnicity_ontology_term_id' is not allowed."
+                )
             ],
         )
 
@@ -540,12 +543,9 @@ class TestObs(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'unknown' in 'self_reported_ethnicity_ontology_term_id' is "
-                "not a valid ontology term id of 'HANCESTRO'. When 'organism_ontology_term_id' "
-                "is 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST "
-                "be formatted as one or more comma-separated (with no leading or trailing spaces) "
-                "HANCESTRO terms in ascending lexical order, or 'unknown' if unavailable. Cannot "
-                "match any forbidden HANCESTRO terms listed in schema definition."
+                self.get_format_error_message(
+                    "ERROR: 'unknown' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id of 'HANCESTRO'."
+                )
             ],
         )
 
@@ -559,12 +559,9 @@ class TestObs(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'HANCESTRO:0014,HANCESTRO:0005' in 'self_reported_ethnicity_ontology_term_id' is "
-                "not in ascending lexical order. When 'organism_ontology_term_id' "
-                "is 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST "
-                "be formatted as one or more comma-separated (with no leading or trailing spaces) "
-                "HANCESTRO terms in ascending lexical order, or 'unknown' if unavailable. Cannot "
-                "match any forbidden HANCESTRO terms listed in schema definition."
+                self.get_format_error_message(
+                    "ERROR: 'HANCESTRO:0014,HANCESTRO:0005' in 'self_reported_ethnicity_ontology_term_id' is not in ascending lexical order."
+                )
             ],
         )
 
@@ -578,12 +575,9 @@ class TestObs(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: ' HANCESTRO:0014' in 'self_reported_ethnicity_ontology_term_id' is "
-                "not a valid ontology term id of 'HANCESTRO'. When 'organism_ontology_term_id' "
-                "is 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST "
-                "be formatted as one or more comma-separated (with no leading or trailing spaces) "
-                "HANCESTRO terms in ascending lexical order, or 'unknown' if unavailable. Cannot "
-                "match any forbidden HANCESTRO terms listed in schema definition."
+                self.get_format_error_message(
+                    "ERROR: ' HANCESTRO:0014' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id of 'HANCESTRO'."
+                )
             ],
         )
 
@@ -597,12 +591,9 @@ class TestObs(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'HANCESTRO:0018' in 'self_reported_ethnicity_ontology_term_id' is "
-                "not allowed. When 'organism_ontology_term_id' "
-                "is 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST "
-                "be formatted as one or more comma-separated (with no leading or trailing spaces) "
-                "HANCESTRO terms in ascending lexical order, or 'unknown' if unavailable. Cannot "
-                "match any forbidden HANCESTRO terms listed in schema definition."
+                self.get_format_error_message(
+                    "ERROR: 'HANCESTRO:0018' in 'self_reported_ethnicity_ontology_term_id' is not allowed."
+                )
             ],
         )
 
@@ -616,18 +607,12 @@ class TestObs(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is "
-                "not a valid ontology term id of 'HANCESTRO'. When 'organism_ontology_term_id' "
-                "is 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST "
-                "be formatted as one or more comma-separated (with no leading or trailing spaces) "
-                "HANCESTRO terms in ascending lexical order, or 'unknown' if unavailable. Cannot "
-                "match any forbidden HANCESTRO terms listed in schema definition.",
-                "ERROR: 'HANCESTRO:1' in 'self_reported_ethnicity_ontology_term_id' is "
-                "not a valid ontology term id of 'HANCESTRO'. When 'organism_ontology_term_id' "
-                "is 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST "
-                "be formatted as one or more comma-separated (with no leading or trailing spaces) "
-                "HANCESTRO terms in ascending lexical order, or 'unknown' if unavailable. Cannot "
-                "match any forbidden HANCESTRO terms listed in schema definition.",
+                self.get_format_error_message(
+                    "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id of 'HANCESTRO'."
+                ),
+                self.get_format_error_message(
+                    "ERROR: 'HANCESTRO:1' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id of 'HANCESTRO'."
+                ),
             ],
         )
 
