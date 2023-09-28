@@ -120,14 +120,21 @@ components:
                         type: curie
                         to_column: cell_type
             assay_ontology_term_id:
+                error_message_suffix: >-
+                    Only 'EFO:0002772', 'EFO:0010183', or their children terms are allowed for assay_ontology_term_id
                 type: curie
                 curie_constraints:
                     ontologies:
                         - EFO
-                    ancestors_inclusive: # "_inclusive" means that these terms themselves are allowed
-                        EFO:
-                            - EFO:0002772
-                            - EFO:0010183
+                    allowed:
+                        terms:
+                            EFO:
+                                - EFO:0002772
+                                - EFO:0010183
+                        ancestors:
+                            EFO:
+                                - EFO:0002772
+                                - EFO:0010183
                 add_labels:
                     -
                         type: curie
@@ -139,9 +146,12 @@ components:
                     ontologies:
                         - MONDO
                         - PATO
-                    allowed_terms:
-                        PATO:
-                            - PATO:0000461
+                    allowed:
+                        terms:
+                            PATO:
+                                - PATO:0000461
+                            MONDO:
+                                - all
                 add_labels:
                     -
                         type: curie
@@ -164,11 +174,12 @@ components:
                         - PATO
                     exceptions:
                         - unknown
-                    allowed_terms:
-                         PATO:
-                             - PATO:0000383
-                             - PATO:0000384
-                             - PATO:0001340
+                    allowed:
+                        terms:
+                            PATO:
+                                - PATO:0000383
+                                - PATO:0000384
+                                - PATO:0001340
                 add_labels:
                     -
                         type: curie
@@ -186,9 +197,10 @@ components:
                         curie_constraints:
                             ontologies:
                                 - UBERON
-                            ancestors:
-                                UBERON:
-                                    - UBERON:0001062
+                            allowed:
+                                ancestors:
+                                    UBERON:
+                                        - UBERON:0001062
                     -
                         # If tissue_type is cell culture
                         rule: "tissue_type == 'cell culture'"
@@ -229,6 +241,7 @@ components:
                                 - unknown
                             forbidden:
                                 terms:
+                                    - HANCESTRO:0002
                                     - HANCESTRO:0003
                                     - HANCESTRO:0004
                                     - HANCESTRO:0018
@@ -239,6 +252,7 @@ components:
                                     - HANCESTRO:0033
                                     - HANCESTRO:0034
                                     - HANCESTRO:0290
+                                    - HANCESTRO:0304
                                     - HANCESTRO:0323
                                     - HANCESTRO:0324
                                     - HANCESTRO:0551
@@ -252,7 +266,7 @@ components:
                                     - HANCESTRO:0564
                                     - HANCESTRO:0565
                                     - HANCESTRO:0566
-                                ancestors_inclusive:    # these terms AND their children are forbidden
+                                ancestors:
                                     HANCESTRO:
                                         - HANCESTRO:0002
                                         - HANCESTRO:0304
@@ -307,9 +321,10 @@ components:
                 curie_constraints:
                     ontologies:
                         - UBERON
-                    ancestors:
-                        UBERON:
-                            - UBERON:0000105
+                    allowed:
+                        ancestors:
+                            UBERON:
+                                - UBERON:0000105
                     exceptions:
                         - unknown
                     forbidden:

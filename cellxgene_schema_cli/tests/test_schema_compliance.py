@@ -260,9 +260,17 @@ class TestObs(BaseValidationTest):
         # Not a valid term
         self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "assay_ontology_term_id"] = "EFO:0009310"
         self.validator.validate_adata()
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"]["assay_ontology_term_id"][
+            "error_message_suffix"
+        ]
         self.assertEqual(
             self.validator.errors,
-            ["ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is a deprecated term id of 'EFO'."],
+            [
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is a deprecated term id of 'EFO'.",
+                )
+            ],
         )
 
     def test_assay_ontology_term_id(self):
@@ -275,9 +283,18 @@ class TestObs(BaseValidationTest):
         # self.validator.adata.obs["assay_ontology_term_id"][0] = "CL:000001"
         self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "assay_ontology_term_id"] = "CL:000001"
         self.validator.validate_adata()
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"]["assay_ontology_term_id"][
+            "error_message_suffix"
+        ]
+
         self.assertEqual(
             self.validator.errors,
-            ["ERROR: 'CL:000001' in 'assay_ontology_term_id' is not a valid " "ontology term id of 'EFO'."],
+            [
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: 'CL:000001' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'.",
+                )
+            ],
         )
 
         # Not a valid child
@@ -287,8 +304,9 @@ class TestObs(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'EFO:0000001' in 'assay_ontology_term_id' is not a "
-                "child term id of ['EFO:0002772', 'EFO:0010183']."
+                self.get_format_error_message(
+                    error_message_suffix, "ERROR: 'EFO:0000001' in 'assay_ontology_term_id' is not an allowed term id."
+                )
             ],
         )
 
@@ -300,7 +318,12 @@ class TestObs(BaseValidationTest):
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
-            ["ERROR: 'EFO:0010183 (sci-plex)' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'."],
+            [
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: 'EFO:0010183 (sci-plex)' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'.",
+                )
+            ],
         )
 
     def test_cell_type_ontology_term_id(self):
@@ -447,7 +470,7 @@ class TestObs(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'PATO:0001894' in 'disease_ontology_term_id' is not an allowed term: '[['PATO:0000461']]'. "
+                "ERROR: 'PATO:0001894' in 'disease_ontology_term_id' is not an allowed term id. "
                 "Only 'PATO:0000461' is allowed for 'PATO' term ids."
             ],
         )
@@ -896,8 +919,8 @@ class TestObs(BaseValidationTest):
             self.assertEqual(
                 self.validator.errors,
                 [
-                    "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not a child term id of "
-                    "'UBERON:0001062'. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' "
+                    "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not an allowed term id. "
+                    "When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' "
                     "MUST be a child term id of 'UBERON:0001062' (anatomical entity)."
                 ],
             )
@@ -909,8 +932,8 @@ class TestObs(BaseValidationTest):
             self.assertEqual(
                 self.validator.errors,
                 [
-                    "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not a child term id of "
-                    "'UBERON:0001062'. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' "
+                    "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not an allowed term id. "
+                    "When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' "
                     "MUST be a child term id of 'UBERON:0001062' (anatomical entity)."
                 ],
             )

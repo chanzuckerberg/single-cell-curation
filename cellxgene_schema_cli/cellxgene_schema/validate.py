@@ -90,29 +90,8 @@ class Validator:
         else:
             return self._get_component_def(component)["columns"][column_name]
 
-    def _validate_curie_allowed_terms(self, term_id: str, column_name: str, terms: Dict[str, List[str]]):
-        """
-        Validate a single curie term id is a valid children of any of allowed terms
-        If there are any errors, it adds them to self.errors
-
-        :param str term_id: the curie term id to validate
-        :param str column_name: original column name in adata where the term_id comes from (used for error messages)
-        :param dict{str: list[str]} terms: keys must be ontology names and values must lists of allowed terms
-
-        :rtype None
-        """
-
-        checks = []
-        for ontology_name, allowed_terms in terms.items():
-            if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id):
-                checks.append(term_id in allowed_terms)
-
-        if sum(checks) == 0 and len(checks) > 0:
-            all_allowed = list(terms.values())
-            self.errors.append(f"'{term_id}' in '{column_name}' is not an allowed term: '{all_allowed}'.")
-
     def _has_forbidden_curie_ancestor(
-        self, term_id: str, column_name: str, forbidden_def: Dict[str, List[str]], inclusive: bool
+        self, term_id: str, column_name: str, forbidden_def: Dict[str, List[str]]
     ) -> bool:
         """
         Validate if a single curie term id is a child term of any forbidden ancestors.
@@ -121,16 +100,12 @@ class Validator:
         :param str term_id: the curie term id to validate
         :param str column_name: original column name in adata where the term_id comes from (used for error messages)
         :param Dict[str, List[str] forbidden_def: mapping of ontologies to list of ancestor terms to validate against
-        :param bool inclusive:  if True then the ancestors themselves are allowed
 
         :returns bool
         """
         for ontology_name in forbidden_def:
             for ancestor in forbidden_def[ontology_name]:
-                if inclusive and term_id == ancestor:
-                    self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
-                    return True
-                elif ONTOLOGY_CHECKER.is_descendent_of(ontology_name, term_id, ancestor):
+                if ONTOLOGY_CHECKER.is_descendent_of(ontology_name, term_id, ancestor):
                     self.errors.append(
                         f"'{term_id}' in '{column_name}' is not allowed. Child terms of "
                         f"'{ancestor}' are not allowed."
@@ -141,21 +116,16 @@ class Validator:
     def _validate_curie_ancestors(
         self,
         term_id: str,
-        column_name: str,
         allowed_ancestors: Dict[str, List[str]],
-        inclusive: bool,
-        errors=True,
-    ):
+        inclusive: bool = False,
+    ) -> bool:
         """
-        Validate a single curie term id is a valid children of any of allowed ancestors
-        If there are any errors, it adds them to self.errors if the errors flag is True.
+        Validate a single curie term id is a valid child of any allowed ancestors
 
         :param str term_id: the curie term id to validate
-        :param str column_name: original column name in adata where the term_id comes from (used for error messages)
         :param dict{str: list[str]} allowed_ancestors: keys must be ontology names and values must lists of
         allowed ancestors
         :param bool inclusive:  if True then the ancestors themselves are allowed
-        :param bool errors: if True then errors are appended to self.errors
 
         :rtype Bool
         """
@@ -174,12 +144,6 @@ class Validator:
                     checks.append(is_child)
 
         if True not in checks:
-            if errors:
-                all_ancestors = [ancestor for ancestors in allowed_ancestors.values() for ancestor in ancestors]
-                # print ancestor as string with single-quotes if only 1 entry
-                if len(all_ancestors) == 1:
-                    all_ancestors = f"'{all_ancestors[0]}'"
-                self.errors.append(f"'{term_id}' in '{column_name}' is not a child term id of {all_ancestors}.")
             return False
         return True
 
@@ -278,25 +242,31 @@ class Validator:
                 self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
                 return
             if "ancestors" in curie_constraints["forbidden"] and self._has_forbidden_curie_ancestor(
-                term_id, column_name, curie_constraints["forbidden"]["ancestors"], False
-            ):
-                return
-            if "ancestors_inclusive" in curie_constraints["forbidden"] and self._has_forbidden_curie_ancestor(
-                term_id, column_name, curie_constraints["forbidden"]["ancestors_inclusive"], True
+                term_id, column_name, curie_constraints["forbidden"]["ancestors"]
             ):
                 return
 
-        # If there are specified valid ancestors then make sure that this id is a valid child
-        if "ancestors" in curie_constraints:
-            self._validate_curie_ancestors(term_id, column_name, curie_constraints["ancestors"], False)
+        # If there are allow-lists, validate against them
+        if "allowed" in curie_constraints:
+            is_allowed = False
+            if "terms" in curie_constraints["allowed"]:
+                for ontology_name, allow_list in curie_constraints["allowed"]["terms"].items():
+                    if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id):
+                        if allow_list == ["all"]:
+                            is_allowed = True
+                            break
+                        elif term_id in set(allow_list):
+                            is_allowed = True
+                            break
+            if (
+                not is_allowed
+                and "ancestors" in curie_constraints["allowed"]
+                and self._validate_curie_ancestors(term_id, curie_constraints["allowed"]["ancestors"])
+            ):
+                is_allowed = True
 
-        # Ancestors themselves are allowed
-        if "ancestors_inclusive" in curie_constraints:
-            self._validate_curie_ancestors(term_id, column_name, curie_constraints["ancestors_inclusive"], True)
-
-        # If there is a set of allowed terms check for it
-        if "allowed_terms" in curie_constraints:
-            self._validate_curie_allowed_terms(term_id, column_name, curie_constraints["allowed_terms"])
+            if not is_allowed:
+                self.errors.append(f"'{term_id}' in '{column_name}' is not an allowed term id.")
 
     def _validate_feature_id(self, feature_id: str, df_name: str):
         """
@@ -560,7 +530,7 @@ class Validator:
             ancestor_inclusive: bool,
         ) -> bool:
             allowed_ancestors = dict(zip(ontologies, ancestors))
-            return validate_curie_ancestors_vectorized(term_id, "", allowed_ancestors, ancestor_inclusive, False)
+            return validate_curie_ancestors_vectorized(term_id, allowed_ancestors, inclusive=ancestor_inclusive)
 
         return is_ancestor_match, (
             rule_def["column"],
