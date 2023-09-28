@@ -235,7 +235,7 @@ class Validator:
 
         if not isinstance(term_str, str):
             self.errors.append(
-                f"'{term_str}' in '{column_name}' is not a valid ontology term value, " f"it must be a string."
+                f"'{term_str}' in '{column_name}' is not a valid ontology term value, it must be a string."
             )
             return
 
