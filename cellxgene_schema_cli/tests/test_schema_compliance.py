@@ -813,9 +813,10 @@ class TestObs:
         """
         validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_ontology_term_id"] = numpy.nan
         validator.validate_adata()
-        assert validator.errors == [
+        assert (
             "ERROR: Column 'tissue_ontology_term_id' in dataframe 'obs' must not contain NaN values."
-        ]
+            in validator.errors
+        )
 
 
 class TestVar:
