@@ -213,7 +213,7 @@ class Validator:
             return False
         return True
 
-    def _validate_curie_str(self, term_str: str, column_name, curie_constraints: dict):
+    def _validate_curie_str(self, term_str: str, column_name, curie_constraints: dict) -> None:
         """
         Validate a curie str based on some constraints. If there are any errors, it adds them to self.errors
 
