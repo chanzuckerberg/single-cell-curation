@@ -1014,7 +1014,8 @@ class Validator:
         """
         Validates the embedding dictionary -- it checks that all values of adata.obsm are numpy arrays with the correct
         dimension. Adds errors to self.errors if any. Checks that the keys start with "X_", have no whitespace, and have
-        a suffix at least 1 character long
+        a suffix at least 1 character long. For keys that don't start with "X_", we will run them through the same
+        validation checks, but raise warnings instead of errors.
 
         :rtype none
         """
