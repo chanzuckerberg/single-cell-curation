@@ -67,18 +67,18 @@ def get_matrix_format(adata: ad.AnnData, matrix: Union[np.ndarray, sparse.spmatr
     #
     # >>> return getattr(matrix, "format_str", "dense)
     #
-    format = "unknown"
+    matrix_format = "unknown"
     if adata.n_obs == 0 or adata.n_vars == 0:
-        format = "dense"
+        matrix_format = "dense"
     else:
         matrix_slice = matrix[0:1, 0:1]
         if isinstance(matrix_slice, sparse.spmatrix):
-            format = matrix_slice.format
+            matrix_format = matrix_slice.format
         elif isinstance(matrix_slice, np.ndarray):
-            format = "dense"
+            matrix_format = "dense"
 
-    assert format in ["unknown", "csr", "csc", "coo", "dense"]
-    return format
+    assert matrix_format in ["unknown", "csr", "csc", "coo", "dense"]
+    return matrix_format
 
 
 def getattr_anndata(adata: ad.AnnData, attr: str = None):
