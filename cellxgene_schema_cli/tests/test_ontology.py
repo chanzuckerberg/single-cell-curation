@@ -1,5 +1,4 @@
-import unittest
-
+import pytest
 from cellxgene_schema import ontology
 from fixtures.examples_ontology_test import (
     invalid_genes,
@@ -14,78 +13,71 @@ from fixtures.examples_ontology_test import (
 # Tests for internal functions of the OntologyChecker and GeneChecker classes
 
 
-class TestGeneChecker(unittest.TestCase):
-    def setUp(self):
-        self.valid_species = ontology.SupportedOrganisms
-        self.invalid_species = invalid_species
-        self.valid_genes = valid_genes
-        self.invalid_genes = invalid_genes
+class TestGeneChecker:
+    @pytest.mark.parametrize("valid_species", ontology.SupportedOrganisms)
+    def test_species_valid(self, valid_species):
+        assert isinstance(ontology.GeneChecker(valid_species), ontology.GeneChecker)
 
-    def test_species_validity(self):
-        for species in self.valid_species:
-            self.assertIsInstance(ontology.GeneChecker(species), ontology.GeneChecker)
-        for species in self.invalid_species:
-            with self.assertRaises(ValueError):
-                ontology.GeneChecker(species)
+    @pytest.mark.parametrize("invalid_species", invalid_species)
+    def test_species_inalid(self, invalid_species):
+        with pytest.raises(ValueError):
+            ontology.GeneChecker(invalid_species)
 
-    def test_valid_genes(self):
-        for species in self.valid_genes:
-            geneChecker = ontology.GeneChecker(species)
-            for gene_id in self.valid_genes[species]:
-                gene_label = self.valid_genes[species][gene_id][0]
-                gene_length = self.valid_genes[species][gene_id][1]
+    @pytest.mark.parametrize("species,valid_genes", valid_genes.items())
+    def test_valid_genes(self, species, valid_genes):
+        geneChecker = ontology.GeneChecker(species)
+        for gene_id in valid_genes:
+            gene_label = valid_genes[gene_id][0]
+            gene_length = valid_genes[gene_id][1]
 
-                self.assertTrue(geneChecker.is_valid_id(gene_id))
-                self.assertEqual(geneChecker.get_symbol(gene_id), gene_label)
-                self.assertEqual(geneChecker.get_length(gene_id), gene_length)
+            assert geneChecker.is_valid_id(gene_id)
+            assert geneChecker.get_symbol(gene_id) == gene_label
+            assert geneChecker.get_length(gene_id) == gene_length
 
-    def test_invalid_genes(self):
-        for species in self.invalid_genes:
-            geneChecker = ontology.GeneChecker(species)
-            for gene_id in self.invalid_genes[species]:
-                self.assertFalse(geneChecker.is_valid_id(gene_id))
-                with self.assertRaises(ValueError):
-                    geneChecker.get_symbol(gene_id)
-                with self.assertRaises(ValueError):
-                    geneChecker.get_length(gene_id)
+    @pytest.mark.parametrize("species,invalid_genes", invalid_genes.items())
+    def test_invalid_genes(self, species, invalid_genes):
+        geneChecker = ontology.GeneChecker(species)
+        for gene_id in invalid_genes:
+            assert not geneChecker.is_valid_id(gene_id)
+            with pytest.raises(ValueError):
+                geneChecker.get_symbol(gene_id)
+            with pytest.raises(ValueError):
+                geneChecker.get_length(gene_id)
 
 
-class TestOntologyChecker(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.ontologyChecker = ontology.OntologyChecker()
+@pytest.fixture(scope="class")
+def ontologyChecker() -> ontology.OntologyChecker:
+    return ontology.OntologyChecker()
 
-    def setUp(self):
-        self.valid_ontologies = valid_ontologies
-        self.invalid_ontologies = invalid_ontologies
-        self.valid_terms = valid_terms
-        self.invalid_terms = invalid_terms
 
-    def test_ontology_validity(self):
-        for i in self.valid_ontologies:
-            self.assertTrue(self.ontologyChecker.is_valid_ontology(i))
-            self.assertIsNone(self.ontologyChecker.assert_ontology(i))
+class TestOntologyChecker:
+    @pytest.mark.parametrize("valid_ontology", valid_ontologies)
+    def test_ontology_valid(self, ontologyChecker, valid_ontology):
+        assert ontologyChecker.is_valid_ontology(valid_ontology)
+        assert ontologyChecker.assert_ontology(valid_ontology) is None
 
-        for i in self.invalid_ontologies:
-            self.assertFalse(self.ontologyChecker.is_valid_ontology(i))
-            with self.assertRaises(ValueError):
-                self.ontologyChecker.assert_ontology(i)
+    @pytest.mark.parametrize("invalid_ontology", invalid_ontologies)
+    def test_ontology_invalid(self, ontologyChecker, invalid_ontology):
+        assert not ontologyChecker.is_valid_ontology(invalid_ontology)
+        with pytest.raises(ValueError):
+            ontologyChecker.assert_ontology(invalid_ontology)
 
-    def test_valid_term_id(self):
-        for ontology_id in self.valid_terms:
-            for term_id in self.valid_terms[ontology_id]:
-                term_label = self.valid_terms[ontology_id][term_id]
+    @pytest.mark.parametrize(
+        "ontology_id,term_id",
+        [(ontology_id, term_id) for ontology_id in valid_terms for term_id in valid_terms[ontology_id]],
+    )
+    def test_valid_term_id(self, ontologyChecker, ontology_id, term_id):
+        term_label = valid_terms[ontology_id][term_id]
 
-                self.assertTrue(self.ontologyChecker.is_valid_term_id(ontology_id, term_id))
-                self.assertIsNone(self.ontologyChecker.assert_term_id(ontology_id, term_id))
-                self.assertEqual(
-                    self.ontologyChecker.get_term_label(ontology_id, term_id),
-                    term_label,
-                )
+        assert ontologyChecker.is_valid_term_id(ontology_id, term_id)
+        assert ontologyChecker.assert_term_id(ontology_id, term_id) is None
+        assert ontologyChecker.get_term_label(ontology_id, term_id) == term_label
 
-    def test_invalid_term_ids(self):
-        for ontology_id in self.invalid_terms:
-            for term_id in self.invalid_terms[ontology_id]:
-                self.assertFalse(self.ontologyChecker.is_valid_term_id(ontology_id, term_id))
-                with self.assertRaises(ValueError):
-                    self.ontologyChecker.assert_term_id(ontology_id, term_id)
+    @pytest.mark.parametrize(
+        "ontology_id,term_id",
+        [(ontology_id, term_id) for ontology_id in invalid_terms for term_id in invalid_terms[ontology_id]],
+    )
+    def test_invalid_term_ids(self, ontologyChecker, ontology_id, term_id):
+        assert not ontologyChecker.is_valid_term_id(ontology_id, term_id)
+        with pytest.raises(ValueError):
+            ontologyChecker.assert_term_id(ontology_id, term_id)
