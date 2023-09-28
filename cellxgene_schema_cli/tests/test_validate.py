@@ -45,6 +45,14 @@ def validator_with_minimal_adata():
     return validator
 
 
+@pytest.fixture
+def label_writer():
+    validator = Validator()
+    validator.adata = adata_valid.copy()
+    validator.validate_adata()
+    return AnnDataLabelAppender(validator)
+
+
 class TestFieldValidation:
     def test_schema_definition(self, schema_def):
         """
@@ -103,14 +111,6 @@ class TestFieldValidation:
         curie_constraints = schema_def["components"]["obs"]["columns"][column_name]["curie_constraints"]
         validator._validate_curie("NO_TERM2", column_name, curie_constraints)
         assert validator.errors
-
-
-@pytest.fixture
-def label_writer():
-    validator = Validator()
-    validator.adata = adata_valid.copy()
-    validator.validate_adata()
-    return AnnDataLabelAppender(validator)
 
 
 class TestAddLabelFunctions:
