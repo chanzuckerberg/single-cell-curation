@@ -394,25 +394,25 @@ class TestValidatorValidateDataFrame:
 
 class TestIsRaw:
     @staticmethod
-    def create_validator(data: Union[ndarray, spmatrix], format: str) -> Validator:
+    def create_validator(data: Union[ndarray, spmatrix], matrix_format: str) -> Validator:
         """
         Create a sample AnnData instance with the given data and format.
 
         :param data: The data matrix.
-        :param format: The format of the data matrix (e.g., "dense", "csr", "csc").
+        :param matrix_format: The format of the data matrix (e.g., "dense", "csr", "csc").
 
         :return anndata.AnnData: An AnnData instance with the specified data and format.
         """
         validator = Validator()
 
         adata = anndata.AnnData(X=data)
-        adata.obsm["X_" + format] = data
+        adata.obsm["X_" + matrix_format] = data
 
         validator.adata = adata
         return validator
 
     @pytest.mark.parametrize(
-        "data, format, expected_result",
+        "data, matrix_format, expected_result",
         [
             # Test case with integer values in a dense matrix
             (np.array([[1, 2, 3], [4, 5, 6]], dtype=int), "dense", True),
@@ -426,8 +426,8 @@ class TestIsRaw:
             (np.array([[1, 2.2, 3], [4.4, 5, 6.6]]), "dense", False),
         ],
     )
-    def test_is_raw(self, data, format, expected_result):
-        validator = self.create_validator(data, format)
+    def test_is_raw(self, data, matrix_format, expected_result):
+        validator = self.create_validator(data, matrix_format)
         assert validator._is_raw() == expected_result
 
     @mock.patch("cellxgene_schema.validate.get_matrix_format", return_value="unknown")

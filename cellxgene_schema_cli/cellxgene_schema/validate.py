@@ -291,9 +291,9 @@ class Validator:
         logger.debug(f"Counting non-zero values in {matrix_name}")
 
         nnz = 0
-        format = get_matrix_format(self.adata, matrix)
+        matrix_format = get_matrix_format(self.adata, matrix)
         for matrix_chunk, _, _ in self._chunk_matrix(matrix):
-            nnz += matrix_chunk.count_nonzero() if format != "dense" else np.count_nonzero(matrix_chunk)
+            nnz += matrix_chunk.count_nonzero() if matrix_format != "dense" else np.count_nonzero(matrix_chunk)
 
         self.number_non_zero[matrix_name] = nnz
         return nnz
@@ -898,7 +898,7 @@ class Validator:
             matrix_format = get_matrix_format(self.adata, x)
             if matrix_format == "csr":
                 continue
-            assert format != "unknown"
+            assert matrix_format != "unknown"
 
             # It seems silly to perform this test for 'coo' and 'csc' formats,
             # which are, by definition, already sparse. But the old code
@@ -929,11 +929,11 @@ class Validator:
             to_validate.append((self.adata.raw.X, "raw.X"))
         # Check length of component arrays
         for matrix, matrix_name in to_validate:
-            format = get_matrix_format(self.adata, matrix)
-            if format in ["csc", "csr", "coo"]:
+            matrix_format = get_matrix_format(self.adata, matrix)
+            if matrix_format in ["csc", "csr", "coo"]:
                 effective_r_array_size = self._count_matrix_nonzero(matrix_name, matrix)
                 is_sparse = True
-            elif format == "dense":
+            elif matrix_format == "dense":
                 effective_r_array_size = max(matrix.shape)
                 is_sparse = False
             else:
@@ -1097,8 +1097,8 @@ class Validator:
             raw_loc = self._get_raw_x_loc()
             x = self.adata.raw.X if raw_loc == "raw.X" else self.adata.X
 
-            format = get_matrix_format(self.adata, x)
-            assert format != "unknown"
+            matrix_format = get_matrix_format(self.adata, x)
+            assert matrix_format != "unknown"
             self._raw_layer_exists = True
             for matrix_chunk, _, _ in self._chunk_matrix(x):
                 data = matrix_chunk if isinstance(matrix_chunk, np.ndarray) else matrix_chunk.data
