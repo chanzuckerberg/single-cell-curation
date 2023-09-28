@@ -1023,16 +1023,19 @@ class Validator:
             self.errors.append("No embeddings found in 'adata.obsm'.")
             return
 
+        obsm_with_x_prefix = 0
         for key, value in self.adata.obsm.items():
             # Checks for invalid keys
             if " " in key:
                 self.errors.append(f"Embedding key {key} has whitespace in it, please remove it.")
-            if not key.startswith("X_"):
-                self.errors.append(f"Embedding key in 'adata.obsm' {key} does not start with X_")
             if len(key) <= 3:
                 self.errors.append(
                     f"Embedding key in 'adata.obsm' {key} must start with X_ and have a suffix at least one character long."
                 )
+            if not key.startswith("X_"):
+                self.errors.append(f"Embedding key in 'adata.obsm' {key} does not start with X_")
+            else:
+                obsm_with_x_prefix += 1
 
             if not isinstance(value, np.ndarray):
                 self.errors.append(
@@ -1057,6 +1060,9 @@ class Validator:
                     self.errors.append(f"adata.obsm['{key}'] contains positive infinity or negative infinity values.")
                 if np.all(np.isnan(value)):
                     self.errors.append(f"adata.obsm['{key}'] contains all NaN values.")
+
+        if obsm_with_x_prefix == 0:
+            self.errors.append("At least one embedding in 'obsm' has to have a key with an 'X_' prefix.")
 
     def _validate_annotation_mapping(self, component_name: str, component: Mapping):
         for key, value in component.items():

@@ -1645,6 +1645,7 @@ class TestObsm:
         validator.validate_adata()
         assert validator.errors == ["ERROR: adata.obsm['X_umap'] contains all NaN values."]
 
+<<<<<<< HEAD
     def test_obsm_values_at_least_one_X(self, validator_with_adata):
         """
         At least one key for the embedding MUST be prefixed with "X_"
@@ -1672,11 +1673,27 @@ class TestObsm:
     def test_obsm_values_must_start_with_X(self):
         self.validator.adata.obsm["umap"] = self.validator.adata.obsm["X_umap"]
         self.validator.adata.uns["default_embedding"] = "umap"
+=======
+    def test_obsm_values_at_least_one_X(self):
+        self.validator.adata.obsm["harmony"] = self.validator.adata.obsm["X_umap"]
+        self.validator.adata.uns["default_embedding"] = "harmony"
+>>>>>>> 8dd69eb (update)
         del self.validator.adata.obsm["X_umap"]
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
-            ["ERROR: Embedding key in 'adata.obsm' umap does not start with X_"],
+            [
+                "ERROR: Embedding key in 'adata.obsm' harmony does not start with X_",
+                "ERROR: At least one embedding in 'obsm' has to have a key with an 'X_' prefix.",
+            ],
+        )
+
+    def test_obsm_values_must_start_with_X(self):
+        self.validator.adata.obsm["harmony"] = self.validator.adata.obsm["X_umap"]
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: Embedding key in 'adata.obsm' harmony does not start with X_"],
         )
 
     def test_obsm_suffix_name_valid(self):
@@ -1756,7 +1773,6 @@ class TestObsm:
         ]
         self.validator.adata = self.save_and_read_adata(adata)
         self.validator.validate_adata()
-        print(self.validator.errors)
         self.assertEqual(
             self.validator.errors,
             [
