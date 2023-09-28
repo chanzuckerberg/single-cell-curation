@@ -268,11 +268,8 @@ class Validator:
 
         :rtype None
         """
-        # Check that term id belongs to allowed ontologies
-        is_valid_term = self._validate_curie_ontology(term_id, column_name, curie_constraints["ontologies"])
-
         # If the term id does not belong to an allowed ontology, the subsequent checks are redundant
-        if not is_valid_term:
+        if not self._validate_curie_ontology(term_id, column_name, curie_constraints["ontologies"]):
             return
 
         # Check if term_id is forbidden by schema definition despite being a valid ontology term
