@@ -1,5 +1,4 @@
-import unittest
-
+import pytest
 from cellxgene_schema.remove_labels import AnnDataLabelRemover
 from fixtures.examples_validate import (
     adata,
@@ -8,26 +7,31 @@ from fixtures.examples_validate import (
 from pandas.testing import assert_frame_equal
 
 
-class TestRemoveLabels(unittest.TestCase):
-    def setUp(self):
-        self.anndata_label_remover = AnnDataLabelRemover(adata_with_labels.copy())
-        self.adata_no_labels = adata
+@pytest.fixture
+def remove_labels_setup():
+    anndata_label_remover = AnnDataLabelRemover(adata_with_labels.copy())
+    adata_no_labels = adata
+    return anndata_label_remover, adata_no_labels
 
-    def test_remove_labels(self):
-        self.anndata_label_remover.adata.raw = adata_with_labels
-        self.anndata_label_remover.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
-        self.anndata_label_remover.remove_labels()
-        adata_labels_removed = self.anndata_label_remover.adata
-        assert_frame_equal(adata_labels_removed.obs, self.adata_no_labels.obs)
-        assert_frame_equal(adata_labels_removed.var, self.adata_no_labels.var)
-        assert_frame_equal(adata_labels_removed.raw.var, self.adata_no_labels.raw.var)
-        self.assertDictEqual(dict(adata_labels_removed.uns), dict(self.adata_no_labels.uns))
 
-    def test_remove_labels_no_raw(self):
-        self.anndata_label_remover.remove_labels()
-        adata_labels_removed = self.anndata_label_remover.adata
+class TestRemoveLabels:
+    def test_remove_labels(self, remove_labels_setup):
+        anndata_label_remover, adata_no_labels = remove_labels_setup
+        anndata_label_remover.adata.raw = adata_with_labels
+        anndata_label_remover.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+        anndata_label_remover.remove_labels()
+        adata_labels_removed = anndata_label_remover.adata
+        assert_frame_equal(adata_labels_removed.obs, adata_no_labels.obs)
+        assert_frame_equal(adata_labels_removed.var, adata_no_labels.var)
+        assert_frame_equal(adata_labels_removed.raw.var, adata_no_labels.raw.var)
+        assert dict(adata_labels_removed.uns) == dict(adata_no_labels.uns)
 
-        self.assertIsNone(adata_labels_removed.raw)
-        assert_frame_equal(adata_labels_removed.obs, self.adata_no_labels.obs)
-        assert_frame_equal(adata_labels_removed.var, self.adata_no_labels.var)
-        self.assertDictEqual(dict(adata_labels_removed.uns), dict(self.adata_no_labels.uns))
+    def test_remove_labels_no_raw(self, remove_labels_setup):
+        anndata_label_remover, adata_no_labels = remove_labels_setup
+        anndata_label_remover.remove_labels()
+        adata_labels_removed = anndata_label_remover.adata
+
+        assert adata_labels_removed.raw is None
+        assert_frame_equal(adata_labels_removed.obs, adata_no_labels.obs)
+        assert_frame_equal(adata_labels_removed.var, adata_no_labels.var)
+        assert dict(adata_labels_removed.uns) == dict(adata_no_labels.uns)
