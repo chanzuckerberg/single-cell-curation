@@ -252,10 +252,7 @@ class Validator:
             if "terms" in curie_constraints["allowed"]:
                 for ontology_name, allow_list in curie_constraints["allowed"]["terms"].items():
                     if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id):
-                        if allow_list == ["all"]:
-                            is_allowed = True
-                            break
-                        elif term_id in set(allow_list):
+                        if allow_list == ["all"] or term_id in set(allow_list):
                             is_allowed = True
                             break
             if (
