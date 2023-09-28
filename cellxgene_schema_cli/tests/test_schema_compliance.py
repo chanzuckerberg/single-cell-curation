@@ -1683,17 +1683,28 @@ class TestObsm:
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: Embedding key in 'adata.obsm' harmony does not start with X_",
                 "ERROR: At least one embedding in 'obsm' has to have a key with an 'X_' prefix.",
             ],
         )
+        self.assertEqual(
+            self.validator.warnings,
+            [
+                "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_",
+                "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
+            ],
+        )
 
-    def test_obsm_values_must_start_with_X(self):
-        self.validator.adata.obsm["harmony"] = self.validator.adata.obsm["X_umap"]
+    def test_obsm_values_warn_start_with_X(self):
+        self.validator.adata.obsm["harmony"] = pd.DataFrame(
+            self.validator.adata.obsm["X_umap"], index=self.validator.adata.obs_names
+        )
         self.validator.validate_adata()
         self.assertEqual(
-            self.validator.errors,
-            ["ERROR: Embedding key in 'adata.obsm' harmony does not start with X_"],
+            self.validator.warnings,
+            [
+                "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_",
+                "WARNING: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['harmony']' is <class 'pandas.core.frame.DataFrame'>').",
+            ],
         )
 
     def test_obsm_suffix_name_valid(self):
@@ -1777,9 +1788,6 @@ class TestObsm:
             self.validator.errors,
             [
                 "ERROR: The size of the ndarray stored for a 'adata.obsm['badsize']' MUST NOT be zero.",
-                "ERROR: Embedding key in 'adata.obsm' badsize does not start with X_",
-                "ERROR: All embeddings must have as many rows as cells, and at least two columns. 'adata.obsm['badsize']' has shape of '(2, 0)'.",
-                "ERROR: adata.obsm['badsize'] contains all NaN values.",
             ],
         )
 

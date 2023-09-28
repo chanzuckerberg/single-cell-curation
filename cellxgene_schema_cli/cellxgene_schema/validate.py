@@ -1025,41 +1025,44 @@ class Validator:
 
         obsm_with_x_prefix = 0
         for key, value in self.adata.obsm.items():
-            # Checks for invalid keys
             if " " in key:
                 self.errors.append(f"Embedding key {key} has whitespace in it, please remove it.")
-            if len(key) <= 3:
-                self.errors.append(
-                    f"Embedding key in 'adata.obsm' {key} must start with X_ and have a suffix at least one character long."
-                )
-            if not key.startswith("X_"):
-                self.errors.append(f"Embedding key in 'adata.obsm' {key} does not start with X_")
-            else:
-                obsm_with_x_prefix += 1
 
+            issue_list = self.errors
+            if key.startswith("X_"):
+                obsm_with_x_prefix += 1
+                if len(key) <= 3:
+                    self.errors.append(
+                        f"Embedding key in 'adata.obsm' {key} must start with X_ and have a suffix at least one character long."
+                    )
+            else:
+                self.warnings.append(f"Embedding key in 'adata.obsm' {key} does not start with X_")
+                issue_list = self.warnings
+
+            # For all subsequent checks, we want to raise an error if it's an X_ embedding key, and a warning otherwise
             if not isinstance(value, np.ndarray):
-                self.errors.append(
+                issue_list.append(
                     f"All embeddings have to be of 'numpy.ndarray' type, " f"'adata.obsm['{key}']' is {type(value)}')."
                 )
                 # Skip over the subsequent checks that require the value to be an array
                 continue
 
             if len(value.shape) < 2 or value.shape[0] != self.adata.n_obs or value.shape[1] < 2:
-                self.errors.append(
+                issue_list.append(
                     f"All embeddings must have as many rows as cells, and at least two columns."
                     f" 'adata.obsm['{key}']' has shape of '{value.shape}'."
                 )
             if not (np.issubdtype(value.dtype, np.integer) or np.issubdtype(value.dtype, np.floating)):
-                self.errors.append(
+                issue_list.append(
                     f"adata.obsm['{key}'] has an invalid data type. It should be "
                     "float, integer, or unsigned integer of any precision (8, 16, 32, or 64 bits)."
                 )
             else:
                 # Check for inf/NaN values only if the dtype is numeric
                 if np.isinf(value).any():
-                    self.errors.append(f"adata.obsm['{key}'] contains positive infinity or negative infinity values.")
+                    issue_list.append(f"adata.obsm['{key}'] contains positive infinity or negative infinity values.")
                 if np.all(np.isnan(value)):
-                    self.errors.append(f"adata.obsm['{key}'] contains all NaN values.")
+                    issue_list.append(f"adata.obsm['{key}'] contains all NaN values.")
 
         if obsm_with_x_prefix == 0:
             self.errors.append("At least one embedding in 'obsm' has to have a key with an 'X_' prefix.")
