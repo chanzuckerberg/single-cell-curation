@@ -1668,6 +1668,29 @@ class TestObsm:
         assert validator.errors == [
             "ERROR: Embedding key in 'adata.obsm' X_ must have a suffix at least one character long."
         ]
+        
+    def test_obsm_values_must_start_with_X(self):
+        self.validator.adata.obsm["umap"] = self.validator.adata.obsm["X_umap"]
+        self.validator.adata.uns["default_embedding"] = "umap"
+        del self.validator.adata.obsm["X_umap"]
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            ["ERROR: Embedding key in 'adata.obsm' umap does not start with X_"],
+        )
+
+    def test_obsm_suffix_name_valid(self):
+        """
+        Suffix after X_ must be at least 1 character long
+        """
+        self.validator.adata.obsm["X_"] = self.validator.adata.obsm["X_umap"]
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Embedding key in 'adata.obsm' X_ must start with X_ and have a suffix at least one character long."
+            ],
+        )
 
     def test_obsm_key_name_valid(self, validator_with_adata):
         """
@@ -1693,6 +1716,16 @@ class TestObsm:
             "at least two columns.'adata.obsm['X_umap']' has shape "
             "of '(2, 1)'."
         ]
+        self.validator.adata.obsm["X_umap"] = numpy.delete(self.validator.adata.obsm["X_umap"], 0, 1)
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: All embeddings must have as many rows as cells, and "
+                "at least two columns. 'adata.obsm['X_umap']' has shape "
+                "of '(2, 1)'."
+            ],
+        )
 
     def test_obsm_shape_same_rows_and_columns(self, validator_with_adata):
         """
@@ -1721,6 +1754,18 @@ class TestObsm:
         assert validator.errors == [
             "ERROR: The size of the ndarray stored for a 'adata.obsm['badsize']' MUST NOT be zero."
         ]
+        self.validator.adata = self.save_and_read_adata(adata)
+        self.validator.validate_adata()
+        print(self.validator.errors)
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: The size of the ndarray stored for a 'adata.obsm['badsize']' MUST NOT be zero.",
+                "ERROR: Embedding key in 'adata.obsm' badsize does not start with X_",
+                "ERROR: All embeddings must have as many rows as cells, and at least two columns. 'adata.obsm['badsize']' has shape of '(2, 0)'.",
+                "ERROR: adata.obsm['badsize'] contains all NaN values.",
+            ],
+        )
 
 
 class TestObsp:
