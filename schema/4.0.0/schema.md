@@ -1129,7 +1129,7 @@ To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>X_{suffix} where {suffix} MUST be at least one character long. The {suffix} is presented as text to users in the <b>Embedding Choice</b> selector in CELLxGENE Explorer so it is STRONGLY RECOMMENDED that it be descriptive.<br><br>See also <code>default_embedding</code> in <code>uns</code>.</td>
+      <td>X_{suffix} where {suffix} MUST be at least one character long and MUST NOT contain whitespace characters. The {suffix} is presented as text to users in the <b>Embedding Choice</b> selector in CELLxGENE Explorer so it is STRONGLY RECOMMENDED that it be descriptive.<br><br>See also <code>default_embedding</code> in <code>uns</code>.</td>
     </tr>
     <tr>
       <th>Annotator</th>
@@ -1140,7 +1140,7 @@ To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more
         <td><code>numpy.ndarray</code> with the following requirements<br><br>
           <ul>
           <li>MUST have the same number of rows as <code>X</code> and MUST include at least two columns</li>
-            <li>MUST have a data type of float, integer, or unsigned integer of any precision (8, 16, 32, or 64 bits)</li>
+          <li>MUST be a <a href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.kind.html"><code>numpy.dtype.kind</code></a> of <code>"f"</code>, <code>"i"</code>, or "<code>u"</code></li>
           <li>MUST NOT contain any <a href="https://numpy.org/devdocs/reference/constants.html#numpy.inf">positive infinity (<code>numpy.inf</code>)</a> or <a href="https://numpy.org/devdocs/reference/constants.html#numpy.NINF">negative infinity (<code>numpy.NINF</code>)</a> values </li>
           <li>MUST NOT contain all <a href="https://numpy.org/devdocs/reference/constants.html#numpy.nan">Not a Number (<code>numpy.nan</code>) </a>
 values</li></ul>
