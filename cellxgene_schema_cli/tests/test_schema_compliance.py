@@ -15,6 +15,8 @@ from cellxgene_schema.utils import getattr_anndata
 from cellxgene_schema.validate import Validator
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 
+schema_def = get_schema_definition()
+
 
 @pytest.fixture
 def validator() -> Validator:
@@ -36,8 +38,9 @@ def validator_with_adata(validator) -> Validator:
 
 @pytest.fixture
 def validator_with_tissue_type(validator_with_adata) -> Validator:
-    validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_type"] = "tissue"
-    validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_ontology_term_id"] = "UBERON:0001062"
+    obs = validator_with_adata.adata.obs
+    obs.loc[obs.index[0], "tissue_type"] = "tissue"
+    obs.loc[obs.index[0], "tissue_ontology_term_id"] = "UBERON:0001062"
     return validator
 
 
@@ -157,10 +160,11 @@ class TestExpressionMatrix:
         # The following line makes it to be scATAC-seq data (EFO:0010891)
         # Missing raw data in atac-seq data is allowed, thus the following should not return an error message
         validator = validator_with_adata
+        obs = validator.adata.obs
         validator.errors = []
-        validator.adata.obs["assay_ontology_term_id"] = "EFO:0010891"
-        validator.adata.obs["suspension_type"] = "nucleus"
-        validator.adata.obs.loc[:, ["suspension_type"]] = validator.adata.obs.astype("category")
+        obs["assay_ontology_term_id"] = "EFO:0010891"
+        obs["suspension_type"] = "nucleus"
+        obs.loc[:, ["suspension_type"]] = obs.astype("category")
         validator.validate_adata()
         assert validator.errors == []
 
@@ -247,7 +251,7 @@ class TestObs:
             "to missing dependent column in adata.obs.",
         ]
 
-    @pytest.mark.parametrize("reserved_column", get_schema_definition()["components"]["obs"]["reserved_columns"])
+    @pytest.mark.parametrize("reserved_column", schema_def["components"]["obs"]["reserved_columns"])
     def test_obs_reserved_columns_presence(self, validator_with_adata, reserved_column):
         """
         Reserved columns must NOT be used in obs
@@ -311,9 +315,7 @@ class TestObs:
 
     @pytest.mark.parametrize(
         "term",
-        get_schema_definition()["components"]["obs"]["columns"]["cell_type_ontology_term_id"]["curie_constraints"][
-            "forbidden"
-        ],
+        schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"]["curie_constraints"]["forbidden"],
     )
     def test_cell_type_ontology_term_id(self, validator_with_adata, term):
         """
@@ -332,8 +334,9 @@ class TestObs:
         this MUST be the most accurate HsapDv term.
         """
         validator = validator_with_adata
-        validator.adata.obs.loc[validator.adata.obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:9606"
-        validator.adata.obs.loc[validator.adata.obs.index[0], "development_stage_ontology_term_id"] = "EFO:0000001"
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:9606"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "EFO:0000001"
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is "
@@ -347,10 +350,11 @@ class TestObs:
         this MUST be the most accurate MmusDv term
         """
         validator = validator_with_adata
-        validator.adata.obs.loc[validator.adata.obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:10090"
-        validator.adata.obs.loc[validator.adata.obs.index[0], "development_stage_ontology_term_id"] = "EFO:0000001"
-        validator.adata.obs.loc[
-            validator.adata.obs.index[0],
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:10090"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "EFO:0000001"
+        obs.loc[
+            obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
         ] = "na"
         validator.validate_adata()
@@ -365,11 +369,12 @@ class TestObs:
         All other it MUST be children of UBERON:0000105 and not UBERON:0000071
         """
         validator = validator_with_adata
+        obs = validator.adata.obs
         # Fail case not an UBERON term
-        validator.adata.obs.loc[validator.adata.obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:10114"
-        validator.adata.obs.loc[validator.adata.obs.index[0], "development_stage_ontology_term_id"] = "EFO:0000001"
-        validator.adata.obs.loc[
-            validator.adata.obs.index[0],
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:10114"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "EFO:0000001"
+        obs.loc[
+            obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
         ] = "na"
         validator.validate_adata()
@@ -383,10 +388,10 @@ class TestObs:
         # All other it MUST be children of UBERON:0000105 and not UBERON:0000071
         # Fail case UBERON:0000071
         validator.errors = []
-        validator.adata.obs.loc[validator.adata.obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:10114"
-        validator.adata.obs.loc[validator.adata.obs.index[0], "development_stage_ontology_term_id"] = "UBERON:0000071"
-        validator.adata.obs.loc[
-            validator.adata.obs.index[0],
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:10114"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "UBERON:0000071"
+        obs.loc[
+            obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
         ] = "na"
         validator.validate_adata()
@@ -403,8 +408,9 @@ class TestObs:
         PATO:0000461 for normal or healthy.
         """
         validator = validator_with_adata
+        obs = validator.adata.obs
         # Invalid ontology
-        validator.adata.obs.loc[validator.adata.obs.index[0], "disease_ontology_term_id"] = "EFO:0000001"
+        obs.loc[obs.index[0], "disease_ontology_term_id"] = "EFO:0000001"
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'EFO:0000001' in 'disease_ontology_term_id' is not a "
@@ -413,7 +419,7 @@ class TestObs:
 
         # Invalid PATO term id
         validator.errors = []
-        validator.adata.obs.loc[validator.adata.obs.index[0], "disease_ontology_term_id"] = "PATO:0001894"
+        obs.loc[obs.index[0], "disease_ontology_term_id"] = "PATO:0001894"
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'PATO:0001894' in 'disease_ontology_term_id' is not an allowed term: '[['PATO:0000461']]'. "
@@ -428,11 +434,12 @@ class TestObs:
         Otherwise, for all other organisms this MUST be "na".
         """
         validator = validator_with_adata
+        obs = validator.adata.obs
         # If organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens,
         # this MUST be either a HANCESTRO term, "multiethnic", or "unknown" if unavailable.1
-        validator.adata.obs.loc[validator.adata.obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:9606"
-        validator.adata.obs.loc[
-            validator.adata.obs.index[0],
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:9606"
+        obs.loc[
+            obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
         ] = "EFO:0000001"
         validator.validate_adata()
@@ -447,10 +454,10 @@ class TestObs:
         # development_stage_ontology_term_id has to be set to an appropriate mouse term id, otherwise there
         # will be an error in that field.
         validator.errors = []
-        validator.adata.obs.loc[validator.adata.obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:10090"
-        validator.adata.obs.loc[validator.adata.obs.index[0], "development_stage_ontology_term_id"] = "MmusDv:0000003"
-        validator.adata.obs.loc[
-            validator.adata.obs.index[0],
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:10090"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "MmusDv:0000003"
+        obs.loc[
+            obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
         ] = "EFO:0000001"
         validator.validate_adata()
@@ -465,13 +472,14 @@ class TestObs:
         organism_ontology_term_id categorical with str categories. This MUST be a child of NCBITaxon:33208.
         """
         validator = validator_with_adata
+        obs = validator.adata.obs
         # Setting "organism_ontology_term_id" to "EFO:0000001" is the fail case. However since this represents neither
         # human nor mouse, then two other columns that are dependent on it need to be set appropriately to avoid
         # other error messages: "development_stage_ontology_term_id" and "self_reported_ethnicity_ontology_term_id"
-        validator.adata.obs.loc[validator.adata.obs.index[0], "organism_ontology_term_id"] = "EFO:0000001"
-        validator.adata.obs.loc[validator.adata.obs.index[0], "development_stage_ontology_term_id"] = "unknown"
-        validator.adata.obs.loc[
-            validator.adata.obs.index[0],
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "EFO:0000001"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "unknown"
+        obs.loc[
+            obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
         ] = "na"
         validator.validate_adata()
@@ -486,8 +494,9 @@ class TestObs:
         that this cell was derived from, depending on the type of biological sample:
         """
         validator = validator_with_adata
-        validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_ontology_term_id"] = "EFO:0000001"
-        validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_type"] = "tissue"
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "EFO:0000001"
+        obs.loc[obs.index[0], "tissue_type"] = "tissue"
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'EFO:0000001' in 'tissue_ontology_term_id' is not a valid ontology term id of "
@@ -501,8 +510,9 @@ class TestObs:
         suffixes.
         """
         validator = validator_with_adata
-        validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_type"] = "cell culture"
-        validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_ontology_term_id"] = "CL:0000057 (cell culture)"
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CL:0000057 (cell culture)"
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'CL:0000057 (cell culture)' in 'tissue_ontology_term_id' is not a valid ontology term id "
@@ -516,8 +526,9 @@ class TestObs:
         Cell Culture - MUST be CL term
         """
         validator = validator_with_adata
-        validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_type"] = "cell culture"
-        validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_ontology_term_id"] = "EFO:0000001"
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "EFO:0000001"
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'EFO:0000001' in 'tissue_ontology_term_id' is not a valid ontology term id of "
@@ -528,17 +539,16 @@ class TestObs:
 
     @pytest.mark.parametrize(
         "term",
-        get_schema_definition()["components"]["obs"]["columns"]["cell_type_ontology_term_id"]["curie_constraints"][
-            "forbidden"
-        ],
+        schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"]["curie_constraints"]["forbidden"],
     )
     def test_tissue_ontology_term_id_cell_culture_3(self, validator_with_adata, term):
         """
         Cell Culture - must be a valid CL term other than forbidden columns in schema definition.
         """
         validator = validator_with_adata
-        validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_type"] = "cell culture"
-        validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_ontology_term_id"] = term
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = term
         validator.validate_adata()
         assert validator.errors == [
             f"ERROR: '{term}' in 'tissue_ontology_term_id' is not allowed. When 'tissue_type' is "
@@ -552,9 +562,10 @@ class TestObs:
         Organoid - must not accept suffixes like "(organoid)"
         """
         validator = validator_with_adata
-        validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_ontology_term_id"] = "UBERON:0000057 (organoid)"
-        validator.adata.obs.tissue_type = validator.adata.obs.tissue_type.cat.add_categories(["organoid"])
-        validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_type"] = "organoid"
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "UBERON:0000057 (organoid)"
+        obs.tissue_type = obs.tissue_type.cat.add_categories(["organoid"])
+        obs.loc[obs.index[0], "tissue_type"] = "organoid"
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'UBERON:0000057 (organoid)' in 'tissue_ontology_term_id' is not a valid ontology term id of "
@@ -568,8 +579,9 @@ class TestObs:
         organoid or tissue.
         """
         validator = validator_with_adata
-        validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_ontology_term_id"] = "UBERON:0001062"
-        validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_type"] = "tissue"
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "UBERON:0001062"
+        obs.loc[obs.index[0], "tissue_type"] = "tissue"
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not a child term id of "
@@ -583,9 +595,10 @@ class TestObs:
         organoid or tissue.
         """
         validator = validator_with_adata
-        validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_ontology_term_id"] = "UBERON:0001062"
-        validator.adata.obs.tissue_type = validator.adata.obs.tissue_type.cat.add_categories(["organoid"])
-        validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_type"] = "organoid"
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "UBERON:0001062"
+        obs.tissue_type = obs.tissue_type.cat.add_categories(["organoid"])
+        obs.loc[obs.index[0], "tissue_type"] = "organoid"
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not a child term id of "
@@ -598,8 +611,9 @@ class TestObs:
         tissue_type must be one of 'cell culture', 'tissue', or 'organoid'
         """
         validator = validator_with_adata
-        validator.adata.obs.tissue_type = validator.adata.obs.tissue_type.cat.add_categories(["organ"])
-        validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_type"] = "organ"
+        obs = validator.adata.obs
+        obs.tissue_type = obs.tissue_type.cat.add_categories(["organ"])
+        obs.loc[obs.index[0], "tissue_type"] = "organ"
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Column 'tissue_type' in dataframe 'obs' contains invalid values "
@@ -612,7 +626,8 @@ class TestObs:
         This MUST be a child of PATOPATO:0001894 for phenotypic sex or "unknown" if unavailable
         """
         validator = validator_with_adata
-        validator.adata.obs.loc[validator.adata.obs.index[0], "sex_ontology_term_id"] = "EFO:0000001"
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "sex_ontology_term_id"] = "EFO:0000001"
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'EFO:0000001' in 'sex_ontology_term_id' is "
@@ -648,8 +663,9 @@ class TestObs:
 
     def test_donor_id_must_not_be_empty(self, validator_with_adata):
         validator = validator_with_adata
-        validator.adata.obs["donor_id"] = validator.adata.obs["donor_id"].cat.add_categories("")
-        validator.adata.obs["donor_id"].iloc[0] = ""
+        obs = validator.adata.obs
+        obs["donor_id"] = obs["donor_id"].cat.add_categories("")
+        obs["donor_id"].iloc[0] = ""
         validator.validate_adata()
         assert validator.errors == ["ERROR: Column 'donor_id' in dataframe 'obs' " "must not contain empty values."]
 
@@ -693,8 +709,9 @@ class TestObs:
         validator.warnings = []
 
         invalid_suspension_type = "na"
-        validator.adata.obs.loc[validator.adata.obs.index[1], "suspension_type"] = invalid_suspension_type
-        validator.adata.obs.loc[validator.adata.obs.index[1], "assay_ontology_term_id"] = assay
+        obs = validator.adata.obs
+        obs.loc[obs.index[1], "suspension_type"] = invalid_suspension_type
+        obs.loc[obs.index[1], "assay_ontology_term_id"] = assay
         validator.validate_adata()
         assert validator.errors == [
             f"ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
@@ -715,25 +732,21 @@ class TestObs:
             "EFO:0008919": ["cell"],
         }.items(),
     )
-    def test_suspension_type_ancestors_inclusive(self, validator, assay, suspension_types):
+    def test_suspension_type_ancestors_inclusive(self, validator_with_adata, assay, suspension_types):
         """
         suspension_id categorical with str categories. This field MUST be "cell", "nucleus", or "na". The allowed
         values depend on the assay_ontology_term_id. MUST  fail if the corresponding assay is present in the table, but
         the value of the suspension_type does not match the required value(s) in the table.
         """
-        # Resetting validator
-        validator.adata = examples.adata.copy()
-        validator.errors = []
-        validator.warnings = []
+        validator = validator_with_adata
+        obs = validator.adata.obs
 
         invalid_suspension_type = "na"
         if assay in {"EFO:0009918", "EFO:0700000", "EFO:0008994"}:
             invalid_suspension_type = "nucleus"
-            validator.adata.obs["suspension_type"] = validator.adata.obs[
-                "suspension_type"
-            ].cat.remove_unused_categories()
-        validator.adata.obs.loc[validator.adata.obs.index[1], "assay_ontology_term_id"] = assay
-        validator.adata.obs.loc[validator.adata.obs.index[1], "suspension_type"] = invalid_suspension_type
+            obs["suspension_type"] = obs["suspension_type"].cat.remove_unused_categories()
+        obs.loc[obs.index[1], "assay_ontology_term_id"] = assay
+        obs.loc[obs.index[1], "suspension_type"] = invalid_suspension_type
         validator.validate_adata()
         assert validator.errors == [
             f"ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
@@ -747,10 +760,9 @@ class TestObs:
         values depend on the assay_ontology_term_id. MUST support matching against ancestor term rules if specified.
         """
         validator = validator_with_adata
-        validator.adata.obs.loc[
-            validator.adata.obs.index[0], "assay_ontology_term_id"
-        ] = "EFO:0030008"  # child of EFO:0009294
-        validator.adata.obs.loc[validator.adata.obs.index[0], "suspension_type"] = "nucleus"
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "assay_ontology_term_id"] = "EFO:0030008"  # child of EFO:0009294
+        obs.loc[obs.index[0], "suspension_type"] = "nucleus"
 
         validator.validate_adata()
         assert validator.errors == [
@@ -765,10 +777,9 @@ class TestObs:
         values depend on the assay_ontology_term_id. MUST support matching against ancestor term rules if specified.
         """
         validator = validator_with_adata
-        validator.adata.obs.loc[
-            validator.adata.obs.index[0], "assay_ontology_term_id"
-        ] = "EFO:0008904"  # child of EFO:0007045
-        validator.adata.obs["suspension_type"][0] = "nucleus"
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "assay_ontology_term_id"] = "EFO:0008904"  # child of EFO:0007045
+        obs["suspension_type"][0] = "nucleus"
 
         validator.validate_adata()
         assert validator.errors == []
@@ -779,7 +790,8 @@ class TestObs:
         values depend on the assay_ontology_term_id. MUST warn if the corresponding assay is not recognized.
         """
         validator = validator_with_adata
-        validator.adata.obs.loc[validator.adata.obs.index[1], "assay_ontology_term_id"] = "EFO:0010183"
+        obs = validator.adata.obs
+        obs.loc[obs.index[1], "assay_ontology_term_id"] = "EFO:0010183"
         validator.validate_adata()
         assert validator.errors == []
         assert validator.warnings == [
@@ -791,8 +803,9 @@ class TestObs:
 
     def test_categories_with_zero_values_warn(self, validator_with_adata):
         validator = validator_with_adata
-        modified_donor_id = validator.adata.obs["donor_id"].cat.add_categories("donor_3")
-        validator.adata.obs["donor_id"] = modified_donor_id
+        obs = validator.adata.obs
+        modified_donor_id = obs["donor_id"].cat.add_categories("donor_3")
+        obs["donor_id"] = modified_donor_id
         validator.validate_adata()
         assert validator.warnings == [
             "WARNING: Column 'donor_id' in dataframe 'obs' "
@@ -803,8 +816,9 @@ class TestObs:
 
     def test_deprecated_fields(self, validator_with_adata):
         validator = validator_with_adata
-        validator.adata.obs["ethnicity"] = "test"
-        validator.adata.obs["ethnicity_ontology_term_id"] = "unknown"
+        obs = validator.adata.obs
+        obs["ethnicity"] = "test"
+        obs["ethnicity_ontology_term_id"] = "unknown"
 
         validator.validate_adata()
         assert validator.errors == [
@@ -826,7 +840,8 @@ class TestObs:
         NaN values should not be allowed in dataframes
         """
         validator = validator_with_adata
-        validator.adata.obs.loc[validator.adata.obs.index[0], "tissue_ontology_term_id"] = numpy.nan
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = numpy.nan
         validator.validate_adata()
         assert (
             "ERROR: Column 'tissue_ontology_term_id' in dataframe 'obs' must not contain NaN values."
@@ -904,12 +919,13 @@ class TestVar:
         Otherwise, this MUST be False.
         """
         validator = validator_with_adata
-
+        var = validator.adata.var
+        X = validator.adata.X
         # Duplicate 1st row in var and assigned to 2nd
-        validator.adata.var["feature_is_filtered"][0] = True
-        for i in range(validator.adata.X.shape[0]):
-            validator.adata.X[i, 0] = 0
-        validator.adata.X[0, 0] = 1
+        var["feature_is_filtered"][0] = True
+        for i in range(X.shape[0]):
+            X[i, 0] = 0
+        X[0, 0] = 1
 
         validator.validate_adata()
         assert validator.errors == [
@@ -919,7 +935,7 @@ class TestVar:
         ]
 
         # Test that feature_is_filtered is a bool and not a string
-        validator.adata.var["feature_is_filtered"] = "string"
+        var["feature_is_filtered"] = "string"
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Column 'feature_is_filtered' in dataframe 'var' must be boolean, not 'object'."
@@ -1007,7 +1023,7 @@ class TestVar:
         [
             (df, label["to_column"])
             for df in ["var", "raw.var"]
-            for label in get_schema_definition()["components"][df]["index"]["add_labels"]
+            for label in schema_def["components"][df]["index"]["add_labels"]
         ],
     )
     def test_add_label_fields_are_reserved(self, validator_with_adata, df, column):
@@ -1030,7 +1046,7 @@ class TestUns:
     Fail cases in adata.uns
     """
 
-    @pytest.mark.parametrize("reserved_column", get_schema_definition()["components"]["uns"]["reserved_columns"])
+    @pytest.mark.parametrize("reserved_column", schema_def["components"]["uns"]["reserved_columns"])
     def test_reserved_columns_presence(self, validator_with_adata, reserved_column):
         """
         Reserved columns must NOT be used in uns
@@ -1061,21 +1077,21 @@ class TestUns:
             Multiple (internal) control or space separators - "This     is an example"
         """
         validator = validator_with_adata
-
-        validator.adata.uns["title"] = " There is a leading space"
+        uns = validator.adata.uns
+        uns["title"] = " There is a leading space"
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: ' There is a leading space' in 'uns['title']' is not valid, it contains leading spaces."
         ]
 
-        validator.adata.uns["title"] = "There is a trailing space "
+        uns["title"] = "There is a trailing space "
         validator.errors = []
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'There is a trailing space ' in 'uns['title']' is not valid, it contains trailing spaces."
         ]
 
-        validator.adata.uns["title"] = "There are   double   spaces"
+        uns["title"] = "There are   double   spaces"
         validator.errors = []
         validator.validate_adata()
         assert validator.errors == [
@@ -1098,14 +1114,15 @@ class TestUns:
         batch_condition list[str]
         """
         validator = validator_with_adata
+        uns = validator.adata.uns
 
         # Check valid case of numpy array which is interchangeable with lists
-        validator.adata.uns["batch_condition"] = numpy.array(validator.adata.uns["batch_condition"])
+        uns["batch_condition"] = numpy.array(uns["batch_condition"])
         validator.validate_adata()
         assert validator.errors == []
 
         # Check fail case: not a list nor numpy array
-        validator.adata.uns["batch_condition"] = "cell_type_ontology_term_id"
+        uns["batch_condition"] = "cell_type_ontology_term_id"
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'cell_type_ontology_term_id' in 'uns['batch_condition']' "
@@ -1154,14 +1171,14 @@ class TestUns:
         Note that `normal` is tested in the happy path test case using `good_uns`.
         """
         validator = validator_with_adata
-
+        uns = validator.adata.uns
         # Check valid case of "count" which is not included in valid object
-        validator.adata.uns["X_approximate_distribution"] = "count"
+        uns["X_approximate_distribution"] = "count"
         validator.validate_adata()
         assert validator.errors == []
 
         # Invalid type: list
-        validator.adata.uns["X_approximate_distribution"] = ["count"]
+        uns["X_approximate_distribution"] = ["count"]
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: '['count']' in 'uns['X_approximate_distribution']' " "is not valid, it must be a string."
@@ -1181,17 +1198,18 @@ class TestUns:
 
     def test_deprecated_fields(self, validator_with_adata):
         validator = validator_with_adata
-        validator.adata.uns["X_normalization"] = "test_value"
-        validator.adata.uns["default_field"] = "test_value"
-        validator.adata.uns["layer_descriptions"] = "test_value"
-        validator.adata.uns["tags"] = "test_value"
-        validator.adata.uns["version"] = "test_value"
-        validator.adata.uns["contributors"] = "test_value"
-        validator.adata.uns["preprint_doi"] = "test_value"
-        validator.adata.uns["project_description"] = "test_value"
-        validator.adata.uns["project_links"] = "test_value"
-        validator.adata.uns["project_name"] = "test_value"
-        validator.adata.uns["publication_doi"] = "test_value"
+        uns = validator.adata.uns
+        uns["X_normalization"] = "test_value"
+        uns["default_field"] = "test_value"
+        uns["layer_descriptions"] = "test_value"
+        uns["tags"] = "test_value"
+        uns["version"] = "test_value"
+        uns["contributors"] = "test_value"
+        uns["preprint_doi"] = "test_value"
+        uns["project_description"] = "test_value"
+        uns["project_links"] = "test_value"
+        uns["project_name"] = "test_value"
+        uns["publication_doi"] = "test_value"
 
         validator.validate_adata()
         assert validator.errors == [
@@ -1241,8 +1259,8 @@ class TestObsm:
         values in obsm MUST be a numpy.ndarray
         """
         validator = validator_with_adata
-
-        validator.adata.obsm["X_tsne"] = pd.DataFrame(validator.adata.obsm["X_umap"], index=validator.adata.obs_names)
+        obsm = validator.adata.obsm
+        obsm["X_tsne"] = pd.DataFrame(obsm["X_umap"], index=validator.adata.obs_names)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: All embeddings have to be of 'numpy.ndarray' type, "
@@ -1265,8 +1283,9 @@ class TestObsm:
         values in obsm must be numerical types, strings are not valid
         """
         validator = validator_with_adata
-        all_string = numpy.full(validator.adata.obsm["X_umap"].shape, "test")
-        validator.adata.obsm["X_umap"] = all_string
+        obsm = validator.adata.obsm
+        all_string = numpy.full(obsm["X_umap"].shape, "test")
+        obsm["X_umap"] = all_string
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: adata.obsm['X_umap'] has an invalid data type. It should be float, integer, or unsigned "
@@ -1278,15 +1297,15 @@ class TestObsm:
         values in obsm cannot all be NaN
         """
         validator = validator_with_adata
-
+        obsm = validator.adata.obsm
         # It's okay if only one value is NaN
-        validator.adata.obsm["X_umap"][0:100, 1] = numpy.nan
+        obsm["X_umap"][0:100, 1] = numpy.nan
         validator.validate_adata()
         assert validator.errors == []
 
         # It's not okay if all values are NaN
-        all_nan = numpy.full(validator.adata.obsm["X_umap"].shape, numpy.nan)
-        validator.adata.obsm["X_umap"] = all_nan
+        all_nan = numpy.full(obsm["X_umap"].shape, numpy.nan)
+        obsm["X_umap"] = all_nan
         validator.validate_adata()
         assert validator.errors == ["ERROR: adata.obsm['X_umap'] contains all NaN values."]
 
@@ -1295,10 +1314,10 @@ class TestObsm:
         At least one key for the embedding MUST be prefixed with "X_"
         """
         validator = validator_with_adata
-
-        validator.adata.obsm["umap"] = validator.adata.obsm["X_umap"]
+        obsm = validator.adata.obsm
+        obsm["umap"] = obsm["X_umap"]
         validator.adata.uns["default_embedding"] = "umap"
-        del validator.adata.obsm["X_umap"]
+        del obsm["X_umap"]
         validator.validate_adata()
         assert validator.errors == ["ERROR: At least one embedding in 'obsm' has to have a " "key with an 'X_' prefix."]
 
@@ -1307,7 +1326,8 @@ class TestObsm:
         Suffix after X_ must be at least 1 character long
         """
         validator = validator_with_adata
-        validator.adata.obsm["X_"] = validator.adata.obsm["X_umap"]
+        obsm = validator.adata.obsm
+        obsm["X_"] = obsm["X_umap"]
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Embedding key in 'adata.obsm' X_ must have a suffix at least one character long."
@@ -1318,7 +1338,8 @@ class TestObsm:
         Embedding keys with whitespace are not valid
         """
         validator = validator_with_adata
-        validator.adata.obsm["X_ umap"] = validator.adata.obsm["X_umap"]
+        obsm = validator.adata.obsm
+        obsm["X_ umap"] = obsm["X_umap"]
         validator.validate_adata()
         assert validator.errors == ["ERROR: Embedding key X_ umap has whitespace in it, please remove it."]
 
@@ -1327,9 +1348,9 @@ class TestObsm:
         Curators MUST annotate one or more two-dimensional (m >= 2) embeddings
         """
         validator = validator_with_adata
-
+        obsm = validator.adata.obsm
         # Makes 1 column array
-        validator.adata.obsm["X_umap"] = numpy.delete(validator.adata.obsm["X_umap"], 0, 1)
+        obsm["X_umap"] = numpy.delete(obsm["X_umap"], 0, 1)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: All embeddings must have as many rows as cells, and "
@@ -1342,13 +1363,14 @@ class TestObsm:
         The number of rows must be equal to the number of columns
         """
         validator = validator_with_adata
+        obsm = validator.adata.obsm
         # Create a 3 row array
         arr1 = numpy.array([0, 0])
         arr2 = numpy.array([0, 0])
         arr3 = numpy.array([0, 0])
         three_row_array = numpy.vstack((arr1, arr2, arr3))
         with pytest.raises(ValueError):
-            validator.adata.obsm["X_umap"] = three_row_array
+            obsm["X_umap"] = three_row_array
             validator.validate_adata()
 
     def test_obsm_size_zero(self, validator_with_adata):
@@ -1417,7 +1439,7 @@ class TestAddingLabels:
     """
 
     @pytest.mark.parametrize(
-        "column", [label["to_column"] for label in get_schema_definition()["components"]["var"]["index"]["add_labels"]]
+        "column", [label["to_column"] for label in schema_def["components"]["var"]["index"]["add_labels"]]
     )
     def test_var_added_labels(self, label_writer, adata_with_labels, column):
         """
