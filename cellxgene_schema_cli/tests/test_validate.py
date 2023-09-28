@@ -1,8 +1,6 @@
-import copy
 import hashlib
 import os
 import tempfile
-import unittest
 from typing import Union
 from unittest import mock
 
@@ -34,82 +32,89 @@ from scipy.sparse import spmatrix
 # Tests for internal functions of the Validator and LabelWriter classes.
 
 
-class TestFieldValidation(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.schema_def = get_schema_definition()
-        cls.OntologyChecker = OntologyChecker()
+# schema_def = get_schema_definition()
+@pytest.fixture(scope="class")
+def schema_def():
+    return get_schema_definition()
 
-    def setUp(self):
-        self.validator = Validator()
-        self.validator.adata = adata_minimal
-        self.column_name = "cell_type_ontology_term_id"
-        self.column_schema = self.schema_def["components"]["obs"]["columns"][self.column_name]
-        self.curie_constraints = self.schema_def["components"]["obs"]["columns"][self.column_name]["curie_constraints"]
 
-    def test_schema_definition(self):
+@pytest.fixture()
+def validator_with_minimal_adata():
+    validator = Validator()
+    validator.adata = adata_minimal
+    return validator
+
+
+class TestFieldValidation:
+    def test_schema_definition(self, schema_def):
         """
         Tests that the definition of schema is well-defined
         """
-
-        self.assertIsInstance(self.schema_def["components"], dict)
-        self.assertIsInstance(self.schema_def["components"]["obs"], dict)
-        self.assertIsInstance(self.schema_def["components"]["obs"]["columns"], dict)
+        ontology_checker = OntologyChecker()
+        assert isinstance(schema_def["components"], dict)
+        assert isinstance(schema_def["components"]["obs"], dict)
+        assert isinstance(schema_def["components"]["obs"]["columns"], dict)
 
         # Check that any columns in obs that are "curie" have "curie_constraints" and "ontologies" under the constraints
-        for i in self.schema_def["components"]["obs"]["columns"]:
-            self.assertTrue("type" in self.schema_def["components"]["obs"]["columns"][i])
-            if self.schema_def["components"]["obs"]["columns"][i]["type"] == "curie":
-                if "curie_constraints" in self.schema_def["components"]["obs"]["columns"][i]:
-                    self.assertIsInstance(
-                        self.schema_def["components"]["obs"]["columns"][i]["curie_constraints"],
+        for i in schema_def["components"]["obs"]["columns"]:
+            assert "type" in schema_def["components"]["obs"]["columns"][i]
+            if schema_def["components"]["obs"]["columns"][i]["type"] == "curie":
+                if "curie_constraints" in schema_def["components"]["obs"]["columns"][i]:
+                    assert isinstance(
+                        schema_def["components"]["obs"]["columns"][i]["curie_constraints"],
                         dict,
                     )
-                    self.assertIsInstance(
-                        self.schema_def["components"]["obs"]["columns"][i]["curie_constraints"]["ontologies"],
+                    assert isinstance(
+                        schema_def["components"]["obs"]["columns"][i]["curie_constraints"]["ontologies"],
                         list,
                     )
 
                     # Check that the allowed ontologies are in the ontology checker or 'NA' (special case)
-                    for ontology_name in self.schema_def["components"]["obs"]["columns"][i]["curie_constraints"][
+                    for ontology_name in schema_def["components"]["obs"]["columns"][i]["curie_constraints"][
                         "ontologies"
                     ]:
                         if ontology_name != "NA":
-                            self.assertTrue(self.OntologyChecker.is_valid_ontology(ontology_name))
+                            assert ontology_checker.is_valid_ontology(ontology_name)
                 else:
                     # if no curie_constraints in top-level for type curie, assert that 'dependencies' list exists
-                    self.assertIsInstance(
-                        self.schema_def["components"]["obs"]["columns"][i]["dependencies"],
+                    assert isinstance(
+                        schema_def["components"]["obs"]["columns"][i]["dependencies"],
                         list,
                     )
 
-    def test_validate_ontology_good(self):
-        self.validator._validate_curie("CL:0000066", self.column_name, self.curie_constraints)
-        self.validator._validate_curie("CL:0000192", self.column_name, self.curie_constraints)
-        self.assertFalse(self.validator.errors)
+    def test_validate_ontology_good(self, validator_with_minimal_adata, schema_def):
+        validator = validator_with_minimal_adata
+        column_name = "cell_type_ontology_term_id"
+        curie_constraints = schema_def["components"]["obs"]["columns"][column_name]["curie_constraints"]
+        validator._validate_curie("CL:0000066", column_name, curie_constraints)
+        validator._validate_curie("CL:0000192", column_name, curie_constraints)
+        assert not validator.errors
 
-    def test_validate_ontology_wrong_ontology(self):
-        self.validator._validate_curie("EFO:0009899", self.column_name, self.curie_constraints)
-        self.assertTrue(self.validator.errors)
+    def test_validate_ontology_wrong_ontology(self, validator_with_minimal_adata, schema_def):
+        validator = validator_with_minimal_adata
+        column_name = "cell_type_ontology_term_id"
+        curie_constraints = schema_def["components"]["obs"]["columns"][column_name]["curie_constraints"]
+        validator._validate_curie("EFO:0009899", column_name, curie_constraints)
+        assert validator.errors
 
-    def test_validate_ontology_wrong_term(self):
-        self.validator._validate_curie("NO_TERM2", self.column_name, self.curie_constraints)
-        self.assertTrue(self.validator.errors)
+    def test_validate_ontology_wrong_term(self, validator_with_minimal_adata, schema_def):
+        validator = validator_with_minimal_adata
+        column_name = "cell_type_ontology_term_id"
+        curie_constraints = schema_def["components"]["obs"]["columns"][column_name]["curie_constraints"]
+        validator._validate_curie("NO_TERM2", column_name, curie_constraints)
+        assert validator.errors
 
 
-class TestAddLabelFunctions(unittest.TestCase):
-    def setUp(self):
-        # Set up test data
-        self.test_adata = adata_valid.copy()
-        self.test_adata_with_labels = adata_with_labels
-        self.schema_def = get_schema_definition()
+@pytest.fixture
+def label_writer():
+    validator = Validator()
+    validator.adata = adata_valid.copy()
+    validator.validate_adata()
+    return AnnDataLabelAppender(validator)
 
-        validator = Validator()
-        validator.adata = self.test_adata
-        validator.validate_adata()
-        self.writer = AnnDataLabelAppender(validator)
 
-    def test_get_dictionary_mapping_feature_id(self):
+class TestAddLabelFunctions:
+    def test_get_dictionary_mapping_feature_id(self, label_writer):
         # Good
         ids = [
             "ERCC-00002",
@@ -124,14 +129,14 @@ class TestAddLabelFunctions(unittest.TestCase):
             "S",
         ]
         expected_dict = dict(zip(ids, labels))
-        self.assertEqual(self.writer._get_mapping_dict_feature_id(ids), expected_dict)
+        assert label_writer._get_mapping_dict_feature_id(ids), expected_dict
 
         # Bad
         ids = ["NO_GENE"]
-        with self.assertRaises(KeyError):
-            self.writer._get_mapping_dict_feature_id(ids)
+        with pytest.raises(KeyError):
+            label_writer._get_mapping_dict_feature_id(ids)
 
-    def test_get_dictionary_mapping_feature_reference(self):
+    def test_get_dictionary_mapping_feature_reference(self, label_writer):
         # Good
         ids = [
             "ERCC-00002",
@@ -146,14 +151,14 @@ class TestAddLabelFunctions(unittest.TestCase):
             "NCBITaxon:2697049",
         ]
         expected_dict = dict(zip(ids, labels))
-        self.assertEqual(self.writer._get_mapping_dict_feature_reference(ids), expected_dict)
+        assert label_writer._get_mapping_dict_feature_reference(ids) == expected_dict
 
         # Bad
         ids = ["NO_GENE"]
-        with self.assertRaises(KeyError):
-            self.writer._get_mapping_dict_feature_id(ids)
+        with pytest.raises(KeyError):
+            label_writer._get_mapping_dict_feature_id(ids)
 
-    def test_get_dictionary_mapping_feature_length(self):
+    def test_get_dictionary_mapping_feature_length(self, label_writer):
         # Good
         ids = [
             "ERCC-00002",
@@ -169,94 +174,85 @@ class TestAddLabelFunctions(unittest.TestCase):
             3822,
         ]
         expected_dict = dict(zip(ids, gene_lengths))
-        self.assertEqual(self.writer._get_mapping_dict_feature_length(ids), expected_dict)
+        assert label_writer._get_mapping_dict_feature_length(ids) == expected_dict
 
         # Bad
         ids = ["NO_GENE"]
-        with self.assertRaises(KeyError):
-            self.writer._get_mapping_dict_feature_id(ids)
+        with pytest.raises(KeyError):
+            label_writer._get_mapping_dict_feature_id(ids)
 
-    def test_get_dictionary_mapping_curie(self):
+    def test_get_dictionary_mapping_curie(self, schema_def, label_writer):
         # Good
         ids = ["CL:0000066", "CL:0000192"]
         labels = ["epithelial cell", "smooth muscle cell"]
-        curie_constraints = self.schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"][
+        curie_constraints = schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"][
             "curie_constraints"
         ]
         expected_dict = dict(zip(ids, labels))
-        self.assertEqual(self.writer._get_mapping_dict_curie(ids, curie_constraints), expected_dict)
+        assert label_writer._get_mapping_dict_curie(ids, curie_constraints) == expected_dict
 
         ids = ["EFO:0009899", "EFO:0009922"]
         labels = ["10x 3' v2", "10x 3' v3"]
-        curie_constraints = self.schema_def["components"]["obs"]["columns"]["assay_ontology_term_id"][
-            "curie_constraints"
-        ]
+        curie_constraints = schema_def["components"]["obs"]["columns"]["assay_ontology_term_id"]["curie_constraints"]
         expected_dict = dict(zip(ids, labels))
-        self.assertEqual(self.writer._get_mapping_dict_curie(ids, curie_constraints), expected_dict)
+        assert label_writer._get_mapping_dict_curie(ids, curie_constraints) == expected_dict
 
         ids = ["MONDO:0100096"]
         labels = ["COVID-19"]
-        curie_constraints = self.schema_def["components"]["obs"]["columns"]["disease_ontology_term_id"][
-            "curie_constraints"
-        ]
+        curie_constraints = schema_def["components"]["obs"]["columns"]["disease_ontology_term_id"]["curie_constraints"]
         expected_dict = dict(zip(ids, labels))
-        self.assertEqual(self.writer._get_mapping_dict_curie(ids, curie_constraints), expected_dict)
+        assert label_writer._get_mapping_dict_curie(ids, curie_constraints) == expected_dict
 
         # Bad
-        curie_constraints = self.schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"][
+        curie_constraints = schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"][
             "curie_constraints"
         ]
 
         ids = ["CL:0000066", "CL:0000192_FOO"]
-        with self.assertRaises(ValueError):
-            self.writer._get_mapping_dict_curie(ids, curie_constraints)
+        with pytest.raises(ValueError):
+            label_writer._get_mapping_dict_curie(ids, curie_constraints)
 
         ids = ["CL:0000066", "CL:0000192", "UBERON:0002048"]
-        with self.assertRaises(ValueError):
-            self.writer._get_mapping_dict_curie(ids, curie_constraints)
+        with pytest.raises(ValueError):
+            label_writer._get_mapping_dict_curie(ids, curie_constraints)
 
         ids = ["CL:NO_TERM"]
-        with self.assertRaises(ValueError):
-            self.writer._get_mapping_dict_curie(ids, curie_constraints)
+        with pytest.raises(ValueError):
+            label_writer._get_mapping_dict_curie(ids, curie_constraints)
 
-    def test__write__Success(self):
+    def test__write__Success(self, label_writer):
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
-            self.writer.write_labels(labels_path)
-        self.assertTrue(self.writer.was_writing_successful)
-        self.assertFalse(self.writer.errors)
+            label_writer.write_labels(labels_path)
+        assert label_writer.was_writing_successful
+        assert not label_writer.errors
 
-    def test__write__Fail(self):
-        self.writer.adata.write_h5ad = mock.Mock(side_effect=Exception("Test Fail"))
+    def test__write__Fail(self, label_writer):
+        label_writer.adata.write_h5ad = mock.Mock(side_effect=Exception("Test Fail"))
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
-            self.writer.write_labels(labels_path)
-        self.assertFalse(self.writer.was_writing_successful)
-        self.assertTrue(self.writer.errors)
+            label_writer.write_labels(labels_path)
+        assert not label_writer.was_writing_successful
+        assert label_writer.errors
 
 
-class TestIgnoreLabelFunctions(unittest.TestCase):
-    def setUp(self):
-        # Set up test data
-        self.test_adata = adata_valid.copy()
-        self.test_adata_with_labels = adata_with_labels
-
+class TestIgnoreLabelFunctions:
     def test_validating_labeled_h5ad_should_fail_if_no_flag_set(self):
         validator = Validator()
-        validator.adata = self.test_adata_with_labels
+        validator.adata = adata_with_labels.copy()
         is_valid = validator.validate_adata()
 
-        self.assertFalse(is_valid)
+        assert not is_valid
 
     def test_validating_labeled_h5ad_should_pass_if_flag_set(self):
         validator = Validator(ignore_labels=True)
-        validator.adata = copy.deepcopy(self.test_adata_with_labels)
+        validator.adata = adata_with_labels.copy()
         is_valid = validator.validate_adata()
 
-        self.assertTrue(is_valid)
+        assert is_valid
 
 
-class TestValidate(unittest.TestCase):
+class TestValidate:
     @staticmethod
     def hash_file(file_name: str) -> str:
         with open(file_name, "rb") as f:
@@ -276,26 +272,22 @@ class TestValidate(unittest.TestCase):
             import anndata as ad
 
             adata = ad.read_h5ad(labels_path)
-            self.assertTrue(adata.X.has_canonical_format)
-            self.assertTrue(adata.raw.X.has_canonical_format)
-            self.assertTrue(success)
-            self.assertListEqual(errors, [])
-            self.assertTrue(is_seurat_convertible)
-            self.assertTrue(os.path.exists(labels_path))
+            assert adata.X.has_canonical_format
+            assert adata.raw.X.has_canonical_format
+            assert success
+            assert not errors
+            assert is_seurat_convertible
+            assert os.path.exists(labels_path)
             expected_hash = "55fbc095218a01cad33390f534d6690af0ecd6593f27d7cd4d26e91072ea8835"
             original_hash = self.hash_file(h5ad_valid)
-            self.assertNotEqual(
-                original_hash,
-                expected_hash,
-                "Writing labels did not change the dataset from the original.",
-            )
+            assert original_hash != expected_hash, "Writing labels did not change the dataset from the original."
 
     def test__validate_with_h5ad_valid_and_without_labels(self):
         success, errors, is_seurat_convertible = validate(h5ad_valid)
 
-        self.assertTrue(success)
-        self.assertListEqual(errors, [])
-        self.assertTrue(is_seurat_convertible)
+        assert success
+        assert not errors
+        assert is_seurat_convertible
 
     def test__validate_with_h5ad_invalid_and_with_labels(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -303,20 +295,20 @@ class TestValidate(unittest.TestCase):
 
             success, errors, is_seurat_convertible = validate(h5ad_invalid, labels_path)
 
-            self.assertFalse(success)
-            self.assertTrue(errors)
-            self.assertTrue(is_seurat_convertible)
-            self.assertFalse(os.path.exists(labels_path))
+            assert not success
+            assert errors
+            assert is_seurat_convertible
+            assert not os.path.exists(labels_path)
 
     def test__validate_with_h5ad_invalid_and_without_labels(self):
         success, errors, is_seurat_convertible = validate(h5ad_invalid)
 
-        self.assertFalse(success)
-        self.assertTrue(errors)
-        self.assertTrue(is_seurat_convertible)
+        assert not success
+        assert errors
+        assert is_seurat_convertible
 
 
-class TestSeuratConvertibility(unittest.TestCase):
+class TestSeuratConvertibility:
     def validation_helper(self, matrix, raw=None):
         data = anndata.AnnData(X=matrix, obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var)
         if raw:
@@ -331,32 +323,32 @@ class TestSeuratConvertibility(unittest.TestCase):
         sparse_matrix_too_large = sparse.csr_matrix(np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32))
         self.validation_helper(sparse_matrix_too_large)
         self.validator._validate_seurat_convertibility()
-        self.assertTrue(len(self.validator.warnings) == 1)
-        self.assertFalse(self.validator.is_seurat_convertible)
+        assert len(self.validator.warnings) == 1
+        assert not self.validator.is_seurat_convertible
 
         # Reducing nonzero count by 1, to within limit, makes it Seurat-convertible
         sparse_matrix_with_zero = sparse.csr_matrix(np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32))
         sparse_matrix_with_zero[0, 0] = 0
         self.validation_helper(sparse_matrix_with_zero)
         self.validator._validate_seurat_convertibility()
-        self.assertTrue(len(self.validator.warnings) == 0)
-        self.assertTrue(self.validator.is_seurat_convertible)
+        assert len(self.validator.warnings) == 0
+        assert self.validator.is_seurat_convertible
 
         # Dense matrices with a dimension that exceeds limit will fail -- zeros are irrelevant
         dense_matrix_with_zero = np.zeros((good_obs.shape[0], good_var.shape[0]), dtype=np.float32)
         self.validation_helper(dense_matrix_with_zero)
         self.validator.schema_def["max_size_for_seurat"] = 2**2 - 1
         self.validator._validate_seurat_convertibility()
-        self.assertTrue(len(self.validator.warnings) == 1)
-        self.assertFalse(self.validator.is_seurat_convertible)
+        assert len(self.validator.warnings) == 1
+        assert not self.validator.is_seurat_convertible
 
         # Dense matrices with dimensions in bounds but total count over will succeed
         dense_matrix = np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32)
         self.validation_helper(dense_matrix)
         self.validator.schema_def["max_size_for_seurat"] = 2**3 - 1
         self.validator._validate_seurat_convertibility()
-        self.assertTrue(len(self.validator.warnings) == 0)
-        self.assertTrue(self.validator.is_seurat_convertible)
+        assert len(self.validator.warnings) == 0
+        assert self.validator.is_seurat_convertible
 
         # h5ad where raw matrix variable count != length of raw var variables array is not Seurat-convertible
         matrix = sparse.csr_matrix(np.zeros([good_obs.shape[0], good_var.shape[0]], dtype=np.float32))
@@ -364,9 +356,9 @@ class TestSeuratConvertibility(unittest.TestCase):
         raw.var.drop("ENSSASG00005000004", axis=0, inplace=True)
         self.validation_helper(matrix, raw)
         self.validator._validate_seurat_convertibility()
-        self.assertTrue(len(self.validator.errors) == 1)
-        self.assertFalse(self.validator.is_seurat_convertible)
-        self.assertFalse(self.validator.is_valid)
+        assert len(self.validator.errors) == 1
+        assert not self.validator.is_seurat_convertible
+        assert not self.validator.is_valid
 
 
 class TestValidatorValidateDataFrame:
