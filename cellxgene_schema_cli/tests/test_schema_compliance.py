@@ -161,6 +161,9 @@ class TestObs(BaseValidationTest):
     Fail cases in adata.obs
     """
 
+    def get_format_error_message(self, error_message_suffix: str, detail: str) -> str:
+        return detail + " " + error_message_suffix
+
     def test_column_presence(self):
         """
         obs is a pandas.DataFrame. Curators MUST annotate the following columns in the obs dataframe.
@@ -269,9 +272,17 @@ class TestObs(BaseValidationTest):
         # Not a valid term
         self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "assay_ontology_term_id"] = "EFO:0009310"
         self.validator.validate_adata()
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"]["assay_ontology_term_id"][
+            "error_message_suffix"
+        ]
         self.assertEqual(
             self.validator.errors,
-            ["ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is a deprecated term id of 'EFO'."],
+            [
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: 'EFO:0009310' in 'assay_ontology_term_id' is a deprecated term id of 'EFO'.",
+                )
+            ],
         )
 
     def test_assay_ontology_term_id(self):
@@ -284,9 +295,18 @@ class TestObs(BaseValidationTest):
         # self.validator.adata.obs["assay_ontology_term_id"][0] = "CL:000001"
         self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "assay_ontology_term_id"] = "CL:000001"
         self.validator.validate_adata()
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"]["assay_ontology_term_id"][
+            "error_message_suffix"
+        ]
+
         self.assertEqual(
             self.validator.errors,
-            ["ERROR: 'CL:000001' in 'assay_ontology_term_id' is not a valid " "ontology term id of 'EFO'."],
+            [
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: 'CL:000001' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'.",
+                )
+            ],
         )
 
         # Not a valid child
@@ -296,8 +316,9 @@ class TestObs(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'EFO:0000001' in 'assay_ontology_term_id' is not a "
-                "child term id of ['EFO:0002772', 'EFO:0010183']."
+                self.get_format_error_message(
+                    error_message_suffix, "ERROR: 'EFO:0000001' in 'assay_ontology_term_id' is not an allowed term id."
+                )
             ],
         )
 
@@ -309,7 +330,12 @@ class TestObs(BaseValidationTest):
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
-            ["ERROR: 'EFO:0010183 (sci-plex)' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'."],
+            [
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: 'EFO:0010183 (sci-plex)' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'.",
+                )
+            ],
         )
 
     def test_cell_type_ontology_term_id(self):
@@ -331,7 +357,7 @@ class TestObs(BaseValidationTest):
 
         for term in self.validator.schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"][
             "curie_constraints"
-        ]["forbidden"]:
+        ]["forbidden"]["terms"]:
             with self.subTest(forbidden_term=term):
                 self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "cell_type_ontology_term_id"] = term
                 self.validator.validate_adata()
@@ -456,22 +482,53 @@ class TestObs(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'PATO:0001894' in 'disease_ontology_term_id' is not an allowed term: '[['PATO:0000461']]'. "
+                "ERROR: 'PATO:0001894' in 'disease_ontology_term_id' is not an allowed term id. "
                 "Only 'PATO:0000461' is allowed for 'PATO' term ids."
             ],
         )
 
-    def test_self_reported_ethnicity_ontology_term_id(self):
+    def test_self_reported_ethnicity_ontology_term_id__unknown(self):
         """
-        self_reported_ethnicity_ontology_term_id categorical with str categories.
-        If organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens,
-        this MUST be either a HANCESTRO term, "multiethnic", or "unknown" if unavailable.
-        Otherwise, for all other organisms this MUST be "na".
+        Test 'unknown' self_reported_ethnicity_ontology_term is valid when used as single term
         """
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "unknown"
+        self.assertTrue(self.validator.validate_adata())
+        self.assertEqual(self.validator.errors, [])
 
-        # If organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens,
-        # this MUST be either a HANCESTRO term, "multiethnic", or "unknown" if unavailable.
-        self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:9606"
+    def test_self_reported_ethnicity_ontology_term_id__unknown_in_multi_term(self):
+        """
+        Test 'unknown' self_reported_ethnicity_ontology_term is invalid when used in multi-term comma-delimited str
+        """
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
+
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "HANCESTRO:0005,HANCESTRO:0014,unknown"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: 'unknown' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id "
+                    "of 'HANCESTRO'.",
+                )
+            ],
+        )
+
+    def test_self_reported_ethnicity_ontology_term_id__invalid_ontology(self):
+        """
+        Test self_reported_ethnicity_ontology_term error message when passed a valid term from an invalid ontology
+        """
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
         self.validator.adata.obs.loc[
             self.validator.adata.obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
@@ -480,32 +537,270 @@ class TestObs(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is "
-                "not a valid ontology term id of 'HANCESTRO'. When 'organism_ontology_term_id' is 'NCBITaxon:9606' "
-                "(Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be either: a term id of 'HANCESTRO', "
-                "'multiethnic' if more than one ethnicity is reported, or 'unknown' if unavailable."
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term "
+                    "id of 'HANCESTRO'.",
+                )
             ],
         )
 
-        # Otherwise, for all other organisms this MUST be "na". Below is the test case for mouse data.
-        # development_stage_ontology_term_id has to be set to an appropriate mouse term id, otherwise there
-        # will be an error in that field.
-        self.validator.errors = []
+    def test_self_reported_ethnicity_ontology_term_id__forbidden_term(self):
+        """
+        Test self_reported_ethnicity_ontology_term error message when passed an explicitly forbidden ontology term that
+        is otherwise valid
+        """
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
+
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "HANCESTRO:0003"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: 'HANCESTRO:0003' in 'self_reported_ethnicity_ontology_term_id' is not allowed.",
+                )
+            ],
+        )
+
+    def test_self_reported_ethnicity_ontology_term_id__forbidden_term_ancestor(self):
+        """
+        Test self_reported_ethnicity_ontology_term error message when passed an ontology term that has
+        both itself and its children forbidden
+        """
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
+
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "HANCESTRO:0002"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: 'HANCESTRO:0002' in 'self_reported_ethnicity_ontology_term_id' is not allowed.",
+                )
+            ],
+        )
+
+    def test_self_reported_ethnicity_ontology_term_id__forbidden_term_child(self):
+        """
+        Test self_reported_ethnicity_ontology_term error message when passed the child term of an ontology term that has
+        both itself and its children forbidden
+        """
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
+
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "HANCESTRO:0306"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: 'HANCESTRO:0306' in 'self_reported_ethnicity_ontology_term_id' is not allowed. Child terms "
+                    "of 'HANCESTRO:0304' are not allowed.",
+                )
+            ],
+        )
+
+    def test_self_reported_ethnicity_ontology_term_id__forbidden_term_in_multi_term(self):
+        """
+        Test error message for self_reported_ethnicity_ontology_term_id involving a forbidden term among an otherwise
+        valid comma-delimited str of multiple terms
+        """
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
+
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "HANCESTRO:0005,HANCESTRO:0014,HANCESTRO:0018"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: 'HANCESTRO:0018' in 'self_reported_ethnicity_ontology_term_id' is not allowed.",
+                )
+            ],
+        )
+
+    def test_self_reported_ethnicity_ontology_term_id__non_human(self):
+        """
+        Test self_reported_ethnicity_ontology_term error message if term is not 'na' for a non-human organism
+        """
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["error_message_suffix"]
+        # Mouse organism ID
         self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:10090"
+        # Required to set to avoid development_stage_ontology_term_id errors
         self.validator.adata.obs.loc[
             self.validator.adata.obs.index[0], "development_stage_ontology_term_id"
         ] = "MmusDv:0000003"
         self.validator.adata.obs.loc[
             self.validator.adata.obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
-        ] = "EFO:0000001"
+        ] = "HANCESTRO:0005"
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is not a "
-                "valid value of 'self_reported_ethnicity_ontology_term_id'. When 'organism_ontology_term_id' is NOT "
-                "'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be 'na'."
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: 'HANCESTRO:0005' in 'self_reported_ethnicity_ontology_term_id' is not a "
+                    "valid value of 'self_reported_ethnicity_ontology_term_id'.",
+                )
+            ],
+        )
+
+    def test_self_reported_ethnicity_ontology_term_id__unsorted(self):
+        """
+        Test error message for self_reported_ethnicity_ontology_term_id with valid comma-delimited terms in a str,
+         but NOT in ascending lexical order
+        """
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
+
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "HANCESTRO:0014,HANCESTRO:0005"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: 'HANCESTRO:0014,HANCESTRO:0005' in 'self_reported_ethnicity_ontology_term_id' is not in "
+                    "ascending lexical order.",
+                )
+            ],
+        )
+
+    def test_self_reported_ethnicity_ontology_term_id__invalid_delimiters(self):
+        """
+        Test error message for self_reported_ethnicity_ontology_term_id involving
+        delimiters that are not specified in the schema definition yaml, such as whitespace
+        """
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
+
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "HANCESTRO:0005, HANCESTRO:0014"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: ' HANCESTRO:0014' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology "
+                    "term id of 'HANCESTRO'.",
+                )
+            ],
+        )
+
+    def test_self_reported_ethnicity_ontology_term_id__multiple_errors_in_multi_term(self):
+        """
+        Test that multiple distinct error messages are reported for self_reported_ethnicity_ontology_term_id with
+        multiple different error types in a comma-delimited multi term str
+        """
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
+
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "EFO:0000001,HANCESTRO:0004,HANCESTRO:0014,HANCESTRO:1"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term "
+                    "id of 'HANCESTRO'.",
+                ),
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: 'HANCESTRO:0004' in 'self_reported_ethnicity_ontology_term_id' is not allowed.",
+                ),
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: 'HANCESTRO:1' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term "
+                    "id of 'HANCESTRO'.",
+                ),
+            ],
+        )
+
+    def test_self_reported_ethnicity_ontology_term_id__duplicates_in_multi_term(self):
+        """
+        Test error message for self_reported_ethnicity_ontology_term_id with duplicate valid ontology terms in a
+        comma-delimited multi term str
+        """
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
+
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "HANCESTRO:0014,HANCESTRO:0014"
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: 'HANCESTRO:0014,HANCESTRO:0014' in 'self_reported_ethnicity_ontology_term_id' contains "
+                    "duplicates.",
+                )
+            ],
+        )
+
+    def test_self_reported_ethnicity_ontology_term_id__multi_term_list(self):
+        """
+        Test error message for self_reported_ethnicity_ontology_term_id with list type instead of str
+        """
+        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
+
+        self.validator.adata.obs.loc[
+            self.validator.adata.obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = ["HANCESTRO:0005,HANCESTRO:0014"]
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                self.get_format_error_message(
+                    error_message_suffix,
+                    "ERROR: '['HANCESTRO:0005,HANCESTRO:0014']' in 'self_reported_ethnicity_ontology_term_id' is not "
+                    "a valid ontology term value, it must be a string.",
+                )
             ],
         )
 
@@ -590,7 +885,7 @@ class TestObs(BaseValidationTest):
 
         for term in self.validator.schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"][
             "curie_constraints"
-        ]["forbidden"]:
+        ]["forbidden"]["terms"]:
             with self.subTest(case="error", forbidden_term=term):
                 self.validator.adata.obs.loc[self.validator.adata.obs.index[0], "tissue_ontology_term_id"] = term
                 self.validator.validate_adata()
@@ -636,8 +931,8 @@ class TestObs(BaseValidationTest):
             self.assertEqual(
                 self.validator.errors,
                 [
-                    "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not a child term id of "
-                    "'UBERON:0001062'. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' "
+                    "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not an allowed term id. "
+                    "When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' "
                     "MUST be a child term id of 'UBERON:0001062' (anatomical entity)."
                 ],
             )
@@ -649,8 +944,8 @@ class TestObs(BaseValidationTest):
             self.assertEqual(
                 self.validator.errors,
                 [
-                    "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not a child term id of "
-                    "'UBERON:0001062'. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' "
+                    "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not an allowed term id. "
+                    "When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' "
                     "MUST be a child term id of 'UBERON:0001062' (anatomical entity)."
                 ],
             )
@@ -1382,7 +1677,8 @@ class TestUns(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns[suspension_type_colors]. Found: ['green']"
+                "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns["
+                "suspension_type_colors]. Found: ['green']"
             ],
         )
 
@@ -1392,8 +1688,10 @@ class TestUns(BaseValidationTest):
         self.assertEqual(
             self.validator.errors,
             [
-                "ERROR: Color #000 in uns[suspension_type_colors] is not valid. Colors must be a valid hex code (#08c0ff) or a CSS4 named color",
-                "ERROR: Color pynk in uns[suspension_type_colors] is not valid. Colors must be a valid hex code (#08c0ff) or a CSS4 named color",
+                "ERROR: Color #000 in uns[suspension_type_colors] is not valid. Colors must be a valid hex code ("
+                "#08c0ff) or a CSS4 named color",
+                "ERROR: Color pynk in uns[suspension_type_colors] is not valid. Colors must be a valid hex code ("
+                "#08c0ff) or a CSS4 named color",
             ],
         )
 

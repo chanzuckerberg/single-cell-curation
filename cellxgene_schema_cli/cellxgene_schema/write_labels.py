@@ -108,6 +108,23 @@ class AnnDataLabelAppender:
 
         return flatten
 
+    def _get_ontology_term_label(self, term_id: str, allowed_ontologies: List[str]) -> str:
+        """
+        Fetches human-readable label corresponding to a single ontology term_id, if it is a term_id defined in one of the
+         allowed_ontologies. Raises ValueError if no ontology term label is found (should've triggered validation
+         error if term_id is not valid).
+
+        :param term_id: str single ontology term ID
+        :param allowed_ontologies: List[str] list of onotlogies to check for term_id label in
+        :return: str term label
+        """
+        for ontology_name in allowed_ontologies:
+            if ontology_name == "NA":
+                continue
+            elif ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id):
+                return ONTOLOGY_CHECKER.get_term_label(ontology_name, term_id)
+        raise ValueError(f"Add labels error: Unable to get label for '{term_id}'")
+
     def _get_mapping_dict_curie(self, ids: List[str], curie_constraints: dict) -> Dict[str, str]:
         """
         From defined constraints it creates a mapping dictionary of ontology IDs and labels.
@@ -122,6 +139,8 @@ class AnnDataLabelAppender:
 
         mapping_dict = {}
         allowed_ontologies = curie_constraints["ontologies"]
+        multi_term_def = curie_constraints.get("multi_term", None)
+        delimiter = None if multi_term_def is None else multi_term_def["delimiter"]
 
         # Map term_ids to their human-readable ontology labels
         for term_id in ids:
@@ -130,16 +149,11 @@ class AnnDataLabelAppender:
                 mapping_dict[term_id] = term_id
                 continue
 
-            for ontology_name in allowed_ontologies:
-                if ontology_name == "NA":
-                    continue
-                if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id):
-                    mapping_dict[term_id] = ONTOLOGY_CHECKER.get_term_label(ontology_name, term_id)
-
-        # Check that all ids got a mapping. All ids should be found if adata was validated
-        for id in ids:
-            if id not in mapping_dict:
-                raise ValueError(f"Add labels error: Unable to get label for '{id}'")
+            if delimiter is not None:
+                labels = [self._get_ontology_term_label(term, allowed_ontologies) for term in term_id.split(delimiter)]
+                mapping_dict[term_id] = delimiter.join(labels)
+            else:
+                mapping_dict[term_id] = self._get_ontology_term_label(term_id, allowed_ontologies)
 
         return mapping_dict
 
