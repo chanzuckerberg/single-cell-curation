@@ -17,6 +17,7 @@ invalid_genes = {
 valid_ontologies = [
     "CL",
     "EFO",
+    "HANCESTRO",
     "MONDO",
     "MmusDv",
     "NCBITaxon",
@@ -34,6 +35,10 @@ valid_terms = {
         "EFO:0011025": "10x 5' v1",
         "EFO:0008930": "Smart-seq",
         "EFO:0008931": "Smart-seq2",
+    },
+    "HANCESTRO": {
+        "HANCESTRO:0005": "European",
+        "HANCESTRO:0014": "Hispanic or Latin American",
     },
     "MONDO": {"MONDO:0100096": "COVID-19"},
     "MmusDv": {

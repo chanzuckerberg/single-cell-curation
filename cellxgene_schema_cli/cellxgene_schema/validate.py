@@ -90,45 +90,42 @@ class Validator:
         else:
             return self._get_component_def(component)["columns"][column_name]
 
-    def _validate_curie_allowed_terms(self, term_id: str, column_name: str, terms: Dict[str, List[str]]):
+    def _has_forbidden_curie_ancestor(
+        self, term_id: str, column_name: str, forbidden_def: Dict[str, List[str]]
+    ) -> bool:
         """
-        Validate a single curie term id is a valid children of any of allowed terms
-        If there are any errors, it adds them to self.errors
+        Validate if a single curie term id is a child term of any forbidden ancestors.
+        If there is a forbidden ancestor detected, it adds it to self.errors.
 
         :param str term_id: the curie term id to validate
         :param str column_name: original column name in adata where the term_id comes from (used for error messages)
-        :param dict{str: list[str]} terms: keys must be ontology names and values must lists of allowed terms
+        :param Dict[str, List[str] forbidden_def: mapping of ontologies to list of ancestor terms to validate against
 
-        :rtype None
+        :returns bool
         """
-
-        checks = []
-        for ontology_name, allowed_terms in terms.items():
-            if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id):
-                checks.append(term_id in allowed_terms)
-
-        if sum(checks) == 0 and len(checks) > 0:
-            all_allowed = list(terms.values())
-            self.errors.append(f"'{term_id}' in '{column_name}' is not an allowed term: '{all_allowed}'.")
+        for ontology_name in forbidden_def:
+            for ancestor in forbidden_def[ontology_name]:
+                if ONTOLOGY_CHECKER.is_descendent_of(ontology_name, term_id, ancestor):
+                    self.errors.append(
+                        f"'{term_id}' in '{column_name}' is not allowed. Child terms of "
+                        f"'{ancestor}' are not allowed."
+                    )
+                    return True
+        return False
 
     def _validate_curie_ancestors(
         self,
         term_id: str,
-        column_name: str,
         allowed_ancestors: Dict[str, List[str]],
-        inclusive: bool,
-        errors=True,
-    ):
+        inclusive: bool = False,
+    ) -> bool:
         """
-        Validate a single curie term id is a valid children of any of allowed ancestors
-        If there are any errors, it adds them to self.errors if the errors flag is True.
+        Validate a single curie term id is a valid child of any allowed ancestors
 
         :param str term_id: the curie term id to validate
-        :param str column_name: original column name in adata where the term_id comes from (used for error messages)
         :param dict{str: list[str]} allowed_ancestors: keys must be ontology names and values must lists of
         allowed ancestors
         :param bool inclusive:  if True then the ancestors themselves are allowed
-        :param bool errors: if True then errors are appended to self.errors
 
         :rtype Bool
         """
@@ -147,16 +144,10 @@ class Validator:
                     checks.append(is_child)
 
         if True not in checks:
-            if errors:
-                all_ancestors = [ancestor for ancestors in allowed_ancestors.values() for ancestor in ancestors]
-                # print ancestor as string with single-quotes if only 1 entry
-                if len(all_ancestors) == 1:
-                    all_ancestors = f"'{all_ancestors[0]}'"
-                self.errors.append(f"'{term_id}' in '{column_name}' is not a child term id of {all_ancestors}.")
             return False
         return True
 
-    def _validate_curie_ontology(self, term_id: str, column_name: str, allowed_ontologies: List[str]):
+    def _validate_curie_ontology(self, term_id: str, column_name: str, allowed_ontologies: List[str]) -> bool:
         """
         Validate a single curie term id belongs to specified ontologies. If it does belong to an allowed ontology
         verifies that it is not deprecated (obsolete).
@@ -166,7 +157,7 @@ class Validator:
         :param str column_name: original column name in adata where the term_id comes from (used for error messages)
         :param List[str] allowed_ontologies: allowed ontologies
 
-        :rtype None
+        :rtype bool
         """
 
         checks = []
@@ -177,11 +168,57 @@ class Validator:
 
             if is_valid and ONTOLOGY_CHECKER.is_term_id_deprecated(ontology_name, term_id):
                 self.errors.append(f"'{term_id}' in '{column_name}' is a deprecated term id of '{ontology_name}'.")
+                return False
 
         if sum(checks) == 0:
             self.errors.append(
                 f"'{term_id}' in '{column_name}' is not a valid ontology term id of '{', '.join(allowed_ontologies)}'."
             )
+            return False
+        return True
+
+    def _validate_curie_str(self, term_str: str, column_name, curie_constraints: dict) -> None:
+        """
+        Validate a curie str based on some constraints. If there are any errors, it adds them to self.errors
+
+        :param str term_str: the curie term str to validate
+        :param str column_name: Name of the column in the dataframe
+        :param dict curie_constraints: constraints for the curie term to be validated,
+        this part of the schema definition
+
+        :rtype None
+        """
+        if "exceptions" in curie_constraints and term_str in curie_constraints["exceptions"]:
+            return
+
+        # If NA is found in allowed ontologies, it means only exceptions should be found. If no exceptions were found
+        # then return error
+        if curie_constraints["ontologies"] == ["NA"]:
+            self.errors.append(f"'{term_str}' in '{column_name}' is not a valid value of '{column_name}'.")
+            return
+
+        if not isinstance(term_str, str):
+            self.errors.append(
+                f"'{term_str}' in '{column_name}' is not a valid ontology term value, it must be a string."
+            )
+            return
+
+        # if multi_term is defined, split str into individual ontology terms and validate each
+        if "multi_term" in curie_constraints:
+            delimiter = curie_constraints["multi_term"]["delimiter"]
+            term_ids = term_str.split(delimiter)
+            for term_id in term_ids:
+                self._validate_curie(term_id, column_name, curie_constraints)
+            if (
+                curie_constraints["multi_term"].get("sorted", False)
+                and len(term_ids) > 1
+                and not all(term_ids[i].strip() <= term_ids[i + 1].strip() for i in range(len(term_ids) - 1))
+            ):
+                self.errors.append(f"'{term_str}' in '{column_name}' is not in ascending lexical order.")
+            if len(set(term_ids)) != len(term_ids):
+                self.errors.append(f"'{term_str}' in '{column_name}' contains duplicates.")
+        else:
+            self._validate_curie(term_str, column_name, curie_constraints)
 
     def _validate_curie(self, term_id: str, column_name: str, curie_constraints: dict):
         """
@@ -195,40 +232,39 @@ class Validator:
 
         :rtype None
         """
-
-        # If there are exceptions and this is one then skip to end
-        if "exceptions" in curie_constraints and term_id in curie_constraints["exceptions"]:
-            return
-
-        # If there are forbidden terms
-        if "forbidden" in curie_constraints and term_id in curie_constraints["forbidden"]:
-            self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
-            return
-
-        # If NA is found in allowed ontologies, it means only exceptions should be found. If no exceptions were found
-        # then return error
-        if curie_constraints["ontologies"] == ["NA"]:
-            self.errors.append(f"'{term_id}' in '{column_name}' is not a valid value of '{column_name}'.")
-            return
-
-        # Check that term id belongs to allowed ontologies
-        self._validate_curie_ontology(term_id, column_name, curie_constraints["ontologies"])
-
         # If the term id does not belong to an allowed ontology, the subsequent checks are redundant
-        if self.errors:
+        if not self._validate_curie_ontology(term_id, column_name, curie_constraints["ontologies"]):
             return
 
-        # If there are specified ancestors then make sure that this id is a valid child
-        if "ancestors" in curie_constraints:
-            self._validate_curie_ancestors(term_id, column_name, curie_constraints["ancestors"], False)
+        # Check if term_id is forbidden by schema definition despite being a valid ontology term
+        if "forbidden" in curie_constraints:
+            if "terms" in curie_constraints["forbidden"] and term_id in curie_constraints["forbidden"]["terms"]:
+                self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
+                return
+            if "ancestors" in curie_constraints["forbidden"] and self._has_forbidden_curie_ancestor(
+                term_id, column_name, curie_constraints["forbidden"]["ancestors"]
+            ):
+                return
 
-        # Ancestors themselves are allowed
-        if "ancestors_inclusive" in curie_constraints:
-            self._validate_curie_ancestors(term_id, column_name, curie_constraints["ancestors_inclusive"], True)
+        # If there are allow-lists, validate against them
+        if "allowed" in curie_constraints:
+            is_allowed = False
+            if "terms" in curie_constraints["allowed"]:
+                for ontology_name, allow_list in curie_constraints["allowed"]["terms"].items():
+                    if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id) and (
+                        allow_list == ["all"] or term_id in set(allow_list)
+                    ):
+                        is_allowed = True
+                        break
+            if (
+                not is_allowed
+                and "ancestors" in curie_constraints["allowed"]
+                and self._validate_curie_ancestors(term_id, curie_constraints["allowed"]["ancestors"])
+            ):
+                is_allowed = True
 
-        # If there is a set of allowed terms check for it
-        if "allowed_terms" in curie_constraints:
-            self._validate_curie_allowed_terms(term_id, column_name, curie_constraints["allowed_terms"])
+            if not is_allowed:
+                self.errors.append(f"'{term_id}' in '{column_name}' is not an allowed term id.")
 
     def _validate_feature_id(self, feature_id: str, df_name: str):
         """
@@ -277,7 +313,7 @@ class Validator:
         start = 0
         n = matrix.shape[0]
         for i in range(int(n // obs_chunk_size)):
-            logger.debug(f"_chunk_matrix [{i} of {math.ceil(n/obs_chunk_size)}]")
+            logger.debug(f"_chunk_matrix [{i} of {math.ceil(n / obs_chunk_size)}]")
             end = start + obs_chunk_size
             yield (matrix[start:end], start, end)
             start = end
@@ -291,9 +327,9 @@ class Validator:
         logger.debug(f"Counting non-zero values in {matrix_name}")
 
         nnz = 0
-        format = get_matrix_format(self.adata, matrix)
+        matrix_format = get_matrix_format(self.adata, matrix)
         for matrix_chunk, _, _ in self._chunk_matrix(matrix):
-            nnz += matrix_chunk.count_nonzero() if format != "dense" else np.count_nonzero(matrix_chunk)
+            nnz += matrix_chunk.count_nonzero() if matrix_format != "dense" else np.count_nonzero(matrix_chunk)
 
         self.number_non_zero[matrix_name] = nnz
         return nnz
@@ -407,8 +443,8 @@ class Validator:
                 return
 
             if "curie_constraints" in column_def:
-                for term_id in column.drop_duplicates():
-                    self._validate_curie(term_id, column_name, column_def["curie_constraints"])
+                for term_str in column.drop_duplicates():
+                    self._validate_curie_str(term_str, column_name, column_def["curie_constraints"])
 
         # Add error suffix to errors found here
         if "error_message_suffix" in column_def:
@@ -492,7 +528,7 @@ class Validator:
             ancestor_inclusive: bool,
         ) -> bool:
             allowed_ancestors = dict(zip(ontologies, ancestors))
-            return validate_curie_ancestors_vectorized(term_id, "", allowed_ancestors, ancestor_inclusive, False)
+            return validate_curie_ancestors_vectorized(term_id, allowed_ancestors, inclusive=ancestor_inclusive)
 
         return is_ancestor_match, (
             rule_def["column"],
@@ -898,7 +934,7 @@ class Validator:
             matrix_format = get_matrix_format(self.adata, x)
             if matrix_format == "csr":
                 continue
-            assert format != "unknown"
+            assert matrix_format != "unknown"
 
             # It seems silly to perform this test for 'coo' and 'csc' formats,
             # which are, by definition, already sparse. But the old code
@@ -929,11 +965,11 @@ class Validator:
             to_validate.append((self.adata.raw.X, "raw.X"))
         # Check length of component arrays
         for matrix, matrix_name in to_validate:
-            format = get_matrix_format(self.adata, matrix)
-            if format in ["csc", "csr", "coo"]:
+            matrix_format = get_matrix_format(self.adata, matrix)
+            if matrix_format in ["csc", "csr", "coo"]:
                 effective_r_array_size = self._count_matrix_nonzero(matrix_name, matrix)
                 is_sparse = True
-            elif format == "dense":
+            elif matrix_format == "dense":
                 effective_r_array_size = max(matrix.shape)
                 is_sparse = False
             else:
@@ -1097,8 +1133,8 @@ class Validator:
             raw_loc = self._get_raw_x_loc()
             x = self.adata.raw.X if raw_loc == "raw.X" else self.adata.X
 
-            format = get_matrix_format(self.adata, x)
-            assert format != "unknown"
+            matrix_format = get_matrix_format(self.adata, x)
+            assert matrix_format != "unknown"
             self._raw_layer_exists = True
             for matrix_chunk, _, _ in self._chunk_matrix(x):
                 data = matrix_chunk if isinstance(matrix_chunk, np.ndarray) else matrix_chunk.data
