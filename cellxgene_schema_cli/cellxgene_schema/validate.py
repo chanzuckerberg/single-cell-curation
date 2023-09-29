@@ -1056,7 +1056,7 @@ class Validator:
 
         return False
 
-    def _get_raw_x(self) -> Union[np.ndarray, sparse.csc_matrix, sparse.csr_matrix]:
+    def _get_raw_x(self) -> Union[np.ndarray, sparse.csc_matrix, sparse.csr_matrix, pd.DataFrame]:
         """
         gets raw x (best guess, i.e. not guarantee it's actually raw)
         """
@@ -1271,6 +1271,57 @@ class Validator:
                 if "add_labels" in index_def:
                     self._check_single_column_availability(component, index_def["add_labels"])
 
+    def _validate_dense_raw_matrix_values(self) -> None:
+        raw_matrix = self._get_raw_x()
+        for row_index in range(0, self.adata.n_obs):
+            row = raw_matrix[row_index] if isinstance(raw_matrix, np.ndarray) else raw_matrix.iloc[row_index]
+            whole_row_is_zeros = True
+            for col_index, val in enumerate(row):
+                if val:
+                    whole_row_is_zeros = False
+                if not isinstance(val, np.float32) or val != val.astype(int):
+                    self.errors.append(
+                        f"All non-zero values must be positive integers converted to the numpy.float32 type. "
+                        f"The value at [{row_index}, {col_index}] does not match this requirement."
+                    )
+                    break
+            if whole_row_is_zeros:
+                self.errors.append(
+                    f"Each cell must have at least one non-zero value in its row. The row at index {row_index} "
+                    f"fails this requirement."
+                )
+                break
+
+    def _validate_sparse_raw_matrix_values(self) -> None:
+        rows_without_nonzero = {*range(0, self.adata.n_obs)}
+        row_indices, col_indices = self._get_raw_x().nonzero()
+        for row_index in row_indices:
+            if row_index in rows_without_nonzero:
+                rows_without_nonzero.remove(row_index)
+        if rows_without_nonzero:
+            self.errors.append(
+                f"Each cell must have at least one non-zero value in its row. The full set of "
+                f"rows which fail this requirement: {rows_without_nonzero}"
+            )
+        for row_index, col_index in zip(row_indices, col_indices):
+            val = self._get_raw_x()[row_index, col_index]
+            if not isinstance(val, np.float32) or val != val.astype(int):
+                self.errors.append(
+                    f"All non-zero values must be positive integers converted to the numpy.float32 type. The value"
+                    f"at [{row_index}, {col_index}] does not match this requirement."
+                )
+                break
+
+    def _check_raw_matrix_values(self):
+        """
+        Validate that each row of the raw matrix has at least one nonzero value and that all values are numpy.float32
+        """
+        matrix_format = get_matrix_format()
+        if matrix_format in ("csr", "csc", "coo"):  # full set of sparse matrix types
+            self._validate_sparse_raw_matrix_values()
+        else:  # "dense" or "unknown"
+            self._validate_dense_raw_matrix_values()
+
     def _deep_check(self):
         """
         Perform a "deep" check of the AnnData object using the schema definition. Adds errors to self.errors if any
@@ -1286,6 +1337,9 @@ class Validator:
 
         # Checks that reserved columns are not used
         self._check_column_availability()
+
+        # Checks that each row has at least one non-zero value
+        self._check_raw_matrix_values()
 
         # Checks sparsity
         logger.debug("Validating sparsity...")
