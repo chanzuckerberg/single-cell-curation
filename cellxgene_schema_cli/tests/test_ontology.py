@@ -19,7 +19,7 @@ class TestGeneChecker:
         assert isinstance(ontology.GeneChecker(valid_species), ontology.GeneChecker)
 
     @pytest.mark.parametrize("invalid_species", invalid_species)
-    def test_species_inalid(self, invalid_species):
+    def test_species_invalid(self, invalid_species):
         with pytest.raises(ValueError):
             ontology.GeneChecker(invalid_species)
 
