@@ -1319,7 +1319,7 @@ class Validator:
         matrix_format = get_matrix_format()
         if matrix_format in ("csr", "csc", "coo"):  # full set of sparse matrix types
             self._validate_sparse_raw_matrix_values()
-        else:  # "dense" or "unknown"
+        elif matrix_format == "dense":
             self._validate_dense_raw_matrix_values()
 
     def _deep_check(self):
