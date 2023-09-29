@@ -181,42 +181,36 @@ class TestAddLabelFunctions:
         with pytest.raises(KeyError):
             label_writer._get_mapping_dict_feature_id(ids)
 
-    def test_get_dictionary_mapping_curie(self, schema_def, label_writer):
+    @pytest.mark.parametrize(
+        "ids,labels,curie_constraints",
+        [
+            (["CL:0000066", "CL:0000192"], ["epithelial cell", "smooth muscle cell"], "cell_type_ontology_term_id"),
+            (["EFO:0009899", "EFO:0009922"], ["10x 3' v2", "10x 3' v3"], "assay_ontology_term_id"),
+            (["MONDO:0100096"], ["COVID-19"], "disease_ontology_term_id"),
+        ],
+    )
+    def test_get_dictionary_mapping_curie__good(self, schema_def, label_writer, ids, labels, curie_constraints):
         # Good
-        ids = ["CL:0000066", "CL:0000192"]
-        labels = ["epithelial cell", "smooth muscle cell"]
+        curie_constraints = schema_def["components"]["obs"]["columns"][curie_constraints]["curie_constraints"]
+        expected_dict = dict(zip(ids, labels))
+        assert label_writer._get_mapping_dict_curie(ids, curie_constraints) == expected_dict
+
+    def test_get_dictionary_mapping_curie__self_reported_ethnicity_ontology_term_id(self, schema_def, label_writer):
+        ids = ["HANCESTRO:0005", "HANCESTRO:0014", "HANCESTRO:0005,HANCESTRO:0014", "unknown"]
+        labels = ["European", "Hispanic or Latin American", "European,Hispanic or Latin American", "unknown"]
+        curie_constraints = schema_def["components"]["obs"]["columns"]["self_reported_ethnicity_ontology_term_id"][
+            "dependencies"
+        ][0]["curie_constraints"]
+        expected_dict = dict(zip(ids, labels))
+        assert label_writer._get_mapping_dict_curie(ids, curie_constraints) == expected_dict
+
+    @pytest.mark.parametrize(
+        "ids", [["CL:0000066", "CL:0000192_FOO"], ["CL:0000066", "CL:0000192", "UBERON:0002048"], ["CL:NO_TERM"]]
+    )
+    def test_get_dictionary_mapping_curie__bad(self, schema_def, label_writer, ids):
         curie_constraints = schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"][
             "curie_constraints"
         ]
-        expected_dict = dict(zip(ids, labels))
-        assert label_writer._get_mapping_dict_curie(ids, curie_constraints) == expected_dict
-
-        ids = ["EFO:0009899", "EFO:0009922"]
-        labels = ["10x 3' v2", "10x 3' v3"]
-        curie_constraints = schema_def["components"]["obs"]["columns"]["assay_ontology_term_id"]["curie_constraints"]
-        expected_dict = dict(zip(ids, labels))
-        assert label_writer._get_mapping_dict_curie(ids, curie_constraints) == expected_dict
-
-        ids = ["MONDO:0100096"]
-        labels = ["COVID-19"]
-        curie_constraints = schema_def["components"]["obs"]["columns"]["disease_ontology_term_id"]["curie_constraints"]
-        expected_dict = dict(zip(ids, labels))
-        assert label_writer._get_mapping_dict_curie(ids, curie_constraints) == expected_dict
-
-        # Bad
-        curie_constraints = schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"][
-            "curie_constraints"
-        ]
-
-        ids = ["CL:0000066", "CL:0000192_FOO"]
-        with pytest.raises(ValueError):
-            label_writer._get_mapping_dict_curie(ids, curie_constraints)
-
-        ids = ["CL:0000066", "CL:0000192", "UBERON:0002048"]
-        with pytest.raises(ValueError):
-            label_writer._get_mapping_dict_curie(ids, curie_constraints)
-
-        ids = ["CL:NO_TERM"]
         with pytest.raises(ValueError):
             label_writer._get_mapping_dict_curie(ids, curie_constraints)
 
@@ -386,25 +380,25 @@ class TestValidatorValidateDataFrame:
 
 class TestIsRaw:
     @staticmethod
-    def create_validator(data: Union[ndarray, spmatrix], format: str) -> Validator:
+    def create_validator(data: Union[ndarray, spmatrix], matrix_format: str) -> Validator:
         """
         Create a sample AnnData instance with the given data and format.
 
         :param data: The data matrix.
-        :param format: The format of the data matrix (e.g., "dense", "csr", "csc").
+        :param matrix_format: The format of the data matrix (e.g., "dense", "csr", "csc").
 
         :return anndata.AnnData: An AnnData instance with the specified data and format.
         """
         validator = Validator()
 
         adata = anndata.AnnData(X=data)
-        adata.obsm["X_" + format] = data
+        adata.obsm["X_" + matrix_format] = data
 
         validator.adata = adata
         return validator
 
     @pytest.mark.parametrize(
-        "data, format, expected_result",
+        "data, matrix_format, expected_result",
         [
             # Test case with integer values in a dense matrix
             (np.array([[1, 2, 3], [4, 5, 6]], dtype=int), "dense", True),
@@ -418,8 +412,8 @@ class TestIsRaw:
             (np.array([[1, 2.2, 3], [4.4, 5, 6.6]]), "dense", False),
         ],
     )
-    def test_is_raw(self, data, format, expected_result):
-        validator = self.create_validator(data, format)
+    def test_is_raw(self, data, matrix_format, expected_result):
+        validator = self.create_validator(data, matrix_format)
         assert validator._is_raw() == expected_result
 
     @mock.patch("cellxgene_schema.validate.get_matrix_format", return_value="unknown")
