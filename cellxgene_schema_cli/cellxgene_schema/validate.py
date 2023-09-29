@@ -1056,7 +1056,7 @@ class Validator:
 
         return False
 
-    def _get_raw_x(self) -> Union[np.ndarray, sparse.csc_matrix, sparse.csr_matrix, pd.DataFrame]:
+    def _get_raw_x(self) -> Union[np.ndarray, sparse.csc_matrix, sparse.csr_matrix]:
         """
         gets raw x (best guess, i.e. not guarantee it's actually raw)
         """
@@ -1274,7 +1274,7 @@ class Validator:
     def _validate_dense_raw_matrix_values(self) -> None:
         raw_matrix = self._get_raw_x()
         for row_index in range(0, self.adata.n_obs):
-            row = raw_matrix[row_index] if isinstance(raw_matrix, np.ndarray) else raw_matrix.iloc[row_index]
+            row = raw_matrix[row_index]
             whole_row_is_zeros = True
             for col_index, val in enumerate(row):
                 if val:
