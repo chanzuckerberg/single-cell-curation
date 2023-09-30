@@ -31,7 +31,7 @@ class Validator:
         self.schema_def = dict()
         self.schema_version: str = None
         self.h5ad_path = ""
-        self.invalid_feature_ids = []
+        # self.invalid_feature_ids = []
         self._raw_layer_exists = None
         self.is_seurat_convertible: bool = True
         self.ignore_labels = ignore_labels
@@ -41,6 +41,16 @@ class Validator:
         self.gene_checkers = dict()
 
         # Matrix (e.g., X, raw.X, ...) number non-zero cache
+        self.number_non_zero = dict()
+
+    def reset(self):
+        # TODO add a setter for adata that reset the validator when a new adata is set
+        self.errors = []
+        self.warnings = []
+        self.is_valid = False
+        self.h5ad_path = ""
+        self._raw_layer_exists = None
+        self.is_seurat_convertible: bool = True
         self.number_non_zero = dict()
 
     def _validate_encoding_version(self):
@@ -290,7 +300,7 @@ class Validator:
             self.gene_checkers[organism] = ontology.GeneChecker(organism)
 
         if not self.gene_checkers[organism].is_valid_id(feature_id):
-            self.invalid_feature_ids.append(feature_id)
+            # self.invalid_feature_ids.append(feature_id)
             self.errors.append(f"'{feature_id}' is not a valid feature ID in '{df_name}'.")
 
         return
@@ -1379,7 +1389,7 @@ class Validator:
         """
         logger.info("Starting validation...")
         # Re-start errors in case a new h5ad is being validated
-        self.errors = []
+        self.reset()
 
         if h5ad_path:
             logger.debug("Reading the h5ad file...")

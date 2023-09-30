@@ -18,7 +18,7 @@ from cellxgene_schema.write_labels import AnnDataLabelAppender
 schema_def = get_schema_definition()
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def validator() -> Validator:
     validator = Validator()
 
@@ -294,10 +294,7 @@ class TestObs:
         "assay_ontology_term_id,error",
         [
             ("CL:000001", "ERROR: 'CL:000001' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'."),
-            (
-                "EFO:0000001",
-                "ERROR: 'EFO:0000001' in 'assay_ontology_term_id' is not a child term id of ['EFO:0002772', 'EFO:0010183'].",
-            ),
+            ("EFO:0000001", "ERROR: 'EFO:0000001' in 'assay_ontology_term_id' is not an allowed term id."),
             (
                 "EFO:0010183 (sci-plex)",
                 "ERROR: 'EFO:0010183 (sci-plex)' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'.",
@@ -312,20 +309,17 @@ class TestObs:
         validator = validator_with_adata
         validator.adata.obs.loc[validator.adata.obs.index[0], "assay_ontology_term_id"] = assay_ontology_term_id
         validator.validate_adata()
-        assert validator.errors == [error]
-
-    def test_cell_type_ontology_term_id_invalid_term(self, validator_with_adata):
-        validator = validator_with_adata
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"]["assay_ontology_term_id"][
             "error_message_suffix"
         ]
+        assert validator.errors == [self.get_format_error_message(error_message_suffix, error)]
+
+    def test_cell_type_ontology_term_id_invalid_term(self, validator_with_adata):
+        validator = validator_with_adata
         validator.adata.obs.loc[validator.adata.obs.index[0], "cell_type_ontology_term_id"] = "EFO:0000001"
         validator.validate_adata()
         assert validator.errors == [
-            self.get_format_error_message(
-                error_message_suffix,
-                "ERROR: 'EFO:0010183 (sci-plex)' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'.",
-            )
+            "ERROR: 'EFO:0000001' in 'cell_type_ontology_term_id' is not a valid ontology term id of 'CL'.",
         ]
 
     @pytest.mark.parametrize(
@@ -636,11 +630,12 @@ class TestObs:
             )
         ]
 
-    def test_self_reported_ethnicity_ontology_term_id__invalid_delimiters(self):
+    def test_self_reported_ethnicity_ontology_term_id__invalid_delimiters(self, validator_with_adata):
         """
         Test error message for self_reported_ethnicity_ontology_term_id involving
         delimiters that are not specified in the schema definition yaml, such as whitespace
         """
+        validator = validator_with_adata
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "self_reported_ethnicity_ontology_term_id"
         ]["dependencies"][0]["error_message_suffix"]
@@ -728,11 +723,13 @@ class TestObs:
         ] = ["HANCESTRO:0005,HANCESTRO:0014"]
         validator.validate_adata()
         assert validator.errors == [
+            "ERROR: Column 'self_reported_ethnicity_ontology_term_id' in dataframe 'obs' "
+            "cannot contain mixed types. Found {<class 'str'>, <class 'list'>}.",
             self.get_format_error_message(
                 error_message_suffix,
                 "ERROR: '['HANCESTRO:0005,HANCESTRO:0014']' in 'self_reported_ethnicity_ontology_term_id' is not "
                 "a valid ontology term value, it must be a string.",
-            )
+            ),
         ]
 
     def test_organism_ontology_term_id(self, validator_with_adata):
