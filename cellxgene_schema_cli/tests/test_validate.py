@@ -32,7 +32,6 @@ from scipy.sparse import spmatrix
 # Tests for internal functions of the Validator and LabelWriter classes.
 
 
-# schema_def = get_schema_definition()
 @pytest.fixture(scope="class")
 def schema_def():
     return get_schema_definition()
