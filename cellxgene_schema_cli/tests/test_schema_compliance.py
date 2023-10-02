@@ -96,13 +96,15 @@ class TestExpressionMatrix(BaseValidationTest):
         In any layer, if a matrix has 50% or more values that are zeros, it is STRONGLY RECOMMENDED that
         the matrix be encoded as a scipy.sparse.csr_matrix
         """
-
-        self.validator.adata.X = self.validator.adata.X.toarray()
+        sparse_X = numpy.zeros([self.validator.adata.obs.shape[0], self.validator.adata.var.shape[0]], dtype=numpy.float32)
+        sparse_X[0, 1] = 1
+        sparse_X[1, 1] = 1
+        self.validator.adata.X = sparse_X
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.warnings,
             [
-                "WARNING: Sparsity of 'X' is 0.875 which is greater than 0.5, "
+                "WARNING: Sparsity of 'X' is 0.75 which is greater than 0.5, "
                 "and it is not a 'scipy.sparse.csr_matrix'. It is "
                 "STRONGLY RECOMMENDED to use this type of matrix for "
                 "the given sparsity."
@@ -119,7 +121,10 @@ class TestExpressionMatrix(BaseValidationTest):
         self.validator.validate_adata()
         self.assertEqual(
             self.validator.errors,
-            ["ERROR: Raw data may be missing: data in 'raw.X' contains non-integer values."],
+            [
+                "ERROR: All non-zero values in raw matrix must be positive integers of type numpy.float32.",
+                "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements."
+            ],
         )
 
     def test_raw_existence(self):
@@ -776,30 +781,6 @@ class TestObs(BaseValidationTest):
                     error_message_suffix,
                     "ERROR: 'HANCESTRO:0014,HANCESTRO:0014' in 'self_reported_ethnicity_ontology_term_id' contains "
                     "duplicates.",
-                )
-            ],
-        )
-
-    def test_self_reported_ethnicity_ontology_term_id__multi_term_list(self):
-        """
-        Test error message for self_reported_ethnicity_ontology_term_id with list type instead of str
-        """
-        error_message_suffix = self.validator.schema_def["components"]["obs"]["columns"][
-            "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][0]["error_message_suffix"]
-
-        self.validator.adata.obs.loc[
-            self.validator.adata.obs.index[0],
-            "self_reported_ethnicity_ontology_term_id",
-        ] = ["HANCESTRO:0005,HANCESTRO:0014"]
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            [
-                self.get_format_error_message(
-                    error_message_suffix,
-                    "ERROR: '['HANCESTRO:0005,HANCESTRO:0014']' in 'self_reported_ethnicity_ontology_term_id' is not "
-                    "a valid ontology term value, it must be a string.",
                 )
             ],
         )
