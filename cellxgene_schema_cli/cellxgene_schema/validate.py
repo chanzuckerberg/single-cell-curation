@@ -12,7 +12,7 @@ from pandas.core.computation.ops import UndefinedVariableError
 from scipy import sparse
 
 from . import ontology, schema
-from .utils import get_matrix_format, getattr_anndata, read_h5ad
+from .utils import get_matrix_format, getattr_anndata, read_h5ad, SPARSE_MATRIX_TYPES
 
 logger = logging.getLogger(__name__)
 
@@ -353,7 +353,7 @@ class Validator:
             n_nonzero = 0
 
             X_format = get_matrix_format(self.adata, self.adata.X)
-            if X_format in ["csc", "csr", "coo"]:
+            if X_format in SPARSE_MATRIX_TYPES:
                 n_nonzero = self.adata.X[:, column].count_nonzero()
 
             elif X_format == "dense":
@@ -966,7 +966,7 @@ class Validator:
         # Check length of component arrays
         for matrix, matrix_name in to_validate:
             matrix_format = get_matrix_format(self.adata, matrix)
-            if matrix_format in ["csc", "csr", "coo"]:
+            if matrix_format in SPARSE_MATRIX_TYPES:
                 effective_r_array_size = self._count_matrix_nonzero(matrix_name, matrix)
                 is_sparse = True
             elif matrix_format == "dense":
@@ -1130,8 +1130,7 @@ class Validator:
 
         if self._raw_layer_exists is None:
             # Get potential raw_X
-            raw_loc = self._get_raw_x_loc()
-            x = self.adata.raw.X if raw_loc == "raw.X" else self.adata.X
+            x = self.adata.raw.X if self._get_raw_x_loc() == "raw.X" else self.adata.X
             if x.dtype != np.float32:
                 self._raw_layer_exists = False
                 self.errors.append("Raw matrix values must have type numpy.float32.")
@@ -1140,32 +1139,34 @@ class Validator:
             matrix_format = get_matrix_format(self.adata, x)
             assert matrix_format != "unknown"
             self._raw_layer_exists = True
-            has_nonzero_in_every_row = True
-            all_nonzero_valid = True
+            has_row_of_zeros = False
+            has_invalid_nonzero_value = False
+            is_sparse_matrix = matrix_format in SPARSE_MATRIX_TYPES
             for matrix_chunk, _, _ in self._chunk_matrix(x):
-
-                if has_nonzero_in_every_row:
-                    if matrix_format in ("csr", "csc", "coo"):  # full set of sparse matrix types
+                if not has_row_of_zeros:
+                    if is_sparse_matrix:
                         row_indices, _ = matrix_chunk.nonzero()
                         if len(set(row_indices)) != self.adata.n_obs:
-                            has_nonzero_in_every_row = False
-                    elif matrix_format == "dense" and not all(np.apply_along_axis(np.any, axis=1, arr=matrix_chunk)):
-                        has_nonzero_in_every_row = False
+                            has_row_of_zeros = True
+                    # else, must be dense matrix, confirm that all rows have at least 1 nonzero value
+                    elif not all(np.apply_along_axis(np.any, axis=1, arr=matrix_chunk)):
+                        has_row_of_zeros = True
 
-                if all_nonzero_valid:
+                if not has_invalid_nonzero_value:
                     data = matrix_chunk if isinstance(matrix_chunk, np.ndarray) else matrix_chunk.data
                     if np.any((data % 1 > 0) | (data < 0)):
-                        all_nonzero_valid = False
+                        has_invalid_nonzero_value = True
 
-                if not has_nonzero_in_every_row and not all_nonzero_valid:
+                if has_row_of_zeros and has_invalid_nonzero_value:
+                    # Fail fast, exit loop and report
                     break
 
-            if not all_nonzero_valid:
-                self._raw_layer_exists = False
-                self.errors.append("All non-zero values in raw matrix must be positive integers of type numpy.float32.")
-            if not has_nonzero_in_every_row:
+            if has_row_of_zeros:
                 self._raw_layer_exists = False
                 self.errors.append("Each cell must have at least one non-zero value in its row in the raw matrix.")
+            if has_invalid_nonzero_value:
+                self._raw_layer_exists = False
+                self.errors.append("All non-zero values in raw matrix must be positive integers of type numpy.float32.")
 
         return self._raw_layer_exists
 
