@@ -57,6 +57,12 @@ def adata_with_labels() -> anndata.AnnData:
 
 
 @pytest.fixture
+def validator_with_adata_missing_raw(validator) -> Validator:
+    validator.adata = examples.adata_non_raw.copy()
+    return validator
+
+
+@pytest.fixture
 def label_writer(validator_with_validated_adata) -> AnnDataLabelAppender:
     """
     Fixture that returns an AnnDataLabelAppender object
@@ -131,9 +137,7 @@ class TestExpressionMatrix:
         the matrix be encoded as a scipy.sparse.csr_matrix
         """
         validator = validator_with_adata
-        sparse_X = numpy.zeros(
-            [validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32
-        )
+        sparse_X = numpy.zeros([validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32)
         sparse_X[0, 1] = 1
         sparse_X[1, 1] = 1
         validator.adata.X = sparse_X
@@ -145,19 +149,67 @@ class TestExpressionMatrix:
             "the given sparsity."
         ]
 
-    def test_raw_values(self, validator):
+    @pytest.mark.parametrize("invalid_value", [1.5, -1])
+    def test_raw_values__invalid(self, validator_with_adata, invalid_value):
         """
-        When both `adata.X` and `adata.raw.X` are present, but `adata.raw.X` contains non-integer values an error
-        is raised.
+        When both `adata.X` and `adata.raw.X` are present, but `adata.raw.X` contains negative or non-integer values,
+        an error is raised.
         """
 
-        validator.adata = examples.adata_no_raw_values.copy()
+        validator = validator_with_adata
+        validator.adata.raw.X[0, 1] = invalid_value
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: All non-zero values in raw matrix must be positive integers of type numpy.float32.",
             "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
         ]
-    def test_raw_existence(self, validator_with_adata):
+
+    @pytest.mark.parametrize("datatype", [int, "float16", "float64"])
+    def test_raw_values__wrong_datatype(self, validator_with_adata, datatype):
+        """
+        When both `adata.X` and `adata.raw.X` are present, but `adata.raw.X` values are stored as the wrong datatype
+        """
+
+        validator = validator_with_adata
+        raw = anndata.AnnData(X=validator.adata.raw.X, obs=validator.adata.obs, var=validator.adata.raw.var)
+        raw.X = raw.X.astype(datatype)
+        validator.adata.raw = raw
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Raw matrix values must have type numpy.float32.",
+            "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
+        ]
+
+    def test_raw_values__contains_zero_row(self, validator_with_adata):
+        """
+        When both `adata.X` and `adata.raw.X` are present, but `adata.raw.X` contains a row with all zeros
+        """
+
+        validator = validator_with_adata
+        validator.adata.raw.X[0] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Each cell must have at least one non-zero value in its row in the raw matrix.",
+            "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
+        ]
+
+    def test_raw_values__multiple_errors(self, validator_with_adata):
+        """
+        When both `adata.X` and `adata.raw.X` are present, but `adata.raw.X` contains multiple errors and all are
+        reported
+        """
+
+        validator = validator_with_adata
+        validator.adata.raw.X[0] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
+        validator.adata.raw.X[1, 1] = 1.5
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Each cell must have at least one non-zero value in its row in the raw matrix.",
+            "ERROR: All non-zero values in raw matrix must be positive integers of type numpy.float32.",
+            "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
+        ]
+
+    def test_raw_values__non_rna(self, validator_with_adata):
         """
         Except for ATAC-seq and methylation data, raw data is REQUIRED
         """
@@ -174,6 +226,17 @@ class TestExpressionMatrix:
         obs.loc[:, ["suspension_type"]] = obs.astype("category")
         validator.validate_adata()
         assert validator.errors == []
+
+    def test_missing_raw_matrix(self, validator_with_adata_missing_raw):
+        """
+        Test error message appears if dataset with RNA assay is missing raw matrix
+        """
+        validator = validator_with_adata_missing_raw
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: All non-zero values in raw matrix must be positive integers of type numpy.float32.",
+            "ERROR: Raw data is missing: there is only a normalized matrix in X and no raw.X",
+        ]
 
     def test_final_strongly_recommended(self, validator_with_adata):
         """
