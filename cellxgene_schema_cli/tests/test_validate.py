@@ -434,13 +434,13 @@ class TestIsRaw:
             (np.array([[1, 2.2, 3], [4.4, 5, 6.6]]), "dense", False),
         ],
     )
-    def test_is_raw(self, data, matrix_format, expected_result):
+    def test_has_valid_raw(self, data, matrix_format, expected_result):
         validator = self.create_validator(data, matrix_format)
-        assert validator._is_raw() == expected_result
+        assert validator._has_valid_raw() == expected_result
 
     @mock.patch("cellxgene_schema.validate.get_matrix_format", return_value="unknown")
-    def test_is_raw_with_unknown_format(self, mock_get_matrix_format):
+    def test_has_valid_raw_with_unknown_format(self, mock_get_matrix_format):
         data = np.array([[1, 2, 3], [4, 5, 6]], dtype=int)
         validator = self.create_validator(data, "unknown")
         with pytest.raises(AssertionError):
-            validator._is_raw()
+            validator._has_valid_raw()
