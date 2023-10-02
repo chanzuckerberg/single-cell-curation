@@ -21,8 +21,8 @@ COVERAGE_DATA_FILE=.coverage.$(shell git rev-parse --short HEAD)
 export COVERAGE_RUN_ARGS:=--data-file=$(COVERAGE_DATA_FILE) --parallel-mode
 
 unit-test:
-	cd cellxgene_schema_cli && coverage run $(COVERAGE_RUN_ARGS) --source=cellxgene_schema -m pytest --log-level=INFO \
-	 ./tests
+	cd cellxgene_schema_cli \
+	&& coverage run $(COVERAGE_RUN_ARGS) --source=cellxgene_schema -m pytest --log-level=INFO ./tests
 	mv ./cellxgene_schema_cli/$(COVERAGE_DATA_FILE)* ./$(COVERAGE_DATA_FILE).cellxgene_schema_cli
 
 ontology-dry-run-tests:
