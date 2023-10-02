@@ -1143,20 +1143,23 @@ class Validator:
             has_nonzero_in_every_row = True
             all_nonzero_valid = True
             for matrix_chunk, _, _ in self._chunk_matrix(x):
+
                 if has_nonzero_in_every_row:
                     if matrix_format in ("csr", "csc", "coo"):  # full set of sparse matrix types
                         row_indices, _ = matrix_chunk.nonzero()
                         if len(set(row_indices)) != self.adata.n_obs:
                             has_nonzero_in_every_row = False
-                    elif matrix_format == "dense":
-                        if not all(np.apply_along_axis(np.any, axis=1, arr=matrix_chunk)):
-                            has_nonzero_in_every_row = False
+                    elif matrix_format == "dense" and not all(np.apply_along_axis(np.any, axis=1, arr=matrix_chunk)):
+                        has_nonzero_in_every_row = False
+
                 if all_nonzero_valid:
                     data = matrix_chunk if isinstance(matrix_chunk, np.ndarray) else matrix_chunk.data
                     if np.any((data % 1 > 0) | (data < 0)):
                         all_nonzero_valid = False
+
                 if not has_nonzero_in_every_row and not all_nonzero_valid:
                     break
+
             if not all_nonzero_valid:
                 self._raw_layer_exists = False
                 self.errors.append("All non-zero values in raw matrix must be positive integers of type numpy.float32.")

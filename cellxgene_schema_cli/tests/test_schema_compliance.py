@@ -96,7 +96,9 @@ class TestExpressionMatrix(BaseValidationTest):
         In any layer, if a matrix has 50% or more values that are zeros, it is STRONGLY RECOMMENDED that
         the matrix be encoded as a scipy.sparse.csr_matrix
         """
-        sparse_X = numpy.zeros([self.validator.adata.obs.shape[0], self.validator.adata.var.shape[0]], dtype=numpy.float32)
+        sparse_X = numpy.zeros(
+            [self.validator.adata.obs.shape[0], self.validator.adata.var.shape[0]], dtype=numpy.float32
+        )
         sparse_X[0, 1] = 1
         sparse_X[1, 1] = 1
         self.validator.adata.X = sparse_X
@@ -123,7 +125,7 @@ class TestExpressionMatrix(BaseValidationTest):
             self.validator.errors,
             [
                 "ERROR: All non-zero values in raw matrix must be positive integers of type numpy.float32.",
-                "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements."
+                "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
             ],
         )
 
