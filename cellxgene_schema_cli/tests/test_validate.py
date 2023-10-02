@@ -378,7 +378,7 @@ class TestSeuratConvertibility(unittest.TestCase):
 
 
 class TestValidatorValidateDataFrame:
-    def test_fail_category_not_string(self):
+    def test_fail_category_not_string(self, tmp_path):
         validator = Validator()
         validator._set_schema_def()
         adata = adata_valid.copy()
@@ -388,8 +388,12 @@ class TestValidatorValidateDataFrame:
 
         validator._validate_dataframe("obs")
         assert "must only contain string categories." in validator.errors[0]
+        with pytest.raises(TypeError):
+            # If this tests starts to fail here it means the anndata version has be upgraded and this check is no
+            # longer needed
+            adata.write_h5ad(f"{tmp_path}/test.h5ad")
 
-    def test_fail_mixed_column_types(self):
+    def test_fail_mixed_column_types(self, tmp_path):
         validator = Validator()
         validator._set_schema_def()
         adata = adata_valid.copy()
@@ -398,6 +402,10 @@ class TestValidatorValidateDataFrame:
 
         validator._validate_dataframe("obs")
         assert "Column 'mixed' in dataframe 'obs' cannot contain mixed types." in validator.errors[0]
+        with pytest.raises(TypeError):
+            # If this tests starts to fail here it means the anndata version has be upgraded and this check is no
+            # longer needed
+            adata.write_h5ad(f"{tmp_path}/test.h5ad")
 
 
 class TestIsRaw:
