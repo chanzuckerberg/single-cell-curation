@@ -189,10 +189,9 @@ good_uns_with_labels = {
 # ---
 # 4. Creating expression matrix,
 # X has integer values and non_raw_X has real values
-X = numpy.zeros([good_obs.shape[0], good_var.shape[0]], dtype=numpy.float32)
+X = numpy.ones([good_obs.shape[0], good_var.shape[0]], dtype=numpy.float32)
 non_raw_X = sparse.csr_matrix(X.copy())
 non_raw_X[0, 0] = 1.5
-
 
 # ---
 # 5.Creating valid obsm

@@ -12,7 +12,7 @@ from pandas.core.computation.ops import UndefinedVariableError
 from scipy import sparse
 
 from . import ontology, schema
-from .utils import get_matrix_format, getattr_anndata, read_h5ad
+from .utils import SPARSE_MATRIX_TYPES, get_matrix_format, getattr_anndata, read_h5ad
 
 logger = logging.getLogger(__name__)
 
@@ -360,7 +360,7 @@ class Validator:
             n_nonzero = 0
 
             X_format = get_matrix_format(self.adata, self.adata.X)
-            if X_format in ["csc", "csr", "coo"]:
+            if X_format in SPARSE_MATRIX_TYPES:
                 n_nonzero = self.adata.X[:, column].count_nonzero()
 
             elif X_format == "dense":
@@ -973,7 +973,7 @@ class Validator:
         # Check length of component arrays
         for matrix, matrix_name in to_validate:
             matrix_format = get_matrix_format(self.adata, matrix)
-            if matrix_format in ["csc", "csr", "coo"]:
+            if matrix_format in SPARSE_MATRIX_TYPES:
                 effective_r_array_size = self._count_matrix_nonzero(matrix_name, matrix)
                 is_sparse = True
             elif matrix_format == "dense":
@@ -1119,41 +1119,67 @@ class Validator:
         else:
             return "X"
 
-    def _is_raw(self, force: bool = False) -> bool:
+    def _has_valid_raw(self, force: bool = False) -> bool:
         """
         Checks if the non-zero values for the raw matrix (adata.X or adata.raw.X)
-        are integers. Returns False if at least one value is not an integer,
+        are positive integers stored as numpy.float32. Also validates that every row contains at least one non-zero
+        value.
 
-        True otherwise.
+        Returns False if at least one value / row does not meet requirements. True otherwise.
 
         Since this process is memory intensive, it will return a cache value if this function has been called before.
         If calculation needs to be repeated use `force = True`
 
         :rtype bool
-        :return False if at least one value is not an integer, True otherwise
         """
         if force:
             self._raw_layer_exists = None
 
         if self._raw_layer_exists is None:
             # Get potential raw_X
-            raw_loc = self._get_raw_x_loc()
-            x = self.adata.raw.X if raw_loc == "raw.X" else self.adata.X
+            x = self.adata.raw.X if self._get_raw_x_loc() == "raw.X" else self.adata.X
+            if x.dtype != np.float32:
+                self._raw_layer_exists = False
+                self.errors.append("Raw matrix values must have type numpy.float32.")
+                return self._raw_layer_exists
 
             matrix_format = get_matrix_format(self.adata, x)
             assert matrix_format != "unknown"
             self._raw_layer_exists = True
+            has_row_of_zeros = False
+            has_invalid_nonzero_value = False
+            is_sparse_matrix = matrix_format in SPARSE_MATRIX_TYPES
             for matrix_chunk, _, _ in self._chunk_matrix(x):
-                data = matrix_chunk if isinstance(matrix_chunk, np.ndarray) else matrix_chunk.data
-                if (data % 1 > 0).any():
-                    self._raw_layer_exists = False
+                if not has_row_of_zeros:
+                    if is_sparse_matrix:
+                        row_indices, _ = matrix_chunk.nonzero()
+                        if len(set(row_indices)) != self.adata.n_obs:
+                            has_row_of_zeros = True
+                    # else, must be dense matrix, confirm that all rows have at least 1 nonzero value
+                    elif not all(np.apply_along_axis(np.any, axis=1, arr=matrix_chunk)):
+                        has_row_of_zeros = True
+
+                if not has_invalid_nonzero_value:
+                    data = matrix_chunk if isinstance(matrix_chunk, np.ndarray) else matrix_chunk.data
+                    if np.any((data % 1 > 0) | (data < 0)):
+                        has_invalid_nonzero_value = True
+
+                if has_row_of_zeros and has_invalid_nonzero_value:
+                    # Fail fast, exit loop and report
                     break
+
+            if has_row_of_zeros:
+                self._raw_layer_exists = False
+                self.errors.append("Each cell must have at least one non-zero value in its row in the raw matrix.")
+            if has_invalid_nonzero_value:
+                self._raw_layer_exists = False
+                self.errors.append("All non-zero values in raw matrix must be positive integers of type numpy.float32.")
 
         return self._raw_layer_exists
 
     def _validate_x_raw_x_dimensions(self):
         """
-        Validates that X and raw.X have the same shape. Adds errors to self.errors if any.
+        Validates that X and raw.X have the same shape, if raw.X exists. Adds errors to self.errors if any.
         """
 
         if self._get_raw_x_loc() == "raw.X":
@@ -1176,9 +1202,10 @@ class Validator:
         """
         Validates raw only if the rules in the schema definition are fulfilled and that X and raw.X have the same shape
         The validation entails checking that:
-         1. X and raw.X have the same column and and raw indeces
+         1. X and raw.X have the same column and row indices
          2. there's an expression matrix containing raw (integer) values, first in adata.raw.X and then adata.X if
          the former does not exist.
+         3. For applicable assays, checks that each row has at least one non-zero value
 
         Adds errors to self.errors if any.
 
@@ -1204,17 +1231,17 @@ class Validator:
         if all(checks):
             # If both "raw.X" and "X" exist but neither are raw
             # This is testing for when sometimes data contributors put a normalized matrix in both "X" and "raw.X".
-            if not self._is_raw() and self._get_raw_x_loc() == "raw.X":
-                self.errors.append("Raw data may be missing: data in 'raw.X' contains non-integer values.")
+            if not self._has_valid_raw() and self._get_raw_x_loc() == "raw.X":
+                self.errors.append("Raw data may be missing: data in 'raw.X' does not meet schema requirements.")
 
             # Only "X" exists but it's not raw
             # This is testing for when there is only a normalized matrix in "X" and there is no "raw.X".
-            if not self._is_raw() and self._get_raw_x_loc() == "X":
+            if not self._has_valid_raw() and self._get_raw_x_loc() == "X":
                 self.errors.append("Raw data is missing: there is only a normalized matrix in X and no raw.X")
 
             # If raw data is in X and there is nothing in raw.X (i.e. normalized values are not provided), then
             # add a warning because normalized data for RNA data is STRONGLY RECOMMENDED
-            if self._is_raw() and self._get_raw_x_loc() == "X":
+            if self._has_valid_raw() and self._get_raw_x_loc() == "X":
                 self.warnings.append(
                     "Only raw data was found, i.e. there is no 'raw.X'. "
                     "It is STRONGLY RECOMMENDED that 'final' (normalized) data is provided."
