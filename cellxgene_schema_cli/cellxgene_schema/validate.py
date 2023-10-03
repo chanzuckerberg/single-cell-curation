@@ -1137,7 +1137,7 @@ class Validator:
 
         if self._raw_layer_exists is None:
             # Get potential raw_X
-            x = self.adata.raw.X if self._get_raw_x_loc() == "raw.X" else self.adata.X
+            x = self._get_raw_x()
             if x.dtype != np.float32:
                 self._raw_layer_exists = False
                 self.errors.append("Raw matrix values must have type numpy.float32.")
@@ -1153,7 +1153,7 @@ class Validator:
                 if not has_row_of_zeros:
                     if is_sparse_matrix:
                         row_indices, _ = matrix_chunk.nonzero()
-                        if len(set(row_indices)) != self.adata.n_obs:
+                        if len(set(row_indices)) != matrix_chunk.shape[0]:
                             has_row_of_zeros = True
                     # else, must be dense matrix, confirm that all rows have at least 1 nonzero value
                     elif not all(np.apply_along_axis(np.any, axis=1, arr=matrix_chunk)):
