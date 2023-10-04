@@ -1645,80 +1645,41 @@ class TestObsm:
         validator.validate_adata()
         assert validator.errors == ["ERROR: adata.obsm['X_umap'] contains all NaN values."]
 
-<<<<<<< HEAD
     def test_obsm_values_at_least_one_X(self, validator_with_adata):
-        """
-        At least one key for the embedding MUST be prefixed with "X_"
-        """
         validator = validator_with_adata
-        obsm = validator.adata.obsm
-        obsm["umap"] = obsm["X_umap"]
-        validator.adata.uns["default_embedding"] = "umap"
-        del obsm["X_umap"]
+        validator.adata.obsm["harmony"] = validator.adata.obsm["X_umap"]
+        validator.adata.uns["default_embedding"] = "harmony"
+        del validator.adata.obsm["X_umap"]
         validator.validate_adata()
-        assert validator.errors == ["ERROR: At least one embedding in 'obsm' has to have a " "key with an 'X_' prefix."]
+        assert validator.errors == [
+            "ERROR: At least one embedding in 'obsm' has to have a key with an 'X_' prefix.",
+        ]
+        assert validator.warnings == [
+            "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
+            "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_",
+            "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
+        ]
+
+    def test_obsm_values_warn_start_with_X(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.obsm["harmony"] = pd.DataFrame(validator.adata.obsm["X_umap"], index=validator.adata.obs_names)
+        validator.validate_adata()
+        assert validator.warnings == [
+            "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
+            "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_",
+            "WARNING: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['harmony']' is <class 'pandas.core.frame.DataFrame'>').",
+        ]
 
     def test_obsm_suffix_name_valid(self, validator_with_adata):
         """
         Suffix after X_ must be at least 1 character long
         """
         validator = validator_with_adata
-        obsm = validator.adata.obsm
-        obsm["X_"] = obsm["X_umap"]
+        validator.adata.obsm["X_"] = validator.adata.obsm["X_umap"]
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Embedding key in 'adata.obsm' X_ must have a suffix at least one character long."
+            "ERROR: Embedding key in 'adata.obsm' X_ must start with X_ and have a suffix at least one character long."
         ]
-        
-    def test_obsm_values_must_start_with_X(self):
-        self.validator.adata.obsm["umap"] = self.validator.adata.obsm["X_umap"]
-        self.validator.adata.uns["default_embedding"] = "umap"
-=======
-    def test_obsm_values_at_least_one_X(self):
-        self.validator.adata.obsm["harmony"] = self.validator.adata.obsm["X_umap"]
-        self.validator.adata.uns["default_embedding"] = "harmony"
->>>>>>> 8dd69eb (update)
-        del self.validator.adata.obsm["X_umap"]
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            [
-                "ERROR: At least one embedding in 'obsm' has to have a key with an 'X_' prefix.",
-            ],
-        )
-        self.assertEqual(
-            self.validator.warnings,
-            [
-                "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_",
-                "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
-            ],
-        )
-
-    def test_obsm_values_warn_start_with_X(self):
-        self.validator.adata.obsm["harmony"] = pd.DataFrame(
-            self.validator.adata.obsm["X_umap"], index=self.validator.adata.obs_names
-        )
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.warnings,
-            [
-                "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_",
-                "WARNING: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['harmony']' is <class 'pandas.core.frame.DataFrame'>').",
-            ],
-        )
-
-    def test_obsm_suffix_name_valid(self):
-        """
-        Suffix after X_ must be at least 1 character long
-        """
-        self.validator.adata.obsm["X_"] = self.validator.adata.obsm["X_umap"]
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            [
-                "ERROR: Embedding key in 'adata.obsm' X_ must start with X_ and have a suffix at least one character long."
-            ],
-        )
 
     def test_obsm_key_name_valid(self, validator_with_adata):
         """
@@ -1734,26 +1695,15 @@ class TestObsm:
         """
         Curators MUST annotate one or more two-dimensional (m >= 2) embeddings
         """
-        validator = validator_with_adata
-        obsm = validator.adata.obsm
         # Makes 1 column array
-        obsm["X_umap"] = numpy.delete(obsm["X_umap"], 0, 1)
+        validator = validator_with_adata
+        validator.adata.obsm["X_umap"] = numpy.delete(validator.adata.obsm["X_umap"], 0, 1)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: All embeddings must have as many rows as cells, and "
-            "at least two columns.'adata.obsm['X_umap']' has shape "
+            "at least two columns. 'adata.obsm['X_umap']' has shape "
             "of '(2, 1)'."
         ]
-        self.validator.adata.obsm["X_umap"] = numpy.delete(self.validator.adata.obsm["X_umap"], 0, 1)
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            [
-                "ERROR: All embeddings must have as many rows as cells, and "
-                "at least two columns. 'adata.obsm['X_umap']' has shape "
-                "of '(2, 1)'."
-            ],
-        )
 
     def test_obsm_shape_same_rows_and_columns(self, validator_with_adata):
         """
@@ -1780,16 +1730,8 @@ class TestObsm:
         validator.adata = save_and_read_adata(adata)
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: The size of the ndarray stored for a 'adata.obsm['badsize']' MUST NOT be zero."
+            "ERROR: The size of the ndarray stored for a 'adata.obsm['badsize']' MUST NOT be zero.",
         ]
-        self.validator.adata = self.save_and_read_adata(adata)
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            [
-                "ERROR: The size of the ndarray stored for a 'adata.obsm['badsize']' MUST NOT be zero.",
-            ],
-        )
 
 
 class TestObsp:
