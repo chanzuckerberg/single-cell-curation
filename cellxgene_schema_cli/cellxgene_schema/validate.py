@@ -750,24 +750,37 @@ class Validator:
 
                 if column_def.get("type") == "categorical":
                     category_mapping[column_name] = df[column_name].nunique()
-
-        for column_name, num_unique_vals in category_mapping.items():
-            colors_options = uns_dict.get(f"{column_name}_colors")
-            # If there are no colors specified, that's fine. We only want to validate this field if it's set
-            if colors_options is not None:
-                if len(colors_options) < num_unique_vals:
+        
+        for key, value in uns_dict.items():
+            if key.endswith("_colors"):
+                # 1. Verify that the corresponding categorical field exists in obs
+                obs_unique_values = category_mapping.get(key.replace("_colors", ""))
+                if not obs_unique_values:
                     self.errors.append(
-                        f"Annotated categorical field {column_name} must have at least {num_unique_vals} color options "
-                        f"in uns[{column_name}_colors]. Found: {colors_options}"
+                        f"Colors field uns[{key}] does not have a corresponding categorical field in obs"
                     )
-                for color in colors_options:
-                    if not self._validate_color(color):
-                        self.errors.append(
-                            f"Color {color} in uns[{column_name}_colors] is not valid. Colors must be a valid hex "
-                            f"code (#08c0ff) or a CSS4 named color"
-                        )
+                # 2. Verify that the value is a numpy array
+                if value is None or not isinstance(value, np.ndarray):
+                    self.errors.append(
+                        f"Colors field uns['{key}'] must be of 'numpy.ndarray' type, it is {type(value)}"
+                    )
+                    # Skip over all subsequent validations which expect a numpy array
+                    continue
+                # 3. Verify that we have at least as many colors as unique values in the corresponding categorical field
+                if len(value) < obs_unique_values:
+                    self.errors.append(
+                        f"Annotated categorical field {key.replace('_colors', '')} must have at least {obs_unique_values} color options "
+                        f"in uns[{key}]. Found: {value}"
+                    )
+                # 4. Verify that either all colors are hex OR all colors are CSS4 named colors
+                all_hex_colors = all(map(lambda color: self._validate_hex_color(color), value))
+                all_css4_colors = all(map(lambda color: self._validate_css4_color(color), value))
+                if not (all_hex_colors or all_css4_colors):
+                    self.errors.append(
+                        f"Colors in uns[{key}] must be either all hex colors or all CSS4 named colors. Found: {value}"
+                    )
 
-    def _validate_color(self, color: str) -> bool:
+    def _validate_css4_color(self, color: str) -> bool:
         css4_named_colors = [
             "aliceblue",
             "antiquewhite",
@@ -912,8 +925,9 @@ class Validator:
             "yellow",
             "yellowgreen",
         ]
-        if color in css4_named_colors:
-            return True
+        return color in css4_named_colors
+    
+    def _validate_hex_color(self, color: str) -> bool:
         return re.match(r"^#([0-9a-fA-F]{6})$", color)
 
     def _validate_sparsity(self):
