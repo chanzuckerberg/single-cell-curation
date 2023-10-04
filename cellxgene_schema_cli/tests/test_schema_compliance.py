@@ -231,7 +231,7 @@ class TestExpressionMatrix:
         """
         Test adata is validated correctly when matrix is larger than the chunk size
         """
-        with unittest.mock.patch.object(validator_with_adata._chunk_matrix, '__defaults__', (1,)):
+        with unittest.mock.patch.object(validator_with_adata._chunk_matrix, "__defaults__", (1,)):
             validator = validator_with_adata
             validator.validate_adata()
             assert validator.errors == []
