@@ -1026,9 +1026,6 @@ class Validator:
 
         obsm_with_x_prefix = 0
         for key, value in self.adata.obsm.items():
-            if " " in key:
-                self.errors.append(f"Embedding key {key} has whitespace in it, please remove it.")
-
             issue_list = self.errors
             if key.startswith("X_"):
                 obsm_with_x_prefix += 1
@@ -1036,6 +1033,8 @@ class Validator:
                     self.errors.append(
                         f"Embedding key in 'adata.obsm' {key} must start with X_ and have a suffix at least one character long."
                     )
+                if " " in key:
+                    self.errors.append(f"Embedding key {key} has whitespace in it, please remove it.")
             else:
                 self.warnings.append(f"Embedding key in 'adata.obsm' {key} does not start with X_")
                 issue_list = self.warnings
