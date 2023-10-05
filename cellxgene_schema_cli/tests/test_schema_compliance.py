@@ -1662,7 +1662,6 @@ class TestUns:
         validator = validator_with_adata
         validator.adata.uns["suspension_type_colors"] = numpy.array(["green", None])
         validator.validate_adata()
-        print(validator.errors)
         assert validator.errors == [
             "ERROR: Colors in uns[suspension_type_colors] must be not None or numpy.nan. Found: ['green' None]"
         ]
@@ -1671,7 +1670,6 @@ class TestUns:
         validator = validator_with_adata
         validator.adata.uns["suspension_type_colors"] = numpy.array(["green", numpy.nan])
         validator.validate_adata()
-        print(validator.errors)
         assert validator.errors == [
             "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['green' 'nan']"
         ]
