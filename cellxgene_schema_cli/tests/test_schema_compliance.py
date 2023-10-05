@@ -1704,6 +1704,7 @@ class TestObsm:
         obsm["u m a p"] = obsm["X_umap"]
         validator.validate_adata()
         assert validator.errors == []
+        assert "WARNING: Embedding key u m a p has whitespace in it, please remove it." in validator.warnings
 
     def test_obsm_shape_one_column(self, validator_with_adata):
         """
