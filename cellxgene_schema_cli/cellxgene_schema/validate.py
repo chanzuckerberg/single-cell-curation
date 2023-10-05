@@ -759,6 +759,7 @@ class Validator:
                     self.errors.append(
                         f"Colors field uns[{key}] does not have a corresponding categorical field in obs"
                     )
+                    continue
                 # 2. Verify that the value is a numpy array
                 if value is None or not isinstance(value, np.ndarray):
                     self.errors.append(

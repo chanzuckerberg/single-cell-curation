@@ -1553,45 +1553,74 @@ class TestUns:
         uns["project_name"] = "test_value"
         uns["publication_doi"] = "test_value"
 
-        validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: The field 'X_normalization' is present in 'uns', but it is deprecated.",
-            "ERROR: The field 'default_field' is present in 'uns', but it is deprecated.",
-            "ERROR: The field 'layer_descriptions' is present in 'uns', but it is deprecated.",
-            "ERROR: The field 'tags' is present in 'uns', but it is deprecated.",
-            "ERROR: The field 'version' is present in 'uns', but it is deprecated.",
-            "ERROR: The field 'contributors' is present in 'uns', but it is deprecated.",
-            "ERROR: The field 'preprint_doi' is present in 'uns', but it is deprecated.",
-            "ERROR: The field 'project_description' is present in 'uns', but it is deprecated.",
-            "ERROR: The field 'project_links' is present in 'uns', but it is deprecated.",
-            "ERROR: The field 'project_name' is present in 'uns', but it is deprecated.",
-            "ERROR: The field 'publication_doi' is present in 'uns', but it is deprecated.",
-        ]
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: The field 'X_normalization' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'default_field' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'layer_descriptions' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'tags' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'version' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'contributors' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'preprint_doi' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'project_description' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'project_links' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'project_name' is present in 'uns', but it is deprecated.",
+                "ERROR: The field 'publication_doi' is present in 'uns', but it is deprecated.",
+            ],
+        )
+    
+    def test_colors_not_numpy_array(self):
+        self.validator.adata.uns["suspension_type_colors"] = ["green", "purple"]
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Colors field uns[suspension_type_colors] must be of 'numpy.ndarray' type, it is <class 'list'>"
+            ],
+        )
 
-    def test_no_colors_should_pass(self, validator_with_adata):
-        validator = validator_with_adata
-        del validator.adata.uns["suspension_type_colors"]
-        assert validator.validate_adata()
+    def test_not_enough_color_options(self):
+        self.validator.adata.uns["suspension_type_colors"] = numpy.array(["green"])
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns[suspension_type_colors]. Found: ['green']"
+            ],
+        )
+    
+    def test_different_color_types(self):
+        self.validator.adata.uns["suspension_type_colors"] = numpy.array(["#000000", "pink"])
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['#000000' 'pink']",
+            ],
+        )
+    
+    def test_invalid_hex_color_option(self):
+        self.validator.adata.uns["suspension_type_colors"] = numpy.array(["#000", "#ffffff"])
+        self.validator.validate_adata()
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['#000' '#ffffff']",
+            ],
+        )
 
-    def test_not_enough_color_options(self, validator_with_adata):
-        validator = validator_with_adata
-        validator.adata.uns["suspension_type_colors"] = ["green"]
-        validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns["
-            "suspension_type_colors]. Found: ['green']"
-        ]
-
-    def test_invalid_color_options(self, validator_with_adata):
-        validator = validator_with_adata
-        validator.adata.uns["suspension_type_colors"] = ["#000", "pynk"]
-        validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: Color #000 in uns[suspension_type_colors] is not valid. Colors must be a valid hex code ("
-            "#08c0ff) or a CSS4 named color",
-            "ERROR: Color pynk in uns[suspension_type_colors] is not valid. Colors must be a valid hex code ("
-            "#08c0ff) or a CSS4 named color",
-        ]
+    def test_invalid_named_color_option(self):
+        self.validator.adata.uns["suspension_type_colors"] = numpy.array(["green", "pynk"])
+        self.validator.validate_adata()
+        print(self.validator.errors)
+        self.assertEqual(
+            self.validator.errors,
+            [
+                "Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['green' 'pynk']",
+            ],
+        )
 
 
 class TestObsm:
