@@ -767,21 +767,18 @@ class Validator:
                     )
                     # Skip over all subsequent validations which expect a numpy array
                     continue
-                # 3. Verify that all values are not None or numpy.nan
-                if any((color is None or color == np.nan for color in value)):
-                    self.errors.append(f"Colors in uns[{key}] must be not None or numpy.nan. Found: {value}")
-                    continue
-                # 4. Verify that all values are strings
-                if any((not isinstance(color, str) for color in value)):
+                # 3. Verify that we have strings in the array
+                if not np.issubdtype(value.dtype, np.character):
                     self.errors.append(f"Colors in uns[{key}] must be strings. Found: {value}")
-                # 5. Verify that we have at least as many unique colors as unique values in the corresponding categorical field
+                    continue
+                # 4. Verify that we have at least as many unique colors as unique values in the corresponding categorical field
                 value = np.unique(value)
                 if len(value) < obs_unique_values:
                     self.errors.append(
                         f"Annotated categorical field {key.replace('_colors', '')} must have at least {obs_unique_values} color options "
                         f"in uns[{key}]. Found: {value}"
                     )
-                # 6. Verify that either all colors are hex OR all colors are CSS4 named colors
+                # 5. Verify that either all colors are hex OR all colors are CSS4 named colors strings
                 all_hex_colors = all((self._validate_hex_color(color) for color in value))
                 all_css4_colors = all((self._validate_css4_color(color) for color in value))
                 if not (all_hex_colors or all_css4_colors):

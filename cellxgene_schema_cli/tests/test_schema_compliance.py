@@ -1599,7 +1599,7 @@ class TestUns:
         validator.adata.uns["suspension_type_colors"] = numpy.array([])
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns[suspension_type_colors]. Found: []"
+            "ERROR: Colors in uns[suspension_type_colors] must be strings. Found: []"
         ]
 
     def test_not_enough_color_options(self, validator_with_adata):
@@ -1652,10 +1652,10 @@ class TestUns:
 
     def test_invalid_named_color_option_integer(self, validator_with_adata):
         validator = validator_with_adata
-        validator.adata.uns["suspension_type_colors"] = numpy.array(["green", 3])
+        validator.adata.uns["suspension_type_colors"] = numpy.array([3, 4])
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['3' 'green']"
+            "ERROR: Colors in uns[suspension_type_colors] must be strings. Found: [3 4]"
         ]
 
     def test_invalid_named_color_option_none(self, validator_with_adata):
@@ -1663,15 +1663,15 @@ class TestUns:
         validator.adata.uns["suspension_type_colors"] = numpy.array(["green", None])
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Colors in uns[suspension_type_colors] must be not None or numpy.nan. Found: ['green' None]"
+            "ERROR: Colors in uns[suspension_type_colors] must be strings. Found: ['green' None]"
         ]
 
     def test_invalid_named_color_option_nan(self, validator_with_adata):
         validator = validator_with_adata
-        validator.adata.uns["suspension_type_colors"] = numpy.array(["green", numpy.nan])
+        validator.adata.uns["suspension_type_colors"] = numpy.array([numpy.nan, numpy.nan])
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['green' 'nan']"
+            "ERROR: Colors in uns[suspension_type_colors] must be strings. Found: [nan nan]"
         ]
 
 
