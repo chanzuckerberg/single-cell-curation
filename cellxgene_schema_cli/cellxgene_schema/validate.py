@@ -1026,9 +1026,6 @@ class Validator:
 
         obsm_with_x_prefix = 0
         for key, value in self.adata.obsm.items():
-            if " " in key:
-                self.errors.append(f"Embedding key {key} has whitespace in it, please remove it.")
-
             issue_list = self.errors
             if key.startswith("X_"):
                 obsm_with_x_prefix += 1
@@ -1041,6 +1038,9 @@ class Validator:
                 issue_list = self.warnings
 
             # For all subsequent checks, we want to raise an error if it's an X_ embedding key, and a warning otherwise
+            if " " in key:
+                issue_list.append(f"Embedding key {key} has whitespace in it, please remove it.")
+
             if not isinstance(value, np.ndarray):
                 issue_list.append(
                     f"All embeddings have to be of 'numpy.ndarray' type, " f"'adata.obsm['{key}']' is {type(value)}')."

@@ -1690,15 +1690,21 @@ class TestObsm:
             "ERROR: Embedding key in 'adata.obsm' X_ must start with X_ and have a suffix at least one character long."
         ]
 
-    def test_obsm_key_name_valid(self, validator_with_adata):
+    def test_obsm_key_name_whitespace(self, validator_with_adata):
         """
-        Embedding keys with whitespace are not valid
+        Embedding keys beginning with X_ with whitespace are not valid
         """
         validator = validator_with_adata
         obsm = validator.adata.obsm
         obsm["X_ umap"] = obsm["X_umap"]
         validator.validate_adata()
         assert validator.errors == ["ERROR: Embedding key X_ umap has whitespace in it, please remove it."]
+
+        del obsm["X_ umap"]
+        obsm["u m a p"] = obsm["X_umap"]
+        validator.validate_adata()
+        assert validator.errors == []
+        assert "WARNING: Embedding key u m a p has whitespace in it, please remove it." in validator.warnings
 
     def test_obsm_shape_one_column(self, validator_with_adata):
         """
