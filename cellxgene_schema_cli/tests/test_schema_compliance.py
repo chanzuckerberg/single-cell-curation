@@ -1553,74 +1553,128 @@ class TestUns:
         uns["project_name"] = "test_value"
         uns["publication_doi"] = "test_value"
 
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            [
-                "ERROR: The field 'X_normalization' is present in 'uns', but it is deprecated.",
-                "ERROR: The field 'default_field' is present in 'uns', but it is deprecated.",
-                "ERROR: The field 'layer_descriptions' is present in 'uns', but it is deprecated.",
-                "ERROR: The field 'tags' is present in 'uns', but it is deprecated.",
-                "ERROR: The field 'version' is present in 'uns', but it is deprecated.",
-                "ERROR: The field 'contributors' is present in 'uns', but it is deprecated.",
-                "ERROR: The field 'preprint_doi' is present in 'uns', but it is deprecated.",
-                "ERROR: The field 'project_description' is present in 'uns', but it is deprecated.",
-                "ERROR: The field 'project_links' is present in 'uns', but it is deprecated.",
-                "ERROR: The field 'project_name' is present in 'uns', but it is deprecated.",
-                "ERROR: The field 'publication_doi' is present in 'uns', but it is deprecated.",
-            ],
-        )
-    
-    def test_colors_not_numpy_array(self):
-        self.validator.adata.uns["suspension_type_colors"] = ["green", "purple"]
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            [
-                "ERROR: Colors field uns[suspension_type_colors] must be of 'numpy.ndarray' type, it is <class 'list'>"
-            ],
-        )
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: The field 'X_normalization' is present in 'uns', but it is deprecated.",
+            "ERROR: The field 'default_field' is present in 'uns', but it is deprecated.",
+            "ERROR: The field 'layer_descriptions' is present in 'uns', but it is deprecated.",
+            "ERROR: The field 'tags' is present in 'uns', but it is deprecated.",
+            "ERROR: The field 'version' is present in 'uns', but it is deprecated.",
+            "ERROR: The field 'contributors' is present in 'uns', but it is deprecated.",
+            "ERROR: The field 'preprint_doi' is present in 'uns', but it is deprecated.",
+            "ERROR: The field 'project_description' is present in 'uns', but it is deprecated.",
+            "ERROR: The field 'project_links' is present in 'uns', but it is deprecated.",
+            "ERROR: The field 'project_name' is present in 'uns', but it is deprecated.",
+            "ERROR: The field 'publication_doi' is present in 'uns', but it is deprecated.",
+        ]
 
-    def test_not_enough_color_options(self):
-        self.validator.adata.uns["suspension_type_colors"] = numpy.array(["green"])
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            [
-                "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns[suspension_type_colors]. Found: ['green']"
-            ],
-        )
-    
-    def test_different_color_types(self):
-        self.validator.adata.uns["suspension_type_colors"] = numpy.array(["#000000", "pink"])
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            [
-                "Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['#000000' 'pink']",
-            ],
-        )
-    
-    def test_invalid_hex_color_option(self):
-        self.validator.adata.uns["suspension_type_colors"] = numpy.array(["#000", "#ffffff"])
-        self.validator.validate_adata()
-        self.assertEqual(
-            self.validator.errors,
-            [
-                "Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['#000' '#ffffff']",
-            ],
-        )
+    def test_colors_not_numpy_array(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["suspension_type_colors"] = ["green", "purple"]
+        validator.adata.uns["donor_id_colors"] = {"donor_1": "#000000", "donor_2": "#ffffff"}
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Colors field uns['suspension_type_colors'] must be of 'numpy.ndarray' type, it is <class 'list'>",
+            "ERROR: Colors field uns['donor_id_colors'] must be of 'numpy.ndarray' type, it is <class 'dict'>",
+        ]
 
-    def test_invalid_named_color_option(self):
-        self.validator.adata.uns["suspension_type_colors"] = numpy.array(["green", "pynk"])
-        self.validator.validate_adata()
-        print(self.validator.errors)
-        self.assertEqual(
-            self.validator.errors,
-            [
-                "Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['green' 'pynk']",
-            ],
-        )
+    def test_colors_bool_obs_counterpart(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["is_primary_data_colors"] = ["green", "purple"]
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Colors field uns[is_primary_data_colors] does not have a corresponding categorical field in obs"
+        ]
+
+    def test_colors_without_obs_counterpart(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["fake_field_colors"] = ["green", "purple"]
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Colors field uns[fake_field_colors] does not have a corresponding categorical field in obs"
+        ]
+
+    def test_empty_color_array(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["suspension_type_colors"] = numpy.array([])
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns[suspension_type_colors]. Found: []"
+        ]
+
+    def test_not_enough_color_options(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["suspension_type_colors"] = numpy.array(["green"])
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns[suspension_type_colors]. Found: ['green']"
+        ]
+
+    def test_not_enough_unique_color_options(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["suspension_type_colors"] = numpy.array(["green", "green"])
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns[suspension_type_colors]. Found: ['green']"
+        ]
+
+    def test_different_color_types(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["suspension_type_colors"] = numpy.array(["#000000", "pink"])
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['#000000' 'pink']"
+        ]
+
+    def test_invalid_hex_color_option(sel, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["suspension_type_colors"] = numpy.array(["#000", "#ffffff"])
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['#000' '#ffffff']"
+        ]
+
+    def test_invalid_named_color_option(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["suspension_type_colors"] = numpy.array(["green", "pynk"])
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['green' 'pynk']"
+        ]
+
+    def test_invalid_named_color_option_empty_strings(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["suspension_type_colors"] = numpy.array(["", "green"])
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['' 'green']"
+        ]
+
+    def test_invalid_named_color_option_integer(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["suspension_type_colors"] = numpy.array(["green", 3])
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['3' 'green']"
+        ]
+
+    def test_invalid_named_color_option_none(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["suspension_type_colors"] = numpy.array(["green", None])
+        validator.validate_adata()
+        print(validator.errors)
+        assert validator.errors == [
+            "ERROR: Colors in uns[suspension_type_colors] must be not None or numpy.nan. Found: ['green' None]"
+        ]
+
+    def test_invalid_named_color_option_nan(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["suspension_type_colors"] = numpy.array(["green", numpy.nan])
+        validator.validate_adata()
+        print(validator.errors)
+        assert validator.errors == [
+            "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['green' 'nan']"
+        ]
 
 
 class TestObsm:
