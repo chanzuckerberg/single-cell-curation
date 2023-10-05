@@ -227,6 +227,15 @@ class TestExpressionMatrix:
         validator.validate_adata()
         assert validator.errors == []
 
+    def test_raw_values__matrix_chunks(self, validator_with_adata):
+        """
+        Test adata is validated correctly when matrix is larger than the chunk size
+        """
+        with unittest.mock.patch.object(validator_with_adata._chunk_matrix, "__defaults__", (1,)):
+            validator = validator_with_adata
+            validator.validate_adata()
+            assert validator.errors == []
+
     def test_missing_raw_matrix(self, validator_with_adata_missing_raw):
         """
         Test error message appears if dataset with RNA assay is missing raw matrix
