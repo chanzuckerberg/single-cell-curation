@@ -166,9 +166,6 @@ good_uns = {
     "default_embedding": "X_umap",
     "X_approximate_distribution": "normal",
     "batch_condition": ["is_primary_data"],
-    "donor_id_colors": ["black", "pink"],
-    "suspension_type_colors": ["red", "#000000"],
-    "tissue_type_colors": ["blue", "#ffffff"],
 }
 
 good_uns_with_labels = {
@@ -181,9 +178,6 @@ good_uns_with_labels = {
     "default_embedding": "X_umap",
     "X_approximate_distribution": "normal",
     "batch_condition": ["is_primary_data"],
-    "donor_id_colors": ["black", "pink"],
-    "suspension_type_colors": ["red", "#000000"],
-    "tissue_type_colors": ["blue", "#ffffff"],
 }
 
 # ---
