@@ -1598,9 +1598,7 @@ class TestUns:
         validator = validator_with_adata
         validator.adata.uns["suspension_type_colors"] = numpy.array([])
         validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: Colors in uns[suspension_type_colors] must be strings. Found: []"
-        ]
+        assert validator.errors == ["ERROR: Colors in uns[suspension_type_colors] must be strings. Found: []"]
 
     def test_not_enough_color_options(self, validator_with_adata):
         validator = validator_with_adata
@@ -1654,9 +1652,7 @@ class TestUns:
         validator = validator_with_adata
         validator.adata.uns["suspension_type_colors"] = numpy.array([3, 4])
         validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: Colors in uns[suspension_type_colors] must be strings. Found: [3 4]"
-        ]
+        assert validator.errors == ["ERROR: Colors in uns[suspension_type_colors] must be strings. Found: [3 4]"]
 
     def test_invalid_named_color_option_none(self, validator_with_adata):
         validator = validator_with_adata
@@ -1670,9 +1666,7 @@ class TestUns:
         validator = validator_with_adata
         validator.adata.uns["suspension_type_colors"] = numpy.array([numpy.nan, numpy.nan])
         validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: Colors in uns[suspension_type_colors] must be strings. Found: [nan nan]"
-        ]
+        assert validator.errors == ["ERROR: Colors in uns[suspension_type_colors] must be strings. Found: [nan nan]"]
 
 
 class TestObsm:
