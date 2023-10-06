@@ -737,7 +737,7 @@ class Validator:
 
     def _validate_colors_in_uns_dict(self, uns_dict: dict) -> None:
         df = getattr_anndata(self.adata, "obs")
-        df_definition = self._get_component_def("obs")
+        self._get_component_def("obs")
 
         # Mapping from obs column name to number of unique categorical values
         category_mapping = {}
@@ -747,20 +747,6 @@ class Validator:
             column = df[column_name]
             if column.dtype == "category":
                 category_mapping[column_name] = column.nunique()
-
-        # TODO: check to see if we want to include this block of code or not
-        # Check for categorical columns in the dataframe definition
-        if "columns" in df_definition:
-            for column_name, column_def in df_definition["columns"].items():
-                if column_name not in df.columns:
-                    # Skip this, dataframe validation should already append an error for this
-                    continue
-
-                if column_def.get("type") == "categorical":
-                    if category_mapping.get(column_name) is None:
-                        self.errors.append(
-                            f"Column '{column_name}' in dataframe 'obs' must be declared as categorical in the column definition."
-                        )
 
         for key, value in uns_dict.items():
             if key.endswith("_colors"):
