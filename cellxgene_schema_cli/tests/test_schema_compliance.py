@@ -1568,6 +1568,17 @@ class TestUns:
             "ERROR: The field 'publication_doi' is present in 'uns', but it is deprecated.",
         ]
 
+    def test_colors_happy_path(self, validator_with_adata):
+        """
+        Creates a new column in `obs[test_column]` where the dtype is categorical, but its column definition
+        is not in the schema. Having valid colors in `uns[test_column_colors]` should not raise an error.
+        """
+        validator = validator_with_adata
+        validator.adata.obs["test_column"] = ["one", "two"]
+        validator.adata.obs["test_column"] = validator.adata.obs["test_column"].astype("category")
+        validator.adata.uns["test_column_colors"] = numpy.array(["#000000", "#ffffff"])
+        assert validator.validate_adata()
+
     def test_colors_not_numpy_array(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.uns["suspension_type_colors"] = ["green", "purple"]
@@ -1580,7 +1591,7 @@ class TestUns:
 
     def test_colors_bool_obs_counterpart(self, validator_with_adata):
         validator = validator_with_adata
-        validator.adata.uns["is_primary_data_colors"] = ["green", "purple"]
+        validator.adata.uns["is_primary_data_colors"] = numpy.array(["green", "purple"])
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Colors field uns[is_primary_data_colors] does not have a corresponding categorical field in obs"
@@ -1588,7 +1599,7 @@ class TestUns:
 
     def test_colors_without_obs_counterpart(self, validator_with_adata):
         validator = validator_with_adata
-        validator.adata.uns["fake_field_colors"] = ["green", "purple"]
+        validator.adata.uns["fake_field_colors"] = numpy.array(["green", "purple"])
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Colors field uns[fake_field_colors] does not have a corresponding categorical field in obs"

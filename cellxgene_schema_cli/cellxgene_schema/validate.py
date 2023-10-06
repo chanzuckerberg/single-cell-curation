@@ -689,7 +689,7 @@ class Validator:
 
         for column_name in df.columns:
             column = df[column_name]
-            if column.dtype != "category":
+            if column.dtype.name != "category":
                 # Check for columns with mixed values, which is not supported by anndata 0.8.0
                 # TODO: check if this can be removed after upgading to anndata 0.10.0
                 value_types = {type(x) for x in column.values}
@@ -737,19 +737,15 @@ class Validator:
 
     def _validate_colors_in_uns_dict(self, uns_dict: dict) -> None:
         df = getattr_anndata(self.adata, "obs")
-        df_definition = self._get_component_def("obs")
 
         # Mapping from obs column name to number of unique categorical values
         category_mapping = {}
 
-        if "columns" in df_definition:
-            for column_name, column_def in df_definition["columns"].items():
-                if column_name not in df.columns:
-                    # Skip this, dataframe validation should already append an error for this
-                    continue
-
-                if column_def.get("type") == "categorical":
-                    category_mapping[column_name] = df[column_name].nunique()
+        # Check for categorical dtypes in the dataframe directly
+        for column_name in df.columns:
+            column = df[column_name]
+            if column.dtype.name == "category":
+                category_mapping[column_name] = column.nunique()
 
         for key, value in uns_dict.items():
             if key.endswith("_colors"):
