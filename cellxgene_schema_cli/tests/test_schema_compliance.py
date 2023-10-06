@@ -1740,7 +1740,7 @@ class TestObsm:
         ]
         assert validator.warnings == [
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
-            "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_",
+            "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_ and thus will not be available in Explorer",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
         ]
 
@@ -1750,7 +1750,7 @@ class TestObsm:
         validator.validate_adata()
         assert validator.warnings == [
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
-            "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_",
+            "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_ and thus will not be available in Explorer",
             "WARNING: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['harmony']' is <class 'pandas.core.frame.DataFrame'>').",
         ]
 
