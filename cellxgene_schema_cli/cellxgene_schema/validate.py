@@ -742,6 +742,14 @@ class Validator:
         # Mapping from obs column name to number of unique categorical values
         category_mapping = {}
 
+        # Check for categorical dtypes in the dataframe directly
+        for column_name in df.columns:
+            column = df[column_name]
+            if column.dtype == "category":
+                category_mapping[column_name] = column.nunique()
+
+        # TODO: check to see if we want to include this block of code or not
+        # Check for categorical columns in the dataframe definition
         if "columns" in df_definition:
             for column_name, column_def in df_definition["columns"].items():
                 if column_name not in df.columns:
@@ -749,7 +757,10 @@ class Validator:
                     continue
 
                 if column_def.get("type") == "categorical":
-                    category_mapping[column_name] = df[column_name].nunique()
+                    if category_mapping.get(column_name) is None:
+                        self.errors.append(
+                            f"Column '{column_name}' in dataframe 'obs' must be declared as categorical in the column definition."
+                        )
 
         for key, value in uns_dict.items():
             if key.endswith("_colors"):
