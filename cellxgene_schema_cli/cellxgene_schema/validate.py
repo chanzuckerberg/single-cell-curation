@@ -689,7 +689,7 @@ class Validator:
 
         for column_name in df.columns:
             column = df[column_name]
-            if column.dtype != "category":
+            if column.dtype.name != "category":
                 # Check for columns with mixed values, which is not supported by anndata 0.8.0
                 # TODO: check if this can be removed after upgading to anndata 0.10.0
                 value_types = {type(x) for x in column.values}
@@ -744,7 +744,7 @@ class Validator:
         # Check for categorical dtypes in the dataframe directly
         for column_name in df.columns:
             column = df[column_name]
-            if column.dtype == "category":
+            if column.dtype.name == "category":
                 category_mapping[column_name] = column.nunique()
 
         for key, value in uns_dict.items():
