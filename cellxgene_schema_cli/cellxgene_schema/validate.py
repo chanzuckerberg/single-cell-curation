@@ -737,7 +737,6 @@ class Validator:
 
     def _validate_colors_in_uns_dict(self, uns_dict: dict) -> None:
         df = getattr_anndata(self.adata, "obs")
-        self._get_component_def("obs")
 
         # Mapping from obs column name to number of unique categorical values
         category_mapping = {}
