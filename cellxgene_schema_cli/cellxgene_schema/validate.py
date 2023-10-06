@@ -1058,7 +1058,9 @@ class Validator:
                         f"Embedding key in 'adata.obsm' {key} must start with X_ and have a suffix at least one character long."
                     )
             else:
-                self.warnings.append(f"Embedding key in 'adata.obsm' {key} does not start with X_")
+                self.warnings.append(
+                    f"Embedding key in 'adata.obsm' {key} does not start with X_ and thus will not be available in Explorer"
+                )
                 issue_list = self.warnings
 
             # For all subsequent checks, we want to raise an error if it's an X_ embedding key, and a warning otherwise
