@@ -766,7 +766,7 @@ class Validator:
                     # Skip over all subsequent validations which expect a numpy array
                     continue
                 # 3. Verify that we have strings in the array
-                all_strings = all(self._validate_string(color) for color in value)
+                all_strings = all(isinstance(color, str) for color in value)
                 if not all_strings:
                     self.errors.append(
                         f"Colors in uns[{key}] must be strings. Found: {value} which are {value.dtype.name}"
@@ -786,9 +786,6 @@ class Validator:
                     self.errors.append(
                         f"Colors in uns[{key}] must be either all hex colors or all CSS4 named colors. Found: {value}"
                     )
-
-    def _validate_string(self, color: Any) -> bool:
-        return isinstance(color, str)
 
     def _validate_css4_color(self, color: Any) -> bool:
         if not isinstance(color, str):
