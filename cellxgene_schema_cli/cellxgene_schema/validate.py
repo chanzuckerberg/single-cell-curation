@@ -750,11 +750,13 @@ class Validator:
         for key, value in uns_dict.items():
             if key.endswith("_colors"):
                 # 1. Verify that the corresponding categorical field exists in obs
-                obs_unique_values = category_mapping.get(key.replace("_colors", ""))
+                column_name = key.replace("_colors", "")
+                obs_unique_values = category_mapping.get(column_name)
                 if not obs_unique_values:
-                    self.errors.append(
-                        f"Colors field uns[{key}] does not have a corresponding categorical field in obs"
-                    )
+                    error_message = f"Colors field uns[{key}] does not have a corresponding categorical field in obs"
+                    if column_name in df.columns:
+                        error_message += f" {column_name} is present but is dtype {df[column_name].dtype.name}"
+                    self.errors.append(error_message)
                     continue
                 # 2. Verify that the value is a numpy array
                 if value is None or not isinstance(value, np.ndarray):
@@ -764,8 +766,9 @@ class Validator:
                     # Skip over all subsequent validations which expect a numpy array
                     continue
                 # 3. Verify that we have strings in the array
-                if not np.issubdtype(value.dtype, np.character):
-                    self.errors.append(f"Colors in uns[{key}] must be strings. Found: {value}")
+                all_strings = all(self._validate_string(color) for color in value)
+                if not all_strings:
+                    self.errors.append(f"Colors in uns[{key}] must be strings. Found: {value} which are {value.dtype.name}")
                     continue
                 # 4. Verify that we have at least as many unique colors as unique values in the corresponding categorical field
                 value = np.unique(value)
@@ -781,6 +784,9 @@ class Validator:
                     self.errors.append(
                         f"Colors in uns[{key}] must be either all hex colors or all CSS4 named colors. Found: {value}"
                     )
+    
+    def _validate_string(self, color: Any) -> bool:
+        return isinstance(color, str)
 
     def _validate_css4_color(self, color: Any) -> bool:
         if not isinstance(color, str):
@@ -1465,6 +1471,7 @@ class Validator:
         if self.errors:
             self.errors = ["ERROR: " + i for i in self.errors]
             for e in self.errors:
+                print(f"error: {e}")
                 logger.error(e)
             self.is_valid = False
         else:
