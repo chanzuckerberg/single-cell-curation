@@ -1473,7 +1473,6 @@ class Validator:
         if self.errors:
             self.errors = ["ERROR: " + i for i in self.errors]
             for e in self.errors:
-                print(f"error: {e}")
                 logger.error(e)
             self.is_valid = False
         else:
