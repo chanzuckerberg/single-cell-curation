@@ -1567,7 +1567,7 @@ class TestUns:
             "ERROR: The field 'project_name' is present in 'uns', but it is deprecated.",
             "ERROR: The field 'publication_doi' is present in 'uns', but it is deprecated.",
         ]
-    
+
     def test_colors_happy_path(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata = examples.adata_with_colors.copy()
@@ -1615,7 +1615,9 @@ class TestUns:
         validator = validator_with_adata
         validator.adata.uns["suspension_type_colors"] = numpy.array([])
         validator.validate_adata()
-        assert validator.errors == ["ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns[suspension_type_colors]. Found: []"]
+        assert validator.errors == [
+            "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns[suspension_type_colors]. Found: []"
+        ]
 
     def test_not_enough_color_options(self, validator_with_adata):
         validator = validator_with_adata
@@ -1669,7 +1671,9 @@ class TestUns:
         validator = validator_with_adata
         validator.adata.uns["suspension_type_colors"] = numpy.array([3, 4])
         validator.validate_adata()
-        assert validator.errors == ["ERROR: Colors in uns[suspension_type_colors] must be strings. Found: [3 4] which are int64"]
+        assert validator.errors == [
+            "ERROR: Colors in uns[suspension_type_colors] must be strings. Found: [3 4] which are int64"
+        ]
 
     def test_invalid_named_color_option_none(self, validator_with_adata):
         validator = validator_with_adata
@@ -1683,7 +1687,9 @@ class TestUns:
         validator = validator_with_adata
         validator.adata.uns["suspension_type_colors"] = numpy.array([numpy.nan, numpy.nan])
         validator.validate_adata()
-        assert validator.errors == ["ERROR: Colors in uns[suspension_type_colors] must be strings. Found: [nan nan] which are float64"]
+        assert validator.errors == [
+            "ERROR: Colors in uns[suspension_type_colors] must be strings. Found: [nan nan] which are float64"
+        ]
 
 
 class TestObsm:

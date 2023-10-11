@@ -245,7 +245,9 @@ adata_with_labels = anndata.AnnData(
 )
 
 # Expected anndata with colors for categorical obs fields
-adata_with_colors = anndata.AnnData(X=sparse.csr_matrix(X), obs=good_obs, uns=good_uns_with_colors, obsm=good_obsm, var=good_var)
+adata_with_colors = anndata.AnnData(
+    X=sparse.csr_matrix(X), obs=good_obs, uns=good_uns_with_colors, obsm=good_obsm, var=good_var
+)
 
 # anndata for testing migration
 umigrated_obs = pd.DataFrame(

@@ -768,7 +768,9 @@ class Validator:
                 # 3. Verify that we have strings in the array
                 all_strings = all(self._validate_string(color) for color in value)
                 if not all_strings:
-                    self.errors.append(f"Colors in uns[{key}] must be strings. Found: {value} which are {value.dtype.name}")
+                    self.errors.append(
+                        f"Colors in uns[{key}] must be strings. Found: {value} which are {value.dtype.name}"
+                    )
                     continue
                 # 4. Verify that we have at least as many unique colors as unique values in the corresponding categorical field
                 value = np.unique(value)
@@ -784,7 +786,7 @@ class Validator:
                     self.errors.append(
                         f"Colors in uns[{key}] must be either all hex colors or all CSS4 named colors. Found: {value}"
                     )
-    
+
     def _validate_string(self, color: Any) -> bool:
         return isinstance(color, str)
 
