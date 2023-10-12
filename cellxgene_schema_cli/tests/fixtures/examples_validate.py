@@ -180,6 +180,16 @@ good_uns_with_labels = {
     "batch_condition": ["is_primary_data"],
 }
 
+good_uns_with_colors = {
+    "title": "A title",
+    "default_embedding": "X_umap",
+    "X_approximate_distribution": "normal",
+    "batch_condition": ["is_primary_data"],
+    "suspension_type_colors": numpy.array(["red", "blue"]),
+    "donor_id_colors": numpy.array(["#000000", "#ffffff"]),
+    "tissue_type_colors": numpy.array(["black", "pink"]),
+}
+
 # ---
 # 4. Creating expression matrix,
 # X has integer values and non_raw_X has real values
@@ -234,6 +244,10 @@ adata_with_labels = anndata.AnnData(
     obsm=good_obsm,
 )
 
+# Expected anndata with colors for categorical obs fields
+adata_with_colors = anndata.AnnData(
+    X=sparse.csr_matrix(X), obs=good_obs, uns=good_uns_with_colors, obsm=good_obsm, var=good_var
+)
 
 # anndata for testing migration
 umigrated_obs = pd.DataFrame(

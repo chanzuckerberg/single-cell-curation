@@ -294,7 +294,7 @@ class TestObs:
         validator.adata.uns.pop("batch_condition")
 
         validator.validate_adata()
-        assert validator.errors == [f"ERROR: Dataframe 'obs' is missing " f"column '{column}'."]
+        assert f"ERROR: Dataframe 'obs' is missing " f"column '{column}'." in validator.errors
 
     def test_column_presence_organism(self, validator_with_adata):
         """
@@ -1569,9 +1569,15 @@ class TestUns:
         ]
 
     def test_colors_happy_path(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata = examples.adata_with_colors.copy()
+        assert validator.validate_adata()
+
+    def test_colors_happy_path_no_column_def(self, validator_with_adata):
         """
         Creates a new column in `obs[test_column]` where the dtype is categorical, but its column definition
-        is not in the schema. Having valid colors in `uns[test_column_colors]` should not raise an error.
+        is not in the schema. Having valid colors in `uns[test_column_colors]` should not raise an error, since
+        we should be able to find the corresponding `obs` column with the `category` dtype.
         """
         validator = validator_with_adata
         validator.adata.obs["test_column"] = ["one", "two"]
@@ -1594,7 +1600,7 @@ class TestUns:
         validator.adata.uns["is_primary_data_colors"] = numpy.array(["green", "purple"])
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Colors field uns[is_primary_data_colors] does not have a corresponding categorical field in obs"
+            "ERROR: Colors field uns[is_primary_data_colors] does not have a corresponding categorical field in obs. is_primary_data is present but is dtype bool"
         ]
 
     def test_colors_without_obs_counterpart(self, validator_with_adata):
@@ -1609,7 +1615,9 @@ class TestUns:
         validator = validator_with_adata
         validator.adata.uns["suspension_type_colors"] = numpy.array([])
         validator.validate_adata()
-        assert validator.errors == ["ERROR: Colors in uns[suspension_type_colors] must be strings. Found: []"]
+        assert validator.errors == [
+            "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns[suspension_type_colors]. Found: []"
+        ]
 
     def test_not_enough_color_options(self, validator_with_adata):
         validator = validator_with_adata
@@ -1663,21 +1671,25 @@ class TestUns:
         validator = validator_with_adata
         validator.adata.uns["suspension_type_colors"] = numpy.array([3, 4])
         validator.validate_adata()
-        assert validator.errors == ["ERROR: Colors in uns[suspension_type_colors] must be strings. Found: [3 4]"]
+        assert validator.errors == [
+            "ERROR: Colors in uns[suspension_type_colors] must be strings. Found: [3 4] which are int64"
+        ]
 
     def test_invalid_named_color_option_none(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.uns["suspension_type_colors"] = numpy.array(["green", None])
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Colors in uns[suspension_type_colors] must be strings. Found: ['green' None]"
+            "ERROR: Colors in uns[suspension_type_colors] must be strings. Found: ['green' None] which are object"
         ]
 
     def test_invalid_named_color_option_nan(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.uns["suspension_type_colors"] = numpy.array([numpy.nan, numpy.nan])
         validator.validate_adata()
-        assert validator.errors == ["ERROR: Colors in uns[suspension_type_colors] must be strings. Found: [nan nan]"]
+        assert validator.errors == [
+            "ERROR: Colors in uns[suspension_type_colors] must be strings. Found: [nan nan] which are float64"
+        ]
 
 
 class TestObsm:
