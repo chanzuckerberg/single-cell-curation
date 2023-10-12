@@ -755,7 +755,7 @@ class Validator:
                 if not obs_unique_values:
                     error_message = f"Colors field uns[{key}] does not have a corresponding categorical field in obs"
                     if column_name in df.columns:
-                        error_message += f" {column_name} is present but is dtype {df[column_name].dtype.name}"
+                        error_message += f". {column_name} is present but is dtype {df[column_name].dtype.name}"
                     self.errors.append(error_message)
                     continue
                 # 2. Verify that the value is a numpy array

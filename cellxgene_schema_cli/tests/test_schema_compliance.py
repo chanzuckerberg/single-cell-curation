@@ -1600,7 +1600,7 @@ class TestUns:
         validator.adata.uns["is_primary_data_colors"] = numpy.array(["green", "purple"])
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Colors field uns[is_primary_data_colors] does not have a corresponding categorical field in obs is_primary_data is present but is dtype bool"
+            "ERROR: Colors field uns[is_primary_data_colors] does not have a corresponding categorical field in obs. is_primary_data is present but is dtype bool"
         ]
 
     def test_colors_without_obs_counterpart(self, validator_with_adata):
