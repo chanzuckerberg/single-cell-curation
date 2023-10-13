@@ -1585,6 +1585,11 @@ class TestUns:
         validator.adata.uns["test_column_colors"] = numpy.array(["#000000", "#ffffff"])
         assert validator.validate_adata()
 
+    def test_colors_happy_path_duplicates(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["suspension_type_colors"] = numpy.array(["lightgrey", "lightgrey"])
+        assert validator.validate_adata()
+
     def test_colors_not_numpy_array(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.uns["suspension_type_colors"] = ["green", "purple"]
@@ -1622,14 +1627,6 @@ class TestUns:
     def test_not_enough_color_options(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.uns["suspension_type_colors"] = numpy.array(["green"])
-        validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns[suspension_type_colors]. Found: ['green']"
-        ]
-
-    def test_not_enough_unique_color_options(self, validator_with_adata):
-        validator = validator_with_adata
-        validator.adata.uns["suspension_type_colors"] = numpy.array(["green", "green"])
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns[suspension_type_colors]. Found: ['green']"

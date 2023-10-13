@@ -3,9 +3,10 @@ import math
 import os
 import re
 from datetime import datetime
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Dict, List, Mapping, Optional, Union
 
 import anndata
+import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 from pandas.core.computation.ops import UndefinedVariableError
@@ -772,174 +773,19 @@ class Validator:
                         f"Colors in uns[{key}] must be strings. Found: {value} which are {value.dtype.name}"
                     )
                     continue
-                # 4. Verify that we have at least as many unique colors as unique values in the corresponding categorical field
-                value = np.unique(value)
+                # 4. Verify that we have at least as many colors as unique values in the corresponding categorical field
                 if len(value) < obs_unique_values:
                     self.errors.append(
                         f"Annotated categorical field {key.replace('_colors', '')} must have at least {obs_unique_values} color options "
                         f"in uns[{key}]. Found: {value}"
                     )
                 # 5. Verify that either all colors are hex OR all colors are CSS4 named colors strings
-                all_hex_colors = all((self._validate_hex_color(color) for color in value))
-                all_css4_colors = all((self._validate_css4_color(color) for color in value))
+                all_hex_colors = all(re.match(r"^#([0-9a-fA-F]{6})$", color) for color in value)
+                all_css4_colors = all(color in mcolors.CSS4_COLORS for color in value)
                 if not (all_hex_colors or all_css4_colors):
                     self.errors.append(
                         f"Colors in uns[{key}] must be either all hex colors or all CSS4 named colors. Found: {value}"
                     )
-
-    def _validate_css4_color(self, color: Any) -> bool:
-        if not isinstance(color, str):
-            return False
-        css4_named_colors = [
-            "aliceblue",
-            "antiquewhite",
-            "aqua",
-            "aquamarine",
-            "azure",
-            "beige",
-            "bisque",
-            "black",
-            "blanchedalmond",
-            "blue",
-            "blueviolet",
-            "brown",
-            "burlywood",
-            "cadetblue",
-            "chartreuse",
-            "chocolate",
-            "coral",
-            "cornflowerblue",
-            "cornsilk",
-            "crimson",
-            "cyan",
-            "darkblue",
-            "darkcyan",
-            "darkgoldenrod",
-            "darkgray",
-            "darkgreen",
-            "darkkhaki",
-            "darkmagenta",
-            "darkolivegreen",
-            "darkorange",
-            "darkorchid",
-            "darkred",
-            "darksalmon",
-            "darkseagreen",
-            "darkslateblue",
-            "darkslategray",
-            "darkturquoise",
-            "darkviolet",
-            "deeppink",
-            "deepskyblue",
-            "dimgray",
-            "dodgerblue",
-            "firebrick",
-            "floralwhite",
-            "forestgreen",
-            "fuchsia",
-            "gainsboro",
-            "ghostwhite",
-            "gold",
-            "goldenrod",
-            "gray",
-            "green",
-            "greenyellow",
-            "grey",
-            "honeydew",
-            "hotpink",
-            "indianred",
-            "indigo",
-            "ivory",
-            "khaki",
-            "lavender",
-            "lavenderblush",
-            "lawngreen",
-            "lemonchiffon",
-            "lightblue",
-            "lightcoral",
-            "lightcyan",
-            "lightgoldenrodyellow",
-            "lightgray",
-            "lightgreen",
-            "lightpink",
-            "lightsalmon",
-            "lightseagreen",
-            "lightskyblue",
-            "lightslategray",
-            "lightsteelblue",
-            "lightyellow",
-            "lime",
-            "limegreen",
-            "linen",
-            "magenta",
-            "maroon",
-            "mediumaquamarine",
-            "mediumblue",
-            "mediumorchid",
-            "mediumpurple",
-            "mediumseagreen",
-            "mediumslateblue",
-            "mediumspringgreen",
-            "mediumturquoise",
-            "mediumvioletred",
-            "midnightblue",
-            "mintcream",
-            "mistyrose",
-            "moccasin",
-            "navajowhite",
-            "navy",
-            "oldlace",
-            "olive",
-            "olivedrab",
-            "orange",
-            "orangered",
-            "orchid",
-            "palegoldenrod",
-            "palegreen",
-            "paleturquoise",
-            "palevioletred",
-            "papayawhip",
-            "peachpuff",
-            "peru",
-            "pink",
-            "plum",
-            "powderblue",
-            "purple",
-            "rebeccapurple",
-            "red",
-            "rosybrown",
-            "royalblue",
-            "saddlebrown",
-            "salmon",
-            "sandybrown",
-            "seagreen",
-            "seashell",
-            "sienna",
-            "silver",
-            "skyblue",
-            "slateblue",
-            "slategray",
-            "snow",
-            "springgreen",
-            "steelblue",
-            "tan",
-            "teal",
-            "thistle",
-            "tomato",
-            "turquoise",
-            "violet",
-            "wheat",
-            "white",
-            "whitesmoke",
-            "yellow",
-            "yellowgreen",
-        ]
-        return color in css4_named_colors
-
-    def _validate_hex_color(self, color: Any) -> bool:
-        if not isinstance(color, str):
-            return False
-        return re.match(r"^#([0-9a-fA-F]{6})$", color)
 
     def _validate_sparsity(self):
         """
