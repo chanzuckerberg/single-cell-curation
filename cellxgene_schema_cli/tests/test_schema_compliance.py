@@ -1608,6 +1608,14 @@ class TestUns:
             "ERROR: Colors field uns[is_primary_data_colors] does not have a corresponding categorical field in obs. is_primary_data is present but is dtype bool"
         ]
 
+    def test_colors_portal_obs_counterpart(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["cell_type_colors"] = numpy.array(["green", "purple"])
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Colors field uns[cell_type_colors] does not have a corresponding categorical field in obs. Annotate cell_type_ontology_term_id_colors instead"
+        ]
+
     def test_colors_without_obs_counterpart(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.uns["fake_field_colors"] = numpy.array(["green", "purple"])

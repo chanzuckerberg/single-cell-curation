@@ -757,6 +757,18 @@ class Validator:
                     error_message = f"Colors field uns[{key}] does not have a corresponding categorical field in obs"
                     if column_name in df.columns:
                         error_message += f". {column_name} is present but is dtype {df[column_name].dtype.name}"
+                    portal_column_names = [
+                        "assay",
+                        "cell_type",
+                        "development_stage",
+                        "disease",
+                        "organism",
+                        "self_reported_ethnicity",
+                        "sex",
+                        "tissue",
+                    ]
+                    if column_name in portal_column_names:
+                        error_message += f". Annotate {column_name}_ontology_term_id_colors instead"
                     self.errors.append(error_message)
                     continue
                 # 2. Verify that the value is a numpy array
