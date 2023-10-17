@@ -1,7 +1,12 @@
-name: Minor Schema Version Bump Workflow
+name: Schema Version Bump Workflow
 
 on:
   workflow_dispatch
+    inputs:
+      is-major-schema-bump:
+        description: "Set to 'true' to kickoff major schema update; otherwise trigger a minor schema update"
+        required: true
+        default: 'false'
 
 permissions:
   id-token: write
@@ -109,6 +114,7 @@ jobs:
   publish-to-pypi:
     name: Build and publish Python distributions to PyPI
     runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.is-major-schema-bump }} == 'false'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -239,11 +245,19 @@ jobs:
       - name: remove diff files
         run: |
           git rm --ignore-unmatch ./cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt
-      - name: Bump Version
+      - name: Bump Patch Version
+        if: ${{ github.event.inputs.is-major-schema-bump }} == 'false'
         run: |
           pip install bumpversion
           pip install wheel
           bumpversion --config-file .bumpversion.cfg patch --allow-dirty
+          bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
+          echo "new_version=$(make show-current-version)" >> $GITHUB_ENV
+      - name: Bump RC to Major Version
+        if: ${{ github.event.inputs.is-major-schema-bump }} == 'true'
+        run: |
+          pip install bumpversion
+          pip install wheel
           bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
           echo "new_version=$(make show-current-version)" >> $GITHUB_ENV
       - name: Create Pull Request
