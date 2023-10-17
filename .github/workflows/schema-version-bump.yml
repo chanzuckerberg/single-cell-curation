@@ -1,7 +1,7 @@
 name: Schema Version Bump Workflow
 
 on:
-  workflow_dispatch
+  workflow_dispatch:
     inputs:
       is-major-schema-bump:
         description: "Set to 'true' to kickoff major schema update; otherwise trigger a minor schema update"
