@@ -45,7 +45,6 @@ jobs:
           secret-ids:
             AUTH0_SECRETS, corpora/backend/prod/auth0-secret
       - name: Run Dry-Run Script
-        if: steps.changed-files.outputs.any_changed == 'true'
         run: python3 -m scripts.schema_bump_dry_run_ontologies.ontology_bump_dry_run
         env:
           corpus_env: "prod"
