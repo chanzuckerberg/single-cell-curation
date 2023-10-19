@@ -3,7 +3,6 @@ import traceback
 from typing import Dict, List, Optional
 
 import pandas as pd
-
 from cellxgene_schema import ontology
 from cellxgene_schema.env import SCHEMA_REFERENCE_BASE_URL, SCHEMA_REFERENCE_FILE_NAME
 from cellxgene_schema.validate import ONTOLOGY_CHECKER, Validator

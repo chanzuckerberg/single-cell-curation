@@ -29,3 +29,11 @@ select = ["E", "F", "B", "SIM", "C4", "I"]
 ignore = ["E501", "E402", "C408", "SIM112"]
 line-length = 120
 target-version = "py38"
+
+[tool.mypy]
+packages = ["scripts"]
+strict = true
+show_error_codes = true
+ignore_missing_imports = true
+warn_unreachable = true
+warn_unused_configs = true

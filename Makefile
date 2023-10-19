@@ -11,6 +11,9 @@ install:
 clean:
 	rm -rf cellxgene_schema_cli/build cellxgene_schema_cli/dist cellxgene_schema_cli/cellxgene_schema.egg-info
 
+mypy:
+	mypy --config-file pyproject.toml
+
 ### Migration ###
 .PHONY: generate-conversion-script
 generate-conversion-script:

@@ -12,19 +12,19 @@ from scripts.schema_bump_dry_run_genes.gene_bump_dry_run import (
 )
 
 
-def test_get_diff_map(tmp_path):
+def test_get_diff_map(tmp_path):  # type: ignore
     for key in SupportedOrganisms:
         with open(f"{tmp_path}/{key.name}_diff.txt", "w") as fp:
             fp.write("test")
     with patch("scripts.schema_bump_dry_run_genes.gene_bump_dry_run.ONTOLOGY_DIR", tmp_path):
         diff_map = get_diff_map()
     assert len(diff_map) == 4
-    for key in diff_map:
-        assert key in ["NCBITaxon:9606", "NCBITaxon:10090", "NCBITaxon:2697049", "NCBITaxon:32630"]
+    for key in diff_map:  # type: ignore
+        assert key in ["NCBITaxon:9606", "NCBITaxon:10090", "NCBITaxon:2697049", "NCBITaxon:32630"]  # type: ignore
 
 
 @pytest.fixture
-def sample_report_data():
+def sample_report_data():  # type: ignore
     return {
         "deprecated_public": {
             "with multiple dataset groups": {
@@ -113,7 +113,7 @@ def sample_report_data():
     }
 
 
-def test_generate_report(sample_report_data):
+def test_generate_report(sample_report_data):  # type: ignore
     expected_report = """## Deprecated Features in Public Collections:
 
 Collection ID: with multiple dataset groups
@@ -174,8 +174,8 @@ collection_id_4
     assert generate_report(sample_report_data) == expected_report
 
 
-def test_generate_report__with_empty_data():
-    empty_data = {"deprecated_public": {}, "open_revisions": {}, "non_auto_migrated": []}
+def test_generate_report__with_empty_data():  # type: ignore
+    empty_data = {"deprecated_public": {}, "open_revisions": {}, "non_auto_migrated": []}  # type: ignore
     expected_report = """## Deprecated Features in Public Collections:
 
 ## Deprecated Features in Private Collections:
@@ -185,13 +185,13 @@ def test_generate_report__with_empty_data():
     assert generate_report(empty_data) == expected_report
 
 
-def get_genes(dataset):
+def get_genes(dataset):  # type: ignore
     # Mock implementation for testing purposes
     return dataset.get("get_genes_mock_response", [])
 
 
 @pytest.fixture
-def sample_diff_map():
+def sample_diff_map():  # type: ignore
     return {
         "organism-1": ["deprecated:1-1", "deprecated:1-2", "deprecated:1-3"],
         "organism-2": ["deprecated:2-1", "deprecated:2-2"],
@@ -199,7 +199,7 @@ def sample_diff_map():
 
 
 @pytest.fixture
-def sample_deprecated_datasets():
+def sample_deprecated_datasets():  # type: ignore
     group = {
         "datasets": ["dataset1"],
         "num_datasets": 1,
@@ -208,12 +208,12 @@ def sample_deprecated_datasets():
         "deprecated_genes": {"deprecated:1-1", "deprecated:1-2"},
     }
     return {
-        "existing_collection": {"dataset_groups": {(*sorted(group["deprecated_genes"]), group["num_genes"]): group}}
+        "existing_collection": {"dataset_groups": {(*sorted(group["deprecated_genes"]), group["num_genes"]): group}}  # type: ignore
     }
 
 
 @pytest.fixture
-def sample_dataset():
+def sample_dataset():  # type: ignore
     return {
         "dataset_id": "dataset1",
         "collection_id": "new_collection",
@@ -221,7 +221,7 @@ def sample_dataset():
     }
 
 
-def test_compare_genes__with_no_deprecated_genes(sample_diff_map, sample_deprecated_datasets, sample_dataset):
+def test_compare_genes__with_no_deprecated_genes(sample_diff_map, sample_deprecated_datasets, sample_dataset):  # type: ignore
     # Expected results
     expected_deprecated_datasets = sample_deprecated_datasets.copy()
     expected_is_deprecated_genes_found = False
@@ -239,7 +239,7 @@ def test_compare_genes__with_no_deprecated_genes(sample_diff_map, sample_depreca
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
 
-def test_compare_genes__with_empty_diff_map(sample_deprecated_datasets, sample_dataset):
+def test_compare_genes__with_empty_diff_map(sample_deprecated_datasets, sample_dataset):  # type: ignore
     # Expected results
     expected_deprecated_datasets = sample_deprecated_datasets.copy()
     expected_is_deprecated_genes_found = False
@@ -257,7 +257,7 @@ def test_compare_genes__with_empty_diff_map(sample_deprecated_datasets, sample_d
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
 
-def test_compare_genes__with_existing_collection_deprecated_genes_and_new_dataset_group(
+def test_compare_genes__with_existing_collection_deprecated_genes_and_new_dataset_group(  # type: ignore
     sample_diff_map, sample_deprecated_datasets, sample_dataset
 ):
     # Mock data
@@ -293,7 +293,7 @@ def test_compare_genes__with_existing_collection_deprecated_genes_and_new_datase
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
 
-def test_compare_genes__with_existing_collection_deprecated_genes_and_existing_dataset_group(
+def test_compare_genes__with_existing_collection_deprecated_genes_and_existing_dataset_group(  # type: ignore
     sample_diff_map, sample_deprecated_datasets, sample_dataset
 ):
     # Mock data
@@ -327,7 +327,7 @@ def test_compare_genes__with_existing_collection_deprecated_genes_and_existing_d
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
 
-def test_compare_genes__with_new_collection_and_deprecated_genes(sample_diff_map, sample_dataset):
+def test_compare_genes__with_new_collection_and_deprecated_genes(sample_diff_map, sample_dataset):  # type: ignore
     # Mock data
     sample_dataset.update(
         **{
@@ -362,7 +362,7 @@ def test_compare_genes__with_new_collection_and_deprecated_genes(sample_diff_map
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
 
-def test_compare_genes__with_existing_collection_multiple_organisms_and_deprecated_genes(
+def test_compare_genes__with_existing_collection_multiple_organisms_and_deprecated_genes(  # type: ignore
     sample_dataset, sample_deprecated_datasets, sample_diff_map
 ):
     # Mock data
@@ -398,7 +398,7 @@ def test_compare_genes__with_existing_collection_multiple_organisms_and_deprecat
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
 
-def test_compare_genes__with_new_collection_multiple_organisms_and_deprecated_genes(sample_diff_map, sample_dataset):
+def test_compare_genes__with_new_collection_multiple_organisms_and_deprecated_genes(sample_diff_map, sample_dataset):  # type: ignore
     # Mock data
     sample_dataset.update(
         **{
@@ -436,7 +436,7 @@ def test_compare_genes__with_new_collection_multiple_organisms_and_deprecated_ge
     assert is_deprecated_genes_found == expected_is_deprecated_genes_found
 
 
-def test_generate_deprecated_private__with_revision_collection(sample_diff_map):
+def test_generate_deprecated_private__with_revision_collection(sample_diff_map):  # type: ignore
     # Mock data
     base_url = "https://example.com"
     dataset3 = {"dataset_id": "3", "collection_id": "collection_with_revision", "revision_of": "collection_public"}
@@ -461,11 +461,11 @@ def test_generate_deprecated_private__with_revision_collection(sample_diff_map):
 
     # Assert the results
     assert deprecated_datasets == expected_deprecated_datasets
-    assert non_auto_migrated == expected_non_auto_migrated
+    assert non_auto_migrated == expected_non_auto_migrated  # type: ignore
     fetch_private_datasets_mock.assert_called_once_with(base_url)
 
 
-def test_generate_deprecated_private__with_datasets_in_same_collectionn(sample_diff_map):
+def test_generate_deprecated_private__with_datasets_in_same_collectionn(sample_diff_map):  # type: ignore
     # Mock data
     base_url = "https://example.com"
     dataset1 = {"dataset_id": "1", "collection_id": "existing_collection"}
@@ -478,7 +478,7 @@ def test_generate_deprecated_private__with_datasets_in_same_collectionn(sample_d
 
     # Expected output
     expected_deprecated_datasets = {"existing_collection": {"dataset_groups": ["test", "test2"]}}
-    expected_non_auto_migrated = set()
+    expected_non_auto_migrated = set()  # type: ignore
 
     with patch(
         "scripts.schema_bump_dry_run_genes.gene_bump_dry_run.fetch_private_datasets", fetch_private_datasets_mock
@@ -491,7 +491,7 @@ def test_generate_deprecated_private__with_datasets_in_same_collectionn(sample_d
     fetch_private_datasets_mock.assert_called_once_with(base_url)
 
 
-def test_generate_deprecated_public__with_datasets_in_same_collectionn(sample_diff_map):
+def test_generate_deprecated_public__with_datasets_in_same_collectionn(sample_diff_map):  # type: ignore
     # Mock data
     base_url = "https://example.com"
     dataset1 = {"dataset_id": "1", "collection_id": "existing_collection"}
@@ -515,7 +515,7 @@ def test_generate_deprecated_public__with_datasets_in_same_collectionn(sample_di
     fetch_public_datasets_mock.assert_called_once_with(base_url)
 
 
-def test_generate_deprecated_public(sample_diff_map):
+def test_generate_deprecated_public(sample_diff_map):  # type: ignore
     # Mock data
     base_url = "https://example.com"
     dataset3 = {

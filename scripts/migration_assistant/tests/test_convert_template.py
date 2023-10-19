@@ -9,14 +9,14 @@ from scripts.migration_assistant.generate_script import generate_script, get_dep
 
 # Define a fixture for the template
 @pytest.fixture
-def template():
+def template():  # type: ignore
     return Template("{{ schema_version }}")
 
 
 # Define the test cases
-def test_generate_script__without_gencode_changes(template, tmpdir):
+def test_generate_script__without_gencode_changes(template, tmpdir):  # type: ignore
     # Prepare the input data
-    ontology_term_map = {
+    ontology_term_map = {  # type: ignore
         "assay": {},
         "cell_type": {},
         "development_stage": {},
@@ -26,7 +26,7 @@ def test_generate_script__without_gencode_changes(template, tmpdir):
         "sex": {},
         "tissue": {},
     }
-    gencode_term_map = []
+    gencode_term_map = []  # type: ignore
     mock_target_file = tmpdir + "/migrate.py"
     with mock.patch("scripts.migration_assistant.generate_script.target_file", mock_target_file):
         # Execute the function
@@ -111,7 +111,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     assert actual_output == expected_output[1:]
 
 
-def test_generate_script__with_automated_replaced_by_map(template, tmpdir):
+def test_generate_script__with_automated_replaced_by_map(template, tmpdir):  # type: ignore
     ontology_term_map = {
         "assay": {"EFO:0000002": "EFO:0000001"},
         "cell_type": {"CL:0000002": "CL:0000001", "CL:0000004": "CL:0000003"},
@@ -122,7 +122,7 @@ def test_generate_script__with_automated_replaced_by_map(template, tmpdir):
         "sex": {},
         "tissue": {},
     }
-    gencode_term_map = []
+    gencode_term_map = []  # type: ignore
     mock_target_file = tmpdir + "/migrate.py"
     with mock.patch("scripts.migration_assistant.generate_script.target_file", mock_target_file):
         # Execute the function
@@ -210,9 +210,9 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         assert actual_output == expected_output[1:]
 
 
-def test_generate_script__with_gencode_changes(template, tmpdir):
+def test_generate_script__with_gencode_changes(template, tmpdir):  # type: ignore
     # Prepare the input data
-    ontology_term_map = {
+    ontology_term_map = {  # type: ignore
         "assay": {},
         "cell_type": {},
         "development_stage": {},
@@ -317,11 +317,11 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
 
 @pytest.fixture
-def organisms():
+def organisms():  # type: ignore
     return ["apple", "dog", "mouse"]
 
 
-def test_get_deprecated_feature_ids(tmp_path, organisms):
+def test_get_deprecated_feature_ids(tmp_path, organisms):  # type: ignore
     expected_deprecated_feature_ids = []
     for organism in organisms:
         with open(f"{tmp_path}/{organism}_diff.txt", "w") as fp:
@@ -336,13 +336,13 @@ def test_get_deprecated_feature_ids(tmp_path, organisms):
     assert expected_deprecated_feature_ids == actual_deprecated_features
 
 
-def test_get_deprecated_feature_ids__no_files(tmp_path):
+def test_get_deprecated_feature_ids__no_files(tmp_path):  # type: ignore
     with mock.patch("scripts.migration_assistant.generate_script.env.ONTOLOGY_DIR", tmp_path):
         actual_deprecated_features = get_deprecated_feature_ids()
     assert actual_deprecated_features == []
 
 
-def test_get_deprecated_feature_ids__empty_feature_files(tmp_path, organisms):
+def test_get_deprecated_feature_ids__empty_feature_files(tmp_path, organisms):  # type: ignore
     for organism in organisms:
         with open(f"{tmp_path}/{organism}_diff.txt", "w") as fp:
             fp.write("")

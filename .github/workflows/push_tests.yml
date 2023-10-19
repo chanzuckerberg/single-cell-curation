@@ -16,8 +16,14 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
       - uses: actions/setup-python@v3
-      - name: check backend
+      - name: Pre-commit checks
         uses: pre-commit/action@v3.0.0
+      - name: Install dependencies
+        run: |
+          pip install -r ./requirements-dev.txt
+      - name: Run mypy
+        run: |
+          make mypy
 
   unit-tests-cli:
     runs-on: ubuntu-latest
