@@ -106,7 +106,6 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         if key.endswith("_colors") and not color_key_is_valid(key, value):
             del dataset.uns[key]
 
-
     # CURATOR-DEFINED, DATASET-SPECIFIC UPDATES
     # Use the template below to define dataset and collection specific ontology changes. Will only apply to dataset
     # if it matches a condition.
