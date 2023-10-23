@@ -1,11 +1,11 @@
+import re
+
 import anndata as ad
+import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 
 from . import utils
-import re
-
-import matplotlib.colors as mcolors
 
 # fmt: off
 # ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
@@ -56,28 +56,24 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     dataset.obs["tissue_type"] = "tissue"
     dataset.obs["tissue_type"] = np.where(
-        dataset.obs.tissue_ontology_term_id.str.contains("(cell culture)"),
-        "cell culture",
-        dataset.obs["tissue_type"]
+        dataset.obs.tissue_ontology_term_id.str.contains("(cell culture)"), "cell culture", dataset.obs["tissue_type"]
     )
     dataset.obs["tissue_type"] = np.where(
-        dataset.obs.tissue_ontology_term_id.str.contains("(organoid)"),
-        "organoid",
-        dataset.obs["tissue_type"]
+        dataset.obs.tissue_ontology_term_id.str.contains("(organoid)"), "organoid", dataset.obs["tissue_type"]
     )
     dataset.obs["tissue_ontology_term_id"] = np.where(
         dataset.obs.tissue_ontology_term_id.str.contains("(organoid)"),
         dataset.obs["tissue_ontology_term_id"].str.replace(r" \(organoid\)", ""),
-        dataset.obs["tissue_ontology_term_id"]
+        dataset.obs["tissue_ontology_term_id"],
     )
     dataset.obs["tissue_ontology_term_id"] = np.where(
         dataset.obs.tissue_ontology_term_id.str.contains("(cell culture)"),
         dataset.obs["tissue_ontology_term_id"].str.replace(r" \(cell culture\)", ""),
-        dataset.obs["tissue_ontology_term_id"]
+        dataset.obs["tissue_ontology_term_id"],
     )
 
-    dataset.obs['tissue_ontology_term_id'] = pd.Categorical(dataset.obs.tissue_ontology_term_id)
-    dataset.obs['tissue_type'] = pd.Categorical(dataset.obs.tissue_type)
+    dataset.obs["tissue_ontology_term_id"] = pd.Categorical(dataset.obs.tissue_ontology_term_id)
+    dataset.obs["tissue_type"] = pd.Categorical(dataset.obs.tissue_type)
 
     # Colors Validation, remove _colors key if invalid
     # Mapping from obs column name to number of unique categorical values
