@@ -63,13 +63,14 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     if dataset.uns["title"] == "adipose from neck - all nuclei":
         utils.map_ontology_term(
-            dataset.obs, "self_reported_ethnicity", "donor_id",{"CREEK003": "HANCESTRO:0005,HANCESTRO:0013"}
+            dataset.obs, "self_reported_ethnicity", "donor_id", {"CREEK003": "HANCESTRO:0005,HANCESTRO:0013"}
         )
 
     if collection_id == "1ca90a2d-2943-483d-b678-b809bf464c30":
         utils.map_ontology_term(
             dataset.obs,
-            "self_reported_ethnicity", "donor_id",
+            "self_reported_ethnicity",
+            "donor_id",
             {
                 "H20.33.018": "HANCESTRO:0013,HANCESTRO:0014",
                 "H20.33.034": "HANCESTRO:0005",
@@ -83,11 +84,11 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         donor = "_d10_1101_2022_03_10_4837472020-3173-NC004"
         if dataset_id == "066943a2-fdac-4b29-b348-40cede398e4e":
             utils.map_ontology_term(
-                dataset.obs, "self_reported_ethnicity", "donor_id",{study + "001" + donor: new_eth}
+                dataset.obs, "self_reported_ethnicity", "donor_id", {study + "001" + donor: new_eth}
             )
         elif dataset_id == "9f222629-9e39-47d0-b83f-e08d610c7479":
             utils.map_ontology_term(
-                dataset.obs, "self_reported_ethnicity", "donor_id",{study + "002" + donor: new_eth}
+                dataset.obs, "self_reported_ethnicity", "donor_id", {study + "002" + donor: new_eth}
             )
 
     if collection_id == "7d7cabfd-1d1f-40af-96b7-26a0825a306d":
@@ -104,7 +105,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         utils.map_ontology_term(dataset.obs, "self_reported_ethnicity", "donor_id", update_map)
 
     if collection_id == "4d74781b-8186-4c9a-b659-ff4dc4601d91" and dataset_id == "b07fb54c-d7ad-4995-8bb0-8f3d8611cabe":
-            utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000234": "CL:0000113"})
+        utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000234": "CL:0000113"})
 
     if "multiethnic" in dataset.obs["self_reported_ethnicity"].unique():
         utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"multiethnic": "unknown"})
