@@ -8,6 +8,8 @@ from fixtures.examples_ontology_test import (
     valid_genes,
     valid_ontologies,
     valid_terms,
+    valid_genes_same_name_diff_species,
+    valid_genes_same_name_and_species,
 )
 
 # Tests for internal functions of the OntologyChecker and GeneChecker classes
@@ -43,6 +45,28 @@ class TestGeneChecker:
                 geneChecker.get_symbol(gene_id)
             with pytest.raises(ValueError):
                 geneChecker.get_length(gene_id)
+    
+    @pytest.mark.parametrize("species,valid_genes_same_name_diff_species", valid_genes_same_name_diff_species.items())
+    def test_valid_genes_same_name_diff_species(self, species, valid_genes_same_name_diff_species):
+        geneChecker = ontology.GeneChecker(species)
+        for gene_id in valid_genes_same_name_diff_species:
+            gene_label = valid_genes_same_name_diff_species[gene_id][0]
+            gene_length = valid_genes_same_name_diff_species[gene_id][1]
+
+            assert geneChecker.is_valid_id(gene_id)
+            assert geneChecker.get_symbol(gene_id) == gene_label
+            assert geneChecker.get_length(gene_id) == gene_length
+
+    @pytest.mark.parametrize("species,valid_genes_same_name_and_species", valid_genes_same_name_and_species.items())
+    def test_valid_genes_same_name_and_species(self, species, valid_genes_same_name_and_species):
+        geneChecker = ontology.GeneChecker(species)
+        for gene_id in valid_genes_same_name_and_species:
+            gene_label = valid_genes_same_name_and_species[gene_id][0]
+            gene_length = valid_genes_same_name_and_species[gene_id][1]
+
+            assert geneChecker.is_valid_id(gene_id)
+            assert geneChecker.get_symbol(gene_id) == gene_label
+            assert geneChecker.get_length(gene_id) == gene_length
 
 
 @pytest.fixture(scope="class")

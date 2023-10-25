@@ -59,9 +59,6 @@ class GeneChecker:
         self.species = species
         self.gene_dict = {}
         with gzip.open(self.GENE_FILES[species], "rt") as genes:
-            gene_labels = set()
-            duplicated_gene_labels = set()
-
             for gene in genes:
                 gene = gene.rstrip().split(",")
                 gene_id = gene[0]
@@ -69,17 +66,6 @@ class GeneChecker:
                 gene_length = int(gene[3])
 
                 self.gene_dict[gene_id] = (gene_label, gene_length)
-
-                # Keeps track of duplicated gene labels
-                if gene_label in gene_labels:
-                    duplicated_gene_labels.add(gene_label)
-                else:
-                    gene_labels.add(gene_label)
-
-            # Makes gene labels unique
-            for gene_id, (gene_label, gene_length) in self.gene_dict.items():
-                if gene_label in duplicated_gene_labels:
-                    self.gene_dict[gene_id] = (gene_label + "_" + gene_id, gene_length)
 
     def is_valid_id(self, gene_id: str) -> bool:
         """
