@@ -58,7 +58,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         utils.replace_ontology_term(
             dataset.obs,
             "self_reported_ethnicity",
-            {"HANCESTRO:0487": "HANCESTRO:0598", "HANCESTRO:0496": "HANCESTRO:0597"}
+            {"HANCESTRO:0487": "HANCESTRO:0598", "HANCESTRO:0496": "HANCESTRO:0597"},
         )
 
     if dataset.uns["title"] == "adipose from neck - all nuclei":
@@ -74,8 +74,8 @@ def migrate(input_file, output_file, collection_id, dataset_id):
             {
                 "H20.33.018": "HANCESTRO:0013,HANCESTRO:0014",
                 "H20.33.034": "HANCESTRO:0005",
-                "H21.33.037": "HANCESTRO:0005"
-            }
+                "H21.33.037": "HANCESTRO:0005",
+            },
         )
 
     if collection_id == "6f6d381a-7701-4781-935c-db10d30de293":
@@ -93,13 +93,27 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     if collection_id == "7d7cabfd-1d1f-40af-96b7-26a0825a306d":
         donors_to_update = [
-            "Rep_C_1012", "Rep_C_1017", "Rep_C_1033",
-            "Rep_C_1036", "Rep_C_1037", "Rep_C_1039",
-            "Rep_C_1050", "Rep_C_1053", "Rep_C_1055",
-            "Rep_C_1059", "Rep_C_1060", "Rep_C_1064",
-            "Rep_C_1076", "Rep_C_1078", "Rep_C_1094",
-            "Rep_C_1095", "Rep_C_1107", "Rep_C_1143",
-            "Rep_C_1151", "Rep_C_1154", "Rep_C_1161"
+            "Rep_C_1012",
+            "Rep_C_1017",
+            "Rep_C_1033",
+            "Rep_C_1036",
+            "Rep_C_1037",
+            "Rep_C_1039",
+            "Rep_C_1050",
+            "Rep_C_1053",
+            "Rep_C_1055",
+            "Rep_C_1059",
+            "Rep_C_1060",
+            "Rep_C_1064",
+            "Rep_C_1076",
+            "Rep_C_1078",
+            "Rep_C_1094",
+            "Rep_C_1095",
+            "Rep_C_1107",
+            "Rep_C_1143",
+            "Rep_C_1151",
+            "Rep_C_1154",
+            "Rep_C_1161",
         ]
         update_map = {d: "HANCESTRO:0014" for d in donors_to_update}
         utils.map_ontology_term(dataset.obs, "self_reported_ethnicity", "donor_id", update_map)
