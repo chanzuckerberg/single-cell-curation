@@ -107,7 +107,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     if collection_id == "4d74781b-8186-4c9a-b659-ff4dc4601d91" and dataset_id == "b07fb54c-d7ad-4995-8bb0-8f3d8611cabe":
         utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000234": "CL:0000113"})
 
-    if "multiethnic" in dataset.obs["self_reported_ethnicity"].unique():
+    if "multiethnic" in dataset.obs["self_reported_ethnicity_ontology_term_id"].unique():
         utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"multiethnic": "unknown"})
 
     dataset.obs["tissue_type"] = "tissue"
