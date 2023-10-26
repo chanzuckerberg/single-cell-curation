@@ -110,6 +110,12 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     if "multiethnic" in dataset.obs["self_reported_ethnicity"].unique():
         utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"multiethnic": "unknown"})
 
+    if collection_id == "bcb61471-2a44-4d00-a0af-ff085512674c" and dataset_id == "0b75c598-0893-4216-afe8-5414cab7739d":
+        dataset.obs.rename(columns={"tissue_type" :"sample_tissue_type"}, inplace=True)
+
+    if collection_id == "d17249d2-0e6e-4500-abb8-e6c93fa1ac6f" and dataset_id == "a5d5c529-8a1f-40b5-bda3-35208970070d":
+        dataset.obs.rename(columns={"tissue_type" :"sample_tissue_type"}, inplace=True)
+
     dataset.obs["tissue_type"] = "tissue"
     dataset.obs["tissue_type"] = np.where(
         dataset.obs.tissue_ontology_term_id.str.contains("(cell culture)"), "cell culture", dataset.obs["tissue_type"]
