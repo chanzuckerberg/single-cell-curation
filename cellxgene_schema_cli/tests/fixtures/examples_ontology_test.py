@@ -26,7 +26,7 @@ valid_genes_same_name_and_species = {
 invalid_genes = {
     ontology.SupportedOrganisms.HOMO_SAPIENS: ["ENSMUSG00000059552", ("GENE", 1000)],
     ontology.SupportedOrganisms.MUS_MUSCULUS: ["ENSG00000141510", ("GENE", 200)],
-}   
+}
 
 # For ontology checker
 valid_ontologies = [

@@ -3,9 +3,7 @@ import gzip
 import hashlib
 import os
 import sys
-import uuid
 import urllib.request
-from multiprocessing import Process
 from typing import Dict
 
 import gtf_tools
@@ -32,7 +30,6 @@ class GeneProcessor:
         # Set of gene names that are duplicated
         self.duplicated_gene_names = set()
 
-
     def write_gzip(self, data: str, output_filename: str):
         """
         Writes data to a gziped file. The date modified is not written to the gzip file. This allows
@@ -46,7 +43,6 @@ class GeneProcessor:
         with open(output_filename, "wb") as fileobj, gzip.GzipFile(mode="wb", fileobj=fileobj, mtime=0) as myzip:
             myzip.write(data.encode("utf-8"))
 
-
     def digest(self, file_name: str) -> str:
         with open(file_name, "rb") as f:
             # Read the contents of the file in chunks
@@ -55,7 +51,6 @@ class GeneProcessor:
             while chunk := f.read(chunk_size):
                 hasher.update(chunk)
         return hasher.hexdigest()
-
 
     def _parse_gtf(self, gtf_path: str, gene_info_description: str):
         """
@@ -133,7 +128,6 @@ class GeneProcessor:
                 else:
                     self.gene_ids_by_description[gene_info_description] = [gene_id]
 
-
     def _get_gene_lengths_from_gtf(self, gtf_path: str) -> Dict[str, int]:
         """
         Parses a GTF file and calculates gene lengths, which are calculated as follows for each gene:
@@ -190,7 +184,6 @@ class GeneProcessor:
 
         return gene_lengths
 
-
     def _process_ercc(self, ercc_path: str, gene_info_description: str):
         """
         process the ERCC download, keeps only first column with no header
@@ -216,13 +209,12 @@ class GeneProcessor:
                     self.gene_ids_by_description[gene_info_description].append(ercc_id)
                 else:
                     self.gene_ids_by_description[gene_info_description] = [ercc_id]
-    
-    
+
     def process_gene_infos(self, gene_infos: dict) -> None:
         for gene_info_key in gene_infos:
             # Add to self.gene_labels and self.gene_ids_by_description
             self.process_individual_gene_info(gene_infos[gene_info_key])
-        
+
         # Deduplicate gene names across all gene_metadata
         print("Deduplicating gene names...")
         gene_names = set()
@@ -249,7 +241,17 @@ class GeneProcessor:
             try:
                 for gene_id in gene_ids:
                     gene_metadata = self.gene_metadata[gene_id]
-                    output_to_print += ",".join([gene_metadata.gene_id, gene_metadata.gene_name, gene_metadata.gene_version, gene_metadata.gene_length]) + "\n"
+                    output_to_print += (
+                        ",".join(
+                            [
+                                gene_metadata.gene_id,
+                                gene_metadata.gene_name,
+                                gene_metadata.gene_version,
+                                gene_metadata.gene_length,
+                            ]
+                        )
+                        + "\n"
+                    )
                 self.write_gzip(output_to_print, new_file)
 
                 if self.digest(new_file) == self.digest(previous_ref_filepath):
@@ -262,7 +264,6 @@ class GeneProcessor:
             except Exception as e:
                 print("Writing to new file failed. Using previous version.", gene_info_description)
                 raise e
-
 
     def process_individual_gene_info(self, gene_info: dict) -> None:
         """
@@ -292,8 +293,9 @@ class GeneProcessor:
             raise e
         print("finish", gene_info_description)
 
-
-    def generate_gene_ref_diff(self, output_filename: str, current_ref_filepath: str, previous_ref_filepath: str) -> None:
+    def generate_gene_ref_diff(
+        self, output_filename: str, current_ref_filepath: str, previous_ref_filepath: str
+    ) -> None:
         """
         Compare the previous gene reference CSV to the newest generated CSV. Report a text file with every
         Ensembl ID available in the previous gene reference CSV that is no longer found in the newest.

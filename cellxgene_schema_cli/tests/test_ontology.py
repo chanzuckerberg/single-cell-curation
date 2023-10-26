@@ -6,10 +6,10 @@ from fixtures.examples_ontology_test import (
     invalid_species,
     invalid_terms,
     valid_genes,
+    valid_genes_same_name_and_species,
+    valid_genes_same_name_diff_species,
     valid_ontologies,
     valid_terms,
-    valid_genes_same_name_diff_species,
-    valid_genes_same_name_and_species,
 )
 
 # Tests for internal functions of the OntologyChecker and GeneChecker classes
@@ -45,7 +45,7 @@ class TestGeneChecker:
                 geneChecker.get_symbol(gene_id)
             with pytest.raises(ValueError):
                 geneChecker.get_length(gene_id)
-    
+
     @pytest.mark.parametrize("species,valid_genes_same_name_diff_species", valid_genes_same_name_diff_species.items())
     def test_valid_genes_same_name_diff_species(self, species, valid_genes_same_name_diff_species):
         geneChecker = ontology.GeneChecker(species)
