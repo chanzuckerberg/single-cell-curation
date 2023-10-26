@@ -1,18 +1,11 @@
-.PHONY: fmt
-fmt:
-	pre-commit run -a
-
-lint:
-	cd cellxgene_schema_cli/ && flake8 cellxgene_schema/ tests/
+check:
+	pre-commit run -a && mypy --config-file pyproject.toml
 
 install:
 	cd cellxgene_schema_cli/ && pip install -r requirements.txt && pip install .
 
 clean:
 	rm -rf cellxgene_schema_cli/build cellxgene_schema_cli/dist cellxgene_schema_cli/cellxgene_schema.egg-info
-
-mypy:
-	mypy --config-file pyproject.toml
 
 ### Migration ###
 .PHONY: generate-conversion-script

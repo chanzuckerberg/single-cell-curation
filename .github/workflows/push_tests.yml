@@ -21,6 +21,9 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r ./requirements-dev.txt
+      # We can't have mypy in the pre-commit hook without having it run on all files
+      # in the repo, because (probably) the --all-files argument in pre-commit overrides
+      # the more narrow specifying of files in pyproject.toml
       - name: Run mypy
         run: |
           make mypy
