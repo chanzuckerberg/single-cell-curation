@@ -71,13 +71,13 @@ class GeneProcessor:
 
         gene_lengths = self._get_gene_lengths_from_gtf(gtf_path)
         with gzip.open(gtf_path, "rb") as gtf:
-            for line in gtf:
-                line = line.decode("utf-8")
+            for byte_line in gtf:
+                line = byte_line.decode("utf-8")
 
                 if line[0] == "#":
                     continue
 
-                line = line.rstrip().split("\t")
+                line = line.rstrip().split("\t")  # type: ignore
 
                 # Desired features based on whether is gene or transcript
                 if line[2] == "gene":
@@ -86,7 +86,7 @@ class GeneProcessor:
                     continue
 
                 # Extract features (column 9 of GTF)
-                current_features = gtf_tools._get_features(line)
+                current_features = gtf_tools._get_features(line)  # type: ignore
                 # Filter genes suffixed with "PAR_Y"
                 if current_features["gene_id"].endswith("PAR_Y"):
                     continue
@@ -154,15 +154,15 @@ class GeneProcessor:
             # equivalent  fields from the bed format: chromosome, start, end, strand). Each list of tuples will correspond
             # to one gene.
 
-            exons_in_bed = {}
+            exons_in_bed = {}  # type: ignore
 
-            for line in gtf:
-                line = line.decode("utf-8")
+            for byte_line in gtf:
+                line = byte_line.decode("utf-8")
 
                 if line[0] == "#":
                     continue
 
-                line = line.rstrip().split("\t")
+                line = line.rstrip().split("\t")  # type: ignore
 
                 if line[2] != "exon":
                     continue
@@ -170,7 +170,7 @@ class GeneProcessor:
                 # Convert line to bed-like format: (chromosome, start, end, strand)
                 exon_bed = (line[0], int(line[3]) - 1, int(line[4]), line[6])
 
-                current_features = gtf_tools._get_features(line)
+                current_features = gtf_tools._get_features(line)  # type: ignore
                 gene_id = current_features["gene_id"]
                 if gene_id in exons_in_bed:
                     exons_in_bed[gene_id].append(exon_bed)
@@ -181,7 +181,7 @@ class GeneProcessor:
         # Then calculate gene length
         gene_lengths = {}
         for gene in exons_in_bed:
-            meta_exons = gtf_tools.merge_bed_ranges(exons_in_bed[gene])
+            meta_exons = gtf_tools.merge_bed_ranges(exons_in_bed[gene])  # type: ignore
 
             # get length for this gene, i.e. sum of lengths of "meta" exons
             gene_lengths[gene] = 0
@@ -201,7 +201,7 @@ class GeneProcessor:
         with open(ercc_path, "r") as ercc:
             lines = ercc.readlines()[1:]
             for line in lines:
-                line = line.rstrip().split("\t")
+                line = line.rstrip().split("\t")  # type: ignore
                 ercc_id = line[0]
                 errc_length = str(len(line[4]))
                 errc_version = "1"
@@ -219,8 +219,6 @@ class GeneProcessor:
     
     
     def process_gene_infos(self, gene_infos: dict) -> None:
-        # TODO: remove
-        print(gene_infos)
         for gene_info_key in gene_infos:
             # Add to self.gene_labels and self.gene_ids_by_description
             self.process_individual_gene_info(gene_infos[gene_info_key])
@@ -238,8 +236,6 @@ class GeneProcessor:
         for gene_id, gene_metadata in self.gene_metadata.items():
             gene_name = gene_metadata.gene_name
             if gene_name in duplicated_gene_names:
-                # TODO: remove
-                print("Deduplicating gene name", gene_name, "for gene id", gene_id, "length", gene_metadata.gene_length)
                 self.gene_metadata[gene_id].gene_name = gene_name + "_" + gene_id
 
         # Write output for each file, and process file diffs
@@ -279,7 +275,7 @@ class GeneProcessor:
         if gene_info["url"].endswith("gtf.gz"):
             processer = self._parse_gtf
         elif gene_info["url"].endswith("txt"):
-            processer = self._process_ercc
+            processer = self._process_ercc  # type: ignore
         else:
             raise TypeError(f"unknown file type: {gene_info['file_type']}")
 
