@@ -26,7 +26,7 @@ jobs:
       # the more narrow specifying of files in pyproject.toml
       - name: Run mypy
         run: |
-          make mypy
+          mypy --config-file pyproject.toml
 
   unit-tests-cli:
     runs-on: ubuntu-latest
