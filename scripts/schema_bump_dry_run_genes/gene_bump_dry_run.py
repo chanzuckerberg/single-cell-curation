@@ -18,14 +18,14 @@ from scripts.common.thirdparty.discovery_api import (
 )
 from scripts.logger import configure_logging
 
-configure_logging()
+configure_logging()  # type: ignore
 logger = logging.getLogger()
 
 ctx = tiledb.default_ctx({"vfs.s3.region": "us-west-2"})
 
 
 class RunReporter:
-    def __init__(self):
+    def __init__(self):  # type: ignore
         self.public_datasets_processed = 0
         self.public_deprecated_datasets = 0
         self.public_errored_datasets = 0
@@ -33,7 +33,7 @@ class RunReporter:
         self.private_deprecated_datasets = 0
         self.private_errored_datasets = 0
 
-    def log_report(self):
+    def log_report(self):  # type: ignore
         logger.info("Run report:")
         logger.info(f"  Public datasets processed: {self.public_datasets_processed}")
         logger.info(f"  Public deprecated datasets: {self.public_deprecated_datasets}")
@@ -43,10 +43,10 @@ class RunReporter:
         logger.info(f"  Private errored datasets: {self.private_errored_datasets}")
 
 
-run_reporter = RunReporter()
+run_reporter = RunReporter()  # type: ignore
 
 
-def generate_report(data) -> str:
+def generate_report(data) -> str:  # type: ignore
     file_path = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(file_path, "report_template.jinja"), "r") as fp:
         report = fp.read()
@@ -56,7 +56,7 @@ def generate_report(data) -> str:
     return report
 
 
-def get_genes(dataset: dict) -> List[str]:
+def get_genes(dataset: dict) -> List[str]:  # type: ignore
     """
     Uses tiledb to get the genes for a dataset. This method is slower, but does not add a dependency on the explorer. It
     is also free if we run computer with in the same AWS region.
@@ -67,7 +67,7 @@ def get_genes(dataset: dict) -> List[str]:
 
     # TODO: remove different paths once we decide if we are using data portal or curation API.
     if dataset.get("s3_uri"):
-        s3_path = dataset.get("s3_uri") + "/var"
+        s3_path = dataset.get("s3_uri") + "/var"  # type: ignore
     elif dataset.get("dataset_assets"):
         s3_path = [asset["s3_uri"] for asset in dataset["dataset_assets"] if asset["filetype"] == "CXG"][0] + "/var"
     else:
@@ -87,7 +87,7 @@ def get_genes(dataset: dict) -> List[str]:
             raise KeyError(f"No columns with matching prefix:'{prefix}' found in var_df")
         index_name = f"{prefix}{suffix}"
         stored_genes = var_df[index_name].to_list()
-    return stored_genes
+    return stored_genes  # type: ignore
 
 
 def get_diff_map() -> Dict[str, List[str]]:
@@ -105,17 +105,17 @@ def get_diff_map() -> Dict[str, List[str]]:
     return diff_map
 
 
-def fetch_private_datasets(base_url) -> Tuple[List[dict], Optional[str]]:
+def fetch_private_datasets(base_url) -> Tuple[List[dict], Optional[str]]:  # type: ignore
     """
     Fetches all private collections and parses the datasets from the response.
     :param base_url:
     :return:
     """
-    auth_headers = get_headers(base_url)
-    for collection in fetch_private_collections(base_url, auth_headers):
+    auth_headers = get_headers(base_url)  # type: ignore
+    for collection in fetch_private_collections(base_url, auth_headers):  # type: ignore
         collection_id = collection["collection_id"]
         for ds in collection["datasets"]:
-            dataset_metadata = fetch_private_dataset(base_url, auth_headers, collection_id, ds["dataset_id"])
+            dataset_metadata = fetch_private_dataset(base_url, auth_headers, collection_id, ds["dataset_id"])  # type: ignore
             dataset_metadata["collection_id"] = collection_id
             # only process uploaded datasets
             if "processing_status" not in dataset_metadata or dataset_metadata["processing_status"] != "SUCCESS":
@@ -124,8 +124,8 @@ def fetch_private_datasets(base_url) -> Tuple[List[dict], Optional[str]]:
 
 
 def compare_genes(
-    dataset: Dict[str, Any], diff_map: Dict[str, str], deprecated_datasets: defaultdict(list)
-) -> Tuple[Dict, bool]:
+    dataset: Dict[str, Any], diff_map: Dict[str, str], deprecated_datasets: defaultdict(list)  # type: ignore
+) -> Tuple[Dict, bool]:  # type: ignore
     """
     Compare genes in a dataset with the provided diff map and update the deprecated_datasets dictionary.
 
@@ -147,7 +147,7 @@ def compare_genes(
     is_deprecated_genes_found = False
     deprecated_genes_in_dataset = set()
     for organism in organisms:
-        deprecated_genes_source = diff_map.get(organism, set())
+        deprecated_genes_source = diff_map.get(organism, set())  # type: ignore
         intersection_genes = dataset_genes_to_compare.intersection(deprecated_genes_source)
         if intersection_genes:
             deprecated_genes_in_dataset.update(intersection_genes)
@@ -179,7 +179,7 @@ def compare_genes(
     return deprecated_datasets, is_deprecated_genes_found
 
 
-def generate_deprecated_public(base_url: str, diff_map: Dict) -> Dict:
+def generate_deprecated_public(base_url: str, diff_map: Dict) -> Dict:  # type: ignore
     """
     Generate a dictionary of deprecated datasets from public datasets.
 
@@ -191,8 +191,8 @@ def generate_deprecated_public(base_url: str, diff_map: Dict) -> Dict:
     :return: A dictionary of public collections with datasets containing deprecated genes.
     :rtype: dict
     """
-    public_deprecated = {}
-    for dataset in fetch_public_datasets(base_url):
+    public_deprecated = {}  # type: ignore
+    for dataset in fetch_public_datasets(base_url):  # type: ignore
         run_reporter.public_datasets_processed += 1
         try:
             public_deprecated, is_deprecated_genes_found = compare_genes(dataset, diff_map, public_deprecated)
@@ -210,7 +210,7 @@ def generate_deprecated_public(base_url: str, diff_map: Dict) -> Dict:
     return public_deprecated
 
 
-def generate_deprecated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, List]:
+def generate_deprecated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, List]:  # type: ignore
     """
     Generate a dictionary of deprecated private collections its datasets and a list of non-auto-migrated public
     collections.
@@ -223,9 +223,9 @@ def generate_deprecated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, Li
         of non-auto-migrated public collections.
     :rtype: tuple
     """
-    private_deprecated = dict()
+    private_deprecated = dict()  # type: ignore
     non_auto_migrated = set()
-    for dataset, revision_of in fetch_private_datasets(base_url):
+    for dataset, revision_of in fetch_private_datasets(base_url):  # type: ignore
         run_reporter.private_datasets_processed += 1
         try:
             private_deprecated, is_deprecated_genes_found = compare_genes(dataset, diff_map, private_deprecated)
@@ -239,10 +239,10 @@ def generate_deprecated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, Li
             logger.error(f"Error processing private dataset: {e}")
     for collection in private_deprecated.values():
         collection["dataset_groups"] = list(collection["dataset_groups"].values())
-    return private_deprecated, non_auto_migrated
+    return private_deprecated, non_auto_migrated  # type: ignore
 
 
-def main():
+def main():  # type: ignore
     base_url = BASE_API[os.getenv("corpus_env", default="dev")]
     logger.info(f"Using base URL: {base_url}")
     report_data = {}
@@ -255,20 +255,20 @@ def main():
         report_data["deprecated_public"] = {}
 
     try:
-        report_data["open_revisions"], report_data["non_auto_migrated"] = generate_deprecated_private(
+        report_data["open_revisions"], report_data["non_auto_migrated"] = generate_deprecated_private(  # type: ignore
             base_url, diff_map
         )
     except Exception:
         logger.exception("Error generating deprecated private datasets report")
         report_data["open_revisions"] = {}
-        report_data["non_auto_migrated"] = []
+        report_data["non_auto_migrated"] = []  # type: ignore
 
     report = generate_report(report_data)
     with open("genes-curator-report.txt", "w") as fp:
         fp.write(report)
     logger.info("Curator Report generated")
-    run_reporter.log_report()
+    run_reporter.log_report()  # type: ignore
 
 
 if __name__ == "__main__":
-    main()
+    main()  # type: ignore

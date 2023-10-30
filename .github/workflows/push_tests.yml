@@ -16,8 +16,18 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
       - uses: actions/setup-python@v3
-      - name: check backend
+      - name: Pre-commit checks
         uses: pre-commit/action@v3.0.0
+      - name: Install dependencies
+        run: |
+          pip install -r ./requirements-dev.txt
+      # We can't have mypy in the pre-commit hook without having it run on all files
+      # in the repo, because (probably) the --all-files argument in pre-commit overrides
+      # the more narrow specifying of files in pyproject.toml
+      # TODO: Remove this if/when all files are mypy-compliant
+      - name: Run mypy
+        run: |
+          mypy --config-file pyproject.toml
 
   unit-tests-cli:
     runs-on: ubuntu-latest

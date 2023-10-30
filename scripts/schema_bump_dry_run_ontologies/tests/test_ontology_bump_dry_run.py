@@ -11,7 +11,7 @@ FIXTURES_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
 @pytest.fixture
-def setup():
+def setup():  # type: ignore
     mock_onto_map = {
         "EFO": {
             "EFO:0000001": {
@@ -98,12 +98,12 @@ def setup():
         },
     ]
 
-    def mock_fetch_private_dataset(*args):
+    def mock_fetch_private_dataset(*args):  # type: ignore
         collection_id = args[2]
         dataset_id = args[3]
         for c in private_collections:
-            if c["collection_id"] == collection_id:
-                for ds in c["datasets"]:
+            if c["collection_id"] == collection_id:  # type: ignore
+                for ds in c["datasets"]:  # type: ignore
                     if ds["dataset_id"] == dataset_id:
                         return ds
 
@@ -115,7 +115,7 @@ def setup():
         fetch_private_collections=Mock(return_value=private_collections),
         fetch_private_dataset=Mock(side_effect=mock_fetch_private_dataset),
     )
-    expected_replaced_by_map = {
+    expected_replaced_by_map = {  # type: ignore
         "assay": {},
         "cell_type": {},
         "development_stage": {},
@@ -131,7 +131,7 @@ def setup():
 
 
 class TestOntologyBumpDryRun:
-    def test_no_deprecated_terms_no_revisions(self, setup):
+    def test_no_deprecated_terms_no_revisions(self, setup):  # type: ignore
         public_datasets, private_collections, expected_replaced_by_map = setup
         private_collections.pop()
         with NamedTemporaryFile() as tmp, NamedTemporaryFile() as tmp_json, open(
@@ -141,7 +141,7 @@ class TestOntologyBumpDryRun:
             assert list(expected) == list(tmp)
             assert expected_replaced_by_map == json.load(tmp_json)
 
-    def test_no_deprecated_terms_with_open_revisions(self, setup):
+    def test_no_deprecated_terms_with_open_revisions(self, setup):  # type: ignore
         _, _, expected_replaced_by_map = setup
         with NamedTemporaryFile() as tmp, NamedTemporaryFile() as tmp_json, open(
             f"{FIXTURES_ROOT}/no_deprecated_terms_with_open_revisions", "rb"
@@ -150,7 +150,7 @@ class TestOntologyBumpDryRun:
             assert list(expected) == list(tmp)
             assert expected_replaced_by_map == json.load(tmp_json)
 
-    def test_with_replaced_by(self, setup):
+    def test_with_replaced_by(self, setup):  # type: ignore
         public_datasets, private_collections, expected_replaced_by_map = setup
         public_datasets[0]["assay"].extend([{"ontology_term_id": "EFO:0000002"}, {"ontology_term_id": "EFO:0000007"}])
         private_collections[0]["datasets"][0]["assay"].append({"ontology_term_id": "EFO:0000002"})
@@ -164,7 +164,7 @@ class TestOntologyBumpDryRun:
             assert list(expected) == list(tmp)
             assert expected_replaced_by_map == json.load(tmp_json)
 
-    def test_with_comments_and_considers(self, setup):
+    def test_with_comments_and_considers(self, setup):  # type: ignore
         public_datasets, private_collections, expected_replaced_by_map = setup
         public_datasets[0]["assay"].append({"ontology_term_id": "EFO:0000003"})
         private_collections[0]["datasets"][0]["assay"].append({"ontology_term_id": "EFO:0000004"})
@@ -176,7 +176,7 @@ class TestOntologyBumpDryRun:
             assert list(expected) == list(tmp)
             assert expected_replaced_by_map == json.load(tmp_json)
 
-    def test_with_replaced_by_diff_ontology(self, setup):
+    def test_with_replaced_by_diff_ontology(self, setup):  # type: ignore
         public_datasets, private_collections, expected_replaced_by_map = setup
         public_datasets[0]["assay"].append({"ontology_term_id": "EFO:0000006"})
         private_collections[0]["datasets"][0]["assay"].append({"ontology_term_id": "EFO:0000006"})
@@ -188,7 +188,7 @@ class TestOntologyBumpDryRun:
             assert list(expected) == list(tmp)
             assert expected_replaced_by_map == json.load(tmp_json)
 
-    def test_group_datasets_by_collection(self, setup):
+    def test_group_datasets_by_collection(self, setup):  # type: ignore
         public_datasets, private_collections, expected_replaced_by_map = setup
         public_datasets[0]["assay"].append({"ontology_term_id": "EFO:0000002"})
         public_datasets.append(
@@ -222,7 +222,7 @@ class TestOntologyBumpDryRun:
             assert list(expected) == list(tmp)
             assert expected_replaced_by_map == json.load(tmp_json)
 
-    def test_term_tracker(self, setup):
+    def test_term_tracker(self, setup):  # type: ignore
         public_datasets, private_collections, expected_replaced_by_map = setup
         public_datasets[0]["assay"].append({"ontology_term_id": "EFO:0000008"})
         private_collections[0]["datasets"][0]["assay"].append({"ontology_term_id": "EFO:0000009"})

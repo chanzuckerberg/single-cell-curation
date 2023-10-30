@@ -323,7 +323,7 @@ orphan_cell_types = [
 # In[11]:
 
 
-def build_descendants_graph(entity_name, graph):
+def build_descendants_graph(entity_name, graph):  # type: ignore
     """
     Recursively build set of descendants (that is, is_a descendants) for the
     given entity and add to graph.
@@ -334,7 +334,7 @@ def build_descendants_graph(entity_name, graph):
     graph.add_node(entity_name)
 
     # List descendants via is_a relationship.
-    subtypes = list_direct_descendants(entity_name)
+    subtypes = list_direct_descendants(entity_name)  # type: ignore
 
     for subtype in subtypes:
         child_name = subtype.name
@@ -347,13 +347,13 @@ def build_descendants_graph(entity_name, graph):
 
         # Build graph for child if it hasn't already been visited.
         if not child_visted:
-            build_descendants_graph(child_name, graph)
+            build_descendants_graph(child_name, graph)  # type: ignore
 
 
 # In[12]:
 
 
-def build_descendants_and_parts_graph(entity_name, graph):
+def build_descendants_and_parts_graph(entity_name, graph):  # type: ignore
     """
     Recursively build set of descendants and parts (that is, include both is_a
     and part_of descendants) for the given entity and add to graph.
@@ -364,7 +364,7 @@ def build_descendants_and_parts_graph(entity_name, graph):
     graph.add_node(entity_name)
 
     # List descendants via is_a and part_of relationships.
-    subtypes_and_parts = list_direct_descendants_and_parts(entity_name)
+    subtypes_and_parts = list_direct_descendants_and_parts(entity_name)  # type: ignore
 
     for subtype_or_part in subtypes_and_parts:
         # Each child should be a singleton array; detect, report and continue if
@@ -377,7 +377,7 @@ def build_descendants_and_parts_graph(entity_name, graph):
         child = subtype_or_part[0]
 
         # Ignore axioms, only add true entities.
-        if not is_axiom(child):
+        if not is_axiom(child):  # type: ignore
             child_name = child.name
 
             # Ignore disjoint.
@@ -392,39 +392,39 @@ def build_descendants_and_parts_graph(entity_name, graph):
 
             # Build graph for child if it hasn't already been visited.
             if not child_visted:
-                build_descendants_and_parts_graph(child_name, graph)
+                build_descendants_and_parts_graph(child_name, graph)  # type: ignore
 
 
 # In[13]:
 
 
-def build_graph_for_cell_types(entity_names):
+def build_graph_for_cell_types(entity_names):  # type: ignore
     """
     Extract a subgraph of CL for the given cell types.
     """
     graph = pgv.AGraph()
     for entity_name in entity_names:
-        build_descendants_graph(entity_name, graph)
+        build_descendants_graph(entity_name, graph)  # type: ignore
     return graph
 
 
 # In[14]:
 
 
-def build_graph_for_tissues(entity_names):
+def build_graph_for_tissues(entity_names):  # type: ignore
     """
     Extract a subgraph of UBERON for the given tissues.
     """
     tissue_graph = pgv.AGraph()
     for entity_name in entity_names:
-        build_descendants_and_parts_graph(entity_name, tissue_graph)
+        build_descendants_and_parts_graph(entity_name, tissue_graph)  # type: ignore
     return tissue_graph
 
 
 # In[15]:
 
 
-def is_axiom(entity):
+def is_axiom(entity):  # type: ignore
     """
     Returns true if the given entity is an axiom.
     For example, obo.UBERON_0001213 & obo.BFO_0000050.some(obo.NCBITaxon_9606)
@@ -435,7 +435,7 @@ def is_axiom(entity):
 # In[16]:
 
 
-def is_cell_culture(entity_name):
+def is_cell_culture(entity_name):  # type: ignore
     """
     Returns true if the given entity name contains (cell culture).
     """
@@ -445,17 +445,17 @@ def is_cell_culture(entity_name):
 # In[17]:
 
 
-def is_cell_culture_or_organoid(entity_name):
+def is_cell_culture_or_organoid(entity_name):  # type: ignore
     """
     Returns true if the given entity name contains (cell culture) or (organoid).
     """
-    return is_cell_culture(entity_name) or is_organoid(entity_name)
+    return is_cell_culture(entity_name) or is_organoid(entity_name)  # type: ignore
 
 
 # In[18]:
 
 
-def is_organoid(entity_name):
+def is_organoid(entity_name):  # type: ignore
     """
     Returns true if the given entity name contains "(organoid)".
     """
@@ -465,15 +465,15 @@ def is_organoid(entity_name):
 # In[19]:
 
 
-def key_ancestors_by_entity(entity_names, graph):
+def key_ancestors_by_entity(entity_names, graph):  # type: ignore
     """
     Build a dictionary of ancestors keyed by entity for the given entities.
     """
 
     ancestors_by_entity = {}
     for entity_name in entity_names:
-        descendants = set()
-        list_ancestors(entity_name, graph, descendants)
+        descendants = set()  # type: ignore
+        list_ancestors(entity_name, graph, descendants)  # type: ignore
 
         sanitized_entity_name = reformat_ontology_term_id(entity_name, to_writable=True)
         sanitized_ancestors = [reformat_ontology_term_id(descendant, to_writable=True) for descendant in descendants]
@@ -486,14 +486,14 @@ def key_ancestors_by_entity(entity_names, graph):
 # In[20]:
 
 
-def key_organoids_by_ontology_term_id(entity_names):
+def key_organoids_by_ontology_term_id(entity_names):  # type: ignore
     """
     Returns a dictionary of organoid ontology term IDs by stem ontology term ID.
     """
 
     organoids_by_ontology_term_id = {}
     for entity_name in entity_names:
-        if is_organoid(entity_name):
+        if is_organoid(entity_name):  # type: ignore
             ontology_term_id = entity_name.replace(" (organoid)", "")
             organoids_by_ontology_term_id[ontology_term_id] = entity_name
 
@@ -503,7 +503,7 @@ def key_organoids_by_ontology_term_id(entity_names):
 # In[21]:
 
 
-def list_ancestors(entity_name, graph, ancestor_set):
+def list_ancestors(entity_name, graph, ancestor_set):  # type: ignore
     """
     From the given graph, recursively build up set of ancestors for the given
     entity.
@@ -512,7 +512,7 @@ def list_ancestors(entity_name, graph, ancestor_set):
     ancestor_set.add(entity_name)
 
     # Ignore cell culture and organoids
-    if is_cell_culture_or_organoid(entity_name):
+    if is_cell_culture_or_organoid(entity_name):  # type: ignore
         return ancestor_set
 
     try:
@@ -524,7 +524,7 @@ def list_ancestors(entity_name, graph, ancestor_set):
         return ancestor_set
 
     for ancestor_entity in ancestor_entities:
-        list_ancestors(ancestor_entity, graph, ancestor_set)
+        list_ancestors(ancestor_entity, graph, ancestor_set)  # type: ignore
 
     return ancestor_set
 
@@ -532,14 +532,14 @@ def list_ancestors(entity_name, graph, ancestor_set):
 # In[22]:
 
 
-def list_descendants(entity_name, graph, all_successors):
+def list_descendants(entity_name, graph, all_successors):  # type: ignore
     """
     From the given graph, recursively build up set of descendants for the given
     entity from the given
     """
 
     # Ignore cell culture and organoid tissues.
-    if is_cell_culture(entity_name) or is_organoid(entity_name):
+    if is_cell_culture(entity_name) or is_organoid(entity_name):  # type: ignore
         return
 
     successors = []
@@ -556,13 +556,13 @@ def list_descendants(entity_name, graph, all_successors):
 
     # Find descendants of children of entity.
     for successor in successors:
-        list_descendants(successor, graph, all_successors)
+        list_descendants(successor, graph, all_successors)  # type: ignore
 
 
 # In[23]:
 
 
-def list_direct_descendants(entity_name):
+def list_direct_descendants(entity_name):  # type: ignore
     """
     Return the set of descendants for the given entity.
     """
@@ -578,7 +578,7 @@ def list_direct_descendants(entity_name):
 # In[24]:
 
 
-def list_direct_descendants_and_parts(entity_name):
+def list_direct_descendants_and_parts(entity_name):  # type: ignore
     """
     Determine the set of descendants and parts for the given entity.
 
@@ -621,7 +621,7 @@ def list_direct_descendants_and_parts(entity_name):
 # In[25]:
 
 
-def reformat_ontology_term_id(ontology_term_id: str, to_writable: bool = True):
+def reformat_ontology_term_id(ontology_term_id: str, to_writable: bool = True):  # type: ignore
     """
     Converts ontology term id string between two formats:
         - `to_writable == True`: from "UBERON_0002048" to "UBERON:0002048"
@@ -641,14 +641,14 @@ def reformat_ontology_term_id(ontology_term_id: str, to_writable: bool = True):
 # In[26]:
 
 
-def write_ancestors_by_entity(entities, graph, file_name):
+def write_ancestors_by_entity(entities, graph, file_name):  # type: ignore
     """
     Create dictionary of ancestors keyed by entity and write to file. The
     contents of the generated file is copied into ${entity}_ontology_mapping.py
     in the single-cell-data-portal repository and is used to key datasets with
     their corresponding entity ancestors.
     """
-    ancestors_by_entity = key_ancestors_by_entity(entities, graph)
+    ancestors_by_entity = key_ancestors_by_entity(entities, graph)  # type: ignore
     with open(file_name, "w") as f:
         json.dump(ancestors_by_entity, f)
 
@@ -656,7 +656,7 @@ def write_ancestors_by_entity(entities, graph, file_name):
 # In[27]:
 
 
-def write_descendants_by_entity(entity_hierarchy, graph, file_name):
+def write_descendants_by_entity(entity_hierarchy, graph, file_name):  # type: ignore
     """
     Create descendant relationships between the given entity hierarchy.
     """
@@ -672,12 +672,12 @@ def write_descendants_by_entity(entity_hierarchy, graph, file_name):
             continue
 
         accept_list = [i for sublist in accept_lists for i in sublist]
-        organoids_by_ontology_term_id = key_organoids_by_ontology_term_id(accept_list)
+        organoids_by_ontology_term_id = key_organoids_by_ontology_term_id(accept_list)  # type: ignore
 
         # List descendants of entity in this set.
         for entity_anme in entity_set:
-            descendants = set()
-            list_descendants(entity_anme, graph, descendants)
+            descendants = set()  # type: ignore
+            list_descendants(entity_anme, graph, descendants)  # type: ignore
 
             # Determine the set of descendants that be included.
             descendant_accept_list = []
@@ -737,7 +737,7 @@ print(len(prod_cell_types), " prod cell types found")
 
 # Extract a subgraph from UBERON for the hand-curated systems and orphans,
 # collapsing is_a and part_of relations.
-tissue_graph = build_graph_for_tissues(system_tissues + orphan_tissues)
+tissue_graph = build_graph_for_tissues(system_tissues + orphan_tissues)  # type: ignore
 
 
 # In[30]:
@@ -745,7 +745,7 @@ tissue_graph = build_graph_for_tissues(system_tissues + orphan_tissues)
 
 # Create ancestors file, the contents of which are to be copied to
 # tissue_ontology_mapping.py and read by Single Cell Data Portal BE.
-write_ancestors_by_entity(prod_tissues, tissue_graph, "scripts/compute_mappings/tissue_ontology_mapping.json")
+write_ancestors_by_entity(prod_tissues, tissue_graph, "scripts/compute_mappings/tissue_ontology_mapping.json")  # type: ignore
 
 
 # In[31]:
@@ -754,7 +754,7 @@ write_ancestors_by_entity(prod_tissues, tissue_graph, "scripts/compute_mappings/
 # Create descendants file, the contents of which are to be copied to
 # TISSUE_DESCENDANTS and read by Single Cell Data Portal FE.
 tissue_hierarchy = [system_tissues, organ_tissues, prod_tissues]
-write_descendants_by_entity(tissue_hierarchy, tissue_graph, "scripts/compute_mappings/tissue_descendants.json")
+write_descendants_by_entity(tissue_hierarchy, tissue_graph, "scripts/compute_mappings/tissue_descendants.json")  # type: ignore
 
 
 # #### Calculate Cell Type Graph and Cell Type Ancestor and Descendant Mappings
@@ -764,7 +764,7 @@ write_descendants_by_entity(tissue_hierarchy, tissue_graph, "scripts/compute_map
 
 # Extract a subgraph from CL for the hand-curated cell classes and orphans,
 # including only is_a relationships.
-cell_type_graph = build_graph_for_cell_types(cell_classes + orphan_cell_types)
+cell_type_graph = build_graph_for_cell_types(cell_classes + orphan_cell_types)  # type: ignore
 
 
 # In[33]:
@@ -772,7 +772,7 @@ cell_type_graph = build_graph_for_cell_types(cell_classes + orphan_cell_types)
 
 # Create ancestors file, the contents of which will be loaded into
 # cell_type_ontology_mapping and read by Single Cell Data Portal BE.
-write_ancestors_by_entity(
+write_ancestors_by_entity(  # type: ignore
     prod_cell_types,
     cell_type_graph,
     "scripts/compute_mappings/cell_type_ontology_mapping.json",
@@ -785,4 +785,4 @@ write_ancestors_by_entity(
 # Create descendants file, the contents of which are to be copied to
 # CELL_TYPE_DESCENDANTS and read by Single Cell Data Portal FE.
 cell_type_hierarchy = [cell_classes, cell_subclasses, prod_cell_types]
-write_descendants_by_entity(cell_type_hierarchy, cell_type_graph, "scripts/compute_mappings/cell_type_descendants.json")
+write_descendants_by_entity(cell_type_hierarchy, cell_type_graph, "scripts/compute_mappings/cell_type_descendants.json")  # type: ignore
