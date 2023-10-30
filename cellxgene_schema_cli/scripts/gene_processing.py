@@ -27,8 +27,6 @@ class GeneProcessor:
         self.gene_metadata: dict[str, GeneProcessingResult] = {}
         # Mapping from description (ex: "mus musculus") to a list of gene ids
         self.gene_ids_by_description: dict[str, list[str]] = {}
-        # Set of gene names that are duplicated
-        self.duplicated_gene_names = set()
 
     def write_gzip(self, data: str, output_filename: str):
         """
