@@ -42,6 +42,7 @@ DEPRECATED_FEATURE_IDS = [
 
 def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
+    reported_changes = []
 
     dataset = ad.read_h5ad(input_file, backed="r")
     if dataset.raw is not None and DEPRECATED_FEATURE_IDS:
@@ -165,16 +166,23 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         column_name = key.replace("_colors", "")
         obs_unique_values = category_mapping.get(column_name)
         if not obs_unique_values:
+            reported_changes.append(f"{column_name} is not of categorical dtype. Must remove {key} from uns.")
             return False
         if value is None or not isinstance(value, np.ndarray):
+            reported_changes.append(f"{key} values are not in an ndarray. Must remove from uns.")
             return False
         if not all(isinstance(color, str) for color in value):
+            reported_changes.append(f"{key} values are not all strings. Must remove from uns.")
             return False
         if len(value) < obs_unique_values:
+            reported_changes.append(f"{key} has fewer values than {column_name} has unique values. "
+                                    f"Must remove from uns.")
             return False
         all_hex_colors = all(re.match(r"^#([0-9a-fA-F]{6})$", color) for color in value)
         all_css4_colors = all(color in mcolors.CSS4_COLORS for color in value)
         if not (all_hex_colors or all_css4_colors):
+            reported_changes.append(f"{key} values are not all valid hex colors nor all valid css4 colors. Must remove"
+                                    f"from uns.")
             return False
         return True
 
@@ -204,3 +212,5 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         dataset = utils.remove_deprecated_features(dataset, DEPRECATED_FEATURE_IDS)
 
     dataset.write(output_file, compression="gzip")
+
+    return reported_changes
