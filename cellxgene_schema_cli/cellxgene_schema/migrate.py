@@ -188,7 +188,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
             return False
         return True
 
-    for key, value in dataset.uns.items():
+    for key, value in list(dataset.uns.items()):
         if key.endswith("_colors") and not color_key_is_valid(key, value):
             del dataset.uns[key]
 
