@@ -81,12 +81,13 @@
 
 
 import json
-from typing import List
+from typing import List, Generator, Union
 
 from pygraphviz import AGraph
 import requests
 import yaml
 from owlready2 import World
+from owlready2.entity import ThingClass
 
 
 # In[2]:
@@ -324,7 +325,7 @@ orphan_cell_types = [
 # In[11]:
 
 
-def build_descendants_graph(entity_name, graph):  # type: ignore
+def build_descendants_graph(entity_name: str, graph: AGraph):  # type: ignore
     """
     Recursively build set of descendants (that is, is_a descendants) for the
     given entity and add to graph.
@@ -399,7 +400,7 @@ def build_descendants_and_parts_graph(entity_name, graph):  # type: ignore
 # In[13]:
 
 
-def build_graph_for_cell_types(entity_names):  # type: ignore
+def build_graph_for_cell_types(entity_names: List[str]):  # type: ignore
     """
     Extract a subgraph of CL for the given cell types.
     """
@@ -563,12 +564,12 @@ def list_descendants(entity_name, graph, all_successors):  # type: ignore
 # In[23]:
 
 
-def list_direct_descendants(entity_name):  # type: ignore
+def list_direct_descendants(entity_name: str) -> Union[List, Generator[ThingClass, None, None]]:
     """
     Return the set of descendants for the given entity.
     """
 
-    entity = cl_world.search_one(iri=f"http://purl.obolibrary.org/obo/{entity_name}")
+    entity: ThingClass = cl_world.search_one(iri=f"http://purl.obolibrary.org/obo/{entity_name}")
     if not entity:
         print(f"{entity_name} not found in the ontology - please investigate.")
         return []
