@@ -675,9 +675,9 @@ def write_descendants_by_entity(entity_hierarchy, graph, file_name):  # type: ig
         organoids_by_ontology_term_id = key_organoids_by_ontology_term_id(accept_list)  # type: ignore
 
         # List descendants of entity in this set.
-        for entity_anme in entity_set:
+        for entity_name in entity_set:
             descendants = set()  # type: ignore
-            list_descendants(entity_anme, graph, descendants)  # type: ignore
+            list_descendants(entity_name, graph, descendants)  # type: ignore
 
             # Determine the set of descendants that be included.
             descendant_accept_list = []
@@ -691,14 +691,14 @@ def write_descendants_by_entity(entity_hierarchy, graph, file_name):  # type: ig
                     descendant_accept_list.append(organoids_by_ontology_term_id[descendant])
 
             # Add organoid entity, if any.
-            if entity_anme in organoids_by_ontology_term_id:
-                descendant_accept_list.append(organoids_by_ontology_term_id[entity_anme])
+            if entity_name in organoids_by_ontology_term_id:
+                descendant_accept_list.append(organoids_by_ontology_term_id[entity_name])
 
             if not descendant_accept_list:
                 continue
 
             # Add descendants to dictionary.
-            sanitized_entity_name = reformat_ontology_term_id(entity_anme, to_writable=True)
+            sanitized_entity_name = reformat_ontology_term_id(entity_name, to_writable=True)
             sanitized_descendants = [
                 reformat_ontology_term_id(descendant, to_writable=True) for descendant in descendant_accept_list
             ]
