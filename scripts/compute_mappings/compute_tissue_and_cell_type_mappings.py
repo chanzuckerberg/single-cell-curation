@@ -342,13 +342,13 @@ def build_descendants_graph(entity_name: str, graph: AGraph):  # type: ignore
         child_name = subtype.name
 
         # Check if child has been added to graph already.
-        child_visted = graph.has_node(child_name)
+        child_visited = graph.has_node(child_name)
 
         # Add valid child to graph as a descendant.
         graph.add_edge(entity_name, child_name)
 
         # Build graph for child if it hasn't already been visited.
-        if not child_visted:
+        if not child_visited:
             build_descendants_graph(child_name, graph)  # type: ignore
 
 
@@ -387,13 +387,13 @@ def build_descendants_and_parts_graph(entity_name, graph):  # type: ignore
                 continue
 
             # Check if child has been added to graph already.
-            child_visted = graph.has_node(child_name)
+            child_visited = graph.has_node(child_name)
 
             # Add valid child to graph as a descendant.
             graph.add_edge(entity_name, child_name)
 
             # Build graph for child if it hasn't already been visited.
-            if not child_visted:
+            if not child_visited:
                 build_descendants_and_parts_graph(child_name, graph)  # type: ignore
 
 
