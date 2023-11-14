@@ -81,8 +81,9 @@
 
 
 import json
+from typing import List
 
-import pygraphviz as pgv
+from pygraphviz import AGraph
 import requests
 import yaml
 from owlready2 import World
@@ -402,7 +403,7 @@ def build_graph_for_cell_types(entity_names):  # type: ignore
     """
     Extract a subgraph of CL for the given cell types.
     """
-    graph = pgv.AGraph()
+    graph = AGraph()
     for entity_name in entity_names:
         build_descendants_graph(entity_name, graph)  # type: ignore
     return graph
@@ -411,11 +412,11 @@ def build_graph_for_cell_types(entity_names):  # type: ignore
 # In[14]:
 
 
-def build_graph_for_tissues(entity_names):  # type: ignore
+def build_graph_for_tissues(entity_names: List[str]) -> AGraph:
     """
     Extract a subgraph of UBERON for the given tissues.
     """
-    tissue_graph = pgv.AGraph()
+    tissue_graph = AGraph()
     for entity_name in entity_names:
         build_descendants_and_parts_graph(entity_name, tissue_graph)  # type: ignore
     return tissue_graph
@@ -737,7 +738,7 @@ print(len(prod_cell_types), " prod cell types found")
 
 # Extract a subgraph from UBERON for the hand-curated systems and orphans,
 # collapsing is_a and part_of relations.
-tissue_graph = build_graph_for_tissues(system_tissues + orphan_tissues)  # type: ignore
+tissue_graph = build_graph_for_tissues(system_tissues + orphan_tissues)
 
 
 # In[30]:
