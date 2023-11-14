@@ -325,7 +325,7 @@ orphan_cell_types = [
 # In[11]:
 
 
-def build_descendants_graph(entity_name: str, graph: AGraph):  # type: ignore
+def build_descendants_graph(entity_name: str, graph: AGraph) -> None:
     """
     Recursively build set of descendants (that is, is_a descendants) for the
     given entity and add to graph.
@@ -341,15 +341,15 @@ def build_descendants_graph(entity_name: str, graph: AGraph):  # type: ignore
     for subtype in subtypes:
         child_name: str = subtype.name
 
-        # Check if child has been added to graph already.
+        # Check if child exists in the graph already BEFORE calling 'add_edge'
         child_node_exists = graph.has_node(child_name)
 
-        # Add valid child to graph as a descendant.
-        graph.add_edge(entity_name, child_name)
+        # Construct edge between entity and child.
+        graph.add_edge(entity_name, child_name)  # Adds child node if not already present; does not build descendants
 
         # Build graph for child if it hasn't already been visited.
         if not child_node_exists:
-            build_descendants_graph(child_name, graph)  # type: ignore
+            build_descendants_graph(child_name, graph)
 
 
 # In[12]:
