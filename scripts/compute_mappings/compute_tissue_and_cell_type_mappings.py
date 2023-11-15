@@ -81,7 +81,7 @@
 
 
 import json
-from typing import List, Union, Dict, Set
+from typing import List, Union, Dict, Set, Iterable
 
 from pygraphviz import AGraph, Node
 import requests
@@ -488,7 +488,7 @@ def key_ancestors_by_entity(entity_names: List[str], graph: AGraph) -> Dict[str,
 # In[20]:
 
 
-def key_organoids_by_ontology_term_id(entity_names: List[str]) -> Dict[str, str]:
+def key_organoids_by_ontology_term_id(entity_names: Iterable[str]) -> Dict[str, str]:
     """
     Returns a dictionary of organoid ontology term IDs by stem ontology term ID.
     """
@@ -656,7 +656,7 @@ def write_ancestors_by_entity(entities, graph, file_name) -> None:
 # In[27]:
 
 
-def write_descendants_by_entity(entity_hierarchy: List[List[str]], graph, file_name) -> None:
+def write_descendants_by_entity(entity_hierarchy: List[Set[str]], graph, file_name) -> None:
     """
     Create descendant relationships between the given entity hierarchy.
     """
@@ -665,25 +665,24 @@ def write_descendants_by_entity(entity_hierarchy: List[List[str]], graph, file_n
         # Create the set of descendants that can be included for this entity set.
         # For example, systems can include organs or tissues,
         # organs can only include tissues, tissues can't have descendants.
-        accept_lists = entity_hierarchy[idx + 1 :]
+        candidate_descendants = set([entity for subset in entity_hierarchy[idx + 1 :] for entity in subset])
 
         # Tissue or cell type for example will not have any descendants.
-        if not accept_lists:
+        if not candidate_descendants:
             continue
 
-        accept_list = [i for sublist in accept_lists for i in sublist]
-        organoids_by_ontology_term_id = key_organoids_by_ontology_term_id(accept_list)
+        organoids_by_ontology_term_id = key_organoids_by_ontology_term_id(candidate_descendants)
 
         # List descendants of entity in this set.
         for entity_name in entities:
             descendants: Set[Union[Node, str]] = set()
             build_descendants_set(entity_name, graph, descendants)
 
-            # Determine the set of descendants that be included.
+            # Determine the set of descendants that should be included.
             descendant_accept_list = []
             for descendant in descendants:
-                # Include all entities in the accept list.
-                if descendant in accept_list:
+                # Include all entities in the candidate list.
+                if descendant in candidate_descendants:
                     descendant_accept_list.append(descendant)
 
                 # Add organoid descendants, if any.
@@ -718,16 +717,16 @@ def write_descendants_by_entity(entity_hierarchy: List[List[str]], graph, file_n
 
 response = requests.get("https://api.cellxgene.cziscience.com/dp/v1/datasets/index")
 datasets = json.loads(response.text)
-prodTissueSet = set()
-prodCellTypeSet = set()
+prod_tissue_set = set()
+prod_cell_type_set = set()
 for dataset in datasets:
     for tissue in dataset["tissue"]:
-        prodTissueSet.add(reformat_ontology_term_id(tissue["ontology_term_id"], False))
+        prod_tissue_set.add(reformat_ontology_term_id(tissue["ontology_term_id"], False))
     for cellType in dataset["cell_type"]:
-        prodCellTypeSet.add(reformat_ontology_term_id(cellType["ontology_term_id"], False))
+        prod_cell_type_set.add(reformat_ontology_term_id(cellType["ontology_term_id"], False))
 
-prod_tissues = list(prodTissueSet)
-prod_cell_types = list(prodCellTypeSet)
+prod_tissues = list(prod_tissue_set)
+prod_cell_types = list(prod_cell_type_set)
 print(len(prod_tissues), " prod tissues found")
 print(len(prod_cell_types), " prod cell types found")
 
@@ -753,7 +752,7 @@ write_ancestors_by_entity(prod_tissues, tissue_graph, "scripts/compute_mappings/
 
 # Create descendants file, the contents of which are to be copied to
 # TISSUE_DESCENDANTS and read by Single Cell Data Portal FE.
-tissue_hierarchy = [system_tissues, organ_tissues, prod_tissues]
+tissue_hierarchy = [set(system_tissues), set(organ_tissues), prod_tissue_set]
 write_descendants_by_entity(tissue_hierarchy, tissue_graph, "scripts/compute_mappings/tissue_descendants.json")  # type: ignore
 
 
