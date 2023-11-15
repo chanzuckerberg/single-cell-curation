@@ -641,7 +641,7 @@ def reformat_ontology_term_id(ontology_term_id: str, to_writable: bool = True) -
 # In[26]:
 
 
-def write_ancestors_by_entity(entities, graph, file_name) -> None:
+def write_ancestors_by_entity(entities: List[str], graph: AGraph, file_name: str) -> None:
     """
     Create dictionary of ancestors keyed by entity and write to file. The
     contents of the generated file is copied into ${entity}_ontology_mapping.py
@@ -656,7 +656,7 @@ def write_ancestors_by_entity(entities, graph, file_name) -> None:
 # In[27]:
 
 
-def write_descendants_by_entity(entity_hierarchy: List[Set[str]], graph, file_name) -> None:
+def write_descendants_by_entity(entity_hierarchy: List[Iterable[str]], graph: AGraph, file_name: str) -> None:
     """
     Create descendant relationships between the given entity hierarchy.
     """
@@ -686,6 +686,7 @@ def write_descendants_by_entity(entity_hierarchy: List[Set[str]], graph, file_na
                     descendant_accept_list.append(descendant)
 
                 # Add organoid descendants, if any.
+                # DJH: this should be non-functional as organoids are filtered out by build_descendants_set. Ask Pablo.
                 if descendant in organoids_by_ontology_term_id:
                     descendant_accept_list.append(organoids_by_ontology_term_id[descendant])
 
@@ -744,7 +745,7 @@ tissue_graph = build_graph_for_tissues(system_tissues + orphan_tissues)
 
 # Create ancestors file, the contents of which are to be copied to
 # tissue_ontology_mapping.py and read by Single Cell Data Portal BE.
-write_ancestors_by_entity(prod_tissues, tissue_graph, "scripts/compute_mappings/tissue_ontology_mapping.json")  # type: ignore
+write_ancestors_by_entity(prod_tissues, tissue_graph, "scripts/compute_mappings/tissue_ontology_mapping.json")
 
 
 # In[31]:
@@ -752,8 +753,8 @@ write_ancestors_by_entity(prod_tissues, tissue_graph, "scripts/compute_mappings/
 
 # Create descendants file, the contents of which are to be copied to
 # TISSUE_DESCENDANTS and read by Single Cell Data Portal FE.
-tissue_hierarchy = [set(system_tissues), set(organ_tissues), prod_tissue_set]
-write_descendants_by_entity(tissue_hierarchy, tissue_graph, "scripts/compute_mappings/tissue_descendants.json")  # type: ignore
+tissue_hierarchy = [system_tissues, organ_tissues, prod_tissue_set]
+write_descendants_by_entity(tissue_hierarchy, tissue_graph, "scripts/compute_mappings/tissue_descendants.json")
 
 
 # #### Calculate Cell Type Graph and Cell Type Ancestor and Descendant Mappings
@@ -763,7 +764,7 @@ write_descendants_by_entity(tissue_hierarchy, tissue_graph, "scripts/compute_map
 
 # Extract a subgraph from CL for the hand-curated cell classes and orphans,
 # including only is_a relationships.
-cell_type_graph = build_graph_for_cell_types(cell_classes + orphan_cell_types)  # type: ignore
+cell_type_graph = build_graph_for_cell_types(cell_classes + orphan_cell_types)
 
 
 # In[33]:
@@ -771,7 +772,7 @@ cell_type_graph = build_graph_for_cell_types(cell_classes + orphan_cell_types)  
 
 # Create ancestors file, the contents of which will be loaded into
 # cell_type_ontology_mapping and read by Single Cell Data Portal BE.
-write_ancestors_by_entity(  # type: ignore
+write_ancestors_by_entity(
     prod_cell_types,
     cell_type_graph,
     "scripts/compute_mappings/cell_type_ontology_mapping.json",
@@ -784,4 +785,4 @@ write_ancestors_by_entity(  # type: ignore
 # Create descendants file, the contents of which are to be copied to
 # CELL_TYPE_DESCENDANTS and read by Single Cell Data Portal FE.
 cell_type_hierarchy = [cell_classes, cell_subclasses, prod_cell_types]
-write_descendants_by_entity(cell_type_hierarchy, cell_type_graph, "scripts/compute_mappings/cell_type_descendants.json")  # type: ignore
+write_descendants_by_entity(cell_type_hierarchy, cell_type_graph, "scripts/compute_mappings/cell_type_descendants.json")
