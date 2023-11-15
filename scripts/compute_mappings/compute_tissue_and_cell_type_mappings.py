@@ -474,11 +474,11 @@ def key_ancestors_by_entity(entity_names: List[str], graph: AGraph) -> Dict[str,
 
     ancestors_by_entity = {}
     for entity_name in entity_names:
-        descendants = set()  # type: ignore
-        build_ancestor_set(entity_name, graph, descendants)  # type: ignore
+        ancestors = set()  # type: ignore
+        build_ancestor_set(entity_name, graph, ancestors)  # type: ignore
 
         sanitized_entity_name = reformat_ontology_term_id(entity_name, to_writable=True)
-        sanitized_ancestors = [reformat_ontology_term_id(descendant, to_writable=True) for descendant in descendants]
+        sanitized_ancestors = [reformat_ontology_term_id(ancestor, to_writable=True) for ancestor in ancestors]
 
         ancestors_by_entity[sanitized_entity_name] = sanitized_ancestors
 
