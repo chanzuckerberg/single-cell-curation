@@ -81,7 +81,7 @@
 
 
 import json
-from typing import List, Generator, Union
+from typing import List, Union, Dict, Set
 
 from pygraphviz import AGraph
 import requests
@@ -345,7 +345,7 @@ def build_descendants_graph(entity_name: str, graph: AGraph) -> None:
         child_node_exists = graph.has_node(child_name)
 
         # Construct edge between entity and child.
-        graph.add_edge(entity_name, child_name)  # Adds child node if not already present; does not build descendants
+        graph.add_edge(entity_name, child_name)  # Adds child node if not present; does not build descendants
 
         # Build graph for child if it hasn't already been visited.
         if not child_node_exists:
@@ -355,7 +355,7 @@ def build_descendants_graph(entity_name: str, graph: AGraph) -> None:
 # In[12]:
 
 
-def build_descendants_and_parts_graph(entity_name, graph):  # type: ignore
+def build_descendants_and_parts_graph(entity_name: str, graph: AGraph) -> None:
     """
     Recursively build set of descendants and parts (that is, include both is_a
     and part_of descendants) for the given entity and add to graph.
@@ -366,7 +366,7 @@ def build_descendants_and_parts_graph(entity_name, graph):  # type: ignore
     graph.add_node(entity_name)
 
     # List descendants via is_a and part_of relationships.
-    subtypes_and_parts = list_direct_descendants_and_parts(entity_name)  # type: ignore
+    subtypes_and_parts = list_direct_descendants_and_parts(entity_name)
 
     for subtype_or_part in subtypes_and_parts:
         # Each child should be a singleton array; detect, report and continue if
@@ -390,7 +390,7 @@ def build_descendants_and_parts_graph(entity_name, graph):  # type: ignore
             child_node_exists = graph.has_node(child_name)
 
             # Add valid child to graph as a descendant.
-            graph.add_edge(entity_name, child_name)
+            graph.add_edge(entity_name, child_name)  # Adds child node if not present; does not build descendants
 
             # Build graph for child if it hasn't already been visited.
             if not child_node_exists:
@@ -400,7 +400,7 @@ def build_descendants_and_parts_graph(entity_name, graph):  # type: ignore
 # In[13]:
 
 
-def build_graph_for_cell_types(entity_names: List[str]):  # type: ignore
+def build_graph_for_cell_types(entity_names: List[str]) -> AGraph:  # type: ignore
     """
     Extract a subgraph of CL for the given cell types.
     """
@@ -426,7 +426,7 @@ def build_graph_for_tissues(entity_names: List[str]) -> AGraph:
 # In[15]:
 
 
-def is_axiom(entity):  # type: ignore
+def is_axiom(entity) -> bool:
     """
     Returns true if the given entity is an axiom.
     For example, obo.UBERON_0001213 & obo.BFO_0000050.some(obo.NCBITaxon_9606)
@@ -437,7 +437,7 @@ def is_axiom(entity):  # type: ignore
 # In[16]:
 
 
-def is_cell_culture(entity_name):  # type: ignore
+def is_cell_culture(entity_name) -> bool:
     """
     Returns true if the given entity name contains (cell culture).
     """
@@ -447,7 +447,7 @@ def is_cell_culture(entity_name):  # type: ignore
 # In[17]:
 
 
-def is_cell_culture_or_organoid(entity_name):  # type: ignore
+def is_cell_culture_or_organoid(entity_name) -> bool:
     """
     Returns true if the given entity name contains (cell culture) or (organoid).
     """
@@ -457,7 +457,7 @@ def is_cell_culture_or_organoid(entity_name):  # type: ignore
 # In[18]:
 
 
-def is_organoid(entity_name):  # type: ignore
+def is_organoid(entity_name) -> bool:
     """
     Returns true if the given entity name contains "(organoid)".
     """
@@ -467,7 +467,7 @@ def is_organoid(entity_name):  # type: ignore
 # In[19]:
 
 
-def key_ancestors_by_entity(entity_names, graph):  # type: ignore
+def key_ancestors_by_entity(entity_names: List[str], graph: AGraph) -> Dict[str, List[str]]:
     """
     Build a dictionary of ancestors keyed by entity for the given entities.
     """
@@ -475,7 +475,7 @@ def key_ancestors_by_entity(entity_names, graph):  # type: ignore
     ancestors_by_entity = {}
     for entity_name in entity_names:
         descendants = set()  # type: ignore
-        list_ancestors(entity_name, graph, descendants)  # type: ignore
+        build_ancestor_set(entity_name, graph, descendants)  # type: ignore
 
         sanitized_entity_name = reformat_ontology_term_id(entity_name, to_writable=True)
         sanitized_ancestors = [reformat_ontology_term_id(descendant, to_writable=True) for descendant in descendants]
@@ -505,7 +505,7 @@ def key_organoids_by_ontology_term_id(entity_names):  # type: ignore
 # In[21]:
 
 
-def list_ancestors(entity_name, graph, ancestor_set):  # type: ignore
+def build_ancestor_set(entity_name: str, graph: AGraph, ancestor_set: Set[str]):
     """
     From the given graph, recursively build up set of ancestors for the given
     entity.
@@ -526,9 +526,7 @@ def list_ancestors(entity_name, graph, ancestor_set):  # type: ignore
         return ancestor_set
 
     for ancestor_entity in ancestor_entities:
-        list_ancestors(ancestor_entity, graph, ancestor_set)  # type: ignore
-
-    return ancestor_set
+        build_ancestor_set(ancestor_entity, graph, ancestor_set)
 
 
 # In[22]:
@@ -564,7 +562,7 @@ def list_descendants(entity_name, graph, all_successors):  # type: ignore
 # In[23]:
 
 
-def list_direct_descendants(entity_name: str) -> Union[List, Generator[ThingClass, None, None]]:
+def list_direct_descendants(entity_name: str) -> List[ThingClass]:
     """
     Return the set of descendants for the given entity.
     """
@@ -574,13 +572,13 @@ def list_direct_descendants(entity_name: str) -> Union[List, Generator[ThingClas
         print(f"{entity_name} not found in the ontology - please investigate.")
         return []
 
-    return entity.subclasses()
+    return list(entity.subclasses())  # .subclasses() returns a generator
 
 
 # In[24]:
 
 
-def list_direct_descendants_and_parts(entity_name):  # type: ignore
+def list_direct_descendants_and_parts(entity_name: str) -> List[List[ThingClass]]:
     """
     Determine the set of descendants and parts for the given entity.
 
@@ -623,7 +621,7 @@ def list_direct_descendants_and_parts(entity_name):  # type: ignore
 # In[25]:
 
 
-def reformat_ontology_term_id(ontology_term_id: str, to_writable: bool = True):  # type: ignore
+def reformat_ontology_term_id(ontology_term_id: str, to_writable: bool = True) -> str:
     """
     Converts ontology term id string between two formats:
         - `to_writable == True`: from "UBERON_0002048" to "UBERON:0002048"
