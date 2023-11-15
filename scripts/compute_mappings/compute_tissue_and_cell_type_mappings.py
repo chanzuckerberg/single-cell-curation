@@ -83,7 +83,7 @@
 import json
 from typing import List, Union, Dict, Set
 
-from pygraphviz import AGraph
+from pygraphviz import AGraph, Node
 import requests
 import yaml
 from owlready2 import World
@@ -532,23 +532,23 @@ def build_ancestor_set(entity_name: str, graph: AGraph, ancestor_set: Set[str]):
 # In[22]:
 
 
-def list_descendants(entity_name, graph, all_successors):  # type: ignore
+def build_descendants_set(entity_name: str, graph: AGraph, all_successors: Set[Union[Node, str]]) -> None:
     """
     From the given graph, recursively build up set of descendants for the given
     entity from the given
     """
 
     # Ignore cell culture and organoid tissues.
-    if is_cell_culture(entity_name) or is_organoid(entity_name):  # type: ignore
+    if is_cell_culture(entity_name) or is_organoid(entity_name):
         return
 
-    successors = []
     try:
         successors = graph.successors(entity_name)
     except KeyError:
         # Detect, report and continue if entity not found in graph. Manual
         # investigation of failure is required.
         print(f"{entity_name} not found - please investigate.")
+        return
 
     # Add descendants to the set.
     if len(successors):
@@ -556,7 +556,7 @@ def list_descendants(entity_name, graph, all_successors):  # type: ignore
 
     # Find descendants of children of entity.
     for successor in successors:
-        list_descendants(successor, graph, all_successors)  # type: ignore
+        build_descendants_set(successor, graph, all_successors)
 
 
 # In[23]:
@@ -676,8 +676,8 @@ def write_descendants_by_entity(entity_hierarchy: List[List[str]], graph, file_n
 
         # List descendants of entity in this set.
         for entity_name in entities:
-            descendants = set()  # type: ignore
-            list_descendants(entity_name, graph, descendants)  # type: ignore
+            descendants: Set[Union[Node, str]] = set()
+            build_descendants_set(entity_name, graph, descendants)
 
             # Determine the set of descendants that be included.
             descendant_accept_list = []
