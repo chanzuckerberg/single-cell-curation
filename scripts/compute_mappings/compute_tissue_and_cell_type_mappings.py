@@ -488,14 +488,14 @@ def key_ancestors_by_entity(entity_names: List[str], graph: AGraph) -> Dict[str,
 # In[20]:
 
 
-def key_organoids_by_ontology_term_id(entity_names):  # type: ignore
+def key_organoids_by_ontology_term_id(entity_names: List[str]) -> Dict[str, str]:
     """
     Returns a dictionary of organoid ontology term IDs by stem ontology term ID.
     """
 
     organoids_by_ontology_term_id = {}
     for entity_name in entity_names:
-        if is_organoid(entity_name):  # type: ignore
+        if is_organoid(entity_name):
             ontology_term_id = entity_name.replace(" (organoid)", "")
             organoids_by_ontology_term_id[ontology_term_id] = entity_name
 
@@ -641,14 +641,14 @@ def reformat_ontology_term_id(ontology_term_id: str, to_writable: bool = True) -
 # In[26]:
 
 
-def write_ancestors_by_entity(entities, graph, file_name):  # type: ignore
+def write_ancestors_by_entity(entities, graph, file_name) -> None:
     """
     Create dictionary of ancestors keyed by entity and write to file. The
     contents of the generated file is copied into ${entity}_ontology_mapping.py
     in the single-cell-data-portal repository and is used to key datasets with
     their corresponding entity ancestors.
     """
-    ancestors_by_entity = key_ancestors_by_entity(entities, graph)  # type: ignore
+    ancestors_by_entity = key_ancestors_by_entity(entities, graph)
     with open(file_name, "w") as f:
         json.dump(ancestors_by_entity, f)
 
@@ -656,12 +656,12 @@ def write_ancestors_by_entity(entities, graph, file_name):  # type: ignore
 # In[27]:
 
 
-def write_descendants_by_entity(entity_hierarchy, graph, file_name):  # type: ignore
+def write_descendants_by_entity(entity_hierarchy: List[List[str]], graph, file_name) -> None:
     """
     Create descendant relationships between the given entity hierarchy.
     """
     all_descendants = {}
-    for idx, entity_set in enumerate(entity_hierarchy):
+    for idx, entities in enumerate(entity_hierarchy):
         # Create the set of descendants that can be included for this entity set.
         # For example, systems can include organs or tissues,
         # organs can only include tissues, tissues can't have descendants.
@@ -672,10 +672,10 @@ def write_descendants_by_entity(entity_hierarchy, graph, file_name):  # type: ig
             continue
 
         accept_list = [i for sublist in accept_lists for i in sublist]
-        organoids_by_ontology_term_id = key_organoids_by_ontology_term_id(accept_list)  # type: ignore
+        organoids_by_ontology_term_id = key_organoids_by_ontology_term_id(accept_list)
 
         # List descendants of entity in this set.
-        for entity_name in entity_set:
+        for entity_name in entities:
             descendants = set()  # type: ignore
             list_descendants(entity_name, graph, descendants)  # type: ignore
 
