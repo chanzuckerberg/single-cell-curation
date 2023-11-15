@@ -681,7 +681,7 @@ def write_descendants_by_entity(entity_hierarchy: List[Set[str]], graph, file_na
             # Determine the set of descendants that should be included.
             descendant_accept_list = []
             for descendant in descendants:
-                # Include all entities in the candidate list.
+                # Include all entities in the candidate set.
                 if descendant in candidate_descendants:
                     descendant_accept_list.append(descendant)
 
