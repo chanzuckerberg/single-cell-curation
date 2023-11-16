@@ -93,32 +93,6 @@ from owlready2.entity import ThingClass
 # In[2]:
 
 
-# Load owl.info to grab latest ontology sources
-owl_info_yml = "cellxgene_schema_cli/cellxgene_schema/ontology_files/owl_info.yml"
-with open(owl_info_yml, "r") as owl_info_handle:
-    owl_info = yaml.safe_load(owl_info_handle)
-
-
-# In[3]:
-
-
-# Load CL, pinned for 3.0.0 schema.
-cl_latest_key = owl_info["CL"]["latest"]
-cl_ontology = owl_info["CL"]["urls"][cl_latest_key]
-cl_world = World()
-cl_world.get_ontology(cl_ontology).load()
-
-
-# In[4]:
-
-
-# Load UBERON
-uberon_latest_key = owl_info["UBERON"]["latest"]
-uberon_ontology = owl_info["UBERON"]["urls"][uberon_latest_key]
-uberon_world = World()
-uberon_world.get_ontology(uberon_ontology).load()
-
-
 # #### Tissue Constants
 
 # In[5]:
@@ -710,79 +684,89 @@ def write_descendants_by_entity(entity_hierarchy: List[Iterable[str]], graph: AG
 
 # #### Calculate Tissue Graph and Tissue Ancestor and Descendant Mappings
 
-# In[28]:
+if __name__ == "__main__":
+    # Load owl.info to grab latest ontology sources
+    owl_info_yml = "cellxgene_schema_cli/cellxgene_schema/ontology_files/owl_info.yml"
+    with open(owl_info_yml, "r") as owl_info_handle:
+        owl_info = yaml.safe_load(owl_info_handle)
 
+    # In[3]:
 
-# Load latest prod tissues and cell types
+    # Load CL, pinned for 3.0.0 schema.
+    cl_latest_key = owl_info["CL"]["latest"]
+    cl_ontology = owl_info["CL"]["urls"][cl_latest_key]
+    cl_world = World()
+    cl_world.get_ontology(cl_ontology).load()
 
+    # In[4]:
 
-response = requests.get("https://api.cellxgene.cziscience.com/dp/v1/datasets/index")
-datasets = json.loads(response.text)
-prod_tissue_set = set()
-prod_cell_type_set = set()
-for dataset in datasets:
-    for tissue in dataset["tissue"]:
-        prod_tissue_set.add(reformat_ontology_term_id(tissue["ontology_term_id"], False))
-    for cellType in dataset["cell_type"]:
-        prod_cell_type_set.add(reformat_ontology_term_id(cellType["ontology_term_id"], False))
+    # Load UBERON
+    uberon_latest_key = owl_info["UBERON"]["latest"]
+    uberon_ontology = owl_info["UBERON"]["urls"][uberon_latest_key]
+    uberon_world = World()
+    uberon_world.get_ontology(uberon_ontology).load()
 
-prod_tissues = list(prod_tissue_set)
-prod_cell_types = list(prod_cell_type_set)
-print(len(prod_tissues), " prod tissues found")
-print(len(prod_cell_types), " prod cell types found")
+    # In[28]:
 
+    # Load latest prod tissues and cell types
 
-# In[29]:
+    response = requests.get("https://api.cellxgene.cziscience.com/dp/v1/datasets/index")
+    datasets = json.loads(response.text)
+    prod_tissue_set = set()
+    prod_cell_type_set = set()
+    for dataset in datasets:
+        for tissue in dataset["tissue"]:
+            prod_tissue_set.add(reformat_ontology_term_id(tissue["ontology_term_id"], False))
+        for cellType in dataset["cell_type"]:
+            prod_cell_type_set.add(reformat_ontology_term_id(cellType["ontology_term_id"], False))
 
+    prod_tissues = list(prod_tissue_set)
+    prod_cell_types = list(prod_cell_type_set)
+    print(len(prod_tissues), " prod tissues found")
+    print(len(prod_cell_types), " prod cell types found")
 
-# Extract a subgraph from UBERON for the hand-curated systems and orphans,
-# collapsing is_a and part_of relations.
-tissue_graph = build_graph_for_tissues(system_tissues + orphan_tissues)
+    # In[29]:
 
+    # Extract a subgraph from UBERON for the hand-curated systems and orphans,
+    # collapsing is_a and part_of relations.
+    tissue_graph = build_graph_for_tissues(system_tissues + orphan_tissues)
 
-# In[30]:
+    # In[30]:
 
+    # Create ancestors file, the contents of which are to be copied to
+    # tissue_ontology_mapping.py and read by Single Cell Data Portal BE.
+    write_ancestors_by_entity(prod_tissues, tissue_graph, "scripts/compute_mappings/tissue_ontology_mapping.json")
 
-# Create ancestors file, the contents of which are to be copied to
-# tissue_ontology_mapping.py and read by Single Cell Data Portal BE.
-write_ancestors_by_entity(prod_tissues, tissue_graph, "scripts/compute_mappings/tissue_ontology_mapping.json")
+    # In[31]:
 
+    # Create descendants file, the contents of which are to be copied to
+    # TISSUE_DESCENDANTS and read by Single Cell Data Portal FE.
+    tissue_hierarchy = [system_tissues, organ_tissues, prod_tissue_set]
+    write_descendants_by_entity(tissue_hierarchy, tissue_graph, "scripts/compute_mappings/tissue_descendants.json")
 
-# In[31]:
+    # #### Calculate Cell Type Graph and Cell Type Ancestor and Descendant Mappings
 
+    # In[32]:
 
-# Create descendants file, the contents of which are to be copied to
-# TISSUE_DESCENDANTS and read by Single Cell Data Portal FE.
-tissue_hierarchy = [system_tissues, organ_tissues, prod_tissue_set]
-write_descendants_by_entity(tissue_hierarchy, tissue_graph, "scripts/compute_mappings/tissue_descendants.json")
+    # Extract a subgraph from CL for the hand-curated cell classes and orphans,
+    # including only is_a relationships.
+    cell_type_graph = build_graph_for_cell_types(cell_classes + orphan_cell_types)
 
+    # In[33]:
 
-# #### Calculate Cell Type Graph and Cell Type Ancestor and Descendant Mappings
+    # Create ancestors file, the contents of which will be loaded into
+    # cell_type_ontology_mapping and read by Single Cell Data Portal BE.
+    write_ancestors_by_entity(
+        prod_cell_types,
+        cell_type_graph,
+        "scripts/compute_mappings/cell_type_ontology_mapping.json",
+    )
 
-# In[32]:
+    # In[34]:
 
-
-# Extract a subgraph from CL for the hand-curated cell classes and orphans,
-# including only is_a relationships.
-cell_type_graph = build_graph_for_cell_types(cell_classes + orphan_cell_types)
-
-
-# In[33]:
-
-
-# Create ancestors file, the contents of which will be loaded into
-# cell_type_ontology_mapping and read by Single Cell Data Portal BE.
-write_ancestors_by_entity(
-    prod_cell_types,
-    cell_type_graph,
-    "scripts/compute_mappings/cell_type_ontology_mapping.json",
-)
-
-
-# In[34]:
-
-
-# Create descendants file, the contents of which are to be copied to
-# CELL_TYPE_DESCENDANTS and read by Single Cell Data Portal FE.
-cell_type_hierarchy = [cell_classes, cell_subclasses, prod_cell_types]
-write_descendants_by_entity(cell_type_hierarchy, cell_type_graph, "scripts/compute_mappings/cell_type_descendants.json")
+    # Create descendants file, the contents of which are to be copied to
+    # CELL_TYPE_DESCENDANTS and read by Single Cell Data Portal FE.
+    cell_type_hierarchy = [cell_classes, cell_subclasses, prod_cell_types]
+    write_descendants_by_entity(
+        cell_type_hierarchy, cell_type_graph, "scripts/compute_mappings/cell_type_descendants.json"
+    )
