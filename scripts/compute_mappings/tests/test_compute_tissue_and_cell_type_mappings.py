@@ -1,8 +1,11 @@
 from typing import List
 from unittest.mock import Mock, patch
 
+import pytest
+
 from scripts.compute_mappings.compute_tissue_and_cell_type_mappings import (
     AGraph,
+    build_ancestor_set,
     build_descendants_and_parts_graph,
     build_descendants_graph,
 )
@@ -68,7 +71,32 @@ class TestGraphBuild:
 
         build_descendants_and_parts_graph("0", graph)
 
+        # Test graph formation
         assert list_direct_descendants_and_parts_mock.call_count == 4
+        assert [a.args[0] for a in list_direct_descendants_and_parts_mock.call_args_list] == ["0", "1", "2", "3"]
 
         # Test graph structure
         self.graph_structure_test(graph, all_nodes)
+
+    @pytest.mark.parametrize(
+        "entity, expected_ancestor_set",
+        [(3, {"3", "0"}), (7, {"7", "3", "0"}), (8, {"8", "4", "1", "2"}), (9, {"9", "6", "2"}), (5, {"5", "2"})],
+    )
+    def test_build_ancestor_set(self, entity, expected_ancestor_set):
+        graph = AGraph()
+        edges = [(0, 3), (1, 4), (2, 4), (2, 5), (2, 6), (3, 7), (4, 8), (6, 9)]
+        [graph.add_edge(x, y) for x, y in edges]
+
+        #
+        # graph:
+        #
+        #   0    1   2
+        #    \    \ /|\
+        #     3    4 5 6
+        #      \    \   \
+        #       7    8   9
+        #
+
+        ancestor_set = set()
+        build_ancestor_set(str(entity), graph, ancestor_set)
+        assert ancestor_set == expected_ancestor_set
