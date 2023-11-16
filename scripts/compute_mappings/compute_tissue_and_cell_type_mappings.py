@@ -310,11 +310,9 @@ def build_descendants_graph(entity_name: str, graph: AGraph) -> None:
     graph.add_node(entity_name)
 
     # List descendants via is_a relationship.
-    subtypes = list_direct_descendants(entity_name)  # type: ignore
+    child_names = list_direct_descendants(entity_name)  # type: ignore
 
-    for subtype in subtypes:
-        child_name: str = subtype.name
-
+    for child_name in child_names:
         # Check if child exists in the graph already BEFORE calling 'add_edge'
         child_node_exists = graph.has_node(child_name)
 
@@ -536,7 +534,7 @@ def build_descendants_set(entity_name: str, graph: AGraph, all_successors: Set[U
 # In[23]:
 
 
-def list_direct_descendants(entity_name: str) -> List[ThingClass]:
+def list_direct_descendants(entity_name: str) -> List[str]:
     """
     Return the set of descendants for the given entity.
     """
@@ -546,7 +544,7 @@ def list_direct_descendants(entity_name: str) -> List[ThingClass]:
         print(f"{entity_name} not found in the ontology - please investigate.")
         return []
 
-    return list(entity.subclasses())  # .subclasses() returns a generator
+    return [e.name for e in entity.subclasses()]  # .subclasses() returns a generator
 
 
 # In[24]:
