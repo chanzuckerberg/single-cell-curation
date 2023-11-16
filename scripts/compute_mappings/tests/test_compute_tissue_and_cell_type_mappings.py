@@ -8,6 +8,7 @@ from scripts.compute_mappings.compute_tissue_and_cell_type_mappings import (
     build_ancestor_set,
     build_descendants_and_parts_graph,
     build_descendants_graph,
+    build_descendants_set,
 )
 
 
@@ -78,11 +79,7 @@ class TestGraphBuild:
         # Test graph structure
         self.graph_structure_test(graph, all_nodes)
 
-    @pytest.mark.parametrize(
-        "entity, expected_ancestor_set",
-        [(3, {"3", "0"}), (7, {"7", "3", "0"}), (8, {"8", "4", "1", "2"}), (9, {"9", "6", "2"}), (5, {"5", "2"})],
-    )
-    def test_build_ancestor_set(self, entity, expected_ancestor_set):
+    def get_graph(self) -> AGraph:
         graph = AGraph()
         edges = [(0, 3), (1, 4), (2, 4), (2, 5), (2, 6), (3, 7), (4, 8), (6, 9)]
         [graph.add_edge(x, y) for x, y in edges]
@@ -97,6 +94,29 @@ class TestGraphBuild:
         #       7    8   9
         #
 
+        return graph
+
+    @pytest.mark.parametrize(
+        "entity, expected_ancestor_set",
+        [
+            (0, {"0"}),
+            (3, {"3", "0"}),
+            (7, {"7", "3", "0"}),
+            (8, {"8", "4", "1", "2"}),
+            (9, {"9", "6", "2"}),
+            (5, {"5", "2"}),
+        ],
+    )
+    def test_build_ancestor_set(self, entity, expected_ancestor_set):
         ancestor_set = set()
-        build_ancestor_set(str(entity), graph, ancestor_set)
+        build_ancestor_set(str(entity), self.get_graph(), ancestor_set)
         assert ancestor_set == expected_ancestor_set
+
+    @pytest.mark.parametrize(
+        "entity, expected_descendants_set",
+        [(0, {"3", "7"}), (3, {"7"}), (7, set()), (1, {"8", "4"}), (2, {"9", "6", "5", "4", "8"}), (4, {"8"})],
+    )
+    def test_build_descendants_set(self, entity, expected_descendants_set):
+        descendants_set = set()
+        build_descendants_set(str(entity), self.get_graph(), descendants_set)
+        assert descendants_set == expected_descendants_set
