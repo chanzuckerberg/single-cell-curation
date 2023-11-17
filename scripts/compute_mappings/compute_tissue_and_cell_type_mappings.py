@@ -663,7 +663,6 @@ def write_descendants_by_entity(entity_hierarchy: List[Iterable[str]], graph: AG
                     descendant_accept_list.append(descendant)
 
                 # Add organoid descendants, if any.
-                # DJH: this should be non-functional as organoids are filtered out by build_descendants_set. Ask Pablo.
                 if descendant in organoids_by_ontology_term_id:
                     descendant_accept_list.append(organoids_by_ontology_term_id[descendant])
 

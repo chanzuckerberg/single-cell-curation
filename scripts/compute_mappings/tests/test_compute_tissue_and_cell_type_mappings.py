@@ -10,6 +10,7 @@ from scripts.compute_mappings.compute_tissue_and_cell_type_mappings import (
     build_descendants_graph,
     build_descendants_set,
     write_ancestors_by_entity,
+    write_descendants_by_entity,
 )
 
 
@@ -84,6 +85,7 @@ class TestGraphBuild:
         graph = AGraph()
         edges = [
             ("0_", "3_"),
+            ("0_", "00_ (organoid)"),
             ("1_", "4_"),
             ("2_", "4_"),
             ("2_", "5_"),
@@ -97,11 +99,11 @@ class TestGraphBuild:
         #
         # graph:
         #
-        #   0    1   2
-        #    \    \ /|\
-        #     3    4 5 6
-        #      \    \   \
-        #       7    8   9
+        #               0    1   2
+        #              / \    \ /|\
+        #     (organoid)  3    4 5 6
+        #                  \    \   \
+        #                   7    8   9
         #
 
         return graph
@@ -125,7 +127,7 @@ class TestGraphBuild:
     @pytest.mark.parametrize(
         "entity, expected_descendants_set",
         [
-            ("0_", {"3_", "7_"}),
+            ("0_", {"3_", "7_", "00_ (organoid)"}),
             ("3_", {"7_"}),
             ("7_", set()),
             ("1_", {"8_", "4_"}),
@@ -135,7 +137,8 @@ class TestGraphBuild:
     )
     def test_build_descendants_set(self, entity, expected_descendants_set):
         descendants_set = set()
-        build_descendants_set(str(entity), self.get_graph(), descendants_set)
+        graph = self.get_graph()
+        build_descendants_set(str(entity), graph, descendants_set)
         assert descendants_set == expected_descendants_set
 
     @pytest.mark.parametrize(
@@ -157,6 +160,21 @@ class TestGraphBuild:
         sorted_expected_dict = {k: sorted(v) for k, v in expected_ancestor_dict.items()}
         assert sorted_result_dict == sorted_expected_dict
 
-    def test_write_descendants_by_entity(self):
-        pass
-        # write_descendants_by_entity(, self.get_graph())
+    @pytest.mark.parametrize(
+        "entity_hierarchy, expected_descendants_dict",
+        [
+            (
+                [["1_", "2_"], ["00_", "3_", "4_", "5_"], ["7_", "8_"]],
+                {"1:": ["4:", "8:"], "2:": ["4:", "5:", "8:"], "3:": ["7:"], "4:": ["8:"]},
+            ),
+            ([["0_"], ["00_ (organoid)", "3_", "4_"], []], {"0:": ["3:", "00: (organoid)"]}),
+        ],
+    )
+    @patch("scripts.compute_mappings.compute_tissue_and_cell_type_mappings.write_to_file")
+    def test_write_descendants_by_entity(self, write_to_file_mock, entity_hierarchy, expected_descendants_dict):
+        write_descendants_by_entity(entity_hierarchy, self.get_graph(), "filename")
+        assert write_to_file_mock.call_count == 1
+        assert write_to_file_mock.call_args.args[1] == "filename"
+        sorted_result_dict = {k: sorted(v) for k, v in write_to_file_mock.call_args.args[0].items()}
+        sorted_expected_dict = {k: sorted(v) for k, v in expected_descendants_dict.items()}
+        assert sorted_result_dict == sorted_expected_dict
