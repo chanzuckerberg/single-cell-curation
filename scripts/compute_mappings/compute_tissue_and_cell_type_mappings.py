@@ -495,7 +495,7 @@ def build_ancestors_set(entity_name: str, graph: AGraph, ancestors_set: Set[str]
         # Detect, report and continue if entity not found in graph. Manual
         # investigation of failure is required.
         print(f"{entity_name} not found - either add a parent to this entity or add this entity to the orphans list.")
-        return ancestor_set
+        return ancestors_set
 
     for ancestor_entity in ancestor_entities:
         build_ancestors_set(ancestor_entity, graph, ancestors_set)
