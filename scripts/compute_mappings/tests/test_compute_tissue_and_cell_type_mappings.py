@@ -86,6 +86,7 @@ class TestGraphBuild:
         edges = [
             ("0_", "3_"),
             ("0_", "00_ (organoid)"),
+            ("00_ (organoid)", "10_"),
             ("1_", "4_"),
             ("2_", "4_"),
             ("2_", "5_"),
@@ -101,9 +102,9 @@ class TestGraphBuild:
         #
         #               0    1   2
         #              / \    \ /|\
-        #     (organoid)  3    4 5 6
-        #                  \    \   \
-        #                   7    8   9
+        #  00 (organoid)  3    4 5 6
+        #           /      \    \   \
+        #         10        7    8   9
         #
 
         return graph
@@ -117,6 +118,7 @@ class TestGraphBuild:
             ("8_", {"8_", "4_", "1_", "2_"}),
             ("9_", {"9_", "6_", "2_"}),
             ("5_", {"5_", "2_"}),
+            ("10_", {"10_", "00_ (organoid)"}),  # organoid included but no ancestors of organoid are included
         ],
     )
     def test_build_ancestors_set(self, entity, expected_ancestors_set):
@@ -127,7 +129,7 @@ class TestGraphBuild:
     @pytest.mark.parametrize(
         "entity, expected_descendants_set",
         [
-            ("0_", {"3_", "7_", "00_ (organoid)"}),
+            ("0_", {"3_", "7_", "00_ (organoid)"}),  # organoid included but no descendants of organoid are included
             ("3_", {"7_"}),
             ("7_", set()),
             ("1_", {"8_", "4_"}),
