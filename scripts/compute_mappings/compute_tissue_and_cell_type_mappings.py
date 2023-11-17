@@ -449,10 +449,10 @@ def key_ancestors_by_entity(entity_names: List[str], graph: AGraph) -> Dict[str,
         ancestors = set()  # type: ignore
         build_ancestors_set(entity_name, graph, ancestors)
 
-        sanitized_entity_name = reformat_ontology_term_id(entity_name, to_writable=True)
-        sanitized_ancestors = [reformat_ontology_term_id(ancestor, to_writable=True) for ancestor in ancestors]
+        formatted_entity_name = reformat_ontology_term_id(entity_name, to_writable=True)
+        formatted_ancestors = [reformat_ontology_term_id(ancestor, to_writable=True) for ancestor in ancestors]
 
-        ancestors_by_entity[sanitized_entity_name] = sanitized_ancestors
+        ancestors_by_entity[formatted_entity_name] = formatted_ancestors
 
     return ancestors_by_entity
 
@@ -674,11 +674,11 @@ def write_descendants_by_entity(entity_hierarchy: List[Iterable[str]], graph: AG
                 continue
 
             # Add descendants to dictionary.
-            sanitized_entity_name = reformat_ontology_term_id(entity_name, to_writable=True)
-            sanitized_descendants = [
+            formatted_entity_name = reformat_ontology_term_id(entity_name, to_writable=True)
+            formatted_descendants = [
                 reformat_ontology_term_id(descendant, to_writable=True) for descendant in descendant_accept_list
             ]
-            all_descendants[sanitized_entity_name] = sanitized_descendants
+            all_descendants[formatted_entity_name] = formatted_descendants
 
     write_to_file(all_descendants, file_name)
 
