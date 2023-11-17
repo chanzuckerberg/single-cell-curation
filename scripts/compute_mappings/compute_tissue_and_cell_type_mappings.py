@@ -376,7 +376,7 @@ def build_graph_for_cell_types(entity_names: List[str]) -> AGraph:
     """
     Extract a subgraph of CL for the given cell types.
     """
-    graph = AGraph()
+    graph = AGraph(directed=True)
     for entity_name in entity_names:
         build_descendants_graph(entity_name, graph)
     return graph
@@ -389,7 +389,7 @@ def build_graph_for_tissues(entity_names: List[str]) -> AGraph:
     """
     Extract a subgraph of UBERON for the given tissues.
     """
-    tissue_graph = AGraph()
+    tissue_graph = AGraph(directed=True)
     for entity_name in entity_names:
         build_descendants_and_parts_graph(entity_name, tissue_graph)
     return tissue_graph

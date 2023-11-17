@@ -32,7 +32,7 @@ class TestGraphBuild:
 
     @patch("scripts.compute_mappings.compute_tissue_and_cell_type_mappings.list_direct_descendants")
     def test_build_descendants_graph(self, list_direct_descendants_mock: Mock):
-        graph = AGraph()
+        graph = AGraph(directed=True)
         all_nodes = ["0", "1", "2", "3"]
         return_values = [["1"], ["2", "3"], [], []]  # Return two empty arrays to terminate recursion
         list_direct_descendants_mock.side_effect = lambda x: return_values.pop(0)
@@ -58,7 +58,7 @@ class TestGraphBuild:
 
     @patch("scripts.compute_mappings.compute_tissue_and_cell_type_mappings.list_direct_descendants_and_parts")
     def test_build_descendants_and_parts_graph(self, list_direct_descendants_and_parts_mock: Mock):
-        graph = AGraph()
+        graph = AGraph(directed=True)
         all_nodes = ["0", "1", "2", "3"]
         return_values = [
             [[self.FakeThingClass("1")]],
@@ -82,7 +82,7 @@ class TestGraphBuild:
         self.graph_structure_test(graph, all_nodes)
 
     def get_graph(self) -> AGraph:
-        graph = AGraph()
+        graph = AGraph(directed=True)
         edges = [
             ("0_", "3_"),
             ("0_", "00_ (organoid)"),
