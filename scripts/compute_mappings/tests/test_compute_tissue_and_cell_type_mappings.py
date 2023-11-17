@@ -5,7 +5,7 @@ import pytest
 
 from scripts.compute_mappings.compute_tissue_and_cell_type_mappings import (
     AGraph,
-    build_ancestor_set,
+    build_ancestors_set,
     build_descendants_and_parts_graph,
     build_descendants_graph,
     build_descendants_set,
@@ -109,7 +109,7 @@ class TestGraphBuild:
         return graph
 
     @pytest.mark.parametrize(
-        "entity, expected_ancestor_set",
+        "entity, expected_ancestors_set",
         [
             ("0_", {"0_"}),
             ("3_", {"3_", "0_"}),
@@ -119,10 +119,10 @@ class TestGraphBuild:
             ("5_", {"5_", "2_"}),
         ],
     )
-    def test_build_ancestor_set(self, entity, expected_ancestor_set):
-        ancestor_set = set()
-        build_ancestor_set(str(entity), self.get_graph(), ancestor_set)
-        assert ancestor_set == expected_ancestor_set
+    def test_build_ancestors_set(self, entity, expected_ancestors_set):
+        ancestors_set = set()
+        build_ancestors_set(str(entity), self.get_graph(), ancestors_set)
+        assert ancestors_set == expected_ancestors_set
 
     @pytest.mark.parametrize(
         "entity, expected_descendants_set",
@@ -142,7 +142,7 @@ class TestGraphBuild:
         assert descendants_set == expected_descendants_set
 
     @pytest.mark.parametrize(
-        "entities, expected_ancestor_dict",
+        "entities, expected_ancestors_dict",
         [
             (["0_"], {"0:": ["0:"]}),
             (["3_", "0_"], {"3:": ["3:", "0:"], "0:": ["0:"]}),
@@ -152,12 +152,12 @@ class TestGraphBuild:
         ],
     )
     @patch("scripts.compute_mappings.compute_tissue_and_cell_type_mappings.write_to_file")
-    def test_write_ancestors_by_entity(self, write_to_file_mock, entities, expected_ancestor_dict):
+    def test_write_ancestors_by_entity(self, write_to_file_mock, entities, expected_ancestors_dict):
         write_ancestors_by_entity(entities, self.get_graph(), "filename")
         assert write_to_file_mock.call_count == 1
         assert write_to_file_mock.call_args.args[1] == "filename"
         sorted_result_dict = {k: sorted(v) for k, v in write_to_file_mock.call_args.args[0].items()}
-        sorted_expected_dict = {k: sorted(v) for k, v in expected_ancestor_dict.items()}
+        sorted_expected_dict = {k: sorted(v) for k, v in expected_ancestors_dict.items()}
         assert sorted_result_dict == sorted_expected_dict
 
     @pytest.mark.parametrize(
