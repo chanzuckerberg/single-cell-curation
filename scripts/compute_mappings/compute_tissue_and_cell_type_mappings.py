@@ -13,7 +13,7 @@
 #
 # This notebook generates a dictionary of ancestors keyed by either a tissue or cell type ontology term ID. The dictionary is copied to the Single Cell Data Portal's `tissue_ontology_mappings` or `cell_type_ontology_mappings` constants (see [/utils/ontology_mappings/constants.py](https://github.com/chanzuckerberg/single-cell-data-portal/tree/main/backend/common/utils/ontology_mappings/constants.py)) and the backend then joins datasets and their ancestor mappings on request of the `datasets/index` API endpoint.
 #
-# The ancestor mappings should be updated when:
+# The ancestors mappings should be updated when:
 #
 # 1. The ontology version is updated, or,
 # 2. A new tissue or cell type is added to the production corpus.
@@ -39,7 +39,7 @@
 #
 # From the subgraph, the two artifacts described above can then be generated:
 #
-# 1. Build an ancestor dictionary
+# 1. Build an ancestors dictionary
 #     - Maps every tissue in the production corpus to their ancestors.
 #     - Writes the dictionary to a JSON file, to be copied into `tissue_ontology_mapping` in the Single Cell Data Portal.
 #
@@ -58,7 +58,7 @@
 #
 # From the subgraph, the two artifacts described above can then be generated:
 #
-# 1. Build an ancestor dictionary
+# 1. Build an ancestors dictionary
 #     - Maps every cell type in the production corpus to their ancestors.
 #     - Writes the dictionary to a JSON file, to be copied into `cell_type_ontology_mapping` in the Single Cell Data Portal.
 #
@@ -447,7 +447,7 @@ def key_ancestors_by_entity(entity_names: List[str], graph: AGraph) -> Dict[str,
     ancestors_by_entity = {}
     for entity_name in entity_names:
         ancestors = set()  # type: ignore
-        build_ancestor_set(entity_name, graph, ancestors)
+        build_ancestors_set(entity_name, graph, ancestors)
 
         sanitized_entity_name = reformat_ontology_term_id(entity_name, to_writable=True)
         sanitized_ancestors = [reformat_ontology_term_id(ancestor, to_writable=True) for ancestor in ancestors]
@@ -477,17 +477,17 @@ def key_organoids_by_ontology_term_id(entity_names: Iterable[str]) -> Dict[str, 
 # In[21]:
 
 
-def build_ancestor_set(entity_name: str, graph: AGraph, ancestor_set: Set[str]) -> Union[Set[str], None]:
+def build_ancestors_set(entity_name: str, graph: AGraph, ancestors_set: Set[str]) -> Union[Set[str], None]:
     """
     From the given graph, recursively build up set of ancestors for the given
     entity.
     """
 
-    ancestor_set.add(entity_name)
+    ancestors_set.add(entity_name)
 
     # Ignore cell culture and organoids
     if is_cell_culture_or_organoid(entity_name):
-        return ancestor_set
+        return ancestors_set
 
     try:
         ancestor_entities = graph.predecessors(entity_name)
@@ -498,7 +498,7 @@ def build_ancestor_set(entity_name: str, graph: AGraph, ancestor_set: Set[str]) 
         return ancestor_set
 
     for ancestor_entity in ancestor_entities:
-        build_ancestor_set(ancestor_entity, graph, ancestor_set)
+        build_ancestors_set(ancestor_entity, graph, ancestors_set)
 
 
 # In[22]:
