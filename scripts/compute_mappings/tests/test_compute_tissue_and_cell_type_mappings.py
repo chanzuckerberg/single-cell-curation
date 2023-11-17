@@ -9,6 +9,7 @@ from scripts.compute_mappings.compute_tissue_and_cell_type_mappings import (
     build_descendants_and_parts_graph,
     build_descendants_graph,
     build_descendants_set,
+    write_ancestors_by_entity,
 )
 
 
@@ -81,7 +82,16 @@ class TestGraphBuild:
 
     def get_graph(self) -> AGraph:
         graph = AGraph()
-        edges = [(0, 3), (1, 4), (2, 4), (2, 5), (2, 6), (3, 7), (4, 8), (6, 9)]
+        edges = [
+            ("0_", "3_"),
+            ("1_", "4_"),
+            ("2_", "4_"),
+            ("2_", "5_"),
+            ("2_", "6_"),
+            ("3_", "7_"),
+            ("4_", "8_"),
+            ("6_", "9_"),
+        ]
         [graph.add_edge(x, y) for x, y in edges]
 
         #
@@ -99,12 +109,12 @@ class TestGraphBuild:
     @pytest.mark.parametrize(
         "entity, expected_ancestor_set",
         [
-            (0, {"0"}),
-            (3, {"3", "0"}),
-            (7, {"7", "3", "0"}),
-            (8, {"8", "4", "1", "2"}),
-            (9, {"9", "6", "2"}),
-            (5, {"5", "2"}),
+            ("0_", {"0_"}),
+            ("3_", {"3_", "0_"}),
+            ("7_", {"7_", "3_", "0_"}),
+            ("8_", {"8_", "4_", "1_", "2_"}),
+            ("9_", {"9_", "6_", "2_"}),
+            ("5_", {"5_", "2_"}),
         ],
     )
     def test_build_ancestor_set(self, entity, expected_ancestor_set):
@@ -114,9 +124,34 @@ class TestGraphBuild:
 
     @pytest.mark.parametrize(
         "entity, expected_descendants_set",
-        [(0, {"3", "7"}), (3, {"7"}), (7, set()), (1, {"8", "4"}), (2, {"9", "6", "5", "4", "8"}), (4, {"8"})],
+        [
+            ("0_", {"3_", "7_"}),
+            ("3_", {"7_"}),
+            ("7_", set()),
+            ("1_", {"8_", "4_"}),
+            ("2_", {"9_", "6_", "5_", "4_", "8_"}),
+            ("4_", {"8_"}),
+        ],
     )
     def test_build_descendants_set(self, entity, expected_descendants_set):
         descendants_set = set()
         build_descendants_set(str(entity), self.get_graph(), descendants_set)
         assert descendants_set == expected_descendants_set
+
+    @pytest.mark.parametrize(
+        "entities, expected_ancestor_dict",
+        [
+            (["0_"], {"0:": ["0:"]}),
+            (["3_", "0_"], {"3:": ["3:", "0:"], "0:": ["0:"]}),
+            (["7_", "6_", "2_"], {"7:": ["7:", "3:", "0:"], "6:": ["6:", "2:"], "2:": ["2:"]}),
+            (["8_", "5_"], {"8:": ["8:", "4:", "1:", "2:"], "5:": ["5:", "2:"]}),
+            (["9_"], {"9:": ["9:", "6:", "2:"]}),
+        ],
+    )
+    @patch("scripts.compute_mappings.compute_tissue_and_cell_type_mappings.json.dump")
+    def test_write_ancestors_by_entity(self, json_dump_mock, entities, expected_ancestor_dict):
+        write_ancestors_by_entity(entities, self.get_graph(), "filename")
+        assert json_dump_mock.call_count == 1
+        sorted_result_dict = {k: sorted(v) for k, v in json_dump_mock.call_args.args[0].items()}
+        sorted_expected_dict = {k: sorted(v) for k, v in expected_ancestor_dict.items()}
+        assert sorted_result_dict == sorted_expected_dict
