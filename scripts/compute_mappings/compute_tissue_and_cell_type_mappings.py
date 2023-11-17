@@ -613,6 +613,11 @@ def reformat_ontology_term_id(ontology_term_id: str, to_writable: bool = True) -
 # In[26]:
 
 
+def write_to_file(data, file_name: str) -> None:
+    with open(file_name, "w") as f:
+        json.dump(data, f)
+
+
 def write_ancestors_by_entity(entities: List[str], graph: AGraph, file_name: str) -> None:
     """
     Create dictionary of ancestors keyed by entity and write to file. The
@@ -621,8 +626,8 @@ def write_ancestors_by_entity(entities: List[str], graph: AGraph, file_name: str
     their corresponding entity ancestors.
     """
     ancestors_by_entity = key_ancestors_by_entity(entities, graph)
-    with open(file_name, "w") as f:
-        json.dump(ancestors_by_entity, f)
+
+    write_to_file(ancestors_by_entity, file_name)
 
 
 # In[27]:
@@ -676,8 +681,7 @@ def write_descendants_by_entity(entity_hierarchy: List[Iterable[str]], graph: AG
             ]
             all_descendants[sanitized_entity_name] = sanitized_descendants
 
-    with open(file_name, "w") as f:
-        json.dump(all_descendants, f)
+    write_to_file(all_descendants, file_name)
 
 
 # #### Calculate Tissue Graph and Tissue Ancestor and Descendant Mappings

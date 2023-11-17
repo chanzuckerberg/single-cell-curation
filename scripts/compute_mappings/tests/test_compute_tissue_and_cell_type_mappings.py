@@ -148,10 +148,15 @@ class TestGraphBuild:
             (["9_"], {"9:": ["9:", "6:", "2:"]}),
         ],
     )
-    @patch("scripts.compute_mappings.compute_tissue_and_cell_type_mappings.json.dump")
-    def test_write_ancestors_by_entity(self, json_dump_mock, entities, expected_ancestor_dict):
+    @patch("scripts.compute_mappings.compute_tissue_and_cell_type_mappings.write_to_file")
+    def test_write_ancestors_by_entity(self, write_to_file_mock, entities, expected_ancestor_dict):
         write_ancestors_by_entity(entities, self.get_graph(), "filename")
-        assert json_dump_mock.call_count == 1
-        sorted_result_dict = {k: sorted(v) for k, v in json_dump_mock.call_args.args[0].items()}
+        assert write_to_file_mock.call_count == 1
+        assert write_to_file_mock.call_args.args[1] == "filename"
+        sorted_result_dict = {k: sorted(v) for k, v in write_to_file_mock.call_args.args[0].items()}
         sorted_expected_dict = {k: sorted(v) for k, v in expected_ancestor_dict.items()}
         assert sorted_result_dict == sorted_expected_dict
+
+    def test_write_descendants_by_entity(self):
+        pass
+        # write_descendants_by_entity(, self.get_graph())
