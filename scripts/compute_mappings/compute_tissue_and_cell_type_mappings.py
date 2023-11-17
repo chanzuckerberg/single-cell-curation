@@ -81,7 +81,7 @@
 
 
 import json
-from typing import List, Union, Dict, Set, Iterable
+from typing import List, Union, Dict, Set, Iterable, Any
 
 from pygraphviz import AGraph, Node
 import requests
@@ -310,7 +310,7 @@ def build_descendants_graph(entity_name: str, graph: AGraph) -> None:
     graph.add_node(entity_name)
 
     # List descendants via is_a relationship.
-    child_names = list_direct_descendants(entity_name)  # type: ignore
+    child_names = list_direct_descendants(entity_name)
 
     for child_name in child_names:
         # Check if child exists in the graph already BEFORE calling 'add_edge'
@@ -351,7 +351,7 @@ def build_descendants_and_parts_graph(entity_name: str, graph: AGraph) -> None:
         child = subtype_or_part[0]
 
         # Ignore axioms, only add true entities.
-        if not is_axiom(child):  # type: ignore
+        if not is_axiom(child):
             child_name = child.name
 
             # Ignore disjoint.
@@ -366,19 +366,19 @@ def build_descendants_and_parts_graph(entity_name: str, graph: AGraph) -> None:
 
             # Build graph for child if it hasn't already been visited.
             if not child_node_exists:
-                build_descendants_and_parts_graph(child_name, graph)  # type: ignore
+                build_descendants_and_parts_graph(child_name, graph)
 
 
 # In[13]:
 
 
-def build_graph_for_cell_types(entity_names: List[str]) -> AGraph:  # type: ignore
+def build_graph_for_cell_types(entity_names: List[str]) -> AGraph:
     """
     Extract a subgraph of CL for the given cell types.
     """
     graph = AGraph()
     for entity_name in entity_names:
-        build_descendants_graph(entity_name, graph)  # type: ignore
+        build_descendants_graph(entity_name, graph)
     return graph
 
 
@@ -391,14 +391,14 @@ def build_graph_for_tissues(entity_names: List[str]) -> AGraph:
     """
     tissue_graph = AGraph()
     for entity_name in entity_names:
-        build_descendants_and_parts_graph(entity_name, tissue_graph)  # type: ignore
+        build_descendants_and_parts_graph(entity_name, tissue_graph)
     return tissue_graph
 
 
 # In[15]:
 
 
-def is_axiom(entity) -> bool:
+def is_axiom(entity: Any) -> bool:
     """
     Returns true if the given entity is an axiom.
     For example, obo.UBERON_0001213 & obo.BFO_0000050.some(obo.NCBITaxon_9606)
@@ -409,7 +409,7 @@ def is_axiom(entity) -> bool:
 # In[16]:
 
 
-def is_cell_culture(entity_name) -> bool:
+def is_cell_culture(entity_name: str) -> bool:
     """
     Returns true if the given entity name contains (cell culture).
     """
@@ -419,17 +419,17 @@ def is_cell_culture(entity_name) -> bool:
 # In[17]:
 
 
-def is_cell_culture_or_organoid(entity_name) -> bool:
+def is_cell_culture_or_organoid(entity_name: str) -> bool:
     """
     Returns true if the given entity name contains (cell culture) or (organoid).
     """
-    return is_cell_culture(entity_name) or is_organoid(entity_name)  # type: ignore
+    return is_cell_culture(entity_name) or is_organoid(entity_name)
 
 
 # In[18]:
 
 
-def is_organoid(entity_name) -> bool:
+def is_organoid(entity_name: str) -> bool:
     """
     Returns true if the given entity name contains "(organoid)".
     """
@@ -447,7 +447,7 @@ def key_ancestors_by_entity(entity_names: List[str], graph: AGraph) -> Dict[str,
     ancestors_by_entity = {}
     for entity_name in entity_names:
         ancestors = set()  # type: ignore
-        build_ancestor_set(entity_name, graph, ancestors)  # type: ignore
+        build_ancestor_set(entity_name, graph, ancestors)
 
         sanitized_entity_name = reformat_ontology_term_id(entity_name, to_writable=True)
         sanitized_ancestors = [reformat_ontology_term_id(ancestor, to_writable=True) for ancestor in ancestors]
@@ -477,7 +477,7 @@ def key_organoids_by_ontology_term_id(entity_names: Iterable[str]) -> Dict[str, 
 # In[21]:
 
 
-def build_ancestor_set(entity_name: str, graph: AGraph, ancestor_set: Set[str]):
+def build_ancestor_set(entity_name: str, graph: AGraph, ancestor_set: Set[str]) -> Union[Set[str], None]:
     """
     From the given graph, recursively build up set of ancestors for the given
     entity.
@@ -486,7 +486,7 @@ def build_ancestor_set(entity_name: str, graph: AGraph, ancestor_set: Set[str]):
     ancestor_set.add(entity_name)
 
     # Ignore cell culture and organoids
-    if is_cell_culture_or_organoid(entity_name):  # type: ignore
+    if is_cell_culture_or_organoid(entity_name):
         return ancestor_set
 
     try:
@@ -586,7 +586,7 @@ def list_direct_descendants_and_parts(entity_name: str) -> List[List[ThingClass]
     """.format(
         entity=entity_name
     )
-    classes = uberon_world.sparql(query)
+    classes: List[List[ThingClass]] = uberon_world.sparql(query)
     return classes
 
 
@@ -613,7 +613,7 @@ def reformat_ontology_term_id(ontology_term_id: str, to_writable: bool = True) -
 # In[26]:
 
 
-def write_to_file(data, file_name: str) -> None:
+def write_to_file(data: Any, file_name: str) -> None:
     with open(file_name, "w") as f:
         json.dump(data, f)
 
@@ -743,7 +743,7 @@ if __name__ == "__main__":
     # Create descendants file, the contents of which are to be copied to
     # TISSUE_DESCENDANTS and read by Single Cell Data Portal FE.
     tissue_hierarchy = [system_tissues, organ_tissues, prod_tissue_set]
-    write_descendants_by_entity(tissue_hierarchy, tissue_graph, "scripts/compute_mappings/tissue_descendants.json")
+    write_descendants_by_entity(tissue_hierarchy, tissue_graph, "scripts/compute_mappings/tissue_descendants.json")  # type: ignore
 
     # #### Calculate Cell Type Graph and Cell Type Ancestor and Descendant Mappings
 
