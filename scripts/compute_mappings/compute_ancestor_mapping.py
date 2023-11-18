@@ -21,7 +21,7 @@ from owlready2 import get_ontology  # noqa
 
 # In[ ]:
 
-RO__PART_OF = "BFO_0000050"
+RO__PART_OF = "BFO_0000050"  # RO ontology property "part of"
 
 
 def get_ancestors(onto, class_name):  # type: ignore
