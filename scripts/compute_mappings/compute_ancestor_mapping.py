@@ -21,16 +21,15 @@ import yaml
 
 # In[ ]:
 
+RO__PART_OF = "BFO_0000050"
+
 
 def get_ancestors(onto, class_name):  # type: ignore
     z = onto.search_one(iri=f"http://purl.obolibrary.org/obo/{class_name}")
 
     def recurse(x):  # type: ignore
         for e in x.is_a:
-            if hasattr(e, "value"):
-                prop = e.property.name
-                if prop != "BFO_0000050":
-                    continue
+            if hasattr(e, "value") and e.property.name == RO__PART_OF:
                 val = e.value.name.replace("obo.", "")
                 z = onto.search_one(iri=f"http://purl.obolibrary.org/obo/{val}")
                 yield (z, z.name, z.label, z.IAO_0000115)
