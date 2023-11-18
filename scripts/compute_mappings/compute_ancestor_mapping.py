@@ -12,12 +12,12 @@
 # 1. Write a json file with these mappings (a dictionary of lists)
 
 # In[ ]:
-
-
-from owlready2 import get_ontology  # noqa
 import json
-import yaml
+from collections import defaultdict
+from typing import Dict, List
 
+import yaml
+from owlready2 import get_ontology  # noqa
 
 # In[ ]:
 
@@ -32,10 +32,10 @@ def get_ancestors(onto, class_name):  # type: ignore
             if hasattr(e, "value") and e.property.name == RO__PART_OF:
                 val = e.value.name.replace("obo.", "")
                 z = onto.search_one(iri=f"http://purl.obolibrary.org/obo/{val}")
-                yield (z, z.name, z.label, z.IAO_0000115)
+                yield z.name
                 yield from recurse(z)  # type: ignore
 
-    yield (z, z.name, z.label, z.IAO_0000115)
+    yield z.name
     yield from recurse(z)  # type: ignore
 
 
@@ -43,17 +43,13 @@ def get_ancestors(onto, class_name):  # type: ignore
 
 
 def create_mapping(onto, classes, prefix=None):  # type: ignore
-    x = dict()  # type: ignore
+    x: Dict[str, List[str]] = defaultdict(list)
     for cls in classes:
-        for a in get_ancestors(onto, cls.name):  # type: ignore
-            if prefix and not a[1].startswith(prefix):
+        class_key = cls.name.replace("_", ":")
+        for name in get_ancestors(onto, cls.name):  # type: ignore
+            if prefix and not name.startswith(prefix):
                 continue
-            key = cls.name.replace("_", ":")
-            val = a[1].replace("_", ":")
-            if key in x:
-                x[key].append(val)
-            else:
-                x[key] = [val]
+            x[class_key].append(name.replace("_", ":"))
     return x
 
 
