@@ -42,7 +42,7 @@ def get_ancestors(onto, class_name):  # type: ignore
 # In[ ]:
 
 
-def create_ancestors_mapping(onto, classes, prefix=None):  # type: ignore
+def create_ancestors_mapping(onto, classes, prefix=None) -> Dict[str, List[str]]:
     ancestors: Dict[str, List[str]] = defaultdict(list)
     for cls in classes:
         class_key = cls.name.replace("_", ":")
