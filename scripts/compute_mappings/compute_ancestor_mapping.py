@@ -42,15 +42,15 @@ def get_ancestors(onto, class_name):  # type: ignore
 # In[ ]:
 
 
-def create_mapping(onto, classes, prefix=None):  # type: ignore
-    x: Dict[str, List[str]] = defaultdict(list)
+def create_ancestors_mapping(onto, classes, prefix=None):  # type: ignore
+    ancestors: Dict[str, List[str]] = defaultdict(list)
     for cls in classes:
         class_key = cls.name.replace("_", ":")
         for name in get_ancestors(onto, cls.name):  # type: ignore
             if prefix and not name.startswith(prefix):
                 continue
-            x[class_key].append(name.replace("_", ":"))
-    return x
+            ancestors[class_key].append(name.replace("_", ":"))
+    return ancestors
 
 
 # In[ ]:
@@ -71,7 +71,7 @@ human_ontology = owl_info["HsapDv"]["urls"][human_latest_key]
 human_onto = get_ontology(human_ontology)
 human_onto.load()
 
-m_human = create_mapping(human_onto, human_onto.classes(), "HsapDv")  # type: ignore
+m_human = create_ancestors_mapping(human_onto, human_onto.classes(), "HsapDv")  # type: ignore
 
 
 # In[ ]:
@@ -83,7 +83,7 @@ mouse_ontology = owl_info["MmusDv"]["urls"][mouse_latest_key]
 mouse_onto = get_ontology(mouse_ontology)
 mouse_onto.load()
 
-m_mouse = create_mapping(mouse_onto, mouse_onto.classes(), "MmusDv")  # type: ignore
+m_mouse = create_ancestors_mapping(mouse_onto, mouse_onto.classes(), "MmusDv")  # type: ignore
 
 
 # In[ ]:
@@ -156,7 +156,7 @@ uberon_classes = [
 
 uc = [tissue_onto.search_one(iri=f"http://purl.obolibrary.org/obo/{c}") for c in uberon_classes]
 
-m_uberon = create_mapping(tissue_onto, uc, "UBERON")  # type: ignore
+m_uberon = create_ancestors_mapping(tissue_onto, uc, "UBERON")  # type: ignore
 
 
 # In[ ]:
