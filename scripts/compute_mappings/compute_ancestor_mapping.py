@@ -27,11 +27,8 @@ RO__PART_OF = "BFO_0000050"  # RO ontology property "part of"
 
 
 def get_ancestors(onto: Ontology, class_name: str) -> Iterator[str]:
-    print("djh call")
     entity: ThingClass = onto.search_one(iri=f"http://purl.obolibrary.org/obo/{class_name}")
 
-    # print(f"djh: {entity} {type(entity)}")
-    # return entity
     def recurse(x: ThingClass) -> Iterator[str]:
         for e in x.is_a:
             if hasattr(e, "value") and e.property.name == RO__PART_OF:
