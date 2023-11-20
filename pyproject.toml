@@ -35,6 +35,7 @@ target-version = "py38"
 # packages = ["scripts"] instead of modules = ["scripts"] because packages will recursive
 # check subdirectories, while modules does not.
 packages = ["scripts"]
+exclude = ["scripts.compute_mappings.tests"]
 strict = true
 show_error_codes = true
 ignore_missing_imports = true
