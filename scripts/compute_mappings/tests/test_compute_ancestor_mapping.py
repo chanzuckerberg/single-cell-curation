@@ -1,3 +1,4 @@
+from typing import List
 from unittest.mock import Mock, patch
 
 import pytest
@@ -56,19 +57,32 @@ class TestAncestorMapping:
         assert list(ancestors) == ["E_", "C_", "obo.A_", "obo.B_", "D_"]  # Should not contain "NA" or "NA_2"
 
     @pytest.mark.parametrize(
-        "classes, prefix", [([FakeThingClass("1_"), FakeThingClass("2_"), FakeThingClass("3_")], None)]
+        "classes, prefix, expected_ancestors",
+        [
+            (  # Test no prefix
+                [FakeThingClass("1_"), FakeThingClass("2_"), FakeThingClass("3_")],
+                None,
+                {"1:": ["1:", "4:", "5:"], "3:": ["obo.3:", "obo.6:"]},
+            ),
+            (  # Test prefix
+                [FakeThingClass("1_"), FakeThingClass("2_"), FakeThingClass("3_")],
+                "obo",
+                {"3:": ["obo.3:", "obo.6:"]},
+            ),
+        ],
     )
     @patch("scripts.compute_mappings.compute_ancestor_mapping.get_ancestors")
-    def test_create_ancestors_mapping(self, get_ancestors_mock: Mock, classes, prefix):
+    def test_create_ancestors_mapping(
+        self, get_ancestors_mock: Mock, classes: List[str], prefix: str, expected_ancestors: dict
+    ):
         # Arrange
         # print([c.name for c in classes])
         ontology = Mock(spec=Ontology)
-        return_values = [["3_", "6_"], [], ["1_", "4_", "5:"]]
+        return_values = [["obo.3_", "obo.6_"], [], ["1_", "4_", "5:"]]
         get_ancestors_mock.side_effect = lambda *x: return_values.pop()
-        expected_ancestors_dict = {"1:": ["1:", "4:", "5:"], "3:": ["3:", "6:"]}
 
         # Act
-        ancestors_dict = create_ancestors_mapping(ontology, classes, prefix=prefix)  # type: ignore
+        ancestors = create_ancestors_mapping(ontology, classes, prefix=prefix)  # type: ignore
 
         # Assert
-        assert ancestors_dict == expected_ancestors_dict
+        assert ancestors == expected_ancestors
