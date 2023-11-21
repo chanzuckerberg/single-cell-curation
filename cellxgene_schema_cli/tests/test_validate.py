@@ -5,7 +5,6 @@ from typing import Union
 from unittest import mock
 
 import anndata
-import numpy
 import numpy as np
 import pandas as pd
 import pytest
@@ -41,7 +40,7 @@ def schema_def():
 @pytest.fixture()
 def validator_with_minimal_adata():
     validator = Validator()
-    validator.adata = adata_minimal
+    validator.adata = adata_minimal.copy()
     return validator
 
 
@@ -51,6 +50,11 @@ def label_writer():
     validator.adata = adata_valid.copy()
     validator.validate_adata()
     return AnnDataLabelAppender(validator)
+
+
+@pytest.fixture
+def valid_adata():
+    return adata_valid.copy()
 
 
 class TestFieldValidation:
@@ -356,75 +360,73 @@ class TestSeuratConvertibility:
 
 
 class TestValidatorValidateDataFrame:
-    def test_succeed_categorical_str(self, tmp_path):
-        self._succeed_categorical(tmp_path, ["hello", "world"])
+    @pytest.mark.parametrize("_type", [np.int64, np.int32, int, np.float64, np.float32, float, str])
+    def test_succeed_categorical_types(self, tmp_path, _type, valid_adata):
+        # Arrange
+        categories = [*map(_type, range(adata_valid.n_obs))]
+        self._add_catagorical_obs(valid_adata, categories)
+        validator = self._create_validator(valid_adata)
 
-    @pytest.mark.parametrize("typ", [numpy.int64, numpy.int32, int])
-    def test_succeed_categorical_int(self, tmp_path, typ):
-        self._succeed_categorical(tmp_path, [typ(123), typ(456)])
-
-    def test_succeed_mixed_categorical_int(self, tmp_path):
-        self._succeed_categorical(tmp_path, [numpy.int32(123), int(456)])
-
-    def test_fail_categorical_bool(self, tmp_path):
-        validator = self._fail_categorical(tmp_path, [True, False])
-        assert "Categories must only contain" in validator.errors[0]
-
-    @pytest.mark.parametrize("typ", [numpy.float64, numpy.float32, float])
-    def test_fail_categorical_float64(self, tmp_path, typ):
-        validator = self._fail_categorical(tmp_path, [typ(123.123), type(456.456)])
-        assert "Only one type is allowed." in validator.errors[0]
-        assert "Categories must only contain" in validator.errors[1]
-
-    def test_fail_categorical_datetime(self, tmp_path):
-        validator = self._fail_categorical(tmp_path, [pd.Timestamp("20130101"), pd.Timestamp("20130102")])
-        assert "Categories must only contain" in validator.errors[0]
-
-    def test_succeed_categorical_mixed_types(self, tmp_path):
-        validator = self._fail_categorical(tmp_path, ["hello", 123])
-        assert "Only one type is allowed." in validator.errors[0]
-
-    def _fail_categorical(self, tmp_path, categories):
-        validator = Validator()
-        validator._set_schema_def()
-        adata = adata_valid.copy()
-        t = pd.CategoricalDtype(categories=categories)
-        adata.obs["not_string"] = pd.Series(data=categories, index=["X", "Y"], dtype=t)
-        validator.adata = adata
-
+        # Act
         validator._validate_dataframe("obs")
-        with pytest.raises(TypeError):
-            # If this tests starts to fail here it means the anndata version has be upgraded and this check is no
-            # longer needed
-            adata.write_h5ad(f"{tmp_path}/test.h5ad")
-        return validator
 
-    def _succeed_categorical(self, tmp_path, categories):
-        validator = Validator()
-        validator._set_schema_def()
-        adata = adata_valid.copy()
-        t = pd.CategoricalDtype(categories=categories)
-        adata.obs["not_string"] = pd.Series(data=categories, index=["X", "Y"], dtype=t)
-        validator.adata = adata
-
-        validator._validate_dataframe("obs")
+        # Assert
         assert not validator.errors
-        adata.write_h5ad(f"{tmp_path}/test.h5ad")
-        return validator
+        valid_adata.write_h5ad(f"{tmp_path}/test.h5ad")  # Succeed write
 
-    def test_fail_mixed_column_types(self, tmp_path):
+    def test_fail_categorical_mixed_types(self, tmp_path, valid_adata):
+        # Arrange
+        categories = ["hello", 123]
+        self._add_catagorical_obs(valid_adata, categories)
+        validator = self._create_validator(valid_adata)
+
+        # Act
+        validator._validate_dataframe("obs")
+
+        # Assert
+        assert "in dataframe 'obs' containes 2 categorical types. Only one type is allowed." in validator.errors[0]
+        self._fail_write_h5ad(tmp_path, valid_adata)
+
+    def test_fail_categorical_bool(self, tmp_path, valid_adata):
+        # Arrange
+        categories = [True, False]
+        self._add_catagorical_obs(valid_adata, categories)
+        validator = self._create_validator(valid_adata)
+
+        # Act
+        validator._validate_dataframe("obs")
+
+        # Assert
+        assert "in dataframe 'obs' containes illegal_categorical_types={<class 'bool'>}." in validator.errors[0]
+        self._fail_write_h5ad(tmp_path, valid_adata)
+
+    def _add_catagorical_obs(self, adata, categories):
+        t = pd.CategoricalDtype(categories=categories)
+        adata.obs["test_cat"] = pd.Series(data=categories, index=["X", "Y"], dtype=t)
+
+    def _create_validator(self, adata):
         validator = Validator()
         validator._set_schema_def()
-        adata = adata_valid.copy()
-        adata.obs["mixed"] = pd.Series(data=["1234", 0], index=["X", "Y"])
         validator.adata = adata
+        return validator
 
-        validator._validate_dataframe("obs")
-        assert "Column 'mixed' in dataframe 'obs' cannot contain mixed types." in validator.errors[0]
+    def _fail_write_h5ad(self, tmp_path, adata):
         with pytest.raises(TypeError):
             # If this tests starts to fail here it means the anndata version has be upgraded and this check is no
             # longer needed
             adata.write_h5ad(f"{tmp_path}/test.h5ad")
+
+    def test_fail_mixed_column_types(self, tmp_path, valid_adata):
+        # Arrange
+        valid_adata.obs["mixed"] = pd.Series(data=["1234", 0], index=["X", "Y"])
+        validator = self._create_validator(valid_adata)
+
+        # Act
+        validator._validate_dataframe("obs")
+
+        # Assert
+        assert "in dataframe 'obs' cannot contain mixed types." in validator.errors[0]
+        self._fail_write_h5ad(tmp_path, valid_adata)
 
 
 class TestIsRaw:

@@ -707,20 +707,22 @@ class Validator:
                                 f"Column '{column_name}' in dataframe '{df_name}' contains a category '{category}' with "
                                 f"zero observations. These categories will be removed when `--add-labels` flag is present."
                             )
-                # Check for columns that have none string categories, which is not supported by anndata 0.8.0
+                categorical_types = {type(x) for x in column.dtype.categories.values}
+                # Check for columns that have illegal categories, which are not supported by anndata 0.8.0
+                # TODO: check if this can be removed after upgading to anndata 0.10.0
+                blocked_categorical_types = {bool}
+                illegal_categorical_types = categorical_types & blocked_categorical_types
+                if illegal_categorical_types:
+                    self.errors.append(
+                        f"Column '{column_name}' in dataframe '{df_name}' containes {illegal_categorical_types=}."
+                    )
+                # Check for categorical column has mixed types, which is not supported by anndata 0.8.0
                 # TODO: check if this can be removed after upgading to anndata 0.10.0
                 categorical_types = {type(x) for x in column.dtype.categories.values}
                 if len(categorical_types) > 1:
                     self.errors.append(
                         f"Column '{column_name}' in dataframe '{df_name}' containes {len(categorical_types)} categorical types. "
                         f"Only one type is allowed."
-                    )
-                allowed_categorical_types = {str, int, np.int32, np.int64}
-                illegal_categorical_types = categorical_types - allowed_categorical_types
-                if illegal_categorical_types:
-                    self.errors.append(
-                        f"Column '{column_name}' in dataframe '{df_name}' containes {illegal_categorical_types=}. "
-                        f"Categories must only contain {allowed_categorical_types=}."
                     )
 
         # Validate columns
