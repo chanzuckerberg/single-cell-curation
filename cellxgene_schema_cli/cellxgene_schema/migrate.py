@@ -49,8 +49,6 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     reported_changes = []
 
     dataset = ad.read_h5ad(input_file, backed="r")
-    if dataset.raw is not None and DEPRECATED_FEATURE_IDS:
-        dataset = dataset.to_memory()
 
     # AUTOMATED, DO NOT CHANGE
     for ontology_name, deprecated_term_map in ONTOLOGY_TERM_MAPS.items():
@@ -218,6 +216,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
             break
 
     if has_rna_assay:
+        dataset = dataset.to_memory()
         if dataset.raw:
             raw = dataset.raw.X
         else:
