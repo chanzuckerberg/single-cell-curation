@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from . import utils
+from . import ontology
 
 # fmt: off
 # ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
@@ -20,6 +21,8 @@ ONTOLOGY_TERM_MAPS = {
     "assay": {
     },
     "cell_type": {
+        "CL:0000255": "CL:0000003",
+        "CL:0000548": "CL:0000003",
     },
     "development_stage": {
     },
@@ -28,6 +31,7 @@ ONTOLOGY_TERM_MAPS = {
     "organism": {
     },
     "self_reported_ethnicity": {
+        "HANCESTRO:0306": "unknown"
     },
     "sex": {
     },
@@ -191,6 +195,40 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     for key, value in list(dataset.uns.items()):
         if key.endswith("_colors") and not color_key_is_valid(key, value):
             del dataset.uns[key]
+
+    # Coerce Raw Matrix values to np.float32 IF 1) assay requires this constraint in the schema definition, and
+    # 2) the max value in the matrix is representable as np.float32. NOTE: These values are all validated to be integers
+    # so no concern for data precision loss.
+
+    accessibility_assays = {
+        "EFO:0007045",  # ATAC-seq
+        "EFO:0008804",  # Methyl-seq
+        "EFO:0000751",  # methylation profiling
+        "EFO:0008939",  # snmC-seq
+    }
+    ontology_checker = ontology.OntologyChecker()
+    assays = dataset.obs.assay_ontology_term_id.drop_duplicates()
+    has_rna_assay = False
+    for assay in assays:
+        term_ancestors = ontology_checker.get_term_ancestors("EFO", assay)
+        if (assay not in accessibility_assays) and bool(accessibility_assays & term_ancestors) is False:
+            has_rna_assay = True
+            break
+
+    if has_rna_assay:
+        if dataset.raw:
+            raw = dataset.raw.X
+        else:
+            raw = dataset.X
+
+        raw_dtype = raw.dtype
+        if raw_dtype != np.float32:
+            max_float32 = np.finfo(np.float32).max
+            if raw.max() > max_float32:
+                raise ValueError(f"Raw Matrix of Dataset {dataset_id} with RNA Assay contains a value that cannot be "
+                                 f"coerced safely into np.float32.")
+            raw.data = raw.data.astype(np.float32)
+            reported_changes.append(f"Updated raw matrix dtype from {raw_dtype} to np.float32")
 
     # CURATOR-DEFINED, DATASET-SPECIFIC UPDATES
     # Use the template below to define dataset and collection specific ontology changes. Will only apply to dataset
