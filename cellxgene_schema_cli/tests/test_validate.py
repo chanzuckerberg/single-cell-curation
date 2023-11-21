@@ -5,6 +5,7 @@ from typing import Union
 from unittest import mock
 
 import anndata
+import numpy
 import numpy as np
 import pandas as pd
 import pytest
@@ -355,20 +356,61 @@ class TestSeuratConvertibility:
 
 
 class TestValidatorValidateDataFrame:
-    def test_fail_category_not_string(self, tmp_path):
+    def test_succeed_categorical_str(self, tmp_path):
+        self._succeed_categorical(tmp_path, ["hello", "world"])
+
+    @pytest.mark.parametrize("typ", [numpy.int64, numpy.int32, int])
+    def test_succeed_categorical_int(self, tmp_path, typ):
+        self._succeed_categorical(tmp_path, [typ(123), typ(456)])
+
+    def test_succeed_mixed_categorical_int(self, tmp_path):
+        self._succeed_categorical(tmp_path, [numpy.int32(123), int(456)])
+
+    def test_fail_categorical_bool(self, tmp_path):
+        validator = self._fail_categorical(tmp_path, [True, False])
+        assert "Categories must only contain" in validator.errors[0]
+
+    @pytest.mark.parametrize("typ", [numpy.float64, numpy.float32, float])
+    def test_fail_categorical_float64(self, tmp_path, typ):
+        validator = self._fail_categorical(tmp_path, [typ(123.123), type(456.456)])
+        assert "Only one type is allowed." in validator.errors[0]
+        assert "Categories must only contain" in validator.errors[1]
+
+    def test_fail_categorical_datetime(self, tmp_path):
+        validator = self._fail_categorical(tmp_path, [pd.Timestamp("20130101"), pd.Timestamp("20130102")])
+        assert "Categories must only contain" in validator.errors[0]
+
+    def test_succeed_categorical_mixed_types(self, tmp_path):
+        validator = self._fail_categorical(tmp_path, ["hello", 123])
+        assert "Only one type is allowed." in validator.errors[0]
+
+    def _fail_categorical(self, tmp_path, categories):
         validator = Validator()
         validator._set_schema_def()
         adata = adata_valid.copy()
-        t = pd.CategoricalDtype(categories=[True, False])
-        adata.obs["not_string"] = pd.Series(data=[True, False], index=["X", "Y"], dtype=t)
+        t = pd.CategoricalDtype(categories=categories)
+        adata.obs["not_string"] = pd.Series(data=categories, index=["X", "Y"], dtype=t)
         validator.adata = adata
 
         validator._validate_dataframe("obs")
-        assert "must only contain string categories." in validator.errors[0]
         with pytest.raises(TypeError):
             # If this tests starts to fail here it means the anndata version has be upgraded and this check is no
             # longer needed
             adata.write_h5ad(f"{tmp_path}/test.h5ad")
+        return validator
+
+    def _succeed_categorical(self, tmp_path, categories):
+        validator = Validator()
+        validator._set_schema_def()
+        adata = adata_valid.copy()
+        t = pd.CategoricalDtype(categories=categories)
+        adata.obs["not_string"] = pd.Series(data=categories, index=["X", "Y"], dtype=t)
+        validator.adata = adata
+
+        validator._validate_dataframe("obs")
+        assert not validator.errors
+        adata.write_h5ad(f"{tmp_path}/test.h5ad")
+        return validator
 
     def test_fail_mixed_column_types(self, tmp_path):
         validator = Validator()
