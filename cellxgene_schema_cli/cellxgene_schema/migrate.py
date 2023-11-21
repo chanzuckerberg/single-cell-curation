@@ -211,7 +211,9 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     has_rna_assay = False
     for assay in assays:
         term_ancestors = ontology_checker.get_term_ancestors("EFO", assay)
-        if (assay not in accessibility_assays) and bool(accessibility_assays & term_ancestors) is False:
+        term_ancestors.add(assay)
+        # check intersection, if no matches, term is not accessibility assay and therefore we assume its RNA
+        if bool(accessibility_assays & term_ancestors) is False:
             has_rna_assay = True
             break
 
