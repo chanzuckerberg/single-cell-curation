@@ -59,27 +59,13 @@ class GeneChecker:
         self.species = species
         self.gene_dict = {}
         with gzip.open(self.GENE_FILES[species], "rt") as genes:
-            gene_labels = set()
-            duplicated_gene_labels = set()
-
             for gene in genes:
-                gene = gene.rstrip().split(",")
+                gene = gene.rstrip().split(",")  # type: ignore
                 gene_id = gene[0]
                 gene_label = gene[1]
                 gene_length = int(gene[3])
 
                 self.gene_dict[gene_id] = (gene_label, gene_length)
-
-                # Keeps track of duplicated gene labels
-                if gene_label in gene_labels:
-                    duplicated_gene_labels.add(gene_label)
-                else:
-                    gene_labels.add(gene_label)
-
-            # Makes gene labels unique
-            for gene_id, (gene_label, gene_length) in self.gene_dict.items():
-                if gene_label in duplicated_gene_labels:
-                    self.gene_dict[gene_id] = (gene_label + "_" + gene_id, gene_length)
 
     def is_valid_id(self, gene_id: str) -> bool:
         """
@@ -129,7 +115,7 @@ class OntologyChecker:
 
     JSON_FILE = env.PARSED_ONTOLOGIES_FILE
 
-    def __init__(self):
+    def __init__(self):  # type: ignore
         with gzip.open(self.JSON_FILE, "rt") as json_o:
             self.ontology_dict = json.load(json_o)
 
@@ -141,7 +127,7 @@ class OntologyChecker:
 
         return list(self.ontology_dict.keys())
 
-    def get_term_dict(self, ontology: str, term_id: str) -> dict:
+    def get_term_dict(self, ontology: str, term_id: str) -> dict:  # type: ignore
         """
         Returns a dictionary with all the information from a given ontology and term_id
 
@@ -153,7 +139,7 @@ class OntologyChecker:
         """
 
         self.assert_term_id(ontology, term_id)
-        return self.ontology_dict[ontology][term_id]
+        return self.ontology_dict[ontology][term_id]  # type: ignore
 
     def get_term_label(self, ontology: str, term_id: str) -> str:
         """
@@ -167,7 +153,7 @@ class OntologyChecker:
         """
 
         self.assert_term_id(ontology, term_id)
-        return self.ontology_dict[ontology][term_id]["label"]
+        return self.ontology_dict[ontology][term_id]["label"]  # type: ignore
 
     def get_term_ancestors(self, ontology: str, term_id: str) -> Set[str]:
         """
@@ -208,7 +194,7 @@ class OntologyChecker:
 
         self.assert_term_id(ontology, term_id)
 
-        return self.ontology_dict[ontology][term_id]["deprecated"]
+        return self.ontology_dict[ontology][term_id]["deprecated"]  # type: ignore
 
     def is_valid_term_id(self, ontology: str, term_id: str) -> bool:
         """
@@ -242,7 +228,7 @@ class OntologyChecker:
 
         return target_term_id in self.get_term_ancestors(ontology, query_term_id)
 
-    def assert_ontology(self, ontology: str):
+    def assert_ontology(self, ontology: str):  # type: ignore
         """
         Raises error if ontology is not present in the ontology dict
 
@@ -254,7 +240,7 @@ class OntologyChecker:
         if not self.is_valid_ontology(ontology):
             raise ValueError(f"The ontology '{ontology}' is not present in the ontology checker")
 
-    def assert_term_id(self, ontology: str, term_id: str):
+    def assert_term_id(self, ontology: str, term_id: str):  # type: ignore
         """
         Raises error if term_id is not present in ontology
 
@@ -267,7 +253,7 @@ class OntologyChecker:
         if not self.is_valid_term_id(ontology, term_id):
             raise ValueError(f"The term id '{term_id}' is not present in the ontology '{ontology}'")
 
-    def assert_descendent_of(self, ontology: str, query_term_id: str, target_term_id: str):
+    def assert_descendent_of(self, ontology: str, query_term_id: str, target_term_id: str):  # type: ignore
         """
         Raises error if query_term_id is not a descendent of target_term_id in a given ontology
 

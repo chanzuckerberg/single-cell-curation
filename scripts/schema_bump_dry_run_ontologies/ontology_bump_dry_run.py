@@ -25,7 +25,7 @@ ONTOLOGY_TYPES = {
 }
 
 
-def load_ontology_map():
+def load_ontology_map():  # type: ignore
     # Load processed ontologies file
     ontologies = "cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz"
     with gzip.open(ontologies, "rt") as f:
@@ -34,12 +34,12 @@ def load_ontology_map():
 
 
 def map_deprecated_terms(
-    curator_report_entry_map: dict,
-    dataset: dict,
+    curator_report_entry_map: dict,  # type: ignore
+    dataset: dict,  # type: ignore
     collection_id: str,
-    onto_map: dict,
-    non_deprecated_term_cache: set,
-    replaced_by_map: dict,
+    onto_map: dict,  # type: ignore
+    non_deprecated_term_cache: set,  # type: ignore
+    replaced_by_map: dict,  # type: ignore
 ) -> None:
     """
     For a dataset, detects all deprecated ontology terms and, for each found, populates an entry in
@@ -76,7 +76,7 @@ def map_deprecated_terms(
                     else:
                         entry = dict()
                         entry["needs_alert"] = False
-                        entry["dataset_ct"] = 1
+                        entry["dataset_ct"] = 1  # type: ignore
                         if "term_tracker" in ontology:
                             entry["term_tracker"] = ontology["term_tracker"]
                         if "comments" in ontology:
@@ -99,7 +99,7 @@ def map_deprecated_terms(
                     non_deprecated_term_cache.add(ontology_term_id)
 
 
-def write_to_curator_report(output_file: str, curator_report_entry_map: dict, revision_map: dict = None) -> None:
+def write_to_curator_report(output_file: str, curator_report_entry_map: dict, revision_map: dict = None) -> None:  # type: ignore
     """
     Writes curator report entries to output_file. Each entry reports a Collection ID, a Deprecated Term that has been
     detected in that collection, how many datasets are affected, and info derived from owl files that guide how to
@@ -136,16 +136,16 @@ def dry_run(curator_report_filepath: str, replaced_by_filepath: str) -> None:
     :param curator_report_filepath: filepath to write curator report to
     :param replaced_by_filepath: filepath to write replaced by JSON mapping to
     """
-    onto_map = load_ontology_map()
+    onto_map = load_ontology_map()  # type: ignore
 
     # cache terms we know are not deprecated to skip processing; init with special-case, non-ontology terms we use
     non_deprecated_term_cache = {"multiethnic", "unknown", "na"}
     # map deprecated terms with known, deterministic 'replaced by' terms
-    replaced_by_map = {ontology_type: dict() for ontology_type in ONTOLOGY_TYPES}
+    replaced_by_map = {ontology_type: dict() for ontology_type in ONTOLOGY_TYPES}  # type: ignore
 
     base_url = BASE_API[os.getenv("corpus_env", default="dev")]
-    datasets = fetch_public_datasets(base_url)
-    public_curator_report_entry_map = defaultdict(dict)
+    datasets = fetch_public_datasets(base_url)  # type: ignore
+    public_curator_report_entry_map = defaultdict(dict)  # type: ignore
     with open(curator_report_filepath, "w") as f:
         # for every dataset, check its ontology term metadata to see if any terms are deprecated. If so, report.
         f.write("Deprecated Terms in Public Datasets:\n\n")
@@ -160,12 +160,12 @@ def dry_run(curator_report_filepath: str, replaced_by_filepath: str) -> None:
         )
     write_to_curator_report(curator_report_filepath, public_curator_report_entry_map)
 
-    headers = get_headers(base_url)
-    private_collections = fetch_private_collections(base_url, headers)
+    headers = get_headers(base_url)  # type: ignore
+    private_collections = fetch_private_collections(base_url, headers)  # type: ignore
     with open(curator_report_filepath, "a") as f:
         f.write("\nDeprecated Terms in Private Datasets:\n\n")
     revision_map = dict()
-    private_curator_report_entry_map = defaultdict(dict)
+    private_curator_report_entry_map = defaultdict(dict)  # type: ignore
     for collection in private_collections:
         collection_id = collection["collection_id"]
         if collection.get("revision_of"):
@@ -173,7 +173,7 @@ def dry_run(curator_report_filepath: str, replaced_by_filepath: str) -> None:
         for ds in collection["datasets"]:
             dataset_id = ds["dataset_id"]
             # TODO: consider adding ontology fields to dataset preview response so a follow-up call isn't needed
-            dataset_metadata = fetch_private_dataset(base_url, headers, collection_id, dataset_id)
+            dataset_metadata = fetch_private_dataset(base_url, headers, collection_id, dataset_id)  # type: ignore
             # only process uploaded datasets
             if "processing_status" not in dataset_metadata or dataset_metadata["processing_status"] != "SUCCESS":
                 continue

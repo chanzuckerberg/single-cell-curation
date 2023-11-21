@@ -29,3 +29,15 @@ select = ["E", "F", "B", "SIM", "C4", "I"]
 ignore = ["E501", "E402", "C408", "SIM112"]
 line-length = 120
 target-version = "py38"
+
+[tool.mypy]
+# here is where we tell mypy to only check the scripts package. note that we're using
+# packages = ["scripts"] instead of modules = ["scripts"] because packages will recursive
+# check subdirectories, while modules does not.
+packages = ["scripts"]
+exclude = ["scripts.compute_mappings.tests"]
+strict = true
+show_error_codes = true
+ignore_missing_imports = true
+warn_unreachable = true
+warn_unused_configs = true

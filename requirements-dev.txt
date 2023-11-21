@@ -1,2 +1,7 @@
 coverage
 pytest
+mypy
+types-requests
+types-setuptools
+typing_extensions
+types-PyYAML

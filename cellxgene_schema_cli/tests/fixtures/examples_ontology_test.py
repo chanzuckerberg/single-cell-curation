@@ -8,6 +8,21 @@ valid_genes = {
     ontology.SupportedOrganisms.MUS_MUSCULUS: {"ENSMUSG00000059552": ("Trp53", 4045)},
 }
 
+valid_genes_same_name_diff_species = {
+    ontology.SupportedOrganisms.HOMO_SAPIENS: {"ENSG00000277925": ("Telomerase-vert_ENSG00000277925", 438)},
+    ontology.SupportedOrganisms.MUS_MUSCULUS: {
+        "ENSMUSG00002075569": ("Telomerase-vert_ENSMUSG00002075569", 423),
+        "ENSMUSG00002076068": ("Telomerase-vert_ENSMUSG00002076068", 412),
+    },
+}
+
+valid_genes_same_name_and_species = {
+    ontology.SupportedOrganisms.MUS_MUSCULUS: {
+        "ENSMUSG00002075311": ("U6_ENSMUSG00002075311", 110),
+        "ENSMUSG00002075357": ("U6_ENSMUSG00002075357", 110),
+    },
+}
+
 invalid_genes = {
     ontology.SupportedOrganisms.HOMO_SAPIENS: ["ENSMUSG00000059552", ("GENE", 1000)],
     ontology.SupportedOrganisms.MUS_MUSCULUS: ["ENSG00000141510", ("GENE", 200)],

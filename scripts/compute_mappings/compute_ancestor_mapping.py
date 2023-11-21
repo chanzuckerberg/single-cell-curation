@@ -22,10 +22,10 @@ import yaml
 # In[ ]:
 
 
-def get_ancestors(onto, class_name):
+def get_ancestors(onto, class_name):  # type: ignore
     z = onto.search_one(iri=f"http://purl.obolibrary.org/obo/{class_name}")
 
-    def recurse(x):
+    def recurse(x):  # type: ignore
         for e in x.is_a:
             if hasattr(e, "value"):
                 prop = e.property.name
@@ -34,19 +34,19 @@ def get_ancestors(onto, class_name):
                 val = e.value.name.replace("obo.", "")
                 z = onto.search_one(iri=f"http://purl.obolibrary.org/obo/{val}")
                 yield (z, z.name, z.label, z.IAO_0000115)
-                yield from recurse(z)
+                yield from recurse(z)  # type: ignore
 
     yield (z, z.name, z.label, z.IAO_0000115)
-    yield from recurse(z)
+    yield from recurse(z)  # type: ignore
 
 
 # In[ ]:
 
 
-def create_mapping(onto, classes, prefix=None):
-    x = dict()
+def create_mapping(onto, classes, prefix=None):  # type: ignore
+    x = dict()  # type: ignore
     for cls in classes:
-        for a in get_ancestors(onto, cls.name):
+        for a in get_ancestors(onto, cls.name):  # type: ignore
             if prefix and not a[1].startswith(prefix):
                 continue
             key = cls.name.replace("_", ":")
@@ -76,7 +76,7 @@ human_ontology = owl_info["HsapDv"]["urls"][human_latest_key]
 human_onto = get_ontology(human_ontology)
 human_onto.load()
 
-m_human = create_mapping(human_onto, human_onto.classes(), "HsapDv")
+m_human = create_mapping(human_onto, human_onto.classes(), "HsapDv")  # type: ignore
 
 
 # In[ ]:
@@ -88,7 +88,7 @@ mouse_ontology = owl_info["MmusDv"]["urls"][mouse_latest_key]
 mouse_onto = get_ontology(mouse_ontology)
 mouse_onto.load()
 
-m_mouse = create_mapping(mouse_onto, mouse_onto.classes(), "MmusDv")
+m_mouse = create_mapping(mouse_onto, mouse_onto.classes(), "MmusDv")  # type: ignore
 
 
 # In[ ]:
@@ -161,7 +161,7 @@ uberon_classes = [
 
 uc = [tissue_onto.search_one(iri=f"http://purl.obolibrary.org/obo/{c}") for c in uberon_classes]
 
-m_uberon = create_mapping(tissue_onto, uc, "UBERON")
+m_uberon = create_mapping(tissue_onto, uc, "UBERON")  # type: ignore
 
 
 # In[ ]:

@@ -17,7 +17,7 @@ def get_template() -> Template:
     return template
 
 
-def generate_script(template: Template, ontology_term_map: dict, deprecated_feature_ids: List[str]):
+def generate_script(template: Template, ontology_term_map: dict, deprecated_feature_ids: List[str]):  # type: ignore
     output = template.render(ontology_term_map=ontology_term_map, deprecated_feature_ids=deprecated_feature_ids)
 
     # Overwrite the existing migrate.py file
@@ -25,11 +25,11 @@ def generate_script(template: Template, ontology_term_map: dict, deprecated_feat
         fp.write(output)
 
 
-def get_ontology_term_map(term_map_filepath) -> dict:
+def get_ontology_term_map(term_map_filepath) -> dict:  # type: ignore
     if os.path.exists(term_map_filepath):
         with open(term_map_filepath, "r") as fp:
             replaced_by_map = json.load(fp)
-        return replaced_by_map
+        return replaced_by_map  # type: ignore
 
 
 def get_deprecated_feature_ids() -> List[str]:
@@ -45,7 +45,7 @@ def get_deprecated_feature_ids() -> List[str]:
     return diff_list
 
 
-def main():
+def main():  # type: ignore
     template = get_template()
     ontology_term_map = get_ontology_term_map("replaced-by.json")
     deprecated_feature_ids = get_deprecated_feature_ids()
@@ -53,4 +53,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main()  # type: ignore

@@ -1,9 +1,5 @@
-.PHONY: fmt
-fmt:
-	pre-commit run -a
-
-lint:
-	cd cellxgene_schema_cli/ && flake8 cellxgene_schema/ tests/
+check:
+	pre-commit run -a && mypy --config-file pyproject.toml
 
 install:
 	cd cellxgene_schema_cli/ && pip install -r requirements.txt && pip install .
