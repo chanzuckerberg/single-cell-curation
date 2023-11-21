@@ -384,7 +384,7 @@ class TestValidatorValidateDataFrame:
         validator._validate_dataframe("obs")
 
         # Assert
-        assert "in dataframe 'obs' containes 2 categorical types. Only one type is allowed." in validator.errors[0]
+        assert "in dataframe 'obs' contains 2 categorical types. Only one type is allowed." in validator.errors[0]
         self._fail_write_h5ad(tmp_path, valid_adata)
 
     def test_fail_categorical_bool(self, tmp_path, valid_adata):
@@ -397,7 +397,7 @@ class TestValidatorValidateDataFrame:
         validator._validate_dataframe("obs")
 
         # Assert
-        assert "in dataframe 'obs' containes illegal_categorical_types={<class 'bool'>}." in validator.errors[0]
+        assert "in dataframe 'obs' contains illegal_categorical_types={<class 'bool'>}." in validator.errors[0]
         self._fail_write_h5ad(tmp_path, valid_adata)
 
     def _add_catagorical_obs(self, adata, categories):

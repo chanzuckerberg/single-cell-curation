@@ -714,14 +714,14 @@ class Validator:
                 illegal_categorical_types = categorical_types & blocked_categorical_types
                 if illegal_categorical_types:
                     self.errors.append(
-                        f"Column '{column_name}' in dataframe '{df_name}' containes {illegal_categorical_types=}."
+                        f"Column '{column_name}' in dataframe '{df_name}' contains {illegal_categorical_types=}."
                     )
                 # Check for categorical column has mixed types, which is not supported by anndata 0.8.0
                 # TODO: check if this can be removed after upgading to anndata 0.10.0
                 categorical_types = {type(x) for x in column.dtype.categories.values}
                 if len(categorical_types) > 1:
                     self.errors.append(
-                        f"Column '{column_name}' in dataframe '{df_name}' containes {len(categorical_types)} categorical types. "
+                        f"Column '{column_name}' in dataframe '{df_name}' contains {len(categorical_types)} categorical types. "
                         f"Only one type is allowed."
                     )
 
