@@ -216,13 +216,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     if has_rna_assay:
         dataset = dataset.to_memory()
-        # fmt: off
-        if dataset.raw:
-            raw = dataset.raw.X
-        else:
-            raw = dataset.X
-        # fmt: on
-
+        raw = dataset.raw.X if dataset.raw else dataset.X
         raw_dtype = raw.dtype
         if raw_dtype != np.float32:
             max_float32 = np.finfo(np.float32).max
