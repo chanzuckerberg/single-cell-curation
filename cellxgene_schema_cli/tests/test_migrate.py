@@ -1,5 +1,5 @@
 from tempfile import TemporaryDirectory
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import anndata
 from cellxgene_schema.migrate import migrate
@@ -32,7 +32,7 @@ class TestMigrate:
         }
         with TemporaryDirectory() as tmp, patch("cellxgene_schema.migrate.DEPRECATED_FEATURE_IDS", ["DUMMY"]), patch(
             "cellxgene_schema.migrate.ONTOLOGY_TERM_MAPS", test_ONTOLOGY_TERM_MAPS
-        ):
+        ), patch("cellxgene_schema.ontology.OntologyChecker.get_term_ancestors", MagicMock(return_value=set())):
             result_h5ad = tmp + "result.h5ad"
             test_h5ad = tmp + "test.h5ad"
 

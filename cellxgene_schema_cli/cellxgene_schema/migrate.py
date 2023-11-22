@@ -5,8 +5,7 @@ import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 
-from . import utils
-from . import ontology
+from . import ontology, utils
 
 # fmt: off
 # ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
@@ -217,17 +216,21 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     if has_rna_assay:
         dataset = dataset.to_memory()
+        # fmt: off
         if dataset.raw:
             raw = dataset.raw.X
         else:
             raw = dataset.X
+        # fmt: on
 
         raw_dtype = raw.dtype
         if raw_dtype != np.float32:
             max_float32 = np.finfo(np.float32).max
             if raw.max() > max_float32:
-                raise ValueError(f"Raw Matrix of Dataset {dataset_id} with RNA Assay contains a value that cannot be "
-                                 f"coerced safely into np.float32.")
+                raise ValueError(
+                    f"Raw Matrix of Dataset {dataset_id} with RNA Assay contains a value that cannot be "
+                    f"coerced safely into np.float32."
+                )
             raw.data = raw.data.astype(np.float32)
             reported_changes.append(f"Updated raw matrix dtype from {raw_dtype} to np.float32")
 
