@@ -18,9 +18,18 @@ def url_builder(path_segment):
 
 def get_headers():
     access_token = os.getenv("ACCESS_TOKEN")
+    oauth_proxy_token = os.getenv("OAUTH_PROXY_ACCESS_TOKEN")
     headers = {"Content-Type": "application/json"}
-    if not access_token:
-        logger.warning("No access token included in request")
-    else:
+    if oauth_proxy_token:
+        # rdev Auth0 uses Authorization header for proxy token
+        headers["Authorization"] = f"Bearer {oauth_proxy_token}"
+        if access_token:
+            # Use alternative header for Discover API access token
+            headers["X-Curation-Authorization"] = access_token
+        else:
+            logger.warning("No access token included in request")
+    elif access_token:
         headers["Authorization"] = f"Bearer {access_token}"
+    else:
+        logger.warning("No access token included in request")
     return headers

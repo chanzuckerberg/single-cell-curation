@@ -1,29 +1,38 @@
+import json
 import os
 
+import boto3
 import requests
 
 
-def set_api_urls(env: str) -> None:
+def set_api_urls(env: str, stack: str = "") -> None:
     """
     This function sets url environment variables that other Curator API notebook modules use when calling
     Curator API endpoints.
     :param env: the deployment environment
+    :param stack: the stack name (if rdev)
     :return: None
     """
-    if env == "prod":  # For all official use of the cellxgene product
-        domain_name = "cellxgene.cziscience.com"
-    elif env == "dev" or env == "staging":  # For testing purposes only
-        domain_name = f"cellxgene.{env}.single-cell.czi.technology"
+    if stack:
+        root_domain = "rdev.single-cell.czi.technology"
+        os.environ["SITE_URL"] = f"https://{stack}-frontend.{root_domain}"
+        os.environ["API_URL_BASE"] = f"https://{stack}-backend.{root_domain}"
+        print(f"Stack: {stack}")
     else:
-        raise Exception("Must provide env arg: 'dev', 'staging', or 'prod'.")
+        if env == "prod":  # For all official use of the cellxgene product
+            domain_name = "cellxgene.cziscience.com"
+        elif env == "dev" or env == "staging":  # For testing purposes only
+            domain_name = f"cellxgene.{env}.single-cell.czi.technology"
+        else:
+            raise Exception("Must provide env arg: 'dev', 'staging', or 'prod'.")
+        os.environ["SITE_URL"] = f"https://{domain_name}"
+        os.environ["API_URL_BASE"] = f"https://api.{domain_name}"
 
-    os.environ["SITE_URL"] = f"https://{domain_name}"
     print(f"Set 'SITE_URL' env var to {os.getenv('SITE_URL')}")
-    os.environ["API_URL_BASE"] = f"https://api.{domain_name}"
     print(f"Set 'API_URL_BASE' env var to {os.getenv('API_URL_BASE')}")
 
 
-def set_api_access_config(api_key_file_path: str = None, env: str = "prod") -> None:
+def set_api_access_config(api_key_file_path: str = None, env: str = "prod", stack: str = "") -> None:
     """
     This function uses the API key to retrieve a temporary access token from the Curator API. It then sets
     the 'ACCESS_TOKEN' environment variable, which other Curator API notebook modules use when calling
@@ -31,9 +40,11 @@ def set_api_access_config(api_key_file_path: str = None, env: str = "prod") -> N
     will be limited to only publicly-accessible data.
     :param api_key_file_path: the relative path to the file containing the API key
     :param env: the deployment environment
+    :param stack: the stack name (if rdev)
     :return: None
     """
-    set_api_urls(env)
+    set_api_urls(env, stack)
+
     if not api_key_file_path:
         print(
             "No API key file provided. Without an access token, which requires an API key to retrieve, no private "
@@ -45,6 +56,11 @@ def set_api_access_config(api_key_file_path: str = None, env: str = "prod") -> N
     with open(api_key_file_path) as fp:
         api_key = fp.read().strip()
     access_token_headers = {"x-api-key": api_key}
+
+    if stack:
+        set_rdev_oauth_proxy_access_token()
+        access_token_headers["Authorization"] = f"Bearer {os.getenv('OAUTH_PROXY_ACCESS_TOKEN')}"
+
     access_token_path = "/curation/v1/auth/token"
     api_url_base = os.getenv("API_URL_BASE")
     access_token_url = f"{api_url_base}{access_token_path}"
@@ -54,6 +70,25 @@ def set_api_access_config(api_key_file_path: str = None, env: str = "prod") -> N
     access_token = res.json().get("access_token")
     os.environ["ACCESS_TOKEN"] = access_token
     print("Successfully set 'ACCESS_TOKEN' env var!")
+
+
+def set_rdev_oauth_proxy_access_token() -> None:
+    """
+    Get an access token for the outer Auth0 layer that gates all access to single-cell rdev
+    """
+    secrets_client = boto3.client("secretsmanager")
+    secret = json.loads(secrets_client.get_secret_value(SecretId="corpora/backend/rdev/auth0-secret")["SecretString"])
+    payload = {
+        "client_id": secret["test_app_id"],
+        "client_secret": secret["test_app_secret"],
+        "grant_type": "client_credentials",
+        "audience": "https://api.cellxgene.dev.single-cell.czi.technology/dp/v1/curator",
+    }
+    headers = {"content-type": "application/json"}
+    res = requests.post("https://czi-cellxgene-dev.us.auth0.com/oauth/token", json=payload, headers=headers)
+    res.raise_for_status()
+    os.environ["OAUTH_PROXY_ACCESS_TOKEN"] = res.json()["access_token"]
+    print("Successfully set 'OAUTH_PROXY_ACCESS_TOKEN' env var!")
 
 
 def format_c_url(collection_id: str) -> str:
