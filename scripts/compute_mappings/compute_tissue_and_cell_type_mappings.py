@@ -250,7 +250,6 @@ cell_classes = [
 
 # Hand-curated cell subclasses.
 cell_subclasses = [
-    "CL_0002494",  # cardiocyte
     "CL_0000624",  # CD4-positive, alpha-beta T cell
     "CL_0000625",  # CD8-positive, alpha-beta T cell
     "CL_0000084",  # T cell
