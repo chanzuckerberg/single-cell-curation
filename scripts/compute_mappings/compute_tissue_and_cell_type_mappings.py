@@ -16,7 +16,7 @@
 # The ancestor mappings should be updated when:
 #
 # 1. The ontology version is updated, or,
-# 2. A tissue or cell type is added to the production corpus.
+# 2. A new tissue or cell type is added to the production corpus.
 #
 # #### 2. Descendant Mappings
 # To facilitate in-filter, cross-panel restriction of filter values, a descendant hierarchy dictionary is required by the Single Cell Data Portal frontend. For example, if a user selects `hematopoietic system` in the tissue filter's `System` panel, the values in the tissue filter's `Organ` and `Tissue` panels must be restricted by `hematopoietic system`.
@@ -26,7 +26,7 @@
 # The descendant mappings should be updated when:
 #
 # 1. The ontology version is updated,
-# 2. A tissue or cell type is added to the production corpus, or,
+# 2. A new tissue or cell type is added to the production corpus, or,
 # 3. The hand-curated systems, organs, cell classes or cell subclasses are updated.
 #
 # ## Notebook Implementation Notes
