@@ -16,7 +16,7 @@
 # The ancestor mappings should be updated when:
 #
 # 1. The ontology version is updated, or,
-# 2. A new tissue or cell type is added to the production corpus.
+# 2. A tissue or cell type is added to the production corpus.
 #
 # #### 2. Descendant Mappings
 # To facilitate in-filter, cross-panel restriction of filter values, a descendant hierarchy dictionary is required by the Single Cell Data Portal frontend. For example, if a user selects `hematopoietic system` in the tissue filter's `System` panel, the values in the tissue filter's `Organ` and `Tissue` panels must be restricted by `hematopoietic system`.
@@ -26,7 +26,7 @@
 # The descendant mappings should be updated when:
 #
 # 1. The ontology version is updated,
-# 2. A new tissue or cell type is added to the production corpus, or,
+# 2. A tissue or cell type is added to the production corpus, or,
 # 3. The hand-curated systems, organs, cell classes or cell subclasses are updated.
 #
 # ## Notebook Implementation Notes
@@ -219,15 +219,29 @@ orphan_tissues = [
 
 # Hand-curated cell classes.
 cell_classes = [
-    "CL_0002494",
-    "CL_0002320",
-    "CL_0000473",
-    "CL_0000066",
-    "CL_0000988",
-    "CL_0000187",
-    "CL_0002319",
-    "CL_0011115",
-    "CL_0000151",
+   "CL_0002494",  # cardiocyte
+    "CL_0002320",  # connective tissue cell
+    "CL_0000473",  # defensive cell
+    "CL_0000066",  # epithelial cell
+    "CL_0000988",  # hematopoietic cell
+    "CL_0002319",  # neural cell
+    "CL_0011115",  # precursor cell
+    "CL_0000151",  # secretory cell
+    "CL:0000039",  # germ cell line
+    "CL:0000064",  # ciliated cell
+    "CL:0000183",  # contractile cell
+    "CL:0000188",  # cell of skeletal muscle
+    "CL:0000219",  # motile cell
+    "CL:0000325",  # stuff accumulating cell
+    "CL:0000349",  # extraembryonic cell
+    "CL:0000586",  # germ cell
+    "CL:0000630",  # supporting cell
+    "CL:0001035",  # bone cell
+    "CL:0001061",  # abnormal cell
+    "CL:0002321",  # embryonic cell (metazoa)
+    "CL:0009010",  # transit amplifying cell
+    "CL:1000600",  # lower urinary tract cell
+    "CL:4033054",  # perivascular cell
 ]
 
 
@@ -236,35 +250,80 @@ cell_classes = [
 
 # Hand-curated cell subclasses.
 cell_subclasses = [
-    "CL_0000738",
-    "CL_0000542",
-    "CL_0000763",
-    "CL_0000084",
-    "CL_0002076",
-    "CL_0002078",
-    "CL_0000540",
-    "CL_0011026",
-    "CL_0000115",
-    "CL_0008001",
-    "CL_0000163",
-    "CL_0000236",
-    "CL_0000099",
-    "CL_0000234",
-    "CL_0000624",
-    "CL_0000057",
-    "CL_0000125",
-    "CL_0000117",
-    "CL_0000235",
-    "CL_0000451",
-    "CL_0000625",
-    "CL_0000679",
-    "CL_0000617",
-    "CL_0000499",
-    "CL_0000576",
-    "CL_0000101",
-    "CL_0000669",
-    "CL_0000152",
-    "CL_0000100",
+    "CL_0002494",  # cardiocyte
+    "CL_0000624",  # CD4-positive, alpha-beta T cell
+    "CL_0000625",  # CD8-positive, alpha-beta T cell
+    "CL_0000084",  # T cell
+    "CL_0000236",  # B cell
+    "CL_0000451",  # dendritic cell
+    "CL_0000576",  # monocyte
+    "CL_0000235",  # macrophage
+    "CL_0000542",  # lymphocyte
+    "CL_0000738",  # leukocyte
+    "CL_0000763",  # myeloid cell
+    "CL_0008001",  # hematopoietic precursor cell
+    "CL_0000234",  # phagocyte
+    "CL_0000679",  # glutamatergic neuron
+    "CL_0000617",  # GABAergic neuron
+    "CL_0000099",  # interneuron
+    "CL_0000125",  # glial cell
+    "CL_0000101",  # sensory neuron
+    "CL_0000100",  # motor neuron
+    "CL_0000117",  # CNS neuron (sensu Vertebrata)
+    "CL_0000540",  # neuron
+    "CL_0000669",  # pericyte
+    "CL_0000499",  # stromal cell
+    "CL_0000057",  # fibroblast
+    "CL_0000152",  # exocrine cell
+    "CL_0000163",  # endocrine cell
+    "CL_0000115",  # endothelial cell
+    "CL_0002076",  # endo-epithelial cell
+    "CL_0002078",  # meso-epithelial cell
+    "CL_0011026",  # progenitor cell
+    "CL:0000015",  # male germ cell
+    "CL:0000021",  # female germ cell
+    "CL:0000034",  # stem cell
+    "CL:0000055",  # non-terminally differentiated cell
+    "CL:0000068",  # duct epithelial cell
+    "CL:0000075",  # columnar/cuboidal epithelial cell
+    "CL:0000076",  # squamous epithelial cell
+    "CL:0000079",  # stratified epithelial cell
+    "CL:0000082",  # epithelial cell of lung
+    "CL:0000083",  # epithelial cell of pancreas
+    "CL:0000095",  # neuron associated cell
+    "CL:0000098",  # sensory epithelial cell
+    "CL:0000136",  # fat cell
+    "CL:0000147",  # pigment cell
+    "CL:0000150",  # glandular epithelial cell
+    "CL:0000159",  # seromucus secreting cell
+    "CL:0000182",  # hepatocyte
+    "CL:0000186",  # myofibroblast cell
+    "CL:0000187",  # muscle cell
+    "CL:0000221",  # ectodermal cell
+    "CL:0000222",  # mesodermal cell
+    "CL:0000244",  # urothelial cell
+    "CL:0000351",  # trophoblast cell
+    "CL:0000584",  # enterocyte
+    "CL:0000586",  # germ cell
+    "CL:0000670",  # primordial germ cell
+    "CL:0000680",  # muscle precursor cell
+    "CL:0001063",  # neoplastic cell
+    "CL:0002077",  # ecto-epithelial cell
+    "CL:0002222",  # vertebrate lens cell
+    "CL:0002327",  # mammary gland epithelial cell
+    "CL:0002503",  # adventitial cell
+    "CL:0002518",  # kidney epithelial cell
+    "CL:0002535",  # epithelial cell of cervix
+    "CL:0002536",  # epithelial cell of amnion
+    "CL:0005006",  # ionocyte
+    "CL:0008019",  # mesenchymal cell
+    "CL:0008034",  # mural cell
+    "CL:0009010",  # transit amplifying cell
+    "CL:1000296",  # epithelial cell of urethra
+    "CL:1000497",  # kidney cell
+    "CL:2000004",  # pituitary gland cell
+    "CL:2000064",  # ovarian surface epithelial cell
+    "CL:4030031",  # interstitial cell
 ]
 
 
