@@ -219,15 +219,29 @@ orphan_tissues = [
 
 # Hand-curated cell classes.
 cell_classes = [
-    "CL_0002494",
-    "CL_0002320",
-    "CL_0000473",
-    "CL_0000066",
-    "CL_0000988",
-    "CL_0000187",
-    "CL_0002319",
-    "CL_0011115",
-    "CL_0000151",
+    "CL_0002494",  # cardiocyte
+    "CL_0002320",  # connective tissue cell
+    "CL_0000473",  # defensive cell
+    "CL_0000066",  # epithelial cell
+    "CL_0000988",  # hematopoietic cell
+    "CL_0002319",  # neural cell
+    "CL_0011115",  # precursor cell
+    "CL_0000151",  # secretory cell
+    "CL_0000039",  # germ cell line
+    "CL_0000064",  # ciliated cell
+    "CL_0000183",  # contractile cell
+    "CL_0000188",  # cell of skeletal muscle
+    "CL_0000219",  # motile cell
+    "CL_0000325",  # stuff accumulating cell
+    "CL_0000349",  # extraembryonic cell
+    "CL_0000586",  # germ cell
+    "CL_0000630",  # supporting cell
+    "CL_0001035",  # bone cell
+    "CL_0001061",  # abnormal cell
+    "CL_0002321",  # embryonic cell (metazoa)
+    "CL_0009010",  # transit amplifying cell
+    "CL_1000600",  # lower urinary tract cell
+    "CL_4033054",  # perivascular cell
 ]
 
 
@@ -236,35 +250,79 @@ cell_classes = [
 
 # Hand-curated cell subclasses.
 cell_subclasses = [
-    "CL_0000738",
-    "CL_0000542",
-    "CL_0000763",
-    "CL_0000084",
-    "CL_0002076",
-    "CL_0002078",
-    "CL_0000540",
-    "CL_0011026",
-    "CL_0000115",
-    "CL_0008001",
-    "CL_0000163",
-    "CL_0000236",
-    "CL_0000099",
-    "CL_0000234",
-    "CL_0000624",
-    "CL_0000057",
-    "CL_0000125",
-    "CL_0000117",
-    "CL_0000235",
-    "CL_0000451",
-    "CL_0000625",
-    "CL_0000679",
-    "CL_0000617",
-    "CL_0000499",
-    "CL_0000576",
-    "CL_0000101",
-    "CL_0000669",
-    "CL_0000152",
-    "CL_0000100",
+    "CL_0000624",  # CD4-positive, alpha-beta T cell
+    "CL_0000625",  # CD8-positive, alpha-beta T cell
+    "CL_0000084",  # T cell
+    "CL_0000236",  # B cell
+    "CL_0000451",  # dendritic cell
+    "CL_0000576",  # monocyte
+    "CL_0000235",  # macrophage
+    "CL_0000542",  # lymphocyte
+    "CL_0000738",  # leukocyte
+    "CL_0000763",  # myeloid cell
+    "CL_0008001",  # hematopoietic precursor cell
+    "CL_0000234",  # phagocyte
+    "CL_0000679",  # glutamatergic neuron
+    "CL_0000617",  # GABAergic neuron
+    "CL_0000099",  # interneuron
+    "CL_0000125",  # glial cell
+    "CL_0000101",  # sensory neuron
+    "CL_0000100",  # motor neuron
+    "CL_0000117",  # CNS neuron (sensu Vertebrata)
+    "CL_0000540",  # neuron
+    "CL_0000669",  # pericyte
+    "CL_0000499",  # stromal cell
+    "CL_0000057",  # fibroblast
+    "CL_0000152",  # exocrine cell
+    "CL_0000163",  # endocrine cell
+    "CL_0000115",  # endothelial cell
+    "CL_0002076",  # endo-epithelial cell
+    "CL_0002078",  # meso-epithelial cell
+    "CL_0011026",  # progenitor cell
+    "CL_0000015",  # male germ cell
+    "CL_0000021",  # female germ cell
+    "CL_0000034",  # stem cell
+    "CL_0000055",  # non-terminally differentiated cell
+    "CL_0000068",  # duct epithelial cell
+    "CL_0000075",  # columnar/cuboidal epithelial cell
+    "CL_0000076",  # squamous epithelial cell
+    "CL_0000079",  # stratified epithelial cell
+    "CL_0000082",  # epithelial cell of lung
+    "CL_0000083",  # epithelial cell of pancreas
+    "CL_0000095",  # neuron associated cell
+    "CL_0000098",  # sensory epithelial cell
+    "CL_0000136",  # fat cell
+    "CL_0000147",  # pigment cell
+    "CL_0000150",  # glandular epithelial cell
+    "CL_0000159",  # seromucus secreting cell
+    "CL_0000182",  # hepatocyte
+    "CL_0000186",  # myofibroblast cell
+    "CL_0000187",  # muscle cell
+    "CL_0000221",  # ectodermal cell
+    "CL_0000222",  # mesodermal cell
+    "CL_0000244",  # urothelial cell
+    "CL_0000351",  # trophoblast cell
+    "CL_0000584",  # enterocyte
+    "CL_0000586",  # germ cell
+    "CL_0000670",  # primordial germ cell
+    "CL_0000680",  # muscle precursor cell
+    "CL_0001063",  # neoplastic cell
+    "CL_0002077",  # ecto-epithelial cell
+    "CL_0002222",  # vertebrate lens cell
+    "CL_0002327",  # mammary gland epithelial cell
+    "CL_0002503",  # adventitial cell
+    "CL_0002518",  # kidney epithelial cell
+    "CL_0002535",  # epithelial cell of cervix
+    "CL_0002536",  # epithelial cell of amnion
+    "CL_0005006",  # ionocyte
+    "CL_0008019",  # mesenchymal cell
+    "CL_0008034",  # mural cell
+    "CL_0009010",  # transit amplifying cell
+    "CL_1000296",  # epithelial cell of urethra
+    "CL_1000497",  # kidney cell
+    "CL_2000004",  # pituitary gland cell
+    "CL_2000064",  # ovarian surface epithelial cell
+    "CL_4030031",  # interstitial cell
 ]
 
 
