@@ -34,7 +34,7 @@
 # ### Tissues
 # This notebook extracts a subgraph of UBERON starting with a set of hand-curated systems. Specifically, this notebook:
 #
-# 1. Loads the required ontology file, pinned for 2.0.0 schema.
+# 1. Loads the required ontology file, defined as `latest` in `owl_info.yml`.
 # 2. Builds descendants of all systems and orphans (i.e. tissues in production that have no corresponding system), traversing both `is_a` and `part_of` relationships.
 #
 # From the subgraph, the two artifacts described above can then be generated:
@@ -53,7 +53,7 @@
 # ### Cell Types
 # This notebook extracts a subgraph of CL starting with a set of hand-curated cell classes. Specifically, this notebook:
 #
-# 1. Loads the required ontology file, pinned for 2.0.0 schema.
+# 1. Loads the required ontology file, defined as `latest` in `owl_info.yml`.
 # 2. Builds descendants of all cell classes and orphans (i.e. cell types in production that have no corresponding cell class), traversing only `is_a` relationships.
 #
 # From the subgraph, the two artifacts described above can then be generated:
@@ -76,6 +76,7 @@
 # 1. This version of the notebook was setup and last run with Monterey 12.6.1
 # 1. Python 3.10 >= installed and activated in a virtual environment.
 # 1. `brew install graphviz`
+# 1. `pip install -r scripts/compute_mappings/requirements.txt`
 
 # In[1]:
 
@@ -100,7 +101,7 @@ with open(owl_info_yml, "r") as owl_info_handle:
 # In[3]:
 
 
-# Load CL, pinned for 3.0.0 schema.
+# Load CL, pinned to latest version
 cl_latest_key = owl_info["CL"]["latest"]
 cl_ontology = owl_info["CL"]["urls"][cl_latest_key]
 cl_world = World()
@@ -110,7 +111,7 @@ cl_world.get_ontology(cl_ontology).load()
 # In[4]:
 
 
-# Load UBERON
+# Load UBERON, pinned to latest version
 uberon_latest_key = owl_info["UBERON"]["latest"]
 uberon_ontology = owl_info["UBERON"]["urls"][uberon_latest_key]
 uberon_world = World()
@@ -317,6 +318,14 @@ orphan_cell_types = [
     "CL_0001061",
 ]
 
+# %%
+
+
+### Tissue types
+tissue_type_cell_culture  = "cell culture"
+tissue_type_organoid = "organoid"
+tissue_type_tissue = "tissue"
+
 
 # #### Function Definitions
 
@@ -420,6 +429,35 @@ def build_graph_for_tissues(entity_names):  # type: ignore
         build_descendants_and_parts_graph(entity_name, tissue_graph)  # type: ignore
     return tissue_graph
 
+# %%
+
+
+def extract_cell_types(datasets):
+    """
+    List the set of cell type values for the given datasets.
+    """
+    cell_types = set()
+    for dataset in datasets:
+        for tissue in dataset["cell_type"]:
+            cell_types.add(reformat_ontology_term_id(tissue["ontology_term_id"], False))
+    return list(cell_types)
+
+
+# %%
+
+def extract_tissues(datasets):
+    """
+    List the set of tissue values for the given datasets.
+    """
+    tissues = set()
+    for dataset in datasets:
+        for tissue in dataset["tissue"]:
+            formatted_entity_name = reformat_ontology_term_id(tissue["ontology_term_id"], False)
+            tissue_type = tissue.get("tissue_type")
+            tissues.add(tag_tissue_type(formatted_entity_name, tissue_type))  
+                  
+    return list(tissues)
+
 
 # In[15]:
 
@@ -435,9 +473,15 @@ def is_axiom(entity):  # type: ignore
 # In[16]:
 
 
-def is_cell_culture(entity_name):  # type: ignore
+def is_tagged_cell_culture(entity_name):  # type: ignore
     """
     Returns true if the given entity name contains (cell culture).
+    
+    Historically (i.e. before schema 4.0.0 and the introduction of 
+    `tissue_type`), tissues of type "cell culture" were tagged with 
+    "(cell culture)" in their labels and ontology IDs. The post-4.0.0 
+    `tissue_type` value is mapped to this tagged version in order to minimize
+    downstream updates to the filter functionality.
     """
     return "(cell culture)" in entity_name
 
@@ -445,21 +489,45 @@ def is_cell_culture(entity_name):  # type: ignore
 # In[17]:
 
 
-def is_cell_culture_or_organoid(entity_name):  # type: ignore
+def is_tagged_cell_culture_or_organoid(entity_name):  # type: ignore
     """
     Returns true if the given entity name contains (cell culture) or (organoid).
     """
-    return is_cell_culture(entity_name) or is_organoid(entity_name)  # type: ignore
+    return is_tagged_cell_culture(entity_name) or is_tagged_organoid(entity_name)  # type: ignore
 
 
 # In[18]:
 
 
-def is_organoid(entity_name):  # type: ignore
+def is_tagged_organoid(entity_name):  # type: ignore
     """
     Returns true if the given entity name contains "(organoid)".
+
+    Historically (i.e. before schema 4.0.0 and the introduction of 
+    `tissue_type`), tissues of type "organoid" were tagged with "(organoid)"
+    in their labels and ontology IDs. The post-4.0.0 `tissue_type` value is
+    mapped to this tagged version in order to minimize downstream updates to
+    the filter functionality.
     """
     return "(organoid)" in entity_name
+
+
+# %%
+
+def is_tissue_type_cell_culture(tissue_type):
+    """
+    Returns true if the given tissue type is "cell culture".
+    """
+    return tissue_type == tissue_type_cell_culture
+
+
+# %%
+
+def is_tissue_type_organoid(tissue_type):
+    """
+    Returns true if the given tissue type is "organoid".
+    """
+    return tissue_type == tissue_type_organoid
 
 
 # In[19]:
@@ -493,11 +561,22 @@ def key_organoids_by_ontology_term_id(entity_names):  # type: ignore
 
     organoids_by_ontology_term_id = {}
     for entity_name in entity_names:
-        if is_organoid(entity_name):  # type: ignore
+        if is_tagged_organoid(entity_name):  # type: ignore
             ontology_term_id = entity_name.replace(" (organoid)", "")
             organoids_by_ontology_term_id[ontology_term_id] = entity_name
 
     return organoids_by_ontology_term_id
+
+
+# %%
+
+
+def load_prod_datasets():
+    """
+    Request datasets the production corpus.
+    """
+    response = requests.get("https://api.cellxgene.cziscience.com/dp/v1/datasets/index")
+    return json.loads(response.text)
 
 
 # In[21]:
@@ -512,7 +591,7 @@ def list_ancestors(entity_name, graph, ancestor_set):  # type: ignore
     ancestor_set.add(entity_name)
 
     # Ignore cell culture and organoids
-    if is_cell_culture_or_organoid(entity_name):  # type: ignore
+    if is_tagged_cell_culture_or_organoid(entity_name):  # type: ignore
         return ancestor_set
 
     try:
@@ -539,7 +618,7 @@ def list_descendants(entity_name, graph, all_successors):  # type: ignore
     """
 
     # Ignore cell culture and organoid tissues.
-    if is_cell_culture(entity_name) or is_organoid(entity_name):  # type: ignore
+    if is_tagged_cell_culture_or_organoid(entity_name):  # type: ignore
         return
 
     successors = []
@@ -638,6 +717,27 @@ def reformat_ontology_term_id(ontology_term_id: str, to_writable: bool = True): 
         return ontology_term_id.replace(":", "_")
 
 
+# %%
+
+def tag_tissue_type(entity_name, tissue_type):
+    """
+    Append the tissue type to the given entity name if the tissue type is cell
+    culture or organoid, otherwise return the entity name as is.
+    """
+    # Handle error case (possible if tissue has not been migrated to
+    # 4.0.0+ schema).
+    if tissue_type is None:
+        return entity_name
+    
+    if is_tissue_type_cell_culture(tissue_type):
+        return f"{entity_name} (cell culture)"
+    
+    if is_tissue_type_organoid(tissue_type):
+        return f"{entity_name} (organoid)"
+    
+    return entity_name
+
+
 # In[26]:
 
 
@@ -713,23 +813,9 @@ def write_descendants_by_entity(entity_hierarchy, graph, file_name):  # type: ig
 # In[28]:
 
 
-# Load latest prod tissues and cell types
-
-
-response = requests.get("https://api.cellxgene.cziscience.com/dp/v1/datasets/index")
-datasets = json.loads(response.text)
-prodTissueSet = set()
-prodCellTypeSet = set()
-for dataset in datasets:
-    for tissue in dataset["tissue"]:
-        prodTissueSet.add(reformat_ontology_term_id(tissue["ontology_term_id"], False))
-    for cellType in dataset["cell_type"]:
-        prodCellTypeSet.add(reformat_ontology_term_id(cellType["ontology_term_id"], False))
-
-prod_tissues = list(prodTissueSet)
-prod_cell_types = list(prodCellTypeSet)
-print(len(prod_tissues), " prod tissues found")
-print(len(prod_cell_types), " prod cell types found")
+# Load the set of datasets in the production corpus - required for both tissue
+# and cell type calculations.
+prod_datasets = load_prod_datasets()
 
 
 # In[29]:
@@ -738,6 +824,12 @@ print(len(prod_cell_types), " prod cell types found")
 # Extract a subgraph from UBERON for the hand-curated systems and orphans,
 # collapsing is_a and part_of relations.
 tissue_graph = build_graph_for_tissues(system_tissues + orphan_tissues)  # type: ignore
+
+
+# %%
+
+# Extract the set of tissue values from the prod datasets.
+prod_tissues = extract_tissues(prod_datasets)
 
 
 # In[30]:
@@ -765,6 +857,13 @@ write_descendants_by_entity(tissue_hierarchy, tissue_graph, "scripts/compute_map
 # Extract a subgraph from CL for the hand-curated cell classes and orphans,
 # including only is_a relationships.
 cell_type_graph = build_graph_for_cell_types(cell_classes + orphan_cell_types)  # type: ignore
+
+
+# %%
+
+
+# Extract the set of cell type values from the prod datasets.
+prod_cell_types = extract_cell_types(prod_datasets)
 
 
 # In[33]:
