@@ -322,7 +322,7 @@ orphan_cell_types = [
 
 
 ### Tissue types
-tissue_type_cell_culture  = "cell culture"
+tissue_type_cell_culture = "cell culture"
 tissue_type_organoid = "organoid"
 tissue_type_tissue = "tissue"
 
@@ -429,23 +429,25 @@ def build_graph_for_tissues(entity_names):  # type: ignore
         build_descendants_and_parts_graph(entity_name, tissue_graph)  # type: ignore
     return tissue_graph
 
+
 # %%
 
 
-def extract_cell_types(datasets):
+def extract_cell_types(datasets):  # type: ignore
     """
     List the set of cell type values for the given datasets.
     """
     cell_types = set()
     for dataset in datasets:
-        for tissue in dataset["cell_type"]:
-            cell_types.add(reformat_ontology_term_id(tissue["ontology_term_id"], False))
+        for cell_type in dataset["cell_type"]:
+            cell_types.add(reformat_ontology_term_id(cell_type["ontology_term_id"], False))
     return list(cell_types)
 
 
 # %%
 
-def extract_tissues(datasets):
+
+def extract_tissues(datasets):  # type: ignore
     """
     List the set of tissue values for the given datasets.
     """
@@ -454,8 +456,8 @@ def extract_tissues(datasets):
         for tissue in dataset["tissue"]:
             formatted_entity_name = reformat_ontology_term_id(tissue["ontology_term_id"], False)
             tissue_type = tissue.get("tissue_type")
-            tissues.add(tag_tissue_type(formatted_entity_name, tissue_type))  
-                  
+            tissues.add(tag_tissue_type(formatted_entity_name, tissue_type))  # type: ignore
+
     return list(tissues)
 
 
@@ -476,10 +478,10 @@ def is_axiom(entity):  # type: ignore
 def is_tagged_cell_culture(entity_name):  # type: ignore
     """
     Returns true if the given entity name contains (cell culture).
-    
-    Historically (i.e. before schema 4.0.0 and the introduction of 
-    `tissue_type`), tissues of type "cell culture" were tagged with 
-    "(cell culture)" in their labels and ontology IDs. The post-4.0.0 
+
+    Historically (i.e. before schema 4.0.0 and the introduction of
+    `tissue_type`), tissues of type "cell culture" were tagged with
+    "(cell culture)" in their labels and ontology IDs. The post-4.0.0
     `tissue_type` value is mapped to this tagged version in order to minimize
     downstream updates to the filter functionality.
     """
@@ -503,7 +505,7 @@ def is_tagged_organoid(entity_name):  # type: ignore
     """
     Returns true if the given entity name contains "(organoid)".
 
-    Historically (i.e. before schema 4.0.0 and the introduction of 
+    Historically (i.e. before schema 4.0.0 and the introduction of
     `tissue_type`), tissues of type "organoid" were tagged with "(organoid)"
     in their labels and ontology IDs. The post-4.0.0 `tissue_type` value is
     mapped to this tagged version in order to minimize downstream updates to
@@ -514,7 +516,8 @@ def is_tagged_organoid(entity_name):  # type: ignore
 
 # %%
 
-def is_tissue_type_cell_culture(tissue_type):
+
+def is_tissue_type_cell_culture(tissue_type):  # type: ignore
     """
     Returns true if the given tissue type is "cell culture".
     """
@@ -523,7 +526,8 @@ def is_tissue_type_cell_culture(tissue_type):
 
 # %%
 
-def is_tissue_type_organoid(tissue_type):
+
+def is_tissue_type_organoid(tissue_type):  # type: ignore
     """
     Returns true if the given tissue type is "organoid".
     """
@@ -571,7 +575,7 @@ def key_organoids_by_ontology_term_id(entity_names):  # type: ignore
 # %%
 
 
-def load_prod_datasets():
+def load_prod_datasets():  # type: ignore
     """
     Request datasets the production corpus.
     """
@@ -719,7 +723,8 @@ def reformat_ontology_term_id(ontology_term_id: str, to_writable: bool = True): 
 
 # %%
 
-def tag_tissue_type(entity_name, tissue_type):
+
+def tag_tissue_type(entity_name, tissue_type):  # type: ignore
     """
     Append the tissue type to the given entity name if the tissue type is cell
     culture or organoid, otherwise return the entity name as is.
@@ -728,13 +733,13 @@ def tag_tissue_type(entity_name, tissue_type):
     # 4.0.0+ schema).
     if tissue_type is None:
         return entity_name
-    
-    if is_tissue_type_cell_culture(tissue_type):
+
+    if is_tissue_type_cell_culture(tissue_type):  # type: ignore
         return f"{entity_name} (cell culture)"
-    
-    if is_tissue_type_organoid(tissue_type):
+
+    if is_tissue_type_organoid(tissue_type):  # type: ignore
         return f"{entity_name} (organoid)"
-    
+
     return entity_name
 
 
@@ -815,7 +820,7 @@ def write_descendants_by_entity(entity_hierarchy, graph, file_name):  # type: ig
 
 # Load the set of datasets in the production corpus - required for both tissue
 # and cell type calculations.
-prod_datasets = load_prod_datasets()
+prod_datasets = load_prod_datasets()  # type: ignore
 
 
 # In[29]:
@@ -829,7 +834,7 @@ tissue_graph = build_graph_for_tissues(system_tissues + orphan_tissues)  # type:
 # %%
 
 # Extract the set of tissue values from the prod datasets.
-prod_tissues = extract_tissues(prod_datasets)
+prod_tissues = extract_tissues(prod_datasets)  # type: ignore
 
 
 # In[30]:
@@ -863,7 +868,7 @@ cell_type_graph = build_graph_for_cell_types(cell_classes + orphan_cell_types)  
 
 
 # Extract the set of cell type values from the prod datasets.
-prod_cell_types = extract_cell_types(prod_datasets)
+prod_cell_types = extract_cell_types(prod_datasets)  # type: ignore
 
 
 # In[33]:
