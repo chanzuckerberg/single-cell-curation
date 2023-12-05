@@ -1,6 +1,11 @@
-import anndata as ad
+import re
 
-from . import utils
+import anndata as ad
+import matplotlib.colors as mcolors
+import numpy as np
+import pandas as pd
+
+from . import ontology, utils
 
 # fmt: off
 # ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
@@ -15,8 +20,8 @@ ONTOLOGY_TERM_MAPS = {
     "assay": {
     },
     "cell_type": {
-        "CL:0000663": "CL:1000147", # AUTOMATED
-        "CL:0000391": "CL:0000394", # AUTOMATED
+        "CL:0000255": "CL:0000003",
+        "CL:0000548": "CL:0000003",
     },
     "development_stage": {
     },
@@ -25,6 +30,7 @@ ONTOLOGY_TERM_MAPS = {
     "organism": {
     },
     "self_reported_ethnicity": {
+        "HANCESTRO:0306": "unknown"
     },
     "sex": {
     },
@@ -34,77 +40,215 @@ ONTOLOGY_TERM_MAPS = {
 
 DEPRECATED_FEATURE_IDS = [
 ]
+# fmt: on
 
 
 def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
+    reported_changes = []
 
     dataset = ad.read_h5ad(input_file, backed="r")
-    if dataset.raw is not None and DEPRECATED_FEATURE_IDS:
-        dataset = dataset.to_memory()
 
     # AUTOMATED, DO NOT CHANGE
     for ontology_name, deprecated_term_map in ONTOLOGY_TERM_MAPS.items():
         utils.replace_ontology_term(dataset.obs, ontology_name, deprecated_term_map)
 
+    if "schema_version" in dataset.uns:
+        del dataset.uns["schema_version"]
+
+    if collection_id == "ced320a1-29f3-47c1-a735-513c7084d508":
+        utils.replace_ontology_term(
+            dataset.obs,
+            "self_reported_ethnicity",
+            {"HANCESTRO:0487": "HANCESTRO:0598", "HANCESTRO:0496": "HANCESTRO:0597"},
+        )
+
+    if dataset.uns["title"] == "adipose from neck - all nuclei":
+        utils.map_ontology_term(
+            dataset.obs, "self_reported_ethnicity", "donor_id", {"CREEK003": "HANCESTRO:0005,HANCESTRO:0013"}
+        )
+
+    if collection_id == "1ca90a2d-2943-483d-b678-b809bf464c30":
+        utils.map_ontology_term(
+            dataset.obs,
+            "self_reported_ethnicity",
+            "donor_id",
+            {
+                "H20.33.018": "HANCESTRO:0013,HANCESTRO:0014",
+                "H20.33.034": "HANCESTRO:0005",
+                "H21.33.037": "HANCESTRO:0005",
+            },
+        )
+
+    if collection_id == "6f6d381a-7701-4781-935c-db10d30de293":
+        new_eth = "HANCESTRO:0005,HANCESTRO:0008"
+        study = "homosapiens_None_2023_None_sikkemalisa_"
+        donor = "_d10_1101_2022_03_10_4837472020-3173-NC004"
+        if dataset_id == "066943a2-fdac-4b29-b348-40cede398e4e":
+            utils.map_ontology_term(
+                dataset.obs, "self_reported_ethnicity", "donor_id", {study + "001" + donor: new_eth}
+            )
+        elif dataset_id == "9f222629-9e39-47d0-b83f-e08d610c7479":
+            utils.map_ontology_term(
+                dataset.obs, "self_reported_ethnicity", "donor_id", {study + "002" + donor: new_eth}
+            )
+
+    if collection_id == "7d7cabfd-1d1f-40af-96b7-26a0825a306d":
+        donors_to_update = [
+            "Rep_C_1012",
+            "Rep_C_1017",
+            "Rep_C_1033",
+            "Rep_C_1036",
+            "Rep_C_1037",
+            "Rep_C_1039",
+            "Rep_C_1050",
+            "Rep_C_1053",
+            "Rep_C_1055",
+            "Rep_C_1059",
+            "Rep_C_1060",
+            "Rep_C_1064",
+            "Rep_C_1076",
+            "Rep_C_1078",
+            "Rep_C_1094",
+            "Rep_C_1095",
+            "Rep_C_1107",
+            "Rep_C_1143",
+            "Rep_C_1151",
+            "Rep_C_1154",
+            "Rep_C_1161",
+        ]
+        update_map = {d: "HANCESTRO:0014" for d in donors_to_update}
+        utils.map_ontology_term(dataset.obs, "self_reported_ethnicity", "donor_id", update_map)
+
+    if collection_id == "4d74781b-8186-4c9a-b659-ff4dc4601d91" and dataset_id == "b07fb54c-d7ad-4995-8bb0-8f3d8611cabe":
+        utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000234": "CL:0000113"})
+
+    if "multiethnic" in dataset.obs["self_reported_ethnicity_ontology_term_id"].unique():
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"multiethnic": "unknown"})
+
+    if collection_id == "bcb61471-2a44-4d00-a0af-ff085512674c" and dataset_id == "0b75c598-0893-4216-afe8-5414cab7739d":
+        dataset.obs.rename(columns={"tissue_type": "sample_tissue_type"}, inplace=True)
+
+    if collection_id == "d17249d2-0e6e-4500-abb8-e6c93fa1ac6f" and dataset_id == "a5d5c529-8a1f-40b5-bda3-35208970070d":
+        dataset.obs.rename(columns={"tissue_type": "sample_tissue_type"}, inplace=True)
+
+    dataset.obs["tissue_type"] = "tissue"
+    dataset.obs["tissue_type"] = np.where(
+        dataset.obs.tissue_ontology_term_id.str.contains("(cell culture)"), "cell culture", dataset.obs["tissue_type"]
+    )
+    dataset.obs["tissue_type"] = np.where(
+        dataset.obs.tissue_ontology_term_id.str.contains("(organoid)"), "organoid", dataset.obs["tissue_type"]
+    )
+    dataset.obs["tissue_ontology_term_id"] = np.where(
+        dataset.obs.tissue_ontology_term_id.str.contains("(organoid)"),
+        dataset.obs["tissue_ontology_term_id"].str.replace(r" \(organoid\)", ""),
+        dataset.obs["tissue_ontology_term_id"],
+    )
+    dataset.obs["tissue_ontology_term_id"] = np.where(
+        dataset.obs.tissue_ontology_term_id.str.contains("(cell culture)"),
+        dataset.obs["tissue_ontology_term_id"].str.replace(r" \(cell culture\)", ""),
+        dataset.obs["tissue_ontology_term_id"],
+    )
+
+    dataset.obs["tissue_ontology_term_id"] = pd.Categorical(dataset.obs.tissue_ontology_term_id)
+    dataset.obs["tissue_type"] = pd.Categorical(dataset.obs.tissue_type)
+
+    # Colors Validation, remove _colors key if invalid
+    # Mapping from obs column name to number of unique categorical values
+    category_mapping = {}
+
+    # Check for categorical dtypes in the dataframe directly
+    for column_name in dataset.obs.columns:
+        column = dataset.obs[column_name]
+        if column.dtype.name == "category":
+            category_mapping[column_name] = column.nunique()
+
+    def color_key_is_valid(key: str, value: str) -> bool:
+        column_name = key.replace("_colors", "")
+        obs_unique_values = category_mapping.get(column_name)
+        if not obs_unique_values:
+            reported_changes.append(f"{column_name} is not of categorical dtype. Must remove {key} from uns.")
+            return False
+        if value is None or not isinstance(value, np.ndarray):
+            reported_changes.append(f"{key} values are not in an ndarray. Must remove {key} from uns.")
+            return False
+        if not all(isinstance(color, str) for color in value):
+            reported_changes.append(f"{key} values are not all strings. Must remove {key} from uns.")
+            return False
+        if len(value) < obs_unique_values:
+            reported_changes.append(
+                f"{key} has fewer values than {column_name} has unique values. " f"Must remove {key} from uns."
+            )
+            return False
+        all_hex_colors = all(re.match(r"^#([0-9a-fA-F]{6})$", color) for color in value)
+        all_css4_colors = all(color in mcolors.CSS4_COLORS for color in value)
+        if not (all_hex_colors or all_css4_colors):
+            reported_changes.append(
+                f"{key} values are not all valid hex colors nor all valid css4 colors. " f"Must remove {key} from uns."
+            )
+            return False
+        return True
+
+    for key, value in list(dataset.uns.items()):
+        if key.endswith("_colors") and not color_key_is_valid(key, value):
+            del dataset.uns[key]
+
+    # Coerce Raw Matrix values to np.float32 IF 1) assay requires this constraint in the schema definition, and
+    # 2) the max value in the matrix is representable as np.float32. NOTE: These values are all validated to be integers
+    # so no concern for data precision loss.
+
+    accessibility_assays = {
+        "EFO:0007045",  # ATAC-seq
+        "EFO:0008804",  # Methyl-seq
+        "EFO:0000751",  # methylation profiling
+        "EFO:0008939",  # snmC-seq
+    }
+    ontology_checker = ontology.OntologyChecker()
+    assays = dataset.obs.assay_ontology_term_id.drop_duplicates()
+    has_rna_assay = False
+    for assay in assays:
+        term_ancestors = ontology_checker.get_term_ancestors("EFO", assay)
+        term_ancestors.add(assay)
+        # check intersection, if no matches, term is not accessibility assay and therefore we assume its RNA
+        if bool(accessibility_assays & term_ancestors) is False:
+            has_rna_assay = True
+            break
+
+    if has_rna_assay:
+        dataset = dataset.to_memory()
+        raw = dataset.raw.X if dataset.raw else dataset.X
+        raw_dtype = raw.dtype
+        if raw_dtype != np.float32:
+            max_float32 = np.finfo(np.float32).max
+            if raw.max() > max_float32:
+                raise ValueError(
+                    f"Raw Matrix of Dataset {dataset_id} with RNA Assay contains a value that cannot be "
+                    f"coerced safely into np.float32."
+                )
+            raw.data = raw.data.astype(np.float32)
+            reported_changes.append(f"Updated raw matrix dtype from {raw_dtype} to np.float32")
+
     # CURATOR-DEFINED, DATASET-SPECIFIC UPDATES
     # Use the template below to define dataset and collection specific ontology changes. Will only apply to dataset
     # if it matches a condition.
     # If no such changes are needed, leave blank
-    if collection_id == "a48f5033-3438-4550-8574-cdff3263fdfd":
-        utils.replace_ontology_term(dataset.obs, "assay", {"EFO:0008913": "EFO:0700010"})
-    elif collection_id == "64b24fda-6591-4ce1-89e7-33eb6c43ad7b": #REMOVE RACHADELE'S COMMENT - DUPLICATED
-        utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000677": "CL:4030026"})
-    elif collection_id == "edb893ee-4066-4128-9aec-5eb2b03f8287":
-        utils.replace_ontology_term(dataset.obs, "assay", {"EFO:0010183": "EFO:0700011"})
-    elif collection_id == "48259aa8-f168-4bf5-b797-af8e88da6637" and dataset_id in [\
-            "0ba636a1-4754-4786-a8be-7ab3cf760fd6", "975e13b6-bec1-4eed-b46a-9be1f1357373"]:
-            utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0011026": "CL:0009116"})
-    elif dataset.uns["title"] == "Single nucleus transcriptomic profiling of human healthy hamstring tendon":
-        utils.replace_ontology_term(dataset.obs, "tissue", {"UBERON:0000043": "UBERON:8480009"}) #remove coll link in git
-    elif collection_id == "1d1c7275-476a-49e2-9022-ad1b1c793594" and dataset_id == \
-            "5cdbb2ea-c622-466d-9ead-7884ad8cb99f":
-            utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000561": "CL:4030027", "CL:1001509": "CL:4030028"})
-    elif collection_id == "939769a8-d8d2-4d01-abfc-55699893fd49":
-        if dataset_id == "f8c77961-67a7-4161-b8c2-61c3f917b54f":
-            update_map = {"1.0": "CL:0004219", "5.0": "CL:4030028", "11.0": "CL:0004232"}
-            utils.map_ontology_term(dataset.obs, "cell_type", "author_cell_type", update_map)
-        elif dataset_id == "cec9f9a5-8832-437d-99af-fb8237cde54b":
-            update_map = {"1.0": "CL:4023033", "4.0": "CL:4023033", "2.0": "CL:4023032", "5.0": "CL:4023032"}
-            utils.map_ontology_term(dataset.obs, "cell_type", "author_cell_type", update_map)
-        elif dataset_id == "d95ab381-2b7c-4885-b168-0097ed4e397f":
-            update_map = {"2.0": "CL:0003050"}
-            utils.map_ontology_term(dataset.obs, "cell_type", "author_cell_type", update_map)
-    elif collection_id == "a18474f4-ff1e-4864-af69-270b956cee5b":
-        utils.replace_ontology_term(dataset.obs, "disease", {"MONDO:0004298": "MONDO:0100190"})
-    elif dataset.uns["title"] in [
-        "All annotated cells from infection 1",
-        "All annotated cells from infection 2",
-        "All annotated cells from infection 3",
-        "All annotated cells from infection 4"
-        ]:
-        utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0002144": "CL:4028001", "CL:0000669": "CL:0009089"})
-    elif dataset.uns["title"] == "Transcriptional responses of the human dorsal striatum in opioid use disorder implicates cell type-specifc programs":
-            update_map = {"D2-Matrix": "CL:4023029", "D2-Striosome": "CL:4023029", "D1-Matrix": "CL:4023026", "D1-Striosome": "CL:4023026"}
-            utils.map_ontology_term(dataset.obs, "cell_type", "author_cell_type", update_map)
-    elif dataset.uns["title"] in [
-        'A single-cell multi-omic atlas spanning the adult rhesus macaque brain',
-        'A single-cell multi-omic atlas spanning the adult rhesus macaque brain (1.5 million cell subset)',
-        'A single-cell multi-omic atlas spanning the adult rhesus macaque brain (cell class "vascular cells" subset)',
-        ]:
-        utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0002319": "CL:4023072"})
-    elif collection_id == "e3aa612b-0d7d-4d3f-bbea-b8972a74dd4b" and dataset_id == \
-            "812fa7bd-db15-4357-b2c9-efc8e1eb0450":
-            utils.replace_ontology_term(dataset.obs, "tissue", {"UBERON:0000956": "UBERON:8440075"})
-            utils.replace_ontology_term(dataset.obs, "assay", {"EFO:0010184": "EFO:0700016"})
-    elif collection_id == "9d63fcf1-5ca0-4006-8d8f-872f3327dbe9" and dataset_id in [\
-            "c05e6940-729c-47bd-a2a6-6ce3730c4919","12194ced-8086-458e-84a8-e2ab935d8db1"]:
-            update_map = {"COP_A": "CL:4023059", "COP_B": "CL:4023059", "COP_C": "CL:4023059"}
-            utils.map_ontology_term(dataset.obs, "cell_type", "author_cell_type", update_map)
+    # Examples:
+    # if dataset_id == "<dataset_1_id>":
+    #   <no further logic necessary>
+    #   utils.replace_ontology_term(df, <ontology_name>, {"term_to_replace": "replacement_term", ...})
+    # elif dataset_id == "<dataset_2_id>":
+    #   <custom transformation logic beyond scope of util functions>
+    # elif collection_id == "<collection_1_id>":
+    #   <no further logic necessary>
+    #   utils.replace_ontology_term(df, <ontology_name>, {"term_to_replace": "replacement_term", ...})
+    # elif collection_id == "<collection_2_id>":
+    #   <custom transformation logic beyond scope of replace_ontology_term>
+    # ...
 
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
     if DEPRECATED_FEATURE_IDS:
         dataset = utils.remove_deprecated_features(dataset, DEPRECATED_FEATURE_IDS)
 
     dataset.write(output_file, compression="gzip")
-# fmt: on
+
+    return reported_changes
