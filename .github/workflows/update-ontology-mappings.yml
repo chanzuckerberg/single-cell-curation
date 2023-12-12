@@ -1,9 +1,7 @@
 name: Run Scripts and Update FE Filter Ontology Mappings
 
-# on: workflow_dispatch
-on:
-  push:
-    branches: nayib/standalone-fe-filter-script-gha  # TODO: remove
+on: 
+  workflow_dispatch
 
 permissions:
   id-token: write
