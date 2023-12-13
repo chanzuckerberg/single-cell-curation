@@ -1781,23 +1781,21 @@ class TestObsm:
             "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_ and thus will not be available in Explorer",
             "WARNING: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['harmony']' is <class 'pandas.core.frame.DataFrame'>').",
         ]
-    
+
     def test_obsm_values_suffix_start_with_number(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.obsm["X_3D"] = pd.DataFrame(validator.adata.obsm["X_umap"], index=validator.adata.obs_names)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Embedding key in 'adata.obsm' X_3D must have a suffix that starts with a letter.",
-            "ERROR: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['X_3D']' is <class 'pandas.core.frame.DataFrame'>')."
+            "ERROR: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['X_3D']' is <class 'pandas.core.frame.DataFrame'>').",
         ]
-    
+
     def test_obsm_values_key_start_with_number(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.obsm["3D"] = pd.DataFrame(validator.adata.obsm["X_umap"], index=validator.adata.obs_names)
         validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: Embedding key in 'adata.obsm' 3D must start with a letter."
-        ]
+        assert validator.errors == ["ERROR: Embedding key in 'adata.obsm' 3D must start with a letter."]
         assert validator.warnings == [
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' 3D does not start with X_ and thus will not be available in Explorer",

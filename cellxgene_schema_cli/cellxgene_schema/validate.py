@@ -922,9 +922,7 @@ class Validator:
             issue_list = self.errors
 
             if not key[0].isalpha():
-                self.errors.append(
-                    f"Embedding key in 'adata.obsm' {key} must start with a letter."
-                )
+                self.errors.append(f"Embedding key in 'adata.obsm' {key} must start with a letter.")
 
             if key.startswith("X_"):
                 obsm_with_x_prefix += 1
