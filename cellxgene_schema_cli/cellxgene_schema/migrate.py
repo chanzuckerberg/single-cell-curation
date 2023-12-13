@@ -132,6 +132,9 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     if collection_id == "d17249d2-0e6e-4500-abb8-e6c93fa1ac6f" and dataset_id == "a5d5c529-8a1f-40b5-bda3-35208970070d":
         dataset.obs.rename(columns={"tissue_type": "sample_tissue_type"}, inplace=True)
 
+    if collection_id == "dea97145-f712-431c-a223-6b5f565f362a":
+        dataset.obsm["X_Three-D"] = dataset.obsm.pop("X_3D")
+
     dataset.obs["tissue_type"] = "tissue"
     dataset.obs["tissue_type"] = np.where(
         dataset.obs.tissue_ontology_term_id.str.contains("(cell culture)"), "cell culture", dataset.obs["tissue_type"]
