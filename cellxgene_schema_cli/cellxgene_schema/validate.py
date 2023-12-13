@@ -920,12 +920,24 @@ class Validator:
         obsm_with_x_prefix = 0
         for key, value in self.adata.obsm.items():
             issue_list = self.errors
+
+            if not key[0].isalpha():
+                self.errors.append(
+                    f"Embedding key in 'adata.obsm' {key} must start with a letter."
+                )
+
             if key.startswith("X_"):
                 obsm_with_x_prefix += 1
                 if len(key) <= 3:
                     self.errors.append(
                         f"Embedding key in 'adata.obsm' {key} must start with X_ and have a suffix at least one character long."
                     )
+                else:
+                    suffix_first_char = key[2]
+                    if not suffix_first_char.isalpha():
+                        self.errors.append(
+                            f"Embedding key in 'adata.obsm' {key} must have a suffix that starts with a letter."
+                        )
             else:
                 self.warnings.append(
                     f"Embedding key in 'adata.obsm' {key} does not start with X_ and thus will not be available in Explorer"
