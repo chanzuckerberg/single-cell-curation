@@ -921,7 +921,7 @@ class Validator:
         for key, value in self.adata.obsm.items():
             issue_list = self.errors
 
-            regex_pattern = r'^[a-zA-Z][a-zA-Z0-9]*$'
+            regex_pattern = r"^[a-zA-Z][a-zA-Z0-9]*$"
 
             if key.startswith("X_"):
                 obsm_with_x_prefix += 1
