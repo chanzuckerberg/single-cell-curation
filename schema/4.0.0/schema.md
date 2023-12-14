@@ -1129,7 +1129,12 @@ To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>X_{suffix} where {suffix} MUST be at least one character long and MUST NOT contain whitespace characters. The {suffix} is presented as text to users in the <b>Embedding Choice</b> selector in CELLxGENE Explorer so it is STRONGLY RECOMMENDED that it be descriptive.<br><br>See also <code>default_embedding</code> in <code>uns</code>.</td>
+      <td>X_{suffix} with the following requirements:<br><br>
+      <ul>
+        <li>{suffix} MUST be at least one character in length.</li>
+        <li>The first character of {suffix} MUST be a letter of the alphabet and the remaining characters MUST be alphanumeric characters. (This is equivalent to the regular expression pattern <code>"^[a-zA-Z][a-zA-Z0-9]*$"</code>.)</li>
+      </ul><br>
+      {suffix} is presented as text to users in the <b>Embedding Choice</b> selector in CELLxGENE Explorer so it is STRONGLY RECOMMENDED that it be descriptive.<br><br>See also <code>default_embedding</code> in <code>uns</code>.</td>
     </tr>
     <tr>
       <th>Annotator</th>
