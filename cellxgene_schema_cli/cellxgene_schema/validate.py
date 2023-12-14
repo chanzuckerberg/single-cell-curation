@@ -921,30 +921,23 @@ class Validator:
         for key, value in self.adata.obsm.items():
             issue_list = self.errors
 
-            if not key[0].isalpha():
-                self.errors.append(f"Embedding key in 'adata.obsm' {key} must start with a letter.")
+            regex_pattern = r'^[a-zA-Z][a-zA-Z0-9]*$'
 
             if key.startswith("X_"):
                 obsm_with_x_prefix += 1
-                if len(key) <= 3:
+                if not re.match(regex_pattern, key[2:]):
                     self.errors.append(
-                        f"Embedding key in 'adata.obsm' {key} must start with X_ and have a suffix at least one character long."
+                        f"Suffix for embedding key in 'adata.obsm' {key} does not match the regex pattern {regex_pattern}."
                     )
-                else:
-                    suffix_first_char = key[2]
-                    if not suffix_first_char.isalpha():
-                        self.errors.append(
-                            f"Embedding key in 'adata.obsm' {key} must have a suffix that starts with a letter."
-                        )
             else:
+                if not re.match(regex_pattern, key):
+                    self.errors.append(
+                        f"Embedding key in 'adata.obsm' {key} does not match the regex pattern {regex_pattern}."
+                    )
                 self.warnings.append(
                     f"Embedding key in 'adata.obsm' {key} does not start with X_ and thus will not be available in Explorer"
                 )
                 issue_list = self.warnings
-
-            # For all subsequent checks, we want to raise an error if it's an X_ embedding key, and a warning otherwise
-            if " " in key:
-                issue_list.append(f"Embedding key {key} has whitespace in it, please remove it.")
 
             if not isinstance(value, np.ndarray):
                 issue_list.append(
