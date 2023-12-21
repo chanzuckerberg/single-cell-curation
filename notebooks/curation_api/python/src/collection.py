@@ -1,6 +1,6 @@
 import requests
 from src.utils.config import format_c_url
-from src.utils.http import get_headers, url_builder
+from src.utils.http import get_headers_and_cookies, url_builder
 from src.utils.logger import failure, get_custom_logger, success
 
 logger = get_custom_logger()
@@ -13,9 +13,8 @@ def create_collection(collection_form_metadata: dict) -> str:
     :return: the Collection id
     """
     url = url_builder("/collections")
-    headers = get_headers()
     try:
-        res = requests.post(url, json=collection_form_metadata, headers=headers)
+        res = requests.post(url, json=collection_form_metadata, **get_headers_and_cookies())
         res.raise_for_status()
         data = res.json()
     except requests.HTTPError as e:
@@ -32,9 +31,8 @@ def create_collection(collection_form_metadata: dict) -> str:
 
 def create_revision(collection_id: str) -> str:
     url = url_builder(f"/collections/{collection_id}/revision")
-    headers = get_headers()
     try:
-        res = requests.post(url, headers=headers)
+        res = requests.post(url, **get_headers_and_cookies())
         res.raise_for_status()
         data = res.json()
     except requests.HTTPError as e:
@@ -47,9 +45,8 @@ def create_revision(collection_id: str) -> str:
 
 def delete_collection(collection_id: str) -> None:
     url = url_builder(f"/collections/{collection_id}")
-    headers = get_headers()
     try:
-        res = requests.delete(url, headers=headers)
+        res = requests.delete(url, **get_headers_and_cookies())
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)
@@ -59,9 +56,8 @@ def delete_collection(collection_id: str) -> None:
 
 def get_collection(collection_id: str) -> dict:
     url = url_builder(f"/collections/{collection_id}")
-    headers = get_headers()
     try:
-        res = requests.get(url, headers=headers)
+        res = requests.get(url, **get_headers_and_cookies())
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)
@@ -71,9 +67,8 @@ def get_collection(collection_id: str) -> dict:
 
 def get_collection_version(collection_version_id: str) -> dict:
     url = url_builder(f"/collection_versions/{collection_version_id}")
-    headers = get_headers()
     try:
-        res = requests.get(url, headers=headers)
+        res = requests.get(url, **get_headers_and_cookies())
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)
@@ -83,9 +78,8 @@ def get_collection_version(collection_version_id: str) -> dict:
 
 def get_collection_versions(collection_id: str) -> list:
     url = url_builder(f"/collections/{collection_id}/versions")
-    headers = get_headers()
     try:
-        res = requests.get(url, headers=headers)
+        res = requests.get(url, **get_headers_and_cookies())
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)
@@ -100,9 +94,8 @@ def get_collections(visibility: str = None, curator: str = None) -> list:
     if curator:
         params["curator"] = curator
     url = url_builder("/collections")
-    headers = get_headers()
     try:
-        res = requests.get(url, headers=headers, params=params)
+        res = requests.get(url, params=params, **get_headers_and_cookies())
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)
@@ -112,9 +105,8 @@ def get_collections(visibility: str = None, curator: str = None) -> list:
 
 def update_collection(collection_id: str, collection_form_metadata: dict) -> None:
     url = url_builder(f"/collections/{collection_id}")
-    headers = get_headers()
     try:
-        res = requests.patch(url, headers=headers, json=collection_form_metadata)
+        res = requests.patch(url, json=collection_form_metadata, **get_headers_and_cookies())
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)

@@ -32,7 +32,9 @@ def set_api_urls(env: str, stack: str = "") -> None:
     print(f"Set 'API_URL_BASE' env var to {os.getenv('API_URL_BASE')}")
 
 
-def set_api_access_config(api_key_file_path: str = None, env: str = "prod", stack: str = "") -> None:
+def set_api_access_config(
+    api_key_file_path: str = None, env: str = "prod", stack: str = "", oauth_cookie: str = ""
+) -> None:
     """
     This function uses the API key to retrieve a temporary access token from the Curator API. It then sets
     the 'ACCESS_TOKEN' environment variable, which other Curator API notebook modules use when calling
@@ -41,9 +43,21 @@ def set_api_access_config(api_key_file_path: str = None, env: str = "prod", stac
     :param api_key_file_path: the relative path to the file containing the API key
     :param env: the deployment environment
     :param stack: the stack name (if rdev)
+    :param oauth_cookie: the user's _oauth2_proxy cookie associated with .rdev.single-cell.czi.technology
     :return: None
     """
     set_api_urls(env, stack)
+
+    access_token_headers = {}
+    access_token_cookies = {}
+    if stack:
+        if oauth_cookie:
+            os.environ["OAUTH_COOKIE"] = oauth_cookie
+            access_token_cookies["_oauth2_proxy"] = oauth_cookie
+        else:
+            # First generate a 'test app' oauth proxy token
+            set_rdev_oauth_proxy_access_token()
+            access_token_headers["Authorization"] = f"Bearer {os.getenv('OAUTH_PROXY_ACCESS_TOKEN')}"
 
     if not api_key_file_path:
         print(
@@ -55,17 +69,13 @@ def set_api_access_config(api_key_file_path: str = None, env: str = "prod", stac
 
     with open(api_key_file_path) as fp:
         api_key = fp.read().strip()
-    access_token_headers = {"x-api-key": api_key}
-
-    if stack:
-        set_rdev_oauth_proxy_access_token()
-        access_token_headers["Authorization"] = f"Bearer {os.getenv('OAUTH_PROXY_ACCESS_TOKEN')}"
+        access_token_headers["x-api-key"] = api_key
 
     access_token_path = "/curation/v1/auth/token"
     api_url_base = os.getenv("API_URL_BASE")
     access_token_url = f"{api_url_base}{access_token_path}"
 
-    res = requests.post(access_token_url, headers=access_token_headers)
+    res = requests.post(access_token_url, headers=access_token_headers, cookies=access_token_cookies)
     res.raise_for_status()
     access_token = res.json().get("access_token")
     os.environ["ACCESS_TOKEN"] = access_token
