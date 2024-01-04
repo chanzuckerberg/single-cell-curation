@@ -74,7 +74,7 @@ def setup():  # type: ignore
                 "deprecated": True,
                 "replaced_by": "HANCESTRO:0000003",
             },
-        }
+        },
     }
     public_datasets = [
         {
