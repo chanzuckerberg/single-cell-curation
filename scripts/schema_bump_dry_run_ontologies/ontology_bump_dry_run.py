@@ -59,44 +59,45 @@ def map_deprecated_terms(
     for ontology_type in ONTOLOGY_TYPES:
         if ontology_type in dataset:
             for ontology_term in dataset[ontology_type]:
-                ontology_term_id = ontology_term["ontology_term_id"]
-                if ontology_term_id in non_deprecated_term_cache:
-                    continue
-                else:
-                    # all_ontologies is indexed by ontology prefix and term ID without suffixes,
-                    # so we must parse + build the search term
-                    ontology_id_parts = ontology_term_id.split(" ")[0].split(":")
-                    term_prefix = ontology_id_parts[0]
-                    ontology_index_id = f"{term_prefix}:{ontology_id_parts[1]}"
-                    ontology = onto_map[term_prefix][ontology_index_id]
-
-                if ontology["deprecated"]:
-                    if ontology_term_id in curator_report_entry_map[collection_id]:
-                        curator_report_entry_map[collection_id][ontology_term_id]["dataset_ct"] += 1
+                ontology_term_ids = ontology_term["ontology_term_id"].split(",")
+                for ontology_term_id in ontology_term_ids:
+                    if ontology_term_id in non_deprecated_term_cache:
+                        continue
                     else:
-                        entry = dict()
-                        entry["needs_alert"] = False
-                        entry["dataset_ct"] = 1  # type: ignore
-                        if "term_tracker" in ontology:
-                            entry["term_tracker"] = ontology["term_tracker"]
-                        if "comments" in ontology:
-                            entry["comments"] = ontology["comments"]
-                        if "replaced_by" in ontology:
-                            entry["replaced_by"] = ontology["replaced_by"]
-                            replacement_term_ontology = ontology["replaced_by"].split(":")[0]
-                            if replacement_term_ontology != term_prefix:
-                                entry["needs_alert"] = True
-                            else:
-                                if ontology_index_id not in replaced_by_map[ontology_type]:
-                                    replaced_by_map[ontology_type][ontology_index_id] = ontology["replaced_by"]
-                        else:
-                            entry["needs_alert"] = True
-                            if "consider" in ontology:
-                                entry["consider"] = ontology["consider"]
+                        # all_ontologies is indexed by ontology prefix and term ID without suffixes,
+                        # so we must parse + build the search term
+                        ontology_id_parts = ontology_term_id.split(" ")[0].split(":")
+                        term_prefix = ontology_id_parts[0]
+                        ontology_index_id = f"{term_prefix}:{ontology_id_parts[1]}"
+                        ontology = onto_map[term_prefix][ontology_index_id]
 
-                        curator_report_entry_map[collection_id][ontology_term_id] = entry
-                else:
-                    non_deprecated_term_cache.add(ontology_term_id)
+                    if ontology["deprecated"]:
+                        if ontology_term_id in curator_report_entry_map[collection_id]:
+                            curator_report_entry_map[collection_id][ontology_term_id]["dataset_ct"] += 1
+                        else:
+                            entry = dict()
+                            entry["needs_alert"] = False
+                            entry["dataset_ct"] = 1  # type: ignore
+                            if "term_tracker" in ontology:
+                                entry["term_tracker"] = ontology["term_tracker"]
+                            if "comments" in ontology:
+                                entry["comments"] = ontology["comments"]
+                            if "replaced_by" in ontology:
+                                entry["replaced_by"] = ontology["replaced_by"]
+                                replacement_term_ontology = ontology["replaced_by"].split(":")[0]
+                                if replacement_term_ontology != term_prefix:
+                                    entry["needs_alert"] = True
+                                else:
+                                    if ontology_index_id not in replaced_by_map[ontology_type]:
+                                        replaced_by_map[ontology_type][ontology_index_id] = ontology["replaced_by"]
+                            else:
+                                entry["needs_alert"] = True
+                                if "consider" in ontology:
+                                    entry["consider"] = ontology["consider"]
+
+                            curator_report_entry_map[collection_id][ontology_term_id] = entry
+                    else:
+                        non_deprecated_term_cache.add(ontology_term_id)
 
 
 def write_to_curator_report(output_file: str, curator_report_entry_map: dict, revision_map: dict = None) -> None:  # type: ignore
