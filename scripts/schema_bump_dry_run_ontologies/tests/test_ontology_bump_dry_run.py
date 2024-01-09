@@ -63,7 +63,18 @@ def setup():  # type: ignore
                 "consider": ["EFO:0000090"],
                 "term_tracker": "www.fake-github-link.com/repo/example-2",
             },
-        }
+        },
+        "HANCESTRO": {
+            "HANCESTRO:0000001": {
+                "label": "non-deprecated term",
+                "deprecated": False,
+            },
+            "HANCESTRO:0000002": {
+                "label": "obsolete term with replacement",
+                "deprecated": True,
+                "replaced_by": "HANCESTRO:0000003",
+            },
+        },
     }
     public_datasets = [
         {
@@ -145,6 +156,18 @@ class TestOntologyBumpDryRun:
         _, _, expected_replaced_by_map = setup
         with NamedTemporaryFile() as tmp, NamedTemporaryFile() as tmp_json, open(
             f"{FIXTURES_ROOT}/no_deprecated_terms_with_open_revisions", "rb"
+        ) as expected:
+            ontology_bump_dry_run.dry_run(tmp.name, tmp_json.name)
+            assert list(expected) == list(tmp)
+            assert expected_replaced_by_map == json.load(tmp_json)
+
+    def test_with_comma_delimited_onto_id_list(self, setup):  # type: ignore
+        public_datasets, private_collections, expected_replaced_by_map = setup
+        private_collections.pop()
+        public_datasets[0]["self_reported_ethnicity"] = [{"ontology_term_id": "HANCESTRO:0000001,HANCESTRO:0000002"}]
+        expected_replaced_by_map["self_reported_ethnicity"]["HANCESTRO:0000002"] = "HANCESTRO:0000003"
+        with NamedTemporaryFile() as tmp, NamedTemporaryFile() as tmp_json, open(
+            f"{FIXTURES_ROOT}/with_comma_delimited_onto_id_list_expected", "rb"
         ) as expected:
             ontology_bump_dry_run.dry_run(tmp.name, tmp_json.name)
             assert list(expected) == list(tmp)
