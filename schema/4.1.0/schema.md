@@ -60,7 +60,7 @@ This document is organized by:
 
 **AnnData.** The canonical data format for CELLxGENE Discover is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.8 of the anndata library.  Part of the rationale for selecting this format is to allow CELLxGENE to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `raw.var`, `obsm`, and `uns` attributes are described below.
 
-All data submitted to CELLxGENE Discover is automatically converted to a Seurat V4 object that can be loaded by the R package Seurat. See the [Seurat encoding](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.0.0/seurat_encoding.md) for further information.
+All data submitted to CELLxGENE Discover is automatically converted to a Seurat V4 object that can be loaded by the R package Seurat. See the [Seurat encoding](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.1.0/seurat_encoding.md) for further information.
 
 **Organisms**. Data MUST be from a Metazoan organism or SARS-COV-2 and defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the pinned Human and Mouse gene annotations.
 
@@ -1538,7 +1538,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
     <tr>
       <th>Value</th>
         <td>
-          This MUST be <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.0.0/schema.md"</code>.
+          This MUST be <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.1.0/schema.md"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -1562,12 +1562,22 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
     <tr>
       <th>Value</th>
         <td>
-          This MUST be <code>"4.0.0"</code>.
+          This MUST be <code>"4.1.0"</code>.
         </td>
     </tr>
 </tbody></table>
 
 ## Appendix A. Changelog
+
+schema v4.1.0
+
+* Required Gene Annotations
+  * Updated GENCODE (Human) to Human Reference GRCh38.p14 (GENCODE v44/Ensembl 110)
+  * Updated GENCODE (Mouse) to Mouse reference GRCm39 (GENCODE vM33/Ensembl 110)
+
+* obs (Cell metadata)
+  * Updated the requirements for `assay_ontology_term_id`
+  * Updated the requirements for `disease_ontology_term_id`
 
 schema v4.0.0
 
