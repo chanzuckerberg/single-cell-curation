@@ -494,17 +494,20 @@ class TestObs:
 
     def test_disease_ontology_term_id(self, validator_with_adata):
         """
-        disease_ontology_term_id categorical with str categories. This MUST be a MONDO term or
-        PATO:0000461 for normal or healthy.
+        disease_ontology_term_id categorical with str categories. This MUST be one of:
+        - PATO:0000461 for normal or healthy
+        - child of MONDO:0000001 for disease
+        - self or child of MONDO:0021178 for injury
         """
         validator = validator_with_adata
         obs = validator.adata.obs
+
         # Invalid ontology
         obs.loc[obs.index[0], "disease_ontology_term_id"] = "EFO:0000001"
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: 'EFO:0000001' in 'disease_ontology_term_id' is not a "
-            "valid ontology term id of 'MONDO, PATO'. Only 'PATO:0000461' is allowed for 'PATO' term ids."
+            "ERROR: 'EFO:0000001' in 'disease_ontology_term_id' is not a valid ontology term id of 'MONDO, PATO'. "
+            "Only 'PATO:0000461' (normal), children terms of 'MONDO:0000001' (disease), and self or children terms of 'MONDO:0021178' (injury) are allowed"
         ]
 
         # Invalid PATO term id
@@ -513,8 +516,50 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'PATO:0001894' in 'disease_ontology_term_id' is not an allowed term id. "
-            "Only 'PATO:0000461' is allowed for 'PATO' term ids."
+            "Only 'PATO:0000461' (normal), children terms of 'MONDO:0000001' (disease), and self or children terms of 'MONDO:0021178' (injury) are allowed"
         ]
+
+        # Invalid MONDO term id - disease characteristic
+        validator.errors = []
+        obs.loc[obs.index[0], "disease_ontology_term_id"] = "MONDO:0021125"
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: 'MONDO:0021125' in 'disease_ontology_term_id' is not an allowed term id. "
+            "Only 'PATO:0000461' (normal), children terms of 'MONDO:0000001' (disease), and self or children terms of 'MONDO:0021178' (injury) are allowed"
+        ]
+
+        # Invalid MONDO term id - disease parent term
+        validator.errors = []
+        obs.loc[obs.index[0], "disease_ontology_term_id"] = "MONDO:0000001"
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: 'MONDO:0000001' in 'disease_ontology_term_id' is not an allowed term id. "
+            "Only 'PATO:0000461' (normal), children terms of 'MONDO:0000001' (disease), and self or children terms of 'MONDO:0021178' (injury) are allowed"
+        ]
+
+        # Valid PATO term id - healthy
+        validator.errors = []
+        obs.loc[obs.index[0], "disease_ontology_term_id"] = "PATO:0000461"
+        validator.validate_adata()
+        assert validator.errors == []
+
+        # Valid MONDO term id - disease child term
+        validator.errors = []
+        obs.loc[obs.index[0], "disease_ontology_term_id"] = "MONDO:0005491"
+        validator.validate_adata()
+        assert validator.errors == []
+
+        # Valid MONDO term id - injury parent term
+        validator.errors = []
+        obs.loc[obs.index[0], "disease_ontology_term_id"] = "MONDO:0021178"
+        validator.validate_adata()
+        assert validator.errors == []
+
+        # Valid MONDO term id - injury child term
+        validator.errors = []
+        obs.loc[obs.index[0], "disease_ontology_term_id"] = "MONDO:0015796"
+        validator.validate_adata()
+        assert validator.errors == []
 
     def test_self_reported_ethnicity_ontology_term_id__unknown(self, validator_with_adata):
         """
