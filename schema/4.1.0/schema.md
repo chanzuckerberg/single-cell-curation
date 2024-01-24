@@ -195,7 +195,7 @@ The most accurate ontology term MUST always be used. If an exact or approximate 
 
 - For the [Cell Ontology], data submitters may [suggest a new term](https://github.com/obophenotype/cell-ontology/issues/new?assignees=bvarner-ebi&labels=new+term+request%2C+cellxgene&template=a_adding_term_cellxgene.md&title=%5BNTR-cxg%5D) and [notify the curation team](mailto:cellxgene@chanzuckerberg.com) of the pending term request, so that the datasets can be updated once the term is available.
 
-  To meet CELLxGENE schema requirements, the most accurate available CL term MUST be used until the new term is available. For example if `cell_type_ontology_term_id` describes a relay interneuron, but the most accurate available term in the CL ontology is [CL:0000099](https://www.ebi.ac.uk/ols4/ontologies/cl/classes?obo_id=CL%3A0000099) for *interneuron*, then the interneuron term can be used to fulfill this requirement and ensures that users searching for "neuron" are able to find these data. If no appropriate high-level term can be found or the cell type is unknown, then the most accurate term is [CL:0000003](https://www.ebi.ac.uk/ols4/ontologies/cl/classes?obo_id=CL%3A0000003) for *native cell*. Users will still be able to access more specific cell type annotations that have been submitted with the dataset (but aren't required by the schema).
+  To meet CELLxGENE schema requirements, the most accurate available CL term MUST be used until the new term is available. For example if `cell_type_ontology_term_id` describes a relay interneuron, but the most accurate available term in the CL ontology is [CL:0000099](https://www.ebi.ac.uk/ols4/ontologies/cl/classes?obo_id=CL%3A0000099) for *interneuron*, then the interneuron term can be used to fulfill this requirement and ensures that users searching for "neuron" are able to find these data.  If no appropriate term can be found (e.g. the cell type is unknown), then `"unknown"` MUST be used. Users will still be able to access more specific cell type annotations that have been submitted with the dataset (but aren't required by the schema).
 
    
 - For all other ontologies, data submitters may submit a [request to the curation team](mailto:cellxgene@chanzuckerberg.com) during the submission process.
@@ -379,7 +379,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be a CL term.<br><br>If no appropriate high-level term can be found or the cell type is unknown, then it is STRONGLY RECOMMENDED to use <a href="https://www.ebi.ac.uk/ols4/ontologies/cl/terms?obo_id=CL:0000003"><code>"CL:0000003"</code></a> for <i>native cell</i>. The following terms MUST NOT be used:
+        <td>categorical with <code>str</code> categories. This MUST be a CL term or <code>"unknown"</code> if no appropriate term can be found (e.g. the cell type is unknown). The following terms MUST NOT be used:
         <ul><li>
           <a href="https://www.ebi.ac.uk/ols4/ontologies/cl/terms?obo_id=CL:0000255"><code>"CL:0000255"</code></a> for <i>eukaryotic cell</i>
         </li>
@@ -980,7 +980,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>cell_type_ontology_term_id</code>.
+        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if the value of <code>cell_type_ontology_term_id</code> is <code>"unknown"</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>cell_type_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -999,7 +999,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if set in <code>development_stage_ontology_term_id</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>development_stage_ontology_term_id</code>.
+        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if the value of <code>development_stage_ontology_term_id</code> is <code>"unknown"</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>development_stage_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -1076,7 +1076,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code> or <code>"unknown"</code> if set in <code>self_reported_ethnicity_ontology_term_id</code>; otherwise, this MUST be one or more comma-separated (with no leading or trailing spaces) human-readable names for the terms in <code>self_reported_ethnicity_ontology_term_id</code> in the same order.<br><br> For example, if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"HANCESTRO:0005,HANCESTRO:0014"</code> then the value of <code>self_reported_ethnicity</code> is <code>"European,Hispanic or Latin American"</code>.
+        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code> if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"na"</code>. This MUST be <code>"unknown"</code> if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"unknown"</code>. Otherwise, this MUST be one or more comma-separated (with no leading or trailing spaces) human-readable names for the terms in <code>self_reported_ethnicity_ontology_term_id</code> in the same order.<br><br> For example, if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"HANCESTRO:0005,HANCESTRO:0014"</code> then the value of <code>self_reported_ethnicity</code> is <code>"European,Hispanic or Latin American"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -1095,7 +1095,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if set in <code>sex_ontology_term_id</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>sex_ontology_term_id</code>.
+        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if the value of  <code>sex_ontology_term_id</code> is <code>"unknown"</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>sex_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -1577,6 +1577,8 @@ schema v4.1.0
 
 * obs (Cell metadata)
   * Updated the requirements for `assay_ontology_term_id`
+  * Updated the requirements for `cell_type` to set `"unknown"` as the label when the value in the `cell_type_ontology_term_id` is  `"unknown"`. 
+  * Updated the requirements for `cell_type_ontology_term_id` to replace `"CL:0000003"` for *native cell* with `"unknown"` to indicate that the cell type is unknown. 
   * Updated the requirements for `disease_ontology_term_id`
 
 schema v4.0.0
