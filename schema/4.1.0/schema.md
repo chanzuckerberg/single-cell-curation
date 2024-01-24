@@ -1326,7 +1326,9 @@ The size of the ndarray stored for a key in `varp` MUST NOT be zero.
 
 ## `uns` (Dataset Metadata)
 
-`uns` is a ordered dictionary with a `str` key. Curators MUST annotate the following keys and values in `uns`:
+`uns` is a ordered dictionary with a `str` key. The size of the data stored as a value for a key in `uns` MUST NOT be zero.
+
+Curators MUST annotate the following keys and values in `uns`:
 
 ### title
 
@@ -1574,12 +1576,13 @@ schema v4.1.0
 * Required Gene Annotations
   * Updated GENCODE (Human) to Human Reference GRCh38.p14 (GENCODE v44/Ensembl 110)
   * Updated GENCODE (Mouse) to Mouse reference GRCm39 (GENCODE vM33/Ensembl 110)
-
 * obs (Cell metadata)
   * Updated the requirements for `assay_ontology_term_id`
-  * Updated the requirements for `cell_type` to set `"unknown"` as the label when the value in the `cell_type_ontology_term_id` is  `"unknown"`. 
+  * Updated the requirements for `cell_type` to annotate `"unknown"` as the label when the `cell_type_ontology_term_id` value is  `"unknown"`. 
   * Updated the requirements for `cell_type_ontology_term_id` to replace `"CL:0000003"` for *native cell* with `"unknown"` to indicate that the cell type is unknown. 
   * Updated the requirements for `disease_ontology_term_id`
+* uns (Dataset metadata)
+  * Prohibited fields with a size of zero
 
 schema v4.0.0
 
