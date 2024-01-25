@@ -374,6 +374,8 @@ class TestObs:
         [
             ("CL:000001", "ERROR: 'CL:000001' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'."),
             ("EFO:0000001", "ERROR: 'EFO:0000001' in 'assay_ontology_term_id' is not an allowed term id."),
+            ("EFO:0002772", "ERROR: 'EFO:0002772' in 'assay_ontology_term_id' is not an allowed term id."),
+            ("EFO:0010183", "ERROR: 'EFO:0010183' in 'assay_ontology_term_id' is not an allowed term id."),
             (
                 "EFO:0010183 (sci-plex)",
                 "ERROR: 'EFO:0010183 (sci-plex)' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'.",
@@ -383,7 +385,7 @@ class TestObs:
     def test_assay_ontology_term_id(self, validator_with_adata, assay_ontology_term_id, error):
         """
         assay_ontology_term_id categorical with str categories.
-        This MUST be an EFO term and either child of "EFO:0002772" or "EFO:0010183"
+        This MUST be an EFO term a child of either "EFO:0002772" or "EFO:0010183"
         """
         validator = validator_with_adata
         validator.adata.obs.loc[validator.adata.obs.index[0], "assay_ontology_term_id"] = assay_ontology_term_id
@@ -1133,7 +1135,7 @@ class TestObs:
         """
         validator = validator_with_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[1], "assay_ontology_term_id"] = "EFO:0010183"
+        obs.loc[obs.index[1], "assay_ontology_term_id"] = "EFO:0700005"
         validator.validate_adata()
         assert validator.errors == []
         assert validator.warnings == [
