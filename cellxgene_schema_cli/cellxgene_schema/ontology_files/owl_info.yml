@@ -25,7 +25,7 @@ MmusDv:
 NCBITaxon:
   latest: 2023-06-20
   urls:
-    2023-06-20: https://github.com/obophenotype/ncbitaxon/releases/download/v2023-06-20/ncbitaxon.owl.gz
+    2023-06-20: https://github.com/obophenotype/ncbitaxon/releases/download/v2023-06-20/ncbitaxon.obo.gz
   children_of:
     - NCBITaxon:33208
 UBERON:

@@ -1,15 +1,16 @@
 import gzip
 import json
 import os
-import re
 import sys
 import urllib.request
+from collections import defaultdict
 from threading import Thread
 from urllib.error import HTTPError, URLError
 
-import owlready2
 import yaml
-
+import warnings
+import pronto
+warnings.filterwarnings("ignore", category=pronto.warnings.ProntoWarning)
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../cellxgene_schema"))
 import os
 from typing import List
@@ -35,7 +36,7 @@ def _download_owls(owl_info_yml: str = env.OWL_INFO_YAML, output_dir: str = env.
         # Format of owl (handles cases where they are compressed)
         download_format = _url.split(".")[-1]
 
-        output_file = os.path.join(output_dir, _ontology + ".owl")
+        output_file = os.path.join(output_dir, _ontology + ".obo") if _ontology == "NCBITaxon" else os.path.join(output_dir, _ontology + ".owl")
         if download_format == "gz":
             urllib.request.urlretrieve(_url, output_file + ".gz")
             _decompress(output_file + ".gz", output_file)
@@ -117,103 +118,82 @@ def _parse_owls(
     with open(owl_info_yml, "r") as owl_info_handle:
         owl_info = yaml.safe_load(owl_info_handle)
 
-    owl_files = []
+    owl_files = dict()
     for owl_file in os.listdir(working_dir):
-        if owl_file.endswith(".owl"):
-            owl_files.append(os.path.join(working_dir, owl_file))
+        if owl_file.endswith(".owl") or owl_file.endswith(".obo"):
+            ontology_name = owl_file.split(".")[0]
+            owl_files[ontology_name] = os.path.join(working_dir, owl_file)
 
     # Parse owl files
     onto_dict = {}
-    for owl_file in owl_files:
-        world = owlready2.World()
-        onto = world.get_ontology(owl_file)
-        onto.load()
-        onto_dict[onto.name] = {}
+    for ontology_name, owl_file in owl_files.items():
+        onto = pronto.Ontology(owl_file)
+        print(f"Processing {ontology_name}")
+        onto_dict[ontology_name] = defaultdict(dict)
 
-        print(f"Processing {onto.name}")
-
-        for onto_class in onto.classes():
-            term_id = onto_class.name.replace("_", ":")
-
+        for onto_term in onto.terms():
             # Skip terms that are not direct children from this ontology
-            if onto.name != term_id.split(":")[0]:
+            if ontology_name != onto_term.id.split(":")[0]:
                 continue
-
-            # If there are specified target terms then only work with them
-            if onto.name in owl_info and "only" in owl_info[onto.name] and term_id not in owl_info[onto.name]["only"]:
-                continue
-
             # Gets label
-            onto_dict[onto.name][term_id] = dict()
-            try:
-                onto_dict[onto.name][term_id]["label"] = onto_class.label[0]
-            except IndexError:
-                onto_dict[onto.name][term_id]["label"] = ""
+            onto_dict[ontology_name][onto_term.id]["label"] = "" if onto_term.name is None else onto_term.name
 
             # Add the "deprecated" status
-            onto_dict[onto.name][term_id]["deprecated"] = False
-            if onto_class.deprecated and onto_class.deprecated.first():
+            onto_dict[ontology_name][onto_term.id]["deprecated"] = False
+            if onto_term.obsolete:
                 # if deprecated, include information to determine replacement term(s)
-                onto_dict[onto.name][term_id]["deprecated"] = True
-                if onto_class.comment:
-                    onto_dict[onto.name][term_id]["comments"] = [str(c) for c in onto_class.comment]
+                onto_dict[ontology_name][onto_term.id]["deprecated"] = True
+                if onto_term.comment:
+                    onto_dict[ontology_name][onto_term.id]["comments"] = [onto_term.comment]
                 # stores term tracking URL, such as a github issue discussing deprecated term
-                if hasattr(onto_class, "IAO_0000233") and onto_class.IAO_0000233:
-                    onto_dict[onto.name][term_id]["term_tracker"] = str(onto_class.IAO_0000233[0])
-
+                for annotation in onto_term.annotations:
+                    if annotation.property == "http://purl.obolibrary.org/obo/IAO_0000233":
+                        onto_dict[ontology_name][onto_term.id]["term_tracker"] = annotation.literal
                 # only need to record replaced_by OR considers
-                if onto_class.IAO_0100001 and onto_class.IAO_0100001.first():
-                    # url --> term
-                    ontology_term = re.findall(r"[^\W_]+", str(onto_class.IAO_0100001[0]))
-                    onto_dict[onto.name][term_id]["replaced_by"] = f"{ontology_term[-2]}:{ontology_term[-1]}"
+                if onto_term.replaced_by:
+                    onto_dict[ontology_name][onto_term.id]["replaced_by"] = next(iter(onto_term.replaced_by.ids))
                 else:
-                    if hasattr(onto_class, "consider") and onto_class.consider:
-                        onto_dict[onto.name][term_id]["consider"] = [str(c) for c in onto_class.consider]
+                    if onto_term.consider:
+                        onto_dict[ontology_name][onto_term.id]["consider"] = list(onto_term.consider.ids)
+
             # Gets ancestors
-            ancestors = _get_ancestors(onto_class, onto.name)
+            ancestors = _get_ancestors(onto_term, ontology_name)
 
             # If "children_of" specified in owl info then skip the current term if it is
             # not a children of those indicated.
-            if (onto.name in owl_info and "children_of" in owl_info[onto.name]) and (
-                not list(set(ancestors) & set(owl_info[onto.name]["children_of"]))
+            if (ontology_name in owl_info and "children_of" in owl_info[ontology_name]) and (
+                not list(set(ancestors) & set(owl_info[ontology_name]["children_of"]))
             ):
-                onto_dict[onto.name].pop(term_id)
+                onto_dict[ontology_name].pop(onto_term.id)
                 continue
 
             # only add the ancestors if it's not NCBITaxon, as this saves a lot of disk space
-            if onto.name == "NCBITaxon":
-                onto_dict[onto.name][term_id]["ancestors"] = []
+            if ontology_name == "NCBITaxon":
+                onto_dict[ontology_name][onto_term.id]["ancestors"] = []
             else:
-                onto_dict[onto.name][term_id]["ancestors"] = ancestors
+                onto_dict[ontology_name][onto_term.id]["ancestors"] = ancestors
 
     with gzip.open(output_json_file, "wt") as output_json:
         json.dump(onto_dict, output_json, indent=2)
 
 
-def _get_ancestors(onto_class: owlready2.entity.ThingClass, ontololgy_name: str) -> List[str]:
+def _get_ancestors(onto_term: pronto.Term, ontology_name: str) -> List[str]:
     """
-    Returns a list of ancestors ids of the given onto class, only returns those belonging to ontology_name,
-    it will format the id from the form CL_xxxx to CL:xxxx
+    Returns a list of ancestors ids of the given onto class, only returns those belonging to ontology_name
 
-    :param owlready2.entity.ThingClass onto_class: the class for which ancestors will be retrieved
-    :param str ontololgy_name: only ancestors from this ontology will be kept
+    :param pronto.Term onto_term: the class for which ancestors will be retrieved
+    :param str ontology_name: only ancestors from this ontology will be kept
 
     :rtype List[str]
     :return list of ancestors (term ids), it could be empty
     """
-
-    ancestors = []
-
-    for ancestor in onto_class.ancestors():
-        if onto_class.name == ancestor.name:
-            continue
-        if ancestor.name.split("_")[0] == ontololgy_name:
-            ancestors.append(ancestor.name.replace("_", ":"))
-
-    return ancestors
+    return [
+        ancestor.id for ancestor in onto_term.superclasses(with_self=False)
+        if ancestor.id.split(":")[0] == ontology_name
+    ]
 
 
 # Download and parse owls upon execution
 if __name__ == "__main__":
     _download_owls()
-    _parse_owls()
+    _parse_owls(output_json_file=os.path.join(env.ONTOLOGY_DIR, "temp_all_ontology.json.gz"))
