@@ -507,7 +507,7 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'EFO:0000001' in 'disease_ontology_term_id' is not a valid ontology term id of 'MONDO, PATO'. "
-            "Only 'PATO:0000461' (normal), children terms of 'MONDO:0000001' (disease), and self or children terms of 'MONDO:0021178' (injury) are allowed"
+            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or children terms, or children terms of 'MONDO:0000001' (disease) are allowed"
         ]
 
         # Invalid PATO term id
@@ -516,7 +516,7 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'PATO:0001894' in 'disease_ontology_term_id' is not an allowed term id. "
-            "Only 'PATO:0000461' (normal), children terms of 'MONDO:0000001' (disease), and self or children terms of 'MONDO:0021178' (injury) are allowed"
+            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or children terms, or children terms of 'MONDO:0000001' (disease) are allowed"
         ]
 
         # Invalid MONDO term id - disease characteristic
@@ -525,7 +525,7 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'MONDO:0021125' in 'disease_ontology_term_id' is not an allowed term id. "
-            "Only 'PATO:0000461' (normal), children terms of 'MONDO:0000001' (disease), and self or children terms of 'MONDO:0021178' (injury) are allowed"
+            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or children terms, or children terms of 'MONDO:0000001' (disease) are allowed"
         ]
 
         # Invalid MONDO term id - disease parent term
@@ -534,7 +534,7 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'MONDO:0000001' in 'disease_ontology_term_id' is not an allowed term id. "
-            "Only 'PATO:0000461' (normal), children terms of 'MONDO:0000001' (disease), and self or children terms of 'MONDO:0021178' (injury) are allowed"
+            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or children terms, or children terms of 'MONDO:0000001' (disease) are allowed"
         ]
 
         # Valid PATO term id - healthy
