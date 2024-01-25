@@ -147,7 +147,7 @@ components:
                         type: curie
                         to_column: assay
             disease_ontology_term_id:
-                error_message_suffix: "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or children terms, or children terms of 'MONDO:0000001' (disease) are allowed"
+                error_message_suffix: "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or children terms thereof, or children terms of 'MONDO:0000001' (disease) are allowed"
                 type: curie
                 curie_constraints:
                     ontologies:
