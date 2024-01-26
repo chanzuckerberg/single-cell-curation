@@ -385,7 +385,7 @@ class TestObs:
     def test_assay_ontology_term_id(self, validator_with_adata, assay_ontology_term_id, error):
         """
         assay_ontology_term_id categorical with str categories.
-        This MUST be an EFO term a child of either "EFO:0002772" or "EFO:0010183"
+        This MUST be an EFO term that is a child of either "EFO:0002772" or "EFO:0010183"
         """
         validator = validator_with_adata
         validator.adata.obs.loc[validator.adata.obs.index[0], "assay_ontology_term_id"] = assay_ontology_term_id

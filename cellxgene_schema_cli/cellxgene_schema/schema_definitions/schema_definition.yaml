@@ -128,7 +128,7 @@ components:
                         to_column: cell_type
             assay_ontology_term_id:
                 error_message_suffix: >-
-                    Only children terms of 'EFO:0002772', 'EFO:0010183' are allowed for assay_ontology_term_id
+                    Only children terms of either 'EFO:0002772' or 'EFO:0010183' are allowed for assay_ontology_term_id
                 type: curie
                 curie_constraints:
                     ontologies:
