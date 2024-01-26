@@ -1582,10 +1582,10 @@ schema v4.1.0
   * Updated GENCODE (Human) to Human Reference GRCh38.p14 (GENCODE v44/Ensembl 110)
   * Updated GENCODE (Mouse) to Mouse reference GRCm39 (GENCODE vM33/Ensembl 110)
 * obs (Cell metadata)
-  * Updated the requirements for `assay_ontology_term_id`
+  * Updated the requirements for `assay_ontology_term_id` to not allow  the parent terms `EFO:0002772` for _assay by molecule_ and `EFO:0010183` for _single cell library construction_. Their most accurate children are still valid. 
   * Updated the requirements for `cell_type` to annotate `"unknown"` as the label when the `cell_type_ontology_term_id` value is  `"unknown"`. 
   * Updated the requirements for `cell_type_ontology_term_id` to replace `"CL:0000003"` for *native cell* with `"unknown"` to indicate that the cell type is unknown. 
-  * Updated the requirements for `disease_ontology_term_id`
+  * Updated the requirements for `disease_ontology_term_id` to restrict MONDO terms to the most accurate child of `"MONDO:0000001"` for _disease_ or `"MONDO:0021178"` for _injury_ or preferably its most accurate child.
 * uns (Dataset metadata)
   * Prohibited fields with a size of zero
 
