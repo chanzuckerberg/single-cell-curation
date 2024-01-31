@@ -1200,6 +1200,23 @@ class Validator:
                         f"The field '{column}' in '{component}' is invalid. Fields that start with '__' are reserved."
                     )
 
+    def _check_var_and_obs_column_name_uniqueness(self):
+        """
+        This method checks that all column names in the 'var' and 'obs' DataFrames are unique
+
+        :rtype none
+        """
+        dataframe_components = ["obs", "var"]
+        for df_component in dataframe_components:
+            adata_component = getattr_anndata(self.adata, df_component)
+            component_columns = set()
+            for column in adata_component.columns:
+                if column in component_columns:
+                    raise ValueError(
+                        f"Duplicate column name '{column}' detected in 'adata.{df_component}' DataFrame. All DataFrame column names must be unique."
+                    )
+                component_columns.add(column)
+
     def _check_column_availability(self):
         """
         This method will check for columns that are reserved in components and validate that they are
@@ -1250,6 +1267,8 @@ class Validator:
 
         :rtype None
         """
+        # Checks DataFrame column name uniqueness
+        self._check_var_and_obs_column_name_uniqueness()
 
         # Checks for deprecated columns
         self._check_deprecated_columns()
