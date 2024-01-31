@@ -746,7 +746,7 @@ class Validator:
                         self.warnings.append(column_def["warning_message"])
                     self._validate_column(column, column_name, df_name, column_def)
 
-    def _validate_colors_in_uns_dict(self, uns_dict: dict) -> None:
+    def _validate_uns_dict(self, uns_dict: dict) -> None:
         df = getattr_anndata(self.adata, "obs")
 
         # Mapping from obs column name to number of unique categorical values
@@ -759,6 +759,8 @@ class Validator:
                 category_mapping[column_name] = column.nunique()
 
         for key, value in uns_dict.items():
+            if len(value) == 0:
+                self.errors.append(f"uns['{key}'] cannot be an empty value.")
             if key.endswith("_colors"):
                 # 1. Verify that the corresponding categorical field exists in obs
                 column_name = key.replace("_colors", "")
@@ -1284,7 +1286,7 @@ class Validator:
             elif component_def["type"] == "dict":
                 self._validate_dict(component, component_name, component_def)
                 if component_name == "uns":
-                    self._validate_colors_in_uns_dict(component)
+                    self._validate_uns_dict(component)
             elif component_def["type"] == "annotation_mapping":
                 self._validate_annotation_mapping(component_name, component)
                 if component_name == "obsm":
