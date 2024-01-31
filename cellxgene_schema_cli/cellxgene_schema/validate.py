@@ -1209,6 +1209,8 @@ class Validator:
         dataframe_components = ["obs", "var", "raw.var"]
         for df_component in dataframe_components:
             adata_component = getattr_anndata(self.adata, df_component)
+            if not adata_component:
+                continue
             component_columns = set()
             for column in adata_component.columns:
                 if column in component_columns:
