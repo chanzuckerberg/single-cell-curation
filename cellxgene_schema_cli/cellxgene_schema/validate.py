@@ -1212,7 +1212,7 @@ class Validator:
             component_columns = set()
             for column in adata_component.columns:
                 if column in component_columns:
-                    self.errors.append(
+                    raise ValueError(
                         f"Duplicate column name '{column}' detected in 'adata.{df_component}' DataFrame. All DataFrame column names must be unique."
                     )
                 component_columns.add(column)
@@ -1267,15 +1267,14 @@ class Validator:
 
         :rtype None
         """
+        # Checks DataFrame column name uniqueness
+        self._check_var_and_obs_column_name_uniqueness()
 
         # Checks for deprecated columns
         self._check_deprecated_columns()
 
         # Checks for invalid columns
         self._check_invalid_columns()
-
-        # Checks DataFrame column name uniqueness
-        self._check_var_and_obs_column_name_uniqueness()
 
         # Checks that reserved columns are not used
         self._check_column_availability()

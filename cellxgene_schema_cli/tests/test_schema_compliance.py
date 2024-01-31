@@ -1224,6 +1224,13 @@ class TestObs:
             "ERROR: The field '__test_field' in 'obs' is invalid. Fields that start with '__' are reserved.",
         ]
 
+    def test_obs_column_name_uniqueness(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.obs = pd.concat([validator.adata.obs, validator.adata.obs["suspension_type"]], axis=1)
+
+        with pytest.raises(ValueError):
+            validator.validate_adata()
+
     def test_nan_values_must_be_rejected(self, validator_with_adata):
         """
         NaN values should not be allowed in dataframes
@@ -1428,6 +1435,13 @@ class TestVar:
             f"ERROR: Add labels error: Column '{column}' is a reserved column name "
             f"of '{df}'. Remove it from h5ad and try again."
         ]
+
+    def test_var_column_name_uniqueness(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.var = pd.concat([validator.adata.var, validator.adata.var["feature_is_filtered"]], axis=1)
+
+        with pytest.raises(ValueError):
+            validator.validate_adata()
 
 
 class TestUns:
