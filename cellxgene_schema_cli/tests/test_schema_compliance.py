@@ -1443,6 +1443,16 @@ class TestVar:
         with pytest.raises(ValueError):
             validator.validate_adata()
 
+    def test_raw_var_column_name_uniqueness(self, validator_with_adata):
+        validator = validator_with_adata
+        original_var = validator.adata.var.copy()
+        validator.adata.var = pd.concat([validator.adata.var, validator.adata.var["feature_is_filtered"]], axis=1)
+        validator.adata.raw = validator.adata
+        validator.adata.var = original_var  # Ensure only the raw.var has duplicate columns
+
+        with pytest.raises(ValueError):
+            validator.validate_adata()
+
 
 class TestUns:
     """

@@ -1206,7 +1206,7 @@ class Validator:
 
         :rtype none
         """
-        dataframe_components = ["obs", "var"]
+        dataframe_components = ["obs", "var", "raw.var"]
         for df_component in dataframe_components:
             adata_component = getattr_anndata(self.adata, df_component)
             component_columns = set()
