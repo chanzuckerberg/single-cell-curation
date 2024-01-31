@@ -64,7 +64,9 @@ All data submitted to CELLxGENE Discover is automatically converted to a Seurat 
 
 **Organisms**. Data MUST be from a Metazoan organism or SARS-COV-2 and defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the pinned Human and Mouse gene annotations.
 
-**Reserved Names**. The names of metadata keys MUST NOT start with `"__"`. The names of the metadata keys specified by the schema are reserved and MUST be unique. For example, duplicate <code>"feature_biotype"</code> keys in AnnData <code>var</code> are not allowed. 
+**Reserved Names**. The names of metadata fields MUST NOT start with `"__"`. The names of the metadata fields specified by the schema are **reserved** for the purposes and specifications described in the schema.
+
+**Unique Names**. The names of schema and data submitter metadata fields in `obs` and `var` MUST be unique. For example, duplicate `"feature_biotype"` keys in AnnData `var` are not allowed.
 
 Reserved Names from previous schema versions that have since been deprecated MUST NOT be present in datasets:
 
@@ -296,7 +298,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -314,7 +316,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -375,7 +377,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -402,7 +404,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -468,7 +470,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -492,7 +494,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>CCurator MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -514,7 +516,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -533,7 +535,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -553,7 +555,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -768,7 +770,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -788,7 +790,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -919,7 +921,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -937,7 +939,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MUST annotate.</td>
     </tr>
    <tr>
       <th>Value</th>
@@ -957,7 +959,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover</td>
+      <td>CELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -976,7 +978,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover</td>
+      <td>CCELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -995,7 +997,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover</td>
+      <td>CELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1014,7 +1016,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover</td>
+      <td>CELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1035,7 +1037,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover</td>
+      <td>CCELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1053,7 +1055,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover</td>
+      <td>CELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1072,7 +1074,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover</td>
+      <td>CELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1091,7 +1093,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover</td>
+      <td>CELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1110,7 +1112,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover</td>
+      <td>CELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1142,7 +1144,7 @@ To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1178,7 +1180,7 @@ Curators MUST annotate the following columns in the `var` dataframe and if prese
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1198,7 +1200,7 @@ Curators MUST annotate the following column only in the `var` dataframe. This co
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1221,7 +1223,7 @@ add the feature length.
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover</td>
+      <td>CELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1240,7 +1242,7 @@ add the feature length.
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover</td>
+      <td>CELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1260,7 +1262,7 @@ add the feature length.
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover</td>
+      <td>CCELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1279,7 +1281,7 @@ add the feature length.
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover</td>
+      <td>CELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1339,7 +1341,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1361,7 +1363,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MAY annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1395,7 +1397,7 @@ Curators MUST annotate the following keys and values in `uns`:
   </tr>
   <tr>
     <th>Annotator</th>
-    <td>Curator</td>
+    <td>Curator MAY annotate.</td>
   </tr>
   <tr>
     <th>Value</th>
@@ -1447,7 +1449,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MAY annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1467,7 +1469,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator</td>
+      <td>Curator MAY annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1491,7 +1493,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `citat
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover</td>
+      <td>CELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1535,7 +1537,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover</td>
+      <td>CELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1559,7 +1561,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover</td>
+      <td>CELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1573,6 +1575,8 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 
 schema v4.1.0
 
+* General Requirements
+  * Updated requirements to prohibit duplicate data submitter metadata field names in `obs` and `var`
 * Required Ontologies
   * Updated CL to the 2024-01-04 release
   * Updated EFO to the 2024-01-15 EFO 3.62.0 release
