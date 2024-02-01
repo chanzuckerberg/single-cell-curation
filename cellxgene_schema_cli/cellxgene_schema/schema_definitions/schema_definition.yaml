@@ -117,6 +117,8 @@ components:
                 curie_constraints:
                     ontologies:
                         - CL
+                    exceptions:
+                        - unknown
                     forbidden:
                         terms:
                             - CL:0000255
