@@ -904,8 +904,8 @@ class TestObs:
         assert validator.errors == [
             "ERROR: 'CL:0000057 (cell culture)' in 'tissue_ontology_term_id' is not a valid ontology term id "
             "of 'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be a CL term "
-            "and it cannot be 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
-            "nor 'CL:0000548' (animal cell)."
+            "(excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
+            "and 'CL:0000548' (animal cell)) or 'unknown'."
         ]
 
     def test_tissue_ontology_term_id_cell_culture__not_a_CL_term(self, validator_with_adata):
@@ -920,8 +920,8 @@ class TestObs:
         assert validator.errors == [
             "ERROR: 'EFO:0000001' in 'tissue_ontology_term_id' is not a valid ontology term id of "
             "'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be a CL term "
-            "and it cannot be 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
-            "nor 'CL:0000548' (animal cell)."
+            "(excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
+            "and 'CL:0000548' (animal cell)) or 'unknown'."
         ]
 
     @pytest.mark.parametrize(
@@ -942,8 +942,8 @@ class TestObs:
         assert validator.errors == [
             f"ERROR: '{term}' in 'tissue_ontology_term_id' is not allowed. When 'tissue_type' is "
             f"'cell culture', 'tissue_ontology_term_id' MUST be a CL term "
-            "and it cannot be 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
-            "nor 'CL:0000548' (animal cell)."
+            "(excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
+            "and 'CL:0000548' (animal cell)) or 'unknown'."
         ]
 
     def test_tissue_ontology_term_id_organoid(self, validator_with_adata):
