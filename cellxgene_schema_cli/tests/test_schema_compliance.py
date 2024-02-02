@@ -576,6 +576,19 @@ class TestObs:
         assert validator.validate_adata()
         assert validator.errors == []
 
+    def test_cell_type_ontology_term_id__unknown(self, validator_with_adata):
+        """
+        Test 'unknown' cell_type_ontology_term_id is valid
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        obs.loc[
+            obs.index[0],
+            "cell_type_ontology_term_id",
+        ] = "unknown"
+        assert validator.validate_adata()
+        assert validator.errors == []
+
     def test_self_reported_ethnicity_ontology_term_id__unknown_in_multi_term(self, validator_with_adata):
         """
         Test 'unknown' self_reported_ethnicity_ontology_term is invalid when used in multi-term comma-delimited str
@@ -900,7 +913,6 @@ class TestObs:
         obs.loc[obs.index[0], "tissue_type"] = "cell culture"
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CL:0000057 (cell culture)"
         validator.validate_adata()
-        print(validator.errors)
         assert validator.errors == [
             "ERROR: 'CL:0000057 (cell culture)' in 'tissue_ontology_term_id' is not a valid ontology term id "
             "of 'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be a CL term "
