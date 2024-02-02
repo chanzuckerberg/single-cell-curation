@@ -893,18 +893,18 @@ class TestObs:
 
     def test_tissue_ontology_term_id_cell_culture__suffix_in_term_id(self, validator_with_adata):
         """
-        Cell Culture - Can NOT include
-        suffixes.
+        Cell Culture - Cannot include suffixes.
         """
         validator = validator_with_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "tissue_type"] = "cell culture"
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CL:0000057 (cell culture)"
         validator.validate_adata()
+        print(validator.errors)
         assert validator.errors == [
             "ERROR: 'CL:0000057 (cell culture)' in 'tissue_ontology_term_id' is not a valid ontology term id "
             "of 'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be a CL term "
-            "and it can not be 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
+            "and it cannot be 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
             "nor 'CL:0000548' (animal cell)."
         ]
 
@@ -920,7 +920,7 @@ class TestObs:
         assert validator.errors == [
             "ERROR: 'EFO:0000001' in 'tissue_ontology_term_id' is not a valid ontology term id of "
             "'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be a CL term "
-            "and it can not be 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
+            "and it cannot be 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
             "nor 'CL:0000548' (animal cell)."
         ]
 
@@ -942,7 +942,7 @@ class TestObs:
         assert validator.errors == [
             f"ERROR: '{term}' in 'tissue_ontology_term_id' is not allowed. When 'tissue_type' is "
             f"'cell culture', 'tissue_ontology_term_id' MUST be a CL term "
-            "and it can not be 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
+            "and it cannot be 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
             "nor 'CL:0000548' (animal cell)."
         ]
 
@@ -2062,7 +2062,7 @@ class TestAddingLabels:
             - assay. categorical with str categories. This MUST be the human-readable name assigned to the value
             of assay_ontology_term_id.
             - cell_type. categorical with str categories. This MUST be the human-readable name assigned to the value
-            of cell_type_ontology_term_id.
+            of cell_type_ontology_term_id or "unknown" if set in cell_type_ontology_term_id.
             - development_stage. categorical with str categories. This MUST be "unknown" if set in
             development_stage_ontology_term_id; otherwise, this MUST be the human-readable name assigned to
             the value of development_stage_ontology_term_id.
