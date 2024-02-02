@@ -494,7 +494,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CCurator MUST annotate.</td>
+      <td>Curator MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>

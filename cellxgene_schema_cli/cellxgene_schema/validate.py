@@ -464,7 +464,7 @@ class Validator:
         self, df: pd.DataFrame, df_name: str, column_name: str, dependencies: List[dict]
     ) -> pd.Series:
         """
-        Validates subset of columns based on dependecies, for instance development_stage_ontology_term_id has
+        Validates subset of columns based on dependencies, for instance development_stage_ontology_term_id has
         dependencies with organism_ontology_term_id -- the allowed values depend on whether organism is human, mouse
         or something else.
 
@@ -474,7 +474,7 @@ class Validator:
         :param pd.DataFrame df: pandas dataframe containing the column to be validated
         :param str df_name: the name of dataframe in the adata object, e.g. "obs"
         :param str column_name: the name of the column to be validated
-        :param list dependencies: a list of dependecy definitions, which is a list of column definitions with a "rule"
+        :param list dependencies: a list of dependency definitions, which is a list of column definitions with a "rule"
         """
 
         all_rules = []
