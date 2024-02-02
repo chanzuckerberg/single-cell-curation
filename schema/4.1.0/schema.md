@@ -1328,7 +1328,7 @@ The size of the ndarray stored for a key in `varp` MUST NOT be zero.
 
 ## `uns` (Dataset Metadata)
 
-`uns` is a ordered dictionary with a `str` key. The data stored as a value for a key in `uns` MUST be a `bool` type, `NoneType`, or its size MUST NOT be zero.
+`uns` is a ordered dictionary with a `str` key. The data stored as a value for a key in `uns` MUST be `True`, `False`, `None`, or its size MUST NOT be zero.
 
 Curators MUST annotate the following keys and values in `uns`:
 
