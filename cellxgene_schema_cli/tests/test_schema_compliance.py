@@ -1656,6 +1656,21 @@ class TestUns:
         validator.adata.uns["test_column_colors"] = numpy.array(["#000000", "#ffffff"])
         assert validator.validate_adata()
 
+    def test_uns_true_value(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["log1p"] = True
+        assert validator.validate_adata()
+
+    def test_uns_false_value(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["log1p"] = False
+        assert validator.validate_adata()
+
+    def test_uns_none_value(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["log1p"] = None
+        assert validator.validate_adata()
+
     def test_uns_empty_numpy_array(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.uns["log1p"] = numpy.array([])
