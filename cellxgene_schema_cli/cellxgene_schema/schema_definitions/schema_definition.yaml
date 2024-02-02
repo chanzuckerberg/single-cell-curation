@@ -215,12 +215,14 @@ components:
                         rule: "tissue_type == 'cell culture'"
                         error_message_suffix: >-
                             When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be a CL term
-                            and it can not be 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell),
+                            and it cannot be 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell),
                             nor 'CL:0000548' (animal cell).
                         type: curie
                         curie_constraints:
                             ontologies:
                                 - CL
+                            exceptions:
+                                - unknown
                             forbidden:
                                 terms:
                                     - CL:0000255
