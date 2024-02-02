@@ -1443,6 +1443,16 @@ class TestVar:
         with pytest.raises(ValueError):
             validator.validate_adata()
 
+    def test_raw_var_column_name_uniqueness(self, validator_with_adata):
+        validator = validator_with_adata
+        original_var = validator.adata.var.copy()
+        validator.adata.var = pd.concat([validator.adata.var, validator.adata.var["feature_is_filtered"]], axis=1)
+        validator.adata.raw = validator.adata
+        validator.adata.var = original_var  # Ensure only the raw.var has duplicate columns
+
+        with pytest.raises(ValueError):
+            validator.validate_adata()
+
 
 class TestUns:
     """
@@ -1646,6 +1656,30 @@ class TestUns:
         validator.adata.uns["test_column_colors"] = numpy.array(["#000000", "#ffffff"])
         assert validator.validate_adata()
 
+    def test_uns_empty_numpy_array(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["log1p"] = numpy.array([])
+        validator.validate_adata()
+        assert validator.errors == ["ERROR: uns['log1p'] cannot be an empty value."]
+
+    def test_uns_empty_python_array(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["log1p"] = []
+        validator.validate_adata()
+        assert validator.errors == ["ERROR: uns['log1p'] cannot be an empty value."]
+
+    def test_uns_empty_string(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["log1p"] = ""
+        validator.validate_adata()
+        assert validator.errors == ["ERROR: uns['log1p'] cannot be an empty value."]
+
+    def test_uns_empty_dictionary(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["log1p"] = {}
+        validator.validate_adata()
+        assert validator.errors == ["ERROR: uns['log1p'] cannot be an empty value."]
+
     def test_colors_happy_path_duplicates(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.uns["suspension_type_colors"] = numpy.array(["lightgrey", "lightgrey"])
@@ -1690,7 +1724,8 @@ class TestUns:
         validator.adata.uns["suspension_type_colors"] = numpy.array([])
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns[suspension_type_colors]. Found: []"
+            "ERROR: uns['suspension_type_colors'] cannot be an empty value.",
+            "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns[suspension_type_colors]. Found: []",
         ]
 
     def test_not_enough_color_options(self, validator_with_adata):
