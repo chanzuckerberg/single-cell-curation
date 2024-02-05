@@ -589,22 +589,18 @@ class TestObs:
         assert validator.validate_adata()
         assert validator.errors == []
 
-    # def test_tissue_ontology_term_id__unknown(self, validator_with_adata):
-    #     """
-    #     Test 'unknown' tissue_ontology_term_id is valid if tissue_type is 'cell culture'
-    #     """
-    #     validator = validator_with_adata
-    #     obs = validator.adata.obs
-    #
-    #     # Arrange
-    #     copy_of_first_row = obs.iloc[0].copy()
-    #     copy_of_first_row["tissue"] = "unknown"
-    #     copy_of_first_row["tissue_ontology_term_id"] = "unknown"
-    #     validator.adata.obs = pd.concat([obs.iloc[:-1], copy_of_first_row])
-    #     print(obs.obs_names)
-    #
-    #     assert validator.validate_adata()
-    #     assert validator.errors == []
+    def test_tissue_ontology_term_id__unknown(self, validator_with_adata):
+        """
+        Test 'unknown' tissue_ontology_term_id is valid if tissue_type is 'cell culture'
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+
+        # Arrange -- relies on "tissue_type" value for index "Y" already being "cell culture"
+        obs.at["Y", "tissue_ontology_term_id"] = "unknown"
+
+        assert validator.validate_adata()
+        assert validator.errors == []
 
     def test_self_reported_ethnicity_ontology_term_id__unknown_in_multi_term(self, validator_with_adata):
         """
