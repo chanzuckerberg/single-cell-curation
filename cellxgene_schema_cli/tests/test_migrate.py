@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import anndata
 from cellxgene_schema.migrate import migrate
-from fixtures.examples_validate import adata_with_lables_unmigrated
+from fixtures.examples_validate import adata_with_labels_unmigrated
 
 
 class TestMigrate:
@@ -36,7 +36,7 @@ class TestMigrate:
             result_h5ad = tmp + "result.h5ad"
             test_h5ad = tmp + "test.h5ad"
 
-            adata_with_lables_unmigrated.copy().write_h5ad(test_h5ad, compression="gzip")
+            adata_with_labels_unmigrated.copy().write_h5ad(test_h5ad, compression="gzip")
             migrate(
                 input_file=test_h5ad,
                 output_file=result_h5ad,
