@@ -214,7 +214,7 @@ components:
                         # If tissue_type is cell culture
                         rule: "tissue_type == 'cell culture'"
                         error_message_suffix: >-
-                            When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be a CL term
+                            When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be either a CL term
                             (excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell),
                             and 'CL:0000548' (animal cell)) or 'unknown'.
                         type: curie

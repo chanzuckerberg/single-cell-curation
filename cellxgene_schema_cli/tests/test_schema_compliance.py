@@ -589,6 +589,23 @@ class TestObs:
         assert validator.validate_adata()
         assert validator.errors == []
 
+    # def test_tissue_ontology_term_id__unknown(self, validator_with_adata):
+    #     """
+    #     Test 'unknown' tissue_ontology_term_id is valid if tissue_type is 'cell culture'
+    #     """
+    #     validator = validator_with_adata
+    #     obs = validator.adata.obs
+    #
+    #     # Arrange
+    #     copy_of_first_row = obs.iloc[0].copy()
+    #     copy_of_first_row["tissue"] = "unknown"
+    #     copy_of_first_row["tissue_ontology_term_id"] = "unknown"
+    #     validator.adata.obs = pd.concat([obs.iloc[:-1], copy_of_first_row])
+    #     print(obs.obs_names)
+    #
+    #     assert validator.validate_adata()
+    #     assert validator.errors == []
+
     def test_self_reported_ethnicity_ontology_term_id__unknown_in_multi_term(self, validator_with_adata):
         """
         Test 'unknown' self_reported_ethnicity_ontology_term is invalid when used in multi-term comma-delimited str
@@ -915,7 +932,7 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'CL:0000057 (cell culture)' in 'tissue_ontology_term_id' is not a valid ontology term id "
-            "of 'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be a CL term "
+            "of 'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be either a CL term "
             "(excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
             "and 'CL:0000548' (animal cell)) or 'unknown'."
         ]
@@ -931,7 +948,7 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'EFO:0000001' in 'tissue_ontology_term_id' is not a valid ontology term id of "
-            "'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be a CL term "
+            "'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be either a CL term "
             "(excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
             "and 'CL:0000548' (animal cell)) or 'unknown'."
         ]
@@ -953,7 +970,7 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             f"ERROR: '{term}' in 'tissue_ontology_term_id' is not allowed. When 'tissue_type' is "
-            f"'cell culture', 'tissue_ontology_term_id' MUST be a CL term "
+            f"'cell culture', 'tissue_ontology_term_id' MUST be either a CL term "
             "(excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
             "and 'CL:0000548' (animal cell)) or 'unknown'."
         ]
