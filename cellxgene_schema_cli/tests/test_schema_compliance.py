@@ -599,6 +599,24 @@ class TestObs:
         assert validator.validate_adata()
         assert validator.errors == []
 
+    def test_tissue_ontology_term_id__unknown_invalid(self, validator_with_adata):
+        """
+        Test 'unknown' tissue_ontology_term_id is valid if tissue_type is 'cell culture'
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+
+        # Arrange -- 'tissue_ontology_term_id' cannot be "unknown" when 'tissue_type is "tissue"
+        obs.at["Y", "tissue_type"] = "tissue"
+        obs.at["Y", "tissue_ontology_term_id"] = "unknown"
+
+        assert not validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: 'unknown' in 'tissue_ontology_term_id' is not a valid ontology term id of 'UBERON'. "
+            "When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' MUST be a child "
+            "term id of 'UBERON:0001062' (anatomical entity)."
+        ]
+
     def test_self_reported_ethnicity_ontology_term_id__unknown_in_multi_term(self, validator_with_adata):
         """
         Test 'unknown' self_reported_ethnicity_ontology_term is invalid when used in multi-term comma-delimited str
