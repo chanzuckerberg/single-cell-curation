@@ -602,7 +602,7 @@ class TestObs:
 
     def test_tissue_ontology_term_id__unknown_invalid(self, validator_with_adata):
         """
-        Test 'unknown' tissue_ontology_term_id is valid if tissue_type is 'cell culture'
+        Test 'unknown' tissue_ontology_term_id is invalid if tissue_type is NOT 'cell culture'
         """
         validator = validator_with_adata
         obs = validator.adata.obs
