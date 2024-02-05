@@ -114,7 +114,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 def test_generate_script__with_automated_replaced_by_map(template, tmpdir):  # type: ignore
     ontology_term_map = {
         "assay": {"EFO:0000002": "EFO:0000001"},
-        "cell_type": {"CL:0000002": "CL:0000001", "CL:0000004": "CL:0000003"},
+        "cell_type": {"CL:0000002": "CL:0000001", "CL:0000004": "unknown"},
         "development_stage": {},
         "disease": {},
         "organism": {},
@@ -149,7 +149,7 @@ ONTOLOGY_TERM_MAPS = {
     },
     "cell_type": {
         "CL:0000002": "CL:0000001", # AUTOMATED
-        "CL:0000004": "CL:0000003", # AUTOMATED
+        "CL:0000004": "unknown", # AUTOMATED
     },
     "development_stage": {
     },

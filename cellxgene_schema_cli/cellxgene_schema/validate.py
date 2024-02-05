@@ -464,7 +464,7 @@ class Validator:
         self, df: pd.DataFrame, df_name: str, column_name: str, dependencies: List[dict]
     ) -> pd.Series:
         """
-        Validates subset of columns based on dependecies, for instance development_stage_ontology_term_id has
+        Validates subset of columns based on dependencies, for instance development_stage_ontology_term_id has
         dependencies with organism_ontology_term_id -- the allowed values depend on whether organism is human, mouse
         or something else.
 
@@ -474,7 +474,7 @@ class Validator:
         :param pd.DataFrame df: pandas dataframe containing the column to be validated
         :param str df_name: the name of dataframe in the adata object, e.g. "obs"
         :param str column_name: the name of the column to be validated
-        :param list dependencies: a list of dependecy definitions, which is a list of column definitions with a "rule"
+        :param list dependencies: a list of dependency definitions, which is a list of column definitions with a "rule"
         """
 
         all_rules = []
@@ -1255,9 +1255,9 @@ class Validator:
 
             # Do it for columns that map to other columns, for post-upload annotation
             if "columns" in component_def:
-                for _column, columns_def in component_def["columns"].items():
-                    if "add_labels" in columns_def:
-                        self._check_single_column_availability(component, columns_def["add_labels"])
+                for column_def in component_def["columns"].values():
+                    if "add_labels" in column_def:
+                        self._check_single_column_availability(component, column_def["add_labels"])
 
             # Do it for index that map to columns
             if "index" in component_def:

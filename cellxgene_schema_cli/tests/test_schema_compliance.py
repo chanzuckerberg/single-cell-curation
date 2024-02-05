@@ -576,6 +576,48 @@ class TestObs:
         assert validator.validate_adata()
         assert validator.errors == []
 
+    def test_cell_type_ontology_term_id__unknown(self, validator_with_adata):
+        """
+        Test 'unknown' cell_type_ontology_term_id is valid
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        obs.at["Y", "cell_type_ontology_term_id"] = "unknown"
+        assert validator.validate_adata()
+        assert validator.errors == []
+
+    def test_tissue_ontology_term_id__unknown(self, validator_with_adata):
+        """
+        Test 'unknown' tissue_ontology_term_id is valid if tissue_type is 'cell culture'
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+
+        # Arrange -- relies on "tissue_type" value for index "Y" being "cell culture", set explicitly
+        obs.at["Y", "tissue_type"] = "cell culture"
+        obs.at["Y", "tissue_ontology_term_id"] = "unknown"
+
+        assert validator.validate_adata()
+        assert validator.errors == []
+
+    def test_tissue_ontology_term_id__unknown_invalid(self, validator_with_adata):
+        """
+        Test 'unknown' tissue_ontology_term_id is invalid if tissue_type is NOT 'cell culture'
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+
+        # Arrange -- 'tissue_ontology_term_id' cannot be "unknown" when 'tissue_type is "tissue"
+        obs.at["Y", "tissue_type"] = "tissue"
+        obs.at["Y", "tissue_ontology_term_id"] = "unknown"
+
+        assert not validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: 'unknown' in 'tissue_ontology_term_id' is not a valid ontology term id of 'UBERON'. "
+            "When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' MUST be a child "
+            "term id of 'UBERON:0001062' (anatomical entity)."
+        ]
+
     def test_self_reported_ethnicity_ontology_term_id__unknown_in_multi_term(self, validator_with_adata):
         """
         Test 'unknown' self_reported_ethnicity_ontology_term is invalid when used in multi-term comma-delimited str
@@ -893,8 +935,7 @@ class TestObs:
 
     def test_tissue_ontology_term_id_cell_culture__suffix_in_term_id(self, validator_with_adata):
         """
-        Cell Culture - Can NOT include
-        suffixes.
+        Cell Culture - Cannot include suffixes.
         """
         validator = validator_with_adata
         obs = validator.adata.obs
@@ -903,9 +944,9 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'CL:0000057 (cell culture)' in 'tissue_ontology_term_id' is not a valid ontology term id "
-            "of 'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be a CL term "
-            "and it can not be 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
-            "nor 'CL:0000548' (animal cell)."
+            "of 'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be either a CL term "
+            "(excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
+            "and 'CL:0000548' (animal cell)) or 'unknown'."
         ]
 
     def test_tissue_ontology_term_id_cell_culture__not_a_CL_term(self, validator_with_adata):
@@ -919,9 +960,9 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'EFO:0000001' in 'tissue_ontology_term_id' is not a valid ontology term id of "
-            "'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be a CL term "
-            "and it can not be 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
-            "nor 'CL:0000548' (animal cell)."
+            "'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be either a CL term "
+            "(excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
+            "and 'CL:0000548' (animal cell)) or 'unknown'."
         ]
 
     @pytest.mark.parametrize(
@@ -941,9 +982,9 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             f"ERROR: '{term}' in 'tissue_ontology_term_id' is not allowed. When 'tissue_type' is "
-            f"'cell culture', 'tissue_ontology_term_id' MUST be a CL term "
-            "and it can not be 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
-            "nor 'CL:0000548' (animal cell)."
+            f"'cell culture', 'tissue_ontology_term_id' MUST be either a CL term "
+            "(excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
+            "and 'CL:0000548' (animal cell)) or 'unknown'."
         ]
 
     def test_tissue_ontology_term_id_organoid(self, validator_with_adata):
@@ -2077,7 +2118,7 @@ class TestAddingLabels:
             - assay. categorical with str categories. This MUST be the human-readable name assigned to the value
             of assay_ontology_term_id.
             - cell_type. categorical with str categories. This MUST be the human-readable name assigned to the value
-            of cell_type_ontology_term_id.
+            of cell_type_ontology_term_id or "unknown" if set in cell_type_ontology_term_id.
             - development_stage. categorical with str categories. This MUST be "unknown" if set in
             development_stage_ontology_term_id; otherwise, this MUST be the human-readable name assigned to
             the value of development_stage_ontology_term_id.
@@ -2099,6 +2140,27 @@ class TestAddingLabels:
 
         for i, j in zip(expected_column.tolist(), obtained_column.tolist()):
             assert i == j
+
+    def test_obs_added_tissue_type_label__unknown(self, validator_with_adata):
+        obs = validator_with_adata.adata.obs
+
+        # Arrange
+        obs.at["Y", "tissue_type"] = "cell culture"  # Already set in example data, just setting explicitly here
+        obs.at["Y", "tissue_ontology_term_id"] = "unknown"  # Testing this term case
+        validator_with_adata.validate_adata()  # Validate
+        AnnDataLabelAppender(validator_with_adata)._add_labels()  # Annotate
+
+        assert obs.at["Y", "tissue"] == "unknown"
+
+    def test_obs_added_cell_type_label__unknown(self, validator_with_adata):
+        obs = validator_with_adata.adata.obs
+
+        # Arrange
+        obs.at["Y", "cell_type_ontology_term_id"] = "unknown"  # Testing this term case
+        validator_with_adata.validate_adata()  # Validate
+        AnnDataLabelAppender(validator_with_adata)._add_labels()  # Annotate
+
+        assert obs.at["Y", "cell_type"] == "unknown"
 
     def test_remove_unused_categories(self, label_writer, adata_with_labels):
         modified_donor_id = label_writer.adata.obs["donor_id"].cat.add_categories("donor_3")
