@@ -250,7 +250,7 @@ adata_with_colors = anndata.AnnData(
 )
 
 # anndata for testing migration
-umigrated_obs = pd.DataFrame(
+unmigrated_obs = pd.DataFrame(
     [
         [
             "cell_type:1",
@@ -297,12 +297,12 @@ var_unmigrated = pd.DataFrame(
     ],
 )
 
-unmigrated_X = numpy.zeros([good_obs.shape[0], var_unmigrated.shape[0]], dtype=numpy.float32)
-adata_with_lables_unmigrated = anndata.AnnData(
+unmigrated_X = numpy.zeros([unmigrated_obs.shape[0], var_unmigrated.shape[0]], dtype=numpy.float32)
+adata_with_labels_unmigrated = anndata.AnnData(
     X=sparse.csr_matrix(unmigrated_X),
-    obs=umigrated_obs,
+    obs=unmigrated_obs,
     uns=good_uns_with_labels,
     var=var_unmigrated,
     obsm={"X_umap": numpy.zeros([unmigrated_X.shape[0], 2])},
 )
-adata_with_lables_unmigrated.raw = adata_with_lables_unmigrated.copy()
+adata_with_labels_unmigrated.raw = adata_with_labels_unmigrated.copy()
