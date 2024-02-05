@@ -593,7 +593,8 @@ class TestObs:
         validator = validator_with_adata
         obs = validator.adata.obs
 
-        # Arrange -- relies on "tissue_type" value for index "Y" already being "cell culture"
+        # Arrange -- relies on "tissue_type" value for index "Y" being "cell culture", set explicitly
+        obs.at["Y", "tissue_type"] = "cell culture"
         obs.at["Y", "tissue_ontology_term_id"] = "unknown"
 
         assert validator.validate_adata()
