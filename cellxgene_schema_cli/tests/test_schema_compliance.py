@@ -582,10 +582,7 @@ class TestObs:
         """
         validator = validator_with_adata
         obs = validator.adata.obs
-        obs.loc[
-            obs.index[0],
-            "cell_type_ontology_term_id",
-        ] = "unknown"
+        obs.at["Y", "cell_type_ontology_term_id"] = "unknown"
         assert validator.validate_adata()
         assert validator.errors == []
 
