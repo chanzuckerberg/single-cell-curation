@@ -1,3 +1,4 @@
+# Changes to this file will trigger a run of the ontology_process.yml GHA job, which will run the ontology_processing.py script
 CL:
   latest: 2024-01-04
   urls:
