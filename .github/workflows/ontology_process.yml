@@ -83,6 +83,7 @@ jobs:
         run: |
           pip install -r cellxgene_schema_cli/requirements.txt
           pip install pytest
+          pip install coverage
       - name: Unit tests
         run: make unit-test
       - name: Upload coverage to Codecov
