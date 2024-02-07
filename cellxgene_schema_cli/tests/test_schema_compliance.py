@@ -417,7 +417,10 @@ class TestObs:
         validator = validator_with_adata
         validator.adata.obs.loc[validator.adata.obs.index[0], "cell_type_ontology_term_id"] = term
         validator.validate_adata()
-        assert validator.errors == [f"ERROR: '{term}' in 'cell_type_ontology_term_id' is not allowed."]
+        # Forbidden columns may be marked as either "not allowed" or "deprecated"
+        assert validator.errors == [
+            f"ERROR: '{term}' in 'cell_type_ontology_term_id' is not allowed."
+        ] or validator.errors == [f"ERROR: '{term}' in 'cell_type_ontology_term_id' is a deprecated term id of 'CL'."]
 
     def test_development_stage_ontology_term_id_human(self, validator_with_adata):
         """
@@ -980,8 +983,15 @@ class TestObs:
         obs.loc[obs.index[0], "tissue_type"] = "cell culture"
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = term
         validator.validate_adata()
+
+        # Forbidden columns may be marked as either "not allowed" or "deprecated"
         assert validator.errors == [
             f"ERROR: '{term}' in 'tissue_ontology_term_id' is not allowed. When 'tissue_type' is "
+            f"'cell culture', 'tissue_ontology_term_id' MUST be either a CL term "
+            "(excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
+            "and 'CL:0000548' (animal cell)) or 'unknown'."
+        ] or validator.errors == [
+            f"ERROR: '{term}' in 'tissue_ontology_term_id' is a deprecated term id of 'CL'. When 'tissue_type' is "
             f"'cell culture', 'tissue_ontology_term_id' MUST be either a CL term "
             "(excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
             "and 'CL:0000548' (animal cell)) or 'unknown'."
