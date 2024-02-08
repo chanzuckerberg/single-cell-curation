@@ -145,7 +145,7 @@ good_var = pd.DataFrame(
 var_expected = pd.DataFrame(
     [
         ["spike-in", False, "ERCC-00002 (spike-in control)", "NCBITaxon:32630", 0],
-        ["gene", False, "MACF1", "NCBITaxon:9606", 42738],
+        ["gene", False, "MACF1", "NCBITaxon:9606", 70573],
         ["gene", False, "Trp53", "NCBITaxon:10090", 4045],
         ["gene", False, "S", "NCBITaxon:2697049", 3822],
     ],
