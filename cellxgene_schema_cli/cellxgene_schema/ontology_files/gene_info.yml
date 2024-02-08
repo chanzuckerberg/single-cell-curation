@@ -1,14 +1,15 @@
+# Changes to this file will trigger a run of the ontology_process.yml GHA job, which will run the gene_processing.py script.
 ercc:
   description: ercc
   url: https://assets.thermofisher.com/TFS-Assets/LSG/manuals/cms_095047.txt
 human:
   description: homo_sapiens
   url: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_{version}/gencode.v{version}.primary_assembly.annotation.gtf.gz
-  version: 38
+  version: 44
 mouse:
   description: mus_musculus
   url: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_{version}/gencode.v{version}.primary_assembly.annotation.gtf.gz
-  version: M27
+  version: M33
 sars_cov_2:
   description: sars_cov_2
   url: ftp://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz

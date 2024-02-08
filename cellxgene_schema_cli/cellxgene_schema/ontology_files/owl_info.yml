@@ -1,11 +1,12 @@
+# Changes to this file will trigger a run of the ontology_process.yml GHA job, which will run the ontology_processing.py script.
 CL:
-  latest: 2023-08-24
+  latest: 2024-01-04
   urls:
-    2023-08-24: https://github.com/obophenotype/cell-ontology/releases/download/v2023-08-24/cl.owl
+    2024-01-04: https://github.com/obophenotype/cell-ontology/releases/download/v2024-01-04/cl.owl
 EFO:
-  latest: 2023-08-15 EFO 3.57.0
+  latest: 2024-01-15 EFO 3.62.0
   urls:
-    2023-08-15 EFO 3.57.0: https://github.com/EBISPOT/efo/releases/download/v3.57.0/efo.owl
+    2024-01-15 EFO 3.62.0: https://github.com/EBISPOT/efo/releases/download/v3.62.0/efo.owl
 HANCESTRO:
   latest: 3.0
   urls:
@@ -15,9 +16,9 @@ HsapDv:
   urls:
     2020-03-10: http://aber-owl.net/media/ontologies/HSAPDV/11/hsapdv.owl
 MONDO:
-  latest: 2023-08-02
+  latest: 2024-01-03
   urls:
-    2023-08-02: https://github.com/monarch-initiative/mondo/releases/download/v2023-08-02/mondo.owl
+    2024-01-03: https://github.com/monarch-initiative/mondo/releases/download/v2024-01-03/mondo.owl
 MmusDv:
   latest: 2020-03-10
   urls:
@@ -29,9 +30,9 @@ NCBITaxon:
   children_of:
     - NCBITaxon:33208
 UBERON:
-  latest: 2023-09-05
+  latest: 2024-01-18
   urls:
-    2023-09-05: https://github.com/obophenotype/uberon/releases/download/v2023-09-05/uberon.owl
+    2024-01-18: https://github.com/obophenotype/uberon/releases/download/v2024-01-18/uberon.owl
 PATO:
   latest: 2023-05-18
   urls:
