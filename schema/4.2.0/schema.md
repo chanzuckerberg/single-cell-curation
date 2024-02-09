@@ -1422,6 +1422,193 @@ The size of the ndarray stored for a key in `varp` MUST NOT be zero.
 
 Curators MUST annotate the following keys and values in `uns`:
 
+### spatial
+
+---
+---
+
+
+**Editor Note: Add a requirement that only the fields documented in the schema must be present under <code>spatial</code>.**
+
+---
+---
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>spatial</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>dict</code>. The key-value pairs are documented in the following sections:
+          <ul>
+          <li>spatial[<i>library_id</i>]</li>
+          <li>spatial[<i>library_id</i>]['images']</li>
+          <li>spatial[<i>library_id</i>]['images']['fullres']</li>
+          <li>spatial[<i>library_id</i>]['images']['hires']</li>
+          <li>spatial[<i>library_id</i>]['metadata']</li>
+          <li>spatial[<i>library_id</i>]['scalefactors']</li>
+          <li>spatial[<i>library_id</i>]['scalefactors']['spot_diameter_fullres']</li>
+          <li>spatial[<i>library_id</i>]['scalefactors']['tissue_hires_scalef']</li>
+         </ul>
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+#### spatial[_library_id_]
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>Identifier for the Visium library</td>
+    </tr>
+    <tr>
+      <th>Annotation</th>
+      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>dict</code>. There MUST be only one <code><i>library_id</i></code>.</td>
+    </tr>
+</tbody></table>
+<br>
+
+#### spatial[_library_id_]['images']
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>images</td>
+    </tr>
+    <tr>
+      <th>Annotation</th>
+      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          <code>dict</code>
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+#### spatial[_library_id_]['images']['fullres']
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>fullres</td>
+    </tr>
+    <tr>
+      <th>Annotation</th>
+      <td>Curator MAY annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          <code>ndarray</code><br><br>It is STRONGLY RECOMMENDED that the submitter include the full resolution image which MUST be converted to an array of shape (, , 3).
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+#### spatial[_library_id_]['images']['hires']
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>hires</td>
+    </tr>
+    <tr>
+      <th>Annotation</th>
+      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          <code>ndarray</code><br><br><code>tissue_hires_image.png</code> MUST be converted to an array of shape (, , 3). Its largest dimension MUST be 2000 pixels. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/spatial-outputs">Space Ranger Spatial Outputs</a>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+#### spatial[_library_id_]['metadata']
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>metadata</td>
+    </tr>
+    <tr>
+      <th>Annotation</th>
+      <td>Curator MAY annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          <code>dict</code>
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+
+#### spatial[_library_id_]['scalefactors']
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>scalefactors</td>
+    </tr>
+    <tr>
+      <th>Annotation</th>
+      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          <code>dict</code>
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+#### spatial[_library_id_]['scalefactors']['spot_diameter_fullres']
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>spot_diameter_fullres</td>
+    </tr>
+    <tr>
+      <th>Annotation</th>
+      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>float</code>. This must be the value of the <code>spot_diameter_fullres</code> field from <code>scalefactors_json.json</code>. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/spatial-outputs">Space Ranger Spatial Outputs</a>.</td>
+    </tr>
+</tbody></table>
+<br>
+
+#### spatial[_library_id_]['scalefactors']['tissue_hires_scalef']
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>tissue_hires_scalef</td>
+    </tr>
+    <tr>
+      <th>Annotation</th>
+      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          <code>float</code>. This must be the value of the <code>tissue_hires_scalef</code> field from <code>scalefactors_json.json</code>. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/spatial-outputs">Space Ranger Spatial Outputs</a>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
 ### title
 
 <table><tbody>
@@ -1663,193 +1850,6 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 <br>
 
 ---
-
-### spatial
-
----
----
-
-
-**Editor Note: Add a requirement that only the fields documented in the schema must be present under <code>spatial</code>.**
-
----
----
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>spatial</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td><code>dict</code>. The key-value pairs are documented in the following sections:
-          <ul>
-          <li>spatial[<i>library_id</i>]</li>
-          <li>spatial[<i>library_id</i>]['images']</li>
-          <li>spatial[<i>library_id</i>]['images']['fullres']</li>
-          <li>spatial[<i>library_id</i>]['images']['hires']</li>
-          <li>spatial[<i>library_id</i>]['metadata']</li>
-          <li>spatial[<i>library_id</i>]['scalefactors']</li>
-          <li>spatial[<i>library_id</i>]['scalefactors']['spot_diameter_fullres']</li>
-          <li>spatial[<i>library_id</i>]['scalefactors']['tissue_hires_scalef']</li>
-         </ul>
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
-#### spatial[_library_id_]
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>Identifier for the Visium library</td>
-    </tr>
-    <tr>
-      <th>Annotation</th>
-      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td><code>dict</code>. There MUST be only one <code><i>library_id</i></code>.</td>
-    </tr>
-</tbody></table>
-<br>
-
-#### spatial[_library_id_]['images']
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>images</td>
-    </tr>
-    <tr>
-      <th>Annotation</th>
-      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>
-          <code>dict</code>
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
-#### spatial[_library_id_]['images']['fullres']
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>fullres</td>
-    </tr>
-    <tr>
-      <th>Annotation</th>
-      <td>Curator MAY annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>
-          <code>ndarray</code><br><br>It is STRONGLY RECOMMENDED that the submitter include the full resolution image which MUST be converted to an array of shape (, , 3).
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
-#### spatial[_library_id_]['images']['hires']
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>hires</td>
-    </tr>
-    <tr>
-      <th>Annotation</th>
-      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>
-          <code>ndarray</code><br><br><code>tissue_hires_image.png</code> MUST be converted to an array of shape (, , 3). Its largest dimension MUST be 2000 pixels. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/spatial-outputs">Space Ranger Spatial Outputs</a>.
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
-#### spatial[_library_id_]['metadata']
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>metadata</td>
-    </tr>
-    <tr>
-      <th>Annotation</th>
-      <td>Curator MAY annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>
-          <code>dict</code>
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
-
-#### spatial[_library_id_]['scalefactors']
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>scalefactors</td>
-    </tr>
-    <tr>
-      <th>Annotation</th>
-      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>
-          <code>dict</code>
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
-#### spatial[_library_id_]['scalefactors']['spot_diameter_fullres']
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>spot_diameter_fullres</td>
-    </tr>
-    <tr>
-      <th>Annotation</th>
-      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td><code>float</code>. This must be the value of the <code>spot_diameter_fullres</code> field from <code>scalefactors_json.json</code>. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/spatial-outputs">Space Ranger Spatial Outputs</a>.</td>
-    </tr>
-</tbody></table>
-<br>
-
-#### spatial[_library_id_]['scalefactors']['tissue_hires_scalef']
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>tissue_hires_scalef</td>
-    </tr>
-    <tr>
-      <th>Annotation</th>
-      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>
-          <code>float</code>. This must be the value of the <code>tissue_hires_scalef</code> field from <code>scalefactors_json.json</code>. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/spatial-outputs">Space Ranger Spatial Outputs</a>.
-        </td>
-    </tr>
-</tbody></table>
-<br>
 
 
 ## Appendix A. Changelog
