@@ -1209,8 +1209,7 @@ To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator MUST annotate if <b>Visium Single</b> or if <code>
-      assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i>; otherwise, this key MUST NOT be present.</td>
+      <td>Curator MUST annotate if <b>Visium Single</b> or if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i>; otherwise, this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
