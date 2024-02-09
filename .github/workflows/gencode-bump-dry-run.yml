@@ -32,7 +32,7 @@ jobs:
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
-          role-duration-seconds: 2700
+          role-duration-seconds: 5400
       - name: Pull AWS Secrets
         uses: aws-actions/aws-secretsmanager-get-secrets@v1
         with:
@@ -43,7 +43,6 @@ jobs:
         env:
           corpus_env: "prod"
       - name: upload to slack
-        if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           curl -F file=@genes-curator-report.txt -F "initial_comment=Gene Dry Run Report" -F channels=${{secrets
           .SLACK_CURATOR_REPORTING_CHANNEL}} -H "Authorization: Bearer ${{secrets.SLACK_CURATOR_REPORTING_APP_AUTH}}" https://slack.com/api/files.upload
