@@ -1200,6 +1200,25 @@ The size of the ndarray stored for a key in `obsm` MUST NOT be zero.
 
 To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more** embeddings of at least two-dimensions (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`.<br><br>
 
+### spatial
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>spatial</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator MUST annotate if <b>Visium Single</b> or if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i>; otherwise, this key MUST NOT be present.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>numpy.ndarray</code>. If <b>Visium Single</b>, the array MUST be created from the corresponding <code>pxl_row_in_fullres</code> and <code>pxl_col_in_fullres</code> fields from <code>tissue_positions_list.csv</code> or <code>tissue_positions.csv</code>. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/spatial-outputs">Space Ranger Spatial Outputs</a>.<br><br>
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
 ### X_{suffix}
 
 <table><tbody>
