@@ -315,6 +315,44 @@ Curators MUST annotate the following columns in the `obs` dataframe:
 </tbody></table>
 <br>
 
+### array_col
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>array_col</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>int</code>. This MUST be the value of the column coordinate for the corresponding spot from the <code>array_col</code> field in <code>tissue_positions_list.csv</code> or <code>tissue_positions.csv</code>. The value MUST be in the range between <code>0</code> and <code>127</code>. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/spatial-outputs">Space Ranger Spatial Outputs</a>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### array_row
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>array_row</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>int</code>. This MUST be value of the row coordinate for the corresponding spot from the <code>array_row</code> field in in <code>tissue_positions_list.csv</code> or <code>tissue_positions.csv</code>. The value MUST be in the range between <code>0</code> and <code>77</code>. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/spatial-outputs">Space Ranger Spatial Outputs</a>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
 ### assay_ontology_term_id
 
 <table><tbody>
@@ -514,6 +552,26 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
 </tbody></table>
 <br>
+
+### in_tissue
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>in_tissue</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>int</code>. This MUST be the value for the corresponding spot from the <code>in_tissue</code> field in <code>tissue_positions_list.csv</code> or <code>tissue_positions.csv</code> which is either <code>0</code> if the spot falls outside tissue or <code>1</code> if the spot falls inside tissue. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/spatial-outputs">Space Ranger Spatial Outputs</a>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
 
 ### is_primary_data
 
