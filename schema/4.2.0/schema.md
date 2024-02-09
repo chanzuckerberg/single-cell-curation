@@ -160,6 +160,13 @@ Reserved Names from previous schema versions that have since been deprecated MUS
 
 This includes names, emails, or other PII for researchers or curators involved in the data generation and submission.
 
+<b>Visium Spatial Gene Expression.</b> It is STRONGLY RECOMMENDED that <i>Visium Spatial Gene Expression</i> datasets represent one Space Ranger output for a single tissue section. This representation is referenced throughout the schema as <b>Visium Single</b>.
+
+Visium datasets that represent multiple Space Ranger outputs MAY be submitted. This representation is referenced throughout the schema as <b>Visium Multiple</b> which will have limited support in CELLxGENE experiences:
+* Image underlays are not supported in CELLxGENE Explorer.
+* Such datasets are not included in CELLxGENE Discover Census.
+* Such datasets are not converted to Seurat for CELLxGENE Discover downloads.
+
 #### *Note on types*
 The types below are python3 types. Note that a python3 `str` is a sequence of Unicode code points, which is stored null-terminated and UTF-8-encoded by anndata.
 
