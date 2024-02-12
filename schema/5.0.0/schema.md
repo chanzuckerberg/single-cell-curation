@@ -5,7 +5,7 @@ Contact: brianraymor@chanzuckerberg.com
 
 Document Status: _Draft_
 
-Version: 4.1.0
+Version: 5.0.0
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED" "MAY", and "OPTIONAL" in this document are to be interpreted as described in [BCP 14](https://tools.ietf.org/html/bcp14), [RFC2119](https://www.rfc-editor.org/rfc/rfc2119.txt), and [RFC8174](https://www.rfc-editor.org/rfc/rfc8174.txt) when, and only when, they appear in all capitals, as shown here.
 
@@ -60,7 +60,7 @@ This document is organized by:
 
 **AnnData.** The canonical data format for CELLxGENE Discover is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.8 of the anndata library.  Part of the rationale for selecting this format is to allow CELLxGENE to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `raw.var`, `obsm`, and `uns` attributes are described below.
 
-All data submitted to CELLxGENE Discover is automatically converted to a Seurat V5 object that can be loaded by the R package Seurat. See the [Seurat encoding](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.1.0/seurat_encoding.md) for further information.
+All data submitted to CELLxGENE Discover is automatically converted to a Seurat V5 object that can be loaded by the R package Seurat. See the [Seurat encoding](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/seurat_encoding.md) for further information.
 
 **Organisms**. Data MUST be from a Metazoan organism or SARS-COV-2 and defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the pinned Human and Mouse gene annotations.
 
@@ -1542,7 +1542,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
     <tr>
       <th>Value</th>
         <td>
-          This MUST be <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.1.0/schema.md"</code>.
+          This MUST be <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -1566,14 +1566,14 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
     <tr>
       <th>Value</th>
         <td>
-          This MUST be <code>"4.1.0"</code>.
+          This MUST be <code>"5.0.0"</code>.
         </td>
     </tr>
 </tbody></table>
 
 ## Appendix A. Changelog
 
-schema v4.1.0
+schema v5.0.0
 
 * General Requirements
   * Updated requirements to prohibit duplicate data submitter metadata field names in `obs` and `var`
@@ -1587,8 +1587,8 @@ schema v4.1.0
   * Updated GENCODE (Mouse) to Mouse reference GRCm39 (GENCODE vM33/Ensembl 110)
 * obs (Cell metadata)
   * Updated the requirements for `assay_ontology_term_id` to not allow  the parent terms `EFO:0002772` for _assay by molecule_ and `EFO:0010183` for _single cell library construction_. Their most accurate children are still valid. 
-  * Updated the requirements for `cell_type` to annotate `"unknown"` as the label when the `cell_type_ontology_term_id` value is  `"unknown"`. 
-  * Updated the requirements for `cell_type_ontology_term_id` to replace `"CL:0000003"` for *native cell* with `"unknown"` to indicate that the cell type is unknown. 
+  * **Breaking change**. Updated the requirements for `cell_type` to annotate `"unknown"` as the label when the `cell_type_ontology_term_id` value is  `"unknown"`. 
+  * **Breaking change**. Updated the requirements for `cell_type_ontology_term_id` to replace `"CL:0000003"` for *native cell* with `"unknown"` to indicate that the cell type is unknown. 
   * Updated the requirements for `disease_ontology_term_id` to restrict MONDO terms to the most accurate child of `"MONDO:0000001"` for _disease_ or `"MONDO:0021178"` for _injury_ or preferably its most accurate child.
 * uns (Dataset metadata)
   * Prohibited fields with a size of zero
