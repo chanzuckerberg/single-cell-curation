@@ -5,7 +5,7 @@ Contact: brianraymor@chanzuckerberg.com
 
 Document Status: _Draft_
 
-Schema version: 4.2.0
+Schema version: 5.0.0
 
 
 ## Overview
