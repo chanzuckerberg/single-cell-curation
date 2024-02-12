@@ -5,7 +5,7 @@ Contact: brianraymor@chanzuckerberg.com
 
 Document Status: _Draft_
 
-Version: 4.2.0
+Version: 5.1.0
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED" "MAY", and "OPTIONAL" in this document are to be interpreted as described in [BCP 14](https://tools.ietf.org/html/bcp14), [RFC2119](https://www.rfc-editor.org/rfc/rfc2119.txt), and [RFC8174](https://www.rfc-editor.org/rfc/rfc8174.txt) when, and only when, they appear in all capitals, as shown here.
 
@@ -60,7 +60,7 @@ This document is organized by:
 
 **AnnData.** The canonical data format for CELLxGENE Discover is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.8 of the anndata library.  Part of the rationale for selecting this format is to allow CELLxGENE to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `raw.var`, `obsm`, and `uns` attributes are described below.
 
-All data submitted to CELLxGENE Discover is automatically converted to a Seurat V5 object that can be loaded by the R package Seurat. See the [Seurat encoding](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.2.0/seurat_encoding.md) for further information.
+All data submitted to CELLxGENE Discover is automatically converted to a Seurat V5 object that can be loaded by the R package Seurat. See the [Seurat encoding](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/seurat_encoding.md) for further information.
 
 **Organisms**. Data MUST be from a Metazoan organism or SARS-COV-2 and defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the pinned Human and Mouse gene annotations.
 
@@ -1819,7 +1819,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
     <tr>
       <th>Value</th>
         <td>
-          This MUST be <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.2.0/schema.md"</code>.
+          This MUST be <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -1843,7 +1843,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
     <tr>
       <th>Value</th>
         <td>
-          This MUST be <code>"4.2.0"</code>.
+          This MUST be <code>"5.1.0"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -1854,7 +1854,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 
 ## Appendix A. Changelog
 
-schema v4.2.0
+schema v5.1.0
 
 * 
 
