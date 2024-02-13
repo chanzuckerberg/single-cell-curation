@@ -1856,9 +1856,31 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 
 schema v5.1.0
 
-* 
+* General Requirements
+  * Defined **Visium Single** as *Visium Spatial Gene Expression* datasets that represent one Space Ranger output for a single tissue section.
+  * Defined **Visium Multiple** as *Visium Spatial Gene Expression* datasets that represent multiple Space Ranger outputs.
+* Required Ontologies
+  * PENDING
+* obs (Cell metadata)
+  * Added `array_col` for **Visium Single**
+  * Added `array_row` for **Visium Single**
+  * Updated the requirements for `assay_ontology_term_id` for **Visium Single**. All observations MUST be the same value. 
+  * Updated the requirements for `cell_type_ontology_term_id` for **Visium Single**. The value must be `"unknown"` if **Visium Single** and the corresponding value of `in_tissue` is `0`.
+  * Updated the requirements for `development_stage_ontology_term_id` for **Visium Single**. All observations MUST be the same value. 
+  * Updated the requirements for `donor_id` for **Visium Single**. All observations MUST be the same value. 
+  * Added `in_tissue` for **Visium Single**
+  * Updated the requirements for `organism_ontology_term_id` for **Visium Single**. All observations MUST be the same value. 
+  * Updated the requirements for `self_reported_ethnicity_ontology_term_id` for **Visium Single**. All observations MUST be the same value.
+  * Updated the requirements for `sex_ontology_term_id` for **Visium Single**. All observations MUST be the same value. 
+* obsm (Embeddings)
+  * Added `spatial` for **Visium Single** and *Slide-seqV2*
+  * Updated requirements for `X_{suffix}`. {suffix} MUST NOT be `"spatial"`.
+* uns (Dataset metadata)
+  * Updated the value of `schema_reference` to PENDING
+  * Updated the value of `schema_version` to PENDING
+  * Added `spatial` for **Visium Single**
 
-schema v4.1.0
+schema v5.0.0
 
 * General Requirements
   * Updated requirements to prohibit duplicate data submitter metadata field names in `obs` and `var`
@@ -1941,7 +1963,7 @@ schema v3.1.0
     * Updated Seq-Well [EFO:0008919] to Seq-Well [EFO:0008919] and its children
 * uns (Dataset metadata)
   * `schema_version`
-    * Must must be annotated by CELLxGENE Discover and not the Curator.
+    * Must be annotated by CELLxGENE Discover and not the Curator.
 
 
 schema v3.0.0
