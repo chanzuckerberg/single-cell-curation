@@ -1854,7 +1854,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 
 ## Appendix A. Changelog
 
-schema v5.1.0
+### schema v5.1.0
 
 * General Requirements
   * Defined **Visium Single** as *Visium Spatial Gene Expression* datasets that represent one Space Ranger output for a single tissue section.
@@ -1880,7 +1880,7 @@ schema v5.1.0
   * Updated the value of `schema_version` to PENDING
   * Added `spatial` for **Visium Single**
 
-schema v5.0.0
+### schema v5.0.0
 
 * General Requirements
   * Updated requirements to prohibit duplicate data submitter metadata field names in `obs` and `var`
@@ -1900,7 +1900,7 @@ schema v5.0.0
 * uns (Dataset metadata)
   * Prohibited fields with a size of zero
 
-schema v4.0.0
+### schema v4.0.0
 
 * Required Ontologies
   * Updated CL to the 2023-08-24 release
@@ -1936,7 +1936,7 @@ schema v4.0.0
 * X (Matrix Layers)
   * Updated requirements for raw matrices
 
-schema v3.1.0
+### schema v3.1.0
 
 * Added section for Schema versioning
 * Required Ontologies
@@ -1966,7 +1966,7 @@ schema v3.1.0
     * Must be annotated by CELLxGENE Discover and not the Curator.
 
 
-schema v3.0.0
+### schema v3.0.0
 
 * The canonical data format was updated from AnnData 0.7 to 0.8.
 * All references to the "final" matrix has been replaced with "normalized" for clarity.
@@ -1984,6 +1984,8 @@ schema v3.0.0
 * uns (Dataset metadata)
   * Updated `schema_version`
   * Deprecated `X_normalization`
+
+### schema v2.0.0
 
 schema v2.0.0 substantially *remodeled* schema v1.1.0:
 
