@@ -1573,7 +1573,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 
 ## Appendix A. Changelog
 
-schema v5.0.0
+### schema v5.0.0
 
 * General Requirements
   * Updated requirements to prohibit duplicate data submitter metadata field names in `obs` and `var`
@@ -1591,9 +1591,9 @@ schema v5.0.0
   * **Breaking change**. Updated the requirements for `cell_type_ontology_term_id` to replace `"CL:0000003"` for *native cell* with `"unknown"` to indicate that the cell type is unknown. 
   * Updated the requirements for `disease_ontology_term_id` to restrict MONDO terms to the most accurate child of `"MONDO:0000001"` for _disease_ or `"MONDO:0021178"` for _injury_ or preferably its most accurate child.
 * uns (Dataset metadata)
-  * Prohibited fields with a size of zero
+  * Updated requirements. The data stored as a value for a key in `uns` MUST be `True`, `False`, `None`, or its size MUST NOT be zero.
 
-schema v4.0.0
+### schema v4.0.0
 
 * Required Ontologies
   * Updated CL to the 2023-08-24 release
@@ -1629,7 +1629,7 @@ schema v4.0.0
 * X (Matrix Layers)
   * Updated requirements for raw matrices
 
-schema v3.1.0
+### schema v3.1.0
 
 * Added section for Schema versioning
 * Required Ontologies
@@ -1656,10 +1656,10 @@ schema v3.1.0
     * Updated Seq-Well [EFO:0008919] to Seq-Well [EFO:0008919] and its children
 * uns (Dataset metadata)
   * `schema_version`
-    * Must must be annotated by CELLxGENE Discover and not the Curator.
+    * Must be annotated by CELLxGENE Discover and not the Curator.
 
 
-schema v3.0.0
+### schema v3.0.0
 
 * The canonical data format was updated from AnnData 0.7 to 0.8.
 * All references to the "final" matrix has been replaced with "normalized" for clarity.
@@ -1678,6 +1678,7 @@ schema v3.0.0
   * Updated `schema_version`
   * Deprecated `X_normalization`
 
+### schema v2.0.0
 schema v2.0.0 substantially *remodeled* schema v1.1.0:
 
 * "must", "should", and select other words have a defined, standard meaning.
