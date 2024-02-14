@@ -978,7 +978,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CCELLxGENE Discover MUST annotate.</td>
+      <td>CELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1037,7 +1037,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CCELLxGENE Discover MUST annotate.</td>
+      <td>CELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1262,7 +1262,7 @@ add the feature length.
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CCELLxGENE Discover MUST annotate.</td>
+      <td>CELLxGENE Discover MUST annotate.</td>
     </tr>
     <tr>
       <th>Value</th>
