@@ -1450,11 +1450,10 @@ Curators MUST annotate the following keys and values in `uns`:
           <li>spatial[<i>library_id</i>]['images']</li>
           <li>spatial[<i>library_id</i>]['images']['fullres']</li>
           <li>spatial[<i>library_id</i>]['images']['hires']</li>
-          <li>spatial[<i>library_id</i>]['metadata']</li>
           <li>spatial[<i>library_id</i>]['scalefactors']</li>
           <li>spatial[<i>library_id</i>]['scalefactors']['spot_diameter_fullres']</li>
           <li>spatial[<i>library_id</i>]['scalefactors']['tissue_hires_scalef']</li>
-         </ul>
+         </ul><br>Additional key-value pairs MUST NOT be present.
         </td>
     </tr>
 </tbody></table>
@@ -1529,25 +1528,6 @@ Curators MUST annotate the following keys and values in `uns`:
       <th>Value</th>
         <td>
           <code>ndarray</code><br><br><code>tissue_hires_image.png</code> MUST be converted to an array of shape (, , 3). Its largest dimension MUST be 2000 pixels. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/spatial-outputs">Space Ranger Spatial Outputs</a>.
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
-#### spatial[_library_id_]['metadata']
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>metadata</td>
-    </tr>
-    <tr>
-      <th>Annotation</th>
-      <td>Curator MAY annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>
-          <code>dict</code>
         </td>
     </tr>
 </tbody></table>
