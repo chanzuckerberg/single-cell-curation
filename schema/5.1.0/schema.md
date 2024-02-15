@@ -1424,15 +1424,6 @@ Curators MUST annotate the following keys and values in `uns`:
 
 ### spatial
 
----
----
-
-
-**Editor Note: Add a requirement that only the fields documented in the schema must be present under <code>spatial</code>.**
-
----
----
-
 <table><tbody>
     <tr>
       <th>Key</th>
