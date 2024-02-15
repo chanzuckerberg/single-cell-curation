@@ -1453,7 +1453,7 @@ Curators MUST annotate the following keys and values in `uns`:
           <li>spatial[<i>library_id</i>]['scalefactors']</li>
           <li>spatial[<i>library_id</i>]['scalefactors']['spot_diameter_fullres']</li>
           <li>spatial[<i>library_id</i>]['scalefactors']['tissue_hires_scalef']</li>
-         </ul>Additional key-value pairs MUST NOT be present.
+         </ul><br>Additional key-value pairs MUST NOT be present.
         </td>
     </tr>
 </tbody></table>
