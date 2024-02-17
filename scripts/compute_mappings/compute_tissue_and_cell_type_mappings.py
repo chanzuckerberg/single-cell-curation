@@ -220,7 +220,6 @@ orphan_tissues = [
 
 # Hand-curated cell classes.
 cell_classes = [
-    "CL_0002494",  # cardiocyte
     "CL_0002320",  # connective tissue cell
     "CL_0000473",  # defensive cell
     "CL_0000066",  # epithelial cell
@@ -324,6 +323,7 @@ cell_subclasses = [
     "CL_2000004",  # pituitary gland cell
     "CL_2000064",  # ovarian surface epithelial cell
     "CL_4030031",  # interstitial cell
+    "CL_0002494",  # cardiocyte
 ]
 
 
