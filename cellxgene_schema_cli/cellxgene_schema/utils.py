@@ -40,7 +40,9 @@ def map_ontology_term(dataframe, ontology_name, map_from_column, update_map):
     dataframe[column_name] = dataframe[column_name].cat.remove_unused_categories()
 
 
-def remove_deprecated_features(adata: ad.AnnData, deprecated: List[str]) -> ad.AnnData:
+def remove_and_remap_deprecated_features(
+        *, adata: ad.AnnData, deprecated: List[str], remapped_terms: dict[str, str]
+    ) -> ad.AnnData:
     # Filter out genes that don't appear in the approved annotation
     var_to_keep = adata.var.index[~adata.var.index.isin(deprecated)].tolist()
     adata = adata[:, var_to_keep]
@@ -48,8 +50,14 @@ def remove_deprecated_features(adata: ad.AnnData, deprecated: List[str]) -> ad.A
     # Repeat much of the same steps for the raw.var, if it exists
     if adata.raw:
         raw_adata = ad.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
+
+        # Remove the deprecated terms
         var_to_keep = raw_adata.var.index[~raw_adata.var.index.isin(deprecated)].tolist()
         raw_adata = raw_adata[:, var_to_keep]
+
+        # Replace values in the var index using the remapped_terms dictionary
+        raw_adata.var.index = raw_adata.var.index.map(remapped_terms).fillna(raw_adata.var.index)
+
         adata.raw = raw_adata
     return adata
 
