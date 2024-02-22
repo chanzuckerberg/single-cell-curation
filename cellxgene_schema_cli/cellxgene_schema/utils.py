@@ -53,16 +53,18 @@ def remove_deprecated_features(*, adata: ad.AnnData, deprecated: List[str]) -> a
         adata.raw = raw_adata
     return adata
 
+
 def remap_deprecated_features(*, adata: ad.AnnData, remapped_terms: dict[str, str]) -> ad.AnnData:
-    # Remap deprecated terms
-    adata = adata.var.index.map(remapped_terms).fillna(adata.var.index)
+    # Use remapped_terms to map to the new term ids
+    adata.var.index = [remapped_terms.get(val, val) for val in adata.var.index]
 
     # Repeat much of the same steps for the raw.var, if it exists
     if adata.raw:
         raw_adata = ad.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
-        raw_adata.var.index = raw_adata.var.index.map(remapped_terms).fillna(raw_adata.var.index)
+        raw_adata.var.index = [remapped_terms.get(val, val) for val in raw_adata.var.index]
         adata.raw = raw_adata
     return adata
+
 
 def get_matrix_format(adata: ad.AnnData, matrix: Union[np.ndarray, sparse.spmatrix]) -> str:
     """

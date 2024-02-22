@@ -41,7 +41,7 @@ def deprecated_term_map_no_replacement_match():
 
 def test_remove_deprecated_features__with_raw(adata_with_raw, deprecated_features):
     # Call the function under test
-    result = remove_deprecated_features(adata_with_raw, deprecated_features)
+    result = remove_deprecated_features(adata=adata_with_raw, deprecated=deprecated_features)
 
     # Check if the deprecated features are removed
     assert result.var_names.tolist() == ["ENSMUSG00000059552", "ENSSASG00005000004"]
@@ -50,7 +50,7 @@ def test_remove_deprecated_features__with_raw(adata_with_raw, deprecated_feature
 
 def test_remove_deprecated_features__without_raw(adata_without_raw, deprecated_features):
     # Call the function under test
-    result = remove_deprecated_features(adata_without_raw, deprecated_features)
+    result = remove_deprecated_features(adata=adata_without_raw, deprecated=deprecated_features)
 
     # Check if the deprecated features are removed
     assert result.var_names.tolist() == ["ENSMUSG00000059552", "ENSSASG00005000004"]
