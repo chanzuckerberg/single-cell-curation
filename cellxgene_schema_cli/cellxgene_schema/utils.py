@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 from base64 import b85encode
-from typing import List, Dict, Union
+from typing import Dict, List, Union
 
 import anndata as ad
 import numpy as np
