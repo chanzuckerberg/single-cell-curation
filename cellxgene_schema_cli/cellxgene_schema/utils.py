@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 from base64 import b85encode
-from typing import List, Union
+from typing import List, Dict, Union
 
 import anndata as ad
 import numpy as np
@@ -54,7 +54,7 @@ def remove_deprecated_features(*, adata: ad.AnnData, deprecated: List[str]) -> a
     return adata
 
 
-def remap_deprecated_features(*, adata: ad.AnnData, remapped_terms: dict[str, str]) -> ad.AnnData:
+def remap_deprecated_features(*, adata: ad.AnnData, remapped_terms: Dict[str, str]) -> ad.AnnData:
     # Use remapped_terms to map to the new term ids
     adata.var.index = [remapped_terms.get(val, val) for val in adata.var.index]
 
