@@ -84,6 +84,9 @@ def get_genes(dataset: dict) -> List[str]:  # type: ignore
         while filtered_columns and suffix < len(var_df.columns) and f"{prefix}{suffix}" not in var_df.columns:
             suffix += 1
         if suffix == len(var_df.columns) or not filtered_columns:
+            # NOTE: this error will be raised on at least one dataset (as of feb 2024). if this fails on more
+            # datasets in the future, we may want to consider actually fixing it, as described here:
+            # https://github.com/chanzuckerberg/single-cell-data-portal/issues/6695
             raise KeyError(f"No columns with matching prefix:'{prefix}' found in var_df")
         index_name = f"{prefix}{suffix}"
         stored_genes = var_df[index_name].to_list()
