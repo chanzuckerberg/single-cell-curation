@@ -32,11 +32,28 @@ class TestMigrate:
         }
         with TemporaryDirectory() as tmp, patch("cellxgene_schema.migrate.DEPRECATED_FEATURE_IDS", ["DUMMY"]), patch(
             "cellxgene_schema.migrate.ONTOLOGY_TERM_MAPS", test_ONTOLOGY_TERM_MAPS
-        ), patch("cellxgene_schema.ontology.OntologyChecker.get_term_ancestors", MagicMock(return_value=set())):
+        ), patch("cellxgene_schema.ontology.OntologyChecker.get_term_ancestors", MagicMock(return_value=set())), patch(
+            "cellxgene_schema.migrate.GENCODE_MAPPER", {"ENSSASG00005000004": "ENSSASG00005000004_NEW"}
+        ):
             result_h5ad = tmp + "result.h5ad"
             test_h5ad = tmp + "test.h5ad"
-
             adata_with_labels_unmigrated.copy().write_h5ad(test_h5ad, compression="gzip")
+
+            # Verify regular adata is what we expect before migration
+            assert any(adata_with_labels_unmigrated.var.index.isin(["DUMMY"]))
+            assert any(adata_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004"]))
+            assert not any(adata_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004_NEW"]))
+
+            # Verify raw adata is what we expect before migration
+            adata_raw_with_labels_unmigrated = anndata.AnnData(
+                adata_with_labels_unmigrated.raw.X,
+                var=adata_with_labels_unmigrated.raw.var,
+                obs=adata_with_labels_unmigrated.obs,
+            )
+            assert any(adata_raw_with_labels_unmigrated.var.index.isin(["DUMMY"]))
+            assert any(adata_raw_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004"]))
+            assert not any(adata_raw_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004_NEW"]))
+
             migrate(
                 input_file=test_h5ad,
                 output_file=result_h5ad,
@@ -44,7 +61,14 @@ class TestMigrate:
                 dataset_id="",
             )
 
+            # Verify regular adata is what we expect after migration
             adata = anndata.read_h5ad(result_h5ad)
             assert not any(adata.var.index.isin(["DUMMY"]))
+            assert not any(adata.var.index.isin(["ENSSASG00005000004"]))
+            assert any(adata.var.index.isin(["ENSSASG00005000004_NEW"]))
+
+            # Verify raw adata is what we expect after migration
             raw_adata = anndata.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
             assert not any(raw_adata.var.index.isin(["DUMMY"]))
+            assert not any(raw_adata.var.index.isin(["ENSSASG00005000004"]))
+            assert any(raw_adata.var.index.isin(["ENSSASG00005000004_NEW"]))

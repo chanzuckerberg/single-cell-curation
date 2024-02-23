@@ -7,6 +7,7 @@ from cellxgene_schema.utils import (
     get_hash_digest_column,
     map_ontology_term,
     read_h5ad,
+    remap_deprecated_features,
     remove_deprecated_features,
     replace_ontology_term,
 )
@@ -30,6 +31,11 @@ def deprecated_features():
 
 
 @pytest.fixture
+def remapped_features():
+    return {"ENSMUSG00000059552": "ENSMUSG00000059552_NEW"}
+
+
+@pytest.fixture
 def deprecated_term_map_with_replacement_match():
     return {"EFO:0009899": "EFO:0000001"}
 
@@ -41,7 +47,7 @@ def deprecated_term_map_no_replacement_match():
 
 def test_remove_deprecated_features__with_raw(adata_with_raw, deprecated_features):
     # Call the function under test
-    result = remove_deprecated_features(adata_with_raw, deprecated_features)
+    result = remove_deprecated_features(adata=adata_with_raw, deprecated=deprecated_features)
 
     # Check if the deprecated features are removed
     assert result.var_names.tolist() == ["ENSMUSG00000059552", "ENSSASG00005000004"]
@@ -49,11 +55,66 @@ def test_remove_deprecated_features__with_raw(adata_with_raw, deprecated_feature
 
 
 def test_remove_deprecated_features__without_raw(adata_without_raw, deprecated_features):
+    # Verify existing fixtures don't contain the deprecated features
+    assert adata_without_raw.var_names.tolist() == [
+        "ERCC-00002",
+        "ENSG00000127603",
+        "ENSMUSG00000059552",
+        "ENSSASG00005000004",
+    ]
+
     # Call the function under test
-    result = remove_deprecated_features(adata_without_raw, deprecated_features)
+    result = remove_deprecated_features(adata=adata_without_raw, deprecated=deprecated_features)
 
     # Check if the deprecated features are removed
     assert result.var_names.tolist() == ["ENSMUSG00000059552", "ENSSASG00005000004"]
+    assert result.raw is None
+
+
+def test_remap_deprecated_features__with_raw(adata_with_raw, remapped_features):
+    # Verify existing fixtures don't contain the deprecated features
+    assert adata_with_raw.var_names.tolist() == [
+        "ERCC-00002",
+        "ENSG00000127603",
+        "ENSMUSG00000059552",
+        "ENSSASG00005000004",
+    ]
+    assert adata_with_raw.raw.var_names.tolist() == [
+        "ERCC-00002",
+        "ENSG00000127603",
+        "ENSMUSG00000059552",
+        "ENSSASG00005000004",
+    ]
+
+    # Call the function under test
+    result = remap_deprecated_features(adata=adata_with_raw, remapped_features=remapped_features)
+
+    # Check if the deprecated features are replaced
+    assert result.var_names.tolist() == [
+        "ERCC-00002",
+        "ENSG00000127603",
+        "ENSMUSG00000059552_NEW",
+        "ENSSASG00005000004",
+    ]
+    assert result.raw.var_names.tolist() == [
+        "ERCC-00002",
+        "ENSG00000127603",
+        "ENSMUSG00000059552_NEW",
+        "ENSSASG00005000004",
+    ]
+
+
+def test_remap_deprecated_features__without_raw(adata_without_raw, remapped_features):
+    # Call the function under test
+    result = remap_deprecated_features(adata=adata_without_raw, remapped_features=remapped_features)
+
+    # Check if the deprecated features are replaced
+    assert result.var_names.tolist() == [
+        "ERCC-00002",
+        "ENSG00000127603",
+        "ENSMUSG00000059552_NEW",
+        "ENSSASG00005000004",
+    ]
     assert result.raw is None
 
 

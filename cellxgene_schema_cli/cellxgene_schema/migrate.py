@@ -316,6 +316,22 @@ DEPRECATED_FEATURE_IDS = [
     "ENSMUSG00000101725",
     "ENSMUSG00000096850",
 ]
+
+# Manually curated migration of v38 terms to v44
+# https://github.com/chanzuckerberg/single-cell-curation/issues/572
+GENCODE_MAPPER = {
+    'ENSG00000112096': 'ENSG00000291237',
+    'ENSG00000277077': 'ENSG00000289133',
+    'ENSG00000215271': 'ENSG00000290292',
+    'ENSG00000225932': 'ENSG00000288784',
+    'ENSG00000244693': 'ENSG00000289604',
+    'ENSG00000203812': 'ENSG00000288825',
+    'ENSG00000272196': 'ENSG00000288859',
+    'ENSG00000263464': 'ENSG00000288867',
+    'ENSG00000256374': 'ENSG00000289549',
+    'ENSG00000288546': 'ENSG00000289084',
+    'ENSG00000205485': 'ENSG00000290873'
+}
 # fmt: on
 
 
@@ -349,6 +365,9 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
     if DEPRECATED_FEATURE_IDS:
-        dataset = utils.remove_deprecated_features(dataset, DEPRECATED_FEATURE_IDS)
+        dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
+
+    # Manually remap v38 terms to v44
+    dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
 
     dataset.write(output_file, compression="gzip")
