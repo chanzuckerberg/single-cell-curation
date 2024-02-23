@@ -39,13 +39,13 @@ class TestMigrate:
             test_h5ad = tmp + "test.h5ad"
 
             # Verify regular adata is what we expect before migration
-            adata = anndata.read_h5ad(result_h5ad)
+            adata_with_labels_unmigrated = anndata.read_h5ad(test_h5ad)
             assert any(adata.var.index.isin(["DUMMY"]))
             assert any(adata.var.index.isin(["ENSSASG00005000004"]))
             assert not any(adata.var.index.isin(["ENSSASG00005000004_NEW"]))
 
             # Verify raw adata is what we expect before migration
-            raw_adata = anndata.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
+            adata_with_labels_unmigrated = anndata.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
             assert any(raw_adata.var.index.isin(["DUMMY"]))
             assert any(raw_adata.var.index.isin(["ENSSASG00005000004"]))
             assert not any(raw_adata.var.index.isin(["ENSSASG00005000004_NEW"]))
