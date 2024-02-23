@@ -55,6 +55,14 @@ def test_remove_deprecated_features__with_raw(adata_with_raw, deprecated_feature
 
 
 def test_remove_deprecated_features__without_raw(adata_without_raw, deprecated_features):
+    # Verify existing fixtures don't contain the remapped features
+    assert result.var_names.tolist() == [
+        "ERCC-00002",
+        "ENSG00000127603",
+        "ENSMUSG00000059552",
+        "ENSSASG00005000004",
+    ]
+
     # Call the function under test
     result = remove_deprecated_features(adata=adata_without_raw, deprecated=deprecated_features)
 
@@ -64,8 +72,22 @@ def test_remove_deprecated_features__without_raw(adata_without_raw, deprecated_f
 
 
 def test_remap_deprecated_features__with_raw(adata_with_raw, remapped_features):
+    # Verify existing fixtures don't contain the remapped features
+    assert result.var_names.tolist() == [
+        "ERCC-00002",
+        "ENSG00000127603",
+        "ENSMUSG00000059552",
+        "ENSSASG00005000004",
+    ]
+    assert result.raw.var_names.tolist() == [
+        "ERCC-00002",
+        "ENSG00000127603",
+        "ENSMUSG00000059552",
+        "ENSSASG00005000004",
+    ]
+
     # Call the function under test
-    result = remap_deprecated_features(adata=adata_with_raw, remapped_terms=remapped_features)
+    result = remap_deprecated_features(adata=adata_with_raw, remapped_features=remapped_features)
 
     # Check if the deprecated features are replaced
     assert result.var_names.tolist() == [
@@ -84,7 +106,7 @@ def test_remap_deprecated_features__with_raw(adata_with_raw, remapped_features):
 
 def test_remap_deprecated_features__without_raw(adata_without_raw, remapped_features):
     # Call the function under test
-    result = remap_deprecated_features(adata=adata_without_raw, remapped_terms=remapped_features)
+    result = remap_deprecated_features(adata=adata_without_raw, remapped_features=remapped_features)
 
     # Check if the deprecated features are replaced
     assert result.var_names.tolist() == [

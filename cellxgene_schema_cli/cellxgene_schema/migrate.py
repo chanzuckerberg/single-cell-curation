@@ -368,6 +368,6 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
 
     # Manually remap v38 terms to v44
-    dataset = utils.remap_deprecated_features(adata=dataset, remapped_terms=GENCODE_MAPPER)
+    dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
 
     dataset.write(output_file, compression="gzip")
