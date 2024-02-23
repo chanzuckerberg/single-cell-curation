@@ -3,7 +3,6 @@ from unittest.mock import MagicMock, patch
 
 import anndata
 from cellxgene_schema.migrate import migrate
-from fixtures.examples_validate import adata_with_labels_unmigrated
 
 
 class TestMigrate:
@@ -40,15 +39,19 @@ class TestMigrate:
 
             # Verify regular adata is what we expect before migration
             adata_with_labels_unmigrated = anndata.read_h5ad(test_h5ad)
-            assert any(adata.var.index.isin(["DUMMY"]))
-            assert any(adata.var.index.isin(["ENSSASG00005000004"]))
-            assert not any(adata.var.index.isin(["ENSSASG00005000004_NEW"]))
+            assert any(adata_with_labels_unmigrated.var.index.isin(["DUMMY"]))
+            assert any(adata_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004"]))
+            assert not any(adata_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004_NEW"]))
 
             # Verify raw adata is what we expect before migration
-            adata_with_labels_unmigrated = anndata.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
-            assert any(raw_adata.var.index.isin(["DUMMY"]))
-            assert any(raw_adata.var.index.isin(["ENSSASG00005000004"]))
-            assert not any(raw_adata.var.index.isin(["ENSSASG00005000004_NEW"]))
+            adata_raw_with_labels_unmigrated = anndata.AnnData(
+                adata_with_labels_unmigrated.raw.X,
+                var=adata_with_labels_unmigrated.raw.var,
+                obs=adata_with_labels_unmigrated.obs,
+            )
+            assert any(adata_raw_with_labels_unmigrated.var.index.isin(["DUMMY"]))
+            assert any(adata_raw_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004"]))
+            assert not any(adata_raw_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004_NEW"]))
 
             adata_with_labels_unmigrated.copy().write_h5ad(test_h5ad, compression="gzip")
             migrate(
