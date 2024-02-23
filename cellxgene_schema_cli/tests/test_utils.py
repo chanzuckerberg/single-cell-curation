@@ -55,7 +55,7 @@ def test_remove_deprecated_features__with_raw(adata_with_raw, deprecated_feature
 
 
 def test_remove_deprecated_features__without_raw(adata_without_raw, deprecated_features):
-    # Verify existing fixtures don't contain the remapped features
+    # Verify existing fixtures don't contain the deprecated features
     assert adata_without_raw.var_names.tolist() == [
         "ERCC-00002",
         "ENSG00000127603",
@@ -72,7 +72,7 @@ def test_remove_deprecated_features__without_raw(adata_without_raw, deprecated_f
 
 
 def test_remap_deprecated_features__with_raw(adata_with_raw, remapped_features):
-    # Verify existing fixtures don't contain the remapped features
+    # Verify existing fixtures don't contain the deprecated features
     assert adata_with_raw.var_names.tolist() == [
         "ERCC-00002",
         "ENSG00000127603",
