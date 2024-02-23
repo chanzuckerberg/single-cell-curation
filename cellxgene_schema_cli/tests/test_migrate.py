@@ -36,6 +36,7 @@ class TestMigrate:
         ):
             result_h5ad = tmp + "result.h5ad"
             test_h5ad = tmp + "test.h5ad"
+            adata_with_labels_unmigrated.copy().write_h5ad(test_h5ad, compression="gzip")
 
             # Verify regular adata is what we expect before migration
             adata_with_labels_unmigrated = anndata.read_h5ad(test_h5ad)
@@ -53,7 +54,6 @@ class TestMigrate:
             assert any(adata_raw_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004"]))
             assert not any(adata_raw_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004_NEW"]))
 
-            adata_with_labels_unmigrated.copy().write_h5ad(test_h5ad, compression="gzip")
             migrate(
                 input_file=test_h5ad,
                 output_file=result_h5ad,
