@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import anndata
 from cellxgene_schema.migrate import migrate
+from fixtures.examples_validate import adata_with_labels_unmigrated
 
 
 class TestMigrate:
@@ -39,7 +40,6 @@ class TestMigrate:
             adata_with_labels_unmigrated.copy().write_h5ad(test_h5ad, compression="gzip")
 
             # Verify regular adata is what we expect before migration
-            adata_with_labels_unmigrated = anndata.read_h5ad(test_h5ad)
             assert any(adata_with_labels_unmigrated.var.index.isin(["DUMMY"]))
             assert any(adata_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004"]))
             assert not any(adata_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004_NEW"]))
