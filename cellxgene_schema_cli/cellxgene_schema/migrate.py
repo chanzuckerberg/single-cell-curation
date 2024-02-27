@@ -15,7 +15,7 @@ ONTOLOGY_TERM_MAPS = {
     "assay": {
     },
     "cell_type": {
-        "CL:0000003": "CL:0000000", # AUTOMATED
+        "CL:0000003": "unknown",
         "CL:0002371": "CL:0000000", # AUTOMATED
     },
     "development_stage": {
