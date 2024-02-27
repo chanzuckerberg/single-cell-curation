@@ -16,7 +16,7 @@ ONTOLOGY_TERM_MAPS = {
     },
     "cell_type": {
         "CL:0000003": "unknown",
-        "CL:0002371": "CL:0000000", # AUTOMATED
+        "CL:0002371": "unknown",
     },
     "development_stage": {
     },
@@ -363,11 +363,11 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     #   <custom transformation logic beyond scope of replace_ontology_term>
     # ...
 
+    # Manually remap v38 terms to v44
+    dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
+
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
     if DEPRECATED_FEATURE_IDS:
         dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
-
-    # Manually remap v38 terms to v44
-    dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
 
     dataset.write(output_file, compression="gzip")
