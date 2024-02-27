@@ -15,8 +15,8 @@ ONTOLOGY_TERM_MAPS = {
     "assay": {
     },
     "cell_type": {
-        "CL:0000003": "CL:0000000", # AUTOMATED
-        "CL:0002371": "CL:0000000", # AUTOMATED
+        "CL:0000003": "unknown",
+        "CL:0002371": "unknown",
     },
     "development_stage": {
     },
@@ -363,11 +363,57 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     #   <custom transformation logic beyond scope of replace_ontology_term>
     # ...
 
-    # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
-    if DEPRECATED_FEATURE_IDS:
-        dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
+    if collection_id == "91c8e321-566f-4f9d-b89e-3a164be654d5":
+        utils.map_ontology_term(
+            dataset.obs,
+            "cell_type",
+            "author_cell_type",
+            {
+                "L4-5IT_RORB_TSHZ2": "CL:4030062",
+                "L2-4IT_CUX2": "CL:4030059",
+                "L4-5IT_RORB_LRRK1": "CL:4030062",
+                "L4-5IT_RORB_ARHGAP15": "CL:4030062",
+                "L6IT_THEMIS_LINC00343": "CL:4030065",
+                "L6IT_THEMIS_CUX1": "CL:4030065",
+                "L3-5IT_RORB_PLCH1": "CL:4030061",
+            },
+        )
+
+    if collection_id == "e1fa9900-3fc9-4b57-9dce-c95724c88716":
+        utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:4023040": "CL:4030059"})
+
+    if collection_id == "4a9fd4d7-d870-4265-89a5-ad51ab811d89":
+        utils.replace_ontology_term(dataset.obs, "assay", {"EFO:0008913": "EFO:0022490"})
+
+    if collection_id == "03608e22-227a-4492-910b-3cb3f16f952e":
+        utils.replace_ontology_term(dataset.obs, "disease", {"MONDO:1011336": "MONDO:1010239"})
+        utils.replace_ontology_term(dataset.obs, "assay", {"EFO:0008930": "EFO:0022488"})
+
+    if collection_id == "59c9ecfe-c47d-4a6a-bab0-895cc0c1942b":
+        utils.map_ontology_term(
+            dataset.obs,
+            "cell_type",
+            "cellID2",
+            {
+                "L5/6 excitatory neuron": "CL:4030067",
+                "L5/6 CC excitatory neuron": "CL:4030067",
+                "L2/3 excitatory neuron": "CL:4030059",
+                "L4 excitatory neuron": "CL:4030063",
+            },
+        )
+
+    if dataset.uns["title"] == "Major cell cluster: CNS neurons":
+        utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0003001": "CL:4033053"})
+    if dataset.uns["title"] == "Major cell cluster: Epithelial cells":
+        utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000068": "CL:4030066"})
+    if dataset.uns["title"] == "Whole dataset: Raw counts only":
+        utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0003001": "CL:4033053", "CL:0000068": "CL:4030066"})
 
     # Manually remap v38 terms to v44
     dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
+
+    # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
+    if DEPRECATED_FEATURE_IDS:
+        dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
 
     dataset.write(output_file, compression="gzip")
