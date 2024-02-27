@@ -1,4 +1,4 @@
 awscli==1.29.13
-owlready2==0.38
+owlready2==0.40.0
 pygraphviz==1.11 --global-option=build_ext --global-option="-I$(brew --prefix graphviz)/include" --global-option="-L$(brew --prefix graphviz)/lib"
 requests==2.31.0
