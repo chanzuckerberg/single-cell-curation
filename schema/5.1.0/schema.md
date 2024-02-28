@@ -160,13 +160,6 @@ Reserved Names from previous schema versions that have since been deprecated MUS
 
 This includes names, emails, or other PII for researchers or curators involved in the data generation and submission.
 
-**Visium Spatial Gene Expression**. It is STRONGLY RECOMMENDED that *Visium Spatial Gene Expression* datasets represent one Space Ranger output for a single tissue section. This representation is referenced throughout the schema as **Visium Single**.
-
-Visium datasets that represent multiple Space Ranger outputs MAY be submitted. This representation is referenced throughout the schema as **Visium Multiple** which will have limited support in CELLxGENE experiences:
-* Image underlays are not supported in CELLxGENE Explorer.
-* Such datasets are not included in CELLxGENE Discover Census.
-* Such datasets are not converted to Seurat for CELLxGENE Discover downloads.
-
 #### *Note on types*
 The types below are python3 types. Note that a python3 `str` is a sequence of Unicode code points, which is stored null-terminated and UTF-8-encoded by anndata.
 
@@ -324,7 +317,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> and <code>uns['spatial']['is_single']</code> is <code>True</code>; otherwise, this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -343,7 +336,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> and <code>uns['spatial']['is_single']</code> is <code>True</code>; otherwise, this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -430,7 +423,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
         <td>categorical with <code>str</code> categories. This MUST be a CL term or <code>"unknown"</code> if:
         <ul>
         <li> no appropriate term can be found (e.g. the cell type is unknown)</li>
-        <li><b>Visium Single</b> and the corresponding value of <code>in_tissue</code> is <code>0</code></li><br>The following terms MUST NOT be used:
+        <li><code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i>, <code>uns['spatial']['is_single']</code> is <code>True</code>, and the corresponding value of <code>in_tissue</code> is <code>0</code></li><br>The following terms MUST NOT be used:
         <ul><li>
           <a href="https://www.ebi.ac.uk/ols4/ontologies/cl/terms?obo_id=CL:0000255"><code>"CL:0000255"</code></a> for <i>eukaryotic cell</i>
         </li>
@@ -457,7 +450,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If <b>Visium Single</b>, all observations MUST be the same value. If unavailable, this MUST be <code>"unknown"</code>. 
+        <td>categorical with <code>str</code> categories. If <code>uns['spatial']['is_single']</code> is <code>True</code>, all observations MUST be the same value. If unavailable, this MUST be <code>"unknown"</code>. 
 <br><br>If <code>organism_ontolology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9606"><code>"NCBITaxon:9606"</code></a> for <i>Homo sapiens</i>, this MUST be the most accurate HsapDv term with the following STRONGLY RECOMMENDED:
           <br><br>
           <table>
@@ -548,7 +541,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If <b>Visium Single</b>, all observations MUST be the same value. This MUST be free-text that identifies a unique individual that data were derived from. It is STRONGLY RECOMMENDED that this identifier be designed so that it is unique to:<br><br>
+        <td>categorical with <code>str</code> categories. If <code>uns['spatial']['is_single']</code> is <code>True</code>, all observations MUST be the same value. This MUST be free-text that identifies a unique individual that data were derived from. It is STRONGLY RECOMMENDED that this identifier be designed so that it is unique to:<br><br>
           <ul><li>a given individual within the collection of datasets that includes this dataset</li>
           <li>a given individual across all collections in CELLxGENE Discover</li></ul><br>
           It is STRONGLY RECOMMENDED that <code>"pooled"</code> be used  for observations from a sample of multiple individuals that were not confidently assigned to a single individual through demultiplexing.<br><br>It is STRONGLY RECOMMENDED that <code>"unknown"</code> ONLY be used for observations in a dataset when it is not known which observations are from the same individual.<br><br>
@@ -566,7 +559,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> and <code>uns['spatial']['is_single']</code> is <code>True</code>; otherwise, this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -609,7 +602,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If <b>Visium Single</b>, all observations MUST be the same value. This MUST be a child of <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A33208"<code>NCBITaxon:33208</code></a> for <i>Metazoa</i>.
+        <td>categorical with <code>str</code> categories. If <code>uns['spatial']['is_single']</code> is <code>True</code>, all observations MUST be the same value. This MUST be a child of <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A33208"<code>NCBITaxon:33208</code></a> for <i>Metazoa</i>.
         </td>
     </tr>
 </tbody></table>
@@ -630,7 +623,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     <tr>
       <th>Value</th>
       <td>
-        categorical with <code>str</code> categories. If <b>Visium Single</b>, all observations MUST be the same value. If
+        categorical with <code>str</code> categories. If <code>uns['spatial']['is_single']</code> is <code>True</code>, all observations MUST be the same value. If
         <code>organism_ontolology_term_id</code> is
         <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>,
         the value MUST be formatted as one or more comma-separated (with no leading or trailing spaces) HANCESTRO
@@ -844,7 +837,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If <b>Visium Single</b>, all observations MUST be the same value. This MUST be a child of <a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0001894">PATO:0001894</a> for  <i>phenotypic sex</i> or <code>"unknown"</code> if unavailable.
+        <td>categorical with <code>str</code> categories. If <code>uns['spatial']['is_single']</code> is <code>True</code>, all observations MUST be the same value. This MUST be a child of <a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0001894">PATO:0001894</a> for  <i>phenotypic sex</i> or <code>"unknown"</code> if unavailable.
         </td>
     </tr>
 </tbody></table>
@@ -1209,11 +1202,11 @@ To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator MUST annotate if <b>Visium Single</b> or if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i>; otherwise, this key MUST NOT be present.</td>
+      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i>; otherwise, this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>numpy.ndarray</code>. If <b>Visium Single</b>, the array MUST be created from the corresponding <code>pxl_row_in_fullres</code> and <code>pxl_col_in_fullres</code> fields from <code>tissue_positions_list.csv</code> or <code>tissue_positions.csv</code>. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/spatial-outputs">Space Ranger Spatial Outputs</a>.<br><br>
+        <td><code>numpy.ndarray</code>. If <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> and <code>uns['spatial']['is_single']</code> is <code>True</code>, the array MUST be created from the corresponding <code>pxl_row_in_fullres</code> and <code>pxl_col_in_fullres</code> fields from <code>tissue_positions_list.csv</code> or <code>tissue_positions.csv</code>. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/spatial-outputs">Space Ranger Spatial Outputs</a>.<br><br>
         </td>
     </tr>
 </tbody></table>
@@ -1234,7 +1227,7 @@ To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more
     </tr>
     <tr>
       <th>Annotator</th>
-         <td>Curator MUST annotate if NOT <b>Visium Single</b>.</td>
+         <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is neither <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> nor <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i>.<br><br>Curator MAY annotate if <code>assay_ontology_term_id</code> is either <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i>.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1431,12 +1424,13 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i>; otherwise, this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>dict</code>. The key-value pairs are documented in the following sections:
+        <td><code>dict</code>. The requirements for the key-value pairs are documented in the following sections:
           <ul>
+          <li>spatial['is_single']</li>         
           <li>spatial[<i>library_id</i>]</li>
           <li>spatial[<i>library_id</i>]['images']</li>
           <li>spatial[<i>library_id</i>]['images']['fullres']</li>
@@ -1450,6 +1444,31 @@ Curators MUST annotate the following keys and values in `uns`:
 </tbody></table>
 <br>
 
+#### is_single
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>is_single</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i>; otherwise, this key MUST NOT be present.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>bool</code>. This MUST be <code>True</code>:
+        <ul>
+        <li>if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> and the dataset represents one Space Ranger output for a single tissue section
+      </li>
+      <li> if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i> and the dataset represents the output for one puck</li>
+        </ul>
+        Otherwise, this MUST be <code>False</code>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
 #### spatial[_library_id_]
 <table><tbody>
     <tr>
@@ -1458,7 +1477,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotation</th>
-      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> and <code>uns['spatial']['is_single']</code> is <code>True</code>; otherwise, this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1475,7 +1494,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotation</th>
-      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> and <code>uns['spatial']['is_single']</code> is <code>True</code>; otherwise, this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1494,7 +1513,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotation</th>
-      <td>Curator MAY annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+      <td>Curator MAY annotate if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> and <code>uns['spatial']['is_single']</code> is <code>True</code>; otherwise, this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1513,7 +1532,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotation</th>
-      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> and <code>uns['spatial']['is_single']</code> is <code>True</code>; otherwise, this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1533,7 +1552,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotation</th>
-      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> and <code>uns['spatial']['is_single']</code> is <code>True</code>; otherwise, this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1552,7 +1571,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotation</th>
-      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> and <code>uns['spatial']['is_single']</code> is <code>True</code>; otherwise, this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1569,7 +1588,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotation</th>
-      <td>Curator MUST annotate if <b>Visium Single</b>; otherwise, this key MUST NOT be present.</td>
+      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> and <code>uns['spatial']['is_single']</code> is <code>True</code>; otherwise, this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1827,29 +1846,28 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 
 ### schema v5.1.0
 
-* General Requirements
-  * Defined **Visium Single** as *Visium Spatial Gene Expression* datasets that represent one Space Ranger output for a single tissue section.
-  * Defined **Visium Multiple** as *Visium Spatial Gene Expression* datasets that represent multiple Space Ranger outputs.
 * Required Ontologies
   * PENDING
+* X (Matrix Layers)
+  * Added _Visium Spatial Gene Expression_ to the table of assays
 * obs (Cell metadata)
-  * Added `array_col` for **Visium Single**
-  * Added `array_row` for **Visium Single**
-  * Updated the requirements for `assay_ontology_term_id` for **Visium Single**. All observations MUST be the same value. 
-  * Updated the requirements for `cell_type_ontology_term_id` for **Visium Single**. The value must be `"unknown"` if **Visium Single** and the corresponding value of `in_tissue` is `0`.
-  * Updated the requirements for `development_stage_ontology_term_id` for **Visium Single**. All observations MUST be the same value. 
-  * Updated the requirements for `donor_id` for **Visium Single**. All observations MUST be the same value. 
-  * Added `in_tissue` for **Visium Single**
-  * Updated the requirements for `organism_ontology_term_id` for **Visium Single**. All observations MUST be the same value. 
-  * Updated the requirements for `self_reported_ethnicity_ontology_term_id` for **Visium Single**. All observations MUST be the same value.
-  * Updated the requirements for `sex_ontology_term_id` for **Visium Single**. All observations MUST be the same value. 
+  * Added `array_col` for _Visium Spatial Gene Expression_ when <code>uns['spatial']['is_single']</code> is <code>True</code>
+  * Added `array_row` for _Visium Spatial Gene Expression_ when <code>uns['spatial']['is_single']</code> is <code>True</code>
+  * Updated the requirements for `cell_type_ontology_term_id` for _Visium Spatial Gene Expression_ when <code>uns['spatial']['is_single']</code> is <code>True</code>. The value must be `"unknown"` if the corresponding value of `in_tissue` is `0`.
+  * Updated the requirements for `development_stage_ontology_term_id`. All observations must be the same value when <code>uns['spatial']['is_single']</code> is <code>True</code>.
+  * Updated the requirements for `donor_id`. All observations must be the same value when <code>uns['spatial']['is_single']</code> is <code>True</code>.
+  * Added `in_tissue` for _Visium Spatial Gene Expression_ when <code>uns['spatial']['is_single']</code> is <code>True</code>
+  * Updated the requirements for `organism_ontology_term_id`. All observations must be the same value when <code>uns['spatial']['is_single']</code> is <code>True</code>.
+  * Updated the requirements for `self_reported_ethnicity_ontology_term_id`. All observations must be the same value when <code>uns['spatial']['is_single']</code> is <code>True</code>.
+  * Updated the requirements for `sex_ontology_term_id`. All observations must be the same value when <code>uns['spatial']['is_single']</code> is <code>True</code>.
 * obsm (Embeddings)
-  * Added `spatial` for **Visium Single** and *Slide-seqV2*
+  * Added `spatial` for _Visium Spatial Gene Expression_ and _Slide-seqV2_
   * Updated requirements for `X_{suffix}`. {suffix} MUST NOT be `"spatial"`.
 * uns (Dataset metadata)
-  * Updated the value of `schema_reference` to PENDING
-  * Updated the value of `schema_version` to PENDING
-  * Added `spatial` for **Visium Single**
+  * Updated schema_reference to <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md"</code>
+  * Updated schema_version to <code>"5.1.0"</code>
+  * Added `spatial` for _Visium Spatial Gene Expression_ and _Slide-seqV2_, including scale factors and underlay images for _Visium Spatial Gene Expression_.
+
 
 ### schema v5.0.0
 
@@ -1865,11 +1883,13 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
   * Updated GENCODE (Mouse) to Mouse reference GRCm39 (GENCODE vM33/Ensembl 110)
 * obs (Cell metadata)
   * Updated the requirements for `assay_ontology_term_id` to not allow  the parent terms `EFO:0002772` for _assay by molecule_ and `EFO:0010183` for _single cell library construction_. Their most accurate children are still valid. 
-  * Updated the requirements for `cell_type` to annotate `"unknown"` as the label when the `cell_type_ontology_term_id` value is  `"unknown"`. 
-  * Updated the requirements for `cell_type_ontology_term_id` to replace `"CL:0000003"` for *native cell* with `"unknown"` to indicate that the cell type is unknown. 
+  * **Breaking change**. Updated the requirements for `cell_type` to annotate `"unknown"` as the label when the `cell_type_ontology_term_id` value is  `"unknown"`. 
+  * **Breaking change**. Updated the requirements for `cell_type_ontology_term_id` to replace `"CL:0000003"` for *native cell* with `"unknown"` to indicate that the cell type is unknown. 
   * Updated the requirements for `disease_ontology_term_id` to restrict MONDO terms to the most accurate child of `"MONDO:0000001"` for _disease_ or `"MONDO:0021178"` for _injury_ or preferably its most accurate child.
 * uns (Dataset metadata)
-  * Prohibited fields with a size of zero
+  * Updated requirements. The data stored as a value for a key in `uns` MUST be `True`, `False`, `None`, or its size MUST NOT be zero.
+  * Updated schema_reference to <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md"</code>
+  * Updated schema_version to <code>"5.0.0"</code>
 
 ### schema v4.0.0
 
