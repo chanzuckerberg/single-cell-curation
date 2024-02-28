@@ -1592,6 +1592,8 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
   * Updated the requirements for `disease_ontology_term_id` to restrict MONDO terms to the most accurate child of `"MONDO:0000001"` for _disease_ or `"MONDO:0021178"` for _injury_ or preferably its most accurate child.
 * uns (Dataset metadata)
   * Updated requirements. The data stored as a value for a key in `uns` MUST be `True`, `False`, `None`, or its size MUST NOT be zero.
+  * Updated schema_reference to <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md"</code>
+  * Updated schema_version to <code>"5.0.0"</code>
 
 ### schema v4.0.0
 
