@@ -583,7 +583,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>bool</code>. This MUST be <code>False</code> if <code>uns['spatial']['is_single']</code> is <code>False<code>. This MUST be <code>True</code> if this is the canonical instance of this cellular observation and <code>False</code> if not. This is commonly <code>False</code> for meta-analyses reusing data or for secondary views of data.
+        <td><code>bool</code>. This MUST be <code>False</code> if <code>uns['spatial']['is_single']</code> is <code>False</code>. This MUST be <code>True</code> if this is the canonical instance of this cellular observation and <code>False</code> if not. This is commonly <code>False</code> for meta-analyses reusing data or for secondary views of data.
         </td>
     </tr>
 </tbody></table>
