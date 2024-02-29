@@ -420,7 +420,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be a CL term or <code>"unknown". It MUST be "unknown" when:
+        <td>categorical with <code>str</code> categories. This MUST be a CL term or <code>"unknown"</code>. It MUST be <code>"unknown"</code> when:
         <ul>
         <li> no appropriate term can be found (e.g. the cell type is unknown)</li>
         <li><code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i>, <code>uns['spatial']['is_single']</code> is <code>True</code>, and the corresponding value of <code>in_tissue</code> is <code>0</code></li><br>The following terms MUST NOT be used:
@@ -583,7 +583,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>bool</code>. This MUST be <code>False</code> if <code>uns['spatial']['is_single']</code> is <code>False</code>. This MUST be <code>True</code> if this is the canonical instance of this cellular observation and <code>False</code> if not. This is commonly <code>False</code> for meta-analyses reusing data or for secondary views of data.
+        <td><code>bool</code>. This MUST be <code>False</code> if <code>uns['spatial']['is_single']</code> is <code>False<code>. This MUST be <code>True</code> if this is the canonical instance of this cellular observation and <code>False</code> if not. This is commonly <code>False</code> for meta-analyses reusing data or for secondary views of data.
         </td>
     </tr>
 </tbody></table>
