@@ -363,6 +363,12 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     #   <custom transformation logic beyond scope of replace_ontology_term>
     # ...
 
+    # Delete any uns keys with an empty value, logic taken from:
+    # https://github.com/chanzuckerberg/single-cell-curation/blob/43f891005fb9439dbbb747fa0df8f0435ebf3f7c/cellxgene_schema_cli/cellxgene_schema/validate.py#L761-L762
+    for key, value in list(dataset.uns.items()):
+        if value is not None and type(value) is not bool and len(value) == 0:
+            del dataset.uns[key]
+
     if collection_id == "91c8e321-566f-4f9d-b89e-3a164be654d5":
         utils.map_ontology_term(
             dataset.obs,
