@@ -369,6 +369,11 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         if value is not None and type(value) is not bool and len(value) == 0:
             del dataset.uns[key]
 
+    if "X_.umap_MinDist_0.2_N_Neighbors_15" in dataset.obsm:
+        # Applies to dataset ids 63bb6359-3945-4658-92eb-3072419953e4 and 9b188f26-c8e1-4a78-af15-622a35a371fc
+        dataset.obsm["X_umap_MinDist_0.2_N_Neighbors_15"] = dataset.obsm["X_.umap_MinDist_0.2_N_Neighbors_15"]
+        del dataset.obsm["X_.umap_MinDist_0.2_N_Neighbors_15"]
+
     if collection_id == "91c8e321-566f-4f9d-b89e-3a164be654d5":
         utils.map_ontology_term(
             dataset.obs,
