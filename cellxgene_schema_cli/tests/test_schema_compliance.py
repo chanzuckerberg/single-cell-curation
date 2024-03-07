@@ -1949,7 +1949,7 @@ class TestObsm:
         validator.adata.obsm["X_3D"] = pd.DataFrame(validator.adata.obsm["X_umap"], index=validator.adata.obs_names)
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Suffix for embedding key in 'adata.obsm' X_3D does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9]*$.",
+            "ERROR: Suffix for embedding key in 'adata.obsm' X_3D does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$.",
             "ERROR: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['X_3D']' is <class 'pandas.core.frame.DataFrame'>').",
         ]
 
@@ -1958,7 +1958,7 @@ class TestObsm:
         validator.adata.obsm["3D"] = pd.DataFrame(validator.adata.obsm["X_umap"], index=validator.adata.obs_names)
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Embedding key in 'adata.obsm' 3D does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9]*$."
+            "ERROR: Embedding key in 'adata.obsm' 3D does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$."
         ]
         assert validator.warnings == [
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
@@ -1975,7 +1975,7 @@ class TestObsm:
         validator.adata.obsm["X_"] = validator.adata.obsm["X_umap"]
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Suffix for embedding key in 'adata.obsm' X_ does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9]*$."
+            "ERROR: Suffix for embedding key in 'adata.obsm' X_ does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$."
         ]
 
     def test_obsm_key_name_whitespace(self, validator_with_adata):
@@ -1987,15 +1987,21 @@ class TestObsm:
         obsm["X_ umap"] = obsm["X_umap"]
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Suffix for embedding key in 'adata.obsm' X_ umap does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9]*$.",
+            "ERROR: Suffix for embedding key in 'adata.obsm' X_ umap does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$.",
         ]
 
         del obsm["X_ umap"]
         obsm["u m a p"] = obsm["X_umap"]
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Embedding key in 'adata.obsm' u m a p does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9]*$."
+            "ERROR: Embedding key in 'adata.obsm' u m a p does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$."
         ]
+
+    def test_obsm_suffix_has_special_characters_valid(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.obsm["X_umap_MinDist_0.2_N_Neighbors-15"] = validator.adata.obsm["X_umap"]
+        validator.validate_adata()
+        assert validator.errors == []
 
     def test_obsm_shape_one_column(self, validator_with_adata):
         """
