@@ -1996,7 +1996,7 @@ class TestObsm:
         assert validator.errors == [
             "ERROR: Embedding key in 'adata.obsm' u m a p does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$."
         ]
-    
+
     def test_obsm_suffix_has_special_characters_valid(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.obsm["X_umap_MinDist_0.2_N_Neighbors-15"] = validator.adata.obsm["X_umap"]
