@@ -1221,7 +1221,7 @@ To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more
       <td>X_{suffix} with the following requirements:<br><br>
       <ul>
         <li>{suffix} MUST be at least one character in length.</li>
-        <li>The first character of {suffix} MUST be a letter of the alphabet and the remaining characters MUST be alphanumeric characters or one of: `_`, `-`, `.` (This is equivalent to the regular expression pattern <code>"^[a-zA-Z][a-zA-Z0-9_.-]*$"</code>.)</li>
+        <li>The first character of {suffix} MUST be a letter of the alphabet and the remaining characters MUST be alphanumeric characters or one of: <code>_</code>, <code>-</code>, <code>.</code> (This is equivalent to the regular expression pattern <code>"^[a-zA-Z][a-zA-Z0-9_.-]*$"</code>.)</li>
          <li>{suffix} MUST NOT be <code>"spatial"</code>.
       </ul><br>
       {suffix} is presented as text to users in the <b>Embedding Choice</b> selector in CELLxGENE Explorer so it is STRONGLY RECOMMENDED that it be descriptive.<br><br>See also <code>default_embedding</code> in <code>uns</code>.</td>
