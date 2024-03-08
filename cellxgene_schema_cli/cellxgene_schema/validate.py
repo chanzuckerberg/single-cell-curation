@@ -759,7 +759,7 @@ class Validator:
                 category_mapping[column_name] = column.nunique()
 
         for key, value in uns_dict.items():
-            if value is not None and type(value) is not bool and len(value) == 0:
+            if value is not None and type(value) is not bool and type(value) is not np.bool_ and len(value) == 0:
                 self.errors.append(f"uns['{key}'] cannot be an empty value.")
             if key.endswith("_colors"):
                 # 1. Verify that the corresponding categorical field exists in obs

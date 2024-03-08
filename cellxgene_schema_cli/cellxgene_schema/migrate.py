@@ -1,4 +1,5 @@
 import anndata as ad
+import numpy as np
 
 from . import utils
 
@@ -366,7 +367,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     # Delete any uns keys with an empty value, logic taken from:
     # https://github.com/chanzuckerberg/single-cell-curation/blob/43f891005fb9439dbbb747fa0df8f0435ebf3f7c/cellxgene_schema_cli/cellxgene_schema/validate.py#L761-L762
     for key, value in list(dataset.uns.items()):
-        if value is not None and type(value) is not bool and len(value) == 0:
+        if value is not None and type(value) is not bool and type(value) is not np.bool_ and len(value) == 0:
             del dataset.uns[key]
 
     if "X_.umap_MinDist_0.2_N_Neighbors_15" in dataset.obsm:
