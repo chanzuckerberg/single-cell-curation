@@ -1745,10 +1745,10 @@ class TestUns:
         validator.adata.uns["log1p"] = {}
         validator.validate_adata()
         assert validator.errors == ["ERROR: uns['log1p'] cannot be an empty value."]
-    
+
     def test_uns_bool_allowed(self, validator_with_adata):
         validator = validator_with_adata
-        
+
         # Regular bool value
         validator.adata.uns["log1p"] = True
         validator.validate_adata()
