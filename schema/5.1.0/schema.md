@@ -1221,7 +1221,7 @@ To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more
       <td>X_{suffix} with the following requirements:<br><br>
       <ul>
         <li>{suffix} MUST be at least one character in length.</li>
-        <li>The first character of {suffix} MUST be a letter of the alphabet and the remaining characters MUST be alphanumeric characters or one of: <code>_</code>, <code>-</code>, <code>.</code> (This is equivalent to the regular expression pattern <code>"^[a-zA-Z][a-zA-Z0-9_.-]*$"</code>.)</li>
+        <li>The first character of {suffix} MUST be a letter of the alphabet and the remaining characters MUST be alphanumeric characters, <code>'_'</code>, <code>'-'</code>, or <code>'.'</code> (This is equivalent to the regular expression pattern <code>"^[a-zA-Z][a-zA-Z0-9_.-]*$"</code>.)</li>
          <li>{suffix} MUST NOT be <code>"spatial"</code>.
       </ul><br>
       {suffix} is presented as text to users in the <b>Embedding Choice</b> selector in CELLxGENE Explorer so it is STRONGLY RECOMMENDED that it be descriptive.<br><br>See also <code>default_embedding</code> in <code>uns</code>.</td>
@@ -1887,12 +1887,12 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
   * **Breaking change**. Updated the requirements for `cell_type` to annotate `"unknown"` as the label when the `cell_type_ontology_term_id` value is  `"unknown"`. 
   * **Breaking change**. Updated the requirements for `cell_type_ontology_term_id` to replace `"CL:0000003"` for *native cell* with `"unknown"` to indicate that the cell type is unknown. 
   * Updated the requirements for `disease_ontology_term_id` to restrict MONDO terms to the most accurate child of `"MONDO:0000001"` for _disease_ or `"MONDO:0021178"` for _injury_ or preferably its most accurate child.
+* obsm (Embeddings)
+  * Updated requirements for `X_{suffix}` to change the regular expression pattern from `"^[a-zA-Z][a-zA-Z0-9]*$"` to `"^[a-zA-Z][a-zA-Z0-9_.-]*$"`
 * uns (Dataset metadata)
   * Updated requirements. The data stored as a value for a key in `uns` MUST be `True`, `False`, `None`, or its size MUST NOT be zero.
   * Updated schema_reference to <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md"</code>
   * Updated schema_version to <code>"5.0.0"</code>
-* obsm (Embeddings)
-  * Updated requirements for `obsm['X_{suffix}']`
 
 ### schema v4.0.0
 
