@@ -1754,8 +1754,13 @@ class TestUns:
         validator.validate_adata()
         assert validator.errors == []
 
-        # Numpy bool value
+        # Numpy bool_ value
         validator.adata.uns["log1p"] = numpy.bool_(True)
+        validator.validate_adata()
+        assert validator.errors == []
+
+        # Numpy bool value
+        validator.adata.uns["log1p"] = numpy.bool(True)
         validator.validate_adata()
         assert validator.errors == []
 
