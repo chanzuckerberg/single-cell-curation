@@ -10,6 +10,7 @@ import fixtures.examples_validate as examples
 import numpy
 import pandas as pd
 import pytest
+import scipy.sparse
 from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.utils import getattr_anndata
 from cellxgene_schema.validate import Validator
@@ -1763,6 +1764,17 @@ class TestUns:
         validator.adata.uns["log1p"] = numpy.bool(True)
         validator.validate_adata()
         assert validator.errors == []
+
+    def test_uns_scipy_matrices_cannot_be_empty(self, validator_with_adata):
+        validator = validator_with_adata
+
+        validator.adata.uns["test"] = scipy.sparse.csr_matrix([[1]], dtype=int)
+        validator.validate_adata()
+        assert validator.errors == []
+
+        validator.adata.uns["test"] = scipy.sparse.csr_matrix([[]], dtype=int)
+        validator.validate_adata()
+        assert validator.errors == ["ERROR: uns['test'] cannot be an empty value."]
 
     def test_colors_happy_path_duplicates(self, validator_with_adata):
         validator = validator_with_adata

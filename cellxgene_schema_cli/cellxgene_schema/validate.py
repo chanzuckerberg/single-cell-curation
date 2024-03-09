@@ -9,6 +9,7 @@ import anndata
 import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
+import scipy
 from pandas.core.computation.ops import UndefinedVariableError
 from scipy import sparse
 
@@ -759,7 +760,15 @@ class Validator:
                 category_mapping[column_name] = column.nunique()
 
         for key, value in uns_dict.items():
-            if (
+            if any(
+                [
+                    isinstance(value, sparse_class)
+                    for sparse_class in (scipy.sparse.csr_matrix, scipy.sparse.csc_matrix, scipy.sparse.coo_matrix)
+                ]
+            ):
+                if value.nnz == 0:  # number non-zero
+                    self.errors.append(f"uns['{key}'] cannot be an empty value.")
+            elif (
                 value is not None
                 and type(value) is not bool
                 and not (isinstance(value, (np.bool_, np.bool)))
