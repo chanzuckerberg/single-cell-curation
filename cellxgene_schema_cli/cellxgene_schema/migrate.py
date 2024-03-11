@@ -1,5 +1,6 @@
 import anndata as ad
 import numpy as np
+import scipy
 
 from . import utils
 
@@ -367,13 +368,28 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     # Delete any uns keys with an empty value, logic taken from:
     # https://github.com/chanzuckerberg/single-cell-curation/blob/43f891005fb9439dbbb747fa0df8f0435ebf3f7c/cellxgene_schema_cli/cellxgene_schema/validate.py#L761-L762
     for key, value in list(dataset.uns.items()):
-        if (
+        if any(
+            [
+                isinstance(value, sparse_class)
+                for sparse_class in (scipy.sparse.csr_matrix, scipy.sparse.csc_matrix, scipy.sparse.coo_matrix)
+            ]
+        ):
+            if value.nnz == 0:  # number non-zero
+                del dataset.uns[key]
+        elif (
             value is not None
             and type(value) is not bool
             and not (isinstance(value, (np.bool_, np.bool)))
             and len(value) == 0
         ):
             del dataset.uns[key]
+
+    column_changes = []
+    for key in list(dataset.obsm.keys()):
+        if " " in key:
+            column_changes.append(key)
+            dataset.obsm[key.replace(" ", "_")] = dataset.obsm[key]
+            del dataset.obsm[key]
 
     if "X_.umap_MinDist_0.2_N_Neighbors_15" in dataset.obsm:
         # Applies to dataset ids 63bb6359-3945-4658-92eb-3072419953e4 and 9b188f26-c8e1-4a78-af15-622a35a371fc
@@ -434,3 +450,5 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
 
     dataset.write(output_file, compression="gzip")
+
+    return column_changes
