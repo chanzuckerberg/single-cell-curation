@@ -384,8 +384,10 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         ):
             del dataset.uns[key]
 
+    column_changes = []
     for key in list(dataset.obsm.keys()):
         if " " in key:
+            column_changes.append(key)
             dataset.obsm[key.replace(" ", "_")] = dataset.obsm[key]
             del dataset.obsm[key]
 
@@ -448,3 +450,5 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
 
     dataset.write(output_file, compression="gzip")
+
+    return column_changes
