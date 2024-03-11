@@ -627,7 +627,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
         <code>organism_ontolology_term_id</code> is
         <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>,
         the value MUST be formatted as one or more comma-separated (with no leading or trailing spaces) HANCESTRO
-        terms in ascending lexical order or <code>"unknown"</code> if unavailable.<br><br>For example, if the terms are <code>"HANCESTRO:0014</code> and <code>HANCESTRO:0005"</code> then the value of <code>self_reported_ethnicity_ontology_term_id</code> MUST be <code>"HANCESTRO:0005,HANCESTRO:0014"</code>.<br><br>The following terms MUST NOT be used:<br /><br />
+        terms in ascending lexical order with no duplication of terms or <code>"unknown"</code> if unavailable.<br><br>For example, if the terms are <code>"HANCESTRO:0014</code> and <code>HANCESTRO:0005"</code> then the value of <code>self_reported_ethnicity_ontology_term_id</code> MUST be <code>"HANCESTRO:0005,HANCESTRO:0014"</code>.<br><br>The following terms MUST NOT be used:<br /><br />
         <ul>
           <li>
             <a
@@ -1864,7 +1864,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
   * Updated the requirements for `donor_id`. All observations must be the same value when <code>uns['spatial']['is_single']</code> is <code>True</code>.
   * Added `in_tissue` for _Visium Spatial Gene Expression_ when <code>uns['spatial']['is_single']</code> is <code>True</code>
   * Updated the requirements for `organism_ontology_term_id`. All observations must be the same value when <code>uns['spatial']['is_single']</code> is <code>True</code>.
-  * Updated the requirements for `self_reported_ethnicity_ontology_term_id`. All observations must be the same value when <code>uns['spatial']['is_single']</code> is <code>True</code>.
+  * Updated the requirements for `self_reported_ethnicity_ontology_term_id`.  There must be no duplication of terms. All observations must be the same value when <code>uns['spatial']['is_single']</code> is <code>True</code>.
   * Updated the requirements for `sex_ontology_term_id`. All observations must be the same value when <code>uns['spatial']['is_single']</code> is <code>True</code>.
 * obsm (Embeddings)
   * Added `spatial` for _Visium Spatial Gene Expression_ and _Slide-seqV2_
