@@ -386,9 +386,18 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     column_changes = []
     for key in list(dataset.obsm.keys()):
+        delete_key = False
         if " " in key:
-            column_changes.append(key)
             dataset.obsm[key.replace(" ", "_")] = dataset.obsm[key]
+            delete_key = True
+        if key.startswith("_"):
+            dataset.obsm[key.strip("_")] = dataset.obsm[key]
+            delete_key = True
+        if "(" in key or ")" in key:
+            dataset.obsm[key.replace("(", "").replace(")", "")] = dataset.obsm[key]
+            delete_key = True
+        if delete_key:
+            column_changes.append(key)
             del dataset.obsm[key]
 
     if "X_.umap_MinDist_0.2_N_Neighbors_15" in dataset.obsm:
