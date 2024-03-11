@@ -384,7 +384,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         ):
             del dataset.uns[key]
 
-    for key in dataset.obsm:
+    for key in list(dataset.obsm.keys()):
         if " " in key:
             dataset.obsm[key.replace(" ", "_")] = dataset.obsm[key]
             del dataset.obsm[key]
