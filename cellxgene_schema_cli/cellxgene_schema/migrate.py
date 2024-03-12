@@ -387,16 +387,20 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     column_changes = []
     for key in list(dataset.obsm.keys()):
         delete_key = False
-        if " " in key:
-            dataset.obsm[key.replace(" ", "_")] = dataset.obsm[key]
+        new_key = key
+        if " " in new_key:
+            new_key = new_key.replace(" ", "_")
             delete_key = True
-        if key.startswith("_"):
-            dataset.obsm[key.strip("_")] = dataset.obsm[key]
+        if new_key.startswith("_"):
+            new_key = new_key.strip("_")
             delete_key = True
-        if "(" in key or ")" in key:
-            dataset.obsm[key.replace("(", "").replace(")", "")] = dataset.obsm[key]
+        if "(" in new_key or ")" in new_key:
+            new_key = new_key.replace("(", "").replace(")", "")
             delete_key = True
         if delete_key:
+            dataset.obsm[new_key] = dataset.obsm[key]
+            if (default_embedding := dataset.uns.get("default_embedding")) and default_embedding == key:
+                dataset.uns["default_embedding"] = new_key
             column_changes.append(key)
             del dataset.obsm[key]
 
