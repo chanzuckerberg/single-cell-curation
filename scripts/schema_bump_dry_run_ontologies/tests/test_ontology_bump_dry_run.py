@@ -11,79 +11,118 @@ FIXTURES_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
 @pytest.fixture
-def setup():  # type: ignore
-    mock_onto_map = {
-        "EFO": {
-            "EFO:0000001": {
-                "label": "non-deprecated term",
-                "deprecated": False,
-            },
-            "EFO:0000002": {
-                "label": "obsolete term with replacement",
-                "deprecated": True,
-                "replaced_by": "EFO:0000001",
-            },
-            "EFO:0000003": {
-                "label": "obsolete term without replacement, with comment",
-                "deprecated": True,
-                "comments": ["note: replace with EFO:0000001"],
-            },
-            "EFO:0000004": {
-                "label": "obsolete term without replacement, with consider",
-                "deprecated": True,
-                "consider": ["EFO:0000001", "EFO:0000010"],
-            },
-            "EFO:0000005": {
-                "label": "obsolete term without replacement, with comment and consider",
-                "deprecated": True,
-                "comments": ["Consider removing this term entirely", "Or using one from a different ontology"],
-                "consider": ["EFO:0000001", "EFO:0000010"],
-            },
-            "EFO:0000006": {
-                "label": "obsolete term with replacement from a different ontology",
-                "deprecated": True,
-                "replaced_by": "CL:0000006",
-                "comments": ["Comment adding context to replacement"],
-            },
-            "EFO:0000007": {
-                "label": "obsolete term with replacement and comment",
-                "deprecated": True,
-                "replaced_by": "EFO:0000070",
-                "comments": ["Comment adding context to replacement"],
-            },
-            "EFO:0000008": {
-                "label": "obsolete term with replacement and term tracker",
-                "deprecated": True,
-                "replaced_by": "EFO:0000080",
-                "term_tracker": "www.fake-github-link.com/repo/example-1",
-            },
-            "EFO:0000009": {
-                "label": "obsolete term with considers and term tracker",
-                "deprecated": True,
-                "consider": ["EFO:0000090"],
-                "term_tracker": "www.fake-github-link.com/repo/example-2",
-            },
+def mock_ontology_metadata():
+    return {
+        "EFO:0000001": {
+            "label": "non-deprecated term",
+            "deprecated": False,
+            "consider": None,
+            "term_tracker": None,
+            "comments": [],
         },
-        "HANCESTRO": {
-            "HANCESTRO:0000001": {
-                "label": "non-deprecated term",
-                "deprecated": False,
-            },
-            "HANCESTRO:0000002": {
-                "label": "obsolete term with replacement",
-                "deprecated": True,
-                "replaced_by": "HANCESTRO:0000003",
-            },
+        "EFO:0000002": {
+            "label": "obsolete term with replacement",
+            "deprecated": True,
+            "replaced_by": "EFO:0000001",
+            "consider": None,
+            "term_tracker": None,
+            "comments": [],
+        },
+        "EFO:0000003": {
+            "label": "obsolete term without replacement, with comment",
+            "deprecated": True,
+            "consider": None,
+            "term_tracker": None,
+            "comments": ["note: replace with EFO:0000001"],
+        },
+        "EFO:0000004": {
+            "label": "obsolete term without replacement, with consider",
+            "deprecated": True,
+            "consider": ["EFO:0000001", "EFO:0000010"],
+            "term_tracker": None,
+            "comments": [],
+        },
+        "EFO:0000005": {
+            "label": "obsolete term without replacement, with comment and consider",
+            "deprecated": True,
+            "consider": ["EFO:0000001", "EFO:0000010"],
+            "term_tracker": None,
+            "comments": ["Consider removing this term entirely", "Or using one from a different ontology"],
+        },
+        "EFO:0000006": {
+            "label": "obsolete term with replacement from a different ontology",
+            "deprecated": True,
+            "replaced_by": "CL:0000006",
+            "consider": None,
+            "term_tracker": None,
+            "comments": ["Comment adding context to replacement"],
+        },
+        "EFO:0000007": {
+            "label": "obsolete term with replacement and comment",
+            "deprecated": True,
+            "replaced_by": "EFO:0000070",
+            "consider": None,
+            "term_tracker": None,
+            "comments": ["Comment adding context to replacement"],
+        },
+        "EFO:0000008": {
+            "label": "obsolete term with replacement and term tracker",
+            "deprecated": True,
+            "replaced_by": "EFO:0000080",
+            "consider": None,
+            "term_tracker": "www.fake-github-link.com/repo/example-1",
+            "comments": [],
+        },
+        "EFO:0000009": {
+            "label": "obsolete term with considers and term tracker",
+            "deprecated": True,
+            "consider": ["EFO:0000090"],
+            "term_tracker": "www.fake-github-link.com/repo/example-2",
+            "comments": [],
+        },
+        "HANCESTRO:0000001": {
+            "label": "non-deprecated term",
+            "deprecated": False,
+            "consider": None,
+            "term_tracker": None,
+            "comments": [],
+        },
+        "HANCESTRO:0000002": {
+            "label": "obsolete term with replacement",
+            "deprecated": True,
+            "replaced_by": "HANCESTRO:0000003",
+            "consider": None,
+            "term_tracker": None,
+            "comments": [],
         },
     }
-    public_datasets = [
+
+
+@pytest.fixture
+def mock_ontology_parser(mock_ontology_metadata):
+    mock_ontology_parser = Mock()
+    mock_ontology_parser.is_term_deprecated.side_effect = lambda term_id: mock_ontology_metadata[term_id]["deprecated"]
+    mock_ontology_parser.get_term_metadata.side_effect = lambda term_id: mock_ontology_metadata[term_id]
+    mock_ontology_parser.get_term_replacement.side_effect = lambda term_id: mock_ontology_metadata[term_id].get(
+        "replaced_by", None
+    )
+    return Mock(return_value=mock_ontology_parser)
+
+
+@pytest.fixture
+def public_datasets():
+    return [
         {
             "collection_id": "public_coll_0",
             "dataset_id": "public_ds_0",
             "assay": [{"ontology_term_id": "EFO:0000001"}, {"ontology_term_id": "unknown"}],
         }
     ]
-    private_collections = [
+
+
+@pytest.fixture
+def private_collections():
+    return [
         {
             "collection_id": "private_coll_0",
             "revision_of": None,
@@ -109,6 +148,9 @@ def setup():  # type: ignore
         },
     ]
 
+
+@pytest.fixture
+def mock_fetch_private_dataset(private_collections):
     def mock_fetch_private_dataset(*args):  # type: ignore
         collection_id = args[2]
         dataset_id = args[3]
@@ -118,15 +160,12 @@ def setup():  # type: ignore
                     if ds["dataset_id"] == dataset_id:
                         return ds
 
-    patcher = patch.multiple(
-        "scripts.schema_bump_dry_run_ontologies.ontology_bump_dry_run",
-        load_ontology_map=Mock(return_value=mock_onto_map),
-        get_headers=Mock(),
-        fetch_public_datasets=Mock(return_value=public_datasets),
-        fetch_private_collections=Mock(return_value=private_collections),
-        fetch_private_dataset=Mock(side_effect=mock_fetch_private_dataset),
-    )
-    expected_replaced_by_map = {  # type: ignore
+    return Mock(side_effect=mock_fetch_private_dataset)
+
+
+@pytest.fixture
+def expected_replaced_by_map():
+    return {  # type: ignore
         "assay": {},
         "cell_type": {},
         "development_stage": {},
@@ -136,6 +175,18 @@ def setup():  # type: ignore
         "sex": {},
         "tissue": {},
     }
+
+
+@pytest.fixture
+def setup(mock_ontology_parser, public_datasets, private_collections, mock_fetch_private_dataset, expected_replaced_by_map):  # type: ignore
+    patcher = patch.multiple(
+        "scripts.schema_bump_dry_run_ontologies.ontology_bump_dry_run",
+        OntologyParser=mock_ontology_parser,
+        get_headers=Mock(),
+        fetch_public_datasets=Mock(return_value=public_datasets),
+        fetch_private_collections=Mock(return_value=private_collections),
+        fetch_private_dataset=mock_fetch_private_dataset,
+    )
     patcher.start()
     yield public_datasets, private_collections, expected_replaced_by_map
     patcher.stop()
