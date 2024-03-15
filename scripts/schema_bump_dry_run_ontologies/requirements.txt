@@ -1,1 +1,2 @@
 requests==2.31.0
+cellxgene-ontology-guide==0.0.1 # TODO: use official release version when available

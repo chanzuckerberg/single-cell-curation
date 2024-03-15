@@ -13,10 +13,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Set up Python 3.8
+      - name: Set up Python 3.10
         uses: actions/setup-python@v1
         with:
-          python-version: 3.8
+          python-version: "3.10"
       - name: Python cache
         uses: actions/cache@v1
         with:
@@ -26,7 +26,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          pip install -r scripts/schema_bump_dry_run_ontologies/requirements.txt
+          pip install -r scripts/schema_bump_dry_run_ontologies/requirements.txt --extra-index-url https://test.pypi.org/simple/
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
