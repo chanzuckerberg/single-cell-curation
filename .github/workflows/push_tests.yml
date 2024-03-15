@@ -111,7 +111,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          pip install -r scripts/schema_bump_dry_run_ontologies/requirements.txt
+          pip install -r scripts/schema_bump_dry_run_ontologies/requirements.txt --extra-index-url https://test.pypi.org/simple/
           pip install -r ./requirements-dev.txt
       - name: Ontology Dry Run Unit Tests
         run: make ontology-dry-run-tests
