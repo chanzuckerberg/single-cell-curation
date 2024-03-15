@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from cellxgene_ontology_guide.entities import Ontology
-from cellxgene_schema.ontology import OntologyChecker
 from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.validate import Validator, validate
 from cellxgene_schema.write_labels import AnnDataLabelAppender

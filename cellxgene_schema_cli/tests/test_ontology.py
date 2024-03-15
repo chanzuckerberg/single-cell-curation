@@ -1,16 +1,11 @@
 import pytest
 from cellxgene_schema import ontology
-from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from fixtures.examples_ontology_test import (
     invalid_genes,
-    invalid_ontologies,
     invalid_species,
-    invalid_terms,
     valid_genes,
     valid_genes_same_name_and_species,
     valid_genes_same_name_diff_species,
-    valid_ontologies,
-    valid_terms,
 )
 
 # Tests for internal functions of the OntologyChecker and GeneChecker classes

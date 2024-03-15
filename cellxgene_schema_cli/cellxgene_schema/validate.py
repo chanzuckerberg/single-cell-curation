@@ -261,9 +261,12 @@ class Validator:
         if "allowed" in curie_constraints:
             is_allowed = False
             if "terms" in curie_constraints["allowed"]:
-                for _, allow_list in curie_constraints["allowed"]["terms"].items():
-                    if ONTOLOGY_PARSER.is_valid_term_id(term_id) and (
-                        allow_list == ["all"] or term_id in set(allow_list)
+                for ontology_name, allow_list in curie_constraints["allowed"]["terms"].items():
+                    # TODO: make _parse_ontology_name method public
+                    if (
+                            ONTOLOGY_PARSER._parse_ontology_name(term_id) == ontology_name
+                            and ONTOLOGY_PARSER.is_valid_term_id(term_id)
+                            and (allow_list == ["all"] or term_id in set(allow_list))
                     ):
                         is_allowed = True
                         break
