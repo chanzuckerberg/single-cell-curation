@@ -30,7 +30,7 @@ def map_deprecated_terms(
     curator_report_entry_map: dict,  # type: ignore
     dataset: dict,  # type: ignore
     collection_id: str,
-    onto_parser: OntologyParser,  # type: ignore
+    onto_parser: OntologyParser,
     non_deprecated_term_cache: set,  # type: ignore
     replaced_by_map: dict,  # type: ignore
 ) -> None:

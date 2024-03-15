@@ -11,7 +11,7 @@ FIXTURES_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
 @pytest.fixture
-def mock_ontology_metadata():
+def mock_ontology_metadata(): # type: ignore
     return {
         "EFO:0000001": {
             "label": "non-deprecated term",
@@ -99,7 +99,7 @@ def mock_ontology_metadata():
 
 
 @pytest.fixture
-def mock_ontology_parser(mock_ontology_metadata):
+def mock_ontology_parser(mock_ontology_metadata):  # type: ignore
     mock_ontology_parser = Mock()
     mock_ontology_parser.is_term_deprecated.side_effect = lambda term_id: mock_ontology_metadata[term_id]["deprecated"]
     mock_ontology_parser.get_term_metadata.side_effect = lambda term_id: mock_ontology_metadata[term_id]
@@ -110,7 +110,7 @@ def mock_ontology_parser(mock_ontology_metadata):
 
 
 @pytest.fixture
-def public_datasets():
+def public_datasets():  # type: ignore
     return [
         {
             "collection_id": "public_coll_0",
@@ -121,7 +121,7 @@ def public_datasets():
 
 
 @pytest.fixture
-def private_collections():
+def private_collections():  # type: ignore
     return [
         {
             "collection_id": "private_coll_0",
@@ -150,13 +150,13 @@ def private_collections():
 
 
 @pytest.fixture
-def mock_fetch_private_dataset(private_collections):
+def mock_fetch_private_dataset(private_collections):  # type: ignore
     def mock_fetch_private_dataset(*args):  # type: ignore
         collection_id = args[2]
         dataset_id = args[3]
         for c in private_collections:
-            if c["collection_id"] == collection_id:  # type: ignore
-                for ds in c["datasets"]:  # type: ignore
+            if c["collection_id"] == collection_id:
+                for ds in c["datasets"]:
                     if ds["dataset_id"] == dataset_id:
                         return ds
 
@@ -164,8 +164,8 @@ def mock_fetch_private_dataset(private_collections):
 
 
 @pytest.fixture
-def expected_replaced_by_map():
-    return {  # type: ignore
+def expected_replaced_by_map():  # type: ignore
+    return {
         "assay": {},
         "cell_type": {},
         "development_stage": {},
