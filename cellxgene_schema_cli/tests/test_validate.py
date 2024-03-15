@@ -8,11 +8,11 @@ import anndata
 import numpy as np
 import pandas as pd
 import pytest
+from cellxgene_ontology_guide.entities import Ontology
 from cellxgene_schema.ontology import OntologyChecker
 from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.validate import Validator, validate
 from cellxgene_schema.write_labels import AnnDataLabelAppender
-from cellxgene_ontology_guide.entities import Ontology
 from fixtures.examples_validate import (
     adata as adata_valid,
 )
@@ -63,7 +63,6 @@ class TestFieldValidation:
         """
         Tests that the definition of schema is well-defined
         """
-        ontology_checker = OntologyChecker()
         assert isinstance(schema_def["components"], dict)
         assert isinstance(schema_def["components"]["obs"], dict)
         assert isinstance(schema_def["components"]["obs"]["columns"], dict)

@@ -143,7 +143,7 @@ class Validator:
 
         checks = []
 
-        for ontology_name, ancestors in allowed_ancestors.items():
+        for _, ancestors in allowed_ancestors.items():
             for ancestor in ancestors:
                 if inclusive and term_id == ancestor:
                     checks.append(True)
@@ -261,7 +261,7 @@ class Validator:
         if "allowed" in curie_constraints:
             is_allowed = False
             if "terms" in curie_constraints["allowed"]:
-                for ontology_name, allow_list in curie_constraints["allowed"]["terms"].items():
+                for _, allow_list in curie_constraints["allowed"]["terms"].items():
                     if ONTOLOGY_PARSER.is_valid_term_id(term_id) and (
                         allow_list == ["all"] or term_id in set(allow_list)
                     ):
