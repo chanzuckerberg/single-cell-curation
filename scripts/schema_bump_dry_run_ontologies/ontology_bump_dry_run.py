@@ -68,7 +68,7 @@ def map_deprecated_terms(
                                 entry["comments"] = ontology_metadata["comments"]
                             if replacement_term:
                                 entry["replaced_by"] = replacement_term
-                                if ontology_metadata["replaced_by"].split(":")[0] != ontology_term_id.split(":")[0]:
+                                if replacement_term.split(":")[0] != ontology_term_id.split(":")[0]:
                                     entry["needs_alert"] = True
                                 else:
                                     if ontology_term_id not in replaced_by_map[ontology_type]:
