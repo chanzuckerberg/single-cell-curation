@@ -28,6 +28,7 @@ ONTOLOGY_TYPES = {
 def map_deprecated_terms(
     curator_report_entry_map: dict,  # type: ignore
     dataset: dict,  # type: ignore
+    collection_id: str,
     onto_parser: OntologyParser,  # type: ignore
     non_deprecated_term_cache: set,  # type: ignore
     replaced_by_map: dict,  # type: ignore
@@ -40,12 +41,12 @@ def map_deprecated_terms(
     :param curator_report_entry_map: dict with information on deprecated terms detected in the data-portal corpus, and
     guidance from ontologies on how to replace them
     :param dataset: dict with dataset metadata
+    :param collection_id: str unique identifier for collection the dataset is found in
     :param onto_parser: OntologyParser, used to fetch ontology term metadata for a given schema_version
     :param non_deprecated_term_cache: set caching known terms that are not deprecated, used to skip re-processing
     :param replaced_by_map: dict mapping deprecated terms to a single known same-ontology replacement terms,
     updated in-place
     """
-    collection_id = dataset["collection_id"]
     for ontology_type in ONTOLOGY_TYPES:
         if ontology_type in dataset:
             for ontology_term in dataset[ontology_type]:
@@ -136,6 +137,7 @@ def dry_run(curator_report_filepath: str, replaced_by_filepath: str) -> None:
         map_deprecated_terms(
             public_curator_report_entry_map,
             dataset,
+            dataset["collection_id"],
             onto_parser,
             non_deprecated_term_cache,
             replaced_by_map,
@@ -162,6 +164,7 @@ def dry_run(curator_report_filepath: str, replaced_by_filepath: str) -> None:
             map_deprecated_terms(
                 private_curator_report_entry_map,
                 dataset_metadata,
+                collection_id,
                 onto_parser,
                 non_deprecated_term_cache,
                 replaced_by_map,
