@@ -10,6 +10,7 @@ import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 import scipy
+from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from pandas.core.computation.ops import UndefinedVariableError
 from scipy import sparse
 
@@ -18,7 +19,7 @@ from .utils import SPARSE_MATRIX_TYPES, get_matrix_format, getattr_anndata, read
 
 logger = logging.getLogger(__name__)
 
-ONTOLOGY_CHECKER = ontology.OntologyChecker()
+ONTOLOGY_PARSER = OntologyParser(schema_version=f"v{schema.get_current_schema_version()}")
 
 
 class Validator:
@@ -115,7 +116,7 @@ class Validator:
         """
         for ontology_name in forbidden_def:
             for ancestor in forbidden_def[ontology_name]:
-                if ONTOLOGY_CHECKER.is_descendent_of(ontology_name, term_id, ancestor):
+                if ancestor in ONTOLOGY_PARSER.get_term_ancestors(term_id):
                     self.errors.append(
                         f"'{term_id}' in '{column_name}' is not allowed. Child terms of "
                         f"'{ancestor}' are not allowed."
@@ -147,10 +148,10 @@ class Validator:
                 if inclusive and term_id == ancestor:
                     checks.append(True)
 
-                is_valid_term_id = ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id)
-                is_valid_ancestor_id = ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, ancestor)
+                is_valid_term_id = ONTOLOGY_PARSER.is_valid_term_id(term_id)
+                is_valid_ancestor_id = ONTOLOGY_PARSER.is_valid_term_id(ancestor)
                 if is_valid_term_id & is_valid_ancestor_id:
-                    is_child = ONTOLOGY_CHECKER.is_descendent_of(ontology_name, term_id, ancestor)
+                    is_child = ancestor in ONTOLOGY_PARSER.get_term_ancestors(term_id)
                     checks.append(is_child)
 
         if True not in checks:
@@ -173,10 +174,10 @@ class Validator:
         checks = []
 
         for ontology_name in allowed_ontologies:
-            is_valid = ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id)
+            is_valid = ONTOLOGY_PARSER.is_valid_term_id(term_id)
             checks.append(is_valid)
 
-            if is_valid and ONTOLOGY_CHECKER.is_term_id_deprecated(ontology_name, term_id):
+            if is_valid and ONTOLOGY_PARSER.is_term_deprecated(term_id):
                 self.errors.append(f"'{term_id}' in '{column_name}' is a deprecated term id of '{ontology_name}'.")
                 return False
 
@@ -261,7 +262,7 @@ class Validator:
             is_allowed = False
             if "terms" in curie_constraints["allowed"]:
                 for ontology_name, allow_list in curie_constraints["allowed"]["terms"].items():
-                    if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id) and (
+                    if ONTOLOGY_PARSER.is_valid_term_id(term_id) and (
                         allow_list == ["all"] or term_id in set(allow_list)
                     ):
                         is_allowed = True
@@ -1010,10 +1011,9 @@ class Validator:
         curies = curies.drop_duplicates()
 
         for curie in curies:
-            if ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, curie):
-                curie_ancestors = ONTOLOGY_CHECKER.get_term_ancestors(ontology_name, curie)
-                curie_ancestors.add(curie)
-                if bool(curie_ancestors & set(ancestors)):
+            if ONTOLOGY_PARSER.is_valid_term_id(curie):
+                curie_ancestors = ONTOLOGY_PARSER.get_term_ancestors(curie, include_self=True)
+                if bool(set(curie_ancestors) & set(ancestors)):
                     return True
 
         return False
