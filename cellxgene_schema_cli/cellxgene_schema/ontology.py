@@ -42,10 +42,10 @@ class GeneChecker:
     """Handles checking gene ids, retrieves symbols"""
 
     GENE_FILES = {
-        SupportedOrganisms.HOMO_SAPIENS: os.path.join(env.ONTOLOGY_DIR, "genes_homo_sapiens.csv.gz"),
-        SupportedOrganisms.MUS_MUSCULUS: os.path.join(env.ONTOLOGY_DIR, "genes_mus_musculus.csv.gz"),
-        SupportedOrganisms.SARS_COV_2: os.path.join(env.ONTOLOGY_DIR, "genes_sars_cov_2.csv.gz"),
-        SupportedOrganisms.ERCC: os.path.join(env.ONTOLOGY_DIR, "genes_ercc.csv.gz"),
+        SupportedOrganisms.HOMO_SAPIENS: os.path.join(env.GENCODE_DIR, "genes_homo_sapiens.csv.gz"),
+        SupportedOrganisms.MUS_MUSCULUS: os.path.join(env.GENCODE_DIR, "genes_mus_musculus.csv.gz"),
+        SupportedOrganisms.SARS_COV_2: os.path.join(env.GENCODE_DIR, "genes_sars_cov_2.csv.gz"),
+        SupportedOrganisms.ERCC: os.path.join(env.GENCODE_DIR, "genes_ercc.csv.gz"),
     }
 
     def __init__(self, species: SupportedOrganisms):

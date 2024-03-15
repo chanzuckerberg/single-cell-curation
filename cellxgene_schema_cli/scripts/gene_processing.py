@@ -232,8 +232,8 @@ class GeneProcessor:
         for gene_info_key in gene_infos:
             gene_info_description = gene_infos[gene_info_key]["description"]
             print("Writing output for ", gene_info_description)
-            new_file = os.path.join(env.ONTOLOGY_DIR, f"new_genes_{gene_info_description}.csv.gz")
-            previous_ref_filepath = os.path.join(env.ONTOLOGY_DIR, f"genes_{gene_info_description}.csv.gz")
+            new_file = os.path.join(env.GENCODE_DIR, f"new_genes_{gene_info_description}.csv.gz")
+            previous_ref_filepath = os.path.join(env.GENCODE_DIR, f"genes_{gene_info_description}.csv.gz")
             gene_ids = self.gene_ids_by_description[gene_info_description]
             output_to_print = ""
             try:
@@ -314,7 +314,7 @@ class GeneProcessor:
                 if gene_id not in new_ref_gene_ids:
                     removed_gene_ids.append(gene_id)
 
-        diff_filepath = os.path.join(env.ONTOLOGY_DIR, f"{output_filename}_diff.txt")
+        diff_filepath = os.path.join(env.GENCODE_DIR, f"{output_filename}_diff.txt")
         if removed_gene_ids:
             with open(diff_filepath, "w") as f:
                 for gene_id in removed_gene_ids:

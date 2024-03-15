@@ -16,7 +16,7 @@ setup(
     python_requires=">=3.8",
     packages=["cellxgene_schema"],
     package_dir={"cellxgene_schema": "cellxgene_schema"},
-    package_data={"cellxgene_schema": ["ontology_files/*gz", "schema_definitions/*yaml"]},
+    package_data={"cellxgene_schema": ["gencode_files/*gz", "schema_definitions/*yaml"]},
     include_package_data=True,
     zip_safe=False,
     classifiers=[
