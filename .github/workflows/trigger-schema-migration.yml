@@ -16,7 +16,7 @@ jobs:
           python-version: "3.x"
       - name: Build dist
         run: |
-          pip install wheel
+          pip install wheel==0.40.0
           pip install --upgrade setuptools
 #          make pydist
 ##      - name: Publish distribution to Test PyPI
