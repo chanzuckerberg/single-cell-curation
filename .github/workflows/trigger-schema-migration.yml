@@ -15,10 +15,10 @@ jobs:
         with:
           python-version: "3.11"
           check-latest: true
-#      - name: Build dist
-#        run: |
-#          pip install wheel
-#          make pydist
+      - name: Build dist
+        run: |
+          pip install wheel
+          make pydist
 #      - name: Publish distribution to Test PyPI
 #        uses: pypa/gh-action-pypi-publish@release/v1
 #        with:
