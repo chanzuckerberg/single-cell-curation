@@ -541,7 +541,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If <code>uns['spatial']['is_single']</code> is <code>True</code>, all observations MUST be the same value. This MUST be free-text that identifies a unique individual that data were derived from. It is STRONGLY RECOMMENDED that this identifier be designed so that it is unique to:<br><br>
+        <td>categorical with <code>str</code> categories. This MUST be free-text that identifies a unique individual that data were derived from. It is STRONGLY RECOMMENDED that this identifier be designed so that it is unique to:<br><br>
           <ul><li>a given individual within the collection of datasets that includes this dataset</li>
           <li>a given individual across all collections in CELLxGENE Discover</li></ul><br>
           It is STRONGLY RECOMMENDED that <code>"pooled"</code> be used  for observations from a sample of multiple individuals that were not confidently assigned to a single individual through demultiplexing.<br><br>It is STRONGLY RECOMMENDED that <code>"unknown"</code> ONLY be used for observations in a dataset when it is not known which observations are from the same individual.<br><br>
@@ -1861,7 +1861,6 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
   * Added `array_row` for _Visium Spatial Gene Expression_ when <code>uns['spatial']['is_single']</code> is <code>True</code>
   * Updated the requirements for `cell_type_ontology_term_id` for _Visium Spatial Gene Expression_ when <code>uns['spatial']['is_single']</code> is <code>True</code>. The value must be `"unknown"` if the corresponding value of `in_tissue` is `0`.
   * Updated the requirements for `development_stage_ontology_term_id`. All observations must be the same value when <code>uns['spatial']['is_single']</code> is <code>True</code>.
-  * Updated the requirements for `donor_id`. All observations must be the same value when <code>uns['spatial']['is_single']</code> is <code>True</code>.
   * Added `in_tissue` for _Visium Spatial Gene Expression_ when <code>uns['spatial']['is_single']</code> is <code>True</code>
   * Updated the requirements for `organism_ontology_term_id`. All observations must be the same value when <code>uns['spatial']['is_single']</code> is <code>True</code>.
   * Updated the requirements for `self_reported_ethnicity_ontology_term_id`.  There must be no duplication of terms. All observations must be the same value when <code>uns['spatial']['is_single']</code> is <code>True</code>.
