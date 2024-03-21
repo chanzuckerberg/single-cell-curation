@@ -27,7 +27,7 @@ ONTOLOGY_TYPES = {
 
 def load_ontology_map():  # type: ignore
     # Load processed ontologies file
-    ontologies = "cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz"
+    ontologies = "cellxgene_schema_cli/cellxgene_schema/gencode_files/all_ontology.json.gz"
     with gzip.open(ontologies, "rt") as f:
         onto_map = json.loads(f.read())
     return onto_map
