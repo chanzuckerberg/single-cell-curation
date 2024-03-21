@@ -32,9 +32,7 @@ class TestMigrate:
         }
         with TemporaryDirectory() as tmp, patch("cellxgene_schema.migrate.DEPRECATED_FEATURE_IDS", ["DUMMY"]), patch(
             "cellxgene_schema.migrate.ONTOLOGY_TERM_MAPS", test_ONTOLOGY_TERM_MAPS
-        ), patch("cellxgene_schema.ontology.OntologyChecker.get_term_ancestors", MagicMock(return_value=set())), patch(
-            "cellxgene_schema.migrate.GENCODE_MAPPER", {"ENSSASG00005000004": "ENSSASG00005000004_NEW"}
-        ):
+        ), patch("cellxgene_schema.migrate.GENCODE_MAPPER", {"ENSSASG00005000004": "ENSSASG00005000004_NEW"}):
             result_h5ad = tmp + "result.h5ad"
             test_h5ad = tmp + "test.h5ad"
             adata_with_labels_unmigrated.copy().write_h5ad(test_h5ad, compression="gzip")

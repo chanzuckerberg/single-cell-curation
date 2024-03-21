@@ -114,13 +114,16 @@ class AnnDataLabelAppender:
          error if term_id is not valid).
 
         :param term_id: str single ontology term ID
-        :param allowed_ontologies: List[str] list of onotlogies to check for term_id label in
+        :param allowed_ontologies: List[str] list of ontologies to check for term_id label in
         :return: str term label
         """
         for ontology_name in allowed_ontologies:
             if ontology_name == "NA":
                 continue
-            elif ONTOLOGY_PARSER.is_valid_term_id(term_id):
+            elif (
+                ontology_name == ONTOLOGY_PARSER._parse_ontology_name(term_id)
+                and ONTOLOGY_PARSER.is_valid_term_id(term_id)
+            ):
                 return ONTOLOGY_PARSER.get_term_label(term_id)
         raise ValueError(f"Add labels error: Unable to get label for '{term_id}'")
 

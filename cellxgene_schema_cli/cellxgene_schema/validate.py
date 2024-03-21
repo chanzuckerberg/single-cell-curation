@@ -174,7 +174,13 @@ class Validator:
         checks = []
 
         for ontology_name in allowed_ontologies:
-            is_valid = ONTOLOGY_PARSER.is_valid_term_id(term_id)
+            try:
+                is_valid = (
+                    ontology_name == ONTOLOGY_PARSER._parse_ontology_name(term_id) and
+                    ONTOLOGY_PARSER.is_valid_term_id(term_id)
+                )
+            except ValueError:
+                is_valid = False
             checks.append(is_valid)
 
             if is_valid and ONTOLOGY_PARSER.is_term_deprecated(term_id):
