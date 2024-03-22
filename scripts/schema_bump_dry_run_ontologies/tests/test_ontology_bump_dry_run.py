@@ -11,7 +11,7 @@ FIXTURES_ROOT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
 @pytest.fixture
-def mock_ontology_metadata(): # type: ignore
+def mock_ontology_metadata():  # type: ignore
     return {
         "EFO:0000001": {
             "label": "non-deprecated term",
