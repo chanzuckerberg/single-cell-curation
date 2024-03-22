@@ -110,7 +110,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Install dependencies
-        run: | # TODO: Remove the extra-index-url once the package is in the main index
+        run: |
           pip install -r scripts/schema_bump_dry_run_ontologies/requirements.txt
           pip install -r ./requirements-dev.txt
       - name: Ontology Dry Run Unit Tests
