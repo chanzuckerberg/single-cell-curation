@@ -175,10 +175,7 @@ class Validator:
 
         for ontology_name in allowed_ontologies:
             try:
-                is_valid = (
-                    ontology_name == ONTOLOGY_PARSER._parse_ontology_name(term_id) and
-                    ONTOLOGY_PARSER.is_valid_term_id(term_id)
-                )
+                is_valid = ONTOLOGY_PARSER.is_valid_term_id(term_id, ontology_name)
             except ValueError:
                 is_valid = False
             checks.append(is_valid)
@@ -268,11 +265,8 @@ class Validator:
             is_allowed = False
             if "terms" in curie_constraints["allowed"]:
                 for ontology_name, allow_list in curie_constraints["allowed"]["terms"].items():
-                    # TODO: make _parse_ontology_name method public
-                    if (
-                            ONTOLOGY_PARSER._parse_ontology_name(term_id) == ontology_name
-                            and ONTOLOGY_PARSER.is_valid_term_id(term_id)
-                            and (allow_list == ["all"] or term_id in set(allow_list))
+                    if ONTOLOGY_PARSER.is_valid_term_id(term_id, ontology_name) and (
+                        allow_list == ["all"] or term_id in set(allow_list)
                     ):
                         is_allowed = True
                         break
@@ -771,10 +765,8 @@ class Validator:
 
         for key, value in uns_dict.items():
             if any(
-                [
-                    isinstance(value, sparse_class)
-                    for sparse_class in (scipy.sparse.csr_matrix, scipy.sparse.csc_matrix, scipy.sparse.coo_matrix)
-                ]
+                isinstance(value, sparse_class)
+                for sparse_class in (scipy.sparse.csr_matrix, scipy.sparse.csc_matrix, scipy.sparse.coo_matrix)
             ):
                 if value.nnz == 0:  # number non-zero
                     self.errors.append(f"uns['{key}'] cannot be an empty value.")

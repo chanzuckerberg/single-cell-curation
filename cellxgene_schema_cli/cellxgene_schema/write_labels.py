@@ -120,10 +120,7 @@ class AnnDataLabelAppender:
         for ontology_name in allowed_ontologies:
             if ontology_name == "NA":
                 continue
-            elif (
-                ontology_name == ONTOLOGY_PARSER._parse_ontology_name(term_id)
-                and ONTOLOGY_PARSER.is_valid_term_id(term_id)
-            ):
+            elif ONTOLOGY_PARSER.is_valid_term_id(term_id, ontology_name):
                 return ONTOLOGY_PARSER.get_term_label(term_id)
         raise ValueError(f"Add labels error: Unable to get label for '{term_id}'")
 
