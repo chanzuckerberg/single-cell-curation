@@ -369,10 +369,8 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     # https://github.com/chanzuckerberg/single-cell-curation/blob/43f891005fb9439dbbb747fa0df8f0435ebf3f7c/cellxgene_schema_cli/cellxgene_schema/validate.py#L761-L762
     for key, value in list(dataset.uns.items()):
         if any(
-            [
-                isinstance(value, sparse_class)
+            isinstance(value, sparse_class)
                 for sparse_class in (scipy.sparse.csr_matrix, scipy.sparse.csc_matrix, scipy.sparse.coo_matrix)
-            ]
         ):
             if value.nnz == 0:  # number non-zero
                 del dataset.uns[key]
