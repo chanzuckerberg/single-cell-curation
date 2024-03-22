@@ -766,7 +766,7 @@ class Validator:
         for key, value in uns_dict.items():
             if any(
                 isinstance(value, sparse_class)
-                    for sparse_class in (scipy.sparse.csr_matrix, scipy.sparse.csc_matrix, scipy.sparse.coo_matrix)
+                for sparse_class in (scipy.sparse.csr_matrix, scipy.sparse.csc_matrix, scipy.sparse.coo_matrix)
             ):
                 if value.nnz == 0:  # number non-zero
                     self.errors.append(f"uns['{key}'] cannot be an empty value.")

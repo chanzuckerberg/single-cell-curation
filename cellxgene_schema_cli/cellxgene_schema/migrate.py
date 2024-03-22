@@ -370,7 +370,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     for key, value in list(dataset.uns.items()):
         if any(
             isinstance(value, sparse_class)
-                for sparse_class in (scipy.sparse.csr_matrix, scipy.sparse.csc_matrix, scipy.sparse.coo_matrix)
+            for sparse_class in (scipy.sparse.csr_matrix, scipy.sparse.csc_matrix, scipy.sparse.coo_matrix)
         ):
             if value.nnz == 0:  # number non-zero
                 del dataset.uns[key]
