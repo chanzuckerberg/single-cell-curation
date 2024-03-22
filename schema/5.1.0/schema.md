@@ -450,7 +450,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If <code>uns['spatial']['is_single']</code> is <code>True</code>, all observations MUST be the same value. If unavailable, this MUST be <code>"unknown"</code>. 
+        <td>categorical with <code>str</code> categories. If unavailable, this MUST be <code>"unknown"</code>. 
 <br><br>If <code>organism_ontolology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9606"><code>"NCBITaxon:9606"</code></a> for <i>Homo sapiens</i>, this MUST be the most accurate HsapDv term with the following STRONGLY RECOMMENDED:
           <br><br>
           <table>
@@ -602,7 +602,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If <code>uns['spatial']['is_single']</code> is <code>True</code>, all observations MUST be the same value. This MUST be a child of <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A33208"<code>NCBITaxon:33208</code></a> for <i>Metazoa</i>.
+        <td>categorical with <code>str</code> categories. This MUST be a child of <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A33208"<code>NCBITaxon:33208</code></a> for <i>Metazoa</i>.
         </td>
     </tr>
 </tbody></table>
@@ -623,7 +623,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     <tr>
       <th>Value</th>
       <td>
-        categorical with <code>str</code> categories. If <code>uns['spatial']['is_single']</code> is <code>True</code>, all observations MUST be the same value. If
+        categorical with <code>str</code> categories. If
         <code>organism_ontolology_term_id</code> is
         <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>,
         the value MUST be formatted as one or more comma-separated (with no leading or trailing spaces) HANCESTRO
@@ -837,7 +837,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If <code>uns['spatial']['is_single']</code> is <code>True</code>, all observations MUST be the same value. This MUST be a child of <a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0001894">PATO:0001894</a> for  <i>phenotypic sex</i> or <code>"unknown"</code> if unavailable.
+        <td>categorical with <code>str</code> categories. This MUST be a child of <a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0001894">PATO:0001894</a> for  <i>phenotypic sex</i> or <code>"unknown"</code> if unavailable.
         </td>
     </tr>
 </tbody></table>
@@ -1860,11 +1860,8 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
   * Added `array_col` for _Visium Spatial Gene Expression_ when <code>uns['spatial']['is_single']</code> is <code>True</code>
   * Added `array_row` for _Visium Spatial Gene Expression_ when <code>uns['spatial']['is_single']</code> is <code>True</code>
   * Updated the requirements for `cell_type_ontology_term_id` for _Visium Spatial Gene Expression_ when <code>uns['spatial']['is_single']</code> is <code>True</code>. The value must be `"unknown"` if the corresponding value of `in_tissue` is `0`.
-  * Updated the requirements for `development_stage_ontology_term_id`. All observations must be the same value when <code>uns['spatial']['is_single']</code> is <code>True</code>.
   * Added `in_tissue` for _Visium Spatial Gene Expression_ when <code>uns['spatial']['is_single']</code> is <code>True</code>
-  * Updated the requirements for `organism_ontology_term_id`. All observations must be the same value when <code>uns['spatial']['is_single']</code> is <code>True</code>.
-  * Updated the requirements for `self_reported_ethnicity_ontology_term_id`.  There must be no duplication of terms. All observations must be the same value when <code>uns['spatial']['is_single']</code> is <code>True</code>.
-  * Updated the requirements for `sex_ontology_term_id`. All observations must be the same value when <code>uns['spatial']['is_single']</code> is <code>True</code>.
+  * Updated the requirements for `self_reported_ethnicity_ontology_term_id`. There must be no duplication of terms.
 * obsm (Embeddings)
   * Added `spatial` for _Visium Spatial Gene Expression_ and _Slide-seqV2_
   * Updated requirements for `X_{suffix}`. {suffix} MUST NOT be `"spatial"`.
