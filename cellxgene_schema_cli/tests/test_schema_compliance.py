@@ -1776,6 +1776,17 @@ class TestUns:
         validator.validate_adata()
         assert validator.errors == ["ERROR: uns['test'] cannot be an empty value."]
 
+    def test_uns_numbers_are_allowed(self, validator_with_adata):
+        validator = validator_with_adata
+
+        validator.adata.uns["numpy.int64"] = numpy.int64(10)
+        validator.adata.uns["int"] = 1
+        validator.adata.uns["int_zero"] = 0
+        validator.adata.uns["float"] = float(4)
+        validator.adata.uns["numpy.float32"] = numpy.float32(3)
+        validator.validate_adata()
+        assert validator.errors == []
+
     def test_colors_happy_path_duplicates(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.uns["suspension_type_colors"] = numpy.array(["lightgrey", "lightgrey"])
