@@ -1,9 +1,5 @@
 .PHONY: update-references
-update-references: download-ontologies gene-processing clean
-
-.PHONY: download-ontologies
-download-ontologies:
-	python3 ./scripts/ontology_processing.py
+update-references: gene-processing clean
 
 .PHONY: gene-processing
 gene-processing:

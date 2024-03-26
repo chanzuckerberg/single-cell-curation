@@ -2,7 +2,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from cellxgene_schema_cli.cellxgene_schema.ontology import SupportedOrganisms
+from cellxgene_schema_cli.cellxgene_schema.gencode import SupportedOrganisms
 from scripts.schema_bump_dry_run_genes.gene_bump_dry_run import (
     compare_genes,
     generate_deprecated_private,

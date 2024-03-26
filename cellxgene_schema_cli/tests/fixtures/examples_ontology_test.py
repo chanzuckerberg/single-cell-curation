@@ -1,30 +1,30 @@
-from cellxgene_schema import ontology
+from cellxgene_schema import gencode
 
 # For GeneChecker
 invalid_species = ["Caenorhabditis elegans"]
 
 valid_genes = {
-    ontology.SupportedOrganisms.HOMO_SAPIENS: {"ENSG00000141510": ("TP53", 6836)},
-    ontology.SupportedOrganisms.MUS_MUSCULUS: {"ENSMUSG00000059552": ("Trp53", 4045)},
+    gencode.SupportedOrganisms.HOMO_SAPIENS: {"ENSG00000141510": ("TP53", 6836)},
+    gencode.SupportedOrganisms.MUS_MUSCULUS: {"ENSMUSG00000059552": ("Trp53", 4045)},
 }
 
 valid_genes_same_name_diff_species = {
-    ontology.SupportedOrganisms.HOMO_SAPIENS: {"ENSG00000166278": ("C2_ENSG00000166278", 7151)},
-    ontology.SupportedOrganisms.MUS_MUSCULUS: {
+    gencode.SupportedOrganisms.HOMO_SAPIENS: {"ENSG00000166278": ("C2_ENSG00000166278", 7151)},
+    gencode.SupportedOrganisms.MUS_MUSCULUS: {
         "ENSMUSG00000024371": ("C2_ENSMUSG00000024371", 3872),
     },
 }
 
 valid_genes_same_name_and_species = {
-    ontology.SupportedOrganisms.MUS_MUSCULUS: {
+    gencode.SupportedOrganisms.MUS_MUSCULUS: {
         "ENSMUSG00000091071": ("1700030C10Rik_ENSMUSG00000091071", 126),
         "ENSMUSG00000099759": ("1700030C10Rik_ENSMUSG00000099759", 1735),
     },
 }
 
 invalid_genes = {
-    ontology.SupportedOrganisms.HOMO_SAPIENS: ["ENSMUSG00000059552", ("GENE", 1000)],
-    ontology.SupportedOrganisms.MUS_MUSCULUS: ["ENSG00000141510", ("GENE", 200)],
+    gencode.SupportedOrganisms.HOMO_SAPIENS: ["ENSMUSG00000059552", ("GENE", 1000)],
+    gencode.SupportedOrganisms.MUS_MUSCULUS: ["ENSG00000141510", ("GENE", 200)],
 }
 
 # For ontology checker
