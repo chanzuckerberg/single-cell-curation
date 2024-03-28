@@ -7,7 +7,7 @@ import requests
 from botocore.credentials import RefreshableCredentials
 from botocore.session import get_session
 from src.utils.config import format_c_url
-from src.utils.http import get_headers, url_builder
+from src.utils.http import get_headers_and_cookies, url_builder
 from src.utils.logger import failure, get_custom_logger, success
 
 logger = get_custom_logger()
@@ -20,10 +20,9 @@ def create_dataset(collection_id: str):
     :return: None
     """
     url = url_builder(f"/collections/{collection_id}/datasets")
-    headers = get_headers()
 
     try:
-        res = requests.post(url, headers=headers)
+        res = requests.post(url, **get_headers_and_cookies())
         res.raise_for_status()
         data = res.json()
     except requests.HTTPError as e:
@@ -42,13 +41,12 @@ def delete_dataset(collection_id: str, dataset_id: str):
     :return: True if deletion is successful otherwise False
     """
     url = url_builder(f"/collections/{collection_id}/datasets/{dataset_id}")
-    headers = get_headers()
 
     success_message = (
         f"Deleted the Dataset with id '{dataset_id}' from its Collection: " f"\n{format_c_url(collection_id)}"
     )
     try:
-        res = requests.delete(url, headers=headers)
+        res = requests.delete(url, **get_headers_and_cookies())
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)
@@ -96,10 +94,9 @@ def get_dataset(collection_id: str, dataset_id: str):
     :return: the full Dataset metadata
     """
     url = url_builder(f"/collections/{collection_id}/datasets/{dataset_id}")
-    headers = get_headers()
 
     try:
-        res = requests.get(url, headers=headers)
+        res = requests.get(url, **get_headers_and_cookies())
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)
@@ -114,10 +111,9 @@ def get_dataset_version(dataset_version_id: str):
     :return: the full Dataset Version metadata
     """
     url = url_builder(f"/dataset_versions/{dataset_version_id}")
-    headers = get_headers()
 
     try:
-        res = requests.get(url, headers=headers)
+        res = requests.get(url, **get_headers_and_cookies())
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)
@@ -130,10 +126,9 @@ def get_datasets():
     Get full metadata for all public Datasets
     """
     url = url_builder("/datasets")
-    headers = get_headers()
 
     try:
-        res = requests.get(url, headers)
+        res = requests.get(url, **get_headers_and_cookies())
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)
@@ -148,10 +143,9 @@ def get_dataset_versions(dataset_id: str):
     :return: the full Dataset metadata
     """
     url = url_builder(f"/datasets/{dataset_id}/versions")
-    headers = get_headers()
 
     try:
-        res = requests.get(url, headers=headers)
+        res = requests.get(url, **get_headers_and_cookies())
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)
@@ -168,7 +162,6 @@ def upload_datafile_from_link(link: str, collection_id: str, dataset_id: str):
     :return: None
     """
     url = url_builder(f"/collections/{collection_id}/datasets/{dataset_id}")
-    headers = get_headers()
 
     data_dict = dict(link=link)
 
@@ -178,7 +171,7 @@ def upload_datafile_from_link(link: str, collection_id: str, dataset_id: str):
     )
 
     try:
-        res = requests.put(url, headers=headers, json=data_dict)
+        res = requests.put(url, json=data_dict, **get_headers_and_cookies())
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)
@@ -196,11 +189,10 @@ def upload_local_datafile(datafile_path: str, collection_id: str, dataset_id: st
     :return: None
     """
     url = url_builder(f"/collections/{collection_id}/s3-upload-credentials")
-    headers = get_headers()
 
     def retrieve_s3_credentials_and_upload_key_prefix():
         try:
-            res = requests.get(url, headers=headers)
+            res = requests.get(url, **get_headers_and_cookies())
             res.raise_for_status()
         except requests.HTTPError as e:
             failure(logger, e)
