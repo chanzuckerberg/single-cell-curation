@@ -8,7 +8,7 @@ import anndata
 import numpy as np
 import pandas as pd
 import pytest
-from cellxgene_schema.ontology import OntologyChecker
+from cellxgene_ontology_guide.entities import Ontology
 from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.validate import Validator, validate
 from cellxgene_schema.write_labels import AnnDataLabelAppender
@@ -62,7 +62,6 @@ class TestFieldValidation:
         """
         Tests that the definition of schema is well-defined
         """
-        ontology_checker = OntologyChecker()
         assert isinstance(schema_def["components"], dict)
         assert isinstance(schema_def["components"]["obs"], dict)
         assert isinstance(schema_def["components"]["obs"]["columns"], dict)
@@ -86,7 +85,7 @@ class TestFieldValidation:
                         "ontologies"
                     ]:
                         if ontology_name != "NA":
-                            assert ontology_checker.is_valid_ontology(ontology_name)
+                            assert getattr(Ontology, ontology_name, None) is not None
                 else:
                     # if no curie_constraints in top-level for type curie, assert that 'dependencies' list exists
                     assert isinstance(

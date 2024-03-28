@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 import pandas as pd
 from cellxgene_schema import ontology
 from cellxgene_schema.env import SCHEMA_REFERENCE_BASE_URL, SCHEMA_REFERENCE_FILE_NAME
-from cellxgene_schema.validate import ONTOLOGY_CHECKER, Validator
+from cellxgene_schema.validate import ONTOLOGY_PARSER, Validator
 
 from .utils import enforce_canonical_format, get_hash_digest_column, getattr_anndata
 
@@ -114,14 +114,14 @@ class AnnDataLabelAppender:
          error if term_id is not valid).
 
         :param term_id: str single ontology term ID
-        :param allowed_ontologies: List[str] list of onotlogies to check for term_id label in
+        :param allowed_ontologies: List[str] list of ontologies to check for term_id label in
         :return: str term label
         """
         for ontology_name in allowed_ontologies:
             if ontology_name == "NA":
                 continue
-            elif ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id):
-                return ONTOLOGY_CHECKER.get_term_label(ontology_name, term_id)
+            elif ONTOLOGY_PARSER.is_valid_term_id(term_id, ontology_name):
+                return ONTOLOGY_PARSER.get_term_label(term_id)
         raise ValueError(f"Add labels error: Unable to get label for '{term_id}'")
 
     def _get_mapping_dict_curie(self, ids: List[str], curie_constraints: dict) -> Dict[str, str]:

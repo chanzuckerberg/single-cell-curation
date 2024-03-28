@@ -2,14 +2,10 @@ import pytest
 from cellxgene_schema import ontology
 from fixtures.examples_ontology_test import (
     invalid_genes,
-    invalid_ontologies,
     invalid_species,
-    invalid_terms,
     valid_genes,
     valid_genes_same_name_and_species,
     valid_genes_same_name_diff_species,
-    valid_ontologies,
-    valid_terms,
 )
 
 # Tests for internal functions of the OntologyChecker and GeneChecker classes
@@ -67,41 +63,3 @@ class TestGeneChecker:
             assert geneChecker.is_valid_id(gene_id)
             assert geneChecker.get_symbol(gene_id) == gene_label
             assert geneChecker.get_length(gene_id) == gene_length
-
-
-@pytest.fixture(scope="class")
-def ontologyChecker() -> ontology.OntologyChecker:
-    return ontology.OntologyChecker()
-
-
-class TestOntologyChecker:
-    @pytest.mark.parametrize("valid_ontology", valid_ontologies)
-    def test_ontology_valid(self, ontologyChecker, valid_ontology):
-        assert ontologyChecker.is_valid_ontology(valid_ontology)
-        assert ontologyChecker.assert_ontology(valid_ontology) is None
-
-    @pytest.mark.parametrize("invalid_ontology", invalid_ontologies)
-    def test_ontology_invalid(self, ontologyChecker, invalid_ontology):
-        assert not ontologyChecker.is_valid_ontology(invalid_ontology)
-        with pytest.raises(ValueError):
-            ontologyChecker.assert_ontology(invalid_ontology)
-
-    @pytest.mark.parametrize(
-        "ontology_id,term_id",
-        [(ontology_id, term_id) for ontology_id in valid_terms for term_id in valid_terms[ontology_id]],
-    )
-    def test_valid_term_id(self, ontologyChecker, ontology_id, term_id):
-        term_label = valid_terms[ontology_id][term_id]
-
-        assert ontologyChecker.is_valid_term_id(ontology_id, term_id)
-        assert ontologyChecker.assert_term_id(ontology_id, term_id) is None
-        assert ontologyChecker.get_term_label(ontology_id, term_id) == term_label
-
-    @pytest.mark.parametrize(
-        "ontology_id,term_id",
-        [(ontology_id, term_id) for ontology_id in invalid_terms for term_id in invalid_terms[ontology_id]],
-    )
-    def test_invalid_term_ids(self, ontologyChecker, ontology_id, term_id):
-        assert not ontologyChecker.is_valid_term_id(ontology_id, term_id)
-        with pytest.raises(ValueError):
-            ontologyChecker.assert_term_id(ontology_id, term_id)
