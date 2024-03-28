@@ -125,15 +125,20 @@ def get_dataset_version(dataset_version_id: str):
     return res.json()
 
 
-def get_datasets():
+def get_datasets(visibility: str = None, schema_version: str = None):
     """
     Get full metadata for all public Datasets
     """
+    params = {}
+    if visibility:
+        params["visibility"] = visibility
+    if schema_version:
+        params["schema_version"] = schema_version
     url = url_builder("/datasets")
     headers = get_headers()
 
     try:
-        res = requests.get(url, headers)
+        res = requests.get(url, headers=headers, params=params)
         res.raise_for_status()
     except requests.HTTPError as e:
         failure(logger, e)
