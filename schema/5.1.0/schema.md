@@ -362,12 +362,12 @@ Curators MUST annotate the following columns in the `obs` dataframe:
       <th>Value</th>
         <td>categorical with <code>str</code> categories. This MUST be an EFO term and either:<br><br>
           <ul><li>
-            the most accurate child of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0002772"><code>"EFO:0002772"</code></a> for <i>assay by molecule</i>
+            the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0002772"><code>"EFO:0002772"</code></a> for <i>assay by molecule</i>
           </li>
           <li>
-            the most accurate child of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010183"><code>"EFO:0010183"</code></a>  for <i>single cell library construction</i>
+            the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010183"><code>"EFO:0010183"</code></a>  for <i>single cell library construction</i>
           </li></ul>
-        An assay based on 10X Genomics products SHOULD either be <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i> or <b>preferably</b> its most accurate child. An assay based on <i>SMART (Switching Mechanism at the 5' end of the RNA Template) or SMARTer technology</i> SHOULD either be <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010184"><code>"EFO:0010184"</code></a> for <i>Smart-like</i> or preferably its most accurate child.<br><br>
+        An assay based on 10X Genomics products SHOULD either be <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i> or <b>preferably</b> its most accurate descendant. An assay based on <i>SMART (Switching Mechanism at the 5' end of the RNA Template) or SMARTer technology</i> SHOULD either be <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010184"><code>"EFO:0010184"</code></a> for <i>Smart-like</i> or preferably its most accurate descendant.<br><br>
        <br>Recommended values for specific assays:
           <br><br>
           <table>
@@ -499,7 +499,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=MMUSDV&keywords=month-old&submit=Search+terms"> month-old stages</a><br>(e.g. <a href="https://www.ebi.ac.uk/ols4/ontologies/mmusdv/classes?obo_id=MmusDv%3A0000062">MmusDv:0000062)</a></td>
             </tr>
           </tbody></table>
-          <br> Otherwise, for all other organisms this MUST be the most accurate child of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000105"<code>UBERON:0000105</code></a> for <i>life cycle stage</i>, excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000071"<code>UBERON:0000071</code></a> for <i>death stage</i>.
+          <br> Otherwise, for all other organisms this MUST be the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000105"<code>UBERON:0000105</code></a> for <i>life cycle stage</i>, excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000071"<code>UBERON:0000071</code></a> for <i>death stage</i>.
         </td>
     </tr>
 </tbody></table>
@@ -521,8 +521,8 @@ Curators MUST annotate the following columns in the `obs` dataframe:
         <td>categorical with <code>str</code> categories. This MUST be one of:<br><br>
         <ul>
           <li><a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0000461"><code>"PATO:0000461"</code></a> for <i>normal</i> or <i>healthy</i>.</li>
-          <li>the most accurate child of <a href="https://www.ebi.ac.uk/ols4/ontologies/mondo/classes?obo_id=MONDO%3A0000001"><code>"MONDO:0000001"</code></a> for <i>disease</i></li>
-          <li><a href="https://www.ebi.ac.uk/ols4/ontologies/mondo/classes?obo_id=MONDO%3A0021178"><code>"MONDO:0021178"</code></a> for <i>injury</i> or <b>preferably</b> its most accurate child</li>
+          <li>the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/mondo/classes?obo_id=MONDO%3A0000001"><code>"MONDO:0000001"</code></a> for <i>disease</i></li>
+          <li><a href="https://www.ebi.ac.uk/ols4/ontologies/mondo/classes?obo_id=MONDO%3A0021178"><code>"MONDO:0021178"</code></a> for <i>injury</i> or <b>preferably</b> its most accurate descendant</li>
        </ul>
         </td>
     </tr>
@@ -603,7 +603,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be a child of <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A33208"<code>NCBITaxon:33208</code></a> for <i>Metazoa</i>.
+        <td>categorical with <code>str</code> categories. This MUST be a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A33208"<code>NCBITaxon:33208</code></a> for <i>Metazoa</i>.
         </td>
     </tr>
 </tbody></table>
@@ -635,7 +635,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0002?lang=en"
               ><code>"HANCESTRO:0002"</code></a
             >
-            for <i>regions</i> and its children
+            for <i>regions</i> and its descendants
           </li>
           <li>
             <a
@@ -670,7 +670,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0304?lang=en"
               ><code>"HANCESTRO:0304"</code></a
             >
-            for <i>ancestry status</i> and its children
+            for <i>ancestry status</i> and its descendants
           </li>
           <li>
             <a
@@ -769,7 +769,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FGEO_000000374?lang=en"
               ><code>"GEO:000000374"</code></a
             >
-            for <i>continent</i> and its children:
+            for <i>continent</i> and its descendants:
             <ul>
               <li>
                 <a
@@ -838,7 +838,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be a child of <a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0001894">PATO:0001894</a> for  <i>phenotypic sex</i> or <code>"unknown"</code> if unavailable.
+        <td>categorical with <code>str</code> categories. This MUST be a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0001894">PATO:0001894</a> for  <i>phenotypic sex</i> or <code>"unknown"</code> if unavailable.
         </td>
     </tr>
 </tbody></table>
@@ -870,11 +870,11 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           </thead>
           <tbody>
             <tr>
-              <td><i>10x transcription profiling</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030080"><code>EFO:0030080</code></a>] and its children</td>
+              <td><i>10x transcription profiling</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030080"><code>EFO:0030080</code></a>] and its descendants</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr> 
             <tr>
-              <td><i>ATAC-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0007045"><code>EFO:0007045</code></a>] and its children</td>
+              <td><i>ATAC-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0007045"><code>EFO:0007045</code></a>] and its descendants</td>
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
@@ -890,7 +890,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>CITE-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0009294"><code>EFO:0009294</code></a>] and its children</td>
+              <td><i>CITE-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0009294"><code>EFO:0009294</code></a>] and its descendants</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
@@ -930,15 +930,15 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>Seq-Well</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008919"><code>EFO:0008919</code></a>] and its children</td>
+              <td><i>Seq-Well</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008919"><code>EFO:0008919</code></a>] and its descendants</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>Smart-like</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010184"><code>EFO:0010184</code></a>] and its children</td>
+              <td><i>Smart-like</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010184"><code>EFO:0010184</code></a>] and its descendants</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>smFISH</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0009918"><code>EFO:0009918</code></a>] and its children</td>
+              <td><i>smFISH</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0009918"><code>EFO:0009918</code></a>] and its descendants</td>
               <td><code>"na"</code></td>
            </tr>   
             <tr>
@@ -950,11 +950,11 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>spatial proteomics</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0700000"><code>EFO:0700000</code></a>] and its children</td>
+              <td><i>spatial proteomics</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0700000"><code>EFO:0700000</code></a>] and its descendants</td>
               <td><code>"na"</code></td>
            </tr>
             <tr>
-              <td><i>spatial transcriptomics</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008994"><code>EFO:0008994</code></a>] and its children</td>
+              <td><i>spatial transcriptomics</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008994"><code>EFO:0008994</code></a>] and its descendants</td>
               <td><code>"na"</code></td>
            </tr> 
             <tr>
@@ -1007,7 +1007,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
    <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. If <code>tissue_type</code> is <code>"tissue"</code> or <code>"organoid"</code>, this MUST be the most accurate child of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0001062"><code>UBERON:0001062</code></a> for <i>anatomical entity</i>.<br><br> If <code>tissue_type</code> is <code>"cell culture"</code> this MUST follow the requirements for <code>cell_type_ontology_term_id<code>.</td>
+        <td>categorical with <code>str</code> categories. If <code>tissue_type</code> is <code>"tissue"</code> or <code>"organoid"</code>, this MUST be the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0001062"><code>UBERON:0001062</code></a> for <i>anatomical entity</i>.<br><br> If <code>tissue_type</code> is <code>"cell culture"</code> this MUST follow the requirements for <code>cell_type_ontology_term_id<code>.</td>
      </tr>
 </tbody></table>
 <br>
@@ -1886,10 +1886,10 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
   * Updated GENCODE (Human) to Human Reference GRCh38.p14 (GENCODE v44/Ensembl 110)
   * Updated GENCODE (Mouse) to Mouse reference GRCm39 (GENCODE vM33/Ensembl 110)
 * obs (Cell metadata)
-  * Updated the requirements for `assay_ontology_term_id` to not allow  the parent terms `EFO:0002772` for _assay by molecule_ and `EFO:0010183` for _single cell library construction_. Their most accurate children are still valid. 
+  * Updated the requirements for `assay_ontology_term_id` to not allow  the parent terms `EFO:0002772` for _assay by molecule_ and `EFO:0010183` for _single cell library construction_. Their most accurate descendants are still valid. 
   * **Breaking change**. Updated the requirements for `cell_type` to annotate `"unknown"` as the label when the `cell_type_ontology_term_id` value is  `"unknown"`. 
   * **Breaking change**. Updated the requirements for `cell_type_ontology_term_id` to replace `"CL:0000003"` for *native cell* with `"unknown"` to indicate that the cell type is unknown. 
-  * Updated the requirements for `disease_ontology_term_id` to restrict MONDO terms to the most accurate child of `"MONDO:0000001"` for _disease_ or `"MONDO:0021178"` for _injury_ or preferably its most accurate child.
+  * Updated the requirements for `disease_ontology_term_id` to restrict MONDO terms to the most accurate descendant of `"MONDO:0000001"` for _disease_ or `"MONDO:0021178"` for _injury_ or preferably its most accurate descendant.
 * obsm (Embeddings)
   * Updated requirements for `X_{suffix}` to change the regular expression pattern from `"^[a-zA-Z][a-zA-Z0-9]*$"` to `"^[a-zA-Z][a-zA-Z0-9_.-]*$"`
 * uns (Dataset metadata)
@@ -1956,8 +1956,8 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
     * Added TruDrop
     * Added GEXSCOPE technology
     * Added SPLiT-seq
-    * Changed spatial transcriptomics by high-throughput sequencing [EFO:0030005] and its children to spatial transcriptomics [EFO:0008994] and its children
-    * Updated Seq-Well [EFO:0008919] to Seq-Well [EFO:0008919] and its children
+    * Changed spatial transcriptomics by high-throughput sequencing [EFO:0030005] and its descendants to spatial transcriptomics [EFO:0008994] and its descendants
+    * Updated Seq-Well [EFO:0008919] to Seq-Well [EFO:0008919] and its descendants
 * uns (Dataset metadata)
   * `schema_version`
     * Must be annotated by CELLxGENE Discover and not the Curator.
