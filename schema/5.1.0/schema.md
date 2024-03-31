@@ -1853,6 +1853,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 
 ### schema v5.1.0
 
+* All references to "child" and "children" have been changed to "descendant" and "descendants" for accuracy.
 * Required Ontologies
   * PENDING
 * X (Matrix Layers)
@@ -1871,7 +1872,6 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
   * Updated schema_reference to <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md"</code>
   * Updated schema_version to <code>"5.1.0"</code>
   * Added `spatial` for _Visium Spatial Gene Expression_ and _Slide-seqV2_, including scale factors and underlay images for _Visium Spatial Gene Expression_.
-
 
 ### schema v5.0.0
 
