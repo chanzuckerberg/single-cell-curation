@@ -135,7 +135,7 @@ def _parse_owls(
         for onto_class in onto.classes():
             term_id = onto_class.name.replace("_", ":")
 
-            # Skip terms that are not direct children from this ontology
+            # Skip terms that are not direct descendants from this ontology
             if onto.name != term_id.split(":")[0]:
                 continue
 
@@ -172,10 +172,10 @@ def _parse_owls(
             # Gets ancestors
             ancestors = _get_ancestors(onto_class, onto.name)
 
-            # If "children_of" specified in owl info then skip the current term if it is
-            # not a children of those indicated.
-            if (onto.name in owl_info and "children_of" in owl_info[onto.name]) and (
-                not list(set(ancestors) & set(owl_info[onto.name]["children_of"]))
+            # If "descendants_of" specified in owl info then skip the current term if it is
+            # not a descendants of those indicated.
+            if (onto.name in owl_info and "descendants_of" in owl_info[onto.name]) and (
+                not list(set(ancestors) & set(owl_info[onto.name]["descendants_of"]))
             ):
                 onto_dict[onto.name].pop(term_id)
                 continue

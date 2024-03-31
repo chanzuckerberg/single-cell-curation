@@ -82,7 +82,7 @@ def convert(input_file, output_file):
 
     # Set suspension type
 
-    # mappings of assays (or assays + child term assays) to corresponding suspension_type
+    # mappings of assays (or assays + descendant term assays) to corresponding suspension_type
     # valid assays with multiple possible suspension_types shown but commented out
     match_assays = {
         # 'EFO:0010010': ['cell', 'nucleus'],
@@ -97,7 +97,7 @@ def convert(input_file, output_file):
         "EFO:0030027": "nucleus",
     }
 
-    match_assays_or_children = {
+    match_assays_or_descendants = {
         # 'EFO:0030080': ['cell', 'nucleus'],
         "EFO:0007045": "nucleus",
         "EFO:0009294": "cell",
@@ -113,7 +113,7 @@ def convert(input_file, output_file):
         if item in match_assays:
             return match_assays[item]
         else:
-            for k, v in match_assays_or_children.items():
+            for k, v in match_assays_or_descendants.items():
                 try:
                     if k == item or ontology_checker.is_descendent_of("EFO", item, k):
                         return v

@@ -386,7 +386,7 @@ class TestObs:
     def test_assay_ontology_term_id(self, validator_with_adata, assay_ontology_term_id, error):
         """
         assay_ontology_term_id categorical with str categories.
-        This MUST be an EFO term that is a child of either "EFO:0002772" or "EFO:0010183"
+        This MUST be an EFO term that is a descendant of either "EFO:0002772" or "EFO:0010183"
         """
         validator = validator_with_adata
         validator.adata.obs.loc[validator.adata.obs.index[0], "assay_ontology_term_id"] = assay_ontology_term_id
@@ -462,7 +462,7 @@ class TestObs:
 
     def test_development_stage_ontology_term_id_all_species(self, validator_with_adata):
         """
-        All other it MUST be children of UBERON:0000105 and not UBERON:0000071
+        All other it MUST be descendants of UBERON:0000105 and not UBERON:0000071
         """
         validator = validator_with_adata
         obs = validator.adata.obs
@@ -477,11 +477,11 @@ class TestObs:
         assert validator.errors == [
             "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is "
             "not a valid ontology term id of 'UBERON'. When 'organism_ontology_term_id' is not 'NCBITaxon:10090' "
-            "nor 'NCBITaxon:9606', 'development_stage_ontology_term_id' MUST be a child term id of "
+            "nor 'NCBITaxon:9606', 'development_stage_ontology_term_id' MUST be a descendant term id of "
             "'UBERON:0000105' excluding 'UBERON:0000071', or unknown."
         ]
 
-        # All other it MUST be children of UBERON:0000105 and not UBERON:0000071
+        # All other it MUST be descendants of UBERON:0000105 and not UBERON:0000071
         # Fail case UBERON:0000071
         validator.errors = []
         obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:10114"
@@ -494,7 +494,7 @@ class TestObs:
         assert validator.errors == [
             "ERROR: 'UBERON:0000071' in 'development_stage_ontology_term_id' is not allowed. When "
             "'organism_ontology_term_id' is not 'NCBITaxon:10090' "
-            "nor 'NCBITaxon:9606', 'development_stage_ontology_term_id' MUST be a child term id of "
+            "nor 'NCBITaxon:9606', 'development_stage_ontology_term_id' MUST be a descendant term id of "
             "'UBERON:0000105' excluding 'UBERON:0000071', or unknown.",
         ]
 
@@ -502,8 +502,8 @@ class TestObs:
         """
         disease_ontology_term_id categorical with str categories. This MUST be one of:
         - PATO:0000461 for normal or healthy
-        - child of MONDO:0000001 for disease
-        - self or child of MONDO:0021178 for injury
+        - descendant of MONDO:0000001 for disease
+        - self or descendant of MONDO:0021178 for injury
         """
         validator = validator_with_adata
         obs = validator.adata.obs
@@ -513,7 +513,7 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'EFO:0000001' in 'disease_ontology_term_id' is not a valid ontology term id of 'MONDO, PATO'. "
-            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or children terms thereof, or children terms of 'MONDO:0000001' (disease) are allowed"
+            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms of 'MONDO:0000001' (disease) are allowed"
         ]
 
         # Invalid PATO term id
@@ -522,7 +522,7 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'PATO:0001894' in 'disease_ontology_term_id' is not an allowed term id. "
-            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or children terms thereof, or children terms of 'MONDO:0000001' (disease) are allowed"
+            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms of 'MONDO:0000001' (disease) are allowed"
         ]
 
         # Invalid MONDO term id - disease characteristic
@@ -531,7 +531,7 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'MONDO:0021125' in 'disease_ontology_term_id' is not an allowed term id. "
-            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or children terms thereof, or children terms of 'MONDO:0000001' (disease) are allowed"
+            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms of 'MONDO:0000001' (disease) are allowed"
         ]
 
         # Invalid MONDO term id - disease parent term
@@ -540,7 +540,7 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'MONDO:0000001' in 'disease_ontology_term_id' is not an allowed term id. "
-            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or children terms thereof, or children terms of 'MONDO:0000001' (disease) are allowed"
+            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms of 'MONDO:0000001' (disease) are allowed"
         ]
 
         # Valid PATO term id - healthy
@@ -549,7 +549,7 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == []
 
-        # Valid MONDO term id - disease child term
+        # Valid MONDO term id - disease descendant term
         validator.errors = []
         obs.loc[obs.index[0], "disease_ontology_term_id"] = "MONDO:0005491"
         validator.validate_adata()
@@ -561,7 +561,7 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == []
 
-        # Valid MONDO term id - injury child term
+        # Valid MONDO term id - injury descendant term
         validator.errors = []
         obs.loc[obs.index[0], "disease_ontology_term_id"] = "MONDO:0015796"
         validator.validate_adata()
@@ -618,7 +618,7 @@ class TestObs:
         assert not validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'unknown' in 'tissue_ontology_term_id' is not a valid ontology term id of 'UBERON'. "
-            "When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' MUST be a child "
+            "When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' MUST be a descendant "
             "term id of 'UBERON:0001062' (anatomical entity)."
         ]
 
@@ -690,7 +690,7 @@ class TestObs:
     def test_self_reported_ethnicity_ontology_term_id__forbidden_term_ancestor(self, validator_with_adata):
         """
         Test self_reported_ethnicity_ontology_term error message when passed an ontology term that has
-        both itself and its children forbidden
+        both itself and its descendants forbidden
         """
         validator = validator_with_adata
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
@@ -709,10 +709,10 @@ class TestObs:
             )
         ]
 
-    def test_self_reported_ethnicity_ontology_term_id__forbidden_term_child(self, validator_with_adata):
+    def test_self_reported_ethnicity_ontology_term_id__forbidden_term_descendant(self, validator_with_adata):
         """
-        Test self_reported_ethnicity_ontology_term error message when passed the child term of an ontology term that has
-        both itself and its children forbidden
+        Test self_reported_ethnicity_ontology_term error message when passed the descendant term of an ontology term that has
+        both itself and its descendants forbidden
         """
         validator = validator_with_adata
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
@@ -727,7 +727,7 @@ class TestObs:
         assert validator.errors == [
             self.get_format_error_message(
                 error_message_suffix,
-                "ERROR: 'HANCESTRO:0306' in 'self_reported_ethnicity_ontology_term_id' is not allowed. Child terms "
+                "ERROR: 'HANCESTRO:0306' in 'self_reported_ethnicity_ontology_term_id' is not allowed. Descendant terms "
                 "of 'HANCESTRO:0304' are not allowed.",
             )
         ]
@@ -902,7 +902,7 @@ class TestObs:
 
     def test_organism_ontology_term_id(self, validator_with_adata):
         """
-        organism_ontology_term_id categorical with str categories. This MUST be a child of NCBITaxon:33208.
+        organism_ontology_term_id categorical with str categories. This MUST be a descendant of NCBITaxon:33208.
         """
         validator = validator_with_adata
         obs = validator.adata.obs
@@ -918,7 +918,7 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'EFO:0000001' in 'organism_ontology_term_id' is not a valid "
-            "ontology term id of 'NCBITaxon'. Only children term ids of 'NCBITaxon:33208' for metazoan are allowed."
+            "ontology term id of 'NCBITaxon'. Only descendant term ids of 'NCBITaxon:33208' for metazoan are allowed."
         ]
 
     def test_tissue_ontology_term_id_base(self, validator_with_adata):
@@ -934,7 +934,7 @@ class TestObs:
         assert validator.errors == [
             "ERROR: 'EFO:0000001' in 'tissue_ontology_term_id' is not a valid ontology term id of "
             "'UBERON'. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' MUST be a "
-            "child term id of 'UBERON:0001062' (anatomical entity)."
+            "descendant term id of 'UBERON:0001062' (anatomical entity)."
         ]
 
     def test_tissue_ontology_term_id_cell_culture__suffix_in_term_id(self, validator_with_adata):
@@ -1011,12 +1011,12 @@ class TestObs:
         assert validator.errors == [
             "ERROR: 'UBERON:0000057 (organoid)' in 'tissue_ontology_term_id' is not a valid ontology term id of "
             "'UBERON'. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' MUST be a "
-            "child term id of 'UBERON:0001062' (anatomical entity)."
+            "descendant term id of 'UBERON:0001062' (anatomical entity)."
         ]
 
-    def test_tissue_ontology_term_id_child_of_anatomical_entity__tissue(self, validator_with_adata):
+    def test_tissue_ontology_term_id_descendant_of_anatomical_entity__tissue(self, validator_with_adata):
         """
-        Tissue ontology term ID must be a CHILD TERM of 'UBERON:0001062' (anatomical entity) if tissue_type is
+        Tissue ontology term ID must be a descendant term of 'UBERON:0001062' (anatomical entity) if tissue_type is
         organoid or tissue.
         """
         validator = validator_with_adata
@@ -1027,12 +1027,12 @@ class TestObs:
         assert validator.errors == [
             "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not an allowed term id. "
             "When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' "
-            "MUST be a child term id of 'UBERON:0001062' (anatomical entity)."
+            "MUST be a descendant term id of 'UBERON:0001062' (anatomical entity)."
         ]
 
-    def test_tissue_ontology_term_id_child_of_anatomical_entity__organoid(self, validator_with_adata):
+    def test_tissue_ontology_term_id_descendant_of_anatomical_entity__organoid(self, validator_with_adata):
         """
-        Tissue ontology term ID must be a CHILD TERM of 'UBERON:0001062' (anatomical entity) if tissue_type is
+        Tissue ontology term ID must be a descendant term of 'UBERON:0001062' (anatomical entity) if tissue_type is
         organoid or tissue.
         """
         validator = validator_with_adata
@@ -1044,7 +1044,7 @@ class TestObs:
         assert validator.errors == [
             "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not an allowed term id. "
             "When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' "
-            "MUST be a child term id of 'UBERON:0001062' (anatomical entity)."
+            "MUST be a descendant term id of 'UBERON:0001062' (anatomical entity)."
         ]
 
     def test_tissue_type(self, validator_with_adata):
@@ -1064,7 +1064,7 @@ class TestObs:
     def test_sex_ontology_term_id(self, validator_with_adata):
         """
         sex_ontology_term_id categorical with str categories.
-        This MUST be a child of PATOPATO:0001894 for phenotypic sex or "unknown" if unavailable
+        This MUST be a descendant of PATOPATO:0001894 for phenotypic sex or "unknown" if unavailable
         """
         validator = validator_with_adata
         obs = validator.adata.obs
@@ -1192,34 +1192,34 @@ class TestObs:
         assert validator.errors == [
             f"ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
             f"'['{invalid_suspension_type}']'. Values must be one of {suspension_types} when "
-            f"'assay_ontology_term_id' is {assay} or its children"
+            f"'assay_ontology_term_id' is {assay} or its descendants"
         ]
 
-    def test_suspension_type_with_child_term_id_failure(self, validator_with_adata):
+    def test_suspension_type_with_descendant_term_id_failure(self, validator_with_adata):
         """
         suspension_id categorical with str categories. This field MUST be "cell", "nucleus", or "na". The allowed
         values depend on the assay_ontology_term_id. MUST support matching against ancestor term rules if specified.
         """
         validator = validator_with_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "assay_ontology_term_id"] = "EFO:0030008"  # child of EFO:0009294
+        obs.loc[obs.index[0], "assay_ontology_term_id"] = "EFO:0030008"  # descendant of EFO:0009294
         obs.loc[obs.index[0], "suspension_type"] = "nucleus"
 
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
             "'['nucleus']'. Values must be one of ['cell'] when "
-            "'assay_ontology_term_id' is EFO:0009294 or its children"
+            "'assay_ontology_term_id' is EFO:0009294 or its descendants"
         ]
 
-    def test_suspension_type_with_child_term_id_success(self, validator_with_adata):
+    def test_suspension_type_with_descendant_term_id_success(self, validator_with_adata):
         """
         suspension_id categorical with str categories. This field MUST be "cell", "nucleus", or "na". The allowed
         values depend on the assay_ontology_term_id. MUST support matching against ancestor term rules if specified.
         """
         validator = validator_with_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "assay_ontology_term_id"] = "EFO:0008904"  # child of EFO:0007045
+        obs.loc[obs.index[0], "assay_ontology_term_id"] = "EFO:0008904"  # descendant of EFO:0007045
         obs["suspension_type"][0] = "nucleus"
 
         validator.validate_adata()

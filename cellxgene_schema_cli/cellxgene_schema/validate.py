@@ -105,7 +105,7 @@ class Validator:
         self, term_id: str, column_name: str, forbidden_def: Dict[str, List[str]]
     ) -> bool:
         """
-        Validate if a single curie term id is a child term of any forbidden ancestors.
+        Validate if a single curie term id is a descendant term of any forbidden ancestors.
         If there is a forbidden ancestor detected, it adds it to self.errors.
 
         :param str term_id: the curie term id to validate
@@ -118,7 +118,7 @@ class Validator:
             for ancestor in forbidden_def[ontology_name]:
                 if ONTOLOGY_CHECKER.is_descendent_of(ontology_name, term_id, ancestor):
                     self.errors.append(
-                        f"'{term_id}' in '{column_name}' is not allowed. Child terms of "
+                        f"'{term_id}' in '{column_name}' is not allowed. Descendant terms of "
                         f"'{ancestor}' are not allowed."
                     )
                     return True
@@ -131,7 +131,7 @@ class Validator:
         inclusive: bool = False,
     ) -> bool:
         """
-        Validate a single curie term id is a valid child of any allowed ancestors
+        Validate a single curie term id is a valid descendant of any allowed ancestors
 
         :param str term_id: the curie term id to validate
         :param dict{str: list[str]} allowed_ancestors: keys must be ontology names and values must lists of
@@ -151,8 +151,8 @@ class Validator:
                 is_valid_term_id = ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, term_id)
                 is_valid_ancestor_id = ONTOLOGY_CHECKER.is_valid_term_id(ontology_name, ancestor)
                 if is_valid_term_id & is_valid_ancestor_id:
-                    is_child = ONTOLOGY_CHECKER.is_descendent_of(ontology_name, term_id, ancestor)
-                    checks.append(is_child)
+                    is_descendant = ONTOLOGY_CHECKER.is_descendent_of(ontology_name, term_id, ancestor)
+                    checks.append(is_descendant)
 
         if True not in checks:
             return False
@@ -516,7 +516,7 @@ class Validator:
     def _generate_match_ancestors_query_fn(self, rule_def: Dict):
         """
         Generates vectorized function and args to query a pandas dataframe. Function will determine whether values from
-        a specified column is a child term to a group of specified ancestors, returning a Bool.
+        a specified column is a descendant term to a group of specified ancestors, returning a Bool.
         :param rule_def: defines arguments to pass into vectorized ancestor match validation function
         :return: Tuple(function, Tuple(str, List[str], List[str]))
         """
@@ -992,10 +992,10 @@ class Validator:
                     f"The size of the ndarray stored for a 'adata.{component_name}['{key}']' MUST NOT be zero."
                 )
 
-    def _are_children_of(self, component: str, column: str, ontology_name: str, ancestors: List[str]) -> bool:
+    def _are_descendants_of(self, component: str, column: str, ontology_name: str, ancestors: List[str]) -> bool:
         """
         Checks if elements in the specified column of the component (e.g. 'assay_ontology_term_id' of 'adata.obs') are
-        children of the given ancestors.
+        descendants of the given ancestors.
 
         Ancestors checks are inclusive, meaning that a value is its own ancestor as well.
 
@@ -1005,7 +1005,7 @@ class Validator:
         :param List[str] ancestors: List of ancestors
 
         :rtype bool
-        :return True if any value in column is children of any ancestor.
+        :return True if any value in column is a descendant of any ancestor.
         """
 
         curies = getattr(getattr(self.adata, component), column)
@@ -1142,9 +1142,9 @@ class Validator:
         for component, component_rules in self.schema_def["raw"].items():
             for column, column_rules in component_rules.items():
                 for rule, rule_def in column_rules.items():
-                    if rule == "not_children_of":
+                    if rule == "not_descendants_of":
                         for ontology_name, ancestors in rule_def.items():
-                            checks.append(not self._are_children_of(component, column, ontology_name, ancestors))
+                            checks.append(not self._are_descendants_of(component, column, ontology_name, ancestors))
                     else:
                         raise ValueError(f"'{rule}' rule in raw definition of the schema is not implemented ")
 
