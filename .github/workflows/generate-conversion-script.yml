@@ -49,12 +49,6 @@ jobs:
       - name: remove diff files
         run: |
           git rm --ignore-unmatch ./cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt
-      - name: Bump RC to Major Version
-        run: |
-          pip install bumpversion
-          pip install wheel
-          bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
-          echo "new_version=$(make show-current-version)" >> $GITHUB_ENV
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:

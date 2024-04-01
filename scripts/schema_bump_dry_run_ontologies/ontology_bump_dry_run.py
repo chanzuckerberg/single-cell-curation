@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-import gzip
 import json
 import os
 from collections import defaultdict
+
+from cellxgene_ontology_guide.ontology_parser import OntologyParser
 
 from scripts.common.thirdparty.discovery_api import (
     BASE_API,
@@ -25,19 +26,11 @@ ONTOLOGY_TYPES = {
 }
 
 
-def load_ontology_map():  # type: ignore
-    # Load processed ontologies file
-    ontologies = "cellxgene_schema_cli/cellxgene_schema/ontology_files/all_ontology.json.gz"
-    with gzip.open(ontologies, "rt") as f:
-        onto_map = json.loads(f.read())
-    return onto_map
-
-
 def map_deprecated_terms(
     curator_report_entry_map: dict,  # type: ignore
     dataset: dict,  # type: ignore
     collection_id: str,
-    onto_map: dict,  # type: ignore
+    onto_parser: OntologyParser,
     non_deprecated_term_cache: set,  # type: ignore
     replaced_by_map: dict,  # type: ignore
 ) -> None:
@@ -50,8 +43,7 @@ def map_deprecated_terms(
     guidance from ontologies on how to replace them
     :param dataset: dict with dataset metadata
     :param collection_id: str unique identifier for collection the dataset is found in
-    :param onto_map: dict derived from processed ontology file, contains map of all ontology terms from all ontologies
-    used in data-portal and metadata from their owl files
+    :param onto_parser: OntologyParser, used to fetch ontology term metadata for a given schema_version
     :param non_deprecated_term_cache: set caching known terms that are not deprecated, used to skip re-processing
     :param replaced_by_map: dict mapping deprecated terms to a single known same-ontology replacement terms,
     updated in-place
@@ -63,37 +55,30 @@ def map_deprecated_terms(
                 for ontology_term_id in ontology_term_ids:
                     if ontology_term_id in non_deprecated_term_cache:
                         continue
-                    else:
-                        # all_ontologies is indexed by ontology prefix and term ID without suffixes,
-                        # so we must parse + build the search term
-                        ontology_id_parts = ontology_term_id.split(" ")[0].split(":")
-                        term_prefix = ontology_id_parts[0]
-                        ontology_index_id = f"{term_prefix}:{ontology_id_parts[1]}"
-                        ontology = onto_map[term_prefix][ontology_index_id]
-
-                    if ontology["deprecated"]:
+                    if onto_parser.is_term_deprecated(ontology_term_id):
                         if ontology_term_id in curator_report_entry_map[collection_id]:
                             curator_report_entry_map[collection_id][ontology_term_id]["dataset_ct"] += 1
                         else:
                             entry = dict()
                             entry["needs_alert"] = False
                             entry["dataset_ct"] = 1  # type: ignore
-                            if "term_tracker" in ontology:
-                                entry["term_tracker"] = ontology["term_tracker"]
-                            if "comments" in ontology:
-                                entry["comments"] = ontology["comments"]
-                            if "replaced_by" in ontology:
-                                entry["replaced_by"] = ontology["replaced_by"]
-                                replacement_term_ontology = ontology["replaced_by"].split(":")[0]
-                                if replacement_term_ontology != term_prefix:
+                            ontology_metadata = onto_parser.get_term_metadata(ontology_term_id)
+                            replacement_term = onto_parser.get_term_replacement(ontology_term_id)
+                            if ontology_metadata["term_tracker"]:
+                                entry["term_tracker"] = ontology_metadata["term_tracker"]
+                            if ontology_metadata["comments"]:
+                                entry["comments"] = ontology_metadata["comments"]
+                            if replacement_term:
+                                entry["replaced_by"] = replacement_term
+                                if replacement_term.split(":")[0] != ontology_term_id.split(":")[0]:
                                     entry["needs_alert"] = True
                                 else:
-                                    if ontology_index_id not in replaced_by_map[ontology_type]:
-                                        replaced_by_map[ontology_type][ontology_index_id] = ontology["replaced_by"]
+                                    if ontology_term_id not in replaced_by_map[ontology_type]:
+                                        replaced_by_map[ontology_type][ontology_term_id] = replacement_term
                             else:
                                 entry["needs_alert"] = True
-                                if "consider" in ontology:
-                                    entry["consider"] = ontology["consider"]
+                                if ontology_metadata["consider"]:
+                                    entry["consider"] = ontology_metadata["consider"]
 
                             curator_report_entry_map[collection_id][ontology_term_id] = entry
                     else:
@@ -137,16 +122,15 @@ def dry_run(curator_report_filepath: str, replaced_by_filepath: str) -> None:
     :param curator_report_filepath: filepath to write curator report to
     :param replaced_by_filepath: filepath to write replaced by JSON mapping to
     """
-    onto_map = load_ontology_map()  # type: ignore
-
     # cache terms we know are not deprecated to skip processing; init with special-case, non-ontology terms we use
-    non_deprecated_term_cache = {"multiethnic", "unknown", "na"}
+    non_deprecated_term_cache = {"unknown", "na"}
     # map deprecated terms with known, deterministic 'replaced by' terms
     replaced_by_map = {ontology_type: dict() for ontology_type in ONTOLOGY_TYPES}  # type: ignore
 
     base_url = BASE_API[os.getenv("corpus_env", default="dev")]
     datasets = fetch_public_datasets(base_url)  # type: ignore
     public_curator_report_entry_map = defaultdict(dict)  # type: ignore
+    onto_parser = OntologyParser(schema_version="v5.0.0")
     with open(curator_report_filepath, "w") as f:
         # for every dataset, check its ontology term metadata to see if any terms are deprecated. If so, report.
         f.write("Deprecated Terms in Public Datasets:\n\n")
@@ -155,7 +139,7 @@ def dry_run(curator_report_filepath: str, replaced_by_filepath: str) -> None:
             public_curator_report_entry_map,
             dataset,
             dataset["collection_id"],
-            onto_map,
+            onto_parser,
             non_deprecated_term_cache,
             replaced_by_map,
         )
@@ -182,7 +166,7 @@ def dry_run(curator_report_filepath: str, replaced_by_filepath: str) -> None:
                 private_curator_report_entry_map,
                 dataset_metadata,
                 collection_id,
-                onto_map,
+                onto_parser,
                 non_deprecated_term_cache,
                 replaced_by_map,
             )
