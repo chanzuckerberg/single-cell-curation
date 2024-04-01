@@ -1,5 +1,6 @@
 import logging
 import math
+import numbers
 import os
 import re
 from datetime import datetime
@@ -772,6 +773,7 @@ class Validator:
                     self.errors.append(f"uns['{key}'] cannot be an empty value.")
             elif (
                 value is not None
+                and not isinstance(value, numbers.Number)
                 and type(value) is not bool
                 and not (isinstance(value, (np.bool_, np.bool)))
                 and len(value) == 0

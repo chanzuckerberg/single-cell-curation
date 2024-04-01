@@ -16,11 +16,18 @@ def url_builder(path_segment):
     return url
 
 
-def get_headers():
-    access_token = os.getenv("ACCESS_TOKEN")
+def get_headers_and_cookies() -> dict:
     headers = {"Content-Type": "application/json"}
-    if not access_token:
-        logger.warning("No access token included in request")
-    else:
+    cookies = {}
+    if access_token := os.getenv("ACCESS_TOKEN"):
+        # Discover API access token will also allow request to get through rdev proxy
         headers["Authorization"] = f"Bearer {access_token}"
-    return headers
+    elif oauth_cookie := os.getenv("OAUTH_COOKIE"):
+        # Only use oauth cookie if access_token not set -- does not confer any Discover API permissions
+        cookies["_oauth2_proxy"] = oauth_cookie
+    elif oauth_proxy_token := os.getenv("OAUTH_PROXY_ACCESS_TOKEN"):
+        # Or use generic 'test app' token -- does not confer any Discover API permissions
+        headers["Authorization"] = f"Bearer {oauth_proxy_token}"
+    else:
+        logger.warning("No access token included in request")
+    return {"headers": headers, "cookies": cookies}
