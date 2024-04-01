@@ -1,0 +1,1124 @@
+2024-03-29 17:57:23,213:24301:root:INFO:Fetching dataset ids to test
+2024-03-29 17:57:23,242:24301:root:INFO:Found 1284 datasets
+2024-03-29 17:57:23,243:24301:root:INFO:Sampling 256 datasets
+2024-03-29 17:57:23,249:24301:root:INFO:Datasets Versions:
+	abd8c3c5-bfbf-43ad-8569-9217809b852b
+	41d96962-fef0-44b5-88ae-dc2f1ba10802
+	a6f76541-e860-4cbf-a69f-af4527fe0645
+	b151e6dd-f325-4ce5-ac1b-f25b220d0985
+	9af1ce3d-d11a-4edf-9628-65f4ce31c701
+	2384341a-239d-4c1b-bce9-c0f3a0ed477f
+	1f2871a8-3020-4ac4-8b36-fc09bcbb7885
+	9ebcf88a-71ef-469b-90cf-5125e61c62ec
+	5b49ed4d-f13b-4e7f-ade1-39ab689bba84
+	ba54cb9d-baf7-4eeb-860f-6852b68290ff
+	42100a86-b847-4ab5-99c8-6cbb096f742e
+	76838dfe-8a40-45d4-8c1b-9061ed2b6c08
+	0c6a6323-9341-4835-8c0e-de7a00cbfe9e
+	e48806af-87d1-45ae-843a-c7ee06eac672
+	d6f9937a-5830-41a2-affd-e0ae1c164550
+	8a6143a7-a196-47e5-8ce7-fea66a70e880
+	33201c99-5790-4684-a60b-f5773b1408f6
+	3caabe73-c617-4f7a-bd36-6d0d7cbaac00
+	52841e55-f8da-44ad-9ee3-9ee67a998066
+	780eb415-add8-4dd1-892b-50c5351b2b75
+	c52e5d4a-b62a-4f12-a5a2-36dbda7caf8f
+	28ba5ab8-fc1e-4472-a100-128327c8cbe1
+	bac7897b-e215-4844-9883-c224bf17cd4b
+	c407eff2-0315-416b-a3da-acf5b7a271e9
+	b56a74d3-37f1-45b2-85df-973010bcac1d
+	a9152b30-2aa7-47ab-b747-6fadfe426378
+	239559cc-8de8-48fb-975a-dc8b87e2add1
+	0c37b06d-c369-424d-b864-bb6ba40bbb6b
+	eb880774-bb8e-4b5a-ac6e-b6c6c6bc7ab5
+	c8ff97c2-1cc4-4ae7-b187-a327ffa60054
+	c9c1fc42-92b9-4bf5-97dc-dc7c20e28b2a
+	82eacb5f-a974-4bfb-ab6f-6560dd19c3db
+	13ea7e5e-44e8-444f-b1c4-a7e6ff8f36c3
+	ecf9ec99-46ea-489f-836b-f66ba15b4f3d
+	64c6f5c0-7e70-4878-8bb2-d0a20aa9af7d
+	7844c7d5-4ba9-4bcd-99de-1bb79c0f5d99
+	4cda4640-5264-4a82-be44-d2b5550eec4b
+	1015c746-3e59-46d2-a3f5-b592f1ee119a
+	f9fc6637-699b-4979-b976-4b0f4afa930a
+	4fc4d6fb-f105-4f9c-be0e-ab10abd564b4
+	75852754-2d3d-4126-97fb-4514bb5fdebc
+	bad8df4f-8df8-4caf-b888-5bea81dabacc
+	c588e5ee-0741-486e-9283-a8f0157a1406
+	37a13a09-e9aa-4d2a-900c-0862e13cfac3
+	73bf1c1a-6e02-4ec6-9b3d-263b2e372237
+	5d3efbf5-de5f-4feb-a0c6-436c783840ec
+	ac73842f-0691-408a-8d46-4cc8712061d5
+	fd4e5f2a-2e68-4bdf-8d78-c2117cab09d7
+	3faea40f-221c-4d81-8c8c-1bdbeb5749f2
+	e1d241a7-cfdf-4a61-a1d8-ab3c0ed61246
+	472c0683-3049-4950-bde3-50acf7ddc954
+	37f89de0-a46b-47e0-a45f-161b8a895668
+	7ab8f800-4ebf-4b7c-aebe-248096c6f2b5
+	11e9207d-2723-4194-ab74-723b4aed3b4a
+	cfafecd2-b342-4d21-b96e-88e2b78ab6f8
+	a96d8cf4-1852-4ead-81cc-aaeedef9df66
+	8cf40ef1-aba8-4f24-b146-e397f0f8f716
+	7cbbdb10-df4b-47e8-ab84-98f9bccc66e3
+	b8705f1c-ef82-477c-be9a-464f6a80bc66
+	12065530-d3b7-44bb-94c7-4e6b4f9d45ed
+	7e88c4aa-d95f-43e3-bc8b-cf02629d7301
+	932a3e5e-7522-479f-9516-b84355979b8d
+	79e4f5c9-cdcf-4fb3-9c45-b7b626fb9321
+	9dc91933-bd89-48e5-a71b-7dbcc5ed4757
+	5480ae73-a12c-41ad-b10d-69a671502553
+	ba5e1ea8-dedd-4a3f-92ec-ab649126f6ab
+	fbcb3ad7-4e05-44cd-a564-89960b04f30c
+	751a3051-92ec-4dfa-b70c-efd655e348ab
+	00ae06d3-2c07-4e18-8db0-51219b153113
+	63005255-f56a-4533-b021-2bf6509c2f04
+	4d500598-e3d0-4985-bd7b-7073213579c2
+	b39cc59b-ff76-495b-9d77-26e999851f63
+	244661d9-2862-40f8-9bd6-e77d0f5a267e
+	1f8232d3-c97a-402c-b673-d4fe80a4743f
+	af79daba-5e45-4826-9848-95f54c0d5073
+	23c0f030-9727-4522-a539-88417d65c04b
+	4113f438-5e11-4155-b31b-2af9ab151e18
+	761c8afc-b8d9-4bb0-8f11-b8fdb2db5620
+	5287c1e3-aac5-4963-8e60-1d973328416e
+	95422174-456a-48ba-95c4-3d3208aab481
+	575dd70a-45b1-4a82-8acd-467d313e4c66
+	f2ec6cd7-8048-4032-8f7f-b7e5cbb01d19
+	afda9941-cc83-4f0c-b838-c911bebd785e
+	6563d292-1caa-4bc8-a9fe-896559cf491a
+	1c158adf-90ea-47b7-9dac-f4fcb9e3efc5
+	0ebba928-bdf1-40a7-ae6c-d60b855c81b1
+	793210dc-ec6e-4483-b198-76f6d15493c9
+	75bc237f-1795-43dd-b303-7c7c312e5cf9
+	fe64de5d-65f8-4da8-a865-6c2494f4c2e0
+	b6f230bd-6b2c-493c-9381-b0587b973abe
+	b811587f-4a3b-4beb-8376-02bd318ed4c3
+	9074bc5a-a303-48ea-afb3-d429ac5b9dbe
+	9ee9a477-cc0d-4722-b4f2-1e1bd0508cd0
+	b5b4b100-e9ec-42ec-a923-bb539674caee
+	733630fa-b60d-4f1c-a7b1-fa36794812a4
+	d89f8d39-2711-4aae-a4df-33fa3bd629b7
+	1a7e7c90-ba3c-495e-a3c2-7c21eb0b2780
+	ca680d6a-b9cb-48ab-9e52-ad75d6c87ea6
+	bb5708d9-c16a-4c6f-a944-f395add2aa35
+	77914918-bf24-4a40-8aed-c7810892120f
+	2db9718f-2448-443d-906e-0590c57d39f3
+	d31b4bbf-0113-48f0-8d8b-a4031a63fa7b
+	0f2c1200-7bcd-4d5b-b029-4fcd7686433b
+	ecc19ef3-6b11-4f8f-bb63-e046160b8e08
+	7e37201a-d5f5-4811-a424-76f502e811ca
+	06531a55-8495-47b9-94c1-49cae1902115
+	272c6f5b-60f8-4b0c-98d6-c617a9621fa4
+	a50bd91d-5481-421d-9b8d-f89c4e31dd18
+	78a95938-1d74-484a-acdb-4e2372e95c8c
+	44703324-8d6c-44c2-958d-8d16f5eb4054
+	b4645848-e3d8-4920-bb4e-7aa294725177
+	0a9a31a2-1292-496f-b39a-753977be0a4e
+	b5a62bdb-e1c1-45ed-8c26-5af9070b4e89
+	ffa80f3c-f779-49a2-9a7e-275089ece6e2
+	62eba64d-c2f0-41f0-a1b5-6465948960e0
+	e18b8a25-0337-4e37-b65f-033ce2e3a1ea
+	d42e3568-a498-43f4-90d3-711661f38ca5
+	e8b03b79-54e7-4102-8a9d-caef4b6d2674
+	cfd2a57a-7d08-41bc-abf3-bab86b3d8e5f
+	d20d13ee-51b7-4069-81a4-ac878cb2f4fe
+	aa4849b3-7178-4c8c-b079-a49ed03ab09d
+	ac51610f-df0b-490a-b6b1-aac5732284b8
+	380f5dea-b916-41ab-a953-8cdf12b2409c
+	82457847-6d52-46e9-b0d5-3c3f749f1fb5
+	aa9c60a4-dd37-47ef-a7ac-d141b26ae160
+	76554b0e-738c-4238-978f-6a749e303874
+	1dcbb4d6-331b-4e78-ac10-e54aa821d355
+	2a64f4cc-d6c7-4fe6-9918-030c28b1c995
+	2666f9a4-dd15-4bcb-a31e-7122a104fcfc
+	ed6754f8-2a41-475f-a6df-f1a3ed48f353
+	e269dc32-c022-4075-b4bf-49f40d630bdf
+	b498f60f-12ba-4a18-b632-73c7e9527768
+	24b85ce7-4e4f-4e33-a899-1c743f6672cb
+	dee5e801-20cf-4d23-9125-cdbe711440cd
+	c03f88c0-07bf-479c-94b0-771b013f07a5
+	6dca5f55-7e5c-429a-a8b3-8243fb28b815
+	9d32d094-9129-43c0-90e1-a4d46ab6f39d
+	96fc1557-5641-4b67-88ee-ac293b00422f
+	a33dae94-db20-420e-910f-c2a53e2c276c
+	c83105a2-80df-418c-ba40-c66484ba28ff
+	7f0654e8-370b-4faf-aa18-df7b04ae6d66
+	57946996-bf51-4aaa-b108-c50a7b6543c5
+	14db4277-1261-4a96-b3b1-d1cc91518fc1
+	d758eeb4-ce25-42ba-82f4-1980166b7405
+	9aad2375-d19d-44fe-b4cb-c170bcb9376b
+	04101337-68d5-4841-a8c4-e6e24c832cb0
+	5d6308fd-76e2-45b1-b7a1-1f671e2097b7
+	2d8c324d-6307-47ff-94e1-8f27083adc7c
+	87b4ab1f-0a0b-4c6f-9014-bc333da8b05d
+	618b91f6-8b5d-4d79-b8b4-b2c44f5ac58c
+	f45fc70f-ccd6-431b-8a11-98a793161b6c
+	9c0a89ca-67b8-453f-9002-efbeb9bc136a
+	76556f60-b3f4-421d-b0bd-262fd13f774a
+	3b1db058-4e87-4f21-98e2-2bad3a46b1d4
+	7f5fef75-e581-441c-82ab-40238eb21087
+	2173c001-3778-4d46-8383-5e6903095f05
+	13ddb0d8-49e1-48da-b3ab-5c5fed5ec885
+	6ea2bb93-dc7e-49a2-930c-33af53d91a5d
+	4ce2f4eb-757a-4cae-82ed-900a33c3145e
+	c041c19b-b64b-4d42-bfc2-4ba653d02d28
+	9a4dd5df-8757-4f70-b0a1-d8b021a653bc
+	675b276f-6b88-4c65-aa37-7d1df922b705
+	eb3a4e49-daff-44d5-be6e-d5dbcace0c44
+	62660000-7f0f-41c4-9171-beb307f6a7cf
+	1468c9fd-1568-4d5c-8a51-ba0cfe917769
+	f4e1d43c-a5f1-4bd4-8954-ff5ab352a866
+	f6cae838-778f-4e87-9193-0c461c6346b3
+	b422875c-2a1f-4260-b69c-cccae7699ec4
+	f186deb1-4926-4049-8f96-7be42d32ea1b
+	73152955-d99f-4a88-943e-e0da626e2d69
+	fe58ce59-22cd-4865-88a8-a1dfdb70d5af
+	71b9ecfc-ed34-4879-b2f1-15d0cb12dfe9
+	7db3a7ef-f423-4443-bce9-95cb4af0c40d
+	3cef9e59-178b-4fc6-a61a-4fd975d6dbc6
+	95589217-fe82-431b-92fd-3bf038ef5e52
+	709fd03a-e724-488c-bb47-c555821d6775
+	79772e00-00d5-497e-b8ff-f83af5ce59c1
+	323e3474-4205-401d-92eb-dc30a0e022dc
+	fb55e3d2-3d2b-4c26-9371-4e5ae08d5da6
+	5d0e1790-0456-475d-8057-2dabd8cd636d
+	a7334adc-f8e7-4430-92a7-c807db68fd5e
+	595417ad-414c-4e85-8cf4-200ddd31685c
+	017c9ef2-a5e5-429e-a9a1-919e330c4087
+	08e90bd8-0731-473f-b094-cbf59378cb40
+	3ca0e174-aa1a-4624-856e-8f94d3864310
+	c7c2124e-5d10-447e-89b9-7c5613f752c8
+	7d8c460a-fca5-423e-80e7-4f8854446569
+	16ea1d7f-65b8-476f-8d3b-3759804ccbd0
+	5ebf8e58-961c-471c-a87c-3401bbed3377
+	1b19ecb3-0320-4525-8eaf-bf16542e772a
+	5ad1390c-7afa-4792-98a0-186d4018611b
+	bd4aaa42-2714-4e09-bc63-08df687c1b6c
+	4df5ea20-265e-4cec-b09a-e590193576c2
+	51affad7-08ed-43b3-93ad-56640f4b8910
+	19911459-a133-4b26-872c-16e8b4f96ae5
+	d09fce93-63ae-43a9-ae91-55fdd6464d13
+	ae802158-1a7e-43e0-9c23-cdc688ce3481
+	b5b3c6c7-0c1f-4fc7-aa1b-24d547e61070
+	868dd745-47b3-4d95-90e6-b2775394ff18
+	2da22142-53a7-4164-8b01-4fc200d98c49
+	1649053a-a101-432d-b7d2-ffb0888f8c62
+	12fd2029-e977-4f0b-8a93-fe7d557c6150
+	9227d155-6f2d-4534-be73-b86c5c34d8e6
+	1b3b848b-b006-4f3e-8ace-534774b56da4
+	cdc5c7db-c0c1-4b39-9328-ad104b58e18a
+	82035ff8-361d-461a-961c-287293f1b98a
+	2380b77b-018f-461c-a026-2242258bb995
+	35250c8d-a0ea-4844-b262-9fde1d498a82
+	98850cc8-8c09-4668-a2a0-33e0a820e799
+	16fa561d-827b-40ab-8945-e611a5e525bb
+	40cd22b0-b8f1-4601-88c8-a39bb8bcc1ed
+	8cfb7c71-ba45-4b1e-8df9-c84966f069ee
+	f45c1e32-4fb5-4a14-ba4b-adaba432193f
+	b7c4df68-8d51-4999-a350-5eb6cb75ca9e
+	ddc3915a-5db0-4df1-b685-651c45686027
+	588c0a6b-fce7-41be-8fe5-266cc0b04723
+	3733af9a-e43a-4ce9-9cb1-91294fce2b88
+	1e0b7e34-406f-42f3-aad7-fe18d783c050
+	4c54654e-b179-462f-a0a1-bcfd83b1a6ad
+	9802e7d4-6797-484d-ad64-988a2b666b4b
+	da5dbbe1-55c2-42ff-82e8-1f65c9e35b79
+	059fbf28-8cd1-4b4d-9cef-db058a3f4d84
+	cf1f505e-924e-4519-82a2-de8242194f90
+	40832710-d7b1-43fb-b2c2-1cd2255bc3ac
+	4dda3892-01b3-42e4-842d-ec311d548314
+	5d1600bf-6e8a-435e-a2ee-05f8726a876b
+	8252fa6d-8241-4bd8-9c35-3e0eccc7649f
+	aafb30e5-0fe3-4e7d-b3bb-315973650bc7
+	2d47bdec-058e-4362-b39d-9df2be338754
+	52ebbdf2-478b-4da1-9792-fe850e2e06ff
+	754e311b-f8bb-47c5-b4a0-9cda69bbb17e
+	ab149f9b-8fda-414a-a312-69279695f342
+	8a2dd4a0-05e7-41ff-ae73-d2093f8f5982
+	1846f7ed-d11e-44f2-833a-c2272c58ac3d
+	06e43844-99e0-4b72-bb6a-37494a67c90c
+	54937a8a-597c-45cc-a1dd-de76e6099e75
+	3cf9aaab-ee2f-48c1-ae96-71b235bc83ea
+	74bbb414-428c-4f4c-9d04-a45d48b00845
+	d3262686-8780-4ee6-b5ef-39257fe5686f
+	dfb813b4-2e29-4577-9705-9f102caca0ee
+	103b1011-b436-4f11-82d8-dad0f3c29b00
+	8a391122-1bf6-4146-8ded-d18c036810f1
+	d7e86fbd-f606-48c1-af99-a12c10a615f2
+	4b3b2af8-af3c-47aa-b0ce-6fd5c6170dc6
+	061bd455-ab0a-4ae9-9c46-1c1d1ca00bf1
+	96e32f20-3ce0-479a-9b60-2e7344cf8482
+	c480e527-5725-4699-bd8a-e09535b23ba8
+	33f632c2-e5af-4b29-b563-6d9282a4a138
+	57c2a88c-e016-45ca-8fff-1e2d186dca1a
+	697a2396-e6ca-42e4-b177-4ee2a8f871d4
+	08c863a1-7fd3-47a4-9520-136b37ea4aaa
+	1c2a1345-4d3b-4845-abfd-8117a9bdbf2e
+	756a4875-80a7-4e59-8e90-ddffb975c771
+	6555f66a-bb6b-47df-aaef-14b51eb060b2
+	c1661793-74ae-4e20-a388-6796ebd6f9d9
+	380a3c53-d068-40c5-a8e1-232967521dab
+2024-03-29 18:00:18,091:24308:dataset_00ae06d3-2c07-4e18-8db0-51219b153113:INFO:PASS
+2024-03-29 18:04:12,176:24309:dataset_059fbf28-8cd1-4b4d-9cef-db058a3f4d84:ERROR:FAILED
+	spatial.HCAHeartST10238253.images images does not match
+	spatial.HCAHeartST10238253.metadata metadata does not match
+	spatial.HCAHeartST10238253.scalefactors scalefactors does not match
+	spatial.HCAHeartST10238253 HCAHeartST10238253 does not match
+	spatial spatial does not match
+2024-03-29 18:04:22,429:24307:dataset_04101337-68d5-4841-a8c4-e6e24c832cb0:INFO:PASS
+2024-03-29 18:05:28,715:24309:dataset_06531a55-8495-47b9-94c1-49cae1902115:INFO:PASS
+2024-03-29 18:09:00,413:24307:dataset_06e43844-99e0-4b72-bb6a-37494a67c90c:INFO:PASS
+2024-03-29 18:12:38,970:24308:dataset_061bd455-ab0a-4ae9-9c46-1c1d1ca00bf1:INFO:PASS
+2024-03-29 18:13:09,595:24307:dataset_08e90bd8-0731-473f-b094-cbf59378cb40:INFO:PASS
+2024-03-29 18:18:31,498:24307:dataset_0c37b06d-c369-424d-b864-bb6ba40bbb6b:ERROR:FAILED
+	neighbors.params params does not match
+	neighbors neighbors does not match
+2024-03-29 18:18:35,419:24308:dataset_0a9a31a2-1292-496f-b39a-753977be0a4e:INFO:PASS
+2024-03-29 18:19:31,498:24306:dataset_017c9ef2-a5e5-429e-a9a1-919e330c4087:ERROR:FAILED
+	_scvi.categorical_mappings._scvi_batch _scvi_batch does not match
+	_scvi.categorical_mappings._scvi_labels _scvi_labels does not match
+	_scvi.categorical_mappings categorical_mappings does not match
+	_scvi.data_registry.X X does not match
+	_scvi.data_registry.batch_indices batch_indices does not match
+	_scvi.data_registry.labels labels does not match
+	_scvi.data_registry.local_l_mean local_l_mean does not match
+	_scvi.data_registry.local_l_var local_l_var does not match
+	_scvi.data_registry data_registry does not match
+	_scvi.summary_stats summary_stats does not match
+	_scvi _scvi does not match
+	dendrogram_cell_type_tissue.dendrogram_info dendrogram_info does not match
+	dendrogram_cell_type_tissue dendrogram_cell_type_tissue does not match
+	dendrogram_computational_compartment_assignment.dendrogram_info dendrogram_info does not match
+	dendrogram_computational_compartment_assignment dendrogram_computational_compartment_assignment does not match
+	dendrogram_consensus_prediction.dendrogram_info dendrogram_info does not match
+	dendrogram_consensus_prediction dendrogram_consensus_prediction does not match
+	dendrogram_tissue_cell_type.dendrogram_info dendrogram_info does not match
+	dendrogram_tissue_cell_type dendrogram_tissue_cell_type does not match
+	hvg hvg does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 18:20:16,583:24309:dataset_08c863a1-7fd3-47a4-9520-136b37ea4aaa:INFO:PASS
+2024-03-29 18:21:55,624:24308:dataset_0ebba928-bdf1-40a7-ae6c-d60b855c81b1:INFO:PASS
+2024-03-29 18:27:00,348:24306:dataset_0f2c1200-7bcd-4d5b-b029-4fcd7686433b:INFO:PASS
+2024-03-29 18:27:48,393:24307:dataset_0c6a6323-9341-4835-8c0e-de7a00cbfe9e:ERROR:FAILED
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 18:29:06,470:24309:dataset_1015c746-3e59-46d2-a3f5-b592f1ee119a:INFO:PASS
+2024-03-29 18:29:26,920:24308:dataset_103b1011-b436-4f11-82d8-dad0f3c29b00:INFO:PASS
+2024-03-29 18:30:04,117:24306:dataset_11e9207d-2723-4194-ab74-723b4aed3b4a:INFO:PASS
+2024-03-29 18:32:03,830:24309:dataset_12fd2029-e977-4f0b-8a93-fe7d557c6150:ERROR:FAILED
+	leiden.params params does not match
+	leiden leiden does not match
+	louvain.params params does not match
+	louvain louvain does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	pca pca does not match
+2024-03-29 18:33:25,980:24309:dataset_1468c9fd-1568-4d5c-8a51-ba0cfe917769:INFO:PASS
+2024-03-29 18:33:56,571:24306:dataset_13ea7e5e-44e8-444f-b1c4-a7e6ff8f36c3:INFO:PASS
+2024-03-29 18:35:47,138:24308:dataset_13ddb0d8-49e1-48da-b3ab-5c5fed5ec885:INFO:PASS
+2024-03-29 18:37:51,133:24309:dataset_14db4277-1261-4a96-b3b1-d1cc91518fc1:INFO:PASS
+2024-03-29 18:39:26,997:24307:dataset_12065530-d3b7-44bb-94c7-4e6b4f9d45ed:INFO:PASS
+2024-03-29 18:47:29,596:24308:dataset_16ea1d7f-65b8-476f-8d3b-3759804ccbd0:INFO:PASS
+2024-03-29 18:49:21,878:24309:dataset_16fa561d-827b-40ab-8945-e611a5e525bb:INFO:PASS
+2024-03-29 18:49:42,962:24308:dataset_19911459-a133-4b26-872c-16e8b4f96ae5:ERROR:FAILED
+	leiden.params params does not match
+	leiden leiden does not match
+	louvain.params params does not match
+	louvain louvain does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	pca pca does not match
+2024-03-29 18:50:33,349:24307:dataset_1846f7ed-d11e-44f2-833a-c2272c58ac3d:INFO:PASS
+2024-03-29 18:50:49,833:24309:dataset_1a7e7c90-ba3c-495e-a3c2-7c21eb0b2780:INFO:PASS
+2024-03-29 18:51:50,346:24307:dataset_1b3b848b-b006-4f3e-8ace-534774b56da4:INFO:PASS
+2024-03-29 18:52:42,744:24308:dataset_1b19ecb3-0320-4525-8eaf-bf16542e772a:ERROR:FAILED
+	leiden.params params does not match
+	leiden leiden does not match
+	louvain.params params does not match
+	louvain louvain does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	pca pca does not match
+2024-03-29 18:54:09,254:24308:dataset_1dcbb4d6-331b-4e78-ac10-e54aa821d355:INFO:PASS
+2024-03-29 18:55:25,616:24306:dataset_1649053a-a101-432d-b7d2-ffb0888f8c62:ERROR:FAILED
+	_scvi.categorical_mappings._scvi_batch _scvi_batch does not match
+	_scvi.categorical_mappings._scvi_labels _scvi_labels does not match
+	_scvi.categorical_mappings categorical_mappings does not match
+	_scvi.data_registry.X X does not match
+	_scvi.data_registry.batch_indices batch_indices does not match
+	_scvi.data_registry.labels labels does not match
+	_scvi.data_registry.local_l_mean local_l_mean does not match
+	_scvi.data_registry.local_l_var local_l_var does not match
+	_scvi.data_registry data_registry does not match
+	_scvi.summary_stats summary_stats does not match
+	_scvi _scvi does not match
+	dendrogram_cell_type_tissue.dendrogram_info dendrogram_info does not match
+	dendrogram_cell_type_tissue dendrogram_cell_type_tissue does not match
+	dendrogram_computational_compartment_assignment.dendrogram_info dendrogram_info does not match
+	dendrogram_computational_compartment_assignment dendrogram_computational_compartment_assignment does not match
+	dendrogram_consensus_prediction.dendrogram_info dendrogram_info does not match
+	dendrogram_consensus_prediction dendrogram_consensus_prediction does not match
+	dendrogram_tissue_cell_type.dendrogram_info dendrogram_info does not match
+	dendrogram_tissue_cell_type dendrogram_tissue_cell_type does not match
+	hvg hvg does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 18:56:49,372:24306:dataset_1f2871a8-3020-4ac4-8b36-fc09bcbb7885:INFO:PASS
+2024-03-29 18:57:22,709:24309:dataset_1c158adf-90ea-47b7-9dac-f4fcb9e3efc5:INFO:PASS
+2024-03-29 19:02:39,536:24307:dataset_1c2a1345-4d3b-4845-abfd-8117a9bdbf2e:INFO:PASS
+2024-03-29 19:02:50,860:24306:dataset_1f8232d3-c97a-402c-b673-d4fe80a4743f:INFO:PASS
+2024-03-29 19:05:58,429:24308:dataset_1e0b7e34-406f-42f3-aad7-fe18d783c050:INFO:PASS
+2024-03-29 19:07:55,851:24309:dataset_2173c001-3778-4d46-8383-5e6903095f05:INFO:PASS
+2024-03-29 19:09:15,644:24306:dataset_2384341a-239d-4c1b-bce9-c0f3a0ed477f:INFO:PASS
+2024-03-29 19:10:29,807:24308:dataset_239559cc-8de8-48fb-975a-dc8b87e2add1:INFO:PASS
+2024-03-29 19:14:28,253:24309:dataset_23c0f030-9727-4522-a539-88417d65c04b:ERROR:FAILED
+	spatial.HCAHeartST13233999.images images does not match
+	spatial.HCAHeartST13233999.metadata metadata does not match
+	spatial.HCAHeartST13233999.scalefactors scalefactors does not match
+	spatial.HCAHeartST13233999 HCAHeartST13233999 does not match
+	spatial spatial does not match
+2024-03-29 19:14:59,536:24308:dataset_24b85ce7-4e4f-4e33-a899-1c743f6672cb:INFO:PASS
+2024-03-29 19:16:26,580:24306:dataset_244661d9-2862-40f8-9bd6-e77d0f5a267e:ERROR:FAILED
+	hvg hvg does not match
+	leiden.params params does not match
+	leiden leiden does not match
+	neighbors.params params does not match
+	neighbors.rp_forest.children children does not match
+	neighbors.rp_forest.hyperplanes hyperplanes does not match
+	neighbors.rp_forest.indices indices does not match
+	neighbors.rp_forest.offsets offsets does not match
+	neighbors.rp_forest rp_forest does not match
+	neighbors neighbors does not match
+	pca.params params does not match
+	pca pca does not match
+	rank_genes_groups.params params does not match
+	rank_genes_groups rank_genes_groups does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 19:20:11,645:24309:dataset_2666f9a4-dd15-4bcb-a31e-7122a104fcfc:INFO:PASS
+2024-03-29 19:20:35,165:24306:dataset_28ba5ab8-fc1e-4472-a100-128327c8cbe1:INFO:PASS
+2024-03-29 19:21:54,010:24306:dataset_2d47bdec-058e-4362-b39d-9df2be338754:INFO:PASS
+2024-03-29 19:22:30,149:24307:dataset_2380b77b-018f-461c-a026-2242258bb995:ERROR:FAILED
+	_scvi.categorical_mappings._scvi_batch _scvi_batch does not match
+	_scvi.categorical_mappings._scvi_labels _scvi_labels does not match
+	_scvi.categorical_mappings categorical_mappings does not match
+	_scvi.data_registry.X X does not match
+	_scvi.data_registry.batch_indices batch_indices does not match
+	_scvi.data_registry.labels labels does not match
+	_scvi.data_registry.local_l_mean local_l_mean does not match
+	_scvi.data_registry.local_l_var local_l_var does not match
+	_scvi.data_registry data_registry does not match
+	_scvi.summary_stats summary_stats does not match
+	_scvi _scvi does not match
+	dendrogram_cell_type_tissue.dendrogram_info dendrogram_info does not match
+	dendrogram_cell_type_tissue dendrogram_cell_type_tissue does not match
+	dendrogram_computational_compartment_assignment.dendrogram_info dendrogram_info does not match
+	dendrogram_computational_compartment_assignment dendrogram_computational_compartment_assignment does not match
+	dendrogram_consensus_prediction.dendrogram_info dendrogram_info does not match
+	dendrogram_consensus_prediction dendrogram_consensus_prediction does not match
+	dendrogram_tissue_cell_type.dendrogram_info dendrogram_info does not match
+	dendrogram_tissue_cell_type dendrogram_tissue_cell_type does not match
+	hvg hvg does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 19:24:59,442:24306:dataset_2d8c324d-6307-47ff-94e1-8f27083adc7c:INFO:PASS
+2024-03-29 19:27:54,721:24309:dataset_2a64f4cc-d6c7-4fe6-9918-030c28b1c995:ERROR:FAILED
+	hvg hvg does not match
+	neighbors.params.bbknn bbknn does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	pca.params params does not match
+	pca pca does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 19:28:41,108:24307:dataset_2da22142-53a7-4164-8b01-4fc200d98c49:INFO:PASS
+2024-03-29 19:36:00,342:24307:dataset_33201c99-5790-4684-a60b-f5773b1408f6:ERROR:FAILED
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 19:37:24,143:24308:dataset_272c6f5b-60f8-4b0c-98d6-c617a9621fa4:INFO:PASS
+2024-03-29 19:37:57,315:24309:dataset_323e3474-4205-401d-92eb-dc30a0e022dc:INFO:PASS
+2024-03-29 19:41:25,774:24308:dataset_35250c8d-a0ea-4844-b262-9fde1d498a82:INFO:PASS
+2024-03-29 19:42:12,175:24307:dataset_33f632c2-e5af-4b29-b563-6d9282a4a138:INFO:PASS
+2024-03-29 19:42:44,941:24309:dataset_3733af9a-e43a-4ce9-9cb1-91294fce2b88:INFO:PASS
+2024-03-29 19:45:39,311:24307:dataset_37f89de0-a46b-47e0-a45f-161b8a895668:INFO:PASS
+2024-03-29 19:46:07,309:24306:dataset_2db9718f-2448-443d-906e-0590c57d39f3:ERROR:FAILED
+	_scvi.categorical_mappings._scvi_batch _scvi_batch does not match
+	_scvi.categorical_mappings._scvi_labels _scvi_labels does not match
+	_scvi.categorical_mappings categorical_mappings does not match
+	_scvi.data_registry.X X does not match
+	_scvi.data_registry.batch_indices batch_indices does not match
+	_scvi.data_registry.labels labels does not match
+	_scvi.data_registry.local_l_mean local_l_mean does not match
+	_scvi.data_registry.local_l_var local_l_var does not match
+	_scvi.data_registry data_registry does not match
+	_scvi.summary_stats summary_stats does not match
+	_scvi _scvi does not match
+	dendrogram_cell_type_tissue.dendrogram_info dendrogram_info does not match
+	dendrogram_cell_type_tissue dendrogram_cell_type_tissue does not match
+	dendrogram_computational_compartment_assignment.dendrogram_info dendrogram_info does not match
+	dendrogram_computational_compartment_assignment dendrogram_computational_compartment_assignment does not match
+	dendrogram_consensus_prediction.dendrogram_info dendrogram_info does not match
+	dendrogram_consensus_prediction dendrogram_consensus_prediction does not match
+	dendrogram_tissue_cell_type.dendrogram_info dendrogram_info does not match
+	dendrogram_tissue_cell_type dendrogram_tissue_cell_type does not match
+	hvg hvg does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 19:49:08,364:24308:dataset_37a13a09-e9aa-4d2a-900c-0862e13cfac3:INFO:PASS
+2024-03-29 19:49:49,420:24307:dataset_380f5dea-b916-41ab-a953-8cdf12b2409c:INFO:PASS
+2024-03-29 19:51:00,114:24307:dataset_3caabe73-c617-4f7a-bd36-6d0d7cbaac00:INFO:PASS
+2024-03-29 19:51:36,178:24306:dataset_3b1db058-4e87-4f21-98e2-2bad3a46b1d4:INFO:PASS
+2024-03-29 19:52:17,504:24307:dataset_3cef9e59-178b-4fc6-a61a-4fd975d6dbc6:INFO:PASS
+2024-03-29 19:53:41,202:24308:dataset_3ca0e174-aa1a-4624-856e-8f94d3864310:INFO:PASS
+2024-03-29 19:54:47,910:24308:dataset_40832710-d7b1-43fb-b2c2-1cd2255bc3ac:INFO:PASS
+2024-03-29 19:55:01,582:24309:dataset_380a3c53-d068-40c5-a8e1-232967521dab:INFO:PASS
+2024-03-29 19:55:50,264:24307:dataset_3faea40f-221c-4d81-8c8c-1bdbeb5749f2:INFO:PASS
+2024-03-29 19:57:03,388:24309:dataset_4113f438-5e11-4155-b31b-2af9ab151e18:INFO:PASS
+2024-03-29 19:57:18,920:24307:dataset_41d96962-fef0-44b5-88ae-dc2f1ba10802:INFO:PASS
+2024-03-29 19:59:37,540:24308:dataset_40cd22b0-b8f1-4601-88c8-a39bb8bcc1ed:INFO:PASS
+2024-03-29 20:01:05,262:24307:dataset_44703324-8d6c-44c2-958d-8d16f5eb4054:INFO:PASS
+2024-03-29 20:02:26,529:24307:dataset_4b3b2af8-af3c-47aa-b0ce-6fd5c6170dc6:INFO:PASS
+2024-03-29 20:03:15,145:24306:dataset_3cf9aaab-ee2f-48c1-ae96-71b235bc83ea:INFO:PASS
+2024-03-29 20:04:24,312:24309:dataset_42100a86-b847-4ab5-99c8-6cbb096f742e:INFO:PASS
+2024-03-29 20:08:50,997:24307:dataset_4c54654e-b179-462f-a0a1-bcfd83b1a6ad:INFO:PASS
+2024-03-29 20:09:05,656:24306:dataset_4cda4640-5264-4a82-be44-d2b5550eec4b:INFO:PASS
+2024-03-29 20:13:10,446:24307:dataset_4d500598-e3d0-4985-bd7b-7073213579c2:INFO:PASS
+2024-03-29 20:13:33,553:24309:dataset_4ce2f4eb-757a-4cae-82ed-900a33c3145e:ERROR:FAILED
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 20:17:30,011:24306:dataset_4dda3892-01b3-42e4-842d-ec311d548314:INFO:PASS
+2024-03-29 20:21:18,927:24308:dataset_472c0683-3049-4950-bde3-50acf7ddc954:INFO:PASS
+2024-03-29 20:21:54,510:24307:dataset_4df5ea20-265e-4cec-b09a-e590193576c2:INFO:PASS
+2024-03-29 20:24:03,772:24306:dataset_51affad7-08ed-43b3-93ad-56640f4b8910:INFO:PASS
+2024-03-29 20:24:26,340:24308:dataset_52841e55-f8da-44ad-9ee3-9ee67a998066:INFO:PASS
+2024-03-29 20:25:24,978:24309:dataset_4fc4d6fb-f105-4f9c-be0e-ab10abd564b4:INFO:PASS
+2024-03-29 20:25:45,837:24308:dataset_5480ae73-a12c-41ad-b10d-69a671502553:INFO:PASS
+2024-03-29 20:25:55,674:24307:dataset_5287c1e3-aac5-4963-8e60-1d973328416e:INFO:PASS
+2024-03-29 20:28:42,174:24306:dataset_52ebbdf2-478b-4da1-9792-fe850e2e06ff:INFO:PASS
+2024-03-29 20:30:27,699:24307:dataset_57946996-bf51-4aaa-b108-c50a7b6543c5:INFO:PASS
+2024-03-29 20:31:27,794:24309:dataset_54937a8a-597c-45cc-a1dd-de76e6099e75:INFO:PASS
+2024-03-29 20:32:01,186:24308:dataset_575dd70a-45b1-4a82-8acd-467d313e4c66:INFO:PASS
+2024-03-29 20:33:37,211:24309:dataset_595417ad-414c-4e85-8cf4-200ddd31685c:INFO:PASS
+2024-03-29 20:34:52,118:24307:dataset_588c0a6b-fce7-41be-8fe5-266cc0b04723:INFO:PASS
+2024-03-29 20:36:10,511:24309:dataset_5b49ed4d-f13b-4e7f-ade1-39ab689bba84:INFO:PASS
+2024-03-29 20:39:15,325:24307:dataset_5d0e1790-0456-475d-8057-2dabd8cd636d:INFO:PASS
+2024-03-29 20:41:28,497:24306:dataset_57c2a88c-e016-45ca-8fff-1e2d186dca1a:INFO:PASS
+2024-03-29 20:43:06,827:24308:dataset_5ad1390c-7afa-4792-98a0-186d4018611b:INFO:PASS
+2024-03-29 20:47:57,821:24307:dataset_5d3efbf5-de5f-4feb-a0c6-436c783840ec:INFO:PASS
+2024-03-29 20:51:53,947:24309:dataset_5d1600bf-6e8a-435e-a2ee-05f8726a876b:ERROR:<class 'scipy.sparse._csr.csr_matrix'>
+Traceback (most recent call last):
+  File "/Users/trentsmith/workspace/single-cell-curation/scripts/cog_integration/test_cog_with_write_lables.py", line 119, in compare_dicts
+    if value1 != value2:
+  File "/Users/trentsmith/workspace/test-cellxgene-ontology/venv/test-cog/lib/python3.10/site-packages/scipy/sparse/_base.py", line 387, in __bool__
+    raise ValueError("The truth value of an array with more than one "
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all().
+2024-03-29 20:51:53,950:24309:dataset_5d1600bf-6e8a-435e-a2ee-05f8726a876b:ERROR:FAILED
+	dendrogram_merged_cell_type.dendrogram_info dendrogram_info does not match
+	dendrogram_merged_cell_type dendrogram_merged_cell_type does not match
+	leiden.params params does not match
+	leiden leiden does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	pca.params params does not match
+	pca pca does not match
+	rank_genes_groups.params params does not match
+	rank_genes_groups rank_genes_groups does not match
+	triku_params.None None does not match
+	triku_params triku_params does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 20:52:30,925:24307:dataset_618b91f6-8b5d-4d79-b8b4-b2c44f5ac58c:ERROR:FAILED
+	mod.post_sample_means post_sample_means does not match
+	mod.post_sample_q05 post_sample_q05 does not match
+	mod.post_sample_q95 post_sample_q95 does not match
+	mod.post_sample_stds post_sample_stds does not match
+	mod mod does not match
+	mod_coloc_n_fact11.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact11 mod_coloc_n_fact11 does not match
+	mod_coloc_n_fact12.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact12 mod_coloc_n_fact12 does not match
+	mod_coloc_n_fact13.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact13 mod_coloc_n_fact13 does not match
+	mod_coloc_n_fact19.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact19 mod_coloc_n_fact19 does not match
+	mod_coloc_n_fact20.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact20 mod_coloc_n_fact20 does not match
+	mod_coloc_n_fact21.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact21 mod_coloc_n_fact21 does not match
+	mod_coloc_n_fact22.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact22 mod_coloc_n_fact22 does not match
+	mod_coloc_n_fact8.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact8 mod_coloc_n_fact8 does not match
+	mod_coloc_n_fact9.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact9 mod_coloc_n_fact9 does not match
+	spatial.WSA_LngSP10193345.images images does not match
+	spatial.WSA_LngSP10193345.metadata metadata does not match
+	spatial.WSA_LngSP10193345.scalefactors scalefactors does not match
+	spatial.WSA_LngSP10193345 WSA_LngSP10193345 does not match
+	spatial spatial does not match
+2024-03-29 20:52:42,082:24308:dataset_5ebf8e58-961c-471c-a87c-3401bbed3377:ERROR:FAILED
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 20:56:12,080:24308:dataset_63005255-f56a-4533-b021-2bf6509c2f04:INFO:PASS
+2024-03-29 21:00:25,535:24307:dataset_62eba64d-c2f0-41f0-a1b5-6465948960e0:ERROR:FAILED
+	spatial.MacParland_Catia__PSC011-4_D1_VIS.images images does not match
+	spatial.MacParland_Catia__PSC011-4_D1_VIS.metadata metadata does not match
+	spatial.MacParland_Catia__PSC011-4_D1_VIS.scalefactors scalefactors does not match
+	spatial.MacParland_Catia__PSC011-4_D1_VIS MacParland_Catia__PSC011-4_D1_VIS does not match
+	spatial spatial does not match
+2024-03-29 21:03:19,989:24308:dataset_64c6f5c0-7e70-4878-8bb2-d0a20aa9af7d:ERROR:FAILED
+	hvg hvg does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	pca.params params does not match
+	pca pca does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 21:04:33,947:24306:dataset_5d6308fd-76e2-45b1-b7a1-1f671e2097b7:ERROR:FAILED
+	_scvi.categorical_mappings._scvi_batch _scvi_batch does not match
+	_scvi.categorical_mappings._scvi_labels _scvi_labels does not match
+	_scvi.categorical_mappings categorical_mappings does not match
+	_scvi.data_registry.X X does not match
+	_scvi.data_registry.batch_indices batch_indices does not match
+	_scvi.data_registry.labels labels does not match
+	_scvi.data_registry.local_l_mean local_l_mean does not match
+	_scvi.data_registry.local_l_var local_l_var does not match
+	_scvi.data_registry data_registry does not match
+	_scvi.summary_stats summary_stats does not match
+	_scvi _scvi does not match
+	dendrogram_cell_type_tissue.dendrogram_info dendrogram_info does not match
+	dendrogram_cell_type_tissue dendrogram_cell_type_tissue does not match
+	dendrogram_computational_compartment_assignment.dendrogram_info dendrogram_info does not match
+	dendrogram_computational_compartment_assignment dendrogram_computational_compartment_assignment does not match
+	dendrogram_consensus_prediction.dendrogram_info dendrogram_info does not match
+	dendrogram_consensus_prediction dendrogram_consensus_prediction does not match
+	dendrogram_tissue_cell_type.dendrogram_info dendrogram_info does not match
+	dendrogram_tissue_cell_type dendrogram_tissue_cell_type does not match
+	hvg hvg does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 21:08:37,989:24306:dataset_675b276f-6b88-4c65-aa37-7d1df922b705:INFO:PASS
+2024-03-29 21:12:43,507:24309:dataset_62660000-7f0f-41c4-9171-beb307f6a7cf:ERROR:FAILED
+	_scvi.categorical_mappings._scvi_batch _scvi_batch does not match
+	_scvi.categorical_mappings._scvi_labels _scvi_labels does not match
+	_scvi.categorical_mappings categorical_mappings does not match
+	_scvi.data_registry.X X does not match
+	_scvi.data_registry.batch_indices batch_indices does not match
+	_scvi.data_registry.labels labels does not match
+	_scvi.data_registry.local_l_mean local_l_mean does not match
+	_scvi.data_registry.local_l_var local_l_var does not match
+	_scvi.data_registry data_registry does not match
+	_scvi.summary_stats summary_stats does not match
+	_scvi _scvi does not match
+	dendrogram_cell_type_tissue.dendrogram_info dendrogram_info does not match
+	dendrogram_cell_type_tissue dendrogram_cell_type_tissue does not match
+	dendrogram_computational_compartment_assignment.dendrogram_info dendrogram_info does not match
+	dendrogram_computational_compartment_assignment dendrogram_computational_compartment_assignment does not match
+	dendrogram_consensus_prediction.dendrogram_info dendrogram_info does not match
+	dendrogram_consensus_prediction dendrogram_consensus_prediction does not match
+	dendrogram_tissue_cell_type.dendrogram_info dendrogram_info does not match
+	dendrogram_tissue_cell_type dendrogram_tissue_cell_type does not match
+	hvg hvg does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 21:13:36,398:24309:dataset_6dca5f55-7e5c-429a-a8b3-8243fb28b815:ERROR:FAILED
+	mod.post_sample_means post_sample_means does not match
+	mod.post_sample_q05 post_sample_q05 does not match
+	mod.post_sample_q95 post_sample_q95 does not match
+	mod.post_sample_stds post_sample_stds does not match
+	mod mod does not match
+	mod_coloc_n_fact11.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact11 mod_coloc_n_fact11 does not match
+	mod_coloc_n_fact12.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact12 mod_coloc_n_fact12 does not match
+	mod_coloc_n_fact13.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact13 mod_coloc_n_fact13 does not match
+	mod_coloc_n_fact19.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact19 mod_coloc_n_fact19 does not match
+	mod_coloc_n_fact20.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact20 mod_coloc_n_fact20 does not match
+	mod_coloc_n_fact21.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact21 mod_coloc_n_fact21 does not match
+	mod_coloc_n_fact22.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact22 mod_coloc_n_fact22 does not match
+	mod_coloc_n_fact8.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact8 mod_coloc_n_fact8 does not match
+	mod_coloc_n_fact9.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact9 mod_coloc_n_fact9 does not match
+	spatial.WSA_LngSP8759312.images images does not match
+	spatial.WSA_LngSP8759312.metadata metadata does not match
+	spatial.WSA_LngSP8759312.scalefactors scalefactors does not match
+	spatial.WSA_LngSP8759312 WSA_LngSP8759312 does not match
+	spatial spatial does not match
+2024-03-29 21:15:25,670:24308:dataset_6563d292-1caa-4bc8-a9fe-896559cf491a:INFO:PASS
+2024-03-29 21:18:38,172:24307:dataset_6555f66a-bb6b-47df-aaef-14b51eb060b2:INFO:PASS
+2024-03-29 21:19:42,333:24309:dataset_6ea2bb93-dc7e-49a2-930c-33af53d91a5d:ERROR:FAILED
+	hvg hvg does not match
+2024-03-29 21:20:24,832:24306:dataset_697a2396-e6ca-42e4-b177-4ee2a8f871d4:INFO:PASS
+2024-03-29 21:23:16,072:24308:dataset_709fd03a-e724-488c-bb47-c555821d6775:INFO:PASS
+2024-03-29 21:24:58,433:24308:dataset_73bf1c1a-6e02-4ec6-9b3d-263b2e372237:INFO:PASS
+2024-03-29 21:25:53,897:24308:dataset_74bbb414-428c-4f4c-9d04-a45d48b00845:INFO:PASS
+2024-03-29 21:26:49,222:24309:dataset_73152955-d99f-4a88-943e-e0da626e2d69:INFO:PASS
+2024-03-29 21:27:16,164:24308:dataset_751a3051-92ec-4dfa-b70c-efd655e348ab:INFO:PASS
+2024-03-29 21:27:25,230:24308:dataset_756a4875-80a7-4e59-8e90-ddffb975c771:INFO:PASS
+2024-03-29 21:27:44,173:24307:dataset_71b9ecfc-ed34-4879-b2f1-15d0cb12dfe9:INFO:PASS
+2024-03-29 21:29:34,836:24308:dataset_75852754-2d3d-4126-97fb-4514bb5fdebc:INFO:PASS
+2024-03-29 21:33:09,186:24306:dataset_733630fa-b60d-4f1c-a7b1-fa36794812a4:INFO:PASS
+2024-03-29 21:34:02,803:24308:dataset_761c8afc-b8d9-4bb0-8f11-b8fdb2db5620:INFO:PASS
+2024-03-29 21:34:42,218:24307:dataset_75bc237f-1795-43dd-b303-7c7c312e5cf9:INFO:PASS
+2024-03-29 21:37:52,096:24306:dataset_76554b0e-738c-4238-978f-6a749e303874:INFO:PASS
+2024-03-29 21:38:57,810:24306:dataset_77914918-bf24-4a40-8aed-c7810892120f:ERROR:FAILED
+	spatial.WSA_LngSP10972073.images images does not match
+	spatial.WSA_LngSP10972073.metadata metadata does not match
+	spatial.WSA_LngSP10972073.scalefactors scalefactors does not match
+	spatial.WSA_LngSP10972073 WSA_LngSP10972073 does not match
+	spatial spatial does not match
+2024-03-29 21:38:59,272:24309:dataset_754e311b-f8bb-47c5-b4a0-9cda69bbb17e:INFO:PASS
+2024-03-29 21:42:21,401:24306:dataset_780eb415-add8-4dd1-892b-50c5351b2b75:INFO:PASS
+2024-03-29 21:42:59,425:24308:dataset_76556f60-b3f4-421d-b0bd-262fd13f774a:INFO:PASS
+2024-03-29 21:43:52,618:24306:dataset_78a95938-1d74-484a-acdb-4e2372e95c8c:INFO:PASS
+2024-03-29 21:46:07,655:24307:dataset_76838dfe-8a40-45d4-8c1b-9061ed2b6c08:INFO:PASS
+2024-03-29 21:46:08,029:24309:dataset_7844c7d5-4ba9-4bcd-99de-1bb79c0f5d99:ERROR:FAILED
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 21:48:17,524:24308:dataset_793210dc-ec6e-4483-b198-76f6d15493c9:ERROR:<class 'scipy.sparse._csr.csr_matrix'>
+Traceback (most recent call last):
+  File "/Users/trentsmith/workspace/single-cell-curation/scripts/cog_integration/test_cog_with_write_lables.py", line 119, in compare_dicts
+    if value1 != value2:
+  File "/Users/trentsmith/workspace/test-cellxgene-ontology/venv/test-cog/lib/python3.10/site-packages/scipy/sparse/_base.py", line 387, in __bool__
+    raise ValueError("The truth value of an array with more than one "
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all().
+2024-03-29 21:48:17,526:24308:dataset_793210dc-ec6e-4483-b198-76f6d15493c9:ERROR:<class 'scipy.sparse._csr.csr_matrix'>
+Traceback (most recent call last):
+  File "/Users/trentsmith/workspace/single-cell-curation/scripts/cog_integration/test_cog_with_write_lables.py", line 119, in compare_dicts
+    if value1 != value2:
+  File "/Users/trentsmith/workspace/test-cellxgene-ontology/venv/test-cog/lib/python3.10/site-packages/scipy/sparse/_base.py", line 387, in __bool__
+    raise ValueError("The truth value of an array with more than one "
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all().
+2024-03-29 21:48:17,526:24308:dataset_793210dc-ec6e-4483-b198-76f6d15493c9:ERROR:FAILED
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	paga paga does not match
+2024-03-29 21:51:50,273:24307:dataset_79e4f5c9-cdcf-4fb3-9c45-b7b626fb9321:INFO:PASS
+2024-03-29 21:52:08,265:24306:dataset_79772e00-00d5-497e-b8ff-f83af5ce59c1:INFO:PASS
+2024-03-29 21:53:56,468:24309:dataset_7ab8f800-4ebf-4b7c-aebe-248096c6f2b5:ERROR:FAILED
+	spatial.MacParland_Catia__C73_A1_VIS.images images does not match
+	spatial.MacParland_Catia__C73_A1_VIS.metadata metadata does not match
+	spatial.MacParland_Catia__C73_A1_VIS.scalefactors scalefactors does not match
+	spatial.MacParland_Catia__C73_A1_VIS MacParland_Catia__C73_A1_VIS does not match
+	spatial spatial does not match
+2024-03-29 21:59:13,744:24308:dataset_7cbbdb10-df4b-47e8-ab84-98f9bccc66e3:INFO:PASS
+2024-03-29 22:00:44,487:24306:dataset_7db3a7ef-f423-4443-bce9-95cb4af0c40d:ERROR:FAILED
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 22:04:44,706:24309:dataset_7e37201a-d5f5-4811-a424-76f502e811ca:INFO:PASS
+2024-03-29 22:05:09,470:24307:dataset_7d8c460a-fca5-423e-80e7-4f8854446569:INFO:PASS
+2024-03-29 22:05:27,581:24308:dataset_7e88c4aa-d95f-43e3-bc8b-cf02629d7301:INFO:PASS
+2024-03-29 22:05:32,784:24306:dataset_7f0654e8-370b-4faf-aa18-df7b04ae6d66:INFO:PASS
+2024-03-29 22:08:35,106:24306:dataset_8252fa6d-8241-4bd8-9c35-3e0eccc7649f:INFO:PASS
+2024-03-29 22:09:20,467:24309:dataset_7f5fef75-e581-441c-82ab-40238eb21087:INFO:PASS
+2024-03-29 22:10:28,813:24306:dataset_82eacb5f-a974-4bfb-ab6f-6560dd19c3db:INFO:PASS
+2024-03-29 22:11:30,572:24307:dataset_82035ff8-361d-461a-961c-287293f1b98a:ERROR:FAILED
+	spatial.HCAHeartST8795935.images images does not match
+	spatial.HCAHeartST8795935.metadata metadata does not match
+	spatial.HCAHeartST8795935.scalefactors scalefactors does not match
+	spatial.HCAHeartST8795935 HCAHeartST8795935 does not match
+	spatial spatial does not match
+2024-03-29 22:11:32,137:24308:dataset_82457847-6d52-46e9-b0d5-3c3f749f1fb5:INFO:PASS
+2024-03-29 22:12:41,475:24306:dataset_87b4ab1f-0a0b-4c6f-9014-bc333da8b05d:INFO:PASS
+2024-03-29 22:12:43,231:24308:dataset_8a391122-1bf6-4146-8ded-d18c036810f1:INFO:PASS
+2024-03-29 22:17:25,862:24308:dataset_8cf40ef1-aba8-4f24-b146-e397f0f8f716:INFO:PASS
+2024-03-29 22:17:54,072:24307:dataset_8a2dd4a0-05e7-41ff-ae73-d2093f8f5982:ERROR:FAILED
+	spatial.HCAHeartST9383353.images images does not match
+	spatial.HCAHeartST9383353.metadata metadata does not match
+	spatial.HCAHeartST9383353.scalefactors scalefactors does not match
+	spatial.HCAHeartST9383353 HCAHeartST9383353 does not match
+	spatial spatial does not match
+2024-03-29 22:19:23,400:24309:dataset_868dd745-47b3-4d95-90e6-b2775394ff18:INFO:PASS
+2024-03-29 22:21:11,132:24306:dataset_8a6143a7-a196-47e5-8ce7-fea66a70e880:ERROR:<class 'pandas.core.frame.DataFrame'>
+Traceback (most recent call last):
+  File "/Users/trentsmith/workspace/single-cell-curation/scripts/cog_integration/test_cog_with_write_lables.py", line 119, in compare_dicts
+    if value1 != value2:
+  File "/Users/trentsmith/workspace/test-cellxgene-ontology/venv/test-cog/lib/python3.10/site-packages/pandas/core/generic.py", line 1527, in __nonzero__
+    raise ValueError(
+ValueError: The truth value of a DataFrame is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2024-03-29 22:21:11,138:24306:dataset_8a6143a7-a196-47e5-8ce7-fea66a70e880:ERROR:FAILED
+	rank_genes_groups.params params does not match
+	rank_genes_groups rank_genes_groups does not match
+	rank_genes_groups_filtered.params params does not match
+	rank_genes_groups_filtered rank_genes_groups_filtered does not match
+2024-03-29 22:24:42,867:24308:dataset_8cfb7c71-ba45-4b1e-8df9-c84966f069ee:INFO:PASS
+2024-03-29 22:25:59,986:24308:dataset_95422174-456a-48ba-95c4-3d3208aab481:INFO:PASS
+2024-03-29 22:30:39,573:24308:dataset_95589217-fe82-431b-92fd-3bf038ef5e52:INFO:PASS
+2024-03-29 22:33:00,887:24306:dataset_932a3e5e-7522-479f-9516-b84355979b8d:INFO:PASS
+2024-03-29 22:37:15,004:24308:dataset_96e32f20-3ce0-479a-9b60-2e7344cf8482:INFO:PASS
+2024-03-29 22:38:25,884:24308:dataset_9802e7d4-6797-484d-ad64-988a2b666b4b:INFO:PASS
+2024-03-29 22:39:47,323:24306:dataset_96fc1557-5641-4b67-88ee-ac293b00422f:ERROR:FAILED
+	spatial.HCAHeartST8795937.images images does not match
+	spatial.HCAHeartST8795937.metadata metadata does not match
+	spatial.HCAHeartST8795937.scalefactors scalefactors does not match
+	spatial.HCAHeartST8795937 HCAHeartST8795937 does not match
+	spatial spatial does not match
+2024-03-29 22:39:47,799:24307:dataset_9074bc5a-a303-48ea-afb3-d429ac5b9dbe:ERROR:FAILED
+	_scvi.categorical_mappings._scvi_batch _scvi_batch does not match
+	_scvi.categorical_mappings._scvi_labels _scvi_labels does not match
+	_scvi.categorical_mappings categorical_mappings does not match
+	_scvi.data_registry.X X does not match
+	_scvi.data_registry.batch_indices batch_indices does not match
+	_scvi.data_registry.labels labels does not match
+	_scvi.data_registry.local_l_mean local_l_mean does not match
+	_scvi.data_registry.local_l_var local_l_var does not match
+	_scvi.data_registry data_registry does not match
+	_scvi.summary_stats summary_stats does not match
+	_scvi _scvi does not match
+	dendrogram_cell_type_tissue.dendrogram_info dendrogram_info does not match
+	dendrogram_cell_type_tissue dendrogram_cell_type_tissue does not match
+	dendrogram_computational_compartment_assignment.dendrogram_info dendrogram_info does not match
+	dendrogram_computational_compartment_assignment dendrogram_computational_compartment_assignment does not match
+	dendrogram_consensus_prediction.dendrogram_info dendrogram_info does not match
+	dendrogram_consensus_prediction dendrogram_consensus_prediction does not match
+	dendrogram_tissue_cell_type.dendrogram_info dendrogram_info does not match
+	dendrogram_tissue_cell_type dendrogram_tissue_cell_type does not match
+	hvg hvg does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 22:39:57,861:24309:dataset_9227d155-6f2d-4534-be73-b86c5c34d8e6:ERROR:FAILED
+	_scvi.categorical_mappings._scvi_batch _scvi_batch does not match
+	_scvi.categorical_mappings._scvi_labels _scvi_labels does not match
+	_scvi.categorical_mappings categorical_mappings does not match
+	_scvi.data_registry.X X does not match
+	_scvi.data_registry.batch_indices batch_indices does not match
+	_scvi.data_registry.labels labels does not match
+	_scvi.data_registry.local_l_mean local_l_mean does not match
+	_scvi.data_registry.local_l_var local_l_var does not match
+	_scvi.data_registry data_registry does not match
+	_scvi.summary_stats summary_stats does not match
+	_scvi _scvi does not match
+	dendrogram_cell_type_tissue.dendrogram_info dendrogram_info does not match
+	dendrogram_cell_type_tissue dendrogram_cell_type_tissue does not match
+	dendrogram_computational_compartment_assignment.dendrogram_info dendrogram_info does not match
+	dendrogram_computational_compartment_assignment dendrogram_computational_compartment_assignment does not match
+	dendrogram_consensus_prediction.dendrogram_info dendrogram_info does not match
+	dendrogram_consensus_prediction dendrogram_consensus_prediction does not match
+	dendrogram_tissue_cell_type.dendrogram_info dendrogram_info does not match
+	dendrogram_tissue_cell_type dendrogram_tissue_cell_type does not match
+	hvg hvg does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 22:44:15,989:24307:dataset_9aad2375-d19d-44fe-b4cb-c170bcb9376b:INFO:PASS
+2024-03-29 22:44:25,481:24309:dataset_9af1ce3d-d11a-4edf-9628-65f4ce31c701:INFO:PASS
+2024-03-29 22:45:45,660:24307:dataset_9c0a89ca-67b8-453f-9002-efbeb9bc136a:INFO:PASS
+2024-03-29 22:46:49,220:24306:dataset_9a4dd5df-8757-4f70-b0a1-d8b021a653bc:INFO:PASS
+2024-03-29 22:48:00,374:24307:dataset_9dc91933-bd89-48e5-a71b-7dbcc5ed4757:ERROR:FAILED
+	leiden.params params does not match
+	leiden leiden does not match
+	louvain.params params does not match
+	louvain louvain does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	pca pca does not match
+2024-03-29 22:48:25,398:24308:dataset_98850cc8-8c09-4668-a2a0-33e0a820e799:INFO:PASS
+2024-03-29 22:49:51,655:24308:dataset_a33dae94-db20-420e-910f-c2a53e2c276c:INFO:PASS
+2024-03-29 22:50:07,626:24307:dataset_9ee9a477-cc0d-4722-b4f2-1e1bd0508cd0:ERROR:FAILED
+	spatial.HCAHeartST11702010.images images does not match
+	spatial.HCAHeartST11702010.metadata metadata does not match
+	spatial.HCAHeartST11702010.scalefactors scalefactors does not match
+	spatial.HCAHeartST11702010 HCAHeartST11702010 does not match
+	spatial spatial does not match
+2024-03-29 22:51:44,115:24309:dataset_9d32d094-9129-43c0-90e1-a4d46ab6f39d:ERROR:FAILED
+	hvg hvg does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	pca.params params does not match
+	pca pca does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-29 22:53:25,482:24306:dataset_9ebcf88a-71ef-469b-90cf-5125e61c62ec:ERROR:FAILED
+	spatial.HCAHeartST9341982.images images does not match
+	spatial.HCAHeartST9341982.metadata metadata does not match
+	spatial.HCAHeartST9341982.scalefactors scalefactors does not match
+	spatial.HCAHeartST9341982 HCAHeartST9341982 does not match
+	spatial spatial does not match
+2024-03-29 22:54:17,190:24306:dataset_a9152b30-2aa7-47ab-b747-6fadfe426378:ERROR:FAILED
+	mod.post_sample_means post_sample_means does not match
+	mod.post_sample_q05 post_sample_q05 does not match
+	mod.post_sample_q95 post_sample_q95 does not match
+	mod.post_sample_stds post_sample_stds does not match
+	mod mod does not match
+	mod_coloc_n_fact11.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact11 mod_coloc_n_fact11 does not match
+	mod_coloc_n_fact12.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact12 mod_coloc_n_fact12 does not match
+	mod_coloc_n_fact13.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact13 mod_coloc_n_fact13 does not match
+	mod_coloc_n_fact19.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact19 mod_coloc_n_fact19 does not match
+	mod_coloc_n_fact20.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact20 mod_coloc_n_fact20 does not match
+	mod_coloc_n_fact21.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact21 mod_coloc_n_fact21 does not match
+	mod_coloc_n_fact22.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact22 mod_coloc_n_fact22 does not match
+	mod_coloc_n_fact8.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact8 mod_coloc_n_fact8 does not match
+	mod_coloc_n_fact9.post_sample_means post_sample_means does not match
+	mod_coloc_n_fact9 mod_coloc_n_fact9 does not match
+	spatial.WSA_LngSP8759313.images images does not match
+	spatial.WSA_LngSP8759313.metadata metadata does not match
+	spatial.WSA_LngSP8759313.scalefactors scalefactors does not match
+	spatial.WSA_LngSP8759313 WSA_LngSP8759313 does not match
+	spatial spatial does not match
+2024-03-29 22:54:28,376:24307:dataset_a6f76541-e860-4cbf-a69f-af4527fe0645:INFO:PASS
+2024-03-29 22:58:24,590:24308:dataset_a50bd91d-5481-421d-9b8d-f89c4e31dd18:INFO:PASS
+2024-03-29 22:59:50,197:24307:dataset_aa4849b3-7178-4c8c-b079-a49ed03ab09d:INFO:PASS
+2024-03-29 23:02:14,035:24309:dataset_a7334adc-f8e7-4430-92a7-c807db68fd5e:INFO:PASS
+2024-03-29 23:04:14,404:24307:dataset_aafb30e5-0fe3-4e7d-b3bb-315973650bc7:INFO:PASS
+2024-03-29 23:06:50,661:24306:dataset_a96d8cf4-1852-4ead-81cc-aaeedef9df66:INFO:PASS
+2024-03-29 23:07:14,194:24307:dataset_abd8c3c5-bfbf-43ad-8569-9217809b852b:INFO:PASS
+2024-03-29 23:08:52,959:24306:dataset_ac51610f-df0b-490a-b6b1-aac5732284b8:ERROR:FAILED
+	rank_genes_groups.params params does not match
+	rank_genes_groups rank_genes_groups does not match
+	rank_genes_groups_filtered.params params does not match
+	rank_genes_groups_filtered rank_genes_groups_filtered does not match
+2024-03-29 23:10:25,599:24308:dataset_aa9c60a4-dd37-47ef-a7ac-d141b26ae160:INFO:PASS
+2024-03-29 23:10:55,289:24307:dataset_ac73842f-0691-408a-8d46-4cc8712061d5:INFO:PASS
+2024-03-29 23:11:03,150:24309:dataset_ab149f9b-8fda-414a-a312-69279695f342:INFO:PASS
+2024-03-29 23:13:47,959:24307:dataset_afda9941-cc83-4f0c-b838-c911bebd785e:INFO:PASS
+2024-03-29 23:15:24,902:24306:dataset_ae802158-1a7e-43e0-9c23-cdc688ce3481:INFO:PASS
+2024-03-29 23:19:06,041:24307:dataset_b39cc59b-ff76-495b-9d77-26e999851f63:INFO:PASS
+2024-03-29 23:21:19,058:24309:dataset_b151e6dd-f325-4ce5-ac1b-f25b220d0985:INFO:PASS
+2024-03-29 23:22:45,150:24308:dataset_af79daba-5e45-4826-9848-95f54c0d5073:INFO:PASS
+2024-03-29 23:23:20,809:24309:dataset_b498f60f-12ba-4a18-b632-73c7e9527768:ERROR:<class 'scipy.sparse._csr.csr_matrix'>
+Traceback (most recent call last):
+  File "/Users/trentsmith/workspace/single-cell-curation/scripts/cog_integration/test_cog_with_write_lables.py", line 119, in compare_dicts
+    if value1 != value2:
+  File "/Users/trentsmith/workspace/test-cellxgene-ontology/venv/test-cog/lib/python3.10/site-packages/scipy/sparse/_base.py", line 387, in __bool__
+    raise ValueError("The truth value of an array with more than one "
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all().
+2024-03-29 23:23:20,811:24309:dataset_b498f60f-12ba-4a18-b632-73c7e9527768:ERROR:<class 'scipy.sparse._csr.csr_matrix'>
+Traceback (most recent call last):
+  File "/Users/trentsmith/workspace/single-cell-curation/scripts/cog_integration/test_cog_with_write_lables.py", line 119, in compare_dicts
+    if value1 != value2:
+  File "/Users/trentsmith/workspace/test-cellxgene-ontology/venv/test-cog/lib/python3.10/site-packages/scipy/sparse/_base.py", line 387, in __bool__
+    raise ValueError("The truth value of an array with more than one "
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all().
+2024-03-29 23:23:20,812:24309:dataset_b498f60f-12ba-4a18-b632-73c7e9527768:ERROR:FAILED
+	leiden.params params does not match
+	leiden leiden does not match
+	neighbors_hm.params params does not match
+	neighbors_hm neighbors_hm does not match
+	pca pca does not match
+2024-03-29 23:24:44,000:24308:dataset_b56a74d3-37f1-45b2-85df-973010bcac1d:INFO:PASS
+2024-03-29 23:25:42,665:24308:dataset_b5b3c6c7-0c1f-4fc7-aa1b-24d547e61070:INFO:PASS
+2024-03-29 23:26:30,625:24306:dataset_b422875c-2a1f-4260-b69c-cccae7699ec4:INFO:PASS
+2024-03-29 23:27:36,306:24307:dataset_b4645848-e3d8-4920-bb4e-7aa294725177:INFO:PASS
+2024-03-29 23:27:40,637:24308:dataset_b5b4b100-e9ec-42ec-a923-bb539674caee:INFO:PASS
+2024-03-29 23:27:47,396:24309:dataset_b5a62bdb-e1c1-45ed-8c26-5af9070b4e89:INFO:PASS
+2024-03-29 23:30:13,507:24306:dataset_b6f230bd-6b2c-493c-9381-b0587b973abe:INFO:PASS
+2024-03-29 23:32:19,131:24309:dataset_b8705f1c-ef82-477c-be9a-464f6a80bc66:INFO:PASS
+2024-03-29 23:32:59,395:24308:dataset_b811587f-4a3b-4beb-8376-02bd318ed4c3:ERROR:<class 'scipy.sparse._csr.csr_matrix'>
+Traceback (most recent call last):
+  File "/Users/trentsmith/workspace/single-cell-curation/scripts/cog_integration/test_cog_with_write_lables.py", line 119, in compare_dicts
+    if value1 != value2:
+  File "/Users/trentsmith/workspace/test-cellxgene-ontology/venv/test-cog/lib/python3.10/site-packages/scipy/sparse/_base.py", line 387, in __bool__
+    raise ValueError("The truth value of an array with more than one "
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all().
+2024-03-29 23:32:59,397:24308:dataset_b811587f-4a3b-4beb-8376-02bd318ed4c3:ERROR:<class 'pandas.core.frame.DataFrame'>
+Traceback (most recent call last):
+  File "/Users/trentsmith/workspace/single-cell-curation/scripts/cog_integration/test_cog_with_write_lables.py", line 119, in compare_dicts
+    if value1 != value2:
+  File "/Users/trentsmith/workspace/test-cellxgene-ontology/venv/test-cog/lib/python3.10/site-packages/pandas/core/generic.py", line 1527, in __nonzero__
+    raise ValueError(
+ValueError: The truth value of a DataFrame is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2024-03-29 23:32:59,447:24308:dataset_b811587f-4a3b-4beb-8376-02bd318ed4c3:ERROR:<class 'scipy.sparse._csr.csr_matrix'>
+Traceback (most recent call last):
+  File "/Users/trentsmith/workspace/single-cell-curation/scripts/cog_integration/test_cog_with_write_lables.py", line 119, in compare_dicts
+    if value1 != value2:
+  File "/Users/trentsmith/workspace/test-cellxgene-ontology/venv/test-cog/lib/python3.10/site-packages/scipy/sparse/_base.py", line 387, in __bool__
+    raise ValueError("The truth value of an array with more than one "
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all().
+2024-03-29 23:32:59,448:24308:dataset_b811587f-4a3b-4beb-8376-02bd318ed4c3:INFO:PASS
+2024-03-29 23:33:26,872:24306:dataset_ba54cb9d-baf7-4eeb-860f-6852b68290ff:INFO:PASS
+2024-03-29 23:35:09,007:24309:dataset_ba5e1ea8-dedd-4a3f-92ec-ab649126f6ab:INFO:PASS
+2024-03-29 23:36:32,037:24306:dataset_bad8df4f-8df8-4caf-b888-5bea81dabacc:INFO:PASS
+2024-03-29 23:37:26,508:24307:dataset_b7c4df68-8d51-4999-a350-5eb6cb75ca9e:INFO:PASS
+2024-03-29 23:37:45,554:24308:dataset_bac7897b-e215-4844-9883-c224bf17cd4b:INFO:PASS
+2024-03-29 23:39:19,627:24308:dataset_c041c19b-b64b-4d42-bfc2-4ba653d02d28:INFO:PASS
+2024-03-29 23:42:47,486:24308:dataset_c1661793-74ae-4e20-a388-6796ebd6f9d9:ERROR:FAILED
+	spatial.spaceranger110_count_34914_WS_PLA_S9101764_GRCh38-3_0_0_premrna.images images does not match
+	spatial.spaceranger110_count_34914_WS_PLA_S9101764_GRCh38-3_0_0_premrna.metadata metadata does not match
+	spatial.spaceranger110_count_34914_WS_PLA_S9101764_GRCh38-3_0_0_premrna.scalefactors scalefactors does not match
+	spatial.spaceranger110_count_34914_WS_PLA_S9101764_GRCh38-3_0_0_premrna spaceranger110_count_34914_WS_PLA_S9101764_GRCh38-3_0_0_premrna does not match
+	spatial spatial does not match
+2024-03-29 23:42:54,007:24309:dataset_bb5708d9-c16a-4c6f-a944-f395add2aa35:ERROR:FAILED
+	spatial.MacParland_Catia__C73_B1_VIS.images images does not match
+	spatial.MacParland_Catia__C73_B1_VIS.metadata metadata does not match
+	spatial.MacParland_Catia__C73_B1_VIS.scalefactors scalefactors does not match
+	spatial.MacParland_Catia__C73_B1_VIS MacParland_Catia__C73_B1_VIS does not match
+	spatial spatial does not match
+2024-03-29 23:43:59,764:24307:dataset_c03f88c0-07bf-479c-94b0-771b013f07a5:INFO:PASS
+2024-03-29 23:45:43,303:24306:dataset_bd4aaa42-2714-4e09-bc63-08df687c1b6c:INFO:PASS
+2024-03-29 23:47:00,216:24309:dataset_c480e527-5725-4699-bd8a-e09535b23ba8:INFO:PASS
+2024-03-29 23:47:53,642:24307:dataset_c52e5d4a-b62a-4f12-a5a2-36dbda7caf8f:INFO:PASS
+2024-03-29 23:48:10,568:24308:dataset_c407eff2-0315-416b-a3da-acf5b7a271e9:INFO:PASS
+2024-03-29 23:49:51,484:24306:dataset_c588e5ee-0741-486e-9283-a8f0157a1406:INFO:PASS
+2024-03-29 23:50:17,333:24309:dataset_c7c2124e-5d10-447e-89b9-7c5613f752c8:ERROR:FAILED
+	leiden.params params does not match
+	leiden leiden does not match
+	louvain.params params does not match
+	louvain louvain does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	pca pca does not match
+2024-03-29 23:50:27,772:24308:dataset_c8ff97c2-1cc4-4ae7-b187-a327ffa60054:INFO:PASS
+2024-03-29 23:54:54,994:24307:dataset_c83105a2-80df-418c-ba40-c66484ba28ff:INFO:PASS
+2024-03-30 00:00:20,918:24309:dataset_ca680d6a-b9cb-48ab-9e52-ad75d6c87ea6:INFO:PASS
+2024-03-30 00:01:01,756:24306:dataset_c9c1fc42-92b9-4bf5-97dc-dc7c20e28b2a:ERROR:FAILED
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-30 00:02:20,868:24309:dataset_cfafecd2-b342-4d21-b96e-88e2b78ab6f8:ERROR:FAILED
+	rank_genes_groups.params params does not match
+	rank_genes_groups rank_genes_groups does not match
+	rank_genes_groups_filtered.params params does not match
+	rank_genes_groups_filtered rank_genes_groups_filtered does not match
+2024-03-30 00:05:05,157:24307:dataset_cf1f505e-924e-4519-82a2-de8242194f90:INFO:PASS
+2024-03-30 00:06:58,873:24308:dataset_cdc5c7db-c0c1-4b39-9328-ad104b58e18a:ERROR:<class 'scipy.sparse._csr.csr_matrix'>
+Traceback (most recent call last):
+  File "/Users/trentsmith/workspace/single-cell-curation/scripts/cog_integration/test_cog_with_write_lables.py", line 119, in compare_dicts
+    if value1 != value2:
+  File "/Users/trentsmith/workspace/test-cellxgene-ontology/venv/test-cog/lib/python3.10/site-packages/scipy/sparse/_base.py", line 387, in __bool__
+    raise ValueError("The truth value of an array with more than one "
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all().
+2024-03-30 00:06:58,874:24308:dataset_cdc5c7db-c0c1-4b39-9328-ad104b58e18a:ERROR:FAILED
+	dendrogram_merged_cell_type.dendrogram_info dendrogram_info does not match
+	dendrogram_merged_cell_type dendrogram_merged_cell_type does not match
+	leiden.params params does not match
+	leiden leiden does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	pca.params params does not match
+	pca pca does not match
+	rank_genes_groups.logfoldchanges ndarrays do not match
+	rank_genes_groups.params params does not match
+	rank_genes_groups rank_genes_groups does not match
+	triku_params.None None does not match
+	triku_params triku_params does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-30 00:07:56,973:24306:dataset_cfd2a57a-7d08-41bc-abf3-bab86b3d8e5f:INFO:PASS
+2024-03-30 00:08:47,429:24309:dataset_d09fce93-63ae-43a9-ae91-55fdd6464d13:ERROR:FAILED
+	spatial.HCAHeartST9383352.images images does not match
+	spatial.HCAHeartST9383352.metadata metadata does not match
+	spatial.HCAHeartST9383352.scalefactors scalefactors does not match
+	spatial.HCAHeartST9383352 HCAHeartST9383352 does not match
+	spatial spatial does not match
+2024-03-30 00:09:31,175:24306:dataset_d3262686-8780-4ee6-b5ef-39257fe5686f:INFO:PASS
+2024-03-30 00:10:51,508:24306:dataset_d6f9937a-5830-41a2-affd-e0ae1c164550:INFO:PASS
+2024-03-30 00:11:32,404:24307:dataset_d20d13ee-51b7-4069-81a4-ac878cb2f4fe:ERROR:FAILED
+	spatial.HCAHeartST11290657.images images does not match
+	spatial.HCAHeartST11290657.metadata metadata does not match
+	spatial.HCAHeartST11290657.scalefactors scalefactors does not match
+	spatial.HCAHeartST11290657 HCAHeartST11290657 does not match
+	spatial spatial does not match
+2024-03-30 00:13:11,566:24308:dataset_d31b4bbf-0113-48f0-8d8b-a4031a63fa7b:INFO:PASS
+2024-03-30 00:14:17,044:24307:dataset_d7e86fbd-f606-48c1-af99-a12c10a615f2:INFO:PASS
+2024-03-30 00:16:02,748:24309:dataset_d42e3568-a498-43f4-90d3-711661f38ca5:INFO:PASS
+2024-03-30 00:17:15,304:24306:dataset_d758eeb4-ce25-42ba-82f4-1980166b7405:INFO:PASS
+2024-03-30 00:20:36,058:24306:dataset_dee5e801-20cf-4d23-9125-cdbe711440cd:INFO:PASS
+2024-03-30 00:21:04,557:24307:dataset_da5dbbe1-55c2-42ff-82e8-1f65c9e35b79:ERROR:FAILED
+	hvg hvg does not match
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	pca.params params does not match
+	pca pca does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-30 00:21:14,261:24308:dataset_d89f8d39-2711-4aae-a4df-33fa3bd629b7:ERROR:FAILED
+	spatial.MacParland_Catia__C73_D1_VIS.images images does not match
+	spatial.MacParland_Catia__C73_D1_VIS.metadata metadata does not match
+	spatial.MacParland_Catia__C73_D1_VIS.scalefactors scalefactors does not match
+	spatial.MacParland_Catia__C73_D1_VIS MacParland_Catia__C73_D1_VIS does not match
+	spatial spatial does not match
+2024-03-30 00:22:40,323:24307:dataset_e18b8a25-0337-4e37-b65f-033ce2e3a1ea:INFO:PASS
+2024-03-30 00:26:22,742:24306:dataset_dfb813b4-2e29-4577-9705-9f102caca0ee:INFO:PASS
+2024-03-30 00:27:36,767:24309:dataset_ddc3915a-5db0-4df1-b685-651c45686027:INFO:PASS
+2024-03-30 00:29:16,590:24308:dataset_e1d241a7-cfdf-4a61-a1d8-ab3c0ed61246:ERROR:FAILED
+	spatial.BCMHBCA47R1.images images does not match
+	spatial.BCMHBCA47R1.metadata metadata does not match
+	spatial.BCMHBCA47R1.scalefactors scalefactors does not match
+	spatial.BCMHBCA47R1 BCMHBCA47R1 does not match
+	spatial spatial does not match
+2024-03-30 00:29:32,062:24309:dataset_e8b03b79-54e7-4102-8a9d-caef4b6d2674:INFO:PASS
+2024-03-30 00:29:41,508:24306:dataset_e48806af-87d1-45ae-843a-c7ee06eac672:INFO:PASS
+2024-03-30 00:30:32,857:24307:dataset_e269dc32-c022-4075-b4bf-49f40d630bdf:ERROR:FAILED
+	spatial.BCMHBCA04_spara1-2_ref382020.images images does not match
+	spatial.BCMHBCA04_spara1-2_ref382020.metadata metadata does not match
+	spatial.BCMHBCA04_spara1-2_ref382020.scalefactors scalefactors does not match
+	spatial.BCMHBCA04_spara1-2_ref382020 BCMHBCA04_spara1-2_ref382020 does not match
+	spatial spatial does not match
+2024-03-30 00:32:31,157:24308:dataset_eb3a4e49-daff-44d5-be6e-d5dbcace0c44:INFO:PASS
+2024-03-30 00:32:55,773:24306:dataset_ecc19ef3-6b11-4f8f-bb63-e046160b8e08:INFO:PASS
+2024-03-30 00:36:50,579:24307:dataset_ecf9ec99-46ea-489f-836b-f66ba15b4f3d:INFO:PASS
+2024-03-30 00:40:21,031:24309:dataset_eb880774-bb8e-4b5a-ac6e-b6c6c6bc7ab5:INFO:PASS
+2024-03-30 00:42:13,770:24306:dataset_f186deb1-4926-4049-8f96-7be42d32ea1b:INFO:PASS
+2024-03-30 00:44:27,368:24308:dataset_ed6754f8-2a41-475f-a6df-f1a3ed48f353:INFO:PASS
+2024-03-30 00:45:51,211:24308:dataset_f4e1d43c-a5f1-4bd4-8954-ff5ab352a866:INFO:PASS
+2024-03-30 00:47:13,104:24308:dataset_f6cae838-778f-4e87-9193-0c461c6346b3:INFO:PASS
+2024-03-30 00:47:36,731:24307:dataset_f2ec6cd7-8048-4032-8f7f-b7e5cbb01d19:INFO:PASS
+2024-03-30 00:47:41,109:24309:dataset_f45c1e32-4fb5-4a14-ba4b-adaba432193f:INFO:PASS
+2024-03-30 00:48:13,079:24308:dataset_f9fc6637-699b-4979-b976-4b0f4afa930a:INFO:PASS
+2024-03-30 00:49:42,663:24308:dataset_fd4e5f2a-2e68-4bdf-8d78-c2117cab09d7:INFO:PASS
+2024-03-30 00:50:51,686:24307:dataset_fb55e3d2-3d2b-4c26-9371-4e5ae08d5da6:INFO:PASS
+2024-03-30 00:52:53,420:24306:dataset_f45fc70f-ccd6-431b-8a11-98a793161b6c:INFO:PASS
+2024-03-30 00:54:16,455:24309:dataset_fbcb3ad7-4e05-44cd-a564-89960b04f30c:INFO:PASS
+2024-03-30 00:58:02,083:24308:dataset_fe58ce59-22cd-4865-88a8-a1dfdb70d5af:ERROR:FAILED
+	neighbors.params params does not match
+	neighbors neighbors does not match
+	umap.params params does not match
+	umap umap does not match
+2024-03-30 00:59:00,395:24307:dataset_fe64de5d-65f8-4da8-a865-6c2494f4c2e0:INFO:PASS
+2024-03-30 00:59:43,116:24306:dataset_ffa80f3c-f779-49a2-9a7e-275089ece6e2:ERROR:FAILED
+	spatial.HCAHeartST10238253.images images does not match
+	spatial.HCAHeartST10238253.metadata metadata does not match
+	spatial.HCAHeartST10238253.scalefactors scalefactors does not match
+	spatial.HCAHeartST10238253 HCAHeartST10238253 does not match
+	spatial.HCAHeartST8795936.images images does not match
+	spatial.HCAHeartST8795936.metadata metadata does not match
+	spatial.HCAHeartST8795936.scalefactors scalefactors does not match
+	spatial.HCAHeartST8795936 HCAHeartST8795936 does not match
+	spatial.HCAHeartST9341984.images images does not match
+	spatial.HCAHeartST9341984.metadata metadata does not match
+	spatial.HCAHeartST9341984.scalefactors scalefactors does not match
+	spatial.HCAHeartST9341984 HCAHeartST9341984 does not match
+	spatial spatial does not match

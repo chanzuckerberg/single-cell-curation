@@ -1289,24 +1289,24 @@ class Validator:
         :rtype None
         """
         # Checks DataFrame column name uniqueness
-        self._check_var_and_obs_column_name_uniqueness()
+        # self._check_var_and_obs_column_name_uniqueness()
 
         # Checks for deprecated columns
-        self._check_deprecated_columns()
+        # self._check_deprecated_columns()
 
         # Checks for invalid columns
-        self._check_invalid_columns()
+        # self._check_invalid_columns()
 
         # Checks that reserved columns are not used
-        self._check_column_availability()
+        # self._check_column_availability()
 
         # Checks sparsity
-        logger.debug("Validating sparsity...")
-        self._validate_sparsity()
+        # logger.debug("Validating sparsity...")
+        # self._validate_sparsity()
 
         # Checks Seurat convertibility
-        logger.debug("Validating Seurat convertibility...")
-        self._validate_seurat_convertibility()
+        # logger.debug("Validating Seurat convertibility...")
+        # self._validate_seurat_convertibility()
 
         # Checks each component
         for component_name, component_def in self.schema_def["components"].items():
@@ -1321,16 +1321,16 @@ class Validator:
                 continue
             elif component_def["type"] == "dataframe":
                 self._validate_dataframe(component_name)
-            elif component_def["type"] == "dict":
-                self._validate_dict(component, component_name, component_def)
-                if component_name == "uns":
-                    self._validate_uns_dict(component)
-            elif component_def["type"] == "annotation_mapping":
-                self._validate_annotation_mapping(component_name, component)
-                if component_name == "obsm":
-                    self._validate_obsm()
-            else:
-                raise ValueError(f"Unexpected component type '{component_def['type']}'")
+            # elif component_def["type"] == "dict":
+            #     self._validate_dict(component, component_name, component_def)
+            #     if component_name == "uns":
+            #         self._validate_uns_dict(component)
+            # elif component_def["type"] == "annotation_mapping":
+            #     self._validate_annotation_mapping(component_name, component)
+            #     if component_name == "obsm":
+            #         self._validate_obsm()
+            # else:
+            #     raise ValueError(f"Unexpected component type '{component_def['type']}'")
 
         # Checks for raw only if there are no errors, because it depends on the
         # existence of adata.obs["assay_ontology_term_id"]
@@ -1411,9 +1411,9 @@ def validate(
     # Perform validation
     start = datetime.now()
     if verbose:
-        logging.basicConfig(level=logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
     else:
-        logging.basicConfig(level=logging.INFO, format="%(message)s")
+        logger.setLevel(logging.INFO)
     validator = Validator(
         ignore_labels=ignore_labels,
     )
