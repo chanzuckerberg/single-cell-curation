@@ -3,3 +3,5 @@ boto3
 cellxgene-ontology-guide
 cellxgene-schema
 anndata==0.8.0
+pandas
+scipy

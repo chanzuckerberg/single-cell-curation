@@ -12,8 +12,10 @@ from urllib.request import urlopen
 import anndata as ad
 import boto3
 import numpy as np
+import scipy
 from anndata.compat import OverloadedDict
 from cellxgene_schema.validate import validate
+from pandas import DataFrame
 from tqdm.contrib.logging import logging_redirect_tqdm
 
 random.seed(42)
@@ -25,10 +27,10 @@ SAMPLES = 0.2  # Test 20% of the datasets
 def dataset_ids_to_test() -> list[str]:
     logging.info("Fetching dataset ids to test")
     # list all of the datasets
-    # datasets = json.loads(urlopen("https://api.cellxgene.cziscience.com/curation/v1/datasets").read().decode("utf-8"))
-    # Using a local fiel because the above endpoint is slow
-    with open("./dataset_index.json") as fp:
-        datasets = json.load(fp)
+    datasets = json.loads(urlopen("https://api.cellxgene.cziscience.com/curation/v1/datasets").read().decode("utf-8"))
+    # # Using a local fiel because the above endpoint is slow
+    # with open("./dataset_index.json") as fp:
+    #     datasets = json.load(fp)
     logging.info(f"Found {len(datasets)} datasets")
     sample_size = int(len(datasets) * SAMPLES)
     logging.info(f"Sampling {sample_size} datasets")
@@ -83,14 +85,16 @@ def task(args):
         This function recursive compares two dictionaries handling cases where the values
         are unordered arrays with elements that could be dictionaries.
         """
+        _errors = []
         path = path if path else []
         dict_types = (dict, OverloadedDict)
+        array_types = (np.ndarray, scipy.sparse._csr.csr_matrix)
         if len(dict1) != len(dict2):
-            errors.append(f"{'.'.join(path)} Length of dictionaries not equal")
+            _errors.append(f"{'.'.join(path)} Length of dictionaries not equal")
         for key in dict1:
             path.append(key)
             if key not in dict2:
-                errors.append(f"{'.'.join(path)} Key {key} not in dict2")
+                _errors.append(f"{'.'.join(path)} Key {key} not in dict2")
                 continue
             _match = True
             value1 = dict1[key]
@@ -98,28 +102,35 @@ def task(args):
 
             if isinstance(value1, dict_types) and isinstance(value2, dict_types):
                 if not compare_dicts(value1, value2, path):
-                    errors.append(f"{'.'.join(path)} {key} does not match")
+                    _errors.append(f"{'.'.join(path)} {key} does not match")
             elif isinstance(value1, list) and isinstance(value2, list):
                 if len(value1) != len(value2):
-                    errors.append(f"{'.'.join(path)} List lengths do not match")
+                    _errors.append(f"{'.'.join(path)} List lengths do not match")
                 # check if the lists contain dictionaries as elements
                 if len(value1) > 0 and isinstance(value1[0], dict_types) and isinstance(value2[0], dict_types):
                     for i in range(len(value1)):
                         if not compare_dicts(value1[i], value2[i], path):
-                            errors.append(f"{'.'.join(path)} Lists do not match")
+                            _errors.append(f"{'.'.join(path)} Lists do not match")
                             break
                 elif sorted(value1) != sorted(value2):
-                    errors.append(f"{'.'.join(path)} Lists do not match")
-            elif isinstance(value1, np.ndarray) and isinstance(value2, np.ndarray):
+                    _errors.append(f"{'.'.join(path)} Lists do not match")
+            elif isinstance(value1, array_types) and type(value1) == type(value2):
                 if not np.array_equal(value1, value2):
-                    errors.append(f"{'.'.join(path)} ndarrays do not match")
+                    _errors.append(f"{'.'.join(path)} arrays do not match ")
+            elif isinstance(value1, DataFrame) and type(value1) == type(value2):
+                if not value1.equals(value2):
+                    _errors.append(f"{'.'.join(path)} DataFrames do not match")
             else:
                 try:
                     if value1 != value2:
-                        errors.append(f"{'.'.join(path)} values do not match")
+                        _errors.append(f"{'.'.join(path)} values do not match")
                 except ValueError:
                     logger.exception(type(value1))
             path.pop()
+        if _errors:
+            errors.extend(_errors)
+            return False
+        return True
 
     try:
         with tempfile.TemporaryDirectory() as path:
@@ -175,11 +186,11 @@ def main():
     dataset_ids = "\n\t".join(test_datasets_ids)
     logger.info(f"Datasets Versions:\n\t{dataset_ids}")
 
-    # from tqdm import tqdm
-    # for dataset in tqdm(iterate_dataset_metadata(test_datasets_ids)):
-    #     test(dataset)
-
     with logging_redirect_tqdm():
+        # from tqdm import tqdm
+        # for dataset in tqdm(
+        #         iterate_dataset_metadata(test_dataset_ids)):
+        #     task([dataset, log_queue])
         from tqdm.contrib import concurrent
 
         concurrent.process_map(
