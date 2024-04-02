@@ -103,56 +103,6 @@ jobs:
           curl -F file=@genes-curator-report.txt -F "initial_comment=Gene Dry Run Report" -F channels=${{secrets
           .SLACK_CURATOR_REPORTING_CHANNEL}} -H "Authorization: Bearer ${{secrets.SLACK_CURATOR_REPORTING_APP_AUTH}}" https://slack.com/api/files.upload
 
-  publish-to-pypi:
-    name: Build and publish Python distributions to PyPI
-    runs-on: ubuntu-latest
-    if: "${{ github.event.inputs.is-major-schema-bump == 'false' }}"
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
-      - name: setup git
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-#      - name: Bump and tag release version
-#        run: |
-#          pip install bumpversion
-#          pip install wheel
-#          bumpversion --config-file .bumpversion.cfg minor --allow-dirty
-#          bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
-#      - name: Build dist
-#        run: >-
-#          make pydist
-      # - name: Publish distribution to Test PyPI
-      #   uses: pypa/gh-action-pypi-publish@release/v1
-      #   with:
-      #     password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-      #     repository-url: https://test.pypi.org/legacy/
-      #     packages-dir: cellxgene_schema_cli/dist/
-      # - name: Install and Test Package from Test PyPI
-      #   run: |
-      #     pip install -r cellxgene_schema_cli/requirements.txt
-      #     pip install --index-url https://test.pypi.org/simple/ cellxgene-schema
-      #     cellxgene-schema validate cellxgene_schema_cli/tests/fixtures/h5ads/example_valid.h5ad
-      # - name: Publish distribution to PyPI
-      #   uses: pypa/gh-action-pypi-publish@release/v1
-      #   with:
-      #     password: ${{ secrets.PYPI_API_TOKEN }}
-      #     packages-dir: cellxgene_schema_cli/dist/
-#      - name: Push tags
-#        run: |
-#          git push origin --follow-tags
-#      - name: Trigger rebuild of Data Portal Processing Image
-#        run: |
-#          curl -X POST https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/dispatches \
-#          -H 'Accept: application/vnd.github.everest-preview+json' \
-#          --header 'authorization: Bearer ${{ secrets.CZIBUILDBOT_GITHUB_TOKEN }}' \
-#          --data '{"event_type": "rebuild-processing"}'
-
   update-ontology-mappings:
     runs-on: macos-latest
     steps:
@@ -198,7 +148,7 @@ jobs:
 
   generate-conversion-script:
     runs-on: ubuntu-latest
-    needs: [ontology-dry-run, publish-to-pypi]
+    needs: ontology-dry-run
     steps:
       - name: Checkout
         uses: actions/checkout@v3
