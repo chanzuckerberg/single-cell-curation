@@ -1886,10 +1886,10 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
   * Updated GENCODE (Human) to Human Reference GRCh38.p14 (GENCODE v44/Ensembl 110)
   * Updated GENCODE (Mouse) to Mouse reference GRCm39 (GENCODE vM33/Ensembl 110)
 * obs (Cell metadata)
-  * Updated the requirements for `assay_ontology_term_id` to not allow  the parent terms `EFO:0002772` for _assay by molecule_ and `EFO:0010183` for _single cell library construction_. Their most accurate descendants are still valid. 
+  * Updated the requirements for `assay_ontology_term_id` to not allow the parent terms `EFO:0002772` for _assay by molecule_ and `EFO:0010183` for _single cell library construction_. Their most accurate children are still valid. 
   * **Breaking change**. Updated the requirements for `cell_type` to annotate `"unknown"` as the label when the `cell_type_ontology_term_id` value is  `"unknown"`. 
   * **Breaking change**. Updated the requirements for `cell_type_ontology_term_id` to replace `"CL:0000003"` for *native cell* with `"unknown"` to indicate that the cell type is unknown. 
-  * Updated the requirements for `disease_ontology_term_id` to restrict MONDO terms to the most accurate descendant of `"MONDO:0000001"` for _disease_ or `"MONDO:0021178"` for _injury_ or preferably its most accurate descendant.
+  * Updated the requirements for `disease_ontology_term_id` to restrict MONDO terms to the most accurate child of `"MONDO:0000001"` for _disease_ or `"MONDO:0021178"` for _injury_ or preferably its most accurate child.
 * obsm (Embeddings)
   * Updated requirements for `X_{suffix}` to change the regular expression pattern from `"^[a-zA-Z][a-zA-Z0-9]*$"` to `"^[a-zA-Z][a-zA-Z0-9_.-]*$"`
 * uns (Dataset metadata)
@@ -1956,8 +1956,8 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
     * Added TruDrop
     * Added GEXSCOPE technology
     * Added SPLiT-seq
-    * Changed spatial transcriptomics by high-throughput sequencing [EFO:0030005] and its descendants to spatial transcriptomics [EFO:0008994] and its descendants
-    * Updated Seq-Well [EFO:0008919] to Seq-Well [EFO:0008919] and its descendants
+    * Changed spatial transcriptomics by high-throughput sequencing [EFO:0030005] and its children to spatial transcriptomics [EFO:0008994] and its children
+    * Updated Seq-Well [EFO:0008919] to Seq-Well [EFO:0008919] and its children
 * uns (Dataset metadata)
   * `schema_version`
     * Must be annotated by CELLxGENE Discover and not the Curator.
