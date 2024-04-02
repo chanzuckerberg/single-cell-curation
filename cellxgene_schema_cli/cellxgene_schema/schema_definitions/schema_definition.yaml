@@ -1,4 +1,4 @@
-title: Corpora schema version 4.X.X
+title: Corpora schema version 5.X.X
 type: anndata
 # If sparsity of any expression matrix is greater than this and not csr sparse matrix, then there will be warning.
 sparsity: 0.5
