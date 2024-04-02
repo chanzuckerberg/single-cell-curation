@@ -8,7 +8,7 @@ max_size_for_seurat: 2147483647  # 2^31 - 1 (max value for 4-byte signed int)
 raw:
     obs:
         assay_ontology_term_id:
-                not_children_of:
+                not_descendants_of:
                     EFO:
                         - EFO:0007045 # ATAC-seq
                         - EFO:0008804 # Methyl-seq
@@ -130,7 +130,7 @@ components:
                         to_column: cell_type
             assay_ontology_term_id:
                 error_message_suffix: >-
-                    Only children terms of either 'EFO:0002772' or 'EFO:0010183' are allowed for assay_ontology_term_id
+                    Only descendant terms of either 'EFO:0002772' or 'EFO:0010183' are allowed for assay_ontology_term_id
                 type: curie
                 curie_constraints:
                     ontologies:
@@ -145,7 +145,7 @@ components:
                         type: curie
                         to_column: assay
             disease_ontology_term_id:
-                error_message_suffix: "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or children terms thereof, or children terms of 'MONDO:0000001' (disease) are allowed"
+                error_message_suffix: "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms of 'MONDO:0000001' (disease) are allowed"
                 type: curie
                 curie_constraints:
                     ontologies:
@@ -167,7 +167,7 @@ components:
                         to_column: disease
             organism_ontology_term_id:
                 type: curie
-                error_message_suffix: "Only children term ids of 'NCBITaxon:33208' for metazoan are allowed."
+                error_message_suffix: "Only descendant term ids of 'NCBITaxon:33208' for metazoan are allowed."
                 curie_constraints:
                     ontologies:
                         - NCBITaxon
@@ -201,7 +201,7 @@ components:
                         rule: "tissue_type == 'tissue' | tissue_type == 'organoid'"
                         error_message_suffix: >-
                             When 'tissue_type' is 'tissue' or 'organoid',
-                            'tissue_ontology_term_id' MUST be a child term id of 'UBERON:0001062' (anatomical entity).
+                            'tissue_ontology_term_id' MUST be a descendant term id of 'UBERON:0001062' (anatomical entity).
                         type: curie
                         curie_constraints:
                             ontologies:
@@ -327,7 +327,7 @@ components:
                 # If organism is not humnan nor mouse
                 error_message_suffix: >-
                     When 'organism_ontology_term_id' is not 'NCBITaxon:10090' nor 'NCBITaxon:9606',
-                    'development_stage_ontology_term_id' MUST be a child term id of 'UBERON:0000105'
+                    'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105'
                     excluding 'UBERON:0000071', or unknown.
                 curie_constraints:
                     ontologies:
@@ -365,7 +365,7 @@ components:
                     during submission so that the assay(s) can be added to the schema definition document.
                 dependencies:
                     -
-                        # If assay_ontology_term_id is EFO:0030080 or its children, 'suspension_type' MUST be 'cell' or 'nucleus'
+                        # If assay_ontology_term_id is EFO:0030080 or its descendants, 'suspension_type' MUST be 'cell' or 'nucleus'
                         complex_rule:
                             match_ancestors:
                                 column: assay_ontology_term_id
@@ -375,12 +375,12 @@ components:
                                 inclusive: True
                         type: categorical
                         error_message_suffix: >- 
-                            when 'assay_ontology_term_id' is EFO:0030080 or its children
+                            when 'assay_ontology_term_id' is EFO:0030080 or its descendants
                         enum:
                             - "cell"
                             - "nucleus"
                     -
-                        # If assay_ontology_term_id is EFO:0007045 or its children, 'suspension_type' MUST be 'nucleus'
+                        # If assay_ontology_term_id is EFO:0007045 or its descendants, 'suspension_type' MUST be 'nucleus'
                         complex_rule:
                             match_ancestors:
                                 column: assay_ontology_term_id
@@ -390,11 +390,11 @@ components:
                                 inclusive: True
                         type: categorical
                         error_message_suffix: >- 
-                            when 'assay_ontology_term_id' is EFO:0007045 or its children
+                            when 'assay_ontology_term_id' is EFO:0007045 or its descendants
                         enum:
                             - "nucleus"
                     -
-                        # If assay_ontology_term_id is EFO:0009294 or its children, 'suspension_type' MUST be 'cell'
+                        # If assay_ontology_term_id is EFO:0009294 or its descendants, 'suspension_type' MUST be 'cell'
                         complex_rule:
                             match_ancestors:
                                 column: assay_ontology_term_id
@@ -404,11 +404,11 @@ components:
                                 inclusive: True
                         type: categorical
                         error_message_suffix: >- 
-                            when 'assay_ontology_term_id' is EFO:0009294 or its children
+                            when 'assay_ontology_term_id' is EFO:0009294 or its descendants
                         enum:
                             - "cell"
                     -
-                        # If assay_ontology_term_id is EFO:0010184 or its children, 'suspension_type' MUST be 'cell' or 'nucleus'
+                        # If assay_ontology_term_id is EFO:0010184 or its descendants, 'suspension_type' MUST be 'cell' or 'nucleus'
                         complex_rule:
                             match_ancestors:
                                 column: assay_ontology_term_id
@@ -418,12 +418,12 @@ components:
                                 inclusive: True
                         type: categorical
                         error_message_suffix: >- 
-                            when 'assay_ontology_term_id' is EFO:0010184 or its children
+                            when 'assay_ontology_term_id' is EFO:0010184 or its descendants
                         enum:
                             - "cell"
                             - "nucleus"
                     -
-                        # If assay_ontology_term_id is EFO:0009918 or its children, 'suspension_type' MUST be 'na'
+                        # If assay_ontology_term_id is EFO:0009918 or its descendants, 'suspension_type' MUST be 'na'
                         complex_rule:
                             match_ancestors:
                                 column: assay_ontology_term_id
@@ -433,11 +433,11 @@ components:
                                 inclusive: True
                         type: categorical
                         error_message_suffix: >- 
-                            when 'assay_ontology_term_id' is EFO:0009918 or its children
+                            when 'assay_ontology_term_id' is EFO:0009918 or its descendants
                         enum:
                             - "na"
                     -
-                        # If assay_ontology_term_id is EFO:0700000 or its children, 'suspension_type' MUST be 'na'
+                        # If assay_ontology_term_id is EFO:0700000 or its descendants, 'suspension_type' MUST be 'na'
                         complex_rule:
                             match_ancestors:
                                 column: assay_ontology_term_id
@@ -447,11 +447,11 @@ components:
                                 inclusive: True
                         type: categorical
                         error_message_suffix: >- 
-                            when 'assay_ontology_term_id' is EFO:0700000 or its children
+                            when 'assay_ontology_term_id' is EFO:0700000 or its descendants
                         enum:
                             - "na"
                     -
-                        # If assay_ontology_term_id is EFO:0008994 or its children, 'suspension_type' MUST be 'na'
+                        # If assay_ontology_term_id is EFO:0008994 or its descendants, 'suspension_type' MUST be 'na'
                         complex_rule:
                             match_ancestors:
                                 column: assay_ontology_term_id
@@ -461,11 +461,11 @@ components:
                                 inclusive: True
                         type: categorical
                         error_message_suffix: >- 
-                            when 'assay_ontology_term_id' is EFO:0008994 or its children
+                            when 'assay_ontology_term_id' is EFO:0008994 or its descendants
                         enum:
                             - "na"
                     -
-                        # If assay_ontology_term_id is EFO:0008919 or its children, 'suspension_type' MUST be 'cell'
+                        # If assay_ontology_term_id is EFO:0008919 or its descendants, 'suspension_type' MUST be 'cell'
                         complex_rule:
                             match_ancestors:
                                 column: assay_ontology_term_id
@@ -475,7 +475,7 @@ components:
                                 inclusive: True
                         type: categorical
                         error_message_suffix: >- 
-                            when 'assay_ontology_term_id' is EFO:0008919 or its children
+                            when 'assay_ontology_term_id' is EFO:0008919 or its descendants
                         enum:
                             - "cell"
                     -
