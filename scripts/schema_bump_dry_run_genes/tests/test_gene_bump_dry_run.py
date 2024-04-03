@@ -16,7 +16,7 @@ def test_get_diff_map(tmp_path):  # type: ignore
     for key in SupportedOrganisms:
         with open(f"{tmp_path}/{key.name}_diff.txt", "w") as fp:
             fp.write("test")
-    with patch("scripts.schema_bump_dry_run_genes.gene_bump_dry_run.ONTOLOGY_DIR", tmp_path):
+    with patch("scripts.schema_bump_dry_run_genes.gene_bump_dry_run.GENCODE_DIR", tmp_path):
         diff_map = get_diff_map()
     assert len(diff_map) == 4
     for key in diff_map:  # type: ignore
