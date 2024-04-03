@@ -192,7 +192,7 @@ jobs:
         run: |
           pip install bumpversion
           pip install wheel
-          bumpversion --config-file .bumpversion.cfg patch --allow-dirty
+          bumpversion --config-file .bumpversion.cfg minor --allow-dirty
           bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
           echo "new_version=$(make show-current-version)" >> $GITHUB_ENV
       - name: Bump RC to Major Version
@@ -200,6 +200,7 @@ jobs:
         run: |
           pip install bumpversion
           pip install wheel
+          bumpversion --config-file .bumpversion.cfg major --allow-dirty
           bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
           echo "new_version=$(make show-current-version)" >> $GITHUB_ENV
       - name: Create Pull Request
