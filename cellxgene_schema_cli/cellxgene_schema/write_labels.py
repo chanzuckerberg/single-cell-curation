@@ -3,7 +3,7 @@ import traceback
 from typing import Dict, List, Optional
 
 import pandas as pd
-from cellxgene_schema import ontology
+from cellxgene_schema import gencode
 from cellxgene_schema.env import SCHEMA_REFERENCE_BASE_URL, SCHEMA_REFERENCE_FILE_NAME
 from cellxgene_schema.validate import ONTOLOGY_PARSER, Validator
 
@@ -169,12 +169,12 @@ class AnnDataLabelAppender:
         mapping_dict = {}
 
         for i in ids:
-            organism = ontology.get_organism_from_feature_id(i)
+            organism = gencode.get_organism_from_feature_id(i)
             mapping_dict[i] = self.validator.gene_checkers[organism].get_symbol(i)
 
         return mapping_dict
 
-    def _get_mapping_dict_feature_reference(self, ids: List[str]) -> Dict[str, Optional[ontology.SupportedOrganisms]]:
+    def _get_mapping_dict_feature_reference(self, ids: List[str]) -> Dict[str, Optional[gencode.SupportedOrganisms]]:
         """
         Creates a mapping dictionary of gene/feature IDs and NCBITaxon curies
 
@@ -187,7 +187,7 @@ class AnnDataLabelAppender:
         mapping_dict = {}
 
         for i in ids:
-            organism = ontology.get_organism_from_feature_id(i)
+            organism = gencode.get_organism_from_feature_id(i)
             mapping_dict[i] = organism.value
 
         return mapping_dict
@@ -227,7 +227,7 @@ class AnnDataLabelAppender:
 
         for i in ids:
             if i.startswith("ENS"):
-                organism = ontology.get_organism_from_feature_id(i)
+                organism = gencode.get_organism_from_feature_id(i)
                 mapping_dict[i] = self.validator.gene_checkers[organism].get_length(i)
             else:
                 mapping_dict[i] = 0

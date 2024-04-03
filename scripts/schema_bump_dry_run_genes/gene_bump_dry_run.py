@@ -7,8 +7,8 @@ from typing import Any, Dict, List, Optional, Tuple
 import tiledb as tiledb
 from jinja2 import Template
 
-from cellxgene_schema_cli.cellxgene_schema.env import ONTOLOGY_DIR
-from cellxgene_schema_cli.cellxgene_schema.ontology import SupportedOrganisms
+from cellxgene_schema_cli.cellxgene_schema.env import GENCODE_DIR
+from cellxgene_schema_cli.cellxgene_schema.gencode import SupportedOrganisms
 from scripts.common.thirdparty.discovery_api import (
     BASE_API,
     fetch_private_collections,
@@ -94,14 +94,14 @@ def get_genes(dataset: dict) -> List[str]:  # type: ignore
 
 
 def get_diff_map() -> Dict[str, List[str]]:
-    # list all of the files ending with diff.txt in the cellxgene_schema/ontology_files directory
+    # list all of the files ending with diff.txt in the cellxgene_schema/gencode_files directory
     # for each file, open it and read the contents into a dictionary
     diff_map = {}
     suffix = "_diff.txt"
-    files = os.listdir(ONTOLOGY_DIR)
+    files = os.listdir(GENCODE_DIR)
     for file in files:
         if file.endswith(suffix):
-            with open(f"{ONTOLOGY_DIR}/{file}") as fp:
+            with open(f"{GENCODE_DIR}/{file}") as fp:
                 organism = getattr(SupportedOrganisms, file.removesuffix(suffix).upper()).value
                 diff_map[organism] = fp.read().splitlines()
     logger.info("organisms with deprecated genes: %s", diff_map.keys())

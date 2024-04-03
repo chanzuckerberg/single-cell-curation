@@ -15,7 +15,7 @@ from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from pandas.core.computation.ops import UndefinedVariableError
 from scipy import sparse
 
-from . import ontology, schema
+from . import gencode, schema
 from .utils import SPARSE_MATRIX_TYPES, get_matrix_format, getattr_anndata, read_h5ad
 
 logger = logging.getLogger(__name__)
@@ -31,8 +31,8 @@ class Validator:
         self.schema_version: str = None
         self.ignore_labels = ignore_labels
 
-        # Values will be instances of ontology.GeneChecker,
-        # keys will be one of ontology.SupportedOrganisms
+        # Values will be instances of gencode.GeneChecker,
+        # keys will be one of gencode.SupportedOrganisms
         self.gene_checkers = dict()
 
     def reset(self):
@@ -292,7 +292,7 @@ class Validator:
         :rtype none
         """
 
-        organism = ontology.get_organism_from_feature_id(feature_id)
+        organism = gencode.get_organism_from_feature_id(feature_id)
 
         if not organism:
             self.errors.append(
@@ -302,7 +302,7 @@ class Validator:
             return
 
         if organism not in self.gene_checkers:
-            self.gene_checkers[organism] = ontology.GeneChecker(organism)
+            self.gene_checkers[organism] = gencode.GeneChecker(organism)
 
         if not self.gene_checkers[organism].is_valid_id(feature_id):
             self.errors.append(f"'{feature_id}' is not a valid feature ID in '{df_name}'.")

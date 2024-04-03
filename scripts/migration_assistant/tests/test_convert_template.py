@@ -329,7 +329,7 @@ def test_get_deprecated_feature_ids(tmp_path, organisms):  # type: ignore
             for feature_id in organism_feature_ids:
                 fp.write(feature_id + "\n")
             expected_deprecated_feature_ids.extend(organism_feature_ids)
-    with mock.patch("scripts.migration_assistant.generate_script.env.ONTOLOGY_DIR", tmp_path):
+    with mock.patch("scripts.migration_assistant.generate_script.env.GENCODE_DIR", tmp_path):
         actual_deprecated_features = get_deprecated_feature_ids()
     expected_deprecated_feature_ids.sort()
     actual_deprecated_features.sort()
@@ -337,7 +337,7 @@ def test_get_deprecated_feature_ids(tmp_path, organisms):  # type: ignore
 
 
 def test_get_deprecated_feature_ids__no_files(tmp_path):  # type: ignore
-    with mock.patch("scripts.migration_assistant.generate_script.env.ONTOLOGY_DIR", tmp_path):
+    with mock.patch("scripts.migration_assistant.generate_script.env.GENCODE_DIR", tmp_path):
         actual_deprecated_features = get_deprecated_feature_ids()
     assert actual_deprecated_features == []
 
@@ -346,6 +346,6 @@ def test_get_deprecated_feature_ids__empty_feature_files(tmp_path, organisms):  
     for organism in organisms:
         with open(f"{tmp_path}/{organism}_diff.txt", "w") as fp:
             fp.write("")
-    with mock.patch("scripts.migration_assistant.generate_script.env.ONTOLOGY_DIR", tmp_path):
+    with mock.patch("scripts.migration_assistant.generate_script.env.GENCODE_DIR", tmp_path):
         actual_deprecated_features = get_deprecated_feature_ids()
     assert actual_deprecated_features == []
