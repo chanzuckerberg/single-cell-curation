@@ -19,7 +19,7 @@ The reference files are used internally by the class `cellxgene-schema.ontology.
 Ontology information for cellxgene-schema is derived from cellxgene-ontology-guide. To update the ontologies in 
 conjunction with a schema release, update [ontology_info.json in cellxgene-ontology-guide](https://github.com/chanzuckerberg/cellxgene-ontology-guide/blob/main/ontology-assets/ontology_info.json),
 and then generate a new release with the subsequently generated ontology reference files. Bump the version of cellxgene-ontology-guide in 
-`cellxgene_schema_cli/cellxgene_schema/requirements.txt` to this latest release.
+`cellxgene_schema_cli/requirements.txt` to this latest release.
 
 ## Updating gene references
 
