@@ -4,9 +4,9 @@
 To update the gene and ontology references the following files need to be modified with the updated references:
 
 - `cellxgene_schema_cli/cellxgene_schema/gencode_files/gene_info.yml`
-- Bump cellxgene-ontology-guide version to latest release with updated ontologies in `cellxgene_schema_cli/cellxgene_schema/requirements.txt`
+- Bump cellxgene-ontology-guide version to latest release with updated ontologies in `cellxgene_schema_cli/requirements.txt`
 
-- Then the following will command download and process the reference files, and then update the respective package files under `cellxgene_schema_cli/cellxgene_schema/gencode_files/`
+- Then the following command will download and process the reference files, and then update the respective package files under `cellxgene_schema_cli/cellxgene_schema/gencode_files/`
 
 ```bash
 make update-references
