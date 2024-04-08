@@ -7,14 +7,28 @@ import requests
 
 """
 This script leverages the Discover API to give a breakdown of the Datasets of each schema version that is 
-represented by 
+represented by
+
 1) Public Datasets, or
 2) Private and Revision Datasets
 
-The 'visibility' variable must be set to "PUBLIC" for 1) and to "PRIVATE" for 2)
+
+Requirements:
+
+- The 'visibility' variable must be set to "PUBLIC" for 1) and to "PRIVATE" for 2)
 
 1) produces a public.json output
 2) produces a private.json and revision.json output
+
+- The 'api_url' variable for the Discover API must be set appropriately for the chosen environment
+
+
+Invocation:
+
+[ACCESS_TOKEN=<access_token>] python check_corpus_dataset_schemas.py
+
+
+Results:
 
 In both cases, json structure:
 
