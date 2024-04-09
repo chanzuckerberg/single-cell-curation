@@ -18,41 +18,40 @@ jobs:
       - name: Build dist
         id: build
         run: |
-#          pip install wheel
-#          make pydist
+          pip install wheel
+          make pydist
           cd cellxgene_schema_cli
           echo "version=`python setup.py --version`" >> $GITHUB_OUTPUT
-          echo -e "\n djh version is `python setup.py --version`\n"
           cd ..
-#      - name: Publish distribution to Test PyPI
-#        uses: pypa/gh-action-pypi-publish@release/v1
-#        with:
-#          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-#          repository-url: https://test.pypi.org/legacy/
-#          packages-dir: cellxgene_schema_cli/dist/
+      - name: Publish distribution to Test PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: cellxgene_schema_cli/dist/
       - name: Confirm publish to Test PyPI
         run: |
           while [ -z "$has_version" ]; do \
-          echo -e "\n\ndjh\n\n"; sleep 2; has_version=`pip index versions --index-url https://test.pypi.org/simple/ cellxgene-schema | grep \
+          sleep 2; has_version=`pip index versions --index-url https://test.pypi.org/simple/ cellxgene-schema | grep \
           Available.*${{ steps.build.outputs.version }}`; done
-#      - name: Install and Test Package from Test PyPI
-#        run: |
-#          pip install -r cellxgene_schema_cli/requirements.txt
-#          pip install --index-url https://test.pypi.org/simple/ cellxgene-schema
-#          cellxgene-schema validate cellxgene_schema_cli/tests/fixtures/h5ads/example_valid.h5ad
-#      - name: Publish distribution to PyPI
-#        uses: pypa/gh-action-pypi-publish@release/v1
-#        with:
-#          password: ${{ secrets.PYPI_API_TOKEN }}
-#          packages-dir: cellxgene_schema_cli/dist/
-#      - name: Confirm publish to PyPI
-#        run: |
-#          while [ -z "$has_version" ]; do \
-#          sleep 2; has_version=`pip index versions cellxgene-schema | grep \
-#          Available.*${{ steps.build.outputs.version }}`; done
-#      - name: Trigger rebuild of Data Portal Processing Image and Schema Migration
-#        run: |
-#          curl -X POST https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/dispatches \
-#          -H 'Accept: application/vnd.github.everest-preview+json' \
-#          --header 'authorization: Bearer ${{ secrets.CZIBUILDBOT_GITHUB_TOKEN }}' \
-#          --data '{"event_type": "schema-migration"}'
+      - name: Install and Test Package from Test PyPI
+        run: |
+          pip install -r cellxgene_schema_cli/requirements.txt
+          pip install --index-url https://test.pypi.org/simple/ cellxgene-schema
+          cellxgene-schema validate cellxgene_schema_cli/tests/fixtures/h5ads/example_valid.h5ad
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          packages-dir: cellxgene_schema_cli/dist/
+      - name: Confirm publish to PyPI
+        run: |
+          while [ -z "$has_version" ]; do \
+          sleep 2; has_version=`pip index versions cellxgene-schema | grep \
+          Available.*${{ steps.build.outputs.version }}`; done
+      - name: Trigger rebuild of Data Portal Processing Image and Schema Migration
+        run: |
+          curl -X POST https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/dispatches \
+          -H 'Accept: application/vnd.github.everest-preview+json' \
+          --header 'authorization: Bearer ${{ secrets.CZIBUILDBOT_GITHUB_TOKEN }}' \
+          --data '{"event_type": "schema-migration"}'
