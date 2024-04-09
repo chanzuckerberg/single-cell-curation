@@ -1,5 +1,5 @@
-.PHONY: update-references
-update-references: gene-processing clean
+.PHONY: update-gene-references
+update-gene-references: gene-processing clean
 
 .PHONY: gene-processing
 gene-processing:
