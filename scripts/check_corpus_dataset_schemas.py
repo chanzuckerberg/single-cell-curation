@@ -60,7 +60,7 @@ visibility = "PRIVATE"
 
 if visibility == "PUBLIC":
     collections = requests.get(f"{api_url}/collections?visibility={visibility}").json()  # For public Collections
-    public_datasets: Dict[list] = defaultdict(list)
+    public_datasets: Dict[str, list] = defaultdict(list)
     for c in collections:
         sleep(1)
         resp = requests.get(f"{api_url}/collections/{c['collection_id']}")
@@ -88,8 +88,8 @@ elif visibility == "PRIVATE":
         f"{api_url}/collections?visibility={visibility}", headers={"Authorization": f"Bearer {access_token}"}
     ).json()  # For private Collections
 
-    revision_datasets: Dict[list] = defaultdict(list)
-    private_datasets: Dict[list] = defaultdict(list)
+    revision_datasets: Dict[str, list] = defaultdict(list)
+    private_datasets: Dict[str, list] = defaultdict(list)
 
     no_schema_version = []
     no_schema_private = 0
