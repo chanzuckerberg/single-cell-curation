@@ -37,7 +37,7 @@ jobs:
             sleep 2
             echo slept
             has_version=`pip index versions --index-url https://test.pypi.org/simple/ cellxgene-schema | grep Available.*6.0.2`
-            echo "got version'
+            echo "got version"
             echo "$has_version"
           done
           echo "FINISHED"
