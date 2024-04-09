@@ -31,9 +31,10 @@ jobs:
       - name: Confirm publish to Test PyPI
         run: |
           echo ${{ steps.build.outputs.version }}
-          while [ -z "$has_version" ]; do \
-          echo -e "\n\ndjh\n\n"; sleep 2; has_version=`pip index versions --index-url https://test.pypi.org/simple/ cellxgene-schema | grep \
-          Available.*6.1.3`; done
+          while [ -z "$has_version" ]
+          do
+            echo -e "\n\ndjh\n\n"; sleep 2; has_version=`pip index versions --index-url https://test.pypi.org/simple/ cellxgene-schema | grep Available.*6.1.3`
+          done
         shell: bash
 #      - name: Install and Test Package from Test PyPI
 #        run: |
