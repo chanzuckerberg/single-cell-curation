@@ -31,9 +31,9 @@ jobs:
       - name: Confirm publish to Test PyPI
         uses: nick-fields/retry@v3
         with:
+          shell: bash
           polling_interval_seconds: 5
           command: pip index versions --index-url https://test.pypi.org/simple/ cellxgene-schema | grep Available.*{{ steps.build.outputs.version }}
-        shell: bash
 #      - name: Install and Test Package from Test PyPI
 #        run: |
 #          pip install -r cellxgene_schema_cli/requirements.txt
