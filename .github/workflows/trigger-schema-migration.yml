@@ -34,7 +34,9 @@ jobs:
           while [ -z "$has_version" ]
           do
             echo -e "\n\ndjh\n\n"
-            has_version=`pip index versions --index-url https://test.pypi.org/simple/ cellxgene-schema | grep Available.*6.1.3`
+            sleep 2
+            echo slept
+            has_version=`pip index versions --index-url https://test.pypi.org/simple/ cellxgene-schema | grep Available.*5.0.2`
             echo "$has_version"
           done
           echo "FINISHED"
