@@ -35,7 +35,7 @@ jobs:
           max_attempts: 15
           timeout_seconds: 30
           polling_interval_seconds: 5
-          command: pip index versions --index-url https://test.pypi.org/simple/ cellxgene-schema | grep Available.*{{ steps.build.outputs.version }}
+          command: pip index versions --index-url https://test.pypi.org/simple/ cellxgene-schema | grep Available.*${{ steps.build.outputs.version }}
 #      - name: Install and Test Package from Test PyPI
 #        run: |
 #          pip install -r cellxgene_schema_cli/requirements.txt
