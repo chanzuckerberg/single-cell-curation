@@ -59,7 +59,7 @@ visibility = "PRIVATE"
 
 if visibility == "PUBLIC":
     collections = requests.get(f"{api_url}/collections?visibility={visibility}").json()  # For public Collections
-    public = defaultdict(list)
+    public_datasets = defaultdict(list)
     for c in collections:
         sleep(1)
         resp = requests.get(f"{api_url}/collections/{c['collection_id']}")
@@ -71,13 +71,13 @@ if visibility == "PUBLIC":
         for d in datasets:
             schema = d["schema_version"]
             print(
-                f"adding dataset version {d['dataset_version_id']} from collection version {c['collection_version_id']} to public. Count {schema}: {len(public[schema])}"
+                f"adding dataset version {d['dataset_version_id']} from collection version {c['collection_version_id']} to public. Count {schema}: {len(public_datasets[schema])}"
             )
-            public[schema].append(
+            public_datasets[schema].append(
                 (c["collection_id"], c["collection_version_id"], d["dataset_id"], d["dataset_version_id"])
             )
     with open("public.json", "w") as fp:
-        json.dump(public, fp)
+        json.dump(public_datasets, fp)
 
 elif visibility == "PRIVATE":
     access_token = os.getenv("ACCESS_TOKEN")
@@ -87,8 +87,8 @@ elif visibility == "PRIVATE":
         f"{api_url}/collections?visibility={visibility}", headers={"Authorization": f"Bearer {access_token}"}
     ).json()  # For private Collections
 
-    revisions = defaultdict(list)
-    private = defaultdict(list)
+    revision_datasets = defaultdict(list)
+    private_datasets = defaultdict(list)
 
     no_schema_version = []
     no_schema_private = 0
@@ -96,10 +96,10 @@ elif visibility == "PRIVATE":
     for c in collections:
         sleep(1)
         if c["revision_of"]:
-            group = revisions
+            group = revision_datasets
             name = "revisions"
         else:
-            group = private
+            group = private_datasets
             name = "private"
         resp = requests.get(f"{api_url}/collections/{c['collection_id']}")
         if resp.status_code != 200:
@@ -140,6 +140,6 @@ elif visibility == "PRIVATE":
             no_schema_version, fp
         )  # All datasets that do not have a schema version. Indicates processing incomplete / error. Array of tuples where each tuple is a dataset: (c_id, c_v_id, d_id, d_v_id).
     with open("private.json", "w") as fp:
-        json.dump(private, fp)
+        json.dump(private_datasets, fp)
     with open("revisions.json", "w") as fp:
-        json.dump(revisions, fp)
+        json.dump(revision_datasets, fp)
