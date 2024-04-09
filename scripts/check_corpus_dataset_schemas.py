@@ -82,7 +82,7 @@ if visibility == "PUBLIC":
 
 elif visibility == "PRIVATE":
     access_token = os.getenv("ACCESS_TOKEN")
-    assert len(access_token) > 0
+    assert access_token and len(access_token) > 0
 
     collections = requests.get(
         f"{api_url}/collections?visibility={visibility}", headers={"Authorization": f"Bearer {access_token}"}
