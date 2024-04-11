@@ -8,7 +8,7 @@ on:
       - main
 
 jobs:
-  ontology-processing:
+  gencode-processing:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -36,8 +36,8 @@ jobs:
       - name: gene-processing
         run: |
           make gene-processing -C cellxgene_schema_cli
-          git add ./cellxgene_schema_cli/cellxgene_schema/ontology_files/genes_*.csv.gz
-          git add ./cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt
+          git add ./cellxgene_schema_cli/cellxgene_schema/gencode_files/genes_*.csv.gz
+          git add ./cellxgene_schema_cli/cellxgene_schema/gencode_files/*_diff.txt
       - name: Commit
         run: |
           git commit -m "AUTO: update gencode files"
@@ -45,7 +45,7 @@ jobs:
 
   unit-tests:
     runs-on: ubuntu-latest
-    needs: ontology-processing
+    needs: gencode-processing
     steps:
       - name: Checkout
         uses: actions/checkout@v3
