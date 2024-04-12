@@ -48,7 +48,7 @@ jobs:
           git config user.email github-actions@github.com
       - name: remove diff files
         run: |
-          git rm --ignore-unmatch ./cellxgene_schema_cli/cellxgene_schema/ontology_files/*_diff.txt
+          git rm --ignore-unmatch ./cellxgene_schema_cli/cellxgene_schema/gencode_files/*_diff.txt
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
