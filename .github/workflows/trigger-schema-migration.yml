@@ -16,15 +16,26 @@ jobs:
           python-version: "3.11"
           check-latest: true
       - name: Build dist
+        id: build
         run: |
           pip install wheel
           make pydist
+          cd cellxgene_schema_cli
+          echo "version=`python setup.py --version`" >> $GITHUB_OUTPUT
+          cd ..
       - name: Publish distribution to Test PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
           packages-dir: cellxgene_schema_cli/dist/
+      - name: Confirm publish to Test PyPI
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: 15
+          timeout_seconds: 30
+          polling_interval_seconds: 5
+          command: pip index versions --index-url https://test.pypi.org/simple/ cellxgene-schema | grep Available.*${{ steps.build.outputs.version }}
       - name: Install and Test Package from Test PyPI
         run: |
           pip install -r cellxgene_schema_cli/requirements.txt
@@ -35,6 +46,13 @@ jobs:
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
           packages-dir: cellxgene_schema_cli/dist/
+      - name: Confirm publish to Test PyPI
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: 15
+          timeout_seconds: 30
+          polling_interval_seconds: 5
+          command: pip index versions cellxgene-schema | grep Available.*${{ steps.build.outputs.version }}
       - name: Trigger rebuild of Data Portal Processing Image and Schema Migration
         run: |
           curl -X POST https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/dispatches \
