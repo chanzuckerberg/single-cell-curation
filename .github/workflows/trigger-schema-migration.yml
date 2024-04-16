@@ -46,7 +46,7 @@ jobs:
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
           packages-dir: cellxgene_schema_cli/dist/
-      - name: Confirm publish to Test PyPI
+      - name: Confirm publish to PyPI
         uses: nick-fields/retry@v3
         with:
           max_attempts: 15
