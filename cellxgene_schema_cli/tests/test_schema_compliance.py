@@ -1960,7 +1960,7 @@ class TestObsm:
         validator.validate_adata()
         assert validator.errors == ["ERROR: adata.obsm['X_umap'] contains all NaN values."]
 
-    def test_obsm_values_at_least_one_X(self, validator_with_adata):
+    def test_obsm_values_no_X_embedding__non_spatial_dataset(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.obsm["harmony"] = validator.adata.obsm["X_umap"]
         validator.adata.uns["default_embedding"] = "harmony"
@@ -1975,6 +1975,18 @@ class TestObsm:
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
         ]
 
+    @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0010961", "EFO:0030062"])
+    def test_obsm_values_no_X_embedding__spatial_dataset(self, validator_with_adata, assay_ontology_term_id):
+        validator = validator_with_adata
+        validator.adata.obsm["harmony"] = validator.adata.obsm["X_umap"]
+        validator.adata.uns["default_embedding"] = "harmony"
+        del validator.adata.obsm["X_umap"]
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+        validator.adata.obs["suspension_type"] = "na"
+        validator.adata.obs.loc[:, ["suspension_type"]] = validator.adata.obs.astype("category")
+        validator.validate_adata()
+        assert validator.errors == []
+
     def test_obsm_values_warn_start_with_X(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.obsm["harmony"] = pd.DataFrame(validator.adata.obsm["X_umap"], index=validator.adata.obs_names)
@@ -1984,6 +1996,12 @@ class TestObsm:
             "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_ and thus will not be available in Explorer",
             "WARNING: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['harmony']' is <class 'pandas.core.frame.DataFrame'>').",
         ]
+
+    def test_obsm_values_suffix_is_forbidden(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.obsm["X_spatial"] = validator.adata.obsm["X_umap"]
+        validator.validate_adata()
+        assert validator.errors == ["ERROR: Embedding key in 'adata.obsm' X_spatial cannot be used."]
 
     def test_obsm_values_suffix_start_with_number(self, validator_with_adata):
         validator = validator_with_adata
