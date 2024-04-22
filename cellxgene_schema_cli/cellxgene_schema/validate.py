@@ -56,17 +56,19 @@ class Validator:
         self.reset()
         self._adata = adata
 
-    def _set_is_spatial(self) -> bool:
-        try:
-            assay_ontology_term_ids = self.adata.obs.assay_ontology_term_id
-            self.is_spatial = False
-            spatial_assay_ontology_term_ids = ["EFO:0010961", "EFO:0030062"]
-            for assay in assay_ontology_term_ids.drop_duplicates():
-                if assay in spatial_assay_ontology_term_ids:
-                    self.is_spatial = True
-        except AttributeError:
-            # specific error reporting will occur downstream in the validation
-            self.is_spatial = False
+    def _check_is_spatial(self) -> bool:
+        if self.is_spatial is None:
+            try:
+                assay_ontology_term_ids = self.adata.obs.assay_ontology_term_id
+                self.is_spatial = False
+                spatial_assay_ontology_term_ids = ["EFO:0010961", "EFO:0030062"]
+                for assay in assay_ontology_term_ids.drop_duplicates():
+                    if assay in spatial_assay_ontology_term_ids:
+                        self.is_spatial = True
+            except AttributeError:
+                # specific error reporting will occur downstream in the validation
+                self.is_spatial = False
+        return self.is_spatial
 
     def _validate_encoding_version(self):
         import h5py
@@ -998,7 +1000,7 @@ class Validator:
                 if np.all(np.isnan(value)):
                     issue_list.append(f"adata.obsm['{key}'] contains all NaN values.")
 
-        if self.is_spatial is False and obsm_with_x_prefix == 0:
+        if self._check_is_spatial() is False and obsm_with_x_prefix == 0:
             self.errors.append("At least one embedding in 'obsm' has to have a key with an 'X_' prefix.")
 
     def _validate_annotation_mapping(self, component_name: str, component: Mapping):
@@ -1382,8 +1384,6 @@ class Validator:
 
         # Fetches schema def for latest major schema version
         self._set_schema_def()
-        # Check if spatial dataset
-        self._set_is_spatial()
 
         if not self.errors:
             self._deep_check()
