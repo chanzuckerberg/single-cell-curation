@@ -58,7 +58,7 @@ class Validator:
 
     def _set_is_spatial(self) -> bool:
         try:
-            assay_ontology_term_ids = getattr(getattr(self.adata, "obs"), "assay_ontology_term_id")
+            assay_ontology_term_ids = self.adata.obs.assay_ontology_term_id
             self.is_spatial = False
             spatial_assay_ontology_term_ids = ["EFO:0010961", "EFO:0030062"]
             for assay in assay_ontology_term_ids.drop_duplicates():
