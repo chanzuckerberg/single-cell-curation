@@ -1969,7 +1969,7 @@ class TestObsm:
         assert validator.errors == [
             "ERROR: At least one embedding in 'obsm' has to have a key with an 'X_' prefix.",
         ]
-        assert validator.is_spatial == False
+        assert validator.is_spatial is False
         assert validator.warnings == [
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_ and thus will not be available in Explorer",
@@ -1987,7 +1987,7 @@ class TestObsm:
         validator.adata.obs.loc[:, ["suspension_type"]] = validator.adata.obs.astype("category")
         validator.validate_adata()
         assert validator.errors == []
-        assert validator.is_spatial == True
+        assert validator.is_spatial is True
 
     def test_obsm_values_warn_start_with_X(self, validator_with_adata):
         validator = validator_with_adata
