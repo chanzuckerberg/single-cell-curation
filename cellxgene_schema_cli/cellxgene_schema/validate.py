@@ -33,9 +33,6 @@ ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED = f"is required for {ERROR_SUFFI
 class Validator:
     """Handles validation of AnnData"""
 
-    ASSAY_VISIUM = "EFO:0010961"
-    ASSAY_SLIDE_SEQV2 = "EFO:0030062"
-
     def __init__(self, ignore_labels=False):
         self.schema_def = dict()
         self.schema_version: str = None
