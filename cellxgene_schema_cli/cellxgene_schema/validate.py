@@ -29,9 +29,6 @@ ASSAY_SLIDE_SEQV2 = "EFO:0030062"
 class Validator:
     """Handles validation of AnnData"""
 
-    ASSAY_VISIUM = "EFO:0010961"
-    ASSAY_SLIDE_SEQV2 = "EFO:0030062"
-
     def __init__(self, ignore_labels=False):
         self.schema_def = dict()
         self.schema_version: str = None
@@ -1479,7 +1476,7 @@ class Validator:
         :return True if assay_ontology_term_id is Visium or Slide-seqV2, False otherwise.
         :rtype bool
         """
-        return self.adata.obs.get("assay_ontology_term_id").isin([self.ASSAY_VISIUM, self.ASSAY_SLIDE_SEQV2]).any()
+        return self.adata.obs.get("assay_ontology_term_id").isin([ASSAY_VISIUM, ASSAY_SLIDE_SEQV2]).any()
 
     def _is_valid_visium_image_shape(self, image: np.ndarray) -> bool:
         """
@@ -1502,8 +1499,7 @@ class Validator:
         """
         assay_ontology_term_id = self.adata.obs.get("assay_ontology_term_id")
         return (
-            assay_ontology_term_id is not None
-            and (self.adata.obs.get("assay_ontology_term_id") == self.ASSAY_VISIUM).any()
+            assay_ontology_term_id is not None and (self.adata.obs.get("assay_ontology_term_id") == ASSAY_VISIUM).any()
         )
 
     def _validate_spatial_scalefactor(self, scalefactor_name: str, scalefactor: float):
