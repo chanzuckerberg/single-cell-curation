@@ -29,6 +29,9 @@ ASSAY_SLIDE_SEQV2 = "EFO:0030062"
 class Validator:
     """Handles validation of AnnData"""
 
+    ASSAY_VISIUM = "EFO:0010961"
+    ASSAY_SLIDE_SEQV2 = "EFO:0030062"
+
     def __init__(self, ignore_labels=False):
         self.schema_def = dict()
         self.schema_version: str = None
@@ -949,6 +952,13 @@ class Validator:
             self.errors.append(
                 "This dataset has a mismatch between 1) the number of features in raw.X and 2) the number of features "
                 "in raw.var. These counts must be identical."
+            )
+            self.is_seurat_convertible = False
+
+        # Seurat conversion is not supported for Visium datasets.
+        if self._is_visium():
+            self.warnings.append(
+                "Datasets with assay_ontology_term_id 'EFO:0010961' (Visium Spatial Gene Expression) are not compatible with Seurat."
             )
             self.is_seurat_convertible = False
 
