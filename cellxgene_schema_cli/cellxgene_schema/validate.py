@@ -1508,7 +1508,7 @@ class Validator:
         """
         assay_ontology_term_id = self.adata.obs.get("assay_ontology_term_id")
         return (
-            assay_ontology_term_id is not None and (self.adata.obs.get("assay_ontology_term_id") == ASSAY_VISIUM).any()
+            assay_ontology_term_id is not None and (assay_ontology_term_id == ASSAY_VISIUM).any()
         )
 
     def _validate_float(self, name: str, value: float):
