@@ -900,6 +900,14 @@ class Validator:
         too large.
         rtype: None
         """
+        # Seurat conversion is not supported for Visium datasets.
+        if self._is_visium():
+            self.warnings.append(
+                "Datasets with assay_ontology_term_id 'EFO:0010961' (Visium Spatial Gene Expression) are not compatible with Seurat."
+            )
+            self.is_seurat_convertible = False
+            return
+
         to_validate = [(self.adata.X, "X")]
         # check if there's raw data
         if self.adata.raw:
@@ -941,13 +949,6 @@ class Validator:
             self.errors.append(
                 "This dataset has a mismatch between 1) the number of features in raw.X and 2) the number of features "
                 "in raw.var. These counts must be identical."
-            )
-            self.is_seurat_convertible = False
-
-        # Seurat conversion is not supported for Visium datasets.
-        if self._is_visium():
-            self.warnings.append(
-                "Datasets with assay_ontology_term_id 'EFO:0010961' (Visium Spatial Gene Expression) are not compatible with Seurat."
             )
             self.is_seurat_convertible = False
 
@@ -1511,12 +1512,10 @@ class Validator:
 
     def _validate_float(self, name: str, value: float):
         """
-        Validate the spatial scalefactor is a float. A spatial scalefactor is either
-        spatial[library_id]['scalefactors']['spot_diameter_fullres'] or
-        spatial[library_id]['scalefactors']['tissue_hires_scalef']. Errors are added to self.errors if any.
+        Validate the given value is a float. Errors are added to self.errors if any.
 
-        :param str scalefactor_name: the name of the scalefactor, either "spot_diameter_fullres" or "tissue_hires_scalef".
-        :param float scalefactor: the scalefactor to validate.
+        :param str name: the name of the float to validate.
+        :param float value: the float to validate.
 
         :rtype None
         """
@@ -1551,9 +1550,9 @@ class Validator:
             )
 
         # Confirm max dimension of image, if specified, is valid.
-        if max_dimension is not None and max(image.shape) > 2000:
+        if max_dimension is not None and max(image.shape) > max_dimension:
             self.errors.append(
-                f"uns['spatial'][library_id]['images']['{image_name}'] has a max dimension of 2000 pixels, "
+                f"uns['spatial'][library_id]['images']['{image_name}'] has a max dimension of {max_dimension} pixels, "
                 f"it has max dimension {max(image.shape)} pixels."
             )
 
