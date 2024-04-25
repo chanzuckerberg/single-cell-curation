@@ -58,7 +58,7 @@ class Validator:
         self.reset()
         self._adata = adata
 
-    def _is_supported_spatial_assay(self):
+    def _is_supported_spatial_assay(self) -> bool:
         """
         Determine if the assay_ontology_term_id is either Visium (EFO:0010961) or Slide-seqV2 (EFO:0030062).
 
