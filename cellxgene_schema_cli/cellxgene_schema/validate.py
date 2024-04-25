@@ -1496,15 +1496,6 @@ class Validator:
         """
         return set(dictionary.keys()).issubset(allowed_keys)
 
-    def _is_supported_spatial_assay(self):
-        """
-        Determine if the assay_ontology_term_id is either Visium (EFO:0010961) or Slide-seqV2 (EFO:0030062).
-
-        :return True if assay_ontology_term_id is Visium or Slide-seqV2, False otherwise.
-        :rtype bool
-        """
-        return self.adata.obs.get("assay_ontology_term_id").isin([ASSAY_VISIUM, ASSAY_SLIDE_SEQV2]).any()
-
     def _is_valid_visium_image_shape(self, image: np.ndarray) -> bool:
         """
         Determine if the image has shape (,,3); image is expected to be a 3D numpy array
