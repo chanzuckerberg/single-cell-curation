@@ -1362,7 +1362,7 @@ class Validator:
 
         # is_single must be a boolean.
         uns_is_single = uns_spatial["is_single"]
-        if not isinstance(uns_is_single, (np.bool_, np.bool)):
+        if not isinstance(uns_is_single, (np.bool_, np.bool, bool)):
             self.errors.append(f"uns['spatial']['is_single'] must be of boolean type, it is {type(uns_is_single)}.")
             # Exit if is_single is not valid as all further checks are dependent on its value.
             return
