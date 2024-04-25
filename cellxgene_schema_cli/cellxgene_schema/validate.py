@@ -952,13 +952,6 @@ class Validator:
             )
             self.is_seurat_convertible = False
 
-        # Seurat conversion is not supported for Visium datasets.
-        if self._is_visium():
-            self.warnings.append(
-                "Datasets with assay_ontology_term_id 'EFO:0010961' (Visium Spatial Gene Expression) are not compatible with Seurat."
-            )
-            self.is_seurat_convertible = False
-
     def _validate_obsm(self):
         """
         Validates the embedding dictionary -- it checks that all values of adata.obsm are numpy arrays with the correct
