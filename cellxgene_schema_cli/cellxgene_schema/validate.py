@@ -22,6 +22,9 @@ logger = logging.getLogger(__name__)
 
 ONTOLOGY_PARSER = OntologyParser(schema_version=f"v{schema.get_current_schema_version()}")
 
+ASSAY_VISIUM = "EFO:0010961"
+ASSAY_SLIDE_SEQV2 = "EFO:0030062"
+
 
 class Validator:
     """Handles validation of AnnData"""
@@ -42,6 +45,7 @@ class Validator:
         self.h5ad_path = ""
         self._raw_layer_exists = None
         self.is_seurat_convertible: bool = True
+        self.is_spatial = None
 
         # Matrix (e.g., X, raw.X, ...) number non-zero cache
         self.number_non_zero = dict()
@@ -54,6 +58,23 @@ class Validator:
     def adata(self, adata: anndata.AnnData):
         self.reset()
         self._adata = adata
+
+    def _is_supported_spatial_assay(self) -> bool:
+        """
+        Determine if the assay_ontology_term_id is either Visium (EFO:0010961) or Slide-seqV2 (EFO:0030062).
+
+        :return True if assay_ontology_term_id is Visium or Slide-seqV2, False otherwise.
+        :rtype bool
+        """
+        if self.is_spatial is None:
+            try:
+                self.is_spatial = False
+                if self.adata.obs.assay_ontology_term_id.isin([ASSAY_VISIUM, ASSAY_SLIDE_SEQV2]).any():
+                    self.is_spatial = True
+            except AttributeError:
+                # specific error reporting will occur downstream in the validation
+                self.is_spatial = False
+        return self.is_spatial
 
     def _validate_encoding_version(self):
         import h5py
@@ -945,7 +966,9 @@ class Validator:
 
             if key.startswith("X_"):
                 obsm_with_x_prefix += 1
-                if not re.match(regex_pattern, key[2:]):
+                if key.lower() == "x_spatial":
+                    self.errors.append(f"Embedding key in 'adata.obsm' {key} cannot be used.")
+                elif not re.match(regex_pattern, key[2:]):
                     self.errors.append(
                         f"Suffix for embedding key in 'adata.obsm' {key} does not match the regex pattern {regex_pattern}."
                     )
@@ -983,7 +1006,7 @@ class Validator:
                 if np.all(np.isnan(value)):
                     issue_list.append(f"adata.obsm['{key}'] contains all NaN values.")
 
-        if obsm_with_x_prefix == 0:
+        if self._is_supported_spatial_assay() is False and obsm_with_x_prefix == 0:
             self.errors.append("At least one embedding in 'obsm' has to have a key with an 'X_' prefix.")
 
     def _validate_annotation_mapping(self, component_name: str, component: Mapping):
