@@ -323,7 +323,7 @@ good_uns_with_slide_seqV2_spatial = {
     "default_embedding": "X_umap",
     "X_approximate_distribution": "normal",
     "batch_condition": ["is_primary_data"],
-    "spatial": {"is_single": numpy.bool_(True)},
+    "spatial": {"is_single": True},
 }
 
 # ---

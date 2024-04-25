@@ -1333,9 +1333,9 @@ class Validator:
             return
 
         # spatial is forbidden if assay it not a supported spatial assay.
-        uns_spatial_specified = "spatial" in self.adata.uns
+        uns_spatial = self.adata.uns.get("spatial")
         is_supported_spatial_assay = self._is_supported_spatial_assay()
-        if uns_spatial_specified and not is_supported_spatial_assay:
+        if uns_spatial is not None and not is_supported_spatial_assay:
             self.errors.append(
                 "uns['spatial'] is only allowed for obs['assay_ontology_term_id'] values "
                 "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)."
@@ -1347,7 +1347,7 @@ class Validator:
             return
 
         # spatial is required for supported spatial assays.
-        if not uns_spatial_specified:
+        if uns_spatial is None:
             self.errors.append(
                 "uns['spatial'] is required for obs['assay_ontology_term_id'] values "
                 "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)."
@@ -1355,7 +1355,6 @@ class Validator:
             return
 
         # is_single is required.
-        uns_spatial = self.adata.uns["spatial"]
         if "is_single" not in uns_spatial:
             self.errors.append("uns['spatial'] must contain the key 'is_single'.")
             # Exit if is_single is missing as all further checks are dependent on its value.
@@ -1363,7 +1362,7 @@ class Validator:
 
         # is_single must be a boolean.
         uns_is_single = uns_spatial["is_single"]
-        if not isinstance(uns_is_single, np.bool_):
+        if not isinstance(uns_is_single, (np.bool_, np.bool)):
             self.errors.append(f"uns['spatial']['is_single'] must be of boolean type, it is {type(uns_is_single)}.")
             # Exit if is_single is not valid as all further checks are dependent on its value.
             return
@@ -1372,7 +1371,10 @@ class Validator:
         uns_spatial_keys = list(uns_spatial.keys())
         library_ids = list(filter(lambda x: x != "is_single", uns_spatial_keys))
         if len(library_ids) > 1:
-            self.errors.append("uns['spatial'] must contain only one library_id.")
+            self.errors.append(
+                "uns['spatial'] must contain only two top-level keys: 'is_single' and a library_id. "
+                f"More than two top-level keys detected: {library_ids}."
+            )
             # Exit if there is more than one library_id as we don't know which library_id to validate.
             return
 
@@ -1394,7 +1396,7 @@ class Validator:
         # library_id is required if assay is Visium and is_single is True.
         if len(library_ids) == 0:
             self.errors.append(
-                "uns['spatial'] must contain the key 'library_id' for obs['assay_ontology_term_id'] "
+                "uns['spatial'] must contain at least one key representing the library_id when obs['assay_ontology_term_id'] "
                 "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
             )
             # Exit as library_id is missing.
@@ -1404,7 +1406,10 @@ class Validator:
         library_id_key = library_ids[0]
         uns_library_id = uns_spatial[library_id_key]
         if not self._has_no_extra_keys(uns_library_id, ["images", "scalefactors"]):
-            self.errors.append("uns['spatial'][library_id] can only contain the keys 'images' and 'scalefactors'.")
+            self.errors.append(
+                "uns['spatial'][library_id] can only contain the keys 'images' and 'scalefactors'."
+                f"Detected keys: {list(uns_library_id.keys())}."
+            )
 
         # images is required.
         if "images" not in uns_library_id:
@@ -1416,6 +1421,7 @@ class Validator:
             if not self._has_no_extra_keys(uns_images, ["fullres", "hires"]):
                 self.errors.append(
                     "uns['spatial'][library_id]['images'] can only contain the keys 'fullres' and 'hires'."
+                    f"Detected keys: {list(uns_images.keys())}."
                 )
 
             # hires is required.
@@ -1441,6 +1447,7 @@ class Validator:
                 self.errors.append(
                     "uns['spatial'][library_id]['scalefactors'] can only contain the keys "
                     "'spot_diameter_fullres' and 'tissue_hires_scalef'."
+                    f"Detected keys: {list(uns_scalefactors.keys())}."
                 )
 
             # spot_diameter_fullres is required.
@@ -1450,10 +1457,12 @@ class Validator:
                 )
             # spot_diameter_fullres is specified: proceed with validation.
             else:
-                self._validate_float(
-                    "uns['spatial'][library_id]['scalefactors']['spot_diameter_fullres']",
-                    uns_scalefactors["spot_diameter_fullres"],
-                )
+                spot_diameter_fullres = uns_scalefactors["spot_diameter_fullres"]
+                if not isinstance(spot_diameter_fullres, float):
+                    self.errors.append(
+                        "uns['spatial'][library_id]['scalefactors']['spot_diameter_fullres'] must be of type float, it is "
+                        f"{type(spot_diameter_fullres)}. This must be the value of the spot_diameter_fullres field from scalefactors_json.json"
+                    )
 
             # tissue_hires_scalef is required.
             if "tissue_hires_scalef" not in uns_scalefactors:
@@ -1462,10 +1471,12 @@ class Validator:
                 )
             # tissue_hires_scalef is specified: proceed with validation.
             else:
-                self._validate_float(
-                    "uns['spatial'][library_id]['scalefactors']['tissue_hires_scalef']",
-                    uns_scalefactors["tissue_hires_scalef"],
-                )
+                tissue_hires_scalef = uns_scalefactors["tissue_hires_scalef"]
+                if not isinstance(tissue_hires_scalef, float):
+                    self.errors.append(
+                        "uns['spatial'][library_id]['scalefactors']['tissue_hires_scalef'] must be of type float, it is "
+                        f"{type(tissue_hires_scalef)}. This must be the value of the tissue_hires_scalef field from scalefactors_json.json"
+                    )
 
     def _has_no_extra_keys(self, dictionary: dict, allowed_keys: List[str]) -> bool:
         """
@@ -1509,18 +1520,6 @@ class Validator:
         """
         assay_ontology_term_id = self.adata.obs.get("assay_ontology_term_id")
         return assay_ontology_term_id is not None and (assay_ontology_term_id == ASSAY_VISIUM).any()
-
-    def _validate_float(self, name: str, value: float):
-        """
-        Validate the given value is a float. Errors are added to self.errors if any.
-
-        :param str name: the name of the float to validate.
-        :param float value: the float to validate.
-
-        :rtype None
-        """
-        if not isinstance(value, float):
-            self.errors.append(f"{name} must be of type float, it is {type(value)}.")
 
     def _validate_spatial_image_shape(self, image_name: str, image: np.ndarray, max_dimension: int = None):
         """

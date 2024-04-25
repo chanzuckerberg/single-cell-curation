@@ -377,7 +377,10 @@ class TestValidate:
         # Confirm additional key is identified as invalid.
         validator._check_spatial()
         assert validator.errors
-        assert "uns['spatial'] must contain only one library_id." in validator.errors[0]
+        assert (
+            "uns['spatial'] must contain only two top-level keys: 'is_single' and a library_id. "
+            "More than two top-level keys detected:" in validator.errors[0]
+        )
 
     def test__validate_is_single_required_visium_error(self):
         validator: Validator = Validator()
@@ -461,7 +464,7 @@ class TestValidate:
         validator._check_spatial()
         assert validator.errors
         assert (
-            "uns['spatial'] must contain the key 'library_id' for obs['assay_ontology_term_id'] "
+            "uns['spatial'] must contain at least one key representing the library_id for obs['assay_ontology_term_id'] "
             "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
             in validator.errors[0]
         )
