@@ -66,7 +66,13 @@ class Validator:
         :rtype bool
         """
         if self.is_spatial is None:
-            self.is_spatial = self.adata.obs.get("assay_ontology_term_id").isin([ASSAY_VISIUM, ASSAY_SLIDE_SEQV2]).any()
+            try:
+                self.is_spatial = False
+                if self.adata.obs.assay_ontology_term_id.isin([ASSAY_VISIUM, ASSAY_SLIDE_SEQV2]).any():
+                    self.is_spatial = True
+            except AttributeError:
+                # specific error reporting will occur downstream in the validation
+                self.is_spatial = False
         return self.is_spatial
 
     def _validate_encoding_version(self):
