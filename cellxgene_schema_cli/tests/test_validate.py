@@ -527,6 +527,12 @@ class TestValidate:
         # Confirm fullres is optional.
         validator._check_spatial()
         assert not validator.errors
+        assert validator.warnings
+        assert (
+            "No uns['spatial'][library_id]['images']['fullres'] was found. "
+            "It is STRONGLY RECOMMENDED that uns['spatial'][library_id]['images']['fullres'] is provided."
+            in validator.warnings[0]
+        )
 
     def test__validate_images_hires_is_ndarray_error(self):
         validator: Validator = Validator()

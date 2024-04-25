@@ -1362,7 +1362,7 @@ class Validator:
 
         # is_single must be a boolean.
         uns_is_single = uns_spatial["is_single"]
-        if not isinstance(uns_is_single, (np.bool_, np.bool)):
+        if not isinstance(uns_is_single, (np.bool_, np.bool, bool)):
             self.errors.append(f"uns['spatial']['is_single'] must be of boolean type, it is {type(uns_is_single)}.")
             # Exit if is_single is not valid as all further checks are dependent on its value.
             return
@@ -1433,7 +1433,13 @@ class Validator:
 
             # fullres is optional.
             uns_fullres = uns_images.get("fullres")
-            if uns_fullres is not None:
+            if uns_fullres is None:
+                # Warn if no fullres is specified as it is strongly recommended.
+                self.warnings.append(
+                    "No uns['spatial'][library_id]['images']['fullres'] was found. "
+                    "It is STRONGLY RECOMMENDED that uns['spatial'][library_id]['images']['fullres'] is provided."
+                )
+            else:
                 self._validate_spatial_image_shape("fullres", uns_fullres)
 
         # scalefactors is required.
