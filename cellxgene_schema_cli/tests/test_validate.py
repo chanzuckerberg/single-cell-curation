@@ -464,7 +464,7 @@ class TestValidate:
         validator._check_spatial()
         assert validator.errors
         assert (
-            "uns['spatial'] must contain at least one key representing the library_id for obs['assay_ontology_term_id'] "
+            "uns['spatial'] must contain at least one key representing the library_id when obs['assay_ontology_term_id'] "
             "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
             in validator.errors[0]
         )
