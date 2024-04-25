@@ -336,7 +336,7 @@ class TestValidate:
         validator._check_spatial()
         assert len(validator.errors) == 1
         assert (
-            "uns['spatial'] is only allowed for adata.obs['assay_ontology_term_id'] values "
+            "uns['spatial'] is only allowed for obs['assay_ontology_term_id'] values "
             "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)." in validator.errors[0]
         )
 
@@ -350,7 +350,7 @@ class TestValidate:
         validator._check_spatial()
         assert len(validator.errors) == 1
         assert (
-            "uns['spatial'] is required for adata.obs['assay_ontology_term_id'] values "
+            "uns['spatial'] is required for obs['assay_ontology_term_id'] values "
             "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)." in validator.errors[0]
         )
 
@@ -364,7 +364,7 @@ class TestValidate:
         validator._check_spatial()
         assert len(validator.errors) == 1
         assert (
-            "uns['spatial'] is required for adata.obs['assay_ontology_term_id'] values "
+            "uns['spatial'] is required for obs['assay_ontology_term_id'] values "
             "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)." in validator.errors[0]
         )
 
@@ -429,7 +429,7 @@ class TestValidate:
         validator._check_spatial()
         assert len(validator.errors) == 1
         assert (
-            "uns['spatial'][library_id] is only allowed for adata.obs['assay_ontology_term_id'] "
+            "uns['spatial'][library_id] is only allowed for obs['assay_ontology_term_id'] "
             "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
             in validator.errors[0]
         )
@@ -446,7 +446,7 @@ class TestValidate:
         validator._check_spatial()
         assert len(validator.errors) == 1
         assert (
-            "uns['spatial'][library_id] is only allowed for adata.obs['assay_ontology_term_id'] "
+            "uns['spatial'][library_id] is only allowed for obs['assay_ontology_term_id'] "
             "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
             in validator.errors[0]
         )
@@ -461,7 +461,7 @@ class TestValidate:
         validator._check_spatial()
         assert validator.errors
         assert (
-            "uns['spatial'] must contain the key 'library_id' for adata.obs['assay_ontology_term_id'] "
+            "uns['spatial'] must contain the key 'library_id' for obs['assay_ontology_term_id'] "
             "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
             in validator.errors[0]
         )

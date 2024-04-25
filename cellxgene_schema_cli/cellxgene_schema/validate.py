@@ -1336,7 +1336,7 @@ class Validator:
         is_supported_spatial_assay = self._is_supported_spatial_assay()
         if uns_spatial_specified and not is_supported_spatial_assay:
             self.errors.append(
-                "uns['spatial'] is only allowed for adata.obs['assay_ontology_term_id'] values "
+                "uns['spatial'] is only allowed for obs['assay_ontology_term_id'] values "
                 "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)."
             )
             return
@@ -1348,7 +1348,7 @@ class Validator:
         # spatial is required for supported spatial assays.
         if not uns_spatial_specified:
             self.errors.append(
-                "uns['spatial'] is required for adata.obs['assay_ontology_term_id'] values "
+                "uns['spatial'] is required for obs['assay_ontology_term_id'] values "
                 "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)."
             )
             return
@@ -1380,7 +1380,7 @@ class Validator:
         is_visium_and_uns_is_single = is_visium and uns_is_single
         if len(library_ids) > 0 and not is_visium_and_uns_is_single:
             self.errors.append(
-                "uns['spatial'][library_id] is only allowed for adata.obs['assay_ontology_term_id'] "
+                "uns['spatial'][library_id] is only allowed for obs['assay_ontology_term_id'] "
                 "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
             )
             # Exit as library_id is not allowed.
@@ -1393,7 +1393,7 @@ class Validator:
         # library_id is required if assay is Visium and is_single is True.
         if len(library_ids) == 0:
             self.errors.append(
-                "uns['spatial'] must contain the key 'library_id' for adata.obs['assay_ontology_term_id'] "
+                "uns['spatial'] must contain the key 'library_id' for obs['assay_ontology_term_id'] "
                 "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
             )
             # Exit as library_id is missing.
@@ -1507,9 +1507,7 @@ class Validator:
         :rtype bool
         """
         assay_ontology_term_id = self.adata.obs.get("assay_ontology_term_id")
-        return (
-            assay_ontology_term_id is not None and (assay_ontology_term_id == ASSAY_VISIUM).any()
-        )
+        return assay_ontology_term_id is not None and (assay_ontology_term_id == ASSAY_VISIUM).any()
 
     def _validate_float(self, name: str, value: float):
         """
