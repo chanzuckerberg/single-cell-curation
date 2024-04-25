@@ -1535,7 +1535,7 @@ class Validator:
 
         :param str image_name: the name of the image, either "hires" or "fullres".
         :param np.ndarray image: the image to validate.
-        :param int max_dimension: the maximum dimension of the image, optional.
+        :param int max_dimension: the largest allowed dimension of the image, optional.
 
         :rtype None
         """
@@ -1555,10 +1555,10 @@ class Validator:
             )
 
         # Confirm max dimension of image, if specified, is valid.
-        if max_dimension is not None and max(image.shape) > max_dimension:
+        if max_dimension is not None and max(image.shape) != max_dimension:
             self.errors.append(
-                f"uns['spatial'][library_id]['images']['{image_name}'] has a max dimension of {max_dimension} pixels, "
-                f"it has max dimension {max(image.shape)} pixels."
+                f"The largest dimension of uns['spatial'][library_id]['images']['{image_name}'] must be "
+                f"{max_dimension} pixels, it has a largest dimension of {max(image.shape)} pixels."
             )
 
     def _deep_check(self):

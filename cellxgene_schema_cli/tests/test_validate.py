@@ -556,16 +556,33 @@ class TestValidate:
         assert validator.errors
         assert "uns['spatial'][library_id]['images']['hires'] must have shape (,,3)" in validator.errors[0]
 
-    def test__validate_images_hires_max_dimension_error(self):
+    def test__validate_images_hires_max_dimension_greater_than_error(self):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros((2001, 2001, 3))
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros((1, 2001, 3))
 
         # Confirm hires is identified as invalid.
         validator._check_spatial()
         assert validator.errors
-        assert "uns['spatial'][library_id]['images']['hires'] has a max dimension of 2000 pixels" in validator.errors[0]
+        assert (
+            "The largest dimension of uns['spatial'][library_id]['images']['hires'] must be 2000 pixels"
+            in validator.errors[0]
+        )
+
+    def test__validate_images_hires_max_dimension_less_than_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros((1, 1999, 3))
+
+        # Confirm hires is identified as invalid.
+        validator._check_spatial()
+        assert validator.errors
+        assert (
+            "The largest dimension of uns['spatial'][library_id]['images']['hires'] must be 2000 pixels"
+            in validator.errors[0]
+        )
 
     def test__validate_images_fullres_is_ndarray_error(self):
         validator: Validator = Validator()

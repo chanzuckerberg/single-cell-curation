@@ -307,7 +307,7 @@ good_uns_with_visium_spatial = {
         "is_single": numpy.bool_(True),
         visium_library_id: {
             "images": {
-                "hires": numpy.array([[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]]),
+                "hires": numpy.zeros((2000, 100, 3)),
                 "fullres": numpy.array([[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]]),
             },
             "scalefactors": {
