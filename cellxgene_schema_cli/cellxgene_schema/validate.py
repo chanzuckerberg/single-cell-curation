@@ -983,7 +983,7 @@ class Validator:
                 issue_list = self.warnings
 
             if not isinstance(value, np.ndarray):
-                issue_list.append(
+                self.errors.append(
                     f"All embeddings have to be of 'numpy.ndarray' type, " f"'adata.obsm['{key}']' is {type(value)}')."
                 )
                 # Skip over the subsequent checks that require the value to be an array

@@ -1996,7 +1996,9 @@ class TestObsm:
         assert validator.warnings == [
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_ and thus will not be available in Explorer",
-            "WARNING: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['harmony']' is <class 'pandas.core.frame.DataFrame'>').",
+        ]
+        assert validator.errors == [
+            "WARNING: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['harmony']' is <class 'pandas.core.frame.DataFrame'>')."
         ]
 
     def test_obsm_values_suffix_is_forbidden(self, validator_with_adata):
@@ -2024,8 +2026,10 @@ class TestObsm:
         assert validator.warnings == [
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' 3D does not start with X_ and thus will not be available in Explorer",
-            "WARNING: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['3D']' is <class 'pandas.core.frame.DataFrame'>').",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
+        ]
+        assert validator.errors == [
+            "WARNING: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['3D']' is <class 'pandas.core.frame.DataFrame'>')."
         ]
 
     def test_obsm_suffix_name_valid(self, validator_with_adata):
