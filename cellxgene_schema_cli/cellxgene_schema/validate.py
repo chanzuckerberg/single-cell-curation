@@ -25,6 +25,7 @@ ONTOLOGY_PARSER = OntologyParser(schema_version=f"v{schema.get_current_schema_ve
 ASSAY_VISIUM = "EFO:0010961"
 ASSAY_SLIDE_SEQV2 = "EFO:0030062"
 
+
 class Validator:
     """Handles validation of AnnData"""
 
