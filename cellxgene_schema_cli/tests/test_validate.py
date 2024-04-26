@@ -689,32 +689,15 @@ class TestCheckSpatial:
             in validator.errors[0]
         )
 
-    def test__validate_tissue_position_forbidden_if_not_visium(self):
+    @pytest.mark.parametrize("assay_ontology_term_id, is_single", [("EFO:0030062", False), ("EFO:0010961", False)])
+    def test__validate_tissue_position_forbidden(self, assay_ontology_term_id, is_single):
         validator: Validator = Validator()
         validator._set_schema_def()
 
-        # Create Visium adata (with spatial) with 10x 3' v2 obs.
+        # Create Visium adata with tissue positions, update assay_ontology_term_id and is_single to trigger error.
         validator.adata = adata_visium.copy()
-        validator.adata.obs.assay_ontology_term_id = "EFO:0009899"
-
-        # Confirm tissue positions are not allowed for 10x 3' v2.
-        validator._check_spatial_obs()
-        assert len(validator.errors) == 3
-        tissue_position_names = ["array_col", "array_row", "in_tissue"]
-        for i, tissue_position_name in enumerate(tissue_position_names):
-            assert (
-                f"obs['{tissue_position_name}'] is only allowed for obs['assay_ontology_term_id'] "
-                "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
-                in validator.errors[i]
-            )
-
-    def test__validate_tissue_position_forbidden_if_not_visium_and_is_single_false(self):
-        validator: Validator = Validator()
-        validator._set_schema_def()
-
-        # Create Visium adata (with spatial) with is_single false.
-        validator.adata = adata_visium.copy()
-        validator.adata.uns["spatial"]["is_single"] = False
+        validator.adata.obs.assay_ontology_term_id = assay_ontology_term_id
+        validator.adata.uns["spatial"]["is_single"] = is_single
 
         # Confirm tissue positions are not allowed.
         validator._check_spatial_obs()
