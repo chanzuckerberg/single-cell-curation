@@ -129,6 +129,8 @@ obs_expected["observation_joinid"] = get_hash_digest_column(obs_expected)
 good_obs_visium = pd.DataFrame(
     [
         [
+            1,
+            1,
             "CL:0000066",
             "EFO:0010961",
             "MONDO:0100096",
@@ -141,8 +143,11 @@ good_obs_visium = pd.DataFrame(
             "HsapDv:0000003",
             "donor_1",
             "na",
+            0,
         ],
         [
+            2,
+            2,
             "CL:0000192",
             "EFO:0010961",
             "PATO:0000461",
@@ -155,10 +160,13 @@ good_obs_visium = pd.DataFrame(
             "MmusDv:0000003",
             "donor_2",
             "na",
+            1,
         ],
     ],
     index=["X", "Y"],
     columns=[
+        "array_col",
+        "array_row",
         "cell_type_ontology_term_id",
         "assay_ontology_term_id",
         "disease_ontology_term_id",
@@ -171,6 +179,7 @@ good_obs_visium = pd.DataFrame(
         "development_stage_ontology_term_id",
         "donor_id",
         "suspension_type",
+        "in_tissue",
     ],
 )
 
