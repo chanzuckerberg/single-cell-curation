@@ -1977,20 +1977,21 @@ class TestObsm:
         ]
 
     @pytest.mark.parametrize(
-        "assay_ontology_term_id, uns_spatial",
+        "assay_ontology_term_id, adata_spatial",
         [
-            ("EFO:0010961", examples.good_uns_with_visium_spatial["spatial"]),
-            ("EFO:0030062", examples.good_uns_with_slide_seqV2_spatial["spatial"]),
+            ("EFO:0010961", examples.adata_visium),
+            ("EFO:0030062", examples.adata_slide_seqv2),
         ],
     )
     def test_obsm_values_no_X_embedding__spatial_dataset(
-        self, validator_with_adata, assay_ontology_term_id, uns_spatial
+        self, validator_with_adata, assay_ontology_term_id, adata_spatial
     ):
         validator = validator_with_adata
         validator.adata.obsm["harmony"] = validator.adata.obsm["X_umap"]
+        validator.adata.uns = adata_spatial.uns
         validator.adata.uns["default_embedding"] = "harmony"
-        validator.adata.uns["spatial"] = uns_spatial
         del validator.adata.obsm["X_umap"]
+        validator.adata.obs = adata_spatial.obs
         validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
         validator.adata.obs["suspension_type"] = "na"
         validator.adata.obs.loc[:, ["suspension_type"]] = validator.adata.obs.astype("category")
