@@ -1,12 +1,12 @@
+import json
+
 import anndata as ad
 import cerberus
 import pandas as pd
-from cerberus.errors import encode_unicode
 from tests.fixtures.examples_validate import h5ad_valid
 
 
 class CustomerErrorHandler(cerberus.errors.BasicErrorHandler):
-    @encode_unicode
     def add(self, error):
         self._rewrite_error_path(error)
 
@@ -17,8 +17,6 @@ class CustomerErrorHandler(cerberus.errors.BasicErrorHandler):
         elif error.code in self.messages:
             self._insert_error(error.document_path, self._format_message(error.field, error))
 
-
-adata = ad.read_h5ad(h5ad_valid, backed="r")
 
 anndata_type = cerberus.TypeDefinition("anndata", (ad.AnnData,), ())
 dataframe_type = cerberus.TypeDefinition("dataframe", (pd.DataFrame,), ())
@@ -59,7 +57,7 @@ class MyValidator(cerberus.Validator):
         """
         if match_obs_columns:
             for i in value:
-                if i not in self.adata.obs.columns:
+                if i not in self.root_document["adata"].obs.columns:
                     self._error(value, f"Value '{i}' of list '{field}' is not a column in 'adata.obs'.")
 
     def _validate_match_obs_keys(self, match_obs_keys, field, value) -> None:
@@ -69,7 +67,7 @@ class MyValidator(cerberus.Validator):
         """
         if match_obs_keys:
             for i in value:
-                if i not in self.adata.obs.keys():
+                if i not in self.root_document["adata"].obs.keys():
                     self._error(value, f"Value '{i}' of list '{field}' is not a key in 'adata.obs'.")
 
     def _validate_encoding_version(self, contraint: str, field: str, value: ad.AnnData) -> None:
@@ -87,6 +85,7 @@ class MyValidator(cerberus.Validator):
 
 
 def validate_anndata():
+    adata = ad.read_h5ad(h5ad_valid, backed="r")
     schema = {
         "adata": {
             "type": "anndata",
@@ -98,40 +97,47 @@ def validate_anndata():
                 "obsm": {"type": "dict"},
                 "varm": {"type": "dict"},
                 "layers": {"type": "dict"},
-                "uns": {
-                    "type": "dict",
-                    "keysrules": {"type": "string"},
-                    "valuesrules": {"anyof": [{"type": "boolean"}, {"empty": False}, {"nullable": True}]},
-                    "contains": {
-                        "title": {"type": "string", "required": True},
-                        "batch_condition": {"type": "list", "match_obs_columns": True},
-                        "default_embedding": {"match_obs_keys": True},
-                        "X_approximate_distribution": {"type": "string", "allowed": ["count", "normal"]},
-                    },
-                    "forbidden": [
-                        "schema_version",
-                        "citation",
-                        "schema_reference",
-                        "X_normalization",
-                        "default_field",
-                        "layer_descriptions",
-                        "tags",
-                        "version",
-                        "contributors",
-                        "preprint_doi",
-                        "project_description",
-                        "project_links",
-                        "project_name",
-                        "publication_doi",
-                    ],
-                },
+                "uns": {"type": "dict"},
             },
-        }
+        },
+        "uns": {
+            "type": "dict",
+            "keysrules": {"type": "string"},
+            "valuesrules": {"anyof": [{"type": "boolean"}, {"empty": False}, {"nullable": True}]},
+            "schema": {
+                "title": {"type": "string", "required": True},
+                "batch_condition": {"type": "list", "match_obs_columns": False},
+                "default_embedding": {"match_obs_keys": True},
+                "X_approximate_distribution": {"type": "string", "allowed": ["count", "normal"], "required": True},
+            },
+            "forbidden": [
+                "schema_version",
+                "citation",
+                "schema_reference",
+                "X_normalization",
+                "default_field",
+                "layer_descriptions",
+                "tags",
+                "version",
+                "contributors",
+                "preprint_doi",
+                "project_description",
+                "project_links",
+                "project_name",
+                "publication_doi",
+            ],
+        },
     }
     v = MyValidator(schema, error_handler=CustomerErrorHandler())
     if not v.validate(dict(adata=adata), normalize=False):
-        print(v.errors)
-    return v
+        print(json.dumps(v.errors, sort_keys=True, indent=4))
+
+    adata.uns["title"] = [1, 2, 3]
+    adata.uns[1] = None
+    adata.uns["asdfads"] = "asfasdf"
+    adata.uns["project_name"] = "project_name"
+    if not v.validate(dict(adata=adata, uns=adata.uns), normalize=False):
+        print(json.dumps(v.errors, indent=4))
 
 
-v = validate_anndata()
+validate_anndata()
