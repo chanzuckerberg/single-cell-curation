@@ -439,7 +439,7 @@ class TestCheckSpatial:
             in validator.errors[0]
         )
 
-    def test__validate_library_id_forbidden_if_visium_or_is_single_false(self):
+    def test__validate_library_id_forbidden_if_visium_and_is_single_false(self):
         validator: Validator = Validator()
         validator._set_schema_def()
 
