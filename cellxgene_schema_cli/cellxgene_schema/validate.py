@@ -1331,7 +1331,87 @@ class Validator:
 
     def _check_spatial(self):
         """
-        Validate spatial-related values of the AnnData object. Validation is not defined in schema definition yaml.
+        Sequence validation of spatial-related values of the AnnData object.
+
+        :rtype none
+        """
+        self._check_spatial_uns()
+        self._check_spatial_obs()
+
+    def _check_spatial_obs(self):
+        """
+        Validate obs spatial-related values of the AnnData object. Validation is not defined in schema definition yaml.
+        Errors are added to self.errors.
+
+        :rtype none
+        """
+
+        # Exit if obs is not specified. Error is reported in core validate functionality.
+        obs_component = getattr_anndata(self.adata, "obs")
+        if obs_component is None:
+            return
+
+        # obs spatial validation is dependent on uns.spatial.is_single; exit if not specified. Errors are
+        # reported downstream.
+        uns_component = getattr_anndata(self.adata, "uns")
+        if uns_component is None or "spatial" not in uns_component or "is_single" not in uns_component["spatial"]:
+            return
+
+        # Validate tissue positions.
+        is_visium_and_uns_is_single = self._is_visium() and uns_component["spatial"]["is_single"]
+        self._validate_spatial_tissue_position("array_col", 0, 127, is_visium_and_uns_is_single)
+        self._validate_spatial_tissue_position("array_row", 0, 77, is_visium_and_uns_is_single)
+        self._validate_spatial_tissue_position("in_tissue", 0, 1, is_visium_and_uns_is_single)
+
+    def _validate_spatial_tissue_position(
+        self, tissue_position_name: str, min: int, max: int, is_visium_and_uns_is_single: bool
+    ):
+        """
+        Validate tissue position is allowed and required, and are integers within the given range. Validation is not defined in
+        schema definition yaml.
+
+        :rtype none
+        """
+        # Tissue position is foribidden if assay is not Visium or is_single is False.
+        obs_tissue_position = self.adata.obs.get(tissue_position_name)
+        if obs_tissue_position is not None and not is_visium_and_uns_is_single:
+            self.errors.append(
+                f"obs['{tissue_position_name}'] is only allowed for obs['assay_ontology_term_id'] "
+                "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
+            )
+            return
+
+        # Exit if we're not dealing with Visium and _is_single True as no further checks are necessary.
+        if not is_visium_and_uns_is_single:
+            return
+
+        # Tissue position is required.
+        if obs_tissue_position is None:
+            self.errors.append(
+                f"obs['{tissue_position_name}'] is required for obs['assay_ontology_term_id'] "
+                "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] True."
+            )
+            return
+
+        # Tissue position must be an int.
+        if not np.issubdtype(obs_tissue_position.dtype, np.integer):
+            self.errors.append(f"obs['{tissue_position_name}'] must be of int type, it is {obs_tissue_position.dtype}.")
+            return
+
+        # Tissue position must be within the given range.
+        if not ((obs_tissue_position >= min) & (obs_tissue_position <= max)).all():
+            if tissue_position_name == "in_tissue":
+                error_message_token = f"{min} or {max}"
+            else:
+                error_message_token = f"between {min} and {max}"
+            self.errors.append(
+                f"obs['{tissue_position_name}'] must be {error_message_token}, the min and max are {obs_tissue_position.min()} and {obs_tissue_position.max()}. "
+                f"This must be the value of the column tissue_positions_in_tissue from the tissue_positions_list.csv or tissue_positions.csv."
+            )
+
+    def _check_spatial_uns(self):
+        """
+        Validate uns spatial-related values of the AnnData object. Validation is not defined in schema definition yaml.
         Errors are added to self.errors.
 
         :rtype none
