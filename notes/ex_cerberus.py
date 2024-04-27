@@ -60,15 +60,13 @@ class MyValidator(cerberus.Validator):
                 if i not in self.root_document["adata"].obs.columns:
                     self._error(value, f"Value '{i}' of list '{field}' is not a column in 'adata.obs'.")
 
-    def _validate_match_obs_keys(self, match_obs_keys, field, value) -> None:
+    def _validate_match_obsm_key(self, match_obsm_key, field, value) -> None:
         """
         The rule's arguments are validated against this schema:
         {'type': 'boolean'}
         """
-        if match_obs_keys:
-            for i in value:
-                if i not in self.root_document["adata"].obs.keys():
-                    self._error(value, f"Value '{i}' of list '{field}' is not a key in 'adata.obs'.")
+        if match_obsm_key and value not in self.root_document["adata"].obsm:
+            self.errors.append(f"'{value}' in '{field}' is not valid, it must be a key of 'adata.obsm'.")
 
     def _validate_encoding_version(self, contraint: str, field: str, value: ad.AnnData) -> None:
         """
@@ -102,30 +100,38 @@ def validate_anndata():
         },
         "uns": {
             "type": "dict",
-            "keysrules": {"type": "string"},
+            "allow_unknown": True,
+            "keysrules": {
+                "type": "string",
+                "forbidden": [
+                    "schema_version",
+                    "citation",
+                    "schema_reference",
+                    "X_normalization",
+                    "default_field",
+                    "layer_descriptions",
+                    "tags",
+                    "version",
+                    "contributors",
+                    "preprint_doi",
+                    "project_description",
+                    "project_links",
+                    "project_name",
+                    "publication_doi",
+                ],
+            },
             "valuesrules": {"anyof": [{"type": "boolean"}, {"empty": False}, {"nullable": True}]},
             "schema": {
                 "title": {"type": "string", "required": True},
-                "batch_condition": {"type": "list", "match_obs_columns": False},
-                "default_embedding": {"match_obs_keys": True},
-                "X_approximate_distribution": {"type": "string", "allowed": ["count", "normal"], "required": True},
+                "batch_condition": {
+                    "type": "list",
+                    "schema": {"type": "string"},
+                    "match_obs_columns": True,
+                    "required": False,
+                },
+                "default_embedding": {"type": "string", "match_obsm_key": True, "required": False},
+                "X_approximate_distribution": {"type": "string", "allowed": ["count", "normal"], "required": False},
             },
-            "forbidden": [
-                "schema_version",
-                "citation",
-                "schema_reference",
-                "X_normalization",
-                "default_field",
-                "layer_descriptions",
-                "tags",
-                "version",
-                "contributors",
-                "preprint_doi",
-                "project_description",
-                "project_links",
-                "project_name",
-                "publication_doi",
-            ],
         },
     }
     v = MyValidator(schema, error_handler=CustomerErrorHandler())
@@ -136,6 +142,7 @@ def validate_anndata():
     adata.uns[1] = None
     adata.uns["asdfads"] = "asfasdf"
     adata.uns["project_name"] = "project_name"
+    adata.uns["X_approximate_distribution"] = "asdf"
     if not v.validate(dict(adata=adata, uns=adata.uns), normalize=False):
         print(json.dumps(v.errors, indent=4))
 
