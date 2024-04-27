@@ -1,7 +1,10 @@
 import json
+from typing import Mapping
 
 import anndata as ad
 import cerberus
+import matplotlib.colors as mcolors
+import numpy as np
 import pandas as pd
 from tests.fixtures.examples_validate import h5ad_valid
 
@@ -20,12 +23,14 @@ class CustomerErrorHandler(cerberus.errors.BasicErrorHandler):
 
 anndata_type = cerberus.TypeDefinition("anndata", (ad.AnnData,), ())
 dataframe_type = cerberus.TypeDefinition("dataframe", (pd.DataFrame,), ())
+ndarray_type = cerberus.TypeDefinition("ndarray", (np.ndarray,), ())
 
 
 class MyValidator(cerberus.Validator):
     types_mapping = cerberus.Validator.types_mapping.copy()
     types_mapping["anndata"] = anndata_type
     types_mapping["dataframe"] = dataframe_type
+    types_mapping["ndarray"] = ndarray_type
 
     def _validate_attributes(self, schemas: dict, field: str, _object: object) -> None:
         """
@@ -81,59 +86,125 @@ class MyValidator(cerberus.Validator):
             if encoding_version != contraint:
                 self._error(field, "The h5ad artifact was generated with an AnnData version different from 0.8.0.")
 
+    @property
+    def obs_category_mapping(self):
+        if not hasattr(self, "_obs_category_mapping"):
+            # Check for categorical dtypes in the dataframe directly
+            category_mapping = {}
+            df = self.root_document["adata"].obs
+            for column_name in df.columns:
+                column = df[column_name]
+                if column.dtype.name == "category":
+                    category_mapping[column_name] = column.nunique()
+            self._obs_category_mapping = category_mapping
+        return self._obs_category_mapping
+
+    def _check_with_obs_category_mapping(self, field: str, value: np.ndarray) -> None:
+        category_mapping = self.get_category_mapping()
+        if not isinstance(field, str):
+            self._error(field, "Field must be a string.")
+            return
+        column_name = field.replace("_colors", "").replace("_ontology_term_id_colors", "")
+        obs_unique_values = category_mapping.get(column_name)
+        if not obs_unique_values:
+            self._error(field, f"Colors field uns['{field}'] does not have a corresponding categorical field in obs.")
+            return
+        if len(value) < obs_unique_values:
+            self._error(
+                field,
+                f"Annotated categorical field {field.replace('_colors', '')} must have at least "
+                f"{obs_unique_values} color options "
+                f"in uns[{field}]. Found: {value}",
+            )
+
+    def _check_with_annotation_mapping(self, field: str, value: Mapping) -> None:
+        for key, _value in value.items():
+            # Check for empty ndarrays
+            if isinstance(_value, np.ndarray) and not _value.size:
+                self._errors(field, f"The size of the ndarray stored for a 'adata.{field}['{key}']' MUST NOT be zero.")
+
 
 def validate_anndata():
-    adata = ad.read_h5ad(h5ad_valid, backed="r")
     schema = {
         "adata": {
             "type": "anndata",
             "required": True,
             "encoding_version": "0.1.0",
             "attributes": {
-                "obs": {"type": "dataframe"},
-                "var": {"type": "dataframe"},
-                "obsm": {"type": "dict"},
-                "varm": {"type": "dict"},
-                "layers": {"type": "dict"},
-                "uns": {"type": "dict"},
+                "obs": {"type": "dataframe", "required": True},
+                "var": {"type": "dataframe", "required": True},
+                "obsm": {"check_with": "annotation_mapping"},
+                "obsp": {"check_with": "annotation_mapping"},
+                "varm": {"check_with": "annotation_mapping"},
+                "varp": {"check_with": "annotation_mapping"},
+                "uns": {"type": "dict", "required": True},
             },
         },
         "uns": {
             "type": "dict",
             "allow_unknown": True,
-            "keysrules": {
-                "type": "string",
-                "forbidden": [
-                    "schema_version",
-                    "citation",
-                    "schema_reference",
-                    "X_normalization",
-                    "default_field",
-                    "layer_descriptions",
-                    "tags",
-                    "version",
-                    "contributors",
-                    "preprint_doi",
-                    "project_description",
-                    "project_links",
-                    "project_name",
-                    "publication_doi",
-                ],
-            },
-            "valuesrules": {"anyof": [{"type": "boolean"}, {"empty": False}, {"nullable": True}]},
-            "schema": {
-                "title": {"type": "string", "required": True},
-                "batch_condition": {
-                    "type": "list",
-                    "schema": {"type": "string"},
-                    "match_obs_columns": True,
-                    "required": False,
+            "anyof": [
+                {
+                    "keysrules": {
+                        "type": "string",
+                        "forbidden": [
+                            "schema_version",
+                            "citation",
+                            "schema_reference",
+                            "X_normalization",
+                            "default_field",
+                            "layer_descriptions",
+                            "tags",
+                            "version",
+                            "contributors",
+                            "preprint_doi",
+                            "project_description",
+                            "project_links",
+                            "project_name",
+                            "publication_doi",
+                        ],
+                    },
+                    "valuesrules": {"anyof": [{"type": "boolean"}, {"empty": False}, {"nullable": True}]},
+                    "schema": {
+                        "title": {"type": "string", "required": True},
+                        "batch_condition": {
+                            "type": "list",
+                            "schema": {"type": "string"},
+                            "match_obs_columns": True,
+                        },
+                        "default_embedding": {"type": "string", "match_obsm_key": True},
+                        "X_approximate_distribution": {"type": "string", "allowed": ["count", "normal"]},
+                    },
                 },
-                "default_embedding": {"type": "string", "match_obsm_key": True, "required": False},
-                "X_approximate_distribution": {"type": "string", "allowed": ["count", "normal"], "required": False},
-            },
+                {
+                    "keysrules": {
+                        "type": "string",
+                        "regex": "^.*(_colors)|(_ontology_term_id_colors)$",
+                        "forbidden": [
+                            "assay_colors",
+                            "cell_type_colors",
+                            "development_stage_colors",
+                            "disease_colors",
+                            "organism_colors",
+                            "self_reported_ethnicity_colors",
+                            "sex_colors",
+                            "tissue_colors",
+                        ],
+                    },
+                    "valuesrules": {
+                        "type": "ndarray",
+                        "anyof": [
+                            # Verify that either all colors are hex OR all colors are CSS4 named colors strings
+                            {"schema": {"type": "string", "regex": "^#([0-9a-fA-F]{6})$"}},
+                            {"schema": {"type": "string", "allowed": list(mcolors.CSS4_COLORS)}},
+                        ],
+                        "check_with": "obs_category_mapping",
+                    },
+                },
+            ],
         },
     }
+    adata = ad.read_h5ad(h5ad_valid, backed="r")
     v = MyValidator(schema, error_handler=CustomerErrorHandler())
     if not v.validate(dict(adata=adata), normalize=False):
         print(json.dumps(v.errors, sort_keys=True, indent=4))
