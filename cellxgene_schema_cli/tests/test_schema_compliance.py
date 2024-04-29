@@ -379,7 +379,8 @@ class TestObs:
             ("EFO:0010183", "ERROR: 'EFO:0010183' in 'assay_ontology_term_id' is not an allowed term id."),
             (
                 "EFO:0010183 (sci-plex)",
-                "ERROR: 'EFO:0010183 (sci-plex)' in 'assay_ontology_term_id' is not a valid ontology term id of 'EFO'.",
+                "ERROR: 'EFO:0010183 (sci-plex)' in 'assay_ontology_term_id' is not a valid ontology term id of "
+                "'EFO'.",
             ),
         ],
     )
@@ -513,7 +514,8 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'EFO:0000001' in 'disease_ontology_term_id' is not a valid ontology term id of 'MONDO, PATO'. "
-            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms of 'MONDO:0000001' (disease) are allowed"
+            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms "
+            "of 'MONDO:0000001' (disease) are allowed"
         ]
 
         # Invalid PATO term id
@@ -522,7 +524,8 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'PATO:0001894' in 'disease_ontology_term_id' is not an allowed term id. "
-            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms of 'MONDO:0000001' (disease) are allowed"
+            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms "
+            "of 'MONDO:0000001' (disease) are allowed"
         ]
 
         # Invalid MONDO term id - disease characteristic
@@ -531,7 +534,8 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'MONDO:0021125' in 'disease_ontology_term_id' is not an allowed term id. "
-            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms of 'MONDO:0000001' (disease) are allowed"
+            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms "
+            "of 'MONDO:0000001' (disease) are allowed"
         ]
 
         # Invalid MONDO term id - disease parent term
@@ -540,7 +544,8 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'MONDO:0000001' in 'disease_ontology_term_id' is not an allowed term id. "
-            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms of 'MONDO:0000001' (disease) are allowed"
+            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms "
+            "of 'MONDO:0000001' (disease) are allowed"
         ]
 
         # Valid PATO term id - healthy
@@ -711,7 +716,8 @@ class TestObs:
 
     def test_self_reported_ethnicity_ontology_term_id__forbidden_term_descendant(self, validator_with_adata):
         """
-        Test self_reported_ethnicity_ontology_term error message when passed the descendant term of an ontology term that has
+        Test self_reported_ethnicity_ontology_term error message when passed the descendant term of an ontology term
+        that has
         both itself and its descendants forbidden
         """
         validator = validator_with_adata
@@ -727,7 +733,8 @@ class TestObs:
         assert validator.errors == [
             self.get_format_error_message(
                 error_message_suffix,
-                "ERROR: 'HANCESTRO:0306' in 'self_reported_ethnicity_ontology_term_id' is not allowed. Descendant terms "
+                "ERROR: 'HANCESTRO:0306' in 'self_reported_ethnicity_ontology_term_id' is not allowed. Descendant "
+                "terms "
                 "of 'HANCESTRO:0304' are not allowed.",
             )
         ]
@@ -992,7 +999,8 @@ class TestObs:
             "(excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
             "and 'CL:0000548' (animal cell)) or 'unknown'."
         ] or validator.errors == [
-            f"ERROR: '{term}' in 'tissue_ontology_term_id' is a deprecated term id of 'CL'. When 'tissue_type' is "
+            f"ERROR: '{term}' in 'tissue_ontology_term_id' is a deprecated term id of 'CL'. When 'tissue_type' "
+            f"is "
             f"'cell culture', 'tissue_ontology_term_id' MUST be either a CL term "
             "(excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
             "and 'CL:0000548' (animal cell)) or 'unknown'."
@@ -1807,7 +1815,8 @@ class TestUns:
         validator.adata.uns["is_primary_data_colors"] = numpy.array(["green", "purple"])
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Colors field uns[is_primary_data_colors] does not have a corresponding categorical field in obs. is_primary_data is present but is dtype bool"
+            "ERROR: Colors field uns[is_primary_data_colors] does not have a corresponding categorical field in obs. "
+            "is_primary_data is present but is dtype bool"
         ]
 
     def test_colors_portal_obs_counterpart(self, validator_with_adata):
@@ -1815,7 +1824,8 @@ class TestUns:
         validator.adata.uns["cell_type_colors"] = numpy.array(["green", "purple"])
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Colors field uns[cell_type_colors] does not have a corresponding categorical field in obs. Annotate cell_type_ontology_term_id_colors instead"
+            "ERROR: Colors field uns[cell_type_colors] does not have a corresponding categorical field in obs. "
+            "Annotate cell_type_ontology_term_id_colors instead"
         ]
 
     def test_colors_without_obs_counterpart(self, validator_with_adata):
@@ -1832,7 +1842,8 @@ class TestUns:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: uns['suspension_type_colors'] cannot be an empty value.",
-            "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns[suspension_type_colors]. Found: []",
+            "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns["
+            "suspension_type_colors]. Found: []",
         ]
 
     def test_not_enough_color_options(self, validator_with_adata):
@@ -1840,7 +1851,8 @@ class TestUns:
         validator.adata.uns["suspension_type_colors"] = numpy.array(["green"])
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns[suspension_type_colors]. Found: ['green']"
+            "ERROR: Annotated categorical field suspension_type must have at least 2 color options in uns["
+            "suspension_type_colors]. Found: ['green']"
         ]
 
     def test_different_color_types(self, validator_with_adata):
@@ -1848,7 +1860,8 @@ class TestUns:
         validator.adata.uns["suspension_type_colors"] = numpy.array(["#000000", "pink"])
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['#000000' 'pink']"
+            "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. "
+            "Found: ['#000000' 'pink']"
         ]
 
     def test_invalid_hex_color_option(sel, validator_with_adata):
@@ -1856,7 +1869,8 @@ class TestUns:
         validator.adata.uns["suspension_type_colors"] = numpy.array(["#000", "#ffffff"])
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['#000' '#ffffff']"
+            "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. "
+            "Found: ['#000' '#ffffff']"
         ]
 
     def test_invalid_named_color_option(self, validator_with_adata):
@@ -1864,7 +1878,8 @@ class TestUns:
         validator.adata.uns["suspension_type_colors"] = numpy.array(["green", "pynk"])
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['green' 'pynk']"
+            "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. "
+            "Found: ['green' 'pynk']"
         ]
 
     def test_invalid_named_color_option_empty_strings(self, validator_with_adata):
@@ -1872,7 +1887,8 @@ class TestUns:
         validator.adata.uns["suspension_type_colors"] = numpy.array(["", "green"])
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['' 'green']"
+            "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. "
+            "Found: ['' 'green']"
         ]
 
     def test_invalid_named_color_option_integer(self, validator_with_adata):
@@ -1972,8 +1988,10 @@ class TestObsm:
         assert validator.is_spatial is False
         assert validator.warnings == [
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
-            "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_ and thus will not be available in Explorer",
-            "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
+            "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_ and thus will not be available in "
+            "Explorer",
+            "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current "
+            "errors.",
         ]
 
     @pytest.mark.parametrize(
@@ -2003,6 +2021,7 @@ class TestObsm:
         validator.adata.obsm["harmony"] = pd.DataFrame(validator.adata.obsm["X_umap"], index=validator.adata.obs_names)
         validator.validate_adata()
         assert validator.warnings == [
+            "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_ and thus will not be available in Explorer",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
         ]
@@ -2021,8 +2040,10 @@ class TestObsm:
         validator.adata.obsm["X_3D"] = pd.DataFrame(validator.adata.obsm["X_umap"], index=validator.adata.obs_names)
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Suffix for embedding key in 'adata.obsm' X_3D does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$.",
-            "ERROR: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['X_3D']' is <class 'pandas.core.frame.DataFrame'>').",
+            "ERROR: Suffix for embedding key in 'adata.obsm' X_3D does not match the regex pattern ^[a-zA-Z]["
+            "a-zA-Z0-9_.-]*$.",
+            "ERROR: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['X_3D']' is <class "
+            "'pandas.core.frame.DataFrame'>').",
         ]
 
     def test_obsm_values_key_start_with_number(self, validator_with_adata):
@@ -2031,9 +2052,11 @@ class TestObsm:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Embedding key in 'adata.obsm' 3D does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$.",
-            "ERROR: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['3D']' is <class 'pandas.core.frame.DataFrame'>').",
+            "ERROR: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['3D']' is <class "
+            "'pandas.core.frame.DataFrame'>').",
         ]
         assert validator.warnings == [
+            "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered " "from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' 3D does not start with X_ and thus will not be available in Explorer",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
         ]
@@ -2046,7 +2069,8 @@ class TestObsm:
         validator.adata.obsm["X_"] = validator.adata.obsm["X_umap"]
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Suffix for embedding key in 'adata.obsm' X_ does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$."
+            "ERROR: Suffix for embedding key in 'adata.obsm' X_ does not match the regex pattern ^[a-zA-Z]["
+            "a-zA-Z0-9_.-]*$."
         ]
 
     def test_obsm_key_name_whitespace(self, validator_with_adata):
@@ -2058,7 +2082,8 @@ class TestObsm:
         obsm["X_ umap"] = obsm["X_umap"]
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Suffix for embedding key in 'adata.obsm' X_ umap does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$.",
+            "ERROR: Suffix for embedding key in 'adata.obsm' X_ umap does not match the regex pattern ^[a-zA-Z]["
+            "a-zA-Z0-9_.-]*$.",
         ]
 
         del obsm["X_ umap"]
