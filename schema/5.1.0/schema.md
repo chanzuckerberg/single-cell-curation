@@ -1189,8 +1189,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
 ## `obsm` (Embeddings)
 
 
-The size of the ndarray stored for a key in `obsm` MUST NOT be zero.
-
+The value for each `str` key MUST be a  `numpy.ndarray` of shape `(n_obs, m)`, where `n_obs` is the number of rows in `X` and `m >= 1`. 
 
 To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more** embeddings of at least two-dimensions (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`.<br><br>
 
@@ -1866,6 +1865,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
   * Updated the requirements for `is_primary_data` for _Visium Spatial Gene Expression_. The value must be <code>False</code>when <code>uns['spatial']['is_single']</code> is <code>False</code>.
   * Updated the requirements for `self_reported_ethnicity_ontology_term_id`. There must be no duplication of terms.
 * obsm (Embeddings)
+  * Restored v3.1.0 requirement allowing only `numpy.ndarray` values with specific shapes due to Seurat conversion failures
   * Added `spatial` for _Visium Spatial Gene Expression_ and _Slide-seqV2_
   * Updated requirements for `X_{suffix}`. {suffix} MUST NOT be `"spatial"`.
 * uns (Dataset metadata)
