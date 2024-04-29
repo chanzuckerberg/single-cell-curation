@@ -1389,7 +1389,7 @@ class Validator:
         if obs_tissue_position is None:
             self.errors.append(
                 f"obs['{tissue_position_name}'] is required for obs['assay_ontology_term_id'] "
-                "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] True."
+                "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
             )
             return
 
