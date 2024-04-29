@@ -150,15 +150,15 @@ class MyValidator(cerberus.Validator):
         if value != self.root_document["adata"].X.shape[0]:
             self._error(field, "must be equal to the number of rows in 'adata.X'.")
 
-    def _check_with_ndarray_no_ninf(self, field, value):
+    def _check_with_ndarray_not_any_ninf(self, field, value):
         if np.any(np.isneginf(value)):
             self._error(field, "Array contains negative infinity values.")
 
-    def _check_with_ndarray_no_inf(self, field, value):
+    def _check_with_ndarray_not_any_inf(self, field, value):
         if np.any(np.isinf(value)):
             self._error(field, "Array contains infinity values.")
 
-    def _check_with_ndarray_no_nan(self, field, value):
+    def _check_with_ndarray_not_all_nan(self, field, value):
         if np.any(np.isnan(value)):
             self._error(field, "Array contains NaN values.")
 
@@ -207,7 +207,7 @@ def validate_anndata():
                 "size": {"type": "integer", "min": 1},
             },
             "ndarray_dtype_kind": ["f", "i", "u"],
-            "check_with": ["ndarray_no_ninf", "ndarray_no_inf", "ndarray_no_nan"],
+            "check_with": ["ndarray_not_any_ninf", "ndarray_not_any_inf", "ndarray_not_all_nan"],
         },
         "check_with": "annotation_mapping",
     }
