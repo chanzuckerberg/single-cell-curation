@@ -74,6 +74,7 @@ def validator_with_slide_seq_v2_assay(validator) -> Validator:
     validator.adata = examples.adata_slide_seqv2.copy()
     return validator
 
+
 @pytest.fixture
 def label_writer(validator_with_validated_adata) -> AnnDataLabelAppender:
     """
@@ -2040,8 +2041,10 @@ class TestObsm:
         validator = validator_with_adata
         validator.adata.obsm["spatial"] = validator.adata.obsm["X_umap"]
         validator.validate_adata()
-        assert validator.errors == ["ERROR: 'spatial' embedding is forbidden in 'adata.obsm' if "
-                                    "adata.uns['spatial']['is_single'] is not set."]
+        assert validator.errors == [
+            "ERROR: 'spatial' embedding is forbidden in 'adata.obsm' if "
+            "adata.uns['spatial']['is_single'] is not set."
+        ]
 
     def test_obsm_values_warn_start_with_X(self, validator_with_adata):
         validator = validator_with_adata
