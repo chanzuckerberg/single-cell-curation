@@ -25,6 +25,10 @@ ONTOLOGY_PARSER = OntologyParser(schema_version=f"v{schema.get_current_schema_ve
 ASSAY_VISIUM = "EFO:0010961"
 ASSAY_SLIDE_SEQV2 = "EFO:0030062"
 
+ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = "obs['assay_ontology_term_id'] 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
+ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN = f"is only allowed for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
+ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED = f"is required for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
+
 
 class Validator:
     """Handles validation of AnnData"""
@@ -46,6 +50,8 @@ class Validator:
         self._raw_layer_exists = None
         self.is_seurat_convertible: bool = True
         self.is_spatial = None
+        self.is_visium = None
+        self.is_visium_and_is_single_true = None
 
         # Matrix (e.g., X, raw.X, ...) number non-zero cache
         self.number_non_zero = dict()
@@ -75,6 +81,20 @@ class Validator:
                 # specific error reporting will occur downstream in the validation
                 self.is_spatial = False
         return self.is_spatial
+
+    def _is_visium_and_is_single_true(self) -> bool:
+        """
+        Determine if the assay_ontology_term_id is Visium (EFO:0010961) and uns.spatial.is_single is True.
+
+        :return True if assay_ontology_term_id is Visium and is_single_cell is True, False otherwise.
+        :rtype bool
+        """
+        if self.is_visium_and_is_single_true is None:
+            try:
+                self.is_visium_and_is_single_true = self._is_visium() and self.adata.uns["spatial"]["is_single"]
+            except AttributeError:
+                self.is_visium_and_is_single_true = False
+        return self.is_visium_and_is_single_true
 
     def _validate_encoding_version(self):
         import h5py
@@ -1358,14 +1378,11 @@ class Validator:
             return
 
         # Validate tissue positions.
-        is_visium_and_uns_is_single = self._is_visium() and uns_component["spatial"]["is_single"]
-        self._validate_spatial_tissue_position("array_col", 0, 127, is_visium_and_uns_is_single)
-        self._validate_spatial_tissue_position("array_row", 0, 77, is_visium_and_uns_is_single)
-        self._validate_spatial_tissue_position("in_tissue", 0, 1, is_visium_and_uns_is_single)
+        self._validate_spatial_tissue_position("array_col", 0, 127)
+        self._validate_spatial_tissue_position("array_row", 0, 77)
+        self._validate_spatial_tissue_position("in_tissue", 0, 1)
 
-    def _validate_spatial_tissue_position(
-        self, tissue_position_name: str, min: int, max: int, is_visium_and_uns_is_single: bool
-    ):
+    def _validate_spatial_tissue_position(self, tissue_position_name: str, min: int, max: int):
         """
         Validate tissue position is allowed and required, and are integers within the given range. Validation is not defined in
         schema definition yaml.
@@ -1373,12 +1390,10 @@ class Validator:
         :rtype none
         """
         # Tissue position is foribidden if assay is not Visium or is_single is False.
+        is_visium_and_uns_is_single = self._is_visium_and_is_single_true()
         obs_tissue_position = self.adata.obs.get(tissue_position_name)
         if obs_tissue_position is not None and not is_visium_and_uns_is_single:
-            self.errors.append(
-                f"obs['{tissue_position_name}'] is only allowed for obs['assay_ontology_term_id'] "
-                "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
-            )
+            self.errors.append(f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}")
             return
 
         # Exit if we're not dealing with Visium and _is_single True as no further checks are necessary.
@@ -1387,10 +1402,7 @@ class Validator:
 
         # Tissue position is required.
         if obs_tissue_position is None:
-            self.errors.append(
-                f"obs['{tissue_position_name}'] is required for obs['assay_ontology_term_id'] "
-                "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
-            )
+            self.errors.append(f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED}")
             return
 
         # Tissue position must be an int.
@@ -1475,13 +1487,9 @@ class Validator:
             return
 
         # library_id is forbidden if assay is not Visium or is_single is false.
-        is_visium = self._is_visium()
-        is_visium_and_uns_is_single = is_visium and uns_is_single
+        is_visium_and_uns_is_single = self._is_visium_and_is_single_true()
         if len(library_ids) > 0 and not is_visium_and_uns_is_single:
-            self.errors.append(
-                "uns['spatial'][library_id] is only allowed for obs['assay_ontology_term_id'] "
-                "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
-            )
+            self.errors.append(f"uns['spatial'][library_id] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}")
             # Exit as library_id is not allowed.
             return
 
@@ -1492,8 +1500,7 @@ class Validator:
         # library_id is required if assay is Visium and is_single is True.
         if len(library_ids) == 0:
             self.errors.append(
-                "uns['spatial'] must contain at least one key representing the library_id when obs['assay_ontology_term_id'] "
-                "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
+                f"uns['spatial'] must contain at least one key representing the library_id when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
             )
             # Exit as library_id is missing.
             return
@@ -1611,8 +1618,10 @@ class Validator:
         :return True if assay_ontology_term_id is Visium, False otherwise.
         :rtype bool
         """
-        assay_ontology_term_id = self.adata.obs.get("assay_ontology_term_id")
-        return assay_ontology_term_id is not None and (assay_ontology_term_id == ASSAY_VISIUM).any()
+        if self.is_visium is None:
+            assay_ontology_term_id = self.adata.obs.get("assay_ontology_term_id")
+            self.is_visium = assay_ontology_term_id is not None and (assay_ontology_term_id == ASSAY_VISIUM).any()
+        return self.is_visium
 
     def _validate_spatial_image_shape(self, image_name: str, image: np.ndarray, max_dimension: int = None):
         """
