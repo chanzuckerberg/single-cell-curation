@@ -140,7 +140,7 @@ good_obs_visium = pd.DataFrame(
             "HANCESTRO:0575",
             "HsapDv:0000003",
             "donor_1",
-            "nucleus",
+            "na",
         ],
         [
             "CL:0000192",
@@ -193,7 +193,7 @@ good_obs_slide_seqv2 = pd.DataFrame(
             "HANCESTRO:0575",
             "HsapDv:0000003",
             "donor_1",
-            "nucleus",
+            "na",
         ],
         [
             "CL:0000192",
@@ -336,7 +336,7 @@ non_raw_X[0, 0] = 1.5
 # ---
 # 5.Creating valid obsm
 good_obsm = {"X_umap": numpy.zeros([X.shape[0], 2])}
-
+good_obsm_spatial = {"X_umap": numpy.zeros([X.shape[0], 2]), "spatial": numpy.zeros([X.shape[0], 2])}
 
 # ---
 # 6. Putting all the components created in the previous steps into minimal anndata that used for testing in
@@ -387,7 +387,7 @@ adata_with_colors = anndata.AnnData(
 
 # Expected anndata with Visium spatial data
 adata_visium = anndata.AnnData(
-    X=sparse.csr_matrix(X), obs=good_obs_visium, uns=good_uns_with_visium_spatial, obsm=good_obsm, var=good_var
+    X=sparse.csr_matrix(X), obs=good_obs_visium, uns=good_uns_with_visium_spatial, obsm=good_obsm_spatial, var=good_var
 )
 
 # Expected anndata with Slide-seqV2 spatial data
@@ -395,7 +395,7 @@ adata_slide_seqv2 = anndata.AnnData(
     X=sparse.csr_matrix(X),
     obs=good_obs_slide_seqv2,
     uns=good_uns_with_slide_seqV2_spatial,
-    obsm=good_obsm,
+    obsm=good_obsm_spatial,
     var=good_var,
 )
 
