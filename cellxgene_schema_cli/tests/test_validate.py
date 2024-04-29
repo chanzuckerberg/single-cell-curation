@@ -12,18 +12,20 @@ from cellxgene_ontology_guide.entities import Ontology
 from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.validate import Validator, validate
 from cellxgene_schema.write_labels import AnnDataLabelAppender
-from fixtures.examples_validate import (
-    adata as adata_valid,
-)
+from fixtures.examples_validate import adata as adata_valid
 from fixtures.examples_validate import (
     adata_minimal,
+    adata_slide_seqv2,
+    adata_visium,
     adata_with_labels,
     good_obs,
     good_obsm,
     good_uns,
+    good_uns_with_visium_spatial,
     good_var,
     h5ad_invalid,
     h5ad_valid,
+    visium_library_id,
 )
 from numpy import ndarray
 from scipy import sparse
@@ -304,6 +306,387 @@ class TestValidate:
         assert errors
         assert is_seurat_convertible
 
+    def test__validate_spatial_visium_ok(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+
+        # Confirm spatial is valid.
+        validator._check_spatial()
+        assert not validator.errors
+
+    def test__validate_spatial_slide_seqV2_ok(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_slide_seqv2.copy()
+
+        # Confirm spatial is valid.
+        validator._check_spatial()
+        assert not validator.errors
+
+    def test__validate_spatial_forbidden_if_10x(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+
+        # Create Visium uns (with spatial) with 10x 3' v2 obs.
+        validator.adata = adata_visium.copy()
+        validator.adata.obs = good_obs.copy()
+
+        # Confirm spatial is not allowed for 10x 3' v2.
+        validator._check_spatial()
+        assert len(validator.errors) == 1
+        assert (
+            "uns['spatial'] is only allowed for obs['assay_ontology_term_id'] values "
+            "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)." in validator.errors[0]
+        )
+
+    def test__validate_spatial_required_if_visium(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns = good_uns.copy()
+
+        # Confirm spatial is required for Visium.
+        validator._check_spatial()
+        assert len(validator.errors) == 1
+        assert (
+            "uns['spatial'] is required for obs['assay_ontology_term_id'] values "
+            "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)." in validator.errors[0]
+        )
+
+    def test__validate_spatial_required_if_slide_seqV2(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_slide_seqv2.copy()
+        validator.adata.uns = good_uns.copy()
+
+        # Confirm spatial is required for Slide-seqV2.
+        validator._check_spatial()
+        assert len(validator.errors) == 1
+        assert (
+            "uns['spatial'] is required for obs['assay_ontology_term_id'] values "
+            "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)." in validator.errors[0]
+        )
+
+    def test__validate_spatial_allowed_keys_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"]["invalid_key"] = True
+
+        # Confirm additional key is identified as invalid.
+        validator._check_spatial()
+        assert validator.errors
+        assert (
+            "uns['spatial'] must contain only two top-level keys: 'is_single' and a library_id. "
+            "More than two top-level keys detected:" in validator.errors[0]
+        )
+
+    def test__validate_is_single_required_visium_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"].pop("is_single")
+
+        # Confirm is_single is identified as required.
+        validator._check_spatial()
+        assert validator.errors
+        assert "uns['spatial'] must contain the key 'is_single'." in validator.errors[0]
+
+    def test__validate_is_single_required_slide_seqV2_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+
+        # Remove is_single key to trigger error, but add dummy library_id to pass earlier truthy check
+        # on spatial existing.
+        validator.adata = adata_slide_seqv2.copy()
+        validator.adata.uns["spatial"] = {
+            "library_id": "test_library_id",
+        }
+
+        # Confirm is_single is identified as required.
+        validator._check_spatial()
+        assert validator.errors
+        assert "uns['spatial'] must contain the key 'is_single'." in validator.errors[0]
+
+    def test__validate_is_single_boolean_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"]["is_single"] = "invalid"
+
+        # Confirm is_single is identified as invalid.
+        validator._check_spatial()
+        assert validator.errors
+        assert "uns['spatial']['is_single'] must be of boolean type" in validator.errors[0]
+
+    def test__validate_library_id_forbidden_if_slide_seqV2(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+
+        # Add library_id to Slide-seqV2 uns to trigger error.
+        validator.adata = adata_slide_seqv2.copy()
+        validator.adata.uns = good_uns_with_visium_spatial
+
+        # Confirm library_id is not allowed for Slide-seqV2.
+        validator._check_spatial()
+        assert len(validator.errors) == 1
+        assert (
+            "uns['spatial'][library_id] is only allowed for obs['assay_ontology_term_id'] "
+            "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
+            in validator.errors[0]
+        )
+
+    def test__validate_library_id_forbidden_if_visium_and_is_single_false(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+
+        # Set is_single to False to trigger error.
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"]["is_single"] = np.bool_(False)
+
+        # Confirm library_id is not allowed for Visium if is_single is False.
+        validator._check_spatial()
+        assert len(validator.errors) == 1
+        assert (
+            "uns['spatial'][library_id] is only allowed for obs['assay_ontology_term_id'] "
+            "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
+            in validator.errors[0]
+        )
+
+    def test__validate_library_id_required_if_visium(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"].pop(visium_library_id)
+
+        # Confirm library_id is identified as required.
+        validator._check_spatial()
+        assert validator.errors
+        assert (
+            "uns['spatial'] must contain at least one key representing the library_id when obs['assay_ontology_term_id'] "
+            "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
+            in validator.errors[0]
+        )
+
+    def test__validate_library_id_allowed_keys_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id]["invalid_key"] = True
+
+        # Confirm additional key is identified as invalid.
+        validator._check_spatial()
+        assert validator.errors
+        assert (
+            "uns['spatial'][library_id] can only contain the keys 'images' and 'scalefactors'." in validator.errors[0]
+        )
+
+    def test__validate_images_required_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id].pop("images")
+
+        # Confirm images is required.
+        validator._check_spatial()
+        assert validator.errors
+        assert "uns['spatial'][library_id] must contain the key 'images'." in validator.errors[0]
+
+    def test__validate_images_allowed_keys_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id]["images"]["invalid_key"] = True
+
+        # Confirm additional key is identified as invalid.
+        validator._check_spatial()
+        assert validator.errors
+        assert (
+            "uns['spatial'][library_id]['images'] can only contain the keys 'fullres' and 'hires'."
+            in validator.errors[0]
+        )
+
+    def test__validate_images_hires_required_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id]["images"].pop("hires")
+
+        # Confirm hires is required.
+        validator._check_spatial()
+        assert validator.errors
+        assert "uns['spatial'][library_id]['images'] must contain the key 'hires'." in validator.errors[0]
+
+    def test__validate_images_fullres_optional(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id]["images"].pop("fullres")
+
+        # Confirm fullres is optional.
+        validator._check_spatial()
+        assert not validator.errors
+        assert validator.warnings
+        assert (
+            "No uns['spatial'][library_id]['images']['fullres'] was found. "
+            "It is STRONGLY RECOMMENDED that uns['spatial'][library_id]['images']['fullres'] is provided."
+            in validator.warnings[0]
+        )
+
+    def test__validate_images_hires_is_ndarray_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = "invalid"
+
+        # Confirm hires is identified as invalid.
+        validator._check_spatial()
+        assert validator.errors
+        assert "uns['spatial'][library_id]['images']['hires'] must be of numpy.ndarray type" in validator.errors[0]
+
+    def test__valide_images_hires_is_shape_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros((1, 1))
+
+        # Confirm hires is identified as invalid.
+        validator._check_spatial()
+        assert validator.errors
+        assert "uns['spatial'][library_id]['images']['hires'] must have shape (,,3)" in validator.errors[0]
+
+    def test__validate_images_hires_max_dimension_greater_than_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros((1, 2001, 3))
+
+        # Confirm hires is identified as invalid.
+        validator._check_spatial()
+        assert validator.errors
+        assert (
+            "The largest dimension of uns['spatial'][library_id]['images']['hires'] must be 2000 pixels"
+            in validator.errors[0]
+        )
+
+    def test__validate_images_hires_max_dimension_less_than_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros((1, 1999, 3))
+
+        # Confirm hires is identified as invalid.
+        validator._check_spatial()
+        assert validator.errors
+        assert (
+            "The largest dimension of uns['spatial'][library_id]['images']['hires'] must be 2000 pixels"
+            in validator.errors[0]
+        )
+
+    def test__validate_images_fullres_is_ndarray_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id]["images"]["fullres"] = "invalid"
+
+        # Confirm fullres is identified as invalid.
+        validator._check_spatial()
+        assert validator.errors
+        assert "uns['spatial'][library_id]['images']['fullres'] must be of numpy.ndarray type" in validator.errors[0]
+
+    def test__validate_images_fullres_is_shape_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id]["images"]["fullres"] = np.zeros((1, 1))
+
+        # Confirm fullres is identified as invalid.
+        validator._check_spatial()
+        assert validator.errors
+        assert "uns['spatial'][library_id]['images']['fullres'] must have shape (,,3)" in validator.errors[0]
+
+    def test__validate_scalefactors_required_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id].pop("scalefactors")
+
+        # Confirm scalefactors is required.
+        validator._check_spatial()
+        assert validator.errors
+        assert "uns['spatial'][library_id] must contain the key 'scalefactors'." in validator.errors[0]
+
+    def test__validate_scalefactors_allowed_keys_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id]["scalefactors"]["invalid_key"] = True
+
+        # Confirm additional key is identified as invalid.
+        validator._check_spatial()
+        assert validator.errors
+        assert (
+            "uns['spatial'][library_id]['scalefactors'] can only contain the keys "
+            "'spot_diameter_fullres' and 'tissue_hires_scalef'." in validator.errors[0]
+        )
+
+    def test__validate_scalefactors_spot_diameter_fullres_required_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id]["scalefactors"].pop("spot_diameter_fullres")
+
+        # Confirm spot_diameter_fullres is required.
+        validator._check_spatial()
+        assert validator.errors
+        assert (
+            "uns['spatial'][library_id]['scalefactors'] must contain the key 'spot_diameter_fullres'."
+            in validator.errors[0]
+        )
+
+    def test__validate_scalefactors_tissue_hires_scalef_required_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id]["scalefactors"].pop("tissue_hires_scalef")
+
+        # Confirm tissue_hires_scalef is required.
+        validator._check_spatial()
+        assert validator.errors
+        assert (
+            "uns['spatial'][library_id]['scalefactors'] must contain the key 'tissue_hires_scalef'."
+            in validator.errors[0]
+        )
+
+    def test__validate_scalefactors_spot_diameter_fullres_is_float_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id]["scalefactors"]["spot_diameter_fullres"] = "invalid"
+
+        # Confirm spot_diameter_fullres is identified as invalid.
+        validator._check_spatial()
+        assert validator.errors
+        assert (
+            "uns['spatial'][library_id]['scalefactors']['spot_diameter_fullres'] must be of type float"
+            in validator.errors[0]
+        )
+
+    def test__validate_scalefactors_tissue_hires_scalef_is_float_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id]["scalefactors"]["tissue_hires_scalef"] = "invalid"
+
+        # Confirm tissue_hires_scalef is identified as invalid.
+        validator._check_spatial()
+        assert validator.errors
+        assert (
+            "uns['spatial'][library_id]['scalefactors']['tissue_hires_scalef'] must be of type float"
+            in validator.errors[0]
+        )
+
 
 class TestSeuratConvertibility:
     def validation_helper(self, matrix, raw=None):
@@ -356,6 +739,13 @@ class TestSeuratConvertibility:
         assert len(self.validator.errors) == 1
         assert not self.validator.is_seurat_convertible
         assert not self.validator.is_valid
+
+        # Visium datasets are not Seurat-convertible
+        self.validation_helper(sparse_matrix_with_zero)
+        self.validator.adata.obs = adata_visium.obs.copy()
+        self.validator._validate_seurat_convertibility()
+        assert len(self.validator.warnings) == 1
+        assert not self.validator.is_seurat_convertible
 
 
 class TestValidatorValidateDataFrame:

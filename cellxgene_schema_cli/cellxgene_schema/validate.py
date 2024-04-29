@@ -900,6 +900,14 @@ class Validator:
         too large.
         rtype: None
         """
+        # Seurat conversion is not supported for Visium datasets.
+        if self._is_visium():
+            self.warnings.append(
+                "Datasets with assay_ontology_term_id 'EFO:0010961' (Visium Spatial Gene Expression) are not compatible with Seurat."
+            )
+            self.is_seurat_convertible = False
+            return
+
         to_validate = [(self.adata.X, "X")]
         # check if there's raw data
         if self.adata.raw:
@@ -1305,6 +1313,245 @@ class Validator:
                 if "add_labels" in index_def:
                     self._check_single_column_availability(component, index_def["add_labels"])
 
+    def _check_spatial(self):
+        """
+        Validate spatial-related values of the AnnData object. Validation is not defined in schema definition yaml.
+        Errors are added to self.errors.
+
+        :rtype none
+        """
+
+        # Exit if uns is not specified. Error is reported in core validate functionality.
+        uns_component = getattr_anndata(self.adata, "uns")
+        if uns_component is None:
+            return
+
+        # uns spatial validation is dependent on obs.assay_ontology_term_id; exit if not specified. Error is
+        # reported in core validate functionality.
+        obs_component = getattr_anndata(self.adata, "obs")
+        if obs_component is None or "assay_ontology_term_id" not in obs_component:
+            return
+
+        # spatial is forbidden if assay it not a supported spatial assay.
+        uns_spatial = self.adata.uns.get("spatial")
+        is_supported_spatial_assay = self._is_supported_spatial_assay()
+        if uns_spatial is not None and not is_supported_spatial_assay:
+            self.errors.append(
+                "uns['spatial'] is only allowed for obs['assay_ontology_term_id'] values "
+                "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)."
+            )
+            return
+
+        # Exit if we aren't dealing with a supported spatial assay as no further checks are necessary.
+        if not is_supported_spatial_assay:
+            return
+
+        # spatial is required for supported spatial assays.
+        if uns_spatial is None:
+            self.errors.append(
+                "uns['spatial'] is required for obs['assay_ontology_term_id'] values "
+                "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)."
+            )
+            return
+
+        # is_single is required.
+        if "is_single" not in uns_spatial:
+            self.errors.append("uns['spatial'] must contain the key 'is_single'.")
+            # Exit if is_single is missing as all further checks are dependent on its value.
+            return
+
+        # is_single must be a boolean.
+        uns_is_single = uns_spatial["is_single"]
+        if not isinstance(uns_is_single, (np.bool_, np.bool)):
+            self.errors.append(f"uns['spatial']['is_single'] must be of boolean type, it is {type(uns_is_single)}.")
+            # Exit if is_single is not valid as all further checks are dependent on its value.
+            return
+
+        # Check there is at most one library_id.
+        uns_spatial_keys = list(uns_spatial.keys())
+        library_ids = list(filter(lambda x: x != "is_single", uns_spatial_keys))
+        if len(library_ids) > 1:
+            self.errors.append(
+                "uns['spatial'] must contain only two top-level keys: 'is_single' and a library_id. "
+                f"More than two top-level keys detected: {library_ids}."
+            )
+            # Exit if there is more than one library_id as we don't know which library_id to validate.
+            return
+
+        # library_id is forbidden if assay is not Visium or is_single is false.
+        is_visium = self._is_visium()
+        is_visium_and_uns_is_single = is_visium and uns_is_single
+        if len(library_ids) > 0 and not is_visium_and_uns_is_single:
+            self.errors.append(
+                "uns['spatial'][library_id] is only allowed for obs['assay_ontology_term_id'] "
+                "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
+            )
+            # Exit as library_id is not allowed.
+            return
+
+        # Exit if we're not dealing with Visium and _is_single True as no further checks are necessary.
+        if not is_visium_and_uns_is_single:
+            return
+
+        # library_id is required if assay is Visium and is_single is True.
+        if len(library_ids) == 0:
+            self.errors.append(
+                "uns['spatial'] must contain at least one key representing the library_id when obs['assay_ontology_term_id'] "
+                "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
+            )
+            # Exit as library_id is missing.
+            return
+
+        # Confirm shape of library_id is valid: allowed keys are images and scalefactors.
+        library_id_key = library_ids[0]
+        uns_library_id = uns_spatial[library_id_key]
+        if not self._has_no_extra_keys(uns_library_id, ["images", "scalefactors"]):
+            self.errors.append(
+                "uns['spatial'][library_id] can only contain the keys 'images' and 'scalefactors'."
+                f"Detected keys: {list(uns_library_id.keys())}."
+            )
+
+        # images is required.
+        if "images" not in uns_library_id:
+            self.errors.append("uns['spatial'][library_id] must contain the key 'images'.")
+        # images is specified: proceed with validation of images.
+        else:
+            # Confirm shape of images is valid: allowed keys are fullres and hires.
+            uns_images = uns_library_id["images"]
+            if not self._has_no_extra_keys(uns_images, ["fullres", "hires"]):
+                self.errors.append(
+                    "uns['spatial'][library_id]['images'] can only contain the keys 'fullres' and 'hires'."
+                    f"Detected keys: {list(uns_images.keys())}."
+                )
+
+            # hires is required.
+            if "hires" not in uns_images:
+                self.errors.append("uns['spatial'][library_id]['images'] must contain the key 'hires'.")
+            # hires is specified: proceed with validation of hires.
+            else:
+                self._validate_spatial_image_shape("hires", uns_images["hires"], 2000)
+
+            # fullres is optional.
+            uns_fullres = uns_images.get("fullres")
+            if uns_fullres is None:
+                # Warn if no fullres is specified as it is strongly recommended.
+                self.warnings.append(
+                    "No uns['spatial'][library_id]['images']['fullres'] was found. "
+                    "It is STRONGLY RECOMMENDED that uns['spatial'][library_id]['images']['fullres'] is provided."
+                )
+            else:
+                self._validate_spatial_image_shape("fullres", uns_fullres)
+
+        # scalefactors is required.
+        if "scalefactors" not in uns_library_id:
+            self.errors.append("uns['spatial'][library_id] must contain the key 'scalefactors'.")
+        # scalefactors is specified: proceed with validation of scalefactors.
+        else:
+            # Confirm shape of scalefactors is valid: allowed keys are spot_diameter_fullres and tissue_hires_scalef.
+            uns_scalefactors = uns_library_id["scalefactors"]
+            if not self._has_no_extra_keys(uns_scalefactors, ["spot_diameter_fullres", "tissue_hires_scalef"]):
+                self.errors.append(
+                    "uns['spatial'][library_id]['scalefactors'] can only contain the keys "
+                    "'spot_diameter_fullres' and 'tissue_hires_scalef'."
+                    f"Detected keys: {list(uns_scalefactors.keys())}."
+                )
+
+            # spot_diameter_fullres is required.
+            if "spot_diameter_fullres" not in uns_scalefactors:
+                self.errors.append(
+                    "uns['spatial'][library_id]['scalefactors'] must contain the key 'spot_diameter_fullres'."
+                )
+            # spot_diameter_fullres is specified: proceed with validation.
+            else:
+                spot_diameter_fullres = uns_scalefactors["spot_diameter_fullres"]
+                if not isinstance(spot_diameter_fullres, float):
+                    self.errors.append(
+                        "uns['spatial'][library_id]['scalefactors']['spot_diameter_fullres'] must be of type float, it is "
+                        f"{type(spot_diameter_fullres)}. This must be the value of the spot_diameter_fullres field from scalefactors_json.json"
+                    )
+
+            # tissue_hires_scalef is required.
+            if "tissue_hires_scalef" not in uns_scalefactors:
+                self.errors.append(
+                    "uns['spatial'][library_id]['scalefactors'] must contain the key 'tissue_hires_scalef'."
+                )
+            # tissue_hires_scalef is specified: proceed with validation.
+            else:
+                tissue_hires_scalef = uns_scalefactors["tissue_hires_scalef"]
+                if not isinstance(tissue_hires_scalef, float):
+                    self.errors.append(
+                        "uns['spatial'][library_id]['scalefactors']['tissue_hires_scalef'] must be of type float, it is "
+                        f"{type(tissue_hires_scalef)}. This must be the value of the tissue_hires_scalef field from scalefactors_json.json"
+                    )
+
+    def _has_no_extra_keys(self, dictionary: dict, allowed_keys: List[str]) -> bool:
+        """
+        Determine if the dictionary has only the given allowed keys. Keys can be missing (required
+        checks are executed separately) but no additional keys are allowed.
+
+        :param dict dictionary: the dictionary to check.
+        :param List[str] allowed_keys: the list of allowed keys.
+
+        :rtype bool
+        """
+        return set(dictionary.keys()).issubset(allowed_keys)
+
+    def _is_valid_visium_image_shape(self, image: np.ndarray) -> bool:
+        """
+        Determine if the image has shape (,,3); image is expected to be a 3D numpy array
+        with the size of the last dimension being three.
+
+        :param np.ndarray image: the image to check the shape of.
+
+        :return True if image has shape (,,3), False otherwise.
+        :rtype bool
+        """
+        return len(image.shape) == 3 and image.shape[2] == 3
+
+    def _is_visium(self) -> bool:
+        """
+        Determine if the assay_ontology_term_id is Visium (EFO:0010961).
+
+        :return True if assay_ontology_term_id is Visium, False otherwise.
+        :rtype bool
+        """
+        assay_ontology_term_id = self.adata.obs.get("assay_ontology_term_id")
+        return assay_ontology_term_id is not None and (assay_ontology_term_id == ASSAY_VISIUM).any()
+
+    def _validate_spatial_image_shape(self, image_name: str, image: np.ndarray, max_dimension: int = None):
+        """
+        Validate the spatial image is of shape (,,3) and has a max dimension, if specified. A spatial image
+        is either spatial[library_id]['images']['hires'] or spatial[library_id]['images']['fullres']. Errors
+        are added to self.errors if any.
+
+        :param str image_name: the name of the image, either "hires" or "fullres".
+        :param np.ndarray image: the image to validate.
+        :param int max_dimension: the largest allowed dimension of the image, optional.
+
+        :rtype None
+        """
+        # Image must be an ndarray.
+        if not isinstance(image, np.ndarray):
+            self.errors.append(
+                f"uns['spatial'][library_id]['images']['{image_name}'] must be of numpy.ndarray type, "
+                f"it is {type(image)}."
+            )
+            return
+
+        # Confirm shape of image is valid: allowed shape is (,,3).
+        if not self._is_valid_visium_image_shape(image):
+            self.errors.append(
+                f"uns['spatial'][library_id]['images']['{image_name}'] must have shape (,,3), "
+                f"it has shape {image.shape}."
+            )
+
+        # Confirm max dimension of image, if specified, is valid.
+        if max_dimension is not None and max(image.shape) != max_dimension:
+            self.errors.append(
+                f"The largest dimension of uns['spatial'][library_id]['images']['{image_name}'] must be "
+                f"{max_dimension} pixels, it has a largest dimension of {max(image.shape)} pixels."
+            )
+
     def _deep_check(self):
         """
         Perform a "deep" check of the AnnData object using the schema definition. Adds errors to self.errors if any
@@ -1326,6 +1573,9 @@ class Validator:
         # Checks sparsity
         logger.debug("Validating sparsity...")
         self._validate_sparsity()
+
+        # Checks spatial
+        self._check_spatial()
 
         # Checks Seurat convertibility
         logger.debug("Validating Seurat convertibility...")
