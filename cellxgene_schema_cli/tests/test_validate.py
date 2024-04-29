@@ -10,7 +10,13 @@ import pandas as pd
 import pytest
 from cellxgene_ontology_guide.entities import Ontology
 from cellxgene_schema.schema import get_schema_definition
-from cellxgene_schema.validate import Validator, validate
+from cellxgene_schema.validate import (
+    ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE,
+    ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN,
+    ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED,
+    Validator,
+    validate,
+)
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 from fixtures.examples_validate import adata as adata_valid
 from fixtures.examples_validate import (
@@ -433,11 +439,7 @@ class TestCheckSpatial:
         # Confirm library_id is not allowed for Slide-seqV2.
         validator._check_spatial_uns()
         assert len(validator.errors) == 1
-        assert (
-            "uns['spatial'][library_id] is only allowed for obs['assay_ontology_term_id'] "
-            "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
-            in validator.errors[0]
-        )
+        assert f"uns['spatial'][library_id] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}" in validator.errors[0]
 
     def test__validate_library_id_forbidden_if_visium_and_is_single_false(self):
         validator: Validator = Validator()
@@ -450,11 +452,7 @@ class TestCheckSpatial:
         # Confirm library_id is not allowed for Visium if is_single is False.
         validator._check_spatial_uns()
         assert len(validator.errors) == 1
-        assert (
-            "uns['spatial'][library_id] is only allowed for obs['assay_ontology_term_id'] "
-            "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
-            in validator.errors[0]
-        )
+        assert f"uns['spatial'][library_id] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}" in validator.errors[0]
 
     def test__validate_library_id_required_if_visium(self):
         validator: Validator = Validator()
@@ -466,8 +464,7 @@ class TestCheckSpatial:
         validator._check_spatial_uns()
         assert validator.errors
         assert (
-            "uns['spatial'] must contain at least one key representing the library_id when obs['assay_ontology_term_id'] "
-            "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
+            f"uns['spatial'] must contain at least one key representing the library_id when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
             in validator.errors[0]
         )
 
@@ -707,8 +704,7 @@ class TestCheckSpatial:
         tissue_position_names = ["array_col", "array_row", "in_tissue"]
         for i, tissue_position_name in enumerate(tissue_position_names):
             assert (
-                f"obs['{tissue_position_name}'] is only allowed for obs['assay_ontology_term_id'] "
-                "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
+                f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}"
                 in validator.errors[i]
             )
 
@@ -721,10 +717,7 @@ class TestCheckSpatial:
 
         validator._check_spatial_obs()
         assert validator.errors
-        assert (
-            f"obs['{tissue_position_name}'] is required for obs['assay_ontology_term_id'] 'EFO:0010961' "
-            "(Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True." in validator.errors[0]
-        )
+        assert f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED}" in validator.errors[0]
 
     @pytest.mark.parametrize("tissue_position_name", ["array_col", "array_row", "in_tissue"])
     def test__validate_tissue_position_int_error(self, tissue_position_name):
