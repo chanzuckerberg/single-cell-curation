@@ -2006,14 +2006,11 @@ class TestObsm:
         validator.validate_adata()
         assert validator.warnings == [
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
-            "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_ and "
-            "thus will not be available in Explorer",
-            "WARNING: Validation of raw layer was not performed due to current errors, "
-            "try again after fixing current errors.",
+            "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_ and thus will not be available in Explorer",
+            "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
         ]
         assert validator.errors == [
-            "ERROR: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['harmony']' is <class "
-            "'pandas.core.frame.DataFrame'>')."
+            "ERROR: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['harmony']' is <class 'pandas.core.frame.DataFrame'>')."
         ]
 
     def test_obsm_values_suffix_is_forbidden(self, validator_with_adata):
@@ -2027,10 +2024,8 @@ class TestObsm:
         validator.adata.obsm["X_3D"] = pd.DataFrame(validator.adata.obsm["X_umap"], index=validator.adata.obs_names)
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Suffix for embedding key in 'adata.obsm' X_3D does not match the regex pattern ^[a-zA-Z]["
-            "a-zA-Z0-9_.-]*$.",
-            "ERROR: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['X_3D']' is <class "
-            "'pandas.core.frame.DataFrame'>').",
+            "ERROR: Suffix for embedding key in 'adata.obsm' X_3D does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$.",
+            "ERROR: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['X_3D']' is <class 'pandas.core.frame.DataFrame'>').",
         ]
 
     def test_obsm_values_key_start_with_number(self, validator_with_adata):
@@ -2043,11 +2038,9 @@ class TestObsm:
             "'pandas.core.frame.DataFrame'>').",
         ]
         assert validator.warnings == [
-            "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered " "from expression matrix.",
-            "WARNING: Embedding key in 'adata.obsm' 3D does not start with X_ and "
-            "thus will not be available in Explorer",
-            "WARNING: Validation of raw layer was not performed due to current errors, "
-            "try again after fixing current errors.",
+            "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
+            "WARNING: Embedding key in 'adata.obsm' 3D does not start with X_ and thus will not be available in Explorer",
+            "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
         ]
 
     def test_obsm_suffix_name_valid(self, validator_with_adata):
@@ -2058,8 +2051,7 @@ class TestObsm:
         validator.adata.obsm["X_"] = validator.adata.obsm["X_umap"]
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Suffix for embedding key in 'adata.obsm' X_ does not match the regex pattern ^[a-zA-Z]["
-            "a-zA-Z0-9_.-]*$."
+            "ERROR: Suffix for embedding key in 'adata.obsm' X_ does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$."
         ]
 
     def test_obsm_key_name_whitespace(self, validator_with_adata):
@@ -2071,8 +2063,7 @@ class TestObsm:
         obsm["X_ umap"] = obsm["X_umap"]
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Suffix for embedding key in 'adata.obsm' X_ umap does not match the regex pattern ^[a-zA-Z]["
-            "a-zA-Z0-9_.-]*$.",
+            "ERROR: Suffix for embedding key in 'adata.obsm' X_ umap does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$.",
         ]
 
         del obsm["X_ umap"]
