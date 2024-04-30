@@ -689,8 +689,8 @@ class TestCheckSpatial:
     @pytest.mark.parametrize(
         "assay_ontology_term_id, is_single",
         [
-            (["EFO:0010961", "EFO:0030062"], [True, True]),
-            (["EFO:0010961", "EFO:0030062"], [False, True]),
+            (["EFO:0010961", "EFO:0030062"], True),
+            (["EFO:0010961", "EFO:0030062"], False),
             ("EFO:0010961", False),
             ("EFO:0030062", True),
             ("EFO:0030062", False),
