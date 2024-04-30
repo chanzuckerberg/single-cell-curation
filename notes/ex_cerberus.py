@@ -1,3 +1,4 @@
+import collections
 import json
 from typing import Mapping
 
@@ -6,11 +7,15 @@ import cerberus
 import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
+from cellxgene_schema import gencode
 from tests.fixtures.examples_validate import h5ad_valid
 
 
-class CustomerErrorHandler(cerberus.errors.BasicErrorHandler):
+class CustomErrorHandler(cerberus.errors.BasicErrorHandler):
     def add(self, error):
+        """
+        overriding because the deepcopy need to be skipped to avoid h5 Errors
+        """
         self._rewrite_error_path(error)
 
         if error.is_logic_error:
@@ -20,19 +25,24 @@ class CustomerErrorHandler(cerberus.errors.BasicErrorHandler):
         elif error.code in self.messages:
             self._insert_error(error.document_path, self._format_message(error.field, error))
 
-
-anndata_type = cerberus.TypeDefinition("anndata", (ad.AnnData,), ())
-dataframe_type = cerberus.TypeDefinition("dataframe", (pd.DataFrame,), ())
-ndarray_type = cerberus.TypeDefinition("ndarray", (np.ndarray,), ())
+    def _format_message(self, field, error):
+        prefix = "Warning" if "warn" in error.schema_path else "Error"
+        return f"{prefix}: " + self.messages[error.code].format(
+            *error.info, constraint=error.constraint, field=field, value=error.value
+        )
 
 
 class MyValidator(cerberus.Validator):
     types_mapping = cerberus.Validator.types_mapping.copy()
-    types_mapping["anndata"] = anndata_type
-    types_mapping["dataframe"] = dataframe_type
-    types_mapping["ndarray"] = ndarray_type
+    types_mapping["anndata"] = cerberus.TypeDefinition("anndata", (ad.AnnData,), ())
+    types_mapping["dataframe"] = cerberus.TypeDefinition("dataframe", (pd.DataFrame,), ())
+    types_mapping["ndarray"] = cerberus.TypeDefinition("ndarray", (np.ndarray,), ())
 
-    def _validate_attributes(self, schemas: dict, field: str, _object: object) -> None:
+    def __init__(self, *args, **kwargs):
+        self.gene_checker = {}
+        super(MyValidator, self).__init__(*args, **kwargs)
+
+    def _validate_attributes_schema(self, schemas: dict, field: str, _object: object) -> None:
         """
         The rule's arguments are validated against this schema:
         {'type': 'dict'}
@@ -40,7 +50,7 @@ class MyValidator(cerberus.Validator):
         if isinstance(_object, object):
             validator = self._get_child_validator(
                 document_crumb=field,
-                schema_crumb=(field, "attributes"),
+                schema_crumb=(field, "attributes_schema"),
                 schema=schemas,
             )
             document = dict()
@@ -55,7 +65,7 @@ class MyValidator(cerberus.Validator):
             if not validator(document, normalize=False):
                 self._error(validator._errors)
 
-    def _validate_index(self, schemas, field, _list):
+    def _validate_index_schemas(self, schemas, field, _list):
         """
         The rule's arguments are validated against this schema:
         {'type': 'dict'}
@@ -63,7 +73,7 @@ class MyValidator(cerberus.Validator):
         if hasattr(_list, "__getitem__"):
             validator = self._get_child_validator(
                 document_crumb=field,
-                schema_crumb=(field, "index"),
+                schema_crumb=(field, "index_schemas"),
                 schema=schemas,
             )
             document = dict()
@@ -77,6 +87,19 @@ class MyValidator(cerberus.Validator):
                     document[k] = value
             if not validator(document, normalize=False):
                 self._error(validator._errors)
+
+    def _validate_warn(self, schema, field, value):
+        """
+        The rule's arguments are validated against this schema:
+        {'type': 'dict'}
+        """
+        # all errrors will be marked as warnings.
+        validator = self._get_child_validator(
+            schema_crumb=("warn"),
+            schema={field: schema},
+        )
+        if not validator({field: value}, normalize=False):
+            self._error(validator._errors)
 
     def _check_with_match_obs_columns(self, field, value):
         for i in value:
@@ -142,9 +165,8 @@ class MyValidator(cerberus.Validator):
         The rule's arguments are validated against this schema:
         {'type': 'list'}
         """
-        for i in forbidden:
-            if i.lower() in value:
-                self._error(field, f"Value '{i}' is forbidden in '{field}'.")
+        if field.lower() in forbidden:
+            self._error(field, f"{field} is forbidden.")
 
     def _check_with_equal_to_X_rows(self, field, value):
         if value != self.root_document["adata"].X.shape[0]:
@@ -178,6 +200,38 @@ class MyValidator(cerberus.Validator):
         if value.dtype.kind not in dtype_kind:
             self._error(field, f"Array dtype kind must be one of {dtype_kind}.")
 
+    def _check_with_unique(self, field, value):
+        if isinstance(value, (pd.Index, pd.Series)) and value.nunique() != len(value):
+            duplicates = [item for item, count in collections.Counter(value).items() if count > 1]
+            self._error(field, f"Values must be unique. Found duplicates: {duplicates}.")
+
+    def _check_with_feature_id(self, df_name: str, feature_id: str):
+        """
+        Validates a feature id, i.e. checks that it's present in the reference
+        If there are any errors, it adds them to self.errors and adds it to the list of invalid features
+
+        :param str feature_id: the feature id to be validated
+        :param str df_name: name of dataframe the feauter id comes from (var or raw.var)
+
+        """
+
+        organism = gencode.get_organism_from_feature_id(feature_id)
+
+        if not organism:
+            self._error(
+                f"Could not infer organism from feature ID '{feature_id}' in '{df_name}', "
+                f"make sure it is a valid ID."
+            )
+            return
+
+        if organism not in self.gene_checkers:
+            self.gene_checkers[organism] = gencode.GeneChecker(organism)
+
+        if not self.gene_checkers[organism].is_valid_id(feature_id):
+            self.errors.append(f"'{feature_id}' is not a valid feature ID in '{df_name}'.")
+
+        return
+
 
 def validate_anndata():
     obsm_schema = {
@@ -189,18 +243,18 @@ def validate_anndata():
         },
         "valuesrules": {
             "type": "ndarray",
-            "attributes": {
+            "attributes_schema": {
                 "shape": {
                     "type": "list",
                     "minlength": 2,
-                    "index": {
+                    "index_schemas": {
                         0: {"type": "integer", "check_with": "equal_to_X_rows"},
                         1: {"type": "integer", "min": 2},
                     },
                     "items": [{"type": "integer", "check_with": "equal_to_X_rows"}, {"type": "integer", "min": 2}],
                 },
                 "dtype": {
-                    "attributes": {
+                    "attributes_schema": {
                         "kind": {"type": "string", "allowed": ["f", "i", "u"]},
                     }
                 },
@@ -210,6 +264,16 @@ def validate_anndata():
             "check_with": ["ndarray_not_any_ninf", "ndarray_not_any_inf", "ndarray_not_all_nan"],
         },
         "check_with": "annotation_mapping",
+    }
+    var_schema = {
+        "type": "dataframe",
+        "attributes_schema": {
+            "columns": {
+                "schema": {"check_with": "feature_id"},
+                "check_with": "unique",
+            },
+            # "rows": {"warn": {}}
+        },
     }
     uns_schema = {
         "type": "dict",
@@ -279,19 +343,27 @@ def validate_anndata():
             "type": "anndata",
             "required": True,
             "encoding_version": "0.1.0",
-            "attributes": {
-                "obs": {"type": "dataframe", "required": True},
-                "var": {"type": "dataframe", "required": True},
+            "attributes_schema": {
+                "obs": {
+                    "type": "dataframe",
+                    "required": True,
+                },
+                "var": dict(**var_schema, required=True),
                 "obsm": obsm_schema,
                 "obsp": {"check_with": "annotation_mapping"},
                 "varm": {"check_with": "annotation_mapping"},
                 "varp": {"check_with": "annotation_mapping"},
                 "uns": uns_schema,
+                # "raw": {
+                #     "attributes_schema": {
+                #         # "X": {"type": "ndarray"},
+                #         "var": var_schema},
+                # },
             },
         },
     }
     adata = ad.read_h5ad(h5ad_valid, backed="r")
-    v = MyValidator(schema, error_handler=CustomerErrorHandler())
+    v = MyValidator(schema, error_handler=CustomErrorHandler())
     if not v.validate(dict(adata=adata), normalize=False):
         print(json.dumps(v.errors, sort_keys=True, indent=4))
 
@@ -300,11 +372,9 @@ def validate_anndata():
     adata.uns["asdfads"] = "asfasdf"
     adata.uns["project_name"] = "project_name"
     adata.uns["X_approximate_distribution"] = "asdf"
+    adata.obsm["X_spatial"] = adata.obsm["X_pca"]
     if not v.validate(
-        dict(
-            adata=adata,
-            # uns=adata.uns
-        ),
+        dict(adata=adata),
         normalize=False,
     ):
         print(json.dumps(v.errors, indent=4))
