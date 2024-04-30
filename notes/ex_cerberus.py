@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from cellxgene_schema import gencode
 from tests.fixtures.examples_validate import h5ad_valid
+from utils import SPARSE_MATRIX_TYPES, get_matrix_format
 
 
 class CustomErrorHandler(cerberus.errors.BasicErrorHandler):
@@ -231,6 +232,45 @@ class MyValidator(cerberus.Validator):
             if not self.gene_checkers[organism].is_valid_id(feature_id):
                 self._error(f"'{feature_id}' is not a valid feature ID in '{field}'.")
 
+    def _check_with_feature_is_filtered(self, field: str, column: pd.Series):
+        """
+        Validates the "is_feature_filtered" in adata.var. This column must be bool, and for genes that are set to
+        True, their expression values in X must be 0.
+        If there are any errors, it adds them to self._error.
+
+        :rtype none
+        """
+
+        if column.dtype != bool:
+            self._error(field, f"Column '{field}' must be boolean, not '{column.dtype.name}'.")
+            return
+
+        adata = self.root_document["adata"]
+        if sum(column) > 0:
+            n_nonzero = 0
+
+            x_format = get_matrix_format(adata, adata.X)
+            if x_format in SPARSE_MATRIX_TYPES:
+                n_nonzero = adata.X[:, column].count_nonzero()
+
+            elif x_format == "dense":
+                n_nonzero = np.count_nonzero(adata.X[:, column])
+
+            else:
+                self._error(
+                    field,
+                    f"X matrix is of type {type(adata.X)}, validation of 'feature_is_filtered' "
+                    f"cannot be completed.",
+                )
+
+            if n_nonzero > 0:
+                self._error(
+                    field,
+                    f"Some features are 'True' in '{field}', but there are "
+                    f"{n_nonzero} non-zero values in the corresponding columns of the matrix 'X'. All values for "
+                    f"these features must be 0.",
+                )
+
 
 def validate_anndata():
     obsm_schema = {
@@ -271,6 +311,7 @@ def validate_anndata():
                 "check_with": ["unique", "feature_id"],
             },
             "shape": {"index_schemas": {0: {"warn": {"min": 2000}}}},  # row min length
+            "feature_is_filtered": {"required": True, "check_with": "feature_is_filtered"},
         },
     }
     uns_schema = {
