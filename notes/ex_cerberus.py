@@ -39,7 +39,7 @@ class MyValidator(cerberus.Validator):
     types_mapping["ndarray"] = cerberus.TypeDefinition("ndarray", (np.ndarray,), ())
 
     def __init__(self, *args, **kwargs):
-        self.gene_checker = {}
+        self.gene_checkers = {}
         super(MyValidator, self).__init__(*args, **kwargs)
 
     def _validate_attributes_schema(self, schemas: dict, field: str, _object: object) -> None:
@@ -205,32 +205,31 @@ class MyValidator(cerberus.Validator):
             duplicates = [item for item, count in collections.Counter(value).items() if count > 1]
             self._error(field, f"Values must be unique. Found duplicates: {duplicates}.")
 
-    def _check_with_feature_id(self, df_name: str, feature_id: str):
+    def _check_with_feature_id(self, field: str, feature_ids):
         """
-        Validates a feature id, i.e. checks that it's present in the reference
-        If there are any errors, it adds them to self.errors and adds it to the list of invalid features
+        Validates feature ids, i.e. checks that they are present in the reference
+        If there are any errors, it adds them to self._error and adds it to the list of invalid features
 
-        :param str feature_id: the feature id to be validated
-        :param str df_name: name of dataframe the feauter id comes from (var or raw.var)
+        :param str feature_ids: the feature ids to be validated
+        :param str field: the name of the field or attribute
 
         """
 
-        organism = gencode.get_organism_from_feature_id(feature_id)
+        for feature_id in feature_ids:
+            organism = gencode.get_organism_from_feature_id(feature_id)
 
-        if not organism:
-            self._error(
-                f"Could not infer organism from feature ID '{feature_id}' in '{df_name}', "
-                f"make sure it is a valid ID."
-            )
-            return
+            if not organism:
+                self._error(
+                    f"Could not infer organism from feature ID '{feature_id}' in '{field}', "
+                    f"make sure it is a valid ID."
+                )
+                continue
 
-        if organism not in self.gene_checkers:
-            self.gene_checkers[organism] = gencode.GeneChecker(organism)
+            if organism not in self.gene_checkers:
+                self.gene_checkers[organism] = gencode.GeneChecker(organism)
 
-        if not self.gene_checkers[organism].is_valid_id(feature_id):
-            self.errors.append(f"'{feature_id}' is not a valid feature ID in '{df_name}'.")
-
-        return
+            if not self.gene_checkers[organism].is_valid_id(feature_id):
+                self._error(f"'{feature_id}' is not a valid feature ID in '{field}'.")
 
 
 def validate_anndata():
@@ -268,11 +267,10 @@ def validate_anndata():
     var_schema = {
         "type": "dataframe",
         "attributes_schema": {
-            "columns": {
-                "schema": {"check_with": "feature_id"},
-                "check_with": "unique",
+            "index": {
+                "check_with": ["unique", "feature_id"],
             },
-            # "rows": {"warn": {}}
+            "shape": {"index_schemas": {0: {"warn": {"min": 2000}}}},  # row min length
         },
     }
     uns_schema = {
