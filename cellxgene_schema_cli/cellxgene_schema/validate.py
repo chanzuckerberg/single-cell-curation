@@ -1404,7 +1404,7 @@ class Validator:
         if not self._is_visium_and_is_single_true():
             return
 
-        # Check if tissue position is required. At this point, is_single is True and:
+        # At this point, is_single is True and:
         # - there's at least one row with Visum, tissue position column is required
         # - for any Visium row, tissue position is required.
         if (
