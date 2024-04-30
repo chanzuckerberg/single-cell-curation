@@ -1383,6 +1383,9 @@ class Validator:
         self._validate_spatial_tissue_position("array_row", 0, 77)
         self._validate_spatial_tissue_position("in_tissue", 0, 1)
 
+        # Validate cell type.
+        self._validate_spatial_cell_type_ontology_term_id()
+
     def _validate_spatial_cell_type_ontology_term_id(self):
         """
         Validate cell type ontology term id is "unknown" if Visium, is_single is True and in_tissue is 0.

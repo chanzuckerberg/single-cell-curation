@@ -821,7 +821,7 @@ class TestCheckSpatial:
         validator.adata.obs.cell_type_ontology_term_id = cell_type_ontology_term_id
         validator.adata.obs.in_tissue = in_tissue
 
-        # Confirm cell type is valid.
+        # Confirm errors.
         validator._validate_spatial_cell_type_ontology_term_id()
         assert validator.errors
         assert (
