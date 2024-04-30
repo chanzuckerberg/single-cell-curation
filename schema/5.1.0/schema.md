@@ -1511,6 +1511,8 @@ Curators MUST annotate the following keys and values in `uns`:
 </tbody></table>
 <br>
 
+
+
 #### spatial[_library_id_]['images']['fullres']
 <table><tbody>
     <tr>
@@ -1524,7 +1526,12 @@ Curators MUST annotate the following keys and values in `uns`:
     <tr>
       <th>Value</th>
         <td>
-          <code>ndarray</code><br><br>It is STRONGLY RECOMMENDED that the submitter include the full resolution image which MUST be converted to an array of shape (, , 3).
+          The full resolution image MUST be converted to a<code>numpy.ndarray</code> with the following requirements:<br><br>
+          <ul>
+          <li>The length of <code>numpy.ndarray.shape</code> MUST be <code>3</code></li>
+          <li>The <code>numpy.ndarray.dtype</code> MUST be <code>numpy.unit8</code></li>
+          <li>The <code>numpy.ndarray.shape[2]</code> MUST be either <code>3</code> (RGB color model for example) for <code>4</code> (RGBA color model for example)</li>
+          </ul>
         </td>
     </tr>
 </tbody></table>
@@ -1543,11 +1550,16 @@ Curators MUST annotate the following keys and values in `uns`:
     <tr>
       <th>Value</th>
         <td>
-          <code>ndarray</code><br><br><code>tissue_hires_image.png</code> MUST be converted to an array of shape (, , 3). Its largest dimension MUST be 2000 pixels. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/spatial-outputs">Space Ranger Spatial Outputs</a>.
+          <code>tissue_hires_image.png</code> MUST be converted to a<code>numpy.ndarray</code> with the following requirements:<br><br>
+          <ul>
+          <li>The length of <code>numpy.ndarray.shape</code> MUST be <code>3</code></li>
+          <li>THe <code>numpy.ndarray.dtype</code> MUST be <code>numpy.unit8</code></li>
+          <li>The largest dimension in <code>numpy.ndarray.shape[:2]</code> MUST be <code>2000</code>pixels. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/spatial-outputs">Space Ranger Spatial Outputs</a></li>
+          <li>The <code>numpy.ndarray.shape[2]</code> MUST be either <code>3</code> (RGB color model for example) for <code>4</code> (RGBA color model for example)</li>
+          </ul>
         </td>
     </tr>
 </tbody></table>
-<br>
 
 
 #### spatial[_library_id_]['scalefactors']
