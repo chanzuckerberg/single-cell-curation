@@ -1392,12 +1392,10 @@ class Validator:
 
         :rtype none
         """
-        # Exit if not Visium and is_single is True as no further checks are necessary.
-        if not self._is_visium_and_is_single_true():
-            return
-
-        # Exit if in_tissue is not specified as checks are dependent on this value.
-        if "in_tissue" not in self.adata.obs:
+        # Exit if:
+        # - not Visium and is_single is True as no further checks are necessary
+        # - in_tissue is not specified as checks are dependent on this value
+        if not self._is_visium_and_is_single_true() or "in_tissue" not in self.adata.obs:
             return
 
         # Validate cell type: must be "unknown" if Visium and is_single is True and in_tissue is 0.
