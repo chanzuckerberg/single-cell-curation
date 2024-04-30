@@ -1366,6 +1366,26 @@ class Validator:
         self._validate_spatial_tissue_position("array_row", 0, 77)
         self._validate_spatial_tissue_position("in_tissue", 0, 1)
 
+        self._validate_spatial_is_primary_data()
+
+    def _validate_spatial_is_primary_data(self):
+        """
+        Validate is_primary_data for spatial datasets.
+        """
+        is_single = (
+            self.adata.uns["spatial"]["is_single"]
+            if "spatial" in self.adata.uns and "is_single" in self.adata.uns["spatial"]
+            else None
+        )
+        obs = getattr_anndata(self.adata, "obs")
+        if obs is None or "is_primary_data" not in obs:
+            return
+        if is_single is False and obs["is_primary_data"].any():
+            self.errors.append(
+                "When uns['spatial']['is_single'] is False, "
+                "obs['is_primary_data'] must be False for all rows."
+            )
+
     def _validate_spatial_tissue_position(self, tissue_position_name: str, min: int, max: int):
         """
         Validate tissue position is allowed and required, and are integers within the given range. Validation is not defined in

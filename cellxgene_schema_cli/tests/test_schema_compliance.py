@@ -62,6 +62,10 @@ def validator_with_adata_missing_raw(validator) -> Validator:
     validator.adata = examples.adata_non_raw.copy()
     return validator
 
+@pytest.fixture
+def validator_with_spatial_and_is_single_false(validator) -> Validator:
+    validator.adata = examples.adata_spatial_is_single_false.copy()
+    return validator
 
 @pytest.fixture
 def label_writer(validator_with_validated_adata) -> AnnDataLabelAppender:
@@ -1087,6 +1091,17 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Column 'is_primary_data' in dataframe 'obs' " "must be boolean, not 'object'."
+        ]
+
+    def test_is_primary_data__spatial(self, validator_with_spatial_and_is_single_false):
+        """
+        is_primary_data	bool. This MUST be False if dataset has uns['spatial']['is_single'] == False
+        """
+        validator = validator_with_spatial_and_is_single_false
+        validator.adata.obs["is_primary_data"][0] = True
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: When uns['spatial']['is_single'] is False, obs['is_primary_data'] must be False for all rows."
         ]
 
     def test_donor_id_must_be_categorical(self, validator_with_adata):
