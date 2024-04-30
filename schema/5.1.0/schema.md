@@ -1553,7 +1553,7 @@ Curators MUST annotate the following keys and values in `uns`:
           <code>tissue_hires_image.png</code> MUST be converted to a<code>numpy.ndarray</code> with the following requirements:<br><br>
           <ul>
           <li>The length of <code>numpy.ndarray.shape</code> MUST be <code>3</code></li>
-          <li>THe <code>numpy.ndarray.dtype</code> MUST be <code>numpy.unit8</code></li>
+          <li>The <code>numpy.ndarray.dtype</code> MUST be <code>numpy.unit8</code></li>
           <li>The largest dimension in <code>numpy.ndarray.shape[:2]</code> MUST be <code>2000</code>pixels. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/spatial-outputs">Space Ranger Spatial Outputs</a></li>
           <li>The <code>numpy.ndarray.shape[2]</code> MUST be either <code>3</code> (RGB color model for example) for <code>4</code> (RGBA color model for example)</li>
           </ul>
