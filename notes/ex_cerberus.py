@@ -1,5 +1,6 @@
 import collections
 import json
+from copy import deepcopy
 from typing import Mapping
 
 import anndata as ad
@@ -8,7 +9,7 @@ import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 from cellxgene_schema import gencode
-from tests.fixtures.examples_validate import h5ad_valid
+from tests.fixtures.examples_validate import adata, h5ad_valid
 from utils import SPARSE_MATRIX_TYPES, get_matrix_format
 
 
@@ -118,11 +119,14 @@ class MyValidator(cerberus.Validator):
         """
         import h5py
 
-        with h5py.File(value.filename, "r") as f:
-            encoding_dict = dict(f.attrs)
-            encoding_version = encoding_dict.get("encoding-version")
-            if encoding_version != contraint:
-                self._error(field, "The h5ad artifact was generated with an AnnData version different from 0.8.0.")
+        try:
+            with h5py.File(value.filename, "r") as f:
+                encoding_dict = dict(f.attrs)
+                encoding_version = encoding_dict.get("encoding-version")
+                if encoding_version != contraint:
+                    self._error(field, "The h5ad artifact was generated with an AnnData version different from 0.8.0.")
+        except Exception as e:
+            self._error(field, f"Error validating encoding of h5ad file: {e}")
 
     @property
     def obs_category_mapping(self):
@@ -156,6 +160,7 @@ class MyValidator(cerberus.Validator):
             )
 
     def _check_with_annotation_mapping(self, field: str, value: Mapping) -> None:
+        """The size of the ndarray stored for a key MUST NOT be zero"""
         for key, _value in value.items():
             # Check for empty ndarrays
             if isinstance(_value, np.ndarray) and not _value.size:
@@ -168,6 +173,18 @@ class MyValidator(cerberus.Validator):
         """
         if field.lower() in forbidden:
             self._error(field, f"{field} is forbidden.")
+
+    def _validate_forbidden_attributes(self, forbidden, field, value):
+        """
+        The rule's arguments are validated against this schema:
+        {'type': 'list'}
+        """
+        for key in forbidden:
+            try:
+                getattr(value, key)
+                self._error(field, f"Attribute '{key}' is forbidden.")
+            except AttributeError:
+                pass
 
     def _check_with_equal_to_X_rows(self, field, value):
         if value != self.root_document["adata"].X.shape[0]:
@@ -272,7 +289,7 @@ class MyValidator(cerberus.Validator):
                 )
 
 
-def validate_anndata():
+def validate_anndata(adata: ad.AnnData):
     obsm_schema = {
         "required": True,
         "keysrules": {
@@ -304,16 +321,21 @@ def validate_anndata():
         },
         "check_with": "annotation_mapping",
     }
-    var_schema = {
+    var_schema_common = {
         "type": "dataframe",
         "attributes_schema": {
             "index": {
                 "check_with": ["unique", "feature_id"],
             },
             "shape": {"index_schemas": {0: {"warn": {"min": 2000}}}},  # row min length
-            "feature_is_filtered": {"required": True, "check_with": "feature_is_filtered"},
         },
     }
+    var_schema = deepcopy(var_schema_common)
+    var_schema["attributes_schema"]["feature_is_filtered"] = {"required": True, "check_with": "feature_is_filtered"}
+    var_schema["required"] = True
+    var_raw_schema = deepcopy(var_schema_common)
+    var_raw_schema["forbidden_attributes"] = ["feature_is_filtered"]
+
     uns_schema = {
         "type": "dict",
         "allow_unknown": True,
@@ -387,36 +409,35 @@ def validate_anndata():
                     "type": "dataframe",
                     "required": True,
                 },
-                "var": dict(**var_schema, required=True),
+                "var": var_schema,
                 "obsm": obsm_schema,
                 "obsp": {"check_with": "annotation_mapping"},
                 "varm": {"check_with": "annotation_mapping"},
                 "varp": {"check_with": "annotation_mapping"},
                 "uns": uns_schema,
-                # "raw": {
-                #     "attributes_schema": {
-                #         # "X": {"type": "ndarray"},
-                #         "var": var_schema},
-                # },
+                "raw": {
+                    "attributes_schema": {
+                        # "X": {"type": "ndarray"},
+                        "var": var_raw_schema
+                    },
+                },
             },
         },
     }
-    adata = ad.read_h5ad(h5ad_valid, backed="r")
     v = MyValidator(schema, error_handler=CustomErrorHandler())
     if not v.validate(dict(adata=adata), normalize=False):
-        print(json.dumps(v.errors, sort_keys=True, indent=4))
-
-    adata.uns["title"] = [1, 2, 3]
-    adata.uns[1] = None
-    adata.uns["asdfads"] = "asfasdf"
-    adata.uns["project_name"] = "project_name"
-    adata.uns["X_approximate_distribution"] = "asdf"
-    adata.obsm["X_spatial"] = adata.obsm["X_pca"]
-    if not v.validate(
-        dict(adata=adata),
-        normalize=False,
-    ):
         print(json.dumps(v.errors, indent=4))
 
 
-validate_anndata()
+validate_anndata(adata)
+
+_adata = ad.read_h5ad(h5ad_valid, backed="r")
+validate_anndata(_adata)
+
+_adata.uns["title"] = [1, 2, 3]
+_adata.uns[1] = None
+_adata.uns["asdfads"] = "asfasdf"
+_adata.uns["project_name"] = "project_name"
+_adata.uns["X_approximate_distribution"] = "asdf"
+_adata.obsm["X_spatial"] = _adata.obsm["X_pca"]
+validate_anndata(_adata)
