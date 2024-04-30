@@ -469,7 +469,7 @@ adata_slide_seqv2 = anndata.AnnData(
 )
 
 adata_spatial_is_single_false = anndata.AnnData(
-    X=sparse.csr_matrix(X), obs=good_obs_visium_is_single_false, uns=good_uns_with_is_single_false, obsm=good_obsm, var=good_var
+    X=sparse.csr_matrix(X), obs=good_obs_visium_is_single_false, uns=good_uns_with_is_single_false, obsm=good_obsm_spatial, var=good_var
 )
 
 # anndata for testing migration
