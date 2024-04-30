@@ -9,7 +9,7 @@ import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 from cellxgene_schema import gencode
-from tests.fixtures.examples_validate import adata, h5ad_valid
+from tests.fixtures.examples_validate import h5ad_valid
 from utils import SPARSE_MATRIX_TYPES, get_matrix_format
 
 
@@ -202,21 +202,14 @@ class MyValidator(cerberus.Validator):
         if np.any(np.isnan(value)):
             self._error(field, "Array contains NaN values.")
 
-    def _validate_ndarray_columns_length(self, columns_length, field, value):
+    def _validate_dtype(self, dtypes, field, value):
         """
         The rule's arguments are validated against this schema:
-        {'type': 'integer'}
+        {'type': ['list']}
         """
-        if columns_length != value.shape[1]:
-            self._error(field, f"Number of columns in '{field}' must be equal to {columns_length}.")
-
-    def _validate_ndarray_dtype_kind(self, dtype_kind, field, value):
-        """
-        The rule's arguments are validated against this schema:
-        {'type': 'list'}
-        """
-        if value.dtype.kind not in dtype_kind:
-            self._error(field, f"Array dtype kind must be one of {dtype_kind}.")
+        if not any([value.dtype == dtype for dtype in dtypes]):
+            self._error(field, f"Array dtype must one of '{dtypes}'.")
+            self._drop_remaining_rules()
 
     def _check_with_unique(self, field, value):
         if isinstance(value, (pd.Index, pd.Series)) and value.nunique() != len(value):
@@ -232,7 +225,6 @@ class MyValidator(cerberus.Validator):
         :param str field: the name of the field or attribute
 
         """
-
         for feature_id in feature_ids:
             organism = gencode.get_organism_from_feature_id(feature_id)
 
@@ -257,11 +249,6 @@ class MyValidator(cerberus.Validator):
 
         :rtype none
         """
-
-        if column.dtype != bool:
-            self._error(field, f"Column '{field}' must be boolean, not '{column.dtype.name}'.")
-            return
-
         adata = self.root_document["adata"]
         if sum(column) > 0:
             n_nonzero = 0
@@ -316,7 +303,6 @@ def validate_anndata(adata: ad.AnnData):
                 },
                 "size": {"type": "integer", "min": 1},
             },
-            "ndarray_dtype_kind": ["f", "i", "u"],
             "check_with": ["ndarray_not_any_ninf", "ndarray_not_any_inf", "ndarray_not_all_nan"],
         },
         "check_with": "annotation_mapping",
@@ -331,7 +317,11 @@ def validate_anndata(adata: ad.AnnData):
         },
     }
     var_schema = deepcopy(var_schema_common)
-    var_schema["attributes_schema"]["feature_is_filtered"] = {"required": True, "check_with": "feature_is_filtered"}
+    var_schema["attributes_schema"]["feature_is_filtered"] = {
+        "required": True,
+        "dtype": [bool],
+        "check_with": "feature_is_filtered",
+    }
     var_schema["required"] = True
     var_raw_schema = deepcopy(var_schema_common)
     var_raw_schema["forbidden_attributes"] = ["feature_is_filtered"]
@@ -429,7 +419,7 @@ def validate_anndata(adata: ad.AnnData):
         print(json.dumps(v.errors, indent=4))
 
 
-validate_anndata(adata)
+# validate_anndata(adata)
 
 _adata = ad.read_h5ad(h5ad_valid, backed="r")
 validate_anndata(_adata)
@@ -440,4 +430,4 @@ _adata.uns["asdfads"] = "asfasdf"
 _adata.uns["project_name"] = "project_name"
 _adata.uns["X_approximate_distribution"] = "asdf"
 _adata.obsm["X_spatial"] = _adata.obsm["X_pca"]
-validate_anndata(_adata)
+# validate_anndata(_adata)
