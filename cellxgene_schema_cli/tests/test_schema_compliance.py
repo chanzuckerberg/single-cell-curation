@@ -64,6 +64,18 @@ def validator_with_adata_missing_raw(validator) -> Validator:
 
 
 @pytest.fixture
+def validator_with_visium_assay(validator) -> Validator:
+    validator.adata = examples.adata_visium.copy()
+    return validator
+
+
+@pytest.fixture
+def validator_with_slide_seq_v2_assay(validator) -> Validator:
+    validator.adata = examples.adata_slide_seqv2.copy()
+    return validator
+
+
+@pytest.fixture
 def label_writer(validator_with_validated_adata) -> AnnDataLabelAppender:
     """
     Fixture that returns an AnnDataLabelAppender object
@@ -1905,60 +1917,64 @@ class TestObsm:
     Fail cases for adata.obsm
     """
 
-    def test_obsm_values_ara_numpy(self, validator_with_adata):
+    @pytest.mark.parametrize("key", ["X_tsne", "spatial"])
+    def test_obsm_values_ara_numpy(self, validator_with_visium_assay, key):
         """
         values in obsm MUST be a numpy.ndarray
         """
-        validator = validator_with_adata
+        validator = validator_with_visium_assay
         obsm = validator.adata.obsm
-        obsm["X_tsne"] = pd.DataFrame(obsm["X_umap"], index=validator.adata.obs_names)
+        obsm[key] = pd.DataFrame(obsm["X_umap"], index=validator.adata.obs_names)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: All embeddings have to be of 'numpy.ndarray' type, "
-            "'adata.obsm['X_tsne']' is <class 'pandas.core.frame.DataFrame'>')."
+            f"'adata.obsm['{key}']' is <class 'pandas.core.frame.DataFrame'>')."
         ]
 
-    def test_obsm_values_infinity(self, validator_with_adata):
+    @pytest.mark.parametrize("key", ["X_umap", "spatial"])
+    def test_obsm_values_infinity(self, validator_with_visium_assay, key):
         """
         values in obsm cannot have any infinity values
         """
-        validator = validator_with_adata
-        validator.adata.obsm["X_umap"][0:100, 1] = numpy.inf
+        validator = validator_with_visium_assay
+        validator.adata.obsm[key][0:100, 1] = numpy.inf
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: adata.obsm['X_umap'] contains positive infinity or negative infinity values."
+            f"ERROR: adata.obsm['{key}'] contains positive infinity or negative infinity values."
         ]
 
-    def test_obsm_values_str(self, validator_with_adata):
+    @pytest.mark.parametrize("key", ["X_umap", "spatial"])
+    def test_obsm_values_str(self, validator_with_visium_assay, key):
         """
         values in obsm must be numerical types, strings are not valid
         """
-        validator = validator_with_adata
+        validator = validator_with_visium_assay
         obsm = validator.adata.obsm
-        all_string = numpy.full(obsm["X_umap"].shape, "test")
-        obsm["X_umap"] = all_string
+        all_string = numpy.full(obsm[key].shape, "test")
+        obsm[key] = all_string
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: adata.obsm['X_umap'] has an invalid data type. It should be float, integer, or unsigned "
+            f"ERROR: adata.obsm['{key}'] has an invalid data type. It should be float, integer, or unsigned "
             "integer of any precision (8, 16, 32, or 64 bits)."
         ]
 
-    def test_obsm_values_nan(self, validator_with_adata):
+    @pytest.mark.parametrize("key", ["X_umap", "spatial"])
+    def test_obsm_values_nan(self, validator_with_visium_assay, key):
         """
         values in obsm cannot all be NaN
         """
-        validator = validator_with_adata
+        validator = validator_with_visium_assay
         obsm = validator.adata.obsm
         # It's okay if only one value is NaN
-        obsm["X_umap"][0:100, 1] = numpy.nan
+        obsm[key][0:100, 1] = numpy.nan
         validator.validate_adata()
         assert validator.errors == []
 
         # It's not okay if all values are NaN
-        all_nan = numpy.full(obsm["X_umap"].shape, numpy.nan)
-        obsm["X_umap"] = all_nan
+        all_nan = numpy.full(obsm[key].shape, numpy.nan)
+        obsm[key] = all_nan
         validator.validate_adata()
-        assert validator.errors == ["ERROR: adata.obsm['X_umap'] contains all NaN values."]
+        assert validator.errors == [f"ERROR: adata.obsm['{key}'] contains all NaN values."]
 
     def test_obsm_values_no_X_embedding__non_spatial_dataset(self, validator_with_adata):
         validator = validator_with_adata
@@ -1972,7 +1988,8 @@ class TestObsm:
         assert validator.is_spatial is False
         assert validator.warnings == [
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
-            "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_ and thus will not be available in Explorer",
+            "WARNING: Embedding key in 'adata.obsm' harmony is not 'spatial' nor does it start with 'X_'. "
+            "Thus, it will not be available in Explorer",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
         ]
 
@@ -1990,6 +2007,7 @@ class TestObsm:
         validator.adata.obsm["harmony"] = validator.adata.obsm["X_umap"]
         validator.adata.uns["default_embedding"] = "harmony"
         validator.adata.uns["spatial"] = uns_spatial
+        validator.adata.obsm["spatial"] = validator.adata.obsm["X_umap"]
         del validator.adata.obsm["X_umap"]
         validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
         validator.adata.obs["suspension_type"] = "na"
@@ -1998,13 +2016,44 @@ class TestObsm:
         assert validator.errors == []
         assert validator.is_spatial is True
 
+    def test_obsm_values_spatial_embedding_missing__is_single_true(self, validator_with_visium_assay):
+        validator = validator_with_visium_assay
+        del validator.adata.obsm["spatial"]
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: 'spatial' embedding is required in 'adata.obsm' if adata.uns['spatial']['is_single'] is True."
+        ]
+
+    def test_obsm_values_spatial_embedding_missing__is_single_false(self, validator_with_visium_assay):
+        validator = validator_with_visium_assay
+        validator.adata.uns["spatial"] = {"is_single": False}
+        del validator.adata.obsm["spatial"]
+        validator.validate_adata()
+        assert validator.errors == []
+
+    def test_obsm_values_spatial_embedding_present__is_single_false(self, validator_with_visium_assay):
+        validator = validator_with_visium_assay
+        validator.adata.uns["spatial"] = {"is_single": False}
+        validator.validate_adata()
+        assert validator.errors == []
+
+    def test_obsm_values_spatial_embedding_present__is_single_none(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.obsm["spatial"] = validator.adata.obsm["X_umap"]
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: 'spatial' embedding is forbidden in 'adata.obsm' if "
+            "adata.uns['spatial']['is_single'] is not set."
+        ]
+
     def test_obsm_values_warn_start_with_X(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.obsm["harmony"] = pd.DataFrame(validator.adata.obsm["X_umap"], index=validator.adata.obs_names)
         validator.validate_adata()
         assert validator.warnings == [
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
-            "WARNING: Embedding key in 'adata.obsm' harmony does not start with X_ and thus will not be available in Explorer",
+            "WARNING: Embedding key in 'adata.obsm' harmony is not 'spatial' nor does it start with 'X_'. "
+            "Thus, it will not be available in Explorer",
             "WARNING: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['harmony']' is <class 'pandas.core.frame.DataFrame'>').",
         ]
 
@@ -2032,7 +2081,8 @@ class TestObsm:
         ]
         assert validator.warnings == [
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
-            "WARNING: Embedding key in 'adata.obsm' 3D does not start with X_ and thus will not be available in Explorer",
+            "WARNING: Embedding key in 'adata.obsm' 3D is not 'spatial' nor does it start with 'X_'. "
+            "Thus, it will not be available in Explorer",
             "WARNING: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['3D']' is <class 'pandas.core.frame.DataFrame'>').",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
         ]
@@ -2073,17 +2123,18 @@ class TestObsm:
         validator.validate_adata()
         assert validator.errors == []
 
-    def test_obsm_shape_one_column(self, validator_with_adata):
+    @pytest.mark.parametrize("key", ["X_umap", "spatial"])
+    def test_obsm_shape_one_column(self, validator_with_visium_assay, key):
         """
         Curators MUST annotate one or more two-dimensional (m >= 2) embeddings
         """
         # Makes 1 column array
-        validator = validator_with_adata
-        validator.adata.obsm["X_umap"] = numpy.delete(validator.adata.obsm["X_umap"], 0, 1)
+        validator = validator_with_visium_assay
+        validator.adata.obsm[key] = numpy.delete(validator.adata.obsm[key], 0, 1)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: All embeddings must have as many rows as cells, and "
-            "at least two columns. 'adata.obsm['X_umap']' has shape "
+            f"at least two columns. 'adata.obsm['{key}']' has shape "
             "of '(2, 1)'."
         ]
 
