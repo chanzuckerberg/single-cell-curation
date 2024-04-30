@@ -2029,12 +2029,20 @@ class TestObsm:
         validator = validator_with_visium_assay
         validator.adata.uns["spatial"] = {"is_single": False}
         del validator.adata.obsm["spatial"]
+        # Format adata.obs into valid shape for Visium and is_single False.
+        validator.adata.obs.pop("array_col")
+        validator.adata.obs.pop("array_row")
+        validator.adata.obs.pop("in_tissue")
         validator.validate_adata()
         assert validator.errors == []
 
     def test_obsm_values_spatial_embedding_present__is_single_false(self, validator_with_visium_assay):
         validator = validator_with_visium_assay
         validator.adata.uns["spatial"] = {"is_single": False}
+        # Format adata.obs into valid shape for Visium and is_single False.
+        validator.adata.obs.pop("array_col")
+        validator.adata.obs.pop("array_row")
+        validator.adata.obs.pop("in_tissue")
         validator.validate_adata()
         assert validator.errors == []
 
