@@ -321,7 +321,7 @@ class TestCheckSpatial:
         validator.adata = adata_visium.copy()
 
         # Confirm spatial is valid.
-        validator._check_spatial_uns()
+        validator.validate_adata()
         assert not validator.errors
 
     def test__validate_spatial_slide_seqV2_ok(self):
@@ -330,7 +330,7 @@ class TestCheckSpatial:
         validator.adata = adata_slide_seqv2.copy()
 
         # Confirm spatial is valid.
-        validator._check_spatial_uns()
+        validator.validate_adata()
         assert not validator.errors
 
     def test__validate_spatial_is_single_false_ok(self):

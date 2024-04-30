@@ -1000,13 +1000,14 @@ class Validator:
                     self.errors.append(
                         f"Suffix for embedding key in 'adata.obsm' {key} does not match the regex pattern {regex_pattern}."
                     )
-            else:
+            elif key.lower() != "spatial":
                 if not re.match(regex_pattern, key):
                     self.errors.append(
                         f"Embedding key in 'adata.obsm' {key} does not match the regex pattern {regex_pattern}."
                     )
                 self.warnings.append(
-                    f"Embedding key in 'adata.obsm' {key} does not start with X_ and thus will not be available in Explorer"
+                    f"Embedding key in 'adata.obsm' {key} is not 'spatial' nor does it start with 'X_'. Thus, it will "
+                    f"not be available in Explorer"
                 )
                 issue_list = self.warnings
 
@@ -1036,6 +1037,21 @@ class Validator:
 
         if self._is_supported_spatial_assay() is False and obsm_with_x_prefix == 0:
             self.errors.append("At least one embedding in 'obsm' has to have a key with an 'X_' prefix.")
+
+        is_single = (
+            self.adata.uns["spatial"]["is_single"]
+            if "spatial" in self.adata.uns and "is_single" in self.adata.uns["spatial"]
+            else None
+        )
+        has_spatial_embedding = "spatial" in self.adata.obsm
+        if is_single and not has_spatial_embedding:
+            self.errors.append(
+                "'spatial' embedding is required in 'adata.obsm' if " "adata.uns['spatial']['is_single'] is True."
+            )
+        elif is_single is None and has_spatial_embedding:
+            self.errors.append(
+                "'spatial' embedding is forbidden in 'adata.obsm' if " "adata.uns['spatial']['is_single'] is not set."
+            )
 
     def _validate_annotation_mapping(self, component_name: str, component: Mapping):
         for key, value in component.items():
