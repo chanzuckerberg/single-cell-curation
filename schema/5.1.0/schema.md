@@ -1560,7 +1560,7 @@ Curators MUST annotate the following keys and values in `uns`:
         </td>
     </tr>
 </tbody></table>
-
+<br>
 
 #### spatial[_library_id_]['scalefactors']
 <table><tbody>
