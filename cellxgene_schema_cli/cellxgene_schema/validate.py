@@ -65,6 +65,19 @@ class Validator:
         self.reset()
         self._adata = adata
 
+    def _is_single(self) -> bool | None:
+        """
+        Determine value of uns.spatial.is_single. None if non-spatial.
+
+        :return Value of uns.spatial.is_single if specified, None otherwise.
+        :rtype bool | None
+        """
+        return (
+            self.adata.uns["spatial"]["is_single"]
+            if hasattr(self.adata, "uns") and "spatial" in self.adata.uns and "is_single" in self.adata.uns["spatial"]
+            else None
+        )
+
     def _is_supported_spatial_assay(self) -> bool:
         """
         Determine if the assay_ontology_term_id is either Visium (EFO:0010961) or Slide-seqV2 (EFO:0030062).
@@ -90,10 +103,7 @@ class Validator:
         :rtype bool
         """
         if self.is_visium_and_is_single_true is None:
-            try:
-                self.is_visium_and_is_single_true = self._is_visium() and self.adata.uns["spatial"]["is_single"]
-            except AttributeError:
-                self.is_visium_and_is_single_true = False
+            self.is_visium_and_is_single_true = bool(self._is_visium() and self._is_single())
         return self.is_visium_and_is_single_true
 
     def _validate_encoding_version(self):
@@ -1038,11 +1048,7 @@ class Validator:
         if self._is_supported_spatial_assay() is False and obsm_with_x_prefix == 0:
             self.errors.append("At least one embedding in 'obsm' has to have a key with an 'X_' prefix.")
 
-        is_single = (
-            self.adata.uns["spatial"]["is_single"]
-            if "spatial" in self.adata.uns and "is_single" in self.adata.uns["spatial"]
-            else None
-        )
+        is_single = self._is_single()
         has_spatial_embedding = "spatial" in self.adata.obsm
         if is_single and not has_spatial_embedding:
             self.errors.append(
@@ -1371,12 +1377,6 @@ class Validator:
         if obs_component is None:
             return
 
-        # obs spatial validation is dependent on uns.spatial.is_single; exit if not specified. Errors are
-        # reported downstream.
-        uns_component = getattr_anndata(self.adata, "uns")
-        if uns_component is None or "spatial" not in uns_component or "is_single" not in uns_component["spatial"]:
-            return
-
         # Validate tissue positions.
         self._validate_spatial_tissue_position("array_col", 0, 127)
         self._validate_spatial_tissue_position("array_row", 0, 77)
@@ -1409,10 +1409,10 @@ class Validator:
         :rtype none
         """
         # Tissue position is foribidden if assay is not Visium and is_single is True.
-        if (
-            tissue_position_name in self.adata.obs
-            and (
-                ~((self.adata.obs["assay_ontology_term_id"] == ASSAY_VISIUM) & (self.adata.uns["spatial"]["is_single"]))
+        if tissue_position_name in self.adata.obs and (
+            not self._is_visium_and_is_single_true()
+            or (
+                ~(self.adata.obs["assay_ontology_term_id"] == ASSAY_VISIUM)
                 & (self.adata.obs[tissue_position_name].notnull())
             ).any()
         ):

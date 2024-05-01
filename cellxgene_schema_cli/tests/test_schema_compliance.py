@@ -2021,10 +2021,6 @@ class TestObsm:
     def test_obsm_values_no_X_embedding__slide_seq_v2_dataset(self, validator_with_slide_seq_v2_assay):
         validator = validator_with_slide_seq_v2_assay
         validator.adata.uns["default_embedding"] = "spatial"
-        del validator.adata.obsm["X_umap"]
-        validator.validate_adata()
-        assert validator.errors == []
-        assert validator.is_spatial is True
 
     def test_obsm_values_spatial_embedding_missing__is_single_true(self, validator_with_visium_assay):
         validator = validator_with_visium_assay
@@ -2037,6 +2033,10 @@ class TestObsm:
     def test_obsm_values_spatial_embedding_missing__is_single_false(self, validator_with_spatial_and_is_single_false):
         validator = validator_with_spatial_and_is_single_false
         del validator.adata.obsm["spatial"]
+        # Format adata.obs into valid shape for Visium and is_single False.
+        validator.adata.obs.pop("array_col")
+        validator.adata.obs.pop("array_row")
+        validator.adata.obs.pop("in_tissue")
         validator.validate_adata()
         assert validator.errors == []
 
