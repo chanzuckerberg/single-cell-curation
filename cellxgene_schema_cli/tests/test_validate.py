@@ -694,6 +694,9 @@ class TestCheckSpatial:
             ("EFO:0010961", False),
             ("EFO:0030062", True),
             ("EFO:0030062", False),
+            ("EFO:0030062", False),
+            ("EFO:0009899", True),  # Non-spatial
+            ("EFO:0009899", False),  #  Non-spatial
         ],
     )
     def test__validate_tissue_position_forbidden(self, assay_ontology_term_id, is_single):
