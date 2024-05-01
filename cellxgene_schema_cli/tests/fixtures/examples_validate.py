@@ -142,11 +142,7 @@ good_obs_visium = pd.DataFrame(
             "HANCESTRO:0575",
             "HsapDv:0000003",
             "donor_1",
-<<<<<<< HEAD
             "na",
-=======
-            "nucleus",
->>>>>>> 4c8a739 (feat(schema 5.1.0): validate obs[array_col], obs[array_row] and obs[in_tissue])
             0,
         ],
         [
