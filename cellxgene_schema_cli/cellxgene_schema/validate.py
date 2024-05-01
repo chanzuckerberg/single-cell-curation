@@ -1391,9 +1391,9 @@ class Validator:
         """
         # Tissue position is foribidden if assay is not Visium and is_single is True.
         if tissue_position_name in self.adata.obs and (
-            not self._is_supported_spatial_assay
+            not self._is_visium_and_is_single_true()
             or (
-                ~((self.adata.obs["assay_ontology_term_id"] == ASSAY_VISIUM) & ((self._is_single() or False)))
+                ~(self.adata.obs["assay_ontology_term_id"] == ASSAY_VISIUM)
                 & (self.adata.obs[tissue_position_name].notnull())
             ).any()
         ):
