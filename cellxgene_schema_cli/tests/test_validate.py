@@ -737,7 +737,6 @@ class TestCheckSpatial:
         assert validator.errors
         assert f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED}" in validator.errors[0]
 
-
     @pytest.mark.parametrize("tissue_position_name", ["array_col", "array_row", "in_tissue"])
     def test__validate_tissue_position_int_error(self, tissue_position_name):
         validator: Validator = Validator()

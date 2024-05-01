@@ -1398,8 +1398,7 @@ class Validator:
             return
         if is_single is False and obs["is_primary_data"].any():
             self.errors.append(
-                "When uns['spatial']['is_single'] is False, "
-                "obs['is_primary_data'] must be False for all rows."
+                "When uns['spatial']['is_single'] is False, " "obs['is_primary_data'] must be False for all rows."
             )
 
     def _validate_spatial_tissue_position(self, tissue_position_name: str, min: int, max: int):

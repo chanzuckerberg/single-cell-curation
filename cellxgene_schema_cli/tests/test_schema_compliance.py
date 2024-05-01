@@ -62,10 +62,12 @@ def validator_with_adata_missing_raw(validator) -> Validator:
     validator.adata = examples.adata_non_raw.copy()
     return validator
 
+
 @pytest.fixture
 def validator_with_spatial_and_is_single_false(validator) -> Validator:
     validator.adata = examples.adata_spatial_is_single_false.copy()
     return validator
+
 
 @pytest.fixture
 def validator_with_visium_assay(validator) -> Validator:
