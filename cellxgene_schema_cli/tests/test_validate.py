@@ -13,6 +13,7 @@ from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.validate import (
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN,
+    ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED,
     Validator,
     validate,
@@ -439,9 +440,9 @@ class TestCheckSpatial:
         # Confirm library_id is not allowed for Slide-seqV2.
         validator._check_spatial_uns()
         assert len(validator.errors) == 1
-        assert f"uns['spatial'][library_id] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}" in validator.errors[0]
+        assert f"uns['spatial'][library_id] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}." in validator.errors[0]
 
-    def test__validate_library_id_forbidden_if_visium_and_is_single_false(self):
+    def test__validate_library_id_forbidden_if_visium_or_is_single_false(self):
         validator: Validator = Validator()
         validator._set_schema_def()
 
@@ -452,7 +453,7 @@ class TestCheckSpatial:
         # Confirm library_id is not allowed for Visium if is_single is False.
         validator._check_spatial_uns()
         assert len(validator.errors) == 1
-        assert f"uns['spatial'][library_id] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}" in validator.errors[0]
+        assert f"uns['spatial'][library_id] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}." in validator.errors[0]
 
     def test__validate_library_id_required_if_visium(self):
         validator: Validator = Validator()
@@ -464,7 +465,7 @@ class TestCheckSpatial:
         validator._check_spatial_uns()
         assert validator.errors
         assert (
-            f"uns['spatial'] must contain at least one key representing the library_id when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
+            f"uns['spatial'] must contain at least one key representing the library_id when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}."
             in validator.errors[0]
         )
 
@@ -714,7 +715,7 @@ class TestCheckSpatial:
         tissue_position_names = ["array_col", "array_row", "in_tissue"]
         for i, tissue_position_name in enumerate(tissue_position_names):
             assert (
-                f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}"
+                f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}."
                 in validator.errors[i]
             )
 
@@ -727,7 +728,9 @@ class TestCheckSpatial:
 
         validator._check_spatial_obs()
         assert validator.errors
-        assert f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED}" in validator.errors[0]
+        assert (
+            f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED}." in validator.errors[0]
+        )
 
     def test__validate_tissue_position_not_required(self):
         validator: Validator = Validator()
@@ -788,6 +791,43 @@ class TestCheckSpatial:
         validator._check_spatial_obs()
         assert validator.errors
         assert f"obs['{tissue_position_name}'] must be {error_message_token}" in validator.errors[0]
+
+    @pytest.mark.parametrize(
+        "cell_type_ontology_term_id, in_tissue",
+        [("unknown", 0), (["unknown", "CL:0000066"], [0, 1]), ("CL:0000066", 1)],
+    )
+    def test_validate_cell_type_ontology_term_id_ok(self, cell_type_ontology_term_id, in_tissue):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.obs.cell_type_ontology_term_id = cell_type_ontology_term_id
+        validator.adata.obs.in_tissue = in_tissue
+
+        # Confirm cell type is valid.
+        validator._validate_spatial_cell_type_ontology_term_id()
+        assert not validator.errors
+
+    @pytest.mark.parametrize(
+        "cell_type_ontology_term_id, in_tissue",
+        [
+            ("CL:0000066", 0),
+            (["CL:0000066", "unknown"], [0, 1]),
+        ],
+    )
+    def test_validate_cell_type_ontology_term_id_error(self, cell_type_ontology_term_id, in_tissue):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.obs.cell_type_ontology_term_id = cell_type_ontology_term_id
+        validator.adata.obs.in_tissue = in_tissue
+
+        # Confirm errors.
+        validator._validate_spatial_cell_type_ontology_term_id()
+        assert validator.errors
+        assert (
+            f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
+            in validator.errors[0]
+        )
 
 
 class TestSeuratConvertibility:

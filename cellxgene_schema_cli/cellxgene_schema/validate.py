@@ -25,9 +25,10 @@ ONTOLOGY_PARSER = OntologyParser(schema_version=f"v{schema.get_current_schema_ve
 ASSAY_VISIUM = "EFO:0010961"
 ASSAY_SLIDE_SEQV2 = "EFO:0030062"
 
-ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = "obs['assay_ontology_term_id'] 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
+ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = "obs['assay_ontology_term_id'] 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN = f"is only allowed for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED = f"is required for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
+ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0 = f"{ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE} and in_tissue is 0"
 
 
 class Validator:
@@ -1382,6 +1383,31 @@ class Validator:
         self._validate_spatial_tissue_position("array_row", 0, 77)
         self._validate_spatial_tissue_position("in_tissue", 0, 1)
 
+        # Validate cell type.
+        self._validate_spatial_cell_type_ontology_term_id()
+
+    def _validate_spatial_cell_type_ontology_term_id(self):
+        """
+        Validate cell type ontology term id is "unknown" if Visium, is_single is True and in_tissue is 0.
+
+        :rtype none
+        """
+        # Exit if:
+        # - not Visium and is_single is True as no further checks are necessary
+        # - in_tissue is not specified as checks are dependent on this value
+        if not self._is_visium_and_is_single_true() or "in_tissue" not in self.adata.obs:
+            return
+
+        # Validate cell type: must be "unknown" if Visium and is_single is True and in_tissue is 0.
+        if (
+            (self.adata.obs["assay_ontology_term_id"] == ASSAY_VISIUM)
+            & (self.adata.obs["in_tissue"] == 0)
+            & (self.adata.obs["cell_type_ontology_term_id"] != "unknown")
+        ).any():
+            self.errors.append(
+                f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
+            )
+
     def _validate_spatial_tissue_position(self, tissue_position_name: str, min: int, max: int):
         """
         Validate tissue position is allowed and required, and are integers within the given range. Validation is not defined in
@@ -1397,7 +1423,7 @@ class Validator:
                 & (self.adata.obs[tissue_position_name].notnull())
             ).any()
         ):
-            self.errors.append(f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}")
+            self.errors.append(f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}.")
             return
 
         # Exit if we're not dealing with Visium and _is_single True as no further checks are necessary.
@@ -1414,7 +1440,7 @@ class Validator:
                 & (self.adata.obs[tissue_position_name].isnull())
             ).any()
         ):
-            self.errors.append(f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED}")
+            self.errors.append(f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED}.")
             return
 
         # Tissue position must be an int.
@@ -1502,7 +1528,7 @@ class Validator:
         # library_id is forbidden if assay is not Visium or is_single is false.
         is_visium_and_uns_is_single = self._is_visium_and_is_single_true()
         if len(library_ids) > 0 and not is_visium_and_uns_is_single:
-            self.errors.append(f"uns['spatial'][library_id] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}")
+            self.errors.append(f"uns['spatial'][library_id] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}.")
             # Exit as library_id is not allowed.
             return
 
@@ -1513,7 +1539,7 @@ class Validator:
         # library_id is required if assay is Visium and is_single is True.
         if len(library_ids) == 0:
             self.errors.append(
-                f"uns['spatial'] must contain at least one key representing the library_id when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
+                f"uns['spatial'] must contain at least one key representing the library_id when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}."
             )
             # Exit as library_id is missing.
             return
