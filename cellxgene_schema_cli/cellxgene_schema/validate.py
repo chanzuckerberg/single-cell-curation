@@ -1405,7 +1405,7 @@ class Validator:
             & (self.adata.obs["cell_type_ontology_term_id"] != "unknown")
         ).any():
             self.errors.append(
-                f"obs['cell_term_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
+                f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
             )
 
     def _validate_spatial_tissue_position(self, tissue_position_name: str, min: int, max: int):
