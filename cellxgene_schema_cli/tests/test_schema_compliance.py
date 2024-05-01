@@ -2033,10 +2033,6 @@ class TestObsm:
     def test_obsm_values_spatial_embedding_missing__is_single_false(self, validator_with_spatial_and_is_single_false):
         validator = validator_with_spatial_and_is_single_false
         del validator.adata.obsm["spatial"]
-        # Format adata.obs into valid shape for Visium and is_single False.
-        validator.adata.obs.pop("array_col")
-        validator.adata.obs.pop("array_row")
-        validator.adata.obs.pop("in_tissue")
         validator.validate_adata()
         assert validator.errors == []
 

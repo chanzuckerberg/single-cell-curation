@@ -746,6 +746,7 @@ class TestCheckSpatial:
         validator.adata = adata_slide_seqv2.copy()
         validator.adata.obs["assay_ontology_term_id"] = ["EFO:0010961", "EFO:0030062"]
         validator.adata.uns["spatial"]["is_single"] = False
+        validator.adata.obs["is_primary_data"] = False
 
         validator._check_spatial_obs()
         assert not validator.errors
