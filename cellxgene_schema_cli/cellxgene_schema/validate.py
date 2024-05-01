@@ -103,7 +103,7 @@ class Validator:
         :rtype bool
         """
         if self.is_visium_and_is_single_true is None:
-            self.is_visium_and_is_single_true = self._is_visium() and (self._is_single() or False)
+            self.is_visium_and_is_single_true = bool(self._is_visium() and self._is_single())
         return self.is_visium_and_is_single_true
 
     def _validate_encoding_version(self):
