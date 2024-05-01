@@ -1423,7 +1423,7 @@ class Validator:
                 & (self.adata.obs[tissue_position_name].notnull())
             ).any()
         ):
-            self.errors.append(f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}")
+            self.errors.append(f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}.")
             return
 
         # Exit if we're not dealing with Visium and _is_single True as no further checks are necessary.
@@ -1440,7 +1440,7 @@ class Validator:
                 & (self.adata.obs[tissue_position_name].isnull())
             ).any()
         ):
-            self.errors.append(f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED}")
+            self.errors.append(f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED}.")
             return
 
         # Tissue position must be an int.
