@@ -1409,23 +1409,36 @@ class Validator:
 
         :rtype none
         """
-        # Tissue position is foribidden if assay is not Visium or is_single is False.
-        is_visium_and_uns_is_single = self._is_visium_and_is_single_true()
-        obs_tissue_position = self.adata.obs.get(tissue_position_name)
-        if obs_tissue_position is not None and not is_visium_and_uns_is_single:
+        # Tissue position is foribidden if assay is not Visium and is_single is True.
+        if (
+            tissue_position_name in self.adata.obs
+            and (
+                ~((self.adata.obs["assay_ontology_term_id"] == ASSAY_VISIUM) & (self.adata.uns["spatial"]["is_single"]))
+                & (self.adata.obs[tissue_position_name].notnull())
+            ).any()
+        ):
             self.errors.append(f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}")
             return
 
         # Exit if we're not dealing with Visium and _is_single True as no further checks are necessary.
-        if not is_visium_and_uns_is_single:
+        if not self._is_visium_and_is_single_true():
             return
 
-        # Tissue position is required.
-        if obs_tissue_position is None:
+        # At this point, is_single is True and:
+        # - there's at least one row with Visum, tissue position column is required
+        # - for any Visium row, tissue position is required.
+        if (
+            tissue_position_name not in self.adata.obs
+            or (
+                (self.adata.obs["assay_ontology_term_id"] == ASSAY_VISIUM)
+                & (self.adata.obs[tissue_position_name].isnull())
+            ).any()
+        ):
             self.errors.append(f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED}")
             return
 
         # Tissue position must be an int.
+        obs_tissue_position = self.adata.obs.get(tissue_position_name)
         if not np.issubdtype(obs_tissue_position.dtype, np.integer):
             self.errors.append(f"obs['{tissue_position_name}'] must be of int type, it is {obs_tissue_position.dtype}.")
             return

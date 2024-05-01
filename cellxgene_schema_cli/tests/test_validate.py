@@ -697,7 +697,14 @@ class TestCheckSpatial:
         )
 
     @pytest.mark.parametrize(
-        "assay_ontology_term_id, is_single", [("EFO:0030062", False), ("EFO:0010961", False), ("EFO:0030062", True)]
+        "assay_ontology_term_id, is_single",
+        [
+            (["EFO:0010961", "EFO:0030062"], True),
+            (["EFO:0010961", "EFO:0030062"], False),
+            ("EFO:0010961", False),
+            ("EFO:0030062", True),
+            ("EFO:0030062", False),
+        ],
     )
     def test__validate_tissue_position_forbidden(self, assay_ontology_term_id, is_single):
         validator: Validator = Validator()
@@ -729,6 +736,7 @@ class TestCheckSpatial:
         validator._check_spatial_obs()
         assert validator.errors
         assert f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED}" in validator.errors[0]
+
 
     @pytest.mark.parametrize("tissue_position_name", ["array_col", "array_row", "in_tissue"])
     def test__validate_tissue_position_int_error(self, tissue_position_name):
