@@ -64,6 +64,12 @@ def validator_with_adata_missing_raw(validator) -> Validator:
 
 
 @pytest.fixture
+def validator_with_spatial_and_is_single_false(validator) -> Validator:
+    validator.adata = examples.adata_spatial_is_single_false.copy()
+    return validator
+
+
+@pytest.fixture
 def validator_with_visium_assay(validator) -> Validator:
     validator.adata = examples.adata_visium.copy()
     return validator
@@ -1101,6 +1107,17 @@ class TestObs:
             "ERROR: Column 'is_primary_data' in dataframe 'obs' " "must be boolean, not 'object'."
         ]
 
+    def test_is_primary_data__spatial(self, validator_with_spatial_and_is_single_false):
+        """
+        is_primary_data	bool. This MUST be False if dataset has uns['spatial']['is_single'] == False
+        """
+        validator = validator_with_spatial_and_is_single_false
+        validator.adata.obs["is_primary_data"][0] = True
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: When uns['spatial']['is_single'] is False, obs['is_primary_data'] must be False for all rows."
+        ]
+
     def test_donor_id_must_be_categorical(self, validator_with_adata):
         """
         donor_id categorical with str categories. This MUST be free-text that identifies
@@ -1993,25 +2010,18 @@ class TestObsm:
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
         ]
 
-    @pytest.mark.parametrize(
-        "assay_ontology_term_id, uns_spatial",
-        [
-            ("EFO:0010961", examples.good_uns_with_visium_spatial["spatial"]),
-            ("EFO:0030062", examples.good_uns_with_slide_seqV2_spatial["spatial"]),
-        ],
-    )
-    def test_obsm_values_no_X_embedding__spatial_dataset(
-        self, validator_with_adata, assay_ontology_term_id, uns_spatial
-    ):
-        validator = validator_with_adata
-        validator.adata.obsm["harmony"] = validator.adata.obsm["X_umap"]
-        validator.adata.uns["default_embedding"] = "harmony"
-        validator.adata.uns["spatial"] = uns_spatial
-        validator.adata.obsm["spatial"] = validator.adata.obsm["X_umap"]
+    def test_obsm_values_no_X_embedding__visium_dataset(self, validator_with_visium_assay):
+        validator = validator_with_visium_assay
+        validator.adata.uns["default_embedding"] = "spatial"
         del validator.adata.obsm["X_umap"]
-        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
-        validator.adata.obs["suspension_type"] = "na"
-        validator.adata.obs.loc[:, ["suspension_type"]] = validator.adata.obs.astype("category")
+        validator.validate_adata()
+        assert validator.errors == []
+        assert validator.is_spatial is True
+
+    def test_obsm_values_no_X_embedding__slide_seq_v2_dataset(self, validator_with_slide_seq_v2_assay):
+        validator = validator_with_slide_seq_v2_assay
+        validator.adata.uns["default_embedding"] = "spatial"
+        del validator.adata.obsm["X_umap"]
         validator.validate_adata()
         assert validator.errors == []
         assert validator.is_spatial is True
@@ -2024,16 +2034,9 @@ class TestObsm:
             "ERROR: 'spatial' embedding is required in 'adata.obsm' if adata.uns['spatial']['is_single'] is True."
         ]
 
-    def test_obsm_values_spatial_embedding_missing__is_single_false(self, validator_with_visium_assay):
-        validator = validator_with_visium_assay
-        validator.adata.uns["spatial"] = {"is_single": False}
+    def test_obsm_values_spatial_embedding_missing__is_single_false(self, validator_with_spatial_and_is_single_false):
+        validator = validator_with_spatial_and_is_single_false
         del validator.adata.obsm["spatial"]
-        validator.validate_adata()
-        assert validator.errors == []
-
-    def test_obsm_values_spatial_embedding_present__is_single_false(self, validator_with_visium_assay):
-        validator = validator_with_visium_assay
-        validator.adata.uns["spatial"] = {"is_single": False}
         validator.validate_adata()
         assert validator.errors == []
 
