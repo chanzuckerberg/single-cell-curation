@@ -1043,7 +1043,7 @@ class Validator:
 
                 if unknown_key and value.shape[1] < 1:
                     self.errors.append(
-                        f"All other embeddings must have at least one column. 'adata.obsm['{key}']' has columns='{value.shape[1]}'."
+                        f"All unspecified embeddings must have at least one column. 'adata.obsm['{key}']' has columns='{value.shape[1]}'."
                     )
 
                 if not unknown_key and value.shape[1] < 2:
