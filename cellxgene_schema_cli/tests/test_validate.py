@@ -23,6 +23,7 @@ from fixtures.examples_validate import adata as adata_valid
 from fixtures.examples_validate import (
     adata_minimal,
     adata_slide_seqv2,
+    adata_spatial_is_single_false,
     adata_visium,
     adata_with_labels,
     good_obs,
@@ -328,6 +329,15 @@ class TestCheckSpatial:
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_slide_seqv2.copy()
+
+        # Confirm spatial is valid.
+        validator.validate_adata()
+        assert not validator.errors
+
+    def test__validate_spatial_is_single_false_ok(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_spatial_is_single_false.copy()
 
         # Confirm spatial is valid.
         validator.validate_adata()
@@ -708,6 +718,7 @@ class TestCheckSpatial:
         validator.adata = adata_visium.copy()
         validator.adata.obs.assay_ontology_term_id = assay_ontology_term_id
         validator.adata.uns["spatial"]["is_single"] = is_single
+        validator.adata.obs["is_primary_data"] = False
 
         # Confirm tissue positions are not allowed.
         validator._check_spatial_obs()
@@ -738,6 +749,7 @@ class TestCheckSpatial:
         validator.adata = adata_slide_seqv2.copy()
         validator.adata.obs["assay_ontology_term_id"] = ["EFO:0010961", "EFO:0030062"]
         validator.adata.uns["spatial"]["is_single"] = False
+        validator.adata.obs["is_primary_data"] = False
 
         validator._check_spatial_obs()
         assert not validator.errors
