@@ -334,6 +334,20 @@ class TestCheckSpatial:
         validator.validate_adata()
         assert not validator.errors
 
+    def test__validate_spatial_type_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"] = "invalid"
+
+        # Confirm key type dict is required.
+        validator._check_spatial_uns()
+        assert validator.errors
+        assert (
+            "A dict in uns['spatial'] is required for obs['assay_ontology_term_id'] values 'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)."
+            in validator.errors[0]
+        )
+
     def test__validate_spatial_is_single_false_ok(self):
         validator: Validator = Validator()
         validator._set_schema_def()
@@ -369,7 +383,7 @@ class TestCheckSpatial:
         validator._check_spatial_uns()
         assert len(validator.errors) == 1
         assert (
-            "uns['spatial'] is required for obs['assay_ontology_term_id'] values "
+            "A dict in uns['spatial'] is required for obs['assay_ontology_term_id'] values "
             "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)." in validator.errors[0]
         )
 
@@ -383,7 +397,7 @@ class TestCheckSpatial:
         validator._check_spatial_uns()
         assert len(validator.errors) == 1
         assert (
-            "uns['spatial'] is required for obs['assay_ontology_term_id'] values "
+            "A dict in uns['spatial'] is required for obs['assay_ontology_term_id'] values "
             "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)." in validator.errors[0]
         )
 
@@ -696,6 +710,18 @@ class TestCheckSpatial:
             "uns['spatial'][library_id]['scalefactors']['tissue_hires_scalef'] must be of type float"
             in validator.errors[0]
         )
+
+    @pytest.mark.parametrize("key", ["scalefactors", "images"])
+    def test__validate_library_id_key_value_type_error(self, key):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id][key] = "invalid"
+
+        # Confirm key type dict is required.
+        validator._check_spatial_uns()
+        assert validator.errors
+        assert f"uns['spatial'][library_id]['{key}'] must be a dictionary." in validator.errors[0]
 
     @pytest.mark.parametrize(
         "assay_ontology_term_id, is_single",

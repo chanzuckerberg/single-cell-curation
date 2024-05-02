@@ -1508,9 +1508,9 @@ class Validator:
             return
 
         # spatial is required for supported spatial assays.
-        if uns_spatial is None:
+        if not isinstance(uns_spatial, dict):
             self.errors.append(
-                "uns['spatial'] is required for obs['assay_ontology_term_id'] values "
+                "A dict in uns['spatial'] is required for obs['assay_ontology_term_id'] values "
                 "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)."
             )
             return
@@ -1571,9 +1571,12 @@ class Validator:
         if "images" not in uns_library_id:
             self.errors.append("uns['spatial'][library_id] must contain the key 'images'.")
         # images is specified: proceed with validation of images.
+        elif not isinstance(uns_library_id["images"], dict):
+            self.errors.append("uns['spatial'][library_id]['images'] must be a dictionary.")
         else:
             # Confirm shape of images is valid: allowed keys are fullres and hires.
             uns_images = uns_library_id["images"]
+
             if not self._has_no_extra_keys(uns_images, ["fullres", "hires"]):
                 self.errors.append(
                     "uns['spatial'][library_id]['images'] can only contain the keys 'fullres' and 'hires'."
@@ -1602,6 +1605,8 @@ class Validator:
         if "scalefactors" not in uns_library_id:
             self.errors.append("uns['spatial'][library_id] must contain the key 'scalefactors'.")
         # scalefactors is specified: proceed with validation of scalefactors.
+        elif not isinstance(uns_library_id["scalefactors"], dict):
+            self.errors.append("uns['spatial'][library_id]['scalefactors'] must be a dictionary.")
         else:
             # Confirm shape of scalefactors is valid: allowed keys are spot_diameter_fullres and tissue_hires_scalef.
             uns_scalefactors = uns_library_id["scalefactors"]
