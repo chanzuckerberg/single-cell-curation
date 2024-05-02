@@ -1385,7 +1385,7 @@ class Validator:
 
         # Validate cell type.
         self._validate_spatial_cell_type_ontology_term_id()
-        
+
         self._validate_spatial_is_primary_data()
 
     def _validate_spatial_is_primary_data(self):
