@@ -131,7 +131,7 @@ good_obs_visium = pd.DataFrame(
         [
             1,
             1,
-            "CL:0000066",
+            "unknown",
             "EFO:0010961",
             "MONDO:0100096",
             "NCBITaxon:9606",
