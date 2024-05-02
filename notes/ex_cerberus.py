@@ -9,7 +9,7 @@ import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 from cellxgene_schema import gencode
-from tests.fixtures.examples_validate import h5ad_valid
+from tests.fixtures.examples_validate import adata, h5ad_valid
 from utils import SPARSE_MATRIX_TYPES, get_matrix_format
 
 
@@ -60,8 +60,8 @@ class MyValidator(cerberus.Validator):
                 try:
                     value = getattr(_object, k)
                 except AttributeError:
-                    self._error(field, f"Attribute '{k}' not found in {field}.")
-                    continue
+                    if schemas[k].get("required", False):
+                        self._error(field, f"Attribute '{k}' not found in {field}.")
                 else:
                     document[k] = value
             if not validator(document, normalize=False):
@@ -202,14 +202,34 @@ class MyValidator(cerberus.Validator):
         if np.any(np.isnan(value)):
             self._error(field, "Array contains NaN values.")
 
-    def _validate_dtype(self, dtypes, field, value):
+    def _validate_dtype(self, criteria: dict, column_name: str, column: pd.Series):
         """
         The rule's arguments are validated against this schema:
-        {'type': ['list']}
+        {'type': 'dict'}
         """
-        if not any([value.dtype == dtype for dtype in dtypes]):
-            self._error(field, f"Array dtype must one of '{dtypes}'.")
-            self._drop_remaining_rules()
+        dtype = criteria.get("type")
+        if dtype == "boolean" and column.dtype != bool:
+            self.errors.append(f"Column '{column_name}' must be boolean, not '{column.dtype.name}'.")
+        elif dtype == "categorical":
+            if column.dtype.name != "category":
+                self.errors.append(f"Column '{column_name}' must be categorical, not {column.dtype.name}.")
+            else:
+                if criteria.get("subtype") == "string":
+                    if column.dtype.categories.dtype not in ["object", "string"]:
+                        self.errors.append(
+                            f"Column '{column_name}' must be object or string, not" f" {column.dtype.categories.dtype}."
+                        )
+                    else:
+                        if any(len(cat.strip()) == 0 for cat in column.dtype.categories):
+                            self.errors.append(f"Column '{column_name}' must not contain empty values.")
+
+                # check for null values--skip on column defs with enums, since it will already be part of that check
+                if not criteria.get("enum") and column.isnull().any():
+                    self.errors.append(f"Column '{column_name}' must not contain NaN values.")
+        elif criteria.get("kind") and column.dtype.kind != criteria["kind"]:
+            self.errors.append(
+                f"Column '{column_name}' must be of kind '{criteria['kind']}', not '{column.dtype.kind}'."
+            )
 
     def _check_with_unique(self, field, value):
         if isinstance(value, (pd.Index, pd.Series)) and value.nunique() != len(value):
@@ -275,56 +295,108 @@ class MyValidator(cerberus.Validator):
                     f"these features must be 0.",
                 )
 
+    def _validate_columns(self, column_schemas, field: str, df: pd.DataFrame):
+        """
+        The rule's arguments are validated against this schema:
+        {'type': 'list'}
+        """
 
-def validate_anndata(adata: ad.AnnData):
+        validator = self._get_child_validator(
+            document_crumb=field,
+            schema_crumb=(field, "columns"),
+            schema=column_schemas,
+        )
+        document = dict()
+        for k in column_schemas:
+            try:
+                value = df[k]
+            except KeyError:
+                if column_schemas[k].get("required", False):
+                    self._error(field, f"column '{k}' not found in {field}.")
+            else:
+                document[k] = value
+        if not validator(document, normalize=False):
+            self._error(validator._errors)
+
+    def _validate_index(self, index_schema: dict, field: str, df: pd.DataFrame):
+        """
+        The rule's arguments are validated against this schema:
+        {'type': 'dict'}
+        """
+        validator = self._get_child_validator(
+            document_crumb=field,
+            schema_crumb=(field, "index"),
+            schema={"index": index_schema},
+        )
+        document = dict(index=pd.Series(df.index))
+        if not validator(document, normalize=False):
+            self._error(validator._errors)
+
+
+def get_validator():
     obsm_schema = {
         "required": True,
-        "keysrules": {
-            "type": "string",
-            "regex": "^X_[a-zA-Z][a-zA-Z0-9_.-]*$",
-            "forbidden_case_insensative": ["x_spatial"],
-        },
-        "valuesrules": {
-            "type": "ndarray",
-            "attributes_schema": {
-                "shape": {
-                    "type": "list",
-                    "minlength": 2,
-                    "index_schemas": {
-                        0: {"type": "integer", "check_with": "equal_to_X_rows"},
-                        1: {"type": "integer", "min": 2},
-                    },
-                    "items": [{"type": "integer", "check_with": "equal_to_X_rows"}, {"type": "integer", "min": 2}],
+        "anyof": [
+            {
+                "keysrules": {
+                    "type": "string",
+                    "regex": "^X_[a-zA-Z][a-zA-Z0-9_.-]*$",
+                    "forbidden_case_insensative": ["x_spatial"],
                 },
-                "dtype": {
+                "valuesrules": {
+                    "type": "ndarray",
                     "attributes_schema": {
-                        "kind": {"type": "string", "allowed": ["f", "i", "u"]},
-                    }
+                        "shape": {
+                            "type": "list",
+                            "minlength": 2,
+                            "index_schemas": {
+                                0: {"type": "integer", "check_with": "equal_to_X_rows"},
+                                1: {"type": "integer", "min": 2},
+                            },
+                            "items": [
+                                {"type": "integer", "check_with": "equal_to_X_rows"},
+                                {"type": "integer", "min": 2},
+                            ],
+                        },
+                        "dtype": {
+                            "attributes_schema": {
+                                "kind": {"type": "string", "allowed": ["f", "i", "u"]},
+                            }
+                        },
+                        "size": {"type": "integer", "min": 1},
+                    },
+                    "check_with": ["ndarray_not_any_ninf", "ndarray_not_any_inf", "ndarray_not_all_nan"],
                 },
-                "size": {"type": "integer", "min": 1},
             },
-            "check_with": ["ndarray_not_any_ninf", "ndarray_not_any_inf", "ndarray_not_all_nan"],
-        },
-        "check_with": "annotation_mapping",
+            {
+                "keysrules": {
+                    "type": "string",
+                    "regex": "^(?!X_)[a-zA-Z][a-zA-Z0-9_.-]*$",
+                },
+                "valuesrules": {"type": "ndarray", "attributes_schema": {"size": {"type": "integer", "min": 1}}},
+            }
+            # TODO: need to support keys that don't start with X_{suffix}
+        ],
     }
     var_schema_common = {
         "type": "dataframe",
+        "index": {
+            "check_with": ["unique", "feature_id"],
+            "dtype": {"type": "string"},
+        },
         "attributes_schema": {
-            "index": {
-                "check_with": ["unique", "feature_id"],
-            },
             "shape": {"index_schemas": {0: {"warn": {"min": 2000}}}},  # row min length
         },
     }
     var_schema = deepcopy(var_schema_common)
     var_schema["attributes_schema"]["feature_is_filtered"] = {
         "required": True,
-        "dtype": [bool],
+        "dtype": {"type": "boolean"},
         "check_with": "feature_is_filtered",
     }
     var_schema["required"] = True
     var_raw_schema = deepcopy(var_schema_common)
-    var_raw_schema["forbidden_attributes"] = ["feature_is_filtered"]
+    # var_raw_schema["forbidden"] = ["feature_is_filtered"]
 
     uns_schema = {
         "type": "dict",
@@ -414,15 +486,20 @@ def validate_anndata(adata: ad.AnnData):
             },
         },
     }
-    v = MyValidator(schema, error_handler=CustomErrorHandler())
-    if not v.validate(dict(adata=adata), normalize=False):
-        print(json.dumps(v.errors, indent=4))
+    return MyValidator(schema, error_handler=CustomErrorHandler())
 
 
-# validate_anndata(adata)
+def validate_anndata(adata: ad.AnnData, validator):
+    if not validator.validate(dict(adata=adata), normalize=False):
+        print(json.dumps(validator.errors, indent=4))
+
+
+VALIDATOR = get_validator()
+
+validate_anndata(adata, VALIDATOR)
 
 _adata = ad.read_h5ad(h5ad_valid, backed="r")
-validate_anndata(_adata)
+validate_anndata(_adata, VALIDATOR)
 
 _adata.uns["title"] = [1, 2, 3]
 _adata.uns[1] = None
@@ -430,4 +507,5 @@ _adata.uns["asdfads"] = "asfasdf"
 _adata.uns["project_name"] = "project_name"
 _adata.uns["X_approximate_distribution"] = "asdf"
 _adata.obsm["X_spatial"] = _adata.obsm["X_pca"]
-# validate_anndata(_adata)
+_adata.obsm["abcd"] = _adata.obsm["X_pca"]
+validate_anndata(_adata, VALIDATOR)
