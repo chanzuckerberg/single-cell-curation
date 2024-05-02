@@ -999,9 +999,6 @@ class Validator:
 
         obsm_with_x_prefix = 0
         for key, value in self.adata.obsm.items():
-            if not isinstance(key, str):
-                # no validation on none string OBSM key types.
-                continue
             issue_list = self.errors
 
             regex_pattern = r"^[a-zA-Z][a-zA-Z0-9_.-]*$"
