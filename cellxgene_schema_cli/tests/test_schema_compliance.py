@@ -2137,9 +2137,22 @@ class TestObsm:
         validator.adata.obsm[key] = numpy.delete(validator.adata.obsm[key], 0, 1)
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: All embeddings must have as many rows as cells, and "
-            f"at least two columns. 'adata.obsm['{key}']' has shape "
-            "of '(2, 1)'."
+            "ERROR: All 'X_' and 'spatial' embeddings must have at least two columns. "
+            f"'adata.obsm['{key}']' has columns='1'."
+        ]
+
+    def test_obsm_shape_zero_column_with_unknown_key(self, validator_with_adata):
+        """
+        embeddings that are not 'X_' or 'spatial' that are ndarrays must have at least one column
+        """
+        # Makes 0 column array
+        validator = validator_with_adata
+        n_obs = validator_with_adata.adata.n_obs
+        validator.adata.obsm["unknown"] = numpy.zeros((n_obs, 0))
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: The size of the ndarray stored for a 'adata.obsm['unknown']' MUST NOT " "be zero.",
+            "ERROR: All other embeddings must have at least one column. " "'adata.obsm['unknown']' has columns='0'.",
         ]
 
     def test_obsm_shape_same_rows_and_columns(self, validator_with_adata):
@@ -2167,7 +2180,8 @@ class TestObsm:
         validator.adata = save_and_read_adata(adata)
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: The size of the ndarray stored for a 'adata.obsm['badsize']' MUST NOT be zero.",
+            "ERROR: The size of the ndarray stored for a 'adata.obsm['badsize']' MUST NOT " "be zero.",
+            "ERROR: All other embeddings must have at least one column. " "'adata.obsm['badsize']' has columns='0'.",
         ]
 
 

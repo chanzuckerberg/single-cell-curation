@@ -968,6 +968,9 @@ class Validator:
 
         obsm_with_x_prefix = 0
         for key, value in self.adata.obsm.items():
+            if not isinstance(key, str):
+                # no validation on none string OBSM key types.
+                continue
             issue_list = self.errors
 
             regex_pattern = r"^[a-zA-Z][a-zA-Z0-9_.-]*$"
@@ -1007,17 +1010,17 @@ class Validator:
             else:
                 if value.shape[0] != self.adata.n_obs:
                     self.errors.append(
-                        f"All embeddings must have as many rows as cells. 'adata.obsm['{key}']' has shape of '{value.shape[0]}'."
+                        f"All embeddings must have as many rows as cells. 'adata.obsm['{key}']' has rows='{value.shape[0]}'."
                     )
 
                 if unknown_key and value.shape[1] < 1:
                     self.errors.append(
-                        f"All other embeddings must have at least one column. 'adata.obsm['{key}']' has shape of '{value.shape[1]}'."
+                        f"All other embeddings must have at least one column. 'adata.obsm['{key}']' has columns='{value.shape[1]}'."
                     )
 
                 if not unknown_key and value.shape[1] < 2:
                     self.errors.append(
-                        f"All 'X_' and 'spatial' embeddings must have at least two columns. 'adata.obsm['{key}']' has shape of '{value.shape[1]}'."
+                        f"All 'X_' and 'spatial' embeddings must have at least two columns. 'adata.obsm['{key}']' has columns='{value.shape[1]}'."
                     )
 
             if not (np.issubdtype(value.dtype, np.integer) or np.issubdtype(value.dtype, np.floating)):
@@ -1298,7 +1301,8 @@ class Validator:
             for column in adata_component.columns:
                 if column in component_columns:
                     raise ValueError(
-                        f"Duplicate column name '{column}' detected in 'adata.{df_component}' DataFrame. All DataFrame column names must be unique."
+                        f"Duplicate column name '{column}' detected in 'adata.{df_component}' DataFrame. All "
+                        f"DataFrame column names must be unique."
                     )
                 component_columns.add(column)
 
@@ -1429,7 +1433,8 @@ class Validator:
         # library_id is required if assay is Visium and is_single is True.
         if len(library_ids) == 0:
             self.errors.append(
-                "uns['spatial'] must contain at least one key representing the library_id when obs['assay_ontology_term_id'] "
+                "uns['spatial'] must contain at least one key representing the library_id when obs["
+                "'assay_ontology_term_id'] "
                 "'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
             )
             # Exit as library_id is missing.
@@ -1499,8 +1504,10 @@ class Validator:
                 spot_diameter_fullres = uns_scalefactors["spot_diameter_fullres"]
                 if not isinstance(spot_diameter_fullres, float):
                     self.errors.append(
-                        "uns['spatial'][library_id]['scalefactors']['spot_diameter_fullres'] must be of type float, it is "
-                        f"{type(spot_diameter_fullres)}. This must be the value of the spot_diameter_fullres field from scalefactors_json.json"
+                        "uns['spatial'][library_id]['scalefactors']['spot_diameter_fullres'] must be of type float, "
+                        "it is "
+                        f"{type(spot_diameter_fullres)}. This must be the value of the spot_diameter_fullres field "
+                        f"from scalefactors_json.json"
                     )
 
             # tissue_hires_scalef is required.
@@ -1513,8 +1520,10 @@ class Validator:
                 tissue_hires_scalef = uns_scalefactors["tissue_hires_scalef"]
                 if not isinstance(tissue_hires_scalef, float):
                     self.errors.append(
-                        "uns['spatial'][library_id]['scalefactors']['tissue_hires_scalef'] must be of type float, it is "
-                        f"{type(tissue_hires_scalef)}. This must be the value of the tissue_hires_scalef field from scalefactors_json.json"
+                        "uns['spatial'][library_id]['scalefactors']['tissue_hires_scalef'] must be of type float, "
+                        "it is "
+                        f"{type(tissue_hires_scalef)}. This must be the value of the tissue_hires_scalef field from "
+                        f"scalefactors_json.json"
                     )
 
     def _has_no_extra_keys(self, dictionary: dict, allowed_keys: List[str]) -> bool:
