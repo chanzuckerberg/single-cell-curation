@@ -999,7 +999,7 @@ class Validator:
                 continue
 
             if len(value.shape) < 2 or value.shape[0] != self.adata.n_obs or value.shape[1] < 2:
-                issue_list.append(
+                self.errors.append(
                     f"All embeddings must have as many rows as cells, and at least two columns."
                     f" 'adata.obsm['{key}']' has shape of '{value.shape}'."
                 )
