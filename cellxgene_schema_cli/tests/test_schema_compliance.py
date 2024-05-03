@@ -16,7 +16,7 @@ from cellxgene_schema.utils import getattr_anndata
 from cellxgene_schema.validate import (
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE,
     Validator,
-    VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
+    VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE,
 )
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 
@@ -265,7 +265,9 @@ class TestExpressionMatrix:
         validator = validator_with_visium_assay
         validator.adata.obs["in_tissue"] = 0
         validator.adata.obs["cell_type_ontology_term_id"] = "unknown"
-        validator.adata.X = numpy.zeros([validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32)
+        validator.adata.X = numpy.zeros(
+            [validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32
+        )
         validator.adata.raw = validator.adata.copy()
         validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
         validator.validate_adata()
@@ -312,8 +314,9 @@ class TestExpressionMatrix:
 
         validator = validator_with_visium_assay
         validator.visium_and_is_single_true_matrix_size = VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
-        validator.adata.X = numpy.zeros([validator.adata.obs.shape[0], validator.adata.var.shape[0]],
-                                        dtype=numpy.float32)
+        validator.adata.X = numpy.zeros(
+            [validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32
+        )
         validator.adata.raw = validator.adata.copy()
         validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
         validator.validate_adata()
