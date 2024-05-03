@@ -191,15 +191,15 @@ class MyValidator(cerberus.Validator):
             self._error(field, "must be equal to the number of rows in 'adata.X'.")
 
     def _check_with_ndarray_not_any_ninf(self, field, value):
-        if np.any(np.isneginf(value)):
+        if isinstance(value, np.ndarray) and np.any(np.isneginf(value)):
             self._error(field, "Array contains negative infinity values.")
 
     def _check_with_ndarray_not_any_inf(self, field, value):
-        if np.any(np.isinf(value)):
+        if isinstance(value, np.ndarray) and np.any(np.isinf(value)):
             self._error(field, "Array contains infinity values.")
 
     def _check_with_ndarray_not_all_nan(self, field, value):
-        if np.any(np.isnan(value)):
+        if isinstance(value, np.ndarray) and np.any(np.isnan(value)):
             self._error(field, "Array contains NaN values.")
 
     def _validate_dtype(self, criteria: dict, column_name: str, column: pd.Series):
@@ -459,27 +459,21 @@ def get_validator():
         ],
     }
     schema = {
-        "adata": {
-            "type": "anndata",
+        "adata": {"type": "anndata", "required": True, "encoding_version": "0.1.0"},
+        "obs": {
+            "type": "dataframe",
             "required": True,
-            "encoding_version": "0.1.0",
+        },
+        "var": var_schema,
+        "obsm": obsm_schema,
+        "obsp": {"check_with": "annotation_mapping"},
+        "varm": {"check_with": "annotation_mapping"},
+        "varp": {"check_with": "annotation_mapping"},
+        "uns": uns_schema,
+        "raw": {
             "attributes_schema": {
-                "obs": {
-                    "type": "dataframe",
-                    "required": True,
-                },
-                "var": var_schema,
-                "obsm": obsm_schema,
-                "obsp": {"check_with": "annotation_mapping"},
-                "varm": {"check_with": "annotation_mapping"},
-                "varp": {"check_with": "annotation_mapping"},
-                "uns": uns_schema,
-                "raw": {
-                    "attributes_schema": {
-                        # "X": {"type": "ndarray"},
-                        "var": var_raw_schema
-                    },
-                },
+                # "X": {"type": "ndarray"},
+                "var": var_raw_schema
             },
         },
     }
@@ -487,22 +481,33 @@ def get_validator():
 
 
 def validate_anndata(adata: ad.AnnData, validator):
-    if not validator.validate(dict(adata=adata), normalize=False):
+    document = dict(
+        adata=adata,
+        obs=adata.obs,
+        var=adata.var,
+        obsm=adata.obsm,
+        obsp=adata.obsp,
+        varm=adata.varm,
+        varp=adata.varp,
+        uns=adata.uns,
+        raw=adata.raw,
+    )
+    if not validator.validate(document, normalize=False):
         print(json.dumps(validator.errors, indent=4))
 
 
-VALIDATOR = get_validator()
+if __name__ == "__main__":
+    VALIDATOR = get_validator()
+    validate_anndata(adata, VALIDATOR)
 
-validate_anndata(adata, VALIDATOR)
+    _adata = ad.read_h5ad(h5ad_valid, backed="r")
+    validate_anndata(_adata, VALIDATOR)
 
-_adata = ad.read_h5ad(h5ad_valid, backed="r")
-validate_anndata(_adata, VALIDATOR)
-
-_adata.uns["title"] = [1, 2, 3]
-_adata.uns[1] = None
-_adata.uns["asdfads"] = "asfasdf"
-_adata.uns["project_name"] = "project_name"
-_adata.uns["X_approximate_distribution"] = "asdf"
-_adata.obsm["X_spatial"] = _adata.obsm["X_pca"]
-_adata.obsm["abcd"] = _adata.obsm["X_pca"]
-validate_anndata(_adata, VALIDATOR)
+    _adata.uns["title"] = [1, 2, 3]
+    _adata.uns[1] = None
+    _adata.uns["asdfads"] = "asfasdf"
+    _adata.uns["project_name"] = "project_name"
+    _adata.uns["X_approximate_distribution"] = "asdf"
+    _adata.obsm["X_spatial"] = _adata.obsm["X_pca"]
+    _adata.obsm["abcd"] = _adata.obsm["X_pca"]
+    validate_anndata(_adata, VALIDATOR)
