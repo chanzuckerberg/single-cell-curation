@@ -276,10 +276,8 @@ class MyValidator(cerberus.Validator):
             x_format = get_matrix_format(adata, adata.X)
             if x_format in SPARSE_MATRIX_TYPES:
                 n_nonzero = adata.X[:, column].count_nonzero()
-
             elif x_format == "dense":
                 n_nonzero = np.count_nonzero(adata.X[:, column])
-
             else:
                 self._error(
                     field,
@@ -374,8 +372,7 @@ def get_validator():
                     "regex": "^(?!X_)[a-zA-Z][a-zA-Z0-9_.-]*$",
                 },
                 "valuesrules": {"type": "ndarray", "attributes_schema": {"size": {"type": "integer", "min": 1}}},
-            }
-            # TODO: need to support keys that don't start with X_{suffix}
+            },
         ],
     }
     var_schema_common = {
