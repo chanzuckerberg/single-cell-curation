@@ -1188,9 +1188,8 @@ class Validator:
                 elif not all(np.apply_along_axis(np.any, axis=1, arr=matrix_chunk)):
                     has_row_of_zeros = True
 
-            if not has_invalid_nonzero_value:
-                if self._matrix_has_invalid_nonzero_values(matrix_chunk):
-                    has_invalid_nonzero_value = True
+            if not has_invalid_nonzero_value and self._matrix_has_invalid_nonzero_values(matrix_chunk):
+                has_invalid_nonzero_value = True
 
             if has_row_of_zeros and has_invalid_nonzero_value:
                 # Fail fast, exit loop and report

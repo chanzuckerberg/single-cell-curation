@@ -15,8 +15,8 @@ from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.utils import getattr_anndata
 from cellxgene_schema.validate import (
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE,
-    Validator,
     VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE,
+    Validator,
 )
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 
