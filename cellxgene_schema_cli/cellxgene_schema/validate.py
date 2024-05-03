@@ -1468,6 +1468,20 @@ class Validator:
         # Validate cell type.
         self._validate_spatial_cell_type_ontology_term_id()
 
+        self._validate_spatial_is_primary_data()
+
+    def _validate_spatial_is_primary_data(self):
+        """
+        Validate is_primary_data for spatial datasets.
+        """
+        obs = getattr_anndata(self.adata, "obs")
+        if obs is None or "is_primary_data" not in obs:
+            return
+        if self._is_single() is False and obs["is_primary_data"].any():
+            self.errors.append(
+                "When uns['spatial']['is_single'] is False, obs['is_primary_data'] must be False for all rows."
+            )
+
     def _validate_spatial_cell_type_ontology_term_id(self):
         """
         Validate cell type ontology term id is "unknown" if Visium, is_single is True and in_tissue is 0.

@@ -240,6 +240,58 @@ good_obs_slide_seqv2.loc[:, ["donor_id"]] = good_obs_slide_seqv2.astype("categor
 good_obs_slide_seqv2.loc[:, ["suspension_type"]] = good_obs_slide_seqv2.astype("category")
 good_obs_slide_seqv2.loc[:, ["tissue_type"]] = good_obs.astype("category")
 
+good_obs_visium_is_single_false = pd.DataFrame(
+    [
+        [
+            "CL:0000066",
+            "EFO:0010961",
+            "MONDO:0100096",
+            "NCBITaxon:9606",
+            "PATO:0000383",
+            "UBERON:0002048",
+            "tissue",
+            False,
+            "HANCESTRO:0575",
+            "HsapDv:0000003",
+            "donor_1",
+            "na",
+        ],
+        [
+            "CL:0000192",
+            "EFO:0010961",
+            "PATO:0000461",
+            "NCBITaxon:10090",
+            "unknown",
+            "CL:0000192",
+            "cell culture",
+            False,
+            "na",
+            "MmusDv:0000003",
+            "donor_2",
+            "na",
+        ],
+    ],
+    index=["X", "Y"],
+    columns=[
+        "cell_type_ontology_term_id",
+        "assay_ontology_term_id",
+        "disease_ontology_term_id",
+        "organism_ontology_term_id",
+        "sex_ontology_term_id",
+        "tissue_ontology_term_id",
+        "tissue_type",
+        "is_primary_data",
+        "self_reported_ethnicity_ontology_term_id",
+        "development_stage_ontology_term_id",
+        "donor_id",
+        "suspension_type",
+    ],
+)
+
+good_obs_visium_is_single_false.loc[:, ["donor_id"]] = good_obs_visium_is_single_false.astype("category")
+good_obs_visium_is_single_false.loc[:, ["suspension_type"]] = good_obs_visium_is_single_false.astype("category")
+good_obs_visium_is_single_false.loc[:, ["tissue_type"]] = good_obs_visium_is_single_false.astype("category")
+
 # ---
 # 2. Creating individual var components: valid object and valid object and with labels
 
@@ -327,6 +379,14 @@ good_uns_with_visium_spatial = {
     },
 }
 
+good_uns_with_is_single_false = {
+    "title": "A title",
+    "default_embedding": "X_umap",
+    "X_approximate_distribution": "normal",
+    "batch_condition": ["is_primary_data"],
+    "spatial": {"is_single": False},
+}
+
 good_uns_with_slide_seqV2_spatial = {
     "title": "A title",
     "default_embedding": "X_umap",
@@ -406,6 +466,14 @@ adata_slide_seqv2 = anndata.AnnData(
     X=sparse.csr_matrix(X),
     obs=good_obs_slide_seqv2,
     uns=good_uns_with_slide_seqV2_spatial,
+    obsm=good_obsm_spatial,
+    var=good_var,
+)
+
+adata_spatial_is_single_false = anndata.AnnData(
+    X=sparse.csr_matrix(X),
+    obs=good_obs_visium_is_single_false,
+    uns=good_uns_with_is_single_false,
     obsm=good_obsm_spatial,
     var=good_var,
 )
