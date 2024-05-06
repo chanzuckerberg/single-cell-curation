@@ -458,6 +458,8 @@ adata_with_colors = anndata.AnnData(
 adata_visium = anndata.AnnData(
     X=sparse.csr_matrix(X), obs=good_obs_visium, uns=good_uns_with_visium_spatial, obsm=good_obsm_spatial, var=good_var
 )
+adata_visium.raw = adata_visium.copy()
+adata_visium.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
 
 # Expected anndata with Slide-seqV2 spatial data
 adata_slide_seqv2 = anndata.AnnData(
