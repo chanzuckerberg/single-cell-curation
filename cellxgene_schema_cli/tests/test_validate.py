@@ -599,7 +599,8 @@ class TestCheckSpatial:
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.uns["spatial"][visium_library_id]["images"][image_name] = np.zeros(image_shape, dtype=np.int16)
+        # Defaults to float64.
+        validator.adata.uns["spatial"][visium_library_id]["images"][image_name] = np.zeros(image_shape)
 
         # Confirm image is identified as invalid.
         validator._check_spatial_uns()
