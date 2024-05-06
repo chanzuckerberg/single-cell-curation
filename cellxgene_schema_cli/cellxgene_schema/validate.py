@@ -1757,7 +1757,7 @@ class Validator:
 
         :param np.ndarray image: the image to check the shape of.
 
-        :return True if image has shape (,,3), False otherwise.
+        :return True if image has shape (,,3 or 4), False otherwise.
         :rtype bool
         """
         return len(image.shape) == 3 and image.shape[2] in [3, 4]
