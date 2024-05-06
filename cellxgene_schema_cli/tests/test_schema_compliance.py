@@ -2057,7 +2057,10 @@ class TestObsm:
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' harmony is not 'spatial' nor does it start with 'X_'. "
             "Thus, it will not be available in Explorer",
-            "WARNING: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['harmony']' is <class 'pandas.core.frame.DataFrame'>').",
+            "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
+        ]
+        assert validator.errors == [
+            "ERROR: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['harmony']' is <class 'pandas.core.frame.DataFrame'>')."
         ]
 
     def test_obsm_values_suffix_is_forbidden(self, validator_with_adata):
@@ -2080,13 +2083,14 @@ class TestObsm:
         validator.adata.obsm["3D"] = pd.DataFrame(validator.adata.obsm["X_umap"], index=validator.adata.obs_names)
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Embedding key in 'adata.obsm' 3D does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$."
+            "ERROR: Embedding key in 'adata.obsm' 3D does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$.",
+            "ERROR: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['3D']' is <class "
+            "'pandas.core.frame.DataFrame'>').",
         ]
         assert validator.warnings == [
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' 3D is not 'spatial' nor does it start with 'X_'. "
             "Thus, it will not be available in Explorer",
-            "WARNING: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['3D']' is <class 'pandas.core.frame.DataFrame'>').",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
         ]
 
@@ -2136,9 +2140,23 @@ class TestObsm:
         validator.adata.obsm[key] = numpy.delete(validator.adata.obsm[key], 0, 1)
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: All embeddings must have as many rows as cells, and "
-            f"at least two columns. 'adata.obsm['{key}']' has shape "
-            "of '(2, 1)'."
+            "ERROR: All 'X_' and 'spatial' embeddings must have at least two columns. "
+            f"'adata.obsm['{key}']' has columns='1'."
+        ]
+
+    def test_obsm_shape_zero_column_with_unknown_key(self, validator_with_adata):
+        """
+        embeddings that are not 'X_' or 'spatial' that are ndarrays must have at least one column
+        """
+        # Makes 0 column array
+        validator = validator_with_adata
+        n_obs = validator_with_adata.adata.n_obs
+        validator.adata.obsm["unknown"] = numpy.zeros((n_obs, 0))
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: The size of the ndarray stored for a 'adata.obsm['unknown']' MUST NOT " "be zero.",
+            "ERROR: All unspecified embeddings must have at least one column. "
+            "'adata.obsm['unknown']' has columns='0'.",
         ]
 
     def test_obsm_shape_same_rows_and_columns(self, validator_with_adata):
@@ -2166,7 +2184,9 @@ class TestObsm:
         validator.adata = save_and_read_adata(adata)
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: The size of the ndarray stored for a 'adata.obsm['badsize']' MUST NOT be zero.",
+            "ERROR: The size of the ndarray stored for a 'adata.obsm['badsize']' MUST NOT " "be zero.",
+            "ERROR: All unspecified embeddings must have at least one column. "
+            "'adata.obsm['badsize']' has columns='0'.",
         ]
 
 
