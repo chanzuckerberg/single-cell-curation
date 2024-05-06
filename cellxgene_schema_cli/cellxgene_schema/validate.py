@@ -1007,6 +1007,7 @@ class Validator:
 
             regex_pattern = r"^[a-zA-Z][a-zA-Z0-9_.-]*$"
 
+            unknown_key = False  # an unknown key does not match 'spatial' or 'X_{suffix}'
             if key.startswith("X_"):
                 obsm_with_x_prefix += 1
                 if key.lower() == "x_spatial":
@@ -1025,19 +1026,35 @@ class Validator:
                     f"not be available in Explorer"
                 )
                 issue_list = self.warnings
+                unknown_key = True
 
             if not isinstance(value, np.ndarray):
-                issue_list.append(
+                self.errors.append(
                     f"All embeddings have to be of 'numpy.ndarray' type, " f"'adata.obsm['{key}']' is {type(value)}')."
                 )
                 # Skip over the subsequent checks that require the value to be an array
                 continue
 
-            if len(value.shape) < 2 or value.shape[0] != self.adata.n_obs or value.shape[1] < 2:
-                issue_list.append(
-                    f"All embeddings must have as many rows as cells, and at least two columns."
-                    f" 'adata.obsm['{key}']' has shape of '{value.shape}'."
+            if len(value.shape) < 2:
+                self.errors.append(
+                    f"All embeddings must at least two dimensions. 'adata.obsm['{key}']' has a shape length of '{len(value.shape)}'."
                 )
+            else:
+                if value.shape[0] != self.adata.n_obs:
+                    self.errors.append(
+                        f"All embeddings must have as many rows as cells. 'adata.obsm['{key}']' has rows='{value.shape[0]}'."
+                    )
+
+                if unknown_key and value.shape[1] < 1:
+                    self.errors.append(
+                        f"All unspecified embeddings must have at least one column. 'adata.obsm['{key}']' has columns='{value.shape[1]}'."
+                    )
+
+                if not unknown_key and value.shape[1] < 2:
+                    self.errors.append(
+                        f"All 'X_' and 'spatial' embeddings must have at least two columns. 'adata.obsm['{key}']' has columns='{value.shape[1]}'."
+                    )
+
             if not (np.issubdtype(value.dtype, np.integer) or np.issubdtype(value.dtype, np.floating)):
                 issue_list.append(
                     f"adata.obsm['{key}'] has an invalid data type. It should be "
