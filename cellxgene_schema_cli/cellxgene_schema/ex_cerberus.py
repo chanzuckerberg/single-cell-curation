@@ -44,6 +44,20 @@ class MyValidator(cerberus.Validator):
         self.gene_checkers = {}
         super(MyValidator, self).__init__(*args, **kwargs)
 
+    # def _validate_forbidden(self, forbidden_values, field, value):
+    #     """{'type': ['list', 'dict']}"""
+    #     if isinstance(forbidden_values, dict) and isinstance(value, _str_type):
+    #         case_sensative = forbidden_values.get("case_sensative", False)
+    #         suffix = forbidden_values.get("suffix", "")
+    #         prefix = forbidden_values.get("prefix", "")
+    #     if isinstance(value, Sequence) and not isinstance(value, _str_type):
+    #         forbidden = set(value) & set(forbidden_values)
+    #         if forbidden:
+    #             self._error(field, errors.FORBIDDEN_VALUES, list(forbidden))
+    #     else:
+    #         if value in forbidden_values:
+    #             self._error(field, errors.FORBIDDEN_VALUE, value)
+
     def _validate_attributes_schema(self, schemas: dict, field: str, _object: object) -> None:
         """
         The rule's arguments are validated against this schema:
@@ -185,6 +199,20 @@ class MyValidator(cerberus.Validator):
                 self._error(field, f"Attribute '{key}' is forbidden.")
             except AttributeError:
                 pass
+
+    def _validate_curie(self, constraint: dict, field: str, value) -> None:
+        """
+        The rule's arguments are validated against this schema:
+        {'type': 'dict'}
+        """
+        # Check for NaN values
+        if value.isnull().any():
+            self._errors(field, "must not contain NaN values.")
+            return
+
+        if constraint:
+            for term_str in value.drop_duplicates():
+                self._validate_curie_str(term_str, field, constraint)
 
     def _check_with_equal_to_X_rows(self, field, value):
         if value != self.root_document["adata"].X.shape[0]:
