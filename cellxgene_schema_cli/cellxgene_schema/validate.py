@@ -1662,7 +1662,9 @@ class Validator:
         # Confirm shape of library_id is valid: allowed keys are images and scalefactors.
         library_id_key = library_ids[0]
         uns_library_id = uns_spatial[library_id_key]
-        if not self._has_no_extra_keys(uns_library_id, ["images", "scalefactors"]):
+        if not isinstance(uns_library_id, dict):
+            self.errors.append("uns['spatial'][library_id] must be a dictionary.")
+        elif not self._has_no_extra_keys(uns_library_id, ["images", "scalefactors"]):
             self.errors.append(
                 "uns['spatial'][library_id] can only contain the keys 'images' and 'scalefactors'."
                 f"Detected keys: {list(uns_library_id.keys())}."

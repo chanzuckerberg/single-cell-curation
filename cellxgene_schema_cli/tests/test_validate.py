@@ -1,4 +1,5 @@
 import hashlib
+import itertools
 import os
 import tempfile
 from typing import Union
@@ -521,6 +522,17 @@ class TestCheckSpatial:
             in validator.errors[0]
         )
 
+    def test__validate_library_id_type_error(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id] = "invalid"
+
+        # Confirm library_id is identified as invalid.
+        validator._check_spatial_uns()
+        assert validator.errors
+        assert "uns['spatial'][library_id] must be a dictionary." in validator.errors[0]
+
     def test__validate_library_id_allowed_keys_error(self):
         validator: Validator = Validator()
         validator._set_schema_def()
@@ -739,15 +751,17 @@ class TestCheckSpatial:
             in validator.errors[0]
         )
 
-    @pytest.mark.parametrize("key", ["scalefactors", "images"])
-    def test__validate_library_id_key_value_type_error(self, key):
+    @pytest.mark.parametrize(
+        "key, value", itertools.product(["scalefactors", "images"], [None, "invalid", 1, 1.0, True])
+    )
+    def test__validate_library_id_key_value_type_error(self, key, value):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.uns["spatial"][visium_library_id][key] = "invalid"
+        validator.adata.uns["spatial"][visium_library_id][key] = value
 
         # Confirm key type dict is required.
-        validator._check_spatial_uns()
+        validator.validate_adata()
         assert validator.errors
         assert f"uns['spatial'][library_id]['{key}'] must be a dictionary." in validator.errors[0]
 
