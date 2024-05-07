@@ -361,7 +361,7 @@ class TestCheckSpatial:
         validator.validate_adata()
         assert not validator.errors
 
-    @pytest.mark.parametrize("spatial", [None, "invalid"])
+    @pytest.mark.parametrize("spatial", [None, "invalid", 1, 1.0, True])
     def test__validate_spatial_type_error(self, spatial):
         validator: Validator = Validator()
         validator._set_schema_def()

@@ -81,7 +81,7 @@ class Validator:
             self.adata.uns["spatial"]["is_single"]
             if hasattr(self.adata, "uns")
             and "spatial" in self.adata.uns
-            and self.adata.uns["spatial"]
+            and isinstance(self.adata.uns["spatial"], dict)
             and "is_single" in self.adata.uns["spatial"]
             else None
         )
