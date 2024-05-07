@@ -320,7 +320,34 @@ class TestCheckSpatial:
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
+        validator.visium_and_is_single_true_matrix_size = 2
+        # Confirm spatial is valid.
+        validator.validate_adata()
+        assert not validator.errors
 
+    def test__validate_spatial_visium_dense_matrix_ok(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.visium_and_is_single_true_matrix_size = 2
+        validator.adata.X = validator.adata.X.toarray()
+        validator.adata.raw = validator.adata.copy()
+        validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+        # Confirm spatial is valid.
+        validator.validate_adata()
+        assert not validator.errors
+
+    def test__validate_spatial_visium_and_is_single_false_ok(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"] = {"is_single": False}
+        del validator.adata.obsm["spatial"]
+        # Format adata.obs into valid shape for Visium and is_single False.
+        validator.adata.obs.pop("array_col")
+        validator.adata.obs.pop("array_row")
+        validator.adata.obs.pop("in_tissue")
+        validator.adata.obs["is_primary_data"] = False
         # Confirm spatial is valid.
         validator.validate_adata()
         assert not validator.errors

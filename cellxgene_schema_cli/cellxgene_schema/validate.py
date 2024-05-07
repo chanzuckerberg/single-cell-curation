@@ -25,6 +25,9 @@ ONTOLOGY_PARSER = OntologyParser(schema_version=f"v{schema.get_current_schema_ve
 ASSAY_VISIUM = "EFO:0010961"
 ASSAY_SLIDE_SEQV2 = "EFO:0030062"
 
+VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 4992
+SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE = 2000
+
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = "obs['assay_ontology_term_id'] 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN = f"is only allowed for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED = f"is required for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
@@ -38,6 +41,7 @@ class Validator:
         self.schema_def = dict()
         self.schema_version: str = None
         self.ignore_labels = ignore_labels
+        self.visium_and_is_single_true_matrix_size = VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
 
         # Values will be instances of gencode.GeneChecker,
         # keys will be one of gencode.SupportedOrganisms
@@ -1006,6 +1010,7 @@ class Validator:
 
             regex_pattern = r"^[a-zA-Z][a-zA-Z0-9_.-]*$"
 
+            unknown_key = False  # an unknown key does not match 'spatial' or 'X_{suffix}'
             if key.startswith("X_"):
                 obsm_with_x_prefix += 1
                 if key.lower() == "x_spatial":
@@ -1024,19 +1029,35 @@ class Validator:
                     f"not be available in Explorer"
                 )
                 issue_list = self.warnings
+                unknown_key = True
 
             if not isinstance(value, np.ndarray):
-                issue_list.append(
+                self.errors.append(
                     f"All embeddings have to be of 'numpy.ndarray' type, " f"'adata.obsm['{key}']' is {type(value)}')."
                 )
                 # Skip over the subsequent checks that require the value to be an array
                 continue
 
-            if len(value.shape) < 2 or value.shape[0] != self.adata.n_obs or value.shape[1] < 2:
-                issue_list.append(
-                    f"All embeddings must have as many rows as cells, and at least two columns."
-                    f" 'adata.obsm['{key}']' has shape of '{value.shape}'."
+            if len(value.shape) < 2:
+                self.errors.append(
+                    f"All embeddings must at least two dimensions. 'adata.obsm['{key}']' has a shape length of '{len(value.shape)}'."
                 )
+            else:
+                if value.shape[0] != self.adata.n_obs:
+                    self.errors.append(
+                        f"All embeddings must have as many rows as cells. 'adata.obsm['{key}']' has rows='{value.shape[0]}'."
+                    )
+
+                if unknown_key and value.shape[1] < 1:
+                    self.errors.append(
+                        f"All unspecified embeddings must have at least one column. 'adata.obsm['{key}']' has columns='{value.shape[1]}'."
+                    )
+
+                if not unknown_key and value.shape[1] < 2:
+                    self.errors.append(
+                        f"All 'X_' and 'spatial' embeddings must have at least two columns. 'adata.obsm['{key}']' has columns='{value.shape[1]}'."
+                    )
+
             if not (np.issubdtype(value.dtype, np.integer) or np.issubdtype(value.dtype, np.floating)):
                 issue_list.append(
                     f"adata.obsm['{key}'] has an invalid data type. It should be "
@@ -1145,36 +1166,113 @@ class Validator:
             matrix_format = get_matrix_format(self.adata, x)
             assert matrix_format != "unknown"
             self._raw_layer_exists = True
-            has_row_of_zeros = False
-            has_invalid_nonzero_value = False
             is_sparse_matrix = matrix_format in SPARSE_MATRIX_TYPES
-            for matrix_chunk, _, _ in self._chunk_matrix(x):
-                if not has_row_of_zeros:
-                    if is_sparse_matrix:
-                        row_indices, _ = matrix_chunk.nonzero()
-                        if len(set(row_indices)) != matrix_chunk.shape[0]:
-                            has_row_of_zeros = True
-                    # else, must be dense matrix, confirm that all rows have at least 1 nonzero value
-                    elif not all(np.apply_along_axis(np.any, axis=1, arr=matrix_chunk)):
-                        has_row_of_zeros = True
 
-                if not has_invalid_nonzero_value:
-                    data = matrix_chunk if isinstance(matrix_chunk, np.ndarray) else matrix_chunk.data
-                    if np.any((data % 1 > 0) | (data < 0)):
-                        has_invalid_nonzero_value = True
-
-                if has_row_of_zeros and has_invalid_nonzero_value:
-                    # Fail fast, exit loop and report
-                    break
-
-            if has_row_of_zeros:
+            is_visium_and_is_single_true = self._is_visium_and_is_single_true()
+            if is_visium_and_is_single_true and x.shape[0] != self.visium_and_is_single_true_matrix_size:
                 self._raw_layer_exists = False
-                self.errors.append("Each cell must have at least one non-zero value in its row in the raw matrix.")
-            if has_invalid_nonzero_value:
-                self._raw_layer_exists = False
-                self.errors.append("All non-zero values in raw matrix must be positive integers of type numpy.float32.")
+                self.errors.append(
+                    f"When {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}, the raw matrix must be the "
+                    f"unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
+                    f"{self.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is "
+                    f"{x.shape[0]}."
+                )
+
+            if (
+                is_visium_and_is_single_true
+                and "in_tissue" in self.adata.obs
+                and 0 in self.adata.obs["in_tissue"].values
+            ):
+                self._validate_raw_data_with_in_tissue_0(x, is_sparse_matrix)
+            else:
+                self._validate_raw_data(x, is_sparse_matrix)
 
         return self._raw_layer_exists
+
+    def _validate_raw_data(self, x: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool):
+        """
+        Validates the data values in the raw matrix. Matrix size is chunked for large matrices.
+
+        :param x: raw matrix
+        :param is_sparse_matrix: bool indicating if the matrix is sparse {csc, csr, coo}
+        """
+        has_row_of_zeros = False
+        has_invalid_nonzero_value = False
+        for matrix_chunk, _, _ in self._chunk_matrix(x):
+            if not has_row_of_zeros:
+                if is_sparse_matrix:
+                    row_indices, _ = matrix_chunk.nonzero()
+                    if len(set(row_indices)) != matrix_chunk.shape[0]:
+                        has_row_of_zeros = True
+                # else, must be dense matrix, confirm that all rows have at least 1 nonzero value
+                elif not all(np.apply_along_axis(np.any, axis=1, arr=matrix_chunk)):
+                    has_row_of_zeros = True
+
+            if not has_invalid_nonzero_value and self._matrix_has_invalid_nonzero_values(matrix_chunk):
+                has_invalid_nonzero_value = True
+
+            if has_row_of_zeros and has_invalid_nonzero_value:
+                # Fail fast, exit loop and report
+                break
+
+        if has_row_of_zeros:
+            self._raw_layer_exists = False
+            self.errors.append("Each cell must have at least one non-zero value in its row in the raw matrix.")
+        if has_invalid_nonzero_value:
+            self._raw_layer_exists = False
+            self.errors.append("All non-zero values in raw matrix must be positive integers of type numpy.float32.")
+
+    def _validate_raw_data_with_in_tissue_0(self, x: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool):
+        """
+        Special case validation checks for Visium data with is_single = True and in_tissue column in obs where in_tissue
+        has at least one value 0. Static matrix size of 4992 rows, so chunking is not required.
+
+        :param x: raw matrix
+        :param is_sparse_matrix: bool indicating if the matrix is sparse {csc, csr, coo}
+        """
+        has_tissue_0_non_zero_row = False
+        has_tissue_1_zero_row = False
+        if is_sparse_matrix:
+            nonzero_row_indices, _ = x.nonzero()
+        else:  # must be dense matrix
+            nonzero_row_indices = np.where(np.any(x != 0, axis=1))[0]
+        for i in range(x.shape[0]):
+            if not has_tissue_0_non_zero_row and i in nonzero_row_indices and self.adata.obs["in_tissue"][i] == 0:
+                has_tissue_0_non_zero_row = True
+            elif not has_tissue_1_zero_row and i not in nonzero_row_indices and self.adata.obs["in_tissue"][i] == 1:
+                has_tissue_1_zero_row = True
+            if has_tissue_0_non_zero_row and has_tissue_1_zero_row:
+                # exit early and report
+                break
+
+        if not has_tissue_0_non_zero_row:
+            self._raw_layer_exists = False
+            self.errors.append(
+                "If obs['in_tissue'] contains at least one value 0, then there must be at least "
+                "one row with obs['in_tissue'] == 0 that has a non-zero value in the raw matrix."
+            )
+        if has_tissue_1_zero_row:
+            self._raw_layer_exists = False
+            self.errors.append(
+                "Each observation with obs['in_tissue'] == 1 must have at least one "
+                "non-zero value in its row in the raw matrix."
+            )
+        if self._matrix_has_invalid_nonzero_values(x):
+            self._raw_layer_exists = False
+            self.errors.append("All non-zero values in raw matrix must be positive integers of type numpy.float32.")
+
+    def _matrix_has_invalid_nonzero_values(self, x: Union[np.ndarray, sparse.spmatrix]) -> bool:
+        """
+        Checks whether the matrix has invalid non-zero values. The matrix must have all non-zero values as positive
+        integers (type is numpy.float32).
+
+        :param x: The matrix to validate
+
+        :rtype bool
+        :return True if any non-zero values are invalid given validation rules, False otherwise
+        """
+        data = x if isinstance(x, np.ndarray) else x.data
+        return np.any((data % 1 > 0) | (data < 0))
 
     def _validate_x_raw_x_dimensions(self):
         """
@@ -1591,7 +1689,7 @@ class Validator:
                 self.errors.append("uns['spatial'][library_id]['images'] must contain the key 'hires'.")
             # hires is specified: proceed with validation of hires.
             else:
-                self._validate_spatial_image_shape("hires", uns_images["hires"], 2000)
+                self._validate_spatial_image_shape("hires", uns_images["hires"], SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE)
 
             # fullres is optional.
             uns_fullres = uns_images.get("fullres")

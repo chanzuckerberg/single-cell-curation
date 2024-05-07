@@ -13,7 +13,11 @@ import pytest
 import scipy.sparse
 from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.utils import getattr_anndata
-from cellxgene_schema.validate import Validator
+from cellxgene_schema.validate import (
+    ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE,
+    VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE,
+    Validator,
+)
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 
 schema_def = get_schema_definition()
@@ -72,6 +76,7 @@ def validator_with_spatial_and_is_single_false(validator) -> Validator:
 @pytest.fixture
 def validator_with_visium_assay(validator) -> Validator:
     validator.adata = examples.adata_visium.copy()
+    validator.visium_and_is_single_true_matrix_size = 2
     return validator
 
 
@@ -183,6 +188,21 @@ class TestExpressionMatrix:
             "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
         ]
 
+    @pytest.mark.parametrize("invalid_value", [1.5, -1])
+    def test_raw_values__invalid_spatial(self, validator_with_visium_assay, invalid_value):
+        """
+        When both `adata.X` and `adata.raw.X` are present, but `adata.raw.X` contains negative or non-integer values,
+        an error is raised.
+        """
+
+        validator = validator_with_visium_assay
+        validator.adata.raw.X[0, 1] = invalid_value
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: All non-zero values in raw matrix must be positive integers of type numpy.float32.",
+            "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
+        ]
+
     @pytest.mark.parametrize("datatype", [int, "float16", "float64"])
     def test_raw_values__wrong_datatype(self, validator_with_adata, datatype):
         """
@@ -209,6 +229,111 @@ class TestExpressionMatrix:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Each cell must have at least one non-zero value in its row in the raw matrix.",
+            "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
+        ]
+
+    def test_raw_values__contains_zero_row_in_tissue_1(self, validator_with_visium_assay):
+        """
+        Raw Matrix contains a row with all zeros and in_tissue is 1, but no values are in_tissue 0.
+        """
+
+        validator = validator_with_visium_assay
+        validator.adata.obs["in_tissue"] = 1
+        validator.adata.X[0] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
+        validator.adata.raw.X[0] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Each cell must have at least one non-zero value in its row in the raw matrix.",
+            "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
+        ]
+
+    def test_raw_values__contains_zero_row_in_tissue_1_mixed_in_tissue_values(self, validator_with_visium_assay):
+        """
+        Raw Matrix contains a row with all zeros and in_tissue is 1, and there are also values with in_tissue 0.
+        """
+
+        validator = validator_with_visium_assay
+        validator.adata.X[1] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
+        validator.adata.raw.X[1] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Each observation with obs['in_tissue'] == 1 must have at least one "
+            "non-zero value in its row in the raw matrix.",
+            "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
+        ]
+
+    def test_raw_values__contains_all_zero_rows_in_tissue_0(self, validator_with_visium_assay):
+        """
+        When both `adata.X` and `adata.raw.X` are present, but `adata.raw.X` contains all rows with all zeros
+        and in_tissue is 0
+        """
+
+        validator = validator_with_visium_assay
+        validator.adata.obs["in_tissue"] = 0
+        validator.adata.obs["cell_type_ontology_term_id"] = "unknown"
+        validator.adata.X = numpy.zeros(
+            [validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32
+        )
+        validator.adata.raw = validator.adata.copy()
+        validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: If obs['in_tissue'] contains at least one value 0, then there must be at least "
+            "one row with obs['in_tissue'] == 0 that has a non-zero value in the raw matrix.",
+            "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
+        ]
+
+    def test_raw_values__contains_some_zero_rows_in_tissue_0(self, validator_with_visium_assay):
+        """
+        When both `adata.X` and `adata.raw.X` are present, but `adata.raw.X` contains some rows with all zeros
+        and in_tissue is 0. Success case.
+        """
+
+        validator = validator_with_visium_assay
+        validator.adata.obs["in_tissue"] = 0
+        validator.adata.obs["cell_type_ontology_term_id"] = "unknown"
+        validator.adata.X[0] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
+        validator.adata.raw.X[0] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
+        validator.validate_adata()
+        assert validator.errors == []
+
+    def test_raw_values__invalid_visium_and_is_single_true_row_length(self, validator_with_visium_assay):
+        """
+        Dataset is visium and uns['is_single'] is True, but raw.X is the wrong length.
+        """
+        validator = validator_with_visium_assay
+        validator.visium_and_is_single_true_matrix_size = VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
+
+        validator.validate_adata()
+        assert validator.errors == [
+            f"ERROR: When {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}, the raw matrix must be the "
+            "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
+            f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2.",
+            "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
+        ]
+
+    def test_raw_values__multiple_invalid_in_tissue_errors(self, validator_with_visium_assay):
+        """
+        Dataset is visium and uns['is_single'] is True, in_tissue has both 0 and 1 values and there
+        are issues validating rows of both in the matrix.
+        """
+
+        validator = validator_with_visium_assay
+        validator.visium_and_is_single_true_matrix_size = VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
+        validator.adata.X = numpy.zeros(
+            [validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32
+        )
+        validator.adata.raw = validator.adata.copy()
+        validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+        validator.validate_adata()
+        assert validator.errors == [
+            f"ERROR: When {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}, the raw matrix must be the "
+            "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
+            f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2.",
+            "ERROR: If obs['in_tissue'] contains at least one value 0, then there must be at least "
+            "one row with obs['in_tissue'] == 0 that has a non-zero value in the raw matrix.",
+            "ERROR: Each observation with obs['in_tissue'] == 1 must have at least one "
+            "non-zero value in its row in the raw matrix.",
             "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
         ]
 
@@ -2057,7 +2182,10 @@ class TestObsm:
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' harmony is not 'spatial' nor does it start with 'X_'. "
             "Thus, it will not be available in Explorer",
-            "WARNING: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['harmony']' is <class 'pandas.core.frame.DataFrame'>').",
+            "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
+        ]
+        assert validator.errors == [
+            "ERROR: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['harmony']' is <class 'pandas.core.frame.DataFrame'>')."
         ]
 
     def test_obsm_values_suffix_is_forbidden(self, validator_with_adata):
@@ -2080,13 +2208,14 @@ class TestObsm:
         validator.adata.obsm["3D"] = pd.DataFrame(validator.adata.obsm["X_umap"], index=validator.adata.obs_names)
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Embedding key in 'adata.obsm' 3D does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$."
+            "ERROR: Embedding key in 'adata.obsm' 3D does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$.",
+            "ERROR: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['3D']' is <class "
+            "'pandas.core.frame.DataFrame'>').",
         ]
         assert validator.warnings == [
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' 3D is not 'spatial' nor does it start with 'X_'. "
             "Thus, it will not be available in Explorer",
-            "WARNING: All embeddings have to be of 'numpy.ndarray' type, 'adata.obsm['3D']' is <class 'pandas.core.frame.DataFrame'>').",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
         ]
 
@@ -2136,9 +2265,23 @@ class TestObsm:
         validator.adata.obsm[key] = numpy.delete(validator.adata.obsm[key], 0, 1)
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: All embeddings must have as many rows as cells, and "
-            f"at least two columns. 'adata.obsm['{key}']' has shape "
-            "of '(2, 1)'."
+            "ERROR: All 'X_' and 'spatial' embeddings must have at least two columns. "
+            f"'adata.obsm['{key}']' has columns='1'."
+        ]
+
+    def test_obsm_shape_zero_column_with_unknown_key(self, validator_with_adata):
+        """
+        embeddings that are not 'X_' or 'spatial' that are ndarrays must have at least one column
+        """
+        # Makes 0 column array
+        validator = validator_with_adata
+        n_obs = validator_with_adata.adata.n_obs
+        validator.adata.obsm["unknown"] = numpy.zeros((n_obs, 0))
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: The size of the ndarray stored for a 'adata.obsm['unknown']' MUST NOT " "be zero.",
+            "ERROR: All unspecified embeddings must have at least one column. "
+            "'adata.obsm['unknown']' has columns='0'.",
         ]
 
     def test_obsm_shape_same_rows_and_columns(self, validator_with_adata):
@@ -2166,7 +2309,9 @@ class TestObsm:
         validator.adata = save_and_read_adata(adata)
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: The size of the ndarray stored for a 'adata.obsm['badsize']' MUST NOT be zero.",
+            "ERROR: The size of the ndarray stored for a 'adata.obsm['badsize']' MUST NOT " "be zero.",
+            "ERROR: All unspecified embeddings must have at least one column. "
+            "'adata.obsm['badsize']' has columns='0'.",
         ]
 
 
