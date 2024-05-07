@@ -1,7 +1,8 @@
 import collections
 import json
+import re
 from copy import deepcopy
-from typing import Mapping
+from typing import Mapping, Tuple
 
 import anndata as ad
 import cerberus
@@ -44,19 +45,55 @@ class MyValidator(cerberus.Validator):
         self.gene_checkers = {}
         super(MyValidator, self).__init__(*args, **kwargs)
 
-    # def _validate_forbidden(self, forbidden_values, field, value):
-    #     """{'type': ['list', 'dict']}"""
-    #     if isinstance(forbidden_values, dict) and isinstance(value, _str_type):
-    #         case_sensative = forbidden_values.get("case_sensative", False)
-    #         suffix = forbidden_values.get("suffix", "")
-    #         prefix = forbidden_values.get("prefix", "")
-    #     if isinstance(value, Sequence) and not isinstance(value, _str_type):
-    #         forbidden = set(value) & set(forbidden_values)
-    #         if forbidden:
-    #             self._error(field, errors.FORBIDDEN_VALUES, list(forbidden))
-    #     else:
-    #         if value in forbidden_values:
-    #             self._error(field, errors.FORBIDDEN_VALUE, value)
+    def _validate_forbidden(self, forbidden_values, field, value):
+        """{'type': ['list', 'dict']}"""
+        if isinstance(forbidden_values, dict) and isinstance(value, str):
+            case_sensative = forbidden_values.get("case_sensative", False)
+            suffix = forbidden_values.get("suffix", "")
+            prefix = forbidden_values.get("prefix", "")
+            regex = forbidden_values.get("regex", "")
+            values = forbidden_values.get("values", [])
+            regex_flags = 0
+            if case_sensative:
+                suffix = suffix.lower()
+                prefix = prefix.lower()
+                value = value.lower()
+                regex_flags = re.IGNORECASE
+                values = [v.lower() for v in values]
+            if suffix and value.endswith(suffix):
+                self._error(field, f"Value '{value}' must not end with '{suffix}'.")
+            if prefix and value.startswith(prefix):
+                self._error(field, f"Value '{value}' must not start with '{prefix}'.")
+            if regex and re.match(regex, value, flags=regex_flags):
+                self._error(field, f"Value '{value}' must not match the regex '{regex}'.")
+            if values and value in values:
+                self._error(field, f"Value '{value}' must not be one of '{values}'.")
+        super(MyValidator, self)._validate_forbidden(forbidden_values, field, value)
+
+    def _validate_allowed(self, allowed_values, field, value):
+        """{'type': ['list', 'dict']}"""
+        if isinstance(allowed_values, dict) and isinstance(value, str):
+            case_sensative = allowed_values.get("case_sensative", False)
+            suffix = allowed_values.get("suffix", "")
+            prefix = allowed_values.get("prefix", "")
+            regex = allowed_values.get("regex", "")
+            values = allowed_values.get("values", [])
+            regex_flags = 0
+            if case_sensative:
+                suffix = suffix.lower()
+                prefix = prefix.lower()
+                value = value.lower()
+                regex_flags = re.IGNORECASE
+                values = [v.lower() for v in values]
+            if suffix and not value.endswith(suffix):
+                self._error(field, f"Value '{value}' must end with '{suffix}'.")
+            if prefix and not value.startswith(prefix):
+                self._error(field, f"Value '{value}' must start with '{prefix}'.")
+            if regex and not re.match(regex, value, flags=regex_flags):
+                self._error(field, f"Value '{value}' must match the regex '{regex}'.")
+            if values and value not in values:
+                self._error(field, f"Value '{value}' must be one of '{values}'.")
+        super(MyValidator, self)._validate_allowed(allowed_values, field, value)
 
     def _validate_attributes_schema(self, schemas: dict, field: str, _object: object) -> None:
         """
@@ -169,14 +206,6 @@ class MyValidator(cerberus.Validator):
                     self._error(field, "The h5ad artifact was generated with an AnnData version different from 0.8.0.")
         except Exception as e:
             self._error(field, f"Error validating encoding of h5ad file: {e}")
-
-    def _validate_forbidden_case_insensative(self, forbidden, field, value):
-        """
-        The rule's arguments are validated against this schema:
-        {'type': 'list'}
-        """
-        if field.lower() in forbidden:
-            self._error(field, f"{field} is forbidden.")
 
     def _validate_forbidden_attributes(self, forbidden, field, value):
         """
@@ -387,7 +416,7 @@ def get_validator():
                 "keysrules": {
                     "type": "string",
                     "regex": "^X_[a-zA-Z][a-zA-Z0-9_.-]*$",
-                    "forbidden_case_insensative": ["x_spatial"],
+                    "forbidden": {"values": ["x_spatial"], "case_sensative": True},
                 },
                 "valuesrules": {
                     "type": "ndarray",
@@ -541,7 +570,33 @@ def validate_anndata(adata: ad.AnnData, validator):
         raw=adata.raw,
     )
     if not validator.validate(document, normalize=False):
-        print(json.dumps(validator.errors, indent=4))
+        errors = validator.errors
+        print(json.dumps(separate_messages(errors), indent=4))
+
+
+def separate_messages(data: dict) -> Tuple[dict, dict]:
+    errors = collections.defaultdict(list)
+    warnings = collections.defaultdict(list)
+
+    def traverse_dict(d: dict, path: list):
+        for key, value in d.items():
+            path.append(key if isinstance(key, str) else str(key))
+            if isinstance(value, list):
+                for item in value:
+                    if isinstance(item, str):
+                        message_path = ".".join(path)
+                        if item.startswith("Error:"):
+                            errors[message_path].append(item)
+                        elif item.startswith("Warning:"):
+                            warnings[message_path].append(item)
+                    elif isinstance(item, dict):
+                        traverse_dict(item, path)
+            elif isinstance(value, dict):
+                traverse_dict(value, path)
+            path.pop()
+
+    traverse_dict(data, [])
+    return errors, warnings
 
 
 if __name__ == "__main__":
