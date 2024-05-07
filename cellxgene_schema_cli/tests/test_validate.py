@@ -521,14 +521,15 @@ class TestCheckSpatial:
             in validator.errors[0]
         )
 
-    def test__validate_library_id_type_error(self):
+    @pytest.mark.parametrize("library_id", [None, "invalid", 1, 1.0, True])
+    def test__validate_library_id_type_error(self, library_id):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.uns["spatial"][visium_library_id] = "invalid"
+        validator.adata.uns["spatial"][visium_library_id] = library_id
 
         # Confirm library_id is identified as invalid.
-        validator._check_spatial_uns()
+        validator.validate_adata()
         assert validator.errors
         assert "uns['spatial'][library_id] must be a dictionary." in validator.errors[0]
 

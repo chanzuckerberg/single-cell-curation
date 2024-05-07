@@ -1664,6 +1664,7 @@ class Validator:
         uns_library_id = uns_spatial[library_id_key]
         if not isinstance(uns_library_id, dict):
             self.errors.append("uns['spatial'][library_id] must be a dictionary.")
+            return
         elif not self._has_no_extra_keys(uns_library_id, ["images", "scalefactors"]):
             self.errors.append(
                 "uns['spatial'][library_id] can only contain the keys 'images' and 'scalefactors'."
