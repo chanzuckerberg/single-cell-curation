@@ -1479,10 +1479,11 @@ class Validator:
         if obs_component is None:
             return
 
+        # Validate assay ontology term id.
+        self._validate_spatial_assay_ontology_term_id()
+
         # Validate tissue positions.
-        self._validate_spatial_tissue_position("array_col", 0, 127)
-        self._validate_spatial_tissue_position("array_row", 0, 77)
-        self._validate_spatial_tissue_position("in_tissue", 0, 1)
+        self._validate_spatial_tissue_positions()
 
         # Validate cell type.
         self._validate_spatial_cell_type_ontology_term_id()
@@ -1499,6 +1500,24 @@ class Validator:
         if self._is_single() is False and obs["is_primary_data"].any():
             self.errors.append(
                 "When uns['spatial']['is_single'] is False, obs['is_primary_data'] must be False for all rows."
+            )
+
+    def _validate_spatial_assay_ontology_term_id(self):
+        """
+        If assay is spatial, all assay ontology term ids should be identical.
+
+        :rtype none
+        """
+        # Identical requirement is only applicable to spatial datasets.
+        if not self._is_supported_spatial_assay():
+            return
+
+        # Validate assay ontology term ids are identical.
+        term_count = self.adata.obs["assay_ontology_term_id"].nunique()
+        if term_count > 1:
+            self.errors.append(
+                "When obs['assay_ontology_term_id'] is either 'EFO:0010961' (Visium Spatial Gene Expression) or "
+                "'EFO:0030062' (Slide-seqV2), all observations must contain the same value."
             )
 
     def _validate_spatial_cell_type_ontology_term_id(self):
@@ -1574,6 +1593,16 @@ class Validator:
                 f"obs['{tissue_position_name}'] must be {error_message_token}, the min and max are {obs_tissue_position.min()} and {obs_tissue_position.max()}. "
                 f"This must be the value of the column tissue_positions_in_tissue from the tissue_positions_list.csv or tissue_positions.csv."
             )
+
+    def _validate_spatial_tissue_positions(self):
+        """
+        Validate tissue positions of spatial datasets.
+
+        :rtype none
+        """
+        self._validate_spatial_tissue_position("array_col", 0, 127)
+        self._validate_spatial_tissue_position("array_row", 0, 77)
+        self._validate_spatial_tissue_position("in_tissue", 0, 1)
 
     def _check_spatial_uns(self):
         """
