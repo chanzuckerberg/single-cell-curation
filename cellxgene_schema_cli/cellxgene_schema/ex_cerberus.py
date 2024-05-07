@@ -117,14 +117,42 @@ class MyValidator(cerberus.Validator):
         if not validator({field: value}, normalize=False):
             self._error(validator._errors)
 
-    def _check_with_match_obs_columns(self, field, value):
-        for i in value:
-            if i not in self.root_document["adata"].obs.columns:
-                self._error(value, f"Value '{i}' of list '{field}' is not a column in 'adata.obs'.")
+    def _validate_columns(self, column_schemas, field: str, df: pd.DataFrame):
+        """
+        The rule's arguments are validated against this schema:
+        {'type': 'list'}
+        """
 
-    def _check_with_match_obsm_key(self, field, value) -> None:
-        if value not in self.root_document["adata"].obsm:
-            self.errors.append(f"'{value}' in '{field}' is not valid, it must be a key of 'adata.obsm'.")
+        validator = self._get_child_validator(
+            document_crumb=field,
+            schema_crumb=(field, "columns"),
+            schema=column_schemas,
+        )
+        document = dict()
+        for k in column_schemas:
+            try:
+                value = df[k]
+            except KeyError:
+                if column_schemas[k].get("required", False):
+                    self._error(field, f"Required column '{k}' not found in {field}.")
+            else:
+                document[k] = value
+        if not validator(document, normalize=False):
+            self._error(validator._errors)
+
+    def _validate_index(self, index_schema: dict, field: str, df: pd.DataFrame):
+        """
+        The rule's arguments are validated against this schema:
+        {'type': 'dict'}
+        """
+        validator = self._get_child_validator(
+            document_crumb=field,
+            schema_crumb=(field, "index"),
+            schema={"index": index_schema},
+        )
+        document = dict(index=pd.Series(df.index))
+        if not validator(document, normalize=False):
+            self._error(validator._errors)
 
     def _validate_encoding_version(self, contraint: str, field: str, value: ad.AnnData) -> None:
         """
@@ -141,6 +169,78 @@ class MyValidator(cerberus.Validator):
                     self._error(field, "The h5ad artifact was generated with an AnnData version different from 0.8.0.")
         except Exception as e:
             self._error(field, f"Error validating encoding of h5ad file: {e}")
+
+    def _validate_forbidden_case_insensative(self, forbidden, field, value):
+        """
+        The rule's arguments are validated against this schema:
+        {'type': 'list'}
+        """
+        if field.lower() in forbidden:
+            self._error(field, f"{field} is forbidden.")
+
+    def _validate_forbidden_attributes(self, forbidden, field, value):
+        """
+        The rule's arguments are validated against this schema:
+        {'type': 'list'}
+        """
+        for key in forbidden:
+            try:
+                getattr(value, key)
+                self._error(field, f"Attribute '{key}' is forbidden.")
+            except AttributeError:
+                pass
+
+    def _validate_curie(self, constraint: dict, field: str, value) -> None:
+        """
+        The rule's arguments are validated against this schema:
+        {'type': 'dict'}
+        """
+        # Check for NaN values
+        if value.isnull().any():
+            self._errors(field, "must not contain NaN values.")
+            return
+
+        if constraint:
+            for term_str in value.drop_duplicates():
+                self._validate_curie_str(term_str, field, constraint)
+
+    def _validate_dtype(self, criteria: dict, column_name: str, column: pd.Series):
+        """
+        The rule's arguments are validated against this schema:
+        {'type': 'dict'}
+        """
+        dtype = criteria.get("type")
+        if dtype == "boolean" and column.dtype != bool:
+            self.errors.append(f"Column '{column_name}' must be boolean, not '{column.dtype.name}'.")
+        elif dtype == "categorical":
+            if column.dtype.name != "category":
+                self.errors.append(f"Column '{column_name}' must be categorical, not {column.dtype.name}.")
+            else:
+                if criteria.get("subtype") == "string":
+                    if column.dtype.categories.dtype not in ["object", "string"]:
+                        self.errors.append(
+                            f"Column '{column_name}' must be object or string, not" f" {column.dtype.categories.dtype}."
+                        )
+                    else:
+                        if any(len(cat.strip()) == 0 for cat in column.dtype.categories):
+                            self.errors.append(f"Column '{column_name}' must not contain empty values.")
+
+                # check for null values--skip on column defs with enums, since it will already be part of that check
+                if not criteria.get("enum") and column.isnull().any():
+                    self.errors.append(f"Column '{column_name}' must not contain NaN values.")
+        elif criteria.get("kind") and column.dtype.kind != criteria["kind"]:
+            self.errors.append(
+                f"Column '{column_name}' must be of kind '{criteria['kind']}', not '{column.dtype.kind}'."
+            )
+
+    def _check_with_match_obs_columns(self, field, value):
+        for i in value:
+            if i not in self.root_document["adata"].obs.columns:
+                self._error(value, f"Value '{i}' of list '{field}' is not a column in 'adata.obs'.")
+
+    def _check_with_match_obsm_key(self, field, value) -> None:
+        if value not in self.root_document["adata"].obsm:
+            self.errors.append(f"'{value}' in '{field}' is not valid, it must be a key of 'adata.obsm'.")
 
     @property
     def obs_category_mapping(self):
@@ -180,40 +280,6 @@ class MyValidator(cerberus.Validator):
             if isinstance(_value, np.ndarray) and not _value.size:
                 self._errors(field, f"The size of the ndarray stored for a 'adata.{field}['{key}']' MUST NOT be zero.")
 
-    def _validate_forbidden_case_insensative(self, forbidden, field, value):
-        """
-        The rule's arguments are validated against this schema:
-        {'type': 'list'}
-        """
-        if field.lower() in forbidden:
-            self._error(field, f"{field} is forbidden.")
-
-    def _validate_forbidden_attributes(self, forbidden, field, value):
-        """
-        The rule's arguments are validated against this schema:
-        {'type': 'list'}
-        """
-        for key in forbidden:
-            try:
-                getattr(value, key)
-                self._error(field, f"Attribute '{key}' is forbidden.")
-            except AttributeError:
-                pass
-
-    def _validate_curie(self, constraint: dict, field: str, value) -> None:
-        """
-        The rule's arguments are validated against this schema:
-        {'type': 'dict'}
-        """
-        # Check for NaN values
-        if value.isnull().any():
-            self._errors(field, "must not contain NaN values.")
-            return
-
-        if constraint:
-            for term_str in value.drop_duplicates():
-                self._validate_curie_str(term_str, field, constraint)
-
     def _check_with_equal_to_X_rows(self, field, value):
         if value != self.root_document["adata"].X.shape[0]:
             self._error(field, "must be equal to the number of rows in 'adata.X'.")
@@ -229,35 +295,6 @@ class MyValidator(cerberus.Validator):
     def _check_with_ndarray_not_all_nan(self, field, value):
         if isinstance(value, np.ndarray) and np.any(np.isnan(value)):
             self._error(field, "Array contains NaN values.")
-
-    def _validate_dtype(self, criteria: dict, column_name: str, column: pd.Series):
-        """
-        The rule's arguments are validated against this schema:
-        {'type': 'dict'}
-        """
-        dtype = criteria.get("type")
-        if dtype == "boolean" and column.dtype != bool:
-            self.errors.append(f"Column '{column_name}' must be boolean, not '{column.dtype.name}'.")
-        elif dtype == "categorical":
-            if column.dtype.name != "category":
-                self.errors.append(f"Column '{column_name}' must be categorical, not {column.dtype.name}.")
-            else:
-                if criteria.get("subtype") == "string":
-                    if column.dtype.categories.dtype not in ["object", "string"]:
-                        self.errors.append(
-                            f"Column '{column_name}' must be object or string, not" f" {column.dtype.categories.dtype}."
-                        )
-                    else:
-                        if any(len(cat.strip()) == 0 for cat in column.dtype.categories):
-                            self.errors.append(f"Column '{column_name}' must not contain empty values.")
-
-                # check for null values--skip on column defs with enums, since it will already be part of that check
-                if not criteria.get("enum") and column.isnull().any():
-                    self.errors.append(f"Column '{column_name}' must not contain NaN values.")
-        elif criteria.get("kind") and column.dtype.kind != criteria["kind"]:
-            self.errors.append(
-                f"Column '{column_name}' must be of kind '{criteria['kind']}', not '{column.dtype.kind}'."
-            )
 
     def _check_with_unique(self, field, value):
         if isinstance(value, (pd.Index, pd.Series)) and value.nunique() != len(value):
@@ -321,42 +358,25 @@ class MyValidator(cerberus.Validator):
                     f"these features must be 0.",
                 )
 
-    def _validate_columns(self, column_schemas, field: str, df: pd.DataFrame):
+    def _check_with_is_supported_spatial_assay(self) -> bool:
         """
-        The rule's arguments are validated against this schema:
-        {'type': 'list'}
-        """
+        Determine if the assay_ontology_term_id is either Visium (EFO:0010961) or Slide-seqV2 (EFO:0030062).
 
-        validator = self._get_child_validator(
-            document_crumb=field,
-            schema_crumb=(field, "columns"),
-            schema=column_schemas,
-        )
-        document = dict()
-        for k in column_schemas:
+        :return True if assay_ontology_term_id is Visium or Slide-seqV2, False otherwise.
+        :rtype bool
+        """
+        ASSAY_VISIUM = "EFO:0010961"
+        ASSAY_SLIDE_SEQV2 = "EFO:0030062"
+
+        if self.is_spatial is None:
             try:
-                value = df[k]
-            except KeyError:
-                if column_schemas[k].get("required", False):
-                    self._error(field, f"column '{k}' not found in {field}.")
-            else:
-                document[k] = value
-        if not validator(document, normalize=False):
-            self._error(validator._errors)
-
-    def _validate_index(self, index_schema: dict, field: str, df: pd.DataFrame):
-        """
-        The rule's arguments are validated against this schema:
-        {'type': 'dict'}
-        """
-        validator = self._get_child_validator(
-            document_crumb=field,
-            schema_crumb=(field, "index"),
-            schema={"index": index_schema},
-        )
-        document = dict(index=pd.Series(df.index))
-        if not validator(document, normalize=False):
-            self._error(validator._errors)
+                self.is_spatial = False
+                if self.adata.obs.assay_ontology_term_id.isin([ASSAY_VISIUM, ASSAY_SLIDE_SEQV2]).any():
+                    self.is_spatial = True
+            except AttributeError:
+                # specific error reporting will occur downstream in the validation
+                self.is_spatial = False
+        return self.is_spatial
 
 
 def get_validator():
