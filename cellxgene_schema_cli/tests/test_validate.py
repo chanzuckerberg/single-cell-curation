@@ -763,7 +763,7 @@ class TestCheckSpatial:
         assert validator.errors
         assert f"uns['spatial'][library_id]['{key}'] must be a dictionary." in validator.errors[0]
 
-    def test__validate_assay_type_ontology_term_id_unique_error(self):
+    def test__validate_assay_type_ontology_term_id_not_unique_error(self):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()

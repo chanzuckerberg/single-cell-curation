@@ -1508,12 +1508,17 @@ class Validator:
 
         :rtype none
         """
-        # Identical requirement is only applicable to spatial datasets.
+        # Identical check requires assay_ontology_term_id.
+        obs = getattr_anndata(self.adata, "obs")
+        if obs is None or "assay_ontology_term_id" not in obs:
+            return
+
+        # Identical check is only applicable to spatial datasets.
         if not self._is_supported_spatial_assay():
             return
 
         # Validate assay ontology term ids are identical.
-        term_count = self.adata.obs["assay_ontology_term_id"].nunique()
+        term_count = obs["assay_ontology_term_id"].nunique()
         if term_count > 1:
             self.errors.append(
                 "When obs['assay_ontology_term_id'] is either 'EFO:0010961' (Visium Spatial Gene Expression) or "
