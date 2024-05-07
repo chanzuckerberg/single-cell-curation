@@ -334,14 +334,15 @@ class TestCheckSpatial:
         validator.validate_adata()
         assert not validator.errors
 
-    def test__validate_spatial_type_error(self):
+    @pytest.mark.parametrize("spatial", [None, "invalid"])
+    def test__validate_spatial_type_error(self, spatial):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.uns["spatial"] = "invalid"
+        validator.adata.uns["spatial"] = spatial
 
         # Confirm key type dict is required.
-        validator._check_spatial_uns()
+        validator.validate_adata()
         assert validator.errors
         assert (
             "A dict in uns['spatial'] is required for obs['assay_ontology_term_id'] values 'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)."
