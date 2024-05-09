@@ -1,5 +1,5 @@
 anndata==0.8.0
-cellxgene-ontology-guide==0.4.0
+- r ./requirement-cog.txt
 click==8.1.3
 Cython==0.29.34
 numpy==1.23.2
