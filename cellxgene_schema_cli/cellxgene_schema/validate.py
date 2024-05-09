@@ -1797,15 +1797,15 @@ class Validator:
 
     def _is_valid_visium_image_shape(self, image: np.ndarray) -> bool:
         """
-        Determine if the image has shape (,,3); image is expected to be a 3D numpy array
-        with the size of the last dimension being three.
+        Determine if the image has shape (,,3 or 4); image is expected to be a 3D numpy array
+        with the size of the last dimension being three or four.
 
         :param np.ndarray image: the image to check the shape of.
 
-        :return True if image has shape (,,3), False otherwise.
+        :return True if image has shape (,,3 or 4), False otherwise.
         :rtype bool
         """
-        return len(image.shape) == 3 and image.shape[2] == 3
+        return len(image.shape) == 3 and image.shape[2] in [3, 4]
 
     def _is_visium(self) -> bool:
         """
@@ -1821,7 +1821,7 @@ class Validator:
 
     def _validate_spatial_image_shape(self, image_name: str, image: np.ndarray, max_dimension: int = None):
         """
-        Validate the spatial image is of shape (,,3) and has a max dimension, if specified. A spatial image
+        Validate the spatial image is of shape (,,3 or 4) and has a max dimension, if specified. A spatial image
         is either spatial[library_id]['images']['hires'] or spatial[library_id]['images']['fullres']. Errors
         are added to self.errors if any.
 
@@ -1839,10 +1839,18 @@ class Validator:
             )
             return
 
-        # Confirm shape of image is valid: allowed shape is (,,3).
+        # Confirm type of ndarray is uint8.
+        if image.dtype != np.uint8:
+            self.errors.append(
+                f"uns['spatial'][library_id]['images']['{image_name}'] must be of type numpy.uint8, "
+                f"it is {image.dtype}."
+            )
+
+        # Confirm shape of image is valid: allowed shape is (,,3 or 4).
         if not self._is_valid_visium_image_shape(image):
             self.errors.append(
-                f"uns['spatial'][library_id]['images']['{image_name}'] must have shape (,,3), "
+                f"uns['spatial'][library_id]['images']['{image_name}'] must have a length of 3 and "
+                "either 3 (RGB color model for example) or 4 (RGBA color model for example) for its last dimension, "
                 f"it has shape {image.shape}."
             )
 

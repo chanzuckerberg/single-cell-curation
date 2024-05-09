@@ -368,8 +368,8 @@ good_uns_with_visium_spatial = {
         "is_single": numpy.bool_(True),
         visium_library_id: {
             "images": {
-                "hires": numpy.zeros((2000, 100, 3)),
-                "fullres": numpy.array([[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]]),
+                "hires": numpy.zeros((2000, 100, 3), dtype=numpy.uint8),
+                "fullres": numpy.array([[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]], dtype=numpy.uint8),
             },
             "scalefactors": {
                 "spot_diameter_fullres": 1.0,

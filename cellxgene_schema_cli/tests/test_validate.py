@@ -598,33 +598,90 @@ class TestCheckSpatial:
             in validator.warnings[0]
         )
 
-    def test__validate_images_hires_is_ndarray_error(self):
+    @pytest.mark.parametrize(
+        "image_name, image_shape",
+        [
+            ("hires", (1, 2000, 4)),
+            ("fullres", (1, 1, 4)),
+        ],
+    )
+    def test__validate_images_image_last_dimension_4_ok(self, image_name, image_shape):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = "invalid"
+        validator.adata.uns["spatial"][visium_library_id]["images"][image_name] = np.zeros(image_shape, dtype=np.uint8)
 
-        # Confirm hires is identified as invalid.
+        # Confirm image is valid.
         validator._check_spatial_uns()
-        assert validator.errors
-        assert "uns['spatial'][library_id]['images']['hires'] must be of numpy.ndarray type" in validator.errors[0]
+        assert not validator.errors
 
-    def test__valide_images_hires_is_shape_error(self):
+    @pytest.mark.parametrize(
+        "image_name, image_shape",
+        [
+            ("hires", (1, 2000, 3)),
+            ("fullres", (1, 1, 3)),
+        ],
+    )
+    def test__validate_images_image_ndarray_type_error(self, image_name, image_shape):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros((1, 1))
+        # Defaults to float64.
+        validator.adata.uns["spatial"][visium_library_id]["images"][image_name] = np.zeros(image_shape)
 
-        # Confirm hires is identified as invalid.
+        # Confirm image is identified as invalid.
         validator._check_spatial_uns()
         assert validator.errors
-        assert "uns['spatial'][library_id]['images']['hires'] must have shape (,,3)" in validator.errors[0]
+        assert (
+            f"uns['spatial'][library_id]['images']['{image_name}'] must be of type numpy.uint8" in validator.errors[0]
+        )
+
+    @pytest.mark.parametrize(
+        "image_name",
+        [
+            "hires",
+            "fullres",
+        ],
+    )
+    def test__validate_images_image_is_ndarray_error(self, image_name):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id]["images"][image_name] = "invalid"
+
+        # Confirm image is identified as invalid.
+        validator._check_spatial_uns()
+        assert validator.errors
+        assert (
+            f"uns['spatial'][library_id]['images']['{image_name}'] must be of numpy.ndarray type" in validator.errors[0]
+        )
+
+    @pytest.mark.parametrize(
+        "image_name",
+        [
+            "hires",
+            "fullres",
+        ],
+    )
+    def test__validate_images_image_is_shape_error(self, image_name):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.uns["spatial"][visium_library_id]["images"][image_name] = np.zeros((1, 1), dtype=np.uint8)
+
+        # Confirm image is identified as invalid.
+        validator._check_spatial_uns()
+        assert validator.errors
+        assert (
+            f"uns['spatial'][library_id]['images']['{image_name}'] must have a length of 3 and either 3 (RGB color model "
+            "for example) or 4 (RGBA color model for example) for its last dimension" in validator.errors[0]
+        )
 
     def test__validate_images_hires_max_dimension_greater_than_error(self):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros((1, 2001, 3))
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros((1, 2001, 3), dtype=np.uint8)
 
         # Confirm hires is identified as invalid.
         validator._check_spatial_uns()
@@ -638,7 +695,7 @@ class TestCheckSpatial:
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros((1, 1999, 3))
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros((1, 1999, 3), dtype=np.uint8)
 
         # Confirm hires is identified as invalid.
         validator._check_spatial_uns()
@@ -647,28 +704,6 @@ class TestCheckSpatial:
             "The largest dimension of uns['spatial'][library_id]['images']['hires'] must be 2000 pixels"
             in validator.errors[0]
         )
-
-    def test__validate_images_fullres_is_ndarray_error(self):
-        validator: Validator = Validator()
-        validator._set_schema_def()
-        validator.adata = adata_visium.copy()
-        validator.adata.uns["spatial"][visium_library_id]["images"]["fullres"] = "invalid"
-
-        # Confirm fullres is identified as invalid.
-        validator._check_spatial_uns()
-        assert validator.errors
-        assert "uns['spatial'][library_id]['images']['fullres'] must be of numpy.ndarray type" in validator.errors[0]
-
-    def test__validate_images_fullres_is_shape_error(self):
-        validator: Validator = Validator()
-        validator._set_schema_def()
-        validator.adata = adata_visium.copy()
-        validator.adata.uns["spatial"][visium_library_id]["images"]["fullres"] = np.zeros((1, 1))
-
-        # Confirm fullres is identified as invalid.
-        validator._check_spatial_uns()
-        assert validator.errors
-        assert "uns['spatial'][library_id]['images']['fullres'] must have shape (,,3)" in validator.errors[0]
 
     def test__validate_scalefactors_required_error(self):
         validator: Validator = Validator()
