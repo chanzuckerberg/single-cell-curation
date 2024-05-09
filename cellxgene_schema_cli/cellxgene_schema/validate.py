@@ -830,13 +830,7 @@ class Validator:
             ):
                 if value.nnz == 0:  # number non-zero
                     self.errors.append(f"uns['{key}'] cannot be an empty value.")
-            elif (
-                value is not None
-                and not isinstance(value, numbers.Number)
-                and type(value) is not bool
-                and not (isinstance(value, (np.bool_, np.bool)))
-                and len(value) == 0
-            ):
+            elif value is not None and not isinstance(value, (np.bool_, bool, numbers.Number)) and len(value) == 0:
                 self.errors.append(f"uns['{key}'] cannot be an empty value.")
             if key.endswith("_colors"):
                 # 1. Verify that the corresponding categorical field exists in obs
