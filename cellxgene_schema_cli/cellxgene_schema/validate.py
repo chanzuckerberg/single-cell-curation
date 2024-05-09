@@ -79,7 +79,10 @@ class Validator:
         """
         return (
             self.adata.uns["spatial"]["is_single"]
-            if hasattr(self.adata, "uns") and "spatial" in self.adata.uns and "is_single" in self.adata.uns["spatial"]
+            if hasattr(self.adata, "uns")
+            and "spatial" in self.adata.uns
+            and isinstance(self.adata.uns["spatial"], dict)
+            and "is_single" in self.adata.uns["spatial"]
             else None
         )
 
@@ -1476,10 +1479,11 @@ class Validator:
         if obs_component is None:
             return
 
+        # Validate assay ontology term id.
+        self._validate_spatial_assay_ontology_term_id()
+
         # Validate tissue positions.
-        self._validate_spatial_tissue_position("array_col", 0, 127)
-        self._validate_spatial_tissue_position("array_row", 0, 77)
-        self._validate_spatial_tissue_position("in_tissue", 0, 1)
+        self._validate_spatial_tissue_positions()
 
         # Validate cell type.
         self._validate_spatial_cell_type_ontology_term_id()
@@ -1496,6 +1500,29 @@ class Validator:
         if self._is_single() is False and obs["is_primary_data"].any():
             self.errors.append(
                 "When uns['spatial']['is_single'] is False, obs['is_primary_data'] must be False for all rows."
+            )
+
+    def _validate_spatial_assay_ontology_term_id(self):
+        """
+        If assay is spatial, all assay ontology term ids should be identical.
+
+        :rtype none
+        """
+        # Identical check requires assay_ontology_term_id.
+        obs = getattr_anndata(self.adata, "obs")
+        if obs is None or "assay_ontology_term_id" not in obs:
+            return
+
+        # Identical check is only applicable to spatial datasets.
+        if not self._is_supported_spatial_assay():
+            return
+
+        # Validate assay ontology term ids are identical.
+        term_count = obs["assay_ontology_term_id"].nunique()
+        if term_count > 1:
+            self.errors.append(
+                "When obs['assay_ontology_term_id'] is either 'EFO:0010961' (Visium Spatial Gene Expression) or "
+                "'EFO:0030062' (Slide-seqV2), all observations must contain the same value."
             )
 
     def _validate_spatial_cell_type_ontology_term_id(self):
@@ -1572,6 +1599,16 @@ class Validator:
                 f"This must be the value of the column tissue_positions_in_tissue from the tissue_positions_list.csv or tissue_positions.csv."
             )
 
+    def _validate_spatial_tissue_positions(self):
+        """
+        Validate tissue positions of spatial datasets.
+
+        :rtype none
+        """
+        self._validate_spatial_tissue_position("array_col", 0, 127)
+        self._validate_spatial_tissue_position("array_row", 0, 77)
+        self._validate_spatial_tissue_position("in_tissue", 0, 1)
+
     def _check_spatial_uns(self):
         """
         Validate uns spatial-related values of the AnnData object. Validation is not defined in schema definition yaml.
@@ -1606,9 +1643,9 @@ class Validator:
             return
 
         # spatial is required for supported spatial assays.
-        if uns_spatial is None:
+        if not isinstance(uns_spatial, dict):
             self.errors.append(
-                "uns['spatial'] is required for obs['assay_ontology_term_id'] values "
+                "A dict in uns['spatial'] is required for obs['assay_ontology_term_id'] values "
                 "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)."
             )
             return
@@ -1659,7 +1696,10 @@ class Validator:
         # Confirm shape of library_id is valid: allowed keys are images and scalefactors.
         library_id_key = library_ids[0]
         uns_library_id = uns_spatial[library_id_key]
-        if not self._has_no_extra_keys(uns_library_id, ["images", "scalefactors"]):
+        if not isinstance(uns_library_id, dict):
+            self.errors.append("uns['spatial'][library_id] must be a dictionary.")
+            return
+        elif not self._has_no_extra_keys(uns_library_id, ["images", "scalefactors"]):
             self.errors.append(
                 "uns['spatial'][library_id] can only contain the keys 'images' and 'scalefactors'."
                 f"Detected keys: {list(uns_library_id.keys())}."
@@ -1669,9 +1709,12 @@ class Validator:
         if "images" not in uns_library_id:
             self.errors.append("uns['spatial'][library_id] must contain the key 'images'.")
         # images is specified: proceed with validation of images.
+        elif not isinstance(uns_library_id["images"], dict):
+            self.errors.append("uns['spatial'][library_id]['images'] must be a dictionary.")
         else:
             # Confirm shape of images is valid: allowed keys are fullres and hires.
             uns_images = uns_library_id["images"]
+
             if not self._has_no_extra_keys(uns_images, ["fullres", "hires"]):
                 self.errors.append(
                     "uns['spatial'][library_id]['images'] can only contain the keys 'fullres' and 'hires'."
@@ -1700,6 +1743,8 @@ class Validator:
         if "scalefactors" not in uns_library_id:
             self.errors.append("uns['spatial'][library_id] must contain the key 'scalefactors'.")
         # scalefactors is specified: proceed with validation of scalefactors.
+        elif not isinstance(uns_library_id["scalefactors"], dict):
+            self.errors.append("uns['spatial'][library_id]['scalefactors'] must be a dictionary.")
         else:
             # Confirm shape of scalefactors is valid: allowed keys are spot_diameter_fullres and tissue_hires_scalef.
             uns_scalefactors = uns_library_id["scalefactors"]
