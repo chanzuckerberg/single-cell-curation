@@ -368,8 +368,8 @@ good_uns_with_visium_spatial = {
         "is_single": numpy.bool_(True),
         visium_library_id: {
             "images": {
-                "hires": numpy.zeros((2000, 100, 3)),
-                "fullres": numpy.array([[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]]),
+                "hires": numpy.zeros((2000, 100, 3), dtype=numpy.uint8),
+                "fullres": numpy.array([[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]], dtype=numpy.uint8),
             },
             "scalefactors": {
                 "spot_diameter_fullres": 1.0,
@@ -458,6 +458,8 @@ adata_with_colors = anndata.AnnData(
 adata_visium = anndata.AnnData(
     X=sparse.csr_matrix(X), obs=good_obs_visium, uns=good_uns_with_visium_spatial, obsm=good_obsm_spatial, var=good_var
 )
+adata_visium.raw = adata_visium.copy()
+adata_visium.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
 
 # Expected anndata with Slide-seqV2 spatial data
 adata_slide_seqv2 = anndata.AnnData(
