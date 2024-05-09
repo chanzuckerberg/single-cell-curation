@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import scipy
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
-from pandas.core.computation.ops import UndefinedVariableError
+from pandas.errors import UndefinedVariableError
 from scipy import sparse
 
 from . import gencode, schema
@@ -834,7 +834,7 @@ class Validator:
                 value is not None
                 and not isinstance(value, numbers.Number)
                 and type(value) is not bool
-                and not (isinstance(value, (np.bool_, np.bool)))
+                and not (isinstance(value, (np.bool_, bool)))
                 and len(value) == 0
             ):
                 self.errors.append(f"uns['{key}'] cannot be an empty value.")
@@ -1658,7 +1658,7 @@ class Validator:
 
         # is_single must be a boolean.
         uns_is_single = uns_spatial["is_single"]
-        if not isinstance(uns_is_single, (np.bool_, np.bool)):
+        if not isinstance(uns_is_single, (np.bool_, bool)):
             self.errors.append(f"uns['spatial']['is_single'] must be of boolean type, it is {type(uns_is_single)}.")
             # Exit if is_single is not valid as all further checks are dependent on its value.
             return

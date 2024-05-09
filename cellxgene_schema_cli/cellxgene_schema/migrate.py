@@ -377,7 +377,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         elif (
             value is not None
             and type(value) is not bool
-            and not (isinstance(value, (np.bool_, np.bool)))
+            and not (isinstance(value, (np.bool_, bool)))
             and len(value) == 0
         ):
             del dataset.uns[key]
