@@ -1013,9 +1013,9 @@ class Validator:
             unknown_key = False  # an unknown key does not match 'spatial' or 'X_{suffix}'
             if key.startswith("X_"):
                 obsm_with_x_prefix += 1
-                if key.lower() == "x_spatial":
-                    self.errors.append(f"Embedding key in 'adata.obsm' {key} cannot be used.")
-                elif not re.match(regex_pattern, key[2:]):
+                # if key.lower() == "x_spatial":  # TODO undo after 5.0 patch release
+                #     self.errors.append(f"Embedding key in 'adata.obsm' {key} cannot be used.")
+                if not re.match(regex_pattern, key[2:]):
                     self.errors.append(
                         f"Suffix for embedding key in 'adata.obsm' {key} does not match the regex pattern {regex_pattern}."
                     )
