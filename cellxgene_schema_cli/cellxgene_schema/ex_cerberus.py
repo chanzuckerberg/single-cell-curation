@@ -1,3 +1,7 @@
+"""
+This is a prototype for how we can use cerberus to validate an anndata object.
+
+"""
 import collections
 import json
 import re
@@ -408,7 +412,7 @@ class MyValidator(cerberus.Validator):
         return self.is_spatial
 
 
-def get_validator():
+def get_schema() -> dict:
     obsm_schema = {
         "required": True,
         "anyof": [
@@ -477,6 +481,7 @@ def get_validator():
         "allow_unknown": True,
         "anyof": [
             {
+                "meta": {"name": "other"},
                 "keysrules": {
                     "type": "string",
                     "forbidden": [
@@ -509,6 +514,7 @@ def get_validator():
                 },
             },
             {
+                "meta": {"name": "color"},
                 "keysrules": {
                     "type": "string",
                     "regex": "^.*(_colors)|(_ontology_term_id_colors)$",
@@ -554,6 +560,10 @@ def get_validator():
             },
         },
     }
+    return schema
+
+
+def get_validator(schema: dict):
     return MyValidator(schema, error_handler=CustomErrorHandler())
 
 
@@ -600,7 +610,8 @@ def separate_messages(data: dict) -> Tuple[dict, dict]:
 
 
 if __name__ == "__main__":
-    VALIDATOR = get_validator()
+    SCHEMA = get_schema()
+    VALIDATOR = get_validator(SCHEMA)
     validate_anndata(adata, VALIDATOR)
 
     _adata = ad.read_h5ad(h5ad_valid, backed="r")
