@@ -2192,8 +2192,7 @@ class TestObsm:
         validator = validator_with_adata
         validator.adata.obsm["X_spatial"] = validator.adata.obsm["X_umap"]
         validator.validate_adata()
-        assert validator.errors == []  # TODO undo after 5.0 patch release
-        # assert validator.errors == ["ERROR: Embedding key in 'adata.obsm' X_spatial cannot be used."]
+        assert validator.errors == ["ERROR: Embedding key in 'adata.obsm' X_spatial cannot be used."]
 
     def test_obsm_values_suffix_start_with_number(self, validator_with_adata):
         validator = validator_with_adata
