@@ -11,3 +11,18 @@ updates:
     open-pull-requests-limit: 3
     schedule:
       interval: "daily"
+  - package-ecosystem: pip
+    directory: "/scripts/schema_bump_dry_run_ontologies"
+    open-pull-requests-limit: 3
+    schedule:
+      interval: "daily"
+  - package-ecosystem: pip
+    directory: "/scripts/migration_assistant"
+    open-pull-requests-limit: 3
+    schedule:
+      interval: "daily"
+  - package-ecosystem: pip
+    directory: "/scripts/schema_bump_dry_run_genes"
+    open-pull-requests-limit: 3
+    schedule:
+      interval: "daily"

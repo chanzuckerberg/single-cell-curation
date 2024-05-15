@@ -1,2 +1,2 @@
 requests<3
--r ../../cellxgene_schema_cli/requirement-cog.txt  # needs to use the same cellxgene-ontology-guide version
+cellxgene-ontology-guide==0.1.4

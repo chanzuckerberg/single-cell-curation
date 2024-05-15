@@ -1,2 +1,0 @@
-cellxgene-ontology-guide==0.4.0
-
