@@ -6,9 +6,9 @@ updates:
     schedule:
       interval: "weekly"
       day: "sunday"
-    group:
+    groups:
       none-major-updates:
-        pattern:
+        patterns:
           - "*"
         applies-to: version-updates
         update-types:
@@ -19,9 +19,9 @@ updates:
     open-pull-requests-limit: 5
     schedule:
       interval: "monthly"
-    group:
+    groups:
       none-major-updates:
-        pattern:
+        patterns:
           - "*"
         applies-to: version-updates
         update-types:
@@ -32,9 +32,9 @@ updates:
     open-pull-requests-limit: 5
     schedule:
       interval: "monthly"
-    group:
+    groups:
       none-major-updates:
-        pattern:
+        patterns:
           - "*"
         applies-to: version-updates
         update-types:
@@ -45,9 +45,9 @@ updates:
     open-pull-requests-limit: 5
     schedule:
       interval: "monthly"
-    group:
+    groups:
       none-major-updates:
-        pattern:
+        patterns:
           - "*"
         applies-to: version-updates
         update-types:
@@ -58,9 +58,9 @@ updates:
     open-pull-requests-limit: 5
     schedule:
       interval: "monthly"
-    group:
+    groups:
       none-major-updates:
-        pattern:
+        patterns:
           - "*"
         applies-to: version-updates
         update-types:
