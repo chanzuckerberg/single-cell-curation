@@ -56,7 +56,7 @@ jobs:
       - name: Upload coverage results as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: coverage
+          name: coverage-cli
           path: ./.coverage*
           retention-days: 3
 
@@ -87,7 +87,7 @@ jobs:
       - name: Upload coverage results as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: coverage
+          name: coverage-migration-assisstant
           path: ./.coverage*
           retention-days: 3
 
@@ -118,7 +118,7 @@ jobs:
       - name: Upload coverage results as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: coverage
+          name: coverage-ontology-dry-run
           path: ./.coverage*
           retention-days: 3
 
@@ -149,7 +149,7 @@ jobs:
       - name: Upload coverage results as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: coverage
+          name: coverage-genes-dry-run
           path: ./.coverage*
           retention-days: 3
 
@@ -175,7 +175,8 @@ jobs:
           pip install coverage
       - uses: actions/download-artifact@v4
         with:
-          name: coverage
+          pattern: coverage-*
+          merge-multiple: true
           path: .
       - name: coverage report
         run: |
