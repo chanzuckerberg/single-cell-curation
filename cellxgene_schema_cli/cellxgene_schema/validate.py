@@ -11,6 +11,7 @@ import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 import scipy
+from anndata._core.sparse_dataset import SparseDataset
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from pandas.core.computation.ops import UndefinedVariableError
 from scipy import sparse
@@ -1007,7 +1008,7 @@ class Validator:
             unknown_key = False  # an unknown key does not match 'spatial' or 'X_{suffix}'
             if key.startswith("X_"):
                 obsm_with_x_prefix += 1
-                if key.lower() == "x_spatial":
+                if key.lower() == "x_spatial":  # TODO undo after 5.0 patch release
                     self.errors.append(f"Embedding key in 'adata.obsm' {key} cannot be used.")
                 elif not re.match(regex_pattern, key[2:]):
                     self.errors.append(
@@ -1216,7 +1217,9 @@ class Validator:
             self._raw_layer_exists = False
             self.errors.append("All non-zero values in raw matrix must be positive integers of type numpy.float32.")
 
-    def _validate_raw_data_with_in_tissue_0(self, x: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool):
+    def _validate_raw_data_with_in_tissue_0(
+        self, x: Union[np.ndarray, sparse.spmatrix, SparseDataset], is_sparse_matrix: bool
+    ):
         """
         Special case validation checks for Visium data with is_single = True and in_tissue column in obs where in_tissue
         has at least one value 0. Static matrix size of 4992 rows, so chunking is not required.
@@ -1226,6 +1229,8 @@ class Validator:
         """
         has_tissue_0_non_zero_row = False
         has_tissue_1_zero_row = False
+        if isinstance(x, SparseDataset):
+            x = x.to_memory()
         if is_sparse_matrix:
             nonzero_row_indices, _ = x.nonzero()
         else:  # must be dense matrix
