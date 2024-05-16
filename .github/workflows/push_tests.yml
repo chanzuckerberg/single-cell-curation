@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v5
       - name: Pre-commit checks
         uses: pre-commit/action@v3.0.1
       - name: Install dependencies
@@ -37,7 +37,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
       - name: Python cache
@@ -68,7 +68,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
       - name: Python cache
@@ -99,7 +99,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
       - name: Python cache
@@ -130,7 +130,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
       - name: Python cache
@@ -167,7 +167,7 @@ jobs:
           ref:
             ${{ github.event.pull_request.head.ref }}
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
       - name: Install dependencies
