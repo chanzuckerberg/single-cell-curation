@@ -1,0 +1,68 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    open-pull-requests-limit: 5
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    groups:
+      non-major-updates:
+        patterns:
+          - "*"
+        applies-to: version-updates
+        update-types:
+          - patch
+          - minor
+  - package-ecosystem: pip
+    directory: "/cellxgene_schema_cli/"
+    open-pull-requests-limit: 5
+    schedule:
+      interval: "monthly"
+    groups:
+      non-major-updates:
+        patterns:
+          - "*"
+        applies-to: version-updates
+        update-types:
+          - patch
+          - minor
+  - package-ecosystem: pip
+    directory: "/scripts/schema_bump_dry_run_ontologies"
+    open-pull-requests-limit: 5
+    schedule:
+      interval: "monthly"
+    groups:
+      non-major-updates:
+        patterns:
+          - "*"
+        applies-to: version-updates
+        update-types:
+          - patch
+          - minor
+  - package-ecosystem: pip
+    directory: "/scripts/migration_assistant"
+    open-pull-requests-limit: 5
+    schedule:
+      interval: "monthly"
+    groups:
+      non-major-updates:
+        patterns:
+          - "*"
+        applies-to: version-updates
+        update-types:
+          - patch
+          - minor
+  - package-ecosystem: pip
+    directory: "/scripts/schema_bump_dry_run_genes"
+    open-pull-requests-limit: 5
+    schedule:
+      interval: "monthly"
+    groups:
+      non-major-updates:
+        patterns:
+          - "*"
+        applies-to: version-updates
+        update-types:
+          - patch
+          - minor
