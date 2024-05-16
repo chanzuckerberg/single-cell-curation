@@ -191,6 +191,6 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
     if DEPRECATED_FEATURE_IDS:
-        dataset = utils.remove_deprecated_features(dataset, DEPRECATED_FEATURE_IDS)
+        dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
 
     dataset.write(output_file, compression="gzip")
