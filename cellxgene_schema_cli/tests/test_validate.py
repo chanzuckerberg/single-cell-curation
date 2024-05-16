@@ -325,6 +325,17 @@ class TestCheckSpatial:
         validator.validate_adata()
         assert not validator.errors
 
+    def test__validate_from_file(self):
+        """Testing compatibility with SparseDatset types in Anndata"""
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            file_path = os.path.join(temp_dir, "slide_seqv2.h5ad")
+            adata_slide_seqv2.write_h5ad(file_path)
+            # Confirm spatial is valid.
+            validator.validate_adata(file_path)
+        assert not validator.errors
+
     def test__validate_spatial_visium_dense_matrix_ok(self):
         validator: Validator = Validator()
         validator._set_schema_def()
