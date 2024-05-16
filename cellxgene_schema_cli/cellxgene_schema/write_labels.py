@@ -138,7 +138,7 @@ class AnnDataLabelAppender:
 
         mapping_dict = {}
         allowed_ontologies = curie_constraints["ontologies"]
-        multi_term_def = curie_constraints.get("multi_term", None)
+        multi_term_def = curie_constraints.get("multi_term")
         delimiter = None if multi_term_def is None else multi_term_def["delimiter"]
 
         # Map term_ids to their human-readable ontology labels
