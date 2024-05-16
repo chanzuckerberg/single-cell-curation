@@ -1,6 +1,2 @@
 requests<3
-<<<<<<< tsmith/dependabot
-cellxgene-ontology-guide==0.1.4
-=======
 cellxgene-ontology-guide==1.0.0
->>>>>>> main
