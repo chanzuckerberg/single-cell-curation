@@ -54,7 +54,7 @@ jobs:
       - name: cellxgene_schema_cli Unit tests
         run: make unit-test
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: ./.coverage*
@@ -85,7 +85,7 @@ jobs:
       - name: migration_assistant Unit tests
         run: make migration-assistant-tests
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: ./.coverage*
@@ -116,7 +116,7 @@ jobs:
       - name: Ontology Dry Run Unit Tests
         run: make ontology-dry-run-tests
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: ./.coverage*
@@ -147,7 +147,7 @@ jobs:
       - name: Gene Dry Run Unit Tests
         run: make gene-dry-run-tests
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: ./.coverage*
