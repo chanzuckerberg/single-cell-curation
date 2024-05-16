@@ -7,6 +7,10 @@ updates:
       interval: "weekly"
       day: "sunday"
     groups:
+      upload-download-artifact:
+        patterns:
+          - "actions/download-artifact"
+          - "actions/upload-artifact"
       non-major-updates:
         patterns:
           - "*"
