@@ -34,7 +34,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
       - name: Pull AWS Secrets
-        uses: aws-actions/aws-secretsmanager-get-secrets@v1
+        uses: aws-actions/aws-secretsmanager-get-secrets@v2
         with:
           secret-ids:
             AUTH0_SECRETS, corpora/backend/prod/auth0-secret
