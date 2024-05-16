@@ -7,7 +7,7 @@ updates:
       interval: "weekly"
       day: "sunday"
     groups:
-      none-major-updates:
+      non-major-updates:
         patterns:
           - "*"
         applies-to: version-updates
@@ -20,7 +20,7 @@ updates:
     schedule:
       interval: "monthly"
     groups:
-      none-major-updates:
+      non-major-updates:
         patterns:
           - "*"
         applies-to: version-updates
@@ -33,7 +33,7 @@ updates:
     schedule:
       interval: "monthly"
     groups:
-      none-major-updates:
+      non-major-updates:
         patterns:
           - "*"
         applies-to: version-updates
@@ -46,7 +46,7 @@ updates:
     schedule:
       interval: "monthly"
     groups:
-      none-major-updates:
+      non-major-updates:
         patterns:
           - "*"
         applies-to: version-updates
@@ -59,7 +59,7 @@ updates:
     schedule:
       interval: "monthly"
     groups:
-      none-major-updates:
+      non-major-updates:
         patterns:
           - "*"
         applies-to: version-updates
