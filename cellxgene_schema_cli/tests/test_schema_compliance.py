@@ -104,7 +104,7 @@ def save_and_read_adata(adata: anndata.AnnData) -> anndata.AnnData:
     """
     with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
         adata.write_h5ad(f.name)
-        return anndata.read(f.name)
+        return anndata.read_h5ad(f.name)
 
 
 class TestValidAnndata:
