@@ -13,7 +13,7 @@ target_file = os.path.join(file_path, "../../cellxgene_schema_cli/cellxgene_sche
 def get_template() -> Template:
     with open(os.path.join(file_path, "migration_template.jinja"), "r") as fp:
         input_file = fp.read()
-    template = Template(input_file, trim_blocks=True, lstrip_blocks=True)
+    template = Template(input_file, keep_trailing_newline=True, trim_blocks=True, lstrip_blocks=True)
     return template
 
 
