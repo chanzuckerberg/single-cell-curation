@@ -34,18 +34,6 @@ semver = "==3.0.0"
 xxhash = "==3.3.0"
 matplotlib = "==3.7.3"
 
-
-[project.optional-dependencies]
-test = ["pytest", "pytest-cov",
-    "coverage",
-    "pytest",
-    "mypy",
-    "types-requests",
-    "types-setuptools",
-    "typing_extensions",
-    "types-PyYAML",
-]  # Add any additional test dependencies here
-
 [project.scripts]
 "cellxgene-schema" = "cellxgene_schema.cli:schema_cli"
 
