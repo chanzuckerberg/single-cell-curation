@@ -41,7 +41,7 @@ jobs:
         with:
           python-version: "3.10"
       - name: Python cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
@@ -72,7 +72,7 @@ jobs:
         with:
           python-version: "3.10"
       - name: Python cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
@@ -103,7 +103,7 @@ jobs:
         with:
           python-version: "3.10"
       - name: Python cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
@@ -134,7 +134,7 @@ jobs:
         with:
           python-version: "3.10"
       - name: Python cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
