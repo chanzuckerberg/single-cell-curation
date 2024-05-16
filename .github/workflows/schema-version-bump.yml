@@ -19,10 +19,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Set up Python 3.8
+      - name: Set up Python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.8
+          python-version: "3.10"
       - name: Python cache
         uses: actions/cache@v1
         with:
@@ -38,7 +38,7 @@ jobs:
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
-          role-duration-seconds: 5400
+          role-duration-seconds: 2700
       - name: Pull AWS Secrets
         uses: aws-actions/aws-secretsmanager-get-secrets@v1
         with:
@@ -65,7 +65,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.9
+          python-version: "3.10"
       - name: Python cache
         uses: actions/cache@v1
         with:
