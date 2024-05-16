@@ -34,6 +34,9 @@ DEPRECATED_FEATURE_IDS = [
 ]
 # fmt: on
 
+# Dictionary for CURATOR-DEFINED remapping of deprecated feature IDs, if any, to new feature IDs.
+GENCODE_MAPPER = {}
+
 
 def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
@@ -63,8 +66,6 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     #   <custom transformation logic beyond scope of replace_ontology_term>
     # ...
 
-    # Dictionary for CURATOR-DEFINED remapping of deprecated feature IDs, if any, to new feature IDs.
-    GENCODE_MAPPER = {}
     if GENCODE_MAPPER:
         dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
 
