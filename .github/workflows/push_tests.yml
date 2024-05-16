@@ -50,7 +50,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r ./requirements-dev.txt
-          pip install -e .
+          pip install -e ./cellxgene_schema_cli
       - name: cellxgene_schema_cli Unit tests
         run: make unit-test
       - name: Upload coverage results as an artifact
