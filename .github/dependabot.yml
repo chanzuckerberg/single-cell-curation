@@ -27,6 +27,8 @@ updates:
         update-types:
           - patch
           - minor
+        exclude-patterns:
+          - "anndata"
   - package-ecosystem: pip
     directory: "/scripts/schema_bump_dry_run_ontologies"
     open-pull-requests-limit: 5
@@ -66,3 +68,5 @@ updates:
         update-types:
           - patch
           - minor
+        exclude-patterns:
+          - "tiledb"
