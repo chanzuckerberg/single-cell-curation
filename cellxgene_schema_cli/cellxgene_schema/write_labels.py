@@ -313,15 +313,7 @@ class AnnDataLabelAppender:
         for label_def in column_definition["add_labels"]:
             new_column = self._get_labels(component, column, column_definition, label_def["type"])
             new_column_name = label_def["to_column"]
-
-            # The syntax below is a programmatic way to access obs and var in adata:
-            # adata.__dict__["_obs"] is adata.obs
-            # "raw.var" requires to levels of programmatic access
-            if "." in component:
-                [first_elem, second_elem] = component.split(".")
-                self.adata.__dict__["_" + first_elem].__dict__["_" + second_elem][new_column_name] = new_column
-            else:
-                self.adata.__dict__["_" + component][new_column_name] = new_column
+            getattr_anndata(self.adata, component)[new_column_name] = new_column
 
     def _add_labels(self):
         """
