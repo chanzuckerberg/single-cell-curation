@@ -212,24 +212,24 @@ The following ontology dependencies are *pinned* for this version of the schema.
 
 | Ontology | OBO Prefix | Release | Download |
 |:--|:--|:--|:--|
-| [Cell Ontology] | CL |  [2024-01-04] | [cl.owl]|
-| [Experimental Factor Ontology] | EFO | [2024-01-15 EFO 3.62.0] | [efo.owl]
+| [Cell Ontology] | CL |  [2024-04-05] | [cl.owl]|
+| [Experimental Factor Ontology] | EFO | [2024-04-15 EFO 3.65.0] | [efo.owl]
 | [Human Ancestry Ontology] | HANCESTRO | [3.0] | [hancestro-base.owl] |
 | [Human Developmental Stages] |  HsapDv | 2020-03-10 | [hsapdv.owl] |
-| [Mondo Disease Ontology] | MONDO | [2024-01-03] | [mondo.owl] |
+| [Mondo Disease Ontology] | MONDO | [2024-05-08] | [mondo.owl] |
 | [Mouse Developmental Stages]| MmusDv | 2020-03-10 | [mmusdv.owl] |
 | [NCBI organismal classification] |  NCBITaxon | [2023-06-20] | [ncbitaxon.owl] |
 | [Phenotype And Trait Ontology] | PATO | [2023-05-18] | [pato.owl]  |
-| [Uberon multi-species anatomy ontology] |  UBERON | [2024-01-18] | [uberon.owl] |
+| [Uberon multi-species anatomy ontology] |  UBERON | [2024-03-22] | [uberon.owl] |
 | | | | |
 
 [Cell Ontology]: http://obofoundry.org/ontology/cl.html
-[2024-01-04]: https://github.com/obophenotype/cell-ontology/releases/tag/v2024-01-04
-[cl.owl]: https://github.com/obophenotype/cell-ontology/releases/download/v2024-01-04/cl.owl
+[2024-04-05]: https://github.com/obophenotype/cell-ontology/releases/tag/v2024-04-05
+[cl.owl]: https://github.com/obophenotype/cell-ontology/releases/download/v2024-04-05/cl.owl
 
 [Experimental Factor Ontology]: http://www.ebi.ac.uk/efo
-[2024-01-15 EFO 3.62.0]: https://github.com/EBISPOT/efo/releases/tag/v3.62.0
-[efo.owl]: https://github.com/EBISPOT/efo/releases/download/v3.62.0/efo.owl
+[2024-04-15 EFO 3.65.0]: https://github.com/EBISPOT/efo/releases/tag/v3.65.0
+[efo.owl]: https://github.com/EBISPOT/efo/releases/download/v3.65.0/efo.owl
 
 [Human Ancestry Ontology]: http://www.obofoundry.org/ontology/hancestro.html
 [3.0]: https://github.com/EBISPOT/hancestro/releases/tag/3.0
@@ -239,8 +239,8 @@ The following ontology dependencies are *pinned* for this version of the schema.
 [hsapdv.owl]: http://purl.obolibrary.org/obo/hsapdv.owl
 
 [Mondo Disease Ontology]: http://obofoundry.org/ontology/mondo.html
-[2024-01-03]: https://github.com/monarch-initiative/mondo/releases/tag/v2024-01-03
-[mondo.owl]: https://github.com/monarch-initiative/mondo/releases/download/v2024-01-03/mondo.owl
+[2024-05-08]: https://github.com/monarch-initiative/mondo/releases/tag/v2024-05-08
+[mondo.owl]: https://github.com/monarch-initiative/mondo/releases/download/v2024-05-08/mondo.owl
 
 [Mouse Developmental Stages]: http://obofoundry.org/ontology/mmusdv.html
 [mmusdv.owl]: http://purl.obolibrary.org/obo/mmusdv.owl
@@ -254,8 +254,8 @@ The following ontology dependencies are *pinned* for this version of the schema.
 [pato.owl]: https://github.com/pato-ontology/pato/blob/v2023-05-18/pato.owl
 
 [Uberon multi-species anatomy ontology]: http://www.obofoundry.org/ontology/uberon.html
-[2024-01-18]: https://github.com/obophenotype/uberon/releases/tag/v2024-01-18
-[uberon.owl]: https://github.com/obophenotype/uberon/releases/download/v2024-01-18/uberon.owl
+[2024-03-22]: https://github.com/obophenotype/uberon/releases/tag/v2024-03-22
+[uberon.owl]: https://github.com/obophenotype/uberon/releases/download/v2024-03-22/uberon.owl
 
 ### Required Gene Annotations
 
@@ -367,6 +367,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <li>
             the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010183"><code>"EFO:0010183"</code></a>  for <i>single cell library construction</i>
           </li></ul>
+        If <code>assay_ontology_term_id</code> is either <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i> then all observations MUST contain the same value.<br><br>
         An assay based on 10X Genomics products SHOULD either be <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i> or <b>preferably</b> its most accurate descendant. An assay based on <i>SMART (Switching Mechanism at the 5' end of the RNA Template) or SMARTer technology</i> SHOULD either be <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010184"><code>"EFO:0010184"</code></a> for <i>Smart-like</i> or preferably its most accurate descendant.<br><br>
        <br>Recommended values for specific assays:
           <br><br>
@@ -1189,8 +1190,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
 ## `obsm` (Embeddings)
 
 
-The size of the ndarray stored for a key in `obsm` MUST NOT be zero.
-
+The value for each `str` key MUST be a  `numpy.ndarray` of shape `(n_obs, m)`, where `n_obs` is the number of rows in `X` and `m >= 1`. 
 
 To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more** embeddings of at least two-dimensions (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`.<br><br>
 
@@ -1512,6 +1512,8 @@ Curators MUST annotate the following keys and values in `uns`:
 </tbody></table>
 <br>
 
+
+
 #### spatial[_library_id_]['images']['fullres']
 <table><tbody>
     <tr>
@@ -1525,7 +1527,12 @@ Curators MUST annotate the following keys and values in `uns`:
     <tr>
       <th>Value</th>
         <td>
-          <code>ndarray</code><br><br>It is STRONGLY RECOMMENDED that the submitter include the full resolution image which MUST be converted to an array of shape (, , 3).
+          The full resolution image MUST be converted to a<code>numpy.ndarray</code> with the following requirements:<br><br>
+          <ul>
+          <li>The length of <code>numpy.ndarray.shape</code> MUST be <code>3</code></li>
+          <li>The <code>numpy.ndarray.dtype</code> MUST be <code>numpy.uint8</code></li>
+          <li>The <code>numpy.ndarray.shape[2]</code> MUST be either <code>3</code> (RGB color model for example) or <code>4</code> (RGBA color model for example)</li>
+          </ul>
         </td>
     </tr>
 </tbody></table>
@@ -1544,12 +1551,17 @@ Curators MUST annotate the following keys and values in `uns`:
     <tr>
       <th>Value</th>
         <td>
-          <code>ndarray</code><br><br><code>tissue_hires_image.png</code> MUST be converted to an array of shape (, , 3). Its largest dimension MUST be 2000 pixels. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/spatial-outputs">Space Ranger Spatial Outputs</a>.
+          <code>tissue_hires_image.png</code> MUST be converted to a<code>numpy.ndarray</code> with the following requirements:<br><br>
+          <ul>
+          <li>The length of <code>numpy.ndarray.shape</code> MUST be <code>3</code></li>
+          <li>The <code>numpy.ndarray.dtype</code> MUST be <code>numpy.uint8</code></li>
+          <li>The largest dimension in <code>numpy.ndarray.shape[:2]</code> MUST be <code>2000</code>pixels. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/spatial-outputs">Space Ranger Spatial Outputs</a></li>
+          <li>The <code>numpy.ndarray.shape[2]</code> MUST be either <code>3</code> (RGB color model for example) for <code>4</code> (RGBA color model for example)</li>
+          </ul>
         </td>
     </tr>
 </tbody></table>
 <br>
-
 
 #### spatial[_library_id_]['scalefactors']
 <table><tbody>
@@ -1855,17 +1867,22 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 
 * All references to "child" and "children" have been changed to "descendant" and "descendants" for accuracy.
 * Required Ontologies
-  * PENDING
+  * Updated CL to the 2024-04-05 release
+  * Updated EFO to the 2024-04-15 EFO 3.65.0 release
+  * Updated MONDO to the 2024-05-08 release
+  * Updated UBERON to the 2024-03-22 release
 * X (Matrix Layers)
   * Added _Visium Spatial Gene Expression_ to the table of assays
 * obs (Cell metadata)
   * Added `array_col` for _Visium Spatial Gene Expression_ when <code>uns['spatial']['is_single']</code> is <code>True</code>
   * Added `array_row` for _Visium Spatial Gene Expression_ when <code>uns['spatial']['is_single']</code> is <code>True</code>
+  * Updated the requirements for `assay_ontology_term_id` for _Visium Spatial Gene Expression_ and _Slide-seqV2_. All observations must contain the same value.
   * Updated the requirements for `cell_type_ontology_term_id` for _Visium Spatial Gene Expression_ when <code>uns['spatial']['is_single']</code> is <code>True</code>. The value must be `"unknown"` if the corresponding value of `in_tissue` is `0`.
   * Added `in_tissue` for _Visium Spatial Gene Expression_ when <code>uns['spatial']['is_single']</code> is <code>True</code>
   * Updated the requirements for `is_primary_data` for _Visium Spatial Gene Expression_. The value must be <code>False</code>when <code>uns['spatial']['is_single']</code> is <code>False</code>.
   * Updated the requirements for `self_reported_ethnicity_ontology_term_id`. There must be no duplication of terms.
 * obsm (Embeddings)
+  * Restored v3.1.0 requirement allowing only `numpy.ndarray` values with specific shapes due to Seurat conversion failures
   * Added `spatial` for _Visium Spatial Gene Expression_ and _Slide-seqV2_
   * Updated requirements for `X_{suffix}`. {suffix} MUST NOT be `"spatial"`.
 * uns (Dataset metadata)

@@ -125,6 +125,173 @@ obs_expected = pd.DataFrame(
 
 obs_expected["observation_joinid"] = get_hash_digest_column(obs_expected)
 
+# Valid spatial obs per schema
+good_obs_visium = pd.DataFrame(
+    [
+        [
+            1,
+            1,
+            "unknown",
+            "EFO:0010961",
+            "MONDO:0100096",
+            "NCBITaxon:9606",
+            "PATO:0000383",
+            "UBERON:0002048",
+            "tissue",
+            True,
+            "HANCESTRO:0575",
+            "HsapDv:0000003",
+            "donor_1",
+            "na",
+            0,
+        ],
+        [
+            2,
+            2,
+            "CL:0000192",
+            "EFO:0010961",
+            "PATO:0000461",
+            "NCBITaxon:10090",
+            "unknown",
+            "CL:0000192",
+            "cell culture",
+            False,
+            "na",
+            "MmusDv:0000003",
+            "donor_2",
+            "na",
+            1,
+        ],
+    ],
+    index=["X", "Y"],
+    columns=[
+        "array_col",
+        "array_row",
+        "cell_type_ontology_term_id",
+        "assay_ontology_term_id",
+        "disease_ontology_term_id",
+        "organism_ontology_term_id",
+        "sex_ontology_term_id",
+        "tissue_ontology_term_id",
+        "tissue_type",
+        "is_primary_data",
+        "self_reported_ethnicity_ontology_term_id",
+        "development_stage_ontology_term_id",
+        "donor_id",
+        "suspension_type",
+        "in_tissue",
+    ],
+)
+
+good_obs_visium.loc[:, ["donor_id"]] = good_obs_visium.astype("category")
+good_obs_visium.loc[:, ["suspension_type"]] = good_obs_visium.astype("category")
+good_obs_visium.loc[:, ["tissue_type"]] = good_obs_visium.astype("category")
+
+# Valid spatial obs per schema
+good_obs_slide_seqv2 = pd.DataFrame(
+    [
+        [
+            "CL:0000066",
+            "EFO:0030062",
+            "MONDO:0100096",
+            "NCBITaxon:9606",
+            "PATO:0000383",
+            "UBERON:0002048",
+            "tissue",
+            True,
+            "HANCESTRO:0575",
+            "HsapDv:0000003",
+            "donor_1",
+            "na",
+        ],
+        [
+            "CL:0000192",
+            "EFO:0030062",
+            "PATO:0000461",
+            "NCBITaxon:10090",
+            "unknown",
+            "CL:0000192",
+            "cell culture",
+            False,
+            "na",
+            "MmusDv:0000003",
+            "donor_2",
+            "na",
+        ],
+    ],
+    index=["X", "Y"],
+    columns=[
+        "cell_type_ontology_term_id",
+        "assay_ontology_term_id",
+        "disease_ontology_term_id",
+        "organism_ontology_term_id",
+        "sex_ontology_term_id",
+        "tissue_ontology_term_id",
+        "tissue_type",
+        "is_primary_data",
+        "self_reported_ethnicity_ontology_term_id",
+        "development_stage_ontology_term_id",
+        "donor_id",
+        "suspension_type",
+    ],
+)
+
+good_obs_slide_seqv2.loc[:, ["donor_id"]] = good_obs_slide_seqv2.astype("category")
+good_obs_slide_seqv2.loc[:, ["suspension_type"]] = good_obs_slide_seqv2.astype("category")
+good_obs_slide_seqv2.loc[:, ["tissue_type"]] = good_obs.astype("category")
+
+good_obs_visium_is_single_false = pd.DataFrame(
+    [
+        [
+            "CL:0000066",
+            "EFO:0010961",
+            "MONDO:0100096",
+            "NCBITaxon:9606",
+            "PATO:0000383",
+            "UBERON:0002048",
+            "tissue",
+            False,
+            "HANCESTRO:0575",
+            "HsapDv:0000003",
+            "donor_1",
+            "na",
+        ],
+        [
+            "CL:0000192",
+            "EFO:0010961",
+            "PATO:0000461",
+            "NCBITaxon:10090",
+            "unknown",
+            "CL:0000192",
+            "cell culture",
+            False,
+            "na",
+            "MmusDv:0000003",
+            "donor_2",
+            "na",
+        ],
+    ],
+    index=["X", "Y"],
+    columns=[
+        "cell_type_ontology_term_id",
+        "assay_ontology_term_id",
+        "disease_ontology_term_id",
+        "organism_ontology_term_id",
+        "sex_ontology_term_id",
+        "tissue_ontology_term_id",
+        "tissue_type",
+        "is_primary_data",
+        "self_reported_ethnicity_ontology_term_id",
+        "development_stage_ontology_term_id",
+        "donor_id",
+        "suspension_type",
+    ],
+)
+
+good_obs_visium_is_single_false.loc[:, ["donor_id"]] = good_obs_visium_is_single_false.astype("category")
+good_obs_visium_is_single_false.loc[:, ["suspension_type"]] = good_obs_visium_is_single_false.astype("category")
+good_obs_visium_is_single_false.loc[:, ["tissue_type"]] = good_obs_visium_is_single_false.astype("category")
+
 # ---
 # 2. Creating individual var components: valid object and valid object and with labels
 
@@ -190,6 +357,44 @@ good_uns_with_colors = {
     "tissue_type_colors": numpy.array(["black", "pink"]),
 }
 
+visium_library_id = "Proj2023_Lung_C001"
+
+good_uns_with_visium_spatial = {
+    "title": "A title",
+    "default_embedding": "X_umap",
+    "X_approximate_distribution": "normal",
+    "batch_condition": ["is_primary_data"],
+    "spatial": {
+        "is_single": numpy.bool_(True),
+        visium_library_id: {
+            "images": {
+                "hires": numpy.zeros((2000, 100, 3), dtype=numpy.uint8),
+                "fullres": numpy.array([[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]], dtype=numpy.uint8),
+            },
+            "scalefactors": {
+                "spot_diameter_fullres": 1.0,
+                "tissue_hires_scalef": 1.0,
+            },
+        },
+    },
+}
+
+good_uns_with_is_single_false = {
+    "title": "A title",
+    "default_embedding": "X_umap",
+    "X_approximate_distribution": "normal",
+    "batch_condition": ["is_primary_data"],
+    "spatial": {"is_single": False},
+}
+
+good_uns_with_slide_seqV2_spatial = {
+    "title": "A title",
+    "default_embedding": "X_umap",
+    "X_approximate_distribution": "normal",
+    "batch_condition": ["is_primary_data"],
+    "spatial": {"is_single": True},
+}
+
 # ---
 # 4. Creating expression matrix,
 # X has integer values and non_raw_X has real values
@@ -200,7 +405,7 @@ non_raw_X[0, 0] = 1.5
 # ---
 # 5.Creating valid obsm
 good_obsm = {"X_umap": numpy.zeros([X.shape[0], 2])}
-
+good_obsm_spatial = {"X_umap": numpy.zeros([X.shape[0], 2]), "spatial": numpy.zeros([X.shape[0], 2])}
 
 # ---
 # 6. Putting all the components created in the previous steps into minimal anndata that used for testing in
@@ -247,6 +452,30 @@ adata_with_labels = anndata.AnnData(
 # Expected anndata with colors for categorical obs fields
 adata_with_colors = anndata.AnnData(
     X=sparse.csr_matrix(X), obs=good_obs, uns=good_uns_with_colors, obsm=good_obsm, var=good_var
+)
+
+# Expected anndata with Visium spatial data
+adata_visium = anndata.AnnData(
+    X=sparse.csr_matrix(X), obs=good_obs_visium, uns=good_uns_with_visium_spatial, obsm=good_obsm_spatial, var=good_var
+)
+adata_visium.raw = adata_visium.copy()
+adata_visium.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# Expected anndata with Slide-seqV2 spatial data
+adata_slide_seqv2 = anndata.AnnData(
+    X=sparse.csr_matrix(X),
+    obs=good_obs_slide_seqv2,
+    uns=good_uns_with_slide_seqV2_spatial,
+    obsm=good_obsm_spatial,
+    var=good_var,
+)
+
+adata_spatial_is_single_false = anndata.AnnData(
+    X=sparse.csr_matrix(X),
+    obs=good_obs_visium_is_single_false,
+    uns=good_uns_with_is_single_false,
+    obsm=good_obsm_spatial,
+    var=good_var,
 )
 
 # anndata for testing migration

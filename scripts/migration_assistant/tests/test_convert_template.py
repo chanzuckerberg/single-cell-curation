@@ -68,6 +68,9 @@ ONTOLOGY_TERM_MAPS = {
 
 DEPRECATED_FEATURE_IDS = [
 ]
+
+# Dictionary for CURATOR-DEFINED remapping of deprecated feature IDs, if any, to new feature IDs.
+GENCODE_MAPPER = {}
 # fmt: on
 
 
@@ -99,9 +102,12 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     #   <custom transformation logic beyond scope of replace_ontology_term>
     # ...
 
+    if GENCODE_MAPPER:
+        dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
+
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
     if DEPRECATED_FEATURE_IDS:
-        dataset = utils.remove_deprecated_features(dataset, DEPRECATED_FEATURE_IDS)
+        dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
 
     dataset.write(output_file, compression="gzip")"""
 
@@ -167,6 +173,9 @@ ONTOLOGY_TERM_MAPS = {
 
 DEPRECATED_FEATURE_IDS = [
 ]
+
+# Dictionary for CURATOR-DEFINED remapping of deprecated feature IDs, if any, to new feature IDs.
+GENCODE_MAPPER = {}
 # fmt: on
 
 
@@ -198,9 +207,12 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     #   <custom transformation logic beyond scope of replace_ontology_term>
     # ...
 
+    if GENCODE_MAPPER:
+        dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
+
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
     if DEPRECATED_FEATURE_IDS:
-        dataset = utils.remove_deprecated_features(dataset, DEPRECATED_FEATURE_IDS)
+        dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
 
     dataset.write(output_file, compression="gzip")"""
 
@@ -272,6 +284,9 @@ DEPRECATED_FEATURE_IDS = [
     "ENSG00000223972",
     "ENSG00000227232",
 ]
+
+# Dictionary for CURATOR-DEFINED remapping of deprecated feature IDs, if any, to new feature IDs.
+GENCODE_MAPPER = {}
 # fmt: on
 
 
@@ -303,9 +318,12 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     #   <custom transformation logic beyond scope of replace_ontology_term>
     # ...
 
+    if GENCODE_MAPPER:
+        dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
+
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
     if DEPRECATED_FEATURE_IDS:
-        dataset = utils.remove_deprecated_features(dataset, DEPRECATED_FEATURE_IDS)
+        dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
 
     dataset.write(output_file, compression="gzip")"""
     mock.patch("scripts.migration_assistant.generate_script.get_current_version", return_value=expected_output)
