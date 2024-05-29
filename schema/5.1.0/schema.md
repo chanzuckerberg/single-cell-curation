@@ -1688,11 +1688,12 @@ Curators MUST annotate the following keys and values in `uns`:
   <tr>
     <th>Value</th>
       <td>
-        <code>numpy.ndarray</code>. This MUST be a 1-D array of shape <code>(, c)</code>, where <code>c</code> is greater than or equal to the<br> number of unique categories in the {column} as calculated by:<br><br>
-           <samp>len(anndata.obs.{column}.unique())</samp><br><br>
-        The color code at the Nth position in the <code>ndarray</code> corresponds to the Nth category of <samp>anndata.obs.{column}.unique()</samp>.<br><br>For example, if <code>cell_type_ontology_term_id</code> includes two unique categories:<br><br>
-        <samp>anndata.obs.cell_type_ontology_term_id.unique()</samp><br><br>
-        <samp>['CL:0000057', 'CL:0000115']<br>Categories (2, object): ['CL:0000057', 'CL:0000115']</samp><br><br>then <code>cell-type_ontology_term_id_colors</code> MUST contain two or more colors such as:<br><br>
+        <code>numpy.ndarray</code>. This MUST be a 1-D array of shape <code>(, c)</code>, where <code>c</code> is greater than or equal to the<br> number of categories in the {column} as calculated by:<br><br>
+           <samp>anndata.obs.{column}.cat.categories.size</samp><br><br>
+        The color code at the Nth position in the <code>ndarray</code> corresponds to the Nth category of <samp>anndata.obs.{column}.cat.categories</samp>.<br><br>For example, if <code>cell_type_ontology_term_id</code> includes two categories:<br><br>
+        <samp>anndata.obs.cell_type_ontology_term_id.cat.categories.values</samp><br><br>
+        <samp>array(['CL:0000057', 'CL:0000115'],
+      dtype='object')</samp><br><br>then <code>cell-type_ontology_term_id_colors</code> MUST contain two or more colors such as:<br><br>
         <samp>['aqua' 'blueviolet']</samp><br><br>where <code>'aqua'</code> is the color assigned to <code>'CL:0000057'</code> and <code>'blueviolet'</code> is the color assigned to<br> <code>'CL:0000115'</code>.<br><br>All elements in the <code>ndarray</code> MUST use the same color model, limited to:<br><br>
           <table>
           <thead>
@@ -1886,6 +1887,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
   * Added `spatial` for _Visium Spatial Gene Expression_ and _Slide-seqV2_
   * Updated requirements for `X_{suffix}`. {suffix} MUST NOT be `"spatial"`.
 * uns (Dataset metadata)
+  * Updated `{column}_colors` instructions
   * Updated schema_reference to <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md"</code>
   * Updated schema_version to <code>"5.1.0"</code>
   * Added `spatial` for _Visium Spatial Gene Expression_ and _Slide-seqV2_, including scale factors and underlay images for _Visium Spatial Gene Expression_.
