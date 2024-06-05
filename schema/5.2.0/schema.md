@@ -1871,8 +1871,8 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
     * Removed CITE-seq and its descendants
     * Removed smFISH and its descendants
     * Removed snmC-seq
-    * Removed snmC-seq2
     * Removed spatial proteomics and its descendants
+    * Replaced snmC-seq2 with methylation profiling by high throughput sequencing and its descendants
 
 * uns (Dataset metadata)
   * Updated `schema_reference` to <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.2.0/schema.md"</code>
