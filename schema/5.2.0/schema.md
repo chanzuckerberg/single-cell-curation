@@ -891,10 +891,6 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>CITE-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0009294"><code>EFO:0009294</code></a>] and its descendants</td>
-              <td><code>"cell"</code></td>
-           </tr>
-            <tr>
               <td><i>DroNc-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008720"><code>EFO:0008720</code></a>]</td>
               <td><code>"nucleus"</code></td>
            </tr>
@@ -914,7 +910,19 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td><i>MARS-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008796"><code>EFO:0008796</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>
-            <tr>
+           <tr>
+             <td><i>mCT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030060"><code>EFO:0030060</code></a>]</td>
+             <td><code>"cell"</code> or <code>"nucleus"</code></td>
+          </tr>
+          <tr>
+            <td><i>MERFISH</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008992"><code>EFO:0008992</code></a>]</td>
+            <td><code>"na"</code></code></td>
+          </tr>
+          <tr>
+           <td><i>methylation profiling by high throughput sequencing</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0002761"><code>EFO:0002761</code></a>] and its descendants</td>
+          <td><code>"nucleus"</code></td>
+         </tr>
+          <tr>
               <td><i>microwell-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030002"><code>EFO:0030002</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>    
@@ -922,6 +930,10 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td><i>Patch-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008853"><code>EFO:0008853</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>
+          <tr>
+            <td><i>ScaleBio single cell RNA sequencing</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0022490"><code>EFO:0022490</code></a>]</td>
+           <td><code>"cell"</code> or <code>"nucleus"</code></td>
+          </tr>
             <tr>
               <td><i>sci-Plex</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030026"><code>EFO:0030026</code></a>]</td>
               <td><code>"nucleus"</code></td>
@@ -937,22 +949,6 @@ Curators MUST annotate the following columns in the `obs` dataframe:
             <tr>
               <td><i>Smart-like</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010184"><code>EFO:0010184</code></a>] and its descendants</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
-           </tr>
-            <tr>
-              <td><i>smFISH</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0009918"><code>EFO:0009918</code></a>] and its descendants</td>
-              <td><code>"na"</code></td>
-           </tr>   
-            <tr>
-              <td><i>snmC-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008939"><code>EFO:0008939</code></a>]</td>
-              <td><code>"nucleus"</code></td>
-           </tr>
-            <tr>
-              <td><i>snmC-seq2</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030027"><code>EFO:0030027</code></a>]</td>
-              <td><code>"nucleus"</code></td>
-           </tr>
-            <tr>
-              <td><i>spatial proteomics</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0700000"><code>EFO:0700000</code></a>] and its descendants</td>
-              <td><code>"na"</code></td>
            </tr>
             <tr>
               <td><i>spatial transcriptomics</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008994"><code>EFO:0008994</code></a>] and its descendants</td>
@@ -1865,6 +1861,18 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 ## Appendix A. Changelog
 
 ### schema v5.2.0
+
+* obs (Cell metadata)
+  * `suspension_type`
+    * Added mCT-seq
+    * Added MERFISH
+    * Added methylation profiling by high throughput sequencing and its descendants
+    * Added ScaleBio single cell RNA sequencing
+    * Removed CITE-seq and its descendants
+    * Removed smFISH and its descendants
+    * Removed snmC-seq
+    * Removed snmC-seq2
+    * Removed spatial proteomics and its descendants
 
 * uns (Dataset metadata)
   * Updated `schema_reference` to <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.2.0/schema.md"</code>
