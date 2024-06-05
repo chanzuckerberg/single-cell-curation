@@ -879,11 +879,11 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td><code>"nucleus"</code></td>
            </tr>
             <tr>
-              <td><i>BD Rhapsody Whole Transcriptome Analysis</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0700003"><code>EFO:0700003</code></a>]</td>
+              <td><i>BD Rhapsody Targeted mRNA</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0700004"><code>EFO:0700004</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>BD Rhapsody Targeted mRNA</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0700004"><code>EFO:0700004</code></a>]</td>
+              <td><i>BD Rhapsody Whole Transcriptome Analysis</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0700003"><code>EFO:0700003</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
@@ -940,6 +940,10 @@ Curators MUST annotate the following columns in the `obs` dataframe:
            </tr>
             <tr>
               <td><i>sci-RNA-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010550"><code>EFO:0010550</code></a>]</td>
+              <td><code>"cell"</code> or <code>"nucleus"</code></td>
+           </tr>
+            <tr>
+              <td><i>sci-RNA-seq3</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030028"><code>EFO:0030028</code></a>]</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
@@ -1867,6 +1871,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
     * Added mCT-seq
     * Added MERFISH
     * Added ScaleBio single cell RNA sequencing
+    * Added sci-RNA-seq3
     * Removed CITE-seq and its descendants
     * Removed smFISH and its descendants
     * Removed snmC-seq
