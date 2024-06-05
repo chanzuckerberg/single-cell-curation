@@ -1866,7 +1866,6 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
   * `suspension_type`
     * Added mCT-seq
     * Added MERFISH
-    * Added methylation profiling by high throughput sequencing and its descendants
     * Added ScaleBio single cell RNA sequencing
     * Removed CITE-seq and its descendants
     * Removed smFISH and its descendants
