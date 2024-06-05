@@ -100,3 +100,9 @@ This is a large chain of tools for data validation. I did not have time to evalu
 
 # Next steps
 What ever course of action we take, we should start by writing a test suite for the current validator. This will help us understand the current behavior and make sure we don't break anything when we migrate to a new tool.
+
+
+# Optimzing the current validator
+- only check for canonical sparse array during seurat conversion
+- remove the need for the cxg converter to check for the sparsity of the matrix by returning the sparsity from the validator
+  - Use a single sparsity check for both the validator and the cxg converter
