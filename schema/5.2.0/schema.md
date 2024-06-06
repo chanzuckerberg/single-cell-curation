@@ -616,7 +616,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <tbody>
             <tr>
               <td><i>10x multiome</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030059"><code>EFO:0030059</code></a>]</td>
-              <td><code>"epigenomics"</code> or <code>"transcriptomics"</code></td>
+              <td><code>"epigenomics"</code> or<br> <code>"transcriptomics"</code></td>
            </tr>
             <tr>
               <td><i>10x scATAC-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030007"><code>EFO:0030007</code></a>]</td>
