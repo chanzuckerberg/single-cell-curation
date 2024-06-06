@@ -180,14 +180,13 @@ CELLxGENE's matrix layer requirements are tailored to optimize data reuse. Becau
 
 The following table describes the matrix data and layers requirements that are **assay-specific**. If an entry in the table is empty, the schema does not have any other requirements on data in those layers beyond the ones listed above.
 
-| Assay | "raw" required? | "raw" location | "normalized" required? | "normalized" location |
+| assay_ontology_term_id or modality | "raw" required? | "raw" location | "normalized" required? | "normalized" location |
 |-|-|-|-|-|
-| scRNA-seq (UMI, e.g. 10x v3, Slide-seqV2) | REQUIRED. Values MUST be de-duplicated molecule counts. Each cell MUST contain at least one non-zero value. All non-zero values MUST be positive integers stored as `numpy.float32`.| `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
-| Visium Spatial Gene Expression | REQUIRED. Values MUST be de-duplicated molecule counts. All non-zero values MUST be positive integers stored as `numpy.float32`.<br><br>If <code>uns['spatial']['is_single']</code> is <code>False</code> then each cell MUST contain at least one non-zero value.<br><br>If <code>uns['spatial']['is_single']</code> is <code>True</code> then the unfiltered feature-barcode matrix (<code>raw_feature_bc_matrix</code>) MUST be used. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/space-ranger-feature-barcode-matrices">Space Ranger Feature-Barcode Matrices</a>. This matrix MUST contain 4992 rows. If the <code>obs['in_tissue']</code> value is <code>1</code>, then the cell MUST contain at least one non-zero value. If any <code>obs['in_tissue']</code> values are <code>0</code>, then at least one cell corresponding to a <code>obs['in_tissue']</code> with a value of <code>0</code> MUST contain a non-zero value.| `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
+|`modality` is `"transcriptomics"` and `assay_ontology_term_id` is NOT [`"EFO:0010961"`](https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961) for <i>Visium Spatial Gene Expression</i> | REQUIRED. If UMI-based assay (e.g. 10x v3, Slide-seqV2), values MUST be de-duplicated molecule counts.<br><br>If non-UMI-based assay (e.g. Smart-seq2), values MUST be one of read counts (e.g. FeatureCounts) or estimated fragments (e.g. output of RSEM).<br><br>Each observation MUST contain at least one non-zero value. All non-zero values MUST be positive integers stored as numpy.float32. | `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
+|`modality` is `"transcriptomics"` and `assay_ontology_term_id` is [`"EFO:0010961"`](https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961") for <i>Visium Spatial Gene Expression</i> | REQUIRED. Values MUST be de-duplicated molecule counts. All non-zero values MUST be positive integers stored as `numpy.float32`.<br><br>If <code>uns['spatial']['is_single']</code> is <code>False</code> then each observation MUST contain at least one non-zero value.<br><br>If <code>uns['spatial']['is_single']</code> is <code>True</code> then the unfiltered feature-barcode matrix (<code>raw_feature_bc_matrix</code>) MUST be used. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/space-ranger-feature-barcode-matrices">Space Ranger Feature-Barcode Matrices</a>. This matrix MUST contain 4992 rows. If the <code>obs['in_tissue']</code> value is <code>1</code>, then the observation MUST contain at least one non-zero value. If any <code>obs['in_tissue']</code> values are <code>0</code>, then at least one observation corresponding to a <code>obs['in_tissue']</code> with a value of <code>0</code> MUST contain a non-zero value.| `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
+|`modality` is `"epigenomics"` | NOT REQUIRED | | REQUIRED | `AnnData.X` | STRONGLY RECOMMENDED |
 |||||
-| scRNA-seq (non-UMI, e.g. SS2) | REQUIRED. Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM). Each cell MUST contain at least one non-zero value. All non-zero values MUST be positive integers stored as `numpy.float32`. | `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
-| Accessibility (e.g. ATAC-seq, mC-seq) | NOT REQUIRED | | REQUIRED | `AnnData.X` | STRONGLY RECOMMENDED |
-|||||
+
 
 ## Integration Metadata
 
@@ -1998,6 +1997,8 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 
 ### schema v5.2.0
 
+* X (Matrix Layers)
+  * Redesigned table to include `modality`
 * obs (Cell metadata)
   * Added `modality`
   * Updated requirements for `suspension_type`
