@@ -13,7 +13,7 @@ import pandas as pd
 import scipy
 from anndata._core.sparse_dataset import SparseDataset
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
-from pandas.core.computation.ops import UndefinedVariableError
+from pandas.errors import UndefinedVariableError
 from scipy import sparse
 
 from . import gencode, schema
