@@ -6,7 +6,7 @@ numpy==1.26.4
 pandas==1.4.4
 PyYaml==6.0.1
 wheel==0.43.0
-scipy<1.13.0    # scipy 1.13.0 is not compatible with anndata <=0.10.6, revisit before next release
+scipy<1.15.0    # scipy 1.13.0 is not compatible with anndata <=0.10.6, revisit before next release
 semver==3.0.2
 xxhash==3.4.1
 matplotlib==3.9.0
