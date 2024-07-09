@@ -367,7 +367,7 @@ class TestExpressionMatrix:
         validator.errors = []
         obs["assay_ontology_term_id"] = "EFO:0010891"
         obs["suspension_type"] = "nucleus"
-        obs.loc[:, ["suspension_type"]] = obs.astype("category")
+        obs["suspension_type"] = obs["suspension_type"].astype("category")
         validator.validate_adata()
         assert validator.errors == []
 
