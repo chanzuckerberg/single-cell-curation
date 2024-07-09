@@ -1,5 +1,5 @@
 requests==2.32.0
-tiledb
+tiledb<2
 pandas==2.2.2
 pyarrow>=1.0.0
 jinja2<4
