@@ -10,7 +10,6 @@ import anndata
 import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
-import scipy
 from anndata._core.sparse_dataset import SparseDataset
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from pandas.errors import UndefinedVariableError
@@ -39,6 +38,7 @@ class Validator:
     """Handles validation of AnnData"""
 
     def __init__(self, ignore_labels=False):
+        self.reset()
         self.schema_def = dict()
         self.schema_version: str = None
         self.ignore_labels = ignore_labels
@@ -58,6 +58,7 @@ class Validator:
         self.is_spatial = None
         self.is_visium = None
         self.is_visium_and_is_single_true = None
+        self.non_canonical_format: list[str] = []
 
         # Matrix (e.g., X, raw.X, ...) number non-zero cache
         self.number_non_zero = dict()
@@ -393,6 +394,18 @@ class Validator:
             start = end
         if start < n:
             yield (matrix[start:n], start, n)
+
+    def _check_canonical_format(self, matrix_name: str, matrix: Union[sparse.spmatrix]) -> int:
+        """
+        Enforce canonical format for anndata X and raw.X. All operation are done inplace.
+        Canonical Format is required to support h5ad to Seurat file conversion.
+        :param adata:
+        """
+
+        for matrix_chunk, _, _ in self._chunk_matrix(matrix):
+            if not matrix_chunk.has_canonical_format:
+                logger.warning(f"noncanonical sparse matrix found in {matrix_name}.")
+                self.non_canonical_format.append(matrix_name)
 
     def _count_matrix_nonzero(self, matrix_name: str, matrix: Union[np.ndarray, sparse.spmatrix]) -> int:
         if matrix_name in self.number_non_zero:
@@ -825,10 +838,7 @@ class Validator:
                 category_mapping[column_name] = column.nunique()
 
         for key, value in uns_dict.items():
-            if any(
-                isinstance(value, sparse_class)
-                for sparse_class in (scipy.sparse.csr_matrix, scipy.sparse.csc_matrix, scipy.sparse.coo_matrix)
-            ):
+            if isinstance(value, (sparse.csr_matrix, sparse.csc_matrix, sparse.coo_matrix)):
                 if value.nnz == 0:  # number non-zero
                     self.errors.append(f"uns['{key}'] cannot be an empty value.")
             elif value is not None and not isinstance(value, (np.bool_, bool, numbers.Number)) and len(value) == 0:
@@ -890,6 +900,8 @@ class Validator:
 
         :rtype none
         """
+        # TODO there is a similar function in the cxg conversion script. It should be refactored to avoid duplication
+        # this version is memory efficient. The other one is not.
         max_sparsity = float(self.schema_def["sparsity"])
 
         to_validate = [(self.adata.X, "X")]
@@ -906,16 +918,7 @@ class Validator:
         # Check sparsity
         for x, x_name in to_validate:
             matrix_format = get_matrix_format(self.adata, x)
-            if matrix_format == "csr":
-                continue
             assert matrix_format != "unknown"
-
-            # It seems silly to perform this test for 'coo' and 'csc' formats,
-            # which are, by definition, already sparse. But the old code
-            # performs test, and so we continue the tradition. It is possible
-            # that the prolog comment is incorrect, and the purpose of this
-            # function is to recommend CSR for _any_ matrix with sparsity beyond
-            # a given limit.
 
             nnz = self._count_matrix_nonzero(x_name, x)
             sparsity = 1 - nnz / np.prod(x.shape)
@@ -950,6 +953,7 @@ class Validator:
             matrix_format = get_matrix_format(self.adata, matrix)
             if matrix_format in SPARSE_MATRIX_TYPES:
                 effective_r_array_size = self._count_matrix_nonzero(matrix_name, matrix)
+                self._check_canonical_format(matrix_name, matrix)
                 is_sparse = True
             elif matrix_format == "dense":
                 effective_r_array_size = max(matrix.shape)
@@ -1008,7 +1012,7 @@ class Validator:
             unknown_key = False  # an unknown key does not match 'spatial' or 'X_{suffix}'
             if key.startswith("X_"):
                 obsm_with_x_prefix += 1
-                if key.lower() == "x_spatial":  # TODO undo after 5.0 patch release
+                if key.lower() == "x_spatial":
                     self.errors.append(f"Embedding key in 'adata.obsm' {key} cannot be used.")
                 elif not re.match(regex_pattern, key[2:]):
                     self.errors.append(
@@ -1229,10 +1233,14 @@ class Validator:
         """
         has_tissue_0_non_zero_row = False
         has_tissue_1_zero_row = False
-        if isinstance(x, SparseDataset):
-            x = x.to_memory()
         if is_sparse_matrix:
-            nonzero_row_indices, _ = x.nonzero()
+            if isinstance(x, SparseDataset):
+                nonzero_row_indices = np.array([], dtype=int)
+                for _x, _, _ in self._chunk_matrix(x):
+                    _nonzero_row_indices, _ = _x.nonzero()
+                    nonzero_row_indices = np.concatenate((nonzero_row_indices, _nonzero_row_indices))
+            else:
+                nonzero_row_indices, _ = x.nonzero()
         else:  # must be dense matrix
             nonzero_row_indices = np.where(np.any(x != 0, axis=1))[0]
         for i in range(x.shape[0]):
@@ -1272,7 +1280,12 @@ class Validator:
         :rtype bool
         :return True if any non-zero values are invalid given validation rules, False otherwise
         """
-        data = x if isinstance(x, np.ndarray) else x.data
+        if isinstance(x, np.ndarray):
+            data = x
+        elif isinstance(x, sparse.spmatrix):
+            data = x.data
+        elif isinstance(x, SparseDataset):
+            return all(self._matrix_has_invalid_nonzero_values(_x) for _x, _, _ in self._chunk_matrix(x))
         return np.any((data % 1 > 0) | (data < 0))
 
     def _validate_x_raw_x_dimensions(self):

@@ -325,14 +325,14 @@ class TestCheckSpatial:
         validator.validate_adata()
         assert not validator.errors
 
-    def test__validate_from_file(self):
+    @pytest.mark.parametrize("adata", [adata_slide_seqv2, adata_visium])
+    def test__validate_from_file(self, adata):
         """Testing compatibility with SparseDatset types in Anndata"""
         validator: Validator = Validator()
         validator._set_schema_def()
         with tempfile.TemporaryDirectory() as temp_dir:
-            file_path = os.path.join(temp_dir, "slide_seqv2.h5ad")
-            adata_slide_seqv2.write_h5ad(file_path)
-            # Confirm spatial is valid.
+            file_path = os.path.join(temp_dir, "dataset.h5ad")
+            adata.write_h5ad(file_path)
             validator.validate_adata(file_path)
         assert not validator.errors
 
