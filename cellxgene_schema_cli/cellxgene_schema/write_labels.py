@@ -293,8 +293,7 @@ class AnnDataLabelAppender:
         else:
             raise TypeError(f"'{label_type}' is not supported in 'add-labels' functionality")
 
-        new_column = original_column.copy().replace(mapping_dict).astype("category")
-
+        new_column = original_column.copy().map(mapping_dict).astype("category")
         return new_column
 
     def _add_column(self, component: str, column: str, column_definition: dict):

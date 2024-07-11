@@ -1236,9 +1236,11 @@ class Validator:
         else:  # must be dense matrix
             nonzero_row_indices = np.where(np.any(x != 0, axis=1))[0]
         for i in range(x.shape[0]):
-            if not has_tissue_0_non_zero_row and i in nonzero_row_indices and self.adata.obs["in_tissue"][i] == 0:
+            if not has_tissue_0_non_zero_row and i in nonzero_row_indices and self.adata.obs["in_tissue"].iloc[i] == 0:
                 has_tissue_0_non_zero_row = True
-            elif not has_tissue_1_zero_row and i not in nonzero_row_indices and self.adata.obs["in_tissue"][i] == 1:
+            elif (
+                not has_tissue_1_zero_row and i not in nonzero_row_indices and self.adata.obs["in_tissue"].iloc[i] == 1
+            ):
                 has_tissue_1_zero_row = True
             if has_tissue_0_non_zero_row and has_tissue_1_zero_row:
                 # exit early and report
