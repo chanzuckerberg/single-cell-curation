@@ -406,6 +406,7 @@ class Validator:
             if not matrix_chunk.has_canonical_format:
                 logger.warning(f"noncanonical sparse matrix found in {matrix_name}.")
                 self.non_canonical_format.append(matrix_name)
+                break
 
     def _count_matrix_nonzero(self, matrix_name: str, matrix: Union[np.ndarray, sparse.spmatrix]) -> int:
         if matrix_name in self.number_non_zero:
@@ -2013,8 +2014,7 @@ def validate(
     validator = Validator(
         ignore_labels=ignore_labels,
     )
-    to_memory = add_labels_file is not None
-    validator.validate_adata(h5ad_path, to_memory=to_memory)
+    validator.validate_adata(h5ad_path)
     logger.info(f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}")
 
     # Stop if validation was unsuccessful
