@@ -339,6 +339,16 @@ class AnnDataLabelAppender:
     def _build_schema_reference_url(self, schema_version: str):
         return f"{SCHEMA_REFERENCE_BASE_URL}/{schema_version}/{SCHEMA_REFERENCE_FILE_NAME}"
 
+    def enforce_canonical_format(self):
+        for matrix_name in self.validator.non_canonical_format:
+            logger.info(f"enforce canonical format in {matrix_name}")
+            matrix_path = matrix_name.split(".")
+            matrix = getattr(self.adata, matrix_path.pop())
+            for mp in matrix_path:
+                matrix = getattr(matrix, mp)
+            logger.info(f"enforce canonical format in {matrix_name}")
+            enforce_canonical_format(matrix)
+
     def write_labels(self, add_labels_file: str):
         """
         From a valid (per cellxgene's schema) h5ad, this function writes a new h5ad file with ontology/gene labels added
@@ -348,6 +358,8 @@ class AnnDataLabelAppender:
 
         :rtype None
         """
+        self.enforce_canonical_format()
+
         logger.info("Writing labels")
         # Add columns to dataset dataframes based on values in other columns, as defined in schema definition yaml
         self._add_labels()
@@ -361,9 +373,8 @@ class AnnDataLabelAppender:
         self.adata.uns["schema_reference"] = self._build_schema_reference_url(self.validator.schema_version)
         self.adata.obs["observation_joinid"] = get_hash_digest_column(self.adata.obs)
 
-        enforce_canonical_format(self.adata)
-
         # Write file
+        logger.info(f"Writing h5ad to {add_labels_file}")
         try:
             self.adata.write_h5ad(add_labels_file, compression="gzip")
         except Exception as e:

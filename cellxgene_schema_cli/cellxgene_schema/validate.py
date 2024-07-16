@@ -59,6 +59,7 @@ class Validator:
         self.is_visium = None
         self.is_visium_and_is_single_true = None
         self.non_canonical_format: list[str] = []
+        self.matrix_format: dict[str, str] = dict()
 
         # Matrix (e.g., X, raw.X, ...) number non-zero cache
         self.number_non_zero = dict()
@@ -147,6 +148,16 @@ class Validator:
             return self.schema_def["components"][component]
         else:
             raise RuntimeError("Schema has not been set in this instance class")
+
+    def get_matrix_format(self, matrix_name, matrix):
+        """
+        Get the format of a matrix
+        """
+        if matrix_name in self.matrix_format:
+            return self.matrix_format[matrix_name]
+
+        self.matrix_format[matrix_name] = get_matrix_format(self.adata, matrix)
+        return self.matrix_format[matrix_name]
 
     def _get_column_def(self, component: str, column_name: str) -> dict:
         """
@@ -372,7 +383,7 @@ class Validator:
 
     @staticmethod
     def _chunk_matrix(
-        matrix: Union[np.ndarray, sparse.spmatrix],
+        matrix: Union[np.ndarray, sparse.spmatrix, SparseDataset],
         obs_chunk_size: Optional[int] = 10_000,
     ):
         """
@@ -395,7 +406,7 @@ class Validator:
         if start < n:
             yield (matrix[start:n], start, n)
 
-    def _check_canonical_format(self, matrix_name: str, matrix: Union[sparse.spmatrix]) -> int:
+    def _check_canonical_format(self, matrix_name: str, matrix: sparse.spmatrix) -> int:
         """
         Enforce canonical format for anndata X and raw.X. All operation are done inplace.
         Canonical Format is required to support h5ad to Seurat file conversion.
@@ -414,13 +425,13 @@ class Validator:
 
         logger.debug(f"Counting non-zero values in {matrix_name}")
 
-        nnz = 0
-        matrix_format = get_matrix_format(self.adata, matrix)
+        self.number_non_zero[matrix_name] = 0
+        matrix_format = self.get_matrix_format(matrix_name, matrix)
         for matrix_chunk, _, _ in self._chunk_matrix(matrix):
-            nnz += matrix_chunk.count_nonzero() if matrix_format != "dense" else np.count_nonzero(matrix_chunk)
-
-        self.number_non_zero[matrix_name] = nnz
-        return nnz
+            self.number_non_zero[matrix_name] += (
+                matrix_chunk.count_nonzero() if matrix_format != "dense" else np.count_nonzero(matrix_chunk)
+            )
+        return self.number_non_zero[matrix_name]
 
     def _validate_column_feature_is_filtered(self, column: pd.Series, column_name: str, df_name: str):
         """
@@ -440,7 +451,7 @@ class Validator:
         if sum(column) > 0:
             n_nonzero = 0
 
-            X_format = get_matrix_format(self.adata, self.adata.X)
+            X_format = self.get_matrix_format("X", self.adata.X)
             if X_format in SPARSE_MATRIX_TYPES:
                 n_nonzero = self.adata.X[:, column].count_nonzero()
 
@@ -918,12 +929,12 @@ class Validator:
 
         # Check sparsity
         for x, x_name in to_validate:
-            matrix_format = get_matrix_format(self.adata, x)
+            matrix_format = self.get_matrix_format(x_name, x)
             assert matrix_format != "unknown"
 
             nnz = self._count_matrix_nonzero(x_name, x)
             sparsity = 1 - nnz / np.prod(x.shape)
-            if sparsity > max_sparsity:
+            if sparsity > max_sparsity and matrix_format != "csr":
                 self.warnings.append(
                     f"Sparsity of '{x_name}' is {sparsity} which is greater than {max_sparsity}, "
                     f"and it is not a 'scipy.sparse.csr_matrix'. It is STRONGLY RECOMMENDED "
@@ -951,7 +962,7 @@ class Validator:
             to_validate.append((self.adata.raw.X, "raw.X"))
         # Check length of component arrays
         for matrix, matrix_name in to_validate:
-            matrix_format = get_matrix_format(self.adata, matrix)
+            matrix_format = self.get_matrix_format(matrix_name, matrix)
             if matrix_format in SPARSE_MATRIX_TYPES:
                 effective_r_array_size = self._count_matrix_nonzero(matrix_name, matrix)
                 self._check_canonical_format(matrix_name, matrix)
@@ -1163,7 +1174,7 @@ class Validator:
                 self.errors.append("Raw matrix values must have type numpy.float32.")
                 return self._raw_layer_exists
 
-            matrix_format = get_matrix_format(self.adata, x)
+            matrix_format = self.get_matrix_format("raw.X", x)
             assert matrix_format != "unknown"
             self._raw_layer_exists = True
             is_sparse_matrix = matrix_format in SPARSE_MATRIX_TYPES
@@ -1951,7 +1962,7 @@ class Validator:
         :return True if successful validation, False otherwise
         :rtype bool
         """
-        logger.info("Starting validation...")
+        logger.info(f"Starting validation of {h5ad_path}..")
         # Re-start errors in case a new h5ad is being validated
         self.reset()
 

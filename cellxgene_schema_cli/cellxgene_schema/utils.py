@@ -142,26 +142,15 @@ def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike], to_memory=False) -> ad.
     return adata
 
 
-def enforce_canonical_format(adata: ad.AnnData):
+def enforce_canonical_format(matrix: sparse.spmatrix):
     """
-    Enforce canonical format for anndata X and raw.X. All operation are done inplace.
+    Enforce canonical format for a matrix. All operation are done inplace.
     Canonical Format is required to support h5ad to Seurat file conversion.
-    :param adata:
+    :param matrix:
     """
-
-    def _enforce_canonical_format(df):
-        X = df.X
-        if hasattr(X, "has_canonical_format") and not X.has_canonical_format:
-            # this enforces canonical form; see https://docs.scipy.org/doc/scipy/tutorial/sparse.html#canonical-formats
-            logger.warning("noncanonical data found in X; converting to canonical format using sum_duplicates.")
-            X.sum_duplicates()
-
-    # enforce for canonical
-    logger.info("enforce canonical format in X")
-    _enforce_canonical_format(adata)
-    if adata.raw:
-        logger.info("enforce canonical format in raw.X")
-        _enforce_canonical_format(adata.raw)
+    if hasattr(matrix, "has_canonical_format") and not matrix.has_canonical_format:
+        # this enforces canonical form; see https://docs.scipy.org/doc/scipy/tutorial/sparse.html#canonical-formats
+        matrix.sum_duplicates()
 
 
 def get_hash_digest_column(dataframe):

@@ -154,15 +154,8 @@ def noncanonical_matrix():
 class TestEnforceCanonical:
     def test_adata_with_noncanonical_X_and_raw_X(self, noncanonical_matrix):
         assert noncanonical_matrix.has_canonical_format is False
-        adata = AnnData(noncanonical_matrix)
-        enforce_canonical_format(adata)
-        assert adata.X.has_canonical_format is True
-
-    def test_adata_with_noncanonical_raw_X(self, noncanonical_matrix):
-        assert noncanonical_matrix.has_canonical_format is False
-        adata = AnnData(raw=AnnData(noncanonical_matrix))
-        enforce_canonical_format(adata)
-        assert adata.raw.X.has_canonical_format is True
+        enforce_canonical_format(noncanonical_matrix)
+        assert noncanonical_matrix.has_canonical_format is True
 
     def test_adata_with_canonical_raw_X(self, adata_with_raw):
         enforce_canonical_format(adata)
