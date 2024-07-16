@@ -24,10 +24,9 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Install test dependencies
 RUN pip install memray
 
-ADD cellxgene_schema_cli /cellxgene_schema_cli
+ADD ../../cellxgene_schema_cli /cellxgene_schema_cli
 RUN	pip install -e /cellxgene_schema_cli
 
 ADD ./scripts/memtest /memtest
-ADD ./data/unlabeled.h5ad /data/unlabeled.h5ad
 
 ENTRYPOINT ["python3.10", "-m", "memray", "run", "/memtest/run.py"]

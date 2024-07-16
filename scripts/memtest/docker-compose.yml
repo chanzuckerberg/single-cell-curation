@@ -4,8 +4,8 @@ services:
   processing:
     platform: linux/amd64
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: ./scripts/memtest/Dockerfile
       args:
         - BUILDKIT_INLINE_CACHE=1
     restart: "no"
@@ -13,4 +13,3 @@ services:
       - ./scripts/memtest:/memtest
       - ./cellxgene_schema_cli:/cellxgene_schema_cli
       - ./data:/data
-    command: ["sleep", "infinity"]
