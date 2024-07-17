@@ -58,7 +58,6 @@ class Validator:
         self.is_spatial = None
         self.is_visium = None
         self.is_visium_and_is_single_true = None
-        self.non_canonical_format: list[str] = []
         self.matrix_format: dict[str, str] = dict()
 
         # Matrix (e.g., X, raw.X, ...) number non-zero cache
@@ -406,32 +405,19 @@ class Validator:
         if start < n:
             yield (matrix[start:n], start, n)
 
-    def _check_canonical_format(self, matrix_name: str, matrix: sparse.spmatrix) -> int:
-        """
-        Enforce canonical format for anndata X and raw.X. All operation are done inplace.
-        Canonical Format is required to support h5ad to Seurat file conversion.
-        :param adata:
-        """
-
-        for matrix_chunk, _, _ in self._chunk_matrix(matrix):
-            if not matrix_chunk.has_canonical_format:
-                logger.warning(f"noncanonical sparse matrix found in {matrix_name}.")
-                self.non_canonical_format.append(matrix_name)
-                break
-
     def _count_matrix_nonzero(self, matrix_name: str, matrix: Union[np.ndarray, sparse.spmatrix]) -> int:
         if matrix_name in self.number_non_zero:
             return self.number_non_zero[matrix_name]
 
         logger.debug(f"Counting non-zero values in {matrix_name}")
 
-        self.number_non_zero[matrix_name] = 0
+        nnz = 0
         matrix_format = self.get_matrix_format(matrix_name, matrix)
         for matrix_chunk, _, _ in self._chunk_matrix(matrix):
-            self.number_non_zero[matrix_name] += (
-                matrix_chunk.count_nonzero() if matrix_format != "dense" else np.count_nonzero(matrix_chunk)
-            )
-        return self.number_non_zero[matrix_name]
+            nnz += matrix_chunk.count_nonzero() if matrix_format != "dense" else np.count_nonzero(matrix_chunk)
+
+        self.number_non_zero[matrix_name] = nnz
+        return nnz
 
     def _validate_column_feature_is_filtered(self, column: pd.Series, column_name: str, df_name: str):
         """
@@ -932,9 +918,16 @@ class Validator:
             matrix_format = self.get_matrix_format(x_name, x)
             assert matrix_format != "unknown"
 
+            # It seems silly to perform this test for 'coo' and 'csc' formats,
+            # which are, by definition, already sparse. But the old code
+            # performs test, and so we continue the tradition. It is possible
+            # that the prolog comment is incorrect, and the purpose of this
+            # function is to recommend CSR for _any_ matrix with sparsity beyond
+            # a given limit.
+
             nnz = self._count_matrix_nonzero(x_name, x)
             sparsity = 1 - nnz / np.prod(x.shape)
-            if sparsity > max_sparsity and matrix_format != "csr":
+            if sparsity > max_sparsity:
                 self.warnings.append(
                     f"Sparsity of '{x_name}' is {sparsity} which is greater than {max_sparsity}, "
                     f"and it is not a 'scipy.sparse.csr_matrix'. It is STRONGLY RECOMMENDED "

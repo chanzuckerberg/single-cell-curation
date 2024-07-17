@@ -7,7 +7,7 @@ from cellxgene_schema import gencode
 from cellxgene_schema.env import SCHEMA_REFERENCE_BASE_URL, SCHEMA_REFERENCE_FILE_NAME
 from cellxgene_schema.validate import ONTOLOGY_PARSER, Validator
 
-from .utils import enforce_canonical_format, get_hash_digest_column, getattr_anndata
+from .utils import get_hash_digest_column, getattr_anndata
 
 logger = logging.getLogger(__name__)
 
@@ -339,16 +339,6 @@ class AnnDataLabelAppender:
     def _build_schema_reference_url(self, schema_version: str):
         return f"{SCHEMA_REFERENCE_BASE_URL}/{schema_version}/{SCHEMA_REFERENCE_FILE_NAME}"
 
-    def enforce_canonical_format(self):
-        for matrix_name in self.validator.non_canonical_format:
-            logger.info(f"enforce canonical format in {matrix_name}")
-            matrix_path = matrix_name.split(".")
-            matrix = getattr(self.adata, matrix_path.pop())
-            for mp in matrix_path:
-                matrix = getattr(matrix, mp)
-            logger.info(f"enforce canonical format in {matrix_name}")
-            enforce_canonical_format(matrix)
-
     def write_labels(self, add_labels_file: str):
         """
         From a valid (per cellxgene's schema) h5ad, this function writes a new h5ad file with ontology/gene labels added
@@ -358,8 +348,6 @@ class AnnDataLabelAppender:
 
         :rtype None
         """
-        self.enforce_canonical_format()
-
         logger.info("Writing labels")
         # Add columns to dataset dataframes based on values in other columns, as defined in schema definition yaml
         self._add_labels()
