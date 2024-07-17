@@ -240,7 +240,7 @@ class AnnDataLabelAppender:
         column: str,
         column_definition: dict,
         label_type: dict,
-    ) -> pd.Series:
+    ) -> pd.Categorical:
         """
         Retrieves a new column (pandas categorical) with labels based on the IDs in 'column' and the logic in the
         'column_definition'
@@ -293,7 +293,7 @@ class AnnDataLabelAppender:
         else:
             raise TypeError(f"'{label_type}' is not supported in 'add-labels' functionality")
 
-        new_column = original_column.copy().map(mapping_dict).astype("category")
+        new_column = original_column.copy().replace(mapping_dict).astype("category")
 
         return new_column
 

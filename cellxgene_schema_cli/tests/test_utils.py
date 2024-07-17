@@ -121,9 +121,9 @@ def test_remap_deprecated_features__without_raw(adata_without_raw, remapped_feat
 def test_replace_ontology_term__with_replacement(adata_with_raw, deprecated_term_map_with_replacement_match):
     replace_ontology_term(adata_with_raw.obs, "assay", deprecated_term_map_with_replacement_match)
 
-    expected = ["EFO:0000001", "EFO:0009918"]
+    expected = ["EFO:0009918", "EFO:0000001"]
     actual = adata_with_raw.obs["assay_ontology_term_id"].dtype.categories
-    assert sorted(actual) == expected
+    assert all(a == b for a, b in zip(actual, expected))
 
 
 def test_replace_ontology_term__no_replacement(adata_with_raw, deprecated_term_map_no_replacement_match):

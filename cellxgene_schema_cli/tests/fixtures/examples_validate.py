@@ -81,9 +81,9 @@ good_obs = pd.DataFrame(
     ],
 )
 
-good_obs["donor_id"] = good_obs["donor_id"].astype("category")
-good_obs["suspension_type"] = good_obs["suspension_type"].astype("category")
-good_obs["tissue_type"] = good_obs["tissue_type"].astype("category")
+good_obs.loc[:, ["donor_id"]] = good_obs.astype("category")
+good_obs.loc[:, ["suspension_type"]] = good_obs.astype("category")
+good_obs.loc[:, ["tissue_type"]] = good_obs.astype("category")
 
 # Expected obs, this is what the obs above should look like after adding the necessary columns with the validator,
 # these columns are defined in the schema
@@ -183,9 +183,9 @@ good_obs_visium = pd.DataFrame(
     ],
 )
 
-good_obs_visium["donor_id"] = good_obs_visium["donor_id"].astype("category")
-good_obs_visium["suspension_type"] = good_obs_visium["suspension_type"].astype("category")
-good_obs_visium["tissue_type"] = good_obs_visium["tissue_type"].astype("category")
+good_obs_visium.loc[:, ["donor_id"]] = good_obs_visium.astype("category")
+good_obs_visium.loc[:, ["suspension_type"]] = good_obs_visium.astype("category")
+good_obs_visium.loc[:, ["tissue_type"]] = good_obs_visium.astype("category")
 
 # Valid spatial obs per schema
 good_obs_slide_seqv2 = pd.DataFrame(
@@ -236,9 +236,9 @@ good_obs_slide_seqv2 = pd.DataFrame(
     ],
 )
 
-good_obs_slide_seqv2["donor_id"] = good_obs_slide_seqv2["donor_id"].astype("category")
-good_obs_slide_seqv2["suspension_type"] = good_obs_slide_seqv2["suspension_type"].astype("category")
-good_obs_slide_seqv2["tissue_type"] = good_obs_slide_seqv2["tissue_type"].astype("category")
+good_obs_slide_seqv2.loc[:, ["donor_id"]] = good_obs_slide_seqv2.astype("category")
+good_obs_slide_seqv2.loc[:, ["suspension_type"]] = good_obs_slide_seqv2.astype("category")
+good_obs_slide_seqv2.loc[:, ["tissue_type"]] = good_obs.astype("category")
 
 good_obs_visium_is_single_false = pd.DataFrame(
     [
@@ -288,11 +288,9 @@ good_obs_visium_is_single_false = pd.DataFrame(
     ],
 )
 
-good_obs_visium_is_single_false["donor_id"] = good_obs_visium_is_single_false["donor_id"].astype("category")
-good_obs_visium_is_single_false["suspension_type"] = good_obs_visium_is_single_false["suspension_type"].astype(
-    "category"
-)
-good_obs_visium_is_single_false["tissue_type"] = good_obs_visium_is_single_false["tissue_type"].astype("category")
+good_obs_visium_is_single_false.loc[:, ["donor_id"]] = good_obs_visium_is_single_false.astype("category")
+good_obs_visium_is_single_false.loc[:, ["suspension_type"]] = good_obs_visium_is_single_false.astype("category")
+good_obs_visium_is_single_false.loc[:, ["tissue_type"]] = good_obs_visium_is_single_false.astype("category")
 
 # ---
 # 2. Creating individual var components: valid object and valid object and with labels
