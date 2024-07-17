@@ -362,7 +362,6 @@ class AnnDataLabelAppender:
         self.adata.obs["observation_joinid"] = get_hash_digest_column(self.adata.obs)
 
         # Write file
-        logger.info(f"Writing h5ad to {add_labels_file}")
         try:
             self.adata.write_h5ad(add_labels_file, compression="gzip")
         except Exception as e:
