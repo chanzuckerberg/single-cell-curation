@@ -959,7 +959,6 @@ class Validator:
             matrix_format = self.get_matrix_format(matrix_name, matrix)
             if matrix_format in SPARSE_MATRIX_TYPES:
                 effective_r_array_size = self._count_matrix_nonzero(matrix_name, matrix)
-                self._check_canonical_format(matrix_name, matrix)
                 is_sparse = True
             elif matrix_format == "dense":
                 effective_r_array_size = max(matrix.shape)
