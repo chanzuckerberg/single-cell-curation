@@ -2019,7 +2019,8 @@ def validate(
     validator = Validator(
         ignore_labels=ignore_labels,
     )
-    validator.validate_adata(h5ad_path)
+    to_memory = add_labels_file is not None
+    validator.validate_adata(h5ad_path, to_memory=to_memory)
     logger.info(f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}")
 
     # Stop if validation was unsuccessful
