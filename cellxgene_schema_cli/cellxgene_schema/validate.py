@@ -58,6 +58,7 @@ class Validator:
         self.is_spatial = None
         self.is_visium = None
         self.is_visium_and_is_single_true = None
+        # Matrix format cache
         self.matrix_format: dict[str, str] = dict()
 
         # Matrix (e.g., X, raw.X, ...) number non-zero cache
