@@ -2421,7 +2421,7 @@ class TestAddingLabels:
             be appended if present in tissue_ontology_term_id.
         """
         expected_column = adata_with_labels.obs[column]
-        obtained_column = label_writer.adata.obs[column]
+        obtained_column = label_wr biter.adata.obs[column]
 
         for i, j in zip(expected_column.tolist(), obtained_column.tolist()):
             assert i == j
