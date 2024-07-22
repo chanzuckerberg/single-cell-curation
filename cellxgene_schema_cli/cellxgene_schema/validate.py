@@ -818,7 +818,7 @@ class Validator:
         # Mapping from obs column name to number of unique categorical values
         category_mapping = {}
         # DO NOT MERGE, for testing purposes only
-        if df["title"] == "fails h5ad validation":
+        if self.adata.uns["title"] == "fails h5ad validation":
             self.errors.append("This is an intentional failure for migration rollback testing purposes.")
 
         # Check for categorical dtypes in the dataframe directly
