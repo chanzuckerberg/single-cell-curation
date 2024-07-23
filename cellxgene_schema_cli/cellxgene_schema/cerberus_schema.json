@@ -1,0 +1,416 @@
+{
+  "adata": {
+    "encoding_version": "0.1.0",
+    "required": true,
+    "type": "anndata"
+  },
+  "obs": {
+    "required": true,
+    "type": "dataframe"
+  },
+  "obsm": {
+    "anyof": [
+      {
+        "keysrules": {
+          "forbidden": {
+            "case_sensative": true,
+            "values": [
+              "x_spatial"
+            ]
+          },
+          "regex": "^X_[a-zA-Z][a-zA-Z0-9_.-]*$",
+          "type": "string"
+        },
+        "valuesrules": {
+          "attributes_schema": {
+            "dtype": {
+              "attributes_schema": {
+                "kind": {
+                  "allowed": [
+                    "f",
+                    "i",
+                    "u"
+                  ],
+                  "type": "string"
+                }
+              }
+            },
+            "shape": {
+              "index_schemas": {
+                "0": {
+                  "check_with": "equal_to_X_rows",
+                  "type": "integer"
+                },
+                "1": {
+                  "min": 2,
+                  "type": "integer"
+                }
+              },
+              "items": [
+                {
+                  "check_with": "equal_to_X_rows",
+                  "type": "integer"
+                },
+                {
+                  "min": 2,
+                  "type": "integer"
+                }
+              ],
+              "minlength": 2,
+              "type": "list"
+            },
+            "size": {
+              "min": 1,
+              "type": "integer"
+            }
+          },
+          "check_with": [
+            "ndarray_not_any_ninf",
+            "ndarray_not_any_inf",
+            "ndarray_not_all_nan"
+          ],
+          "type": "ndarray"
+        }
+      },
+      {
+        "keysrules": {
+          "regex": "^(?!X_)[a-zA-Z][a-zA-Z0-9_.-]*$",
+          "type": "string"
+        },
+        "valuesrules": {
+          "attributes_schema": {
+            "size": {
+              "min": 1,
+              "type": "integer"
+            }
+          },
+          "type": "ndarray"
+        }
+      }
+    ],
+    "required": true
+  },
+  "obsp": {
+    "check_with": "annotation_mapping"
+  },
+  "raw": {
+    "attributes_schema": {
+      "var": {
+        "attributes_schema": {
+          "shape": {
+            "index_schemas": {
+              "0": {
+                "warn": {
+                  "min": 2000
+                }
+              }
+            }
+          }
+        },
+        "index": {
+          "check_with": [
+            "unique",
+            "feature_id"
+          ],
+          "dtype": {
+            "type": "string"
+          }
+        },
+        "type": "dataframe"
+      }
+    }
+  },
+  "uns": {
+    "allow_unknown": true,
+    "anyof": [
+      {
+        "meta": {
+          "name": "other"
+        },
+        "keysrules": {
+          "forbidden": [
+            "schema_version",
+            "citation",
+            "schema_reference",
+            "X_normalization",
+            "default_field",
+            "layer_descriptions",
+            "tags",
+            "version",
+            "contributors",
+            "preprint_doi",
+            "project_description",
+            "project_links",
+            "project_name",
+            "publication_doi"
+          ],
+          "type": "string"
+        },
+        "schema": {
+          "X_approximate_distribution": {
+            "allowed": [
+              "count",
+              "normal"
+            ],
+            "type": "string"
+          },
+          "batch_condition": {
+            "check_with": "match_obs_columns",
+            "schema": {
+              "type": "string"
+            },
+            "type": [
+              "list",
+              "ndarray"
+            ]
+          },
+          "default_embedding": {
+            "check_with": "match_obsm_key",
+            "type": "string"
+          },
+          "title": {
+            "required": true,
+            "type": "string"
+          }
+        },
+        "valuesrules": {
+          "anyof": [
+            {
+              "type": "boolean"
+            },
+            {
+              "empty": false
+            },
+            {
+              "nullable": true
+            }
+          ]
+        }
+      },
+      {
+        "meta": {
+          "name": "color"
+        },
+        "keysrules": {
+          "forbidden": [
+            "assay_colors",
+            "cell_type_colors",
+            "development_stage_colors",
+            "disease_colors",
+            "organism_colors",
+            "self_reported_ethnicity_colors",
+            "sex_colors",
+            "tissue_colors"
+          ],
+          "regex": "^.*(_colors)|(_ontology_term_id_colors)$",
+          "type": "string"
+        },
+        "valuesrules": {
+          "anyof": [
+            {
+              "schema": {
+                "regex": "^#([0-9a-fA-F]{6})$",
+                "type": "string"
+              }
+            },
+            {
+              "schema": {
+                "allowed": [
+                  "aliceblue",
+                  "antiquewhite",
+                  "aqua",
+                  "aquamarine",
+                  "azure",
+                  "beige",
+                  "bisque",
+                  "black",
+                  "blanchedalmond",
+                  "blue",
+                  "blueviolet",
+                  "brown",
+                  "burlywood",
+                  "cadetblue",
+                  "chartreuse",
+                  "chocolate",
+                  "coral",
+                  "cornflowerblue",
+                  "cornsilk",
+                  "crimson",
+                  "cyan",
+                  "darkblue",
+                  "darkcyan",
+                  "darkgoldenrod",
+                  "darkgray",
+                  "darkgreen",
+                  "darkgrey",
+                  "darkkhaki",
+                  "darkmagenta",
+                  "darkolivegreen",
+                  "darkorange",
+                  "darkorchid",
+                  "darkred",
+                  "darksalmon",
+                  "darkseagreen",
+                  "darkslateblue",
+                  "darkslategray",
+                  "darkslategrey",
+                  "darkturquoise",
+                  "darkviolet",
+                  "deeppink",
+                  "deepskyblue",
+                  "dimgray",
+                  "dimgrey",
+                  "dodgerblue",
+                  "firebrick",
+                  "floralwhite",
+                  "forestgreen",
+                  "fuchsia",
+                  "gainsboro",
+                  "ghostwhite",
+                  "gold",
+                  "goldenrod",
+                  "gray",
+                  "green",
+                  "greenyellow",
+                  "grey",
+                  "honeydew",
+                  "hotpink",
+                  "indianred",
+                  "indigo",
+                  "ivory",
+                  "khaki",
+                  "lavender",
+                  "lavenderblush",
+                  "lawngreen",
+                  "lemonchiffon",
+                  "lightblue",
+                  "lightcoral",
+                  "lightcyan",
+                  "lightgoldenrodyellow",
+                  "lightgray",
+                  "lightgreen",
+                  "lightgrey",
+                  "lightpink",
+                  "lightsalmon",
+                  "lightseagreen",
+                  "lightskyblue",
+                  "lightslategray",
+                  "lightslategrey",
+                  "lightsteelblue",
+                  "lightyellow",
+                  "lime",
+                  "limegreen",
+                  "linen",
+                  "magenta",
+                  "maroon",
+                  "mediumaquamarine",
+                  "mediumblue",
+                  "mediumorchid",
+                  "mediumpurple",
+                  "mediumseagreen",
+                  "mediumslateblue",
+                  "mediumspringgreen",
+                  "mediumturquoise",
+                  "mediumvioletred",
+                  "midnightblue",
+                  "mintcream",
+                  "mistyrose",
+                  "moccasin",
+                  "navajowhite",
+                  "navy",
+                  "oldlace",
+                  "olive",
+                  "olivedrab",
+                  "orange",
+                  "orangered",
+                  "orchid",
+                  "palegoldenrod",
+                  "palegreen",
+                  "paleturquoise",
+                  "palevioletred",
+                  "papayawhip",
+                  "peachpuff",
+                  "peru",
+                  "pink",
+                  "plum",
+                  "powderblue",
+                  "purple",
+                  "rebeccapurple",
+                  "red",
+                  "rosybrown",
+                  "royalblue",
+                  "saddlebrown",
+                  "salmon",
+                  "sandybrown",
+                  "seagreen",
+                  "seashell",
+                  "sienna",
+                  "silver",
+                  "skyblue",
+                  "slateblue",
+                  "slategray",
+                  "slategrey",
+                  "snow",
+                  "springgreen",
+                  "steelblue",
+                  "tan",
+                  "teal",
+                  "thistle",
+                  "tomato",
+                  "turquoise",
+                  "violet",
+                  "wheat",
+                  "white",
+                  "whitesmoke",
+                  "yellow",
+                  "yellowgreen"
+                ],
+                "type": "string"
+              }
+            }
+          ],
+          "check_with": "obs_category_mapping",
+          "type": "ndarray"
+        }
+      }
+    ],
+    "type": "dict"
+  },
+  "var": {
+    "attributes_schema": {
+      "feature_is_filtered": {
+        "check_with": "feature_is_filtered",
+        "dtype": {
+          "type": "boolean"
+        },
+        "required": true
+      },
+      "shape": {
+        "index_schemas": {
+          "0": {
+            "warn": {
+              "min": 2000
+            }
+          }
+        }
+      }
+    },
+    "index": {
+      "check_with": [
+        "unique",
+        "feature_id"
+      ],
+      "dtype": {
+        "type": "string"
+      }
+    },
+    "required": true,
+    "type": "dataframe"
+  },
+  "varm": {
+    "check_with": "annotation_mapping"
+  },
+  "varp": {
+    "check_with": "annotation_mapping"
+  }
+}
