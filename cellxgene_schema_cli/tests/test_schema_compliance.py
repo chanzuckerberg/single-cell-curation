@@ -104,7 +104,7 @@ def save_and_read_adata(adata: anndata.AnnData) -> anndata.AnnData:
     """
     with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
         adata.write_h5ad(f.name)
-        return anndata.read(f.name)
+        return anndata.read_h5ad(f.name)
 
 
 class TestValidAnndata:
@@ -367,7 +367,7 @@ class TestExpressionMatrix:
         validator.errors = []
         obs["assay_ontology_term_id"] = "EFO:0010891"
         obs["suspension_type"] = "nucleus"
-        obs.loc[:, ["suspension_type"]] = obs.astype("category")
+        obs["suspension_type"] = obs["suspension_type"].astype("category")
         validator.validate_adata()
         assert validator.errors == []
 
@@ -2433,9 +2433,10 @@ class TestAddingLabels:
         obs.at["Y", "tissue_type"] = "cell culture"  # Already set in example data, just setting explicitly here
         obs.at["Y", "tissue_ontology_term_id"] = "unknown"  # Testing this term case
         validator_with_adata.validate_adata()  # Validate
-        AnnDataLabelAppender(validator_with_adata)._add_labels()  # Annotate
+        labeler = AnnDataLabelAppender(validator_with_adata)
+        labeler._add_labels()  # Annotate
 
-        assert obs.at["Y", "tissue"] == "unknown"
+        assert labeler.adata.obs.at["Y", "tissue"] == "unknown"
 
     def test_obs_added_cell_type_label__unknown(self, validator_with_adata):
         obs = validator_with_adata.adata.obs
@@ -2443,9 +2444,10 @@ class TestAddingLabels:
         # Arrange
         obs.at["Y", "cell_type_ontology_term_id"] = "unknown"  # Testing this term case
         validator_with_adata.validate_adata()  # Validate
-        AnnDataLabelAppender(validator_with_adata)._add_labels()  # Annotate
+        labeler = AnnDataLabelAppender(validator_with_adata)
+        labeler._add_labels()  # Annotate
 
-        assert obs.at["Y", "cell_type"] == "unknown"
+        assert labeler.adata.obs.at["Y", "cell_type"] == "unknown"
 
     def test_remove_unused_categories(self, label_writer, adata_with_labels):
         modified_donor_id = label_writer.adata.obs["donor_id"].cat.add_categories("donor_3")
