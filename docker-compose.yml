@@ -1,0 +1,19 @@
+name: cellxgene-schema-cli
+
+services:
+  memtest:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: ./scripts/memtest/Dockerfile
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+    restart: "no"
+    volumes:
+      - ./scripts/memtest:/memtest
+      - ./cellxgene_schema_cli:/cellxgene_schema_cli
+      - ./data:/data
