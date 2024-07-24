@@ -1,13 +1,17 @@
-version: "3.8"
+name: cellxgene-schema-cli
 
 services:
-  processing:
+  memtest:
     platform: linux/amd64
     build:
-      context: ../..
+      context: .
       dockerfile: ./scripts/memtest/Dockerfile
       args:
         - BUILDKIT_INLINE_CACHE=1
+    deploy:
+      resources:
+        limits:
+          memory: 4g
     restart: "no"
     volumes:
       - ./scripts/memtest:/memtest

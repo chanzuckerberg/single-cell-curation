@@ -22,11 +22,9 @@ RUN python3.10 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Install test dependencies
-RUN pip install memray
+RUN pip install memray memory-profiler
 
 ADD ../../cellxgene_schema_cli /cellxgene_schema_cli
 RUN	pip install -e /cellxgene_schema_cli
 
 ADD ./scripts/memtest /memtest
-
-ENTRYPOINT ["python3.10", "-m", "memray", "run", "/memtest/run.py"]
