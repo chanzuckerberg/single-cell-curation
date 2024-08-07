@@ -7,7 +7,7 @@ from cellxgene_schema import gencode
 from cellxgene_schema.env import SCHEMA_REFERENCE_BASE_URL, SCHEMA_REFERENCE_FILE_NAME
 from cellxgene_schema.validate import ONTOLOGY_PARSER, Validator
 
-from .utils import enforce_canonical_format, get_hash_digest_column, getattr_anndata
+from .utils import get_hash_digest_column, getattr_anndata
 
 logger = logging.getLogger(__name__)
 
