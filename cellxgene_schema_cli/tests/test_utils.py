@@ -1,9 +1,7 @@
-import numpy as np
 import pandas as pd
 import pytest
 from anndata import AnnData
 from cellxgene_schema.utils import (
-    enforce_canonical_format,
     get_hash_digest_column,
     map_ontology_term,
     read_h5ad,
@@ -12,7 +10,6 @@ from cellxgene_schema.utils import (
     replace_ontology_term,
 )
 from fixtures.examples_validate import adata, adata_non_raw, h5ad_valid
-from scipy.sparse import coo_matrix
 
 
 @pytest.fixture
