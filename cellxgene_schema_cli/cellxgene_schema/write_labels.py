@@ -31,13 +31,7 @@ class AnnDataLabelAppender:
                 "AnnData object is not valid or hasn't been run through validation. "
                 "Validate AnnData first before attempting to write labels"
             )
-        try:
-            # Always reading into memory because the canonical enforcement requires the X matrix to be in memory. Do
-            # this early to make other label writing operation faster.
-            self.adata = validator.adata.to_memory()
-        except ValueError:
-            # already in memory
-            self.adata = validator.adata
+        self.adata = validator.adata
         self.validator = validator
         self.schema_def = validator.schema_def
         self.errors = []
@@ -366,8 +360,6 @@ class AnnDataLabelAppender:
         self.adata.uns["schema_version"] = self.validator.schema_version
         self.adata.uns["schema_reference"] = self._build_schema_reference_url(self.validator.schema_version)
         self.adata.obs["observation_joinid"] = get_hash_digest_column(self.adata.obs)
-
-        enforce_canonical_format(self.adata)
 
         # Write file
         try:

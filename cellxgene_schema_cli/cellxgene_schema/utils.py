@@ -114,7 +114,7 @@ def getattr_anndata(adata: ad.AnnData, attr: str = None):
         return getattr(adata, attr)
 
 
-def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike], to_memory=False) -> ad.AnnData:
+def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
     """
     Reads h5ad into adata
     :params Union[str, bytes, os.PathLike] h5ad_path: path to h5ad to read
@@ -132,36 +132,12 @@ def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike], to_memory=False) -> ad.
         ):
             logger.warning("Matrices are in CSC format; loading entire dataset into memory.")
             adata = adata.to_memory()
-        elif to_memory:
-            adata = adata.to_memory()
 
     except (OSError, TypeError):
         logger.info(f"Unable to open '{h5ad_path}' with AnnData")
         sys.exit(1)
 
     return adata
-
-
-def enforce_canonical_format(adata: ad.AnnData):
-    """
-    Enforce canonical format for anndata X and raw.X. All operation are done inplace.
-    Canonical Format is required to support h5ad to Seurat file conversion.
-    :param adata:
-    """
-
-    def _enforce_canonical_format(df):
-        X = df.X
-        if hasattr(X, "has_canonical_format") and not X.has_canonical_format:
-            # this enforces canonical form; see https://docs.scipy.org/doc/scipy/tutorial/sparse.html#canonical-formats
-            logger.warning("noncanonical data found in X; converting to canonical format using sum_duplicates.")
-            X.sum_duplicates()
-
-    # enforce for canonical
-    logger.info("enforce canonical format in X")
-    _enforce_canonical_format(adata)
-    if adata.raw:
-        logger.info("enforce canonical format in raw.X")
-        _enforce_canonical_format(adata.raw)
 
 
 def get_hash_digest_column(dataframe):
