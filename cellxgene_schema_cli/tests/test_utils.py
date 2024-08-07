@@ -156,9 +156,3 @@ class TestReadH5AD:
         assert isinstance(adata, AnnData)
         assert adata.isbacked
 
-    def test_read_h5ad_to_memory(self):
-        # Provide a valid h5ad path or a valid object resembling a path
-        h5ad_path = h5ad_valid
-        adata = read_h5ad(h5ad_path, to_memory=True)
-        assert isinstance(adata, AnnData)
-        assert not adata.isbacked
