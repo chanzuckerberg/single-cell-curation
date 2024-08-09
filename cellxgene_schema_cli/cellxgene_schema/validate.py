@@ -4,7 +4,7 @@ import numbers
 import os
 import re
 from datetime import datetime
-from typing import Dict, List, Mapping, Optional, Union
+from typing import Dict, List, Mapping, Optional, Tuple, Union
 
 import anndata
 import matplotlib.colors as mcolors
@@ -58,6 +58,7 @@ class Validator:
         self.is_spatial = None
         self.is_visium = None
         self.is_visium_and_is_single_true = None
+        self.sparsity = None
 
         # Matrix (e.g., X, raw.X, ...) number non-zero cache
         self.number_non_zero = dict()
@@ -886,7 +887,7 @@ class Validator:
     def _validate_sparsity(self):
         """
         calculates sparsity of x and raw.x, if bigger than indicated in the schema and not a scipy sparse matrix, then
-        adds to warnings
+        adds to warnings. Sets sparsity of the X matrix to the class attribute.
 
         :rtype none
         """
@@ -903,11 +904,9 @@ class Validator:
             for key, value in self.adata.layers.items():
                 to_validate.append((value, f"layers['{key}']"))
 
-        # Check sparsity
+        # Get sparsity
         for x, x_name in to_validate:
             matrix_format = get_matrix_format(self.adata, x)
-            if matrix_format == "csr":
-                continue
             assert matrix_format != "unknown"
 
             # It seems silly to perform this test for 'coo' and 'csc' formats,
@@ -919,12 +918,16 @@ class Validator:
 
             nnz = self._count_matrix_nonzero(x_name, x)
             sparsity = 1 - nnz / np.prod(x.shape)
-            if sparsity > max_sparsity:
+            if sparsity > max_sparsity and matrix_format != "csr":
                 self.warnings.append(
                     f"Sparsity of '{x_name}' is {sparsity} which is greater than {max_sparsity}, "
                     f"and it is not a 'scipy.sparse.csr_matrix'. It is STRONGLY RECOMMENDED "
                     f"to use this type of matrix for the given sparsity."
                 )
+            logger.info(f"Sparsity of '{x_name}' is {sparsity}")
+            if x_name == "X":
+                logger.info("Setting sparsity...")
+                self.sparsity = sparsity
 
     def _validate_seurat_convertibility(self):
         """
@@ -1879,7 +1882,7 @@ class Validator:
         self._check_column_availability()
 
         # Checks sparsity
-        logger.debug("Validating sparsity...")
+        logger.info("Validating sparsity...")
         self._validate_sparsity()
 
         # Checks spatial
@@ -1926,7 +1929,7 @@ class Validator:
 
     def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None, to_memory: bool = False) -> bool:
         """
-        Validates adata
+        Validates adata and sets sparsity
 
         :params Union[str, bytes, os.PathLike] h5ad_path: path to h5ad to validate, if None it will try to validate
         from self.adata
@@ -1975,7 +1978,7 @@ def validate(
     add_labels_file: str = None,
     ignore_labels: bool = False,
     verbose: bool = False,
-) -> (bool, list, bool):
+) -> (bool, list, bool, float):
     from .write_labels import AnnDataLabelAppender
 
     """
@@ -1984,8 +1987,8 @@ def validate(
     :param Union[str, bytes, os.PathLike] h5ad_path: Path to h5ad file to validate
     :param str add_labels_file: Path to new h5ad file with ontology/gene labels added
 
-    :return (True, [], <bool>) if successful validation, (False, [list_of_errors], <bool>) otherwise; last bool is for
-    seurat convertibility
+    :return (True, [], <bool>, <float>) if successful validation, (False, [list_of_errors], <bool>, <float>) otherwise; last bool is for
+    seurat convertibility. float represents X matrix sparsity
     :rtype tuple
     """
 
@@ -2004,7 +2007,7 @@ def validate(
 
     # Stop if validation was unsuccessful
     if not validator.is_valid:
-        return False, validator.errors, validator.is_seurat_convertible
+        return False, validator.errors, validator.is_seurat_convertible, validator.sparsity
 
     if add_labels_file:
         label_start = datetime.now()
@@ -2019,6 +2022,7 @@ def validate(
             validator.is_valid and writer.was_writing_successful,
             validator.errors + writer.errors,
             validator.is_seurat_convertible,
+            validator.sparsity,
         )
 
-    return True, validator.errors, validator.is_seurat_convertible
+    return True, validator.errors, validator.is_seurat_convertible, validator.sparsity

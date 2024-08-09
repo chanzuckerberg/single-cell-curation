@@ -41,6 +41,7 @@ from scipy.sparse import spmatrix
 
 # Tests for internal functions of the Validator and LabelWriter classes.
 
+H5AD_VALID_SPARSITY = 0.5176700367647059
 
 @pytest.fixture(scope="class")
 def schema_def():
@@ -274,7 +275,7 @@ class TestValidate:
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
 
-            success, errors, is_seurat_convertible = validate(h5ad_valid, labels_path)
+            success, errors, is_seurat_convertible, sparsity = validate(h5ad_valid, labels_path)
 
             import anndata as ad
 
@@ -285,22 +286,24 @@ class TestValidate:
             assert not errors
             assert is_seurat_convertible
             assert os.path.exists(labels_path)
+            assert sparsity == H5AD_VALID_SPARSITY
             expected_hash = "55fbc095218a01cad33390f534d6690af0ecd6593f27d7cd4d26e91072ea8835"
             original_hash = self.hash_file(h5ad_valid)
             assert original_hash != expected_hash, "Writing labels did not change the dataset from the original."
 
     def test__validate_with_h5ad_valid_and_without_labels(self):
-        success, errors, is_seurat_convertible = validate(h5ad_valid)
+        success, errors, is_seurat_convertible, sparsity = validate(h5ad_valid)
 
         assert success
         assert not errors
         assert is_seurat_convertible
+        assert sparsity == H5AD_VALID_SPARSITY
 
     def test__validate_with_h5ad_invalid_and_with_labels(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
 
-            success, errors, is_seurat_convertible = validate(h5ad_invalid, labels_path)
+            success, errors, is_seurat_convertible, _ = validate(h5ad_invalid, labels_path)
 
             assert not success
             assert errors
@@ -308,7 +311,7 @@ class TestValidate:
             assert not os.path.exists(labels_path)
 
     def test__validate_with_h5ad_invalid_and_without_labels(self):
-        success, errors, is_seurat_convertible = validate(h5ad_invalid)
+        success, errors, is_seurat_convertible, _ = validate(h5ad_invalid)
 
         assert not success
         assert errors
