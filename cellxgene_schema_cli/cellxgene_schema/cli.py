@@ -75,7 +75,7 @@ def remove_labels(input_file, output_file):
     print("Removing labels")
     anndata_label_remover.remove_labels()
     print(f"Labels have been removed. Writing to {output_file}")
-    anndata_label_remover.adata.write(output_file)
+    anndata_label_remover.adata.write(output_file, compression="gzip")
 
 
 @click.command(
