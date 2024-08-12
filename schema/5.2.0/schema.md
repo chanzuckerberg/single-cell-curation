@@ -180,13 +180,14 @@ CELLxGENE's matrix layer requirements are tailored to optimize data reuse. Becau
 
 The following table describes the matrix data and layers requirements that are **assay-specific**. If an entry in the table is empty, the schema does not have any other requirements on data in those layers beyond the ones listed above.
 
-| assay_ontology_term_id or modality | "raw" required? | "raw" location | "normalized" required? | "normalized" location |
+| Assay | "raw" required? | "raw" location | "normalized" required? | "normalized" location |
 |-|-|-|-|-|
-|`modality` is `"transcriptomics"` and `assay_ontology_term_id` is NOT [`"EFO:0010961"`](https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961) for <i>Visium Spatial Gene Expression</i> | REQUIRED. If UMI-based assay (e.g. 10x v3, Slide-seqV2), values MUST be de-duplicated molecule counts.<br><br>If non-UMI-based assay (e.g. Smart-seq2), values MUST be one of read counts (e.g. FeatureCounts) or estimated fragments (e.g. output of RSEM).<br><br>Each observation MUST contain at least one non-zero value. All non-zero values MUST be positive integers stored as numpy.float32. | `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
-|`modality` is `"transcriptomics"` and `assay_ontology_term_id` is [`"EFO:0010961"`](https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961) for <i>Visium Spatial Gene Expression</i> | REQUIRED. Values MUST be de-duplicated molecule counts. All non-zero values MUST be positive integers stored as `numpy.float32`.<br><br>If <code>uns['spatial']['is_single']</code> is <code>False</code> then each observation MUST contain at least one non-zero value.<br><br>If <code>uns['spatial']['is_single']</code> is <code>True</code> then the unfiltered feature-barcode matrix (<code>raw_feature_bc_matrix</code>) MUST be used. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/space-ranger-feature-barcode-matrices">Space Ranger Feature-Barcode Matrices</a>. This matrix MUST contain 4992 rows. If the <code>obs['in_tissue']</code> value is <code>1</code>, then the observation MUST contain at least one non-zero value. If any <code>obs['in_tissue']</code> values are <code>0</code>, then at least one observation corresponding to a <code>obs['in_tissue']</code> with a value of <code>0</code> MUST contain a non-zero value.| `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
-|`modality` is `"epigenomics"` | NOT REQUIRED | | REQUIRED | `AnnData.X` | STRONGLY RECOMMENDED |
+| scRNA-seq (UMI, e.g. 10x v3, Slide-seqV2) | REQUIRED. Values MUST be de-duplicated molecule counts. Each cell MUST contain at least one non-zero value. All non-zero values MUST be positive integers stored as `numpy.float32`.| `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
+| Visium Spatial Gene Expression | REQUIRED. Values MUST be de-duplicated molecule counts. All non-zero values MUST be positive integers stored as `numpy.float32`.<br><br>If <code>uns['spatial']['is_single']</code> is <code>False</code> then each cell MUST contain at least one non-zero value.<br><br>If <code>uns['spatial']['is_single']</code> is <code>True</code> then the unfiltered feature-barcode matrix (<code>raw_feature_bc_matrix</code>) MUST be used. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/space-ranger-feature-barcode-matrices">Space Ranger Feature-Barcode Matrices</a>. This matrix MUST contain 4992 rows. If the <code>obs['in_tissue']</code> value is <code>1</code>, then the cell MUST contain at least one non-zero value. If any <code>obs['in_tissue']</code> values are <code>0</code>, then at least one cell corresponding to a <code>obs['in_tissue']</code> with a value of <code>0</code> MUST contain a non-zero value.| `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
 |||||
-
+| scRNA-seq (non-UMI, e.g. SS2) | REQUIRED. Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM). Each cell MUST contain at least one non-zero value. All non-zero values MUST be positive integers stored as `numpy.float32`. | `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
+| Accessibility (e.g. ATAC-seq, mC-seq) | NOT REQUIRED | | REQUIRED | `AnnData.X` | STRONGLY RECOMMENDED |
+|||||
 
 ## Integration Metadata
 
@@ -585,138 +586,6 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     <tr>
       <th>Value</th>
         <td><code>bool</code>. This MUST be <code>False</code> if <code>uns['spatial']['is_single']</code> is <code>False</code>. This MUST be <code>True</code> if this is the canonical instance of this cellular observation and <code>False</code> if not. This is commonly <code>False</code> for meta-analyses reusing data or for secondary views of data.
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
-### modality
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>modality</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Curator MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"epigenomics"</code> or <code>"transcriptomics"</code>.<br>
-        <br>This MUST be the correct type for the corresponding assay:
-          <br><br>
-          <table>
-          <thead>
-          <tr>
-          <th>For Assay</th>
-          <th>MUST Use</th>
-          </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><i>10x multiome</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030059"><code>EFO:0030059</code></a>]</td>
-              <td><code>"epigenomics"</code> or<br> <code>"transcriptomics"</code></td>
-           </tr>
-            <tr>
-              <td><i>10x scATAC-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030007"><code>EFO:0030007</code></a>]</td>
-              <td><code>"epigenomics"</code></td>
-           </tr>
-            <tr>
-              <td><i>10x transcription profiling</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030080"><code>EFO:0030080</code></a>] and its descendants</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr>
-            <tr>
-              <td><i>BD Rhapsody Targeted mRNA</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0700004"><code>EFO:0700004</code></a>]</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr>
-            <tr>
-              <td><i>BD Rhapsody Whole Transcriptome Analysis</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0700003"><code>EFO:0700003</code></a>]</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr>
-            <tr>
-              <td><i>CEL-seq2</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010010"><code>EFO:0010010</code></a>] and its descendants</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr>
-            <tr>
-              <td><i>DroNc-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008720"><code>EFO:0008720</code></a>]</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr>
-            <tr>
-              <td><i>Drop-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008722"><code>EFO:0008722</code></a>]</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr>
-            <tr>
-              <td><i>GEXSCOPE technology</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0700011"><code>EFO:0700011</code></a>]</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr> 
-            <tr>
-              <td><i>inDrop</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008780"><code>EFO:0008780</code></a>]</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr>
-            <tr>
-              <td><i>MARS-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008796"><code>EFO:0008796</code></a>]</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr>
-            <tr>
-              <td><i>mCT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030060"><code>EFO:0030060</code></a>]</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr>
-            <tr>
-              <td><i>MERFISH</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008992"><code>EFO:0008992</code></a>]</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr>  
-            <tr>
-              <td><i>methylation profiling by high throughput sequencing</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0002761"><code>EFO:0002761</code></a>] and its descendants</td>
-              <td><code>"epigenomics"</code></td>
-           </tr>
-            <tr>
-              <td><i>microwell-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030002"><code>EFO:0030002</code></a>]</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr>    
-            <tr>
-              <td><i>Patch-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008853"><code>EFO:0008853</code></a>]</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr>
-            <tr>
-              <td><i>ScaleBio single cell RNA sequencing</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0022490"><code>EFO:0022490</code></a>]</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr>
-            <tr>
-              <td><i>scATAC-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010891"><code>EFO:0010891</code></a>]</td>
-              <td><code>"epigenomics"</code></td>
-           </tr>
-            <tr>
-              <td><i>sci-RNA-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010550"><code>EFO:0010550</code></a>] and its descendants</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr>
-            <tr>
-              <td><i>Seq-Well</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008919"><code>EFO:0008919</code></a>] and its descendants</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr>
-            <tr>
-              <td><i>Smart-like</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010184"><code>EFO:0010184</code></a>] and its descendants</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr> 
-            <tr>
-            <tr>
-              <td><i>spatial transcriptomics</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008994"><code>EFO:0008994</code></a>] and its descendants</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr> 
-            <tr>
-              <td><i>SPLiT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0009919"><code>EFO:0009919</code></a>]</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr> 
-            <tr>
-              <td><i>STRT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008953"><code>EFO:0008953</code></a>]</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr>
-            <tr>
-              <td><i>TruDrop</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0700010"><code>EFO:0700010</code></a>]</td>
-              <td><code>"transcriptomics"</code></td>
-           </tr> 
-          </tbody></table>
-          <br>If the assay does not appear in this table, the most appropriate value MUST be selected and <a href="mailto:cellxgene@chanzuckerberg.com">the curation team informed</a> during submission so that the assay can be added to the table.<br>
         </td>
     </tr>
 </tbody></table>
@@ -1997,10 +1866,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 
 ### schema v5.2.0
 
-* X (Matrix Layers)
-  * Redesigned table to include `modality`
 * obs (Cell metadata)
-  * Added `modality`
   * Updated requirements for `suspension_type`
     * Added mCT-seq
     * Added MERFISH
