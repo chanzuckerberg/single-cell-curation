@@ -1926,13 +1926,12 @@ class Validator:
                 "fixing current errors."
             )
 
-    def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None, to_memory: bool = False) -> bool:
+    def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None) -> bool:
         """
         Validates adata
 
         :params Union[str, bytes, os.PathLike] h5ad_path: path to h5ad to validate, if None it will try to validate
         from self.adata
-        :param to_memory: indicate if the h5ad should be read into memory.
 
         :return True if successful validation, False otherwise
         :rtype bool
@@ -1943,7 +1942,7 @@ class Validator:
 
         if h5ad_path:
             logger.debug("Reading the h5ad file...")
-            self.adata = read_h5ad(h5ad_path, to_memory)
+            self.adata = read_h5ad(h5ad_path)
             self.h5ad_path = h5ad_path
             self._validate_encoding_version()
             logger.debug("Successfully read the h5ad file")
@@ -2000,8 +1999,7 @@ def validate(
     validator = Validator(
         ignore_labels=ignore_labels,
     )
-    to_memory = add_labels_file is not None
-    validator.validate_adata(h5ad_path, to_memory=to_memory)
+    validator.validate_adata(h5ad_path)
     logger.info(f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}")
 
     # Stop if validation was unsuccessful

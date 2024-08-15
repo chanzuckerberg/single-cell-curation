@@ -1,9 +1,7 @@
-import numpy as np
 import pandas as pd
 import pytest
 from anndata import AnnData
 from cellxgene_schema.utils import (
-    enforce_canonical_format,
     get_hash_digest_column,
     map_ontology_term,
     read_h5ad,
@@ -12,7 +10,6 @@ from cellxgene_schema.utils import (
     replace_ontology_term,
 )
 from fixtures.examples_validate import adata, adata_non_raw, h5ad_valid
-from scipy.sparse import coo_matrix
 
 
 @pytest.fixture
@@ -145,34 +142,6 @@ def test_map_ontology_term__(adata_without_raw):
     assert all(a == "CL:0000002" for a in donor_2_rows["cell_type_ontology_term_id"])
 
 
-@pytest.fixture
-def noncanonical_matrix():
-    array = np.array([[1, 0, 1], [3, 2, 3], [4, 5, 4]])
-    return coo_matrix((array[0], (array[1], array[2])))
-
-
-class TestEnforceCanonical:
-    def test_adata_with_noncanonical_X_and_raw_X(self, noncanonical_matrix):
-        assert noncanonical_matrix.has_canonical_format is False
-        adata = AnnData(noncanonical_matrix)
-        enforce_canonical_format(adata)
-        assert adata.X.has_canonical_format is True
-
-    def test_adata_with_noncanonical_raw_X(self, noncanonical_matrix):
-        assert noncanonical_matrix.has_canonical_format is False
-        adata = AnnData(raw=AnnData(noncanonical_matrix))
-        enforce_canonical_format(adata)
-        assert adata.raw.X.has_canonical_format is True
-
-    def test_adata_with_canonical_raw_X(self, adata_with_raw):
-        enforce_canonical_format(adata)
-        assert adata_with_raw.raw.X.has_canonical_format is True
-
-    def test_adata_with_canonical_X(self, adata_without_raw):
-        enforce_canonical_format(adata)
-        assert adata_without_raw.X.has_canonical_format is True
-
-
 class TestGetHashDigestColumn:
     def test_get_hash_digest_column(self, adata_with_raw):
         hash_digest_column = get_hash_digest_column(adata_with_raw.obs)
@@ -186,10 +155,3 @@ class TestReadH5AD:
         adata = read_h5ad(h5ad_path)
         assert isinstance(adata, AnnData)
         assert adata.isbacked
-
-    def test_read_h5ad_to_memory(self):
-        # Provide a valid h5ad path or a valid object resembling a path
-        h5ad_path = h5ad_valid
-        adata = read_h5ad(h5ad_path, to_memory=True)
-        assert isinstance(adata, AnnData)
-        assert not adata.isbacked
