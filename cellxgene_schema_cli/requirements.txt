@@ -1,9 +1,9 @@
-anndata<0.12
+anndata>=0.8,<0.12
 cellxgene-ontology-guide==1.0.0 # update before a schema migration
 click<9
 Cython<4
 numpy<2
-pandas<3
+pandas>2,<3
 PyYAML<7
 scipy<2
 semver<4
