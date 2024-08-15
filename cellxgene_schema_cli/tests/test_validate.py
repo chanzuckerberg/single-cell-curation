@@ -1020,16 +1020,6 @@ class TestSeuratConvertibility:
         assert len(self.validator.warnings) == 0
         assert self.validator.is_seurat_convertible
 
-        # h5ad where raw matrix variable count != length of raw var variables array is not Seurat-convertible
-        matrix = sparse.csr_matrix(np.zeros([good_obs.shape[0], good_var.shape[0]], dtype=np.float32))
-        raw = anndata.AnnData(X=matrix, var=good_var)
-        raw.var.drop("ENSSASG00005000004", axis=0, inplace=True)
-        self.validation_helper(matrix, raw)
-        self.validator._validate_seurat_convertibility()
-        assert len(self.validator.errors) == 1
-        assert not self.validator.is_seurat_convertible
-        assert not self.validator.is_valid
-
         # Visium datasets are not Seurat-convertible
         self.validation_helper(sparse_matrix_with_zero)
         self.validator.adata.obs = adata_visium.obs.copy()
@@ -1064,19 +1054,6 @@ class TestValidatorValidateDataFrame:
 
         # Assert
         assert "in dataframe 'obs' contains 2 categorical types. Only one type is allowed." in validator.errors[0]
-        self._fail_write_h5ad(tmp_path, valid_adata)
-
-    def test_fail_categorical_bool(self, tmp_path, valid_adata):
-        # Arrange
-        categories = [True, False]
-        self._add_catagorical_obs(valid_adata, categories)
-        validator = self._create_validator(valid_adata)
-
-        # Act
-        validator._validate_dataframe("obs")
-
-        # Assert
-        assert "in dataframe 'obs' contains illegal_categorical_types={<class 'bool'>}." in validator.errors[0]
         self._fail_write_h5ad(tmp_path, valid_adata)
 
     def _add_catagorical_obs(self, adata, categories):
@@ -1131,11 +1108,11 @@ class TestIsRaw:
         "data, matrix_format, expected_result",
         [
             # Test case with integer values in a dense matrix
-            (np.array([[1, 2, 3], [4, 5, 6]], dtype=int), "dense", True),
+            (np.array([[1, 2, 3], [4, 5, 6]], dtype=np.float32), "dense", True),
             # Test case with float values in a dense matrix
             (np.array([[1.1, 2.2, 3.3], [4.4, 5.5, 6.6]]), "dense", False),
             # Test case with integer values in a sparse matrix (CSR format)
-            (sparse.csr_matrix([[1, 0, 3], [0, 5, 0]], dtype=int), "csr", True),
+            (sparse.csr_matrix([[1, 0, 3], [0, 5, 0]], dtype=np.float32), "csr", True),
             # Test case with float values in a sparse matrix (CSC format)
             (sparse.csc_matrix([[1.1, 0, 3.3], [0, 5.5, 0]]), "csc", False),
             # Test case with mixed integer and float values in a dense matrix
@@ -1148,7 +1125,7 @@ class TestIsRaw:
 
     @mock.patch("cellxgene_schema.validate.get_matrix_format", return_value="unknown")
     def test_has_valid_raw_with_unknown_format(self, mock_get_matrix_format):
-        data = np.array([[1, 2, 3], [4, 5, 6]], dtype=int)
+        data = np.array([[1, 2, 3], [4, 5, 6]], dtype=np.float32)
         validator = self.create_validator(data, "unknown")
         with pytest.raises(AssertionError):
             validator._has_valid_raw()

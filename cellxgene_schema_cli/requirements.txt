@@ -1,12 +1,11 @@
-anndata==0.8.0
-cellxgene-ontology-guide==1.0.0
-click==8.1.7
-Cython==3.0.10
-numpy==1.26.4
-pandas==1.4.4
-PyYaml==6.0.1
-wheel==0.43.0
-scipy<1.13.0    # scipy 1.13.0 is not compatible with anndata <=0.10.6, revisit before next release
-semver==3.0.2
-xxhash==3.4.1
-matplotlib==3.9.0
+anndata>=0.8,<0.12
+cellxgene-ontology-guide==1.0.0 # update before a schema migration
+click<9
+Cython<4
+numpy<2
+pandas>2,<3
+PyYAML<7
+scipy<2
+semver<4
+xxhash<4
+matplotlib<4
