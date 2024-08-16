@@ -255,8 +255,9 @@ The following ontology dependencies are *pinned* for this version of the schema.
 [pato.owl]: https://github.com/pato-ontology/pato/blob/v2023-05-18/pato.owl
 
 [Uberon multi-species anatomy ontology]: http://www.obofoundry.org/ontology/uberon.html
-[2024-03-22]: https://github.com/obophenotype/uberon/releases/tag/v2024-03-22
-[uberon.owl]: https://github.com/obophenotype/uberon/releases/download/v2024-03-22/uberon.owl
+[2024-08-07]: https://github.com/obophenotype/uberon/releases/tag/v2024-08-07
+[uberon.owl]: https://github.com/obophenotype/uberon/releases/download/v2024-08-07/uberon.owl
+
 
 ### Required Gene Annotations
 
