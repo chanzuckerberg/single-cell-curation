@@ -1,2 +1,2 @@
 requests<3
-cellxgene-ontology-guide==1.0.0
+git+https://github.com/chanzuckerberg/cellxgene-ontology-guide/@nayib/bump-ontologies#subdirectory=api/python
