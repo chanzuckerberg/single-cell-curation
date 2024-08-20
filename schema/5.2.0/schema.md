@@ -455,7 +455,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     <tr>
       <th>Value</th>
         <td>categorical with <code>str</code> categories. If unavailable, this MUST be <code>"unknown"</code>. 
-<br><br>If <code>organism_ontolology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9606"><code>"NCBITaxon:9606"</code></a> for <i>Homo sapiens</i>, this MUST be the most accurate HsapDv term with the following STRONGLY RECOMMENDED:
+<br><br>If <code>organism_ontolology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9606"><code>"NCBITaxon:9606"</code></a> for <i>Homo sapiens</i>, this MUST be the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/hsapdv/classes?obo_id=HsapDv%3A0000001"><code>HsapDv:0000001</code></a> for <i>life cycle</i> with the following STRONGLY RECOMMENDED:
           <br><br>
           <table>
           <thead>
@@ -475,7 +475,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
             </tr>
             <tr>
               <td>After birth for the<br>first 12 months</td>
-              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=month-old&submit=Search+terms">1 to 12 month-old human stages</a><br>(e.g. <a href="https://www.ebi.ac.uk/ols4/ontologies/hsapdv/classes?obo_id=HsapDv%3A">HsapDv:0000174)</a></td>
+              <td>A term from the set of <a href="http://www.ontobee.org/search?ontology=HSAPDV&keywords=month-old&submit=Search+terms">1 to 12 month-old human stages</a><br>(e.g. <a href="https://www.ebi.ac.uk/ols4/ontologies/hsapdv/classes?obo_id=HsapDv%3A0000273">HsapDv:0000273)</a></td>
             </tr>
             <tr>
               <td>After the first 12<br>months post-birth</td>
@@ -483,7 +483,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
             </tr>
           </tbody></table>
           <br>If <code>organism_ontolology_term_id</code> is 
-          <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A10090"><code>"NCBITaxon:10090"</code></a> for <i>Mus musculus</i>, this MUST be the most accurate MmusDv term with the following STRONGLY RECOMMENDED:
+          <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A10090"><code>"NCBITaxon:10090"</code></a> for <i>Mus musculus</i>, this MUST be the accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/mmusdv/classes?obo_id=MmusDv%3A0000001"><code>MmusDv:0000001</code></a> for <i>life cycle</i> with the following STRONGLY RECOMMENDED:
           <br><br>
           <table>
           <thead>
@@ -1876,6 +1876,9 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
   * Updated MmusDv to the 2024-05-28 release
   * Updated UBERON to the 2024-08-07 release
 * obs (Cell metadata)
+  * Updated requirements for `development_stage_ontology_term_id` to require the most accurate descendant of _life cycle_. 
+    * If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be the most accurate descendant of `HsapDv:0000001` for _life cycle_
+    * If <code>organism_ontolology_term_id</code> is <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i>, this MUST be the most accurate descendant of `MmusDv:0000001` for _life cycle_
   * Updated requirements for `suspension_type`
     * Added mCT-seq
     * Added MERFISH
