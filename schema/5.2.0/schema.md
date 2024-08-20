@@ -1339,7 +1339,7 @@ add the feature length.
     <tr>
       <th>Value</th>
         <td>
-        <code>uint</code> number of base-pairs (bps). If the <code>feature_biotype</code> is <code>"gene"</code>, then the value is calculated by creating non-overlapping concatenated exons across all isoforms of the gene, and then adding up their length in base-pairs. This approach is modeled on the "length of merged exons of isoforms of a gene" from <a href="https://doi.org/10.1093/bioinformatics/btac561">GTFtools: a software package for analyzing various features of gene models.</a><br><br> If <code>feature_biotype</code> is NOT <code>"gene"</code> then the value MUST be set to 0.
+        <code>uint</code> number of base-pairs (bps). The value is the median of the lengths of isoforms, reusing the median calculation from <a href="https://doi.org/10.1093/bioinformatics/btac561">GTFtools: a software package for analyzing various features of gene models.</a>
       </td>
     </tr>
 </tbody></table>
@@ -1889,10 +1889,11 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
     * Removed snmC-seq
     * Removed spatial proteomics and its descendants
     * Replaced snmC-seq2 with methylation profiling by high throughput sequencing and its descendants
-
 * uns (Dataset metadata)
   * Updated `schema_reference` to <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.2.0/schema.md"</code>
   * Updated `schema_version` to <code>"5.2.0"</code>
+* var and raw.var (Gene metadata)
+  * Updated the requirements for `feature_length`. All `feature_biotypes` are now included. The calculation of the value changed from the merged length of isoforms to the median of the lengths of isoforms.
 
 ### schema v5.1.0
 
