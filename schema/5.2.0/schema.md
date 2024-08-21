@@ -1868,6 +1868,8 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 
 ### schema v5.2.0
 
+* General Requirements
+  * Updated AnnData from version 0.8.0 to version 0.8.0 or greater
 * Required Ontologies
   * Updated CL to the 2024-08-16 release
   * Updated EFO to the 2024-08-15 EFO 3.69.0 release
@@ -2015,7 +2017,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 
 ### schema v3.0.0
 
-* The canonical data format was updated from AnnData 0.7 to 0.8.
+* Updated AnnData version 0.7 to version 0.8.0
 * All references to the "final" matrix has been replaced with "normalized" for clarity.
 * General Requirements
   * Reserved Names from previous schema versions that have since been deprecated MUST NOT be present.
