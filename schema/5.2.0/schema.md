@@ -1409,6 +1409,26 @@ add the feature length.
 </tbody></table>
 <br>
 
+### feature_type
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>feature_type</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>CELLxGENE Discover MUST annotate.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be the gene type assigned to the feature identifier in <code>var.index</code>. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be <code>"synthetic"</code>.<br><br>See  <a href="https://www.gencodegenes.org/pages/biotypes.html ">GENCODE</a> and <a href="https://useast.ensembl.org/info/genome/genebuild/biotypes.html ">Ensembl</a> references.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+
 ## `varm`
 
 The size of the ndarray stored for a key in `varm` MUST NOT be zero.
@@ -1896,6 +1916,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
   * Updated `schema_version` to <code>"5.2.0"</code>
 * var and raw.var (Gene metadata)
   * Updated the requirements for `feature_length`. All `feature_biotypes` are now included. The calculation of the value changed from the merged length of isoforms to the median of the lengths of isoforms.
+  * Added `feature_type`
 
 ### schema v5.1.0
 

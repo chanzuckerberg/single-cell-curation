@@ -233,6 +233,10 @@ This `data.frame` will have the following columns required by the schema. There 
       <td>feature_reference</td>
       <td><code>character</code></td>
     </tr>
+    <tr>
+      <td>feature_type</td>
+      <td><code>character</code></td>
+    </tr>
  </tbody></table>
 <br>
 
