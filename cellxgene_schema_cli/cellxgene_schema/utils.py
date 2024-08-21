@@ -9,6 +9,9 @@ import numpy as np
 from scipy import sparse
 from xxhash import xxh3_64_intdigest
 
+from anndata.experimental import read_elem, sparse_dataset
+import h5py
+
 logger = logging.getLogger(__name__)
 
 SPARSE_MATRIX_TYPES = {"csc", "csr", "coo"}
@@ -122,7 +125,14 @@ def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
     :rtype None
     """
     try:
-        adata = ad.read_h5ad(h5ad_path, backed="r")
+
+        f = h5py.File(h5ad_path)
+        full_keys = ["obs", "var", "obsm", "varm", "uns", "obsp", "varp"]
+        d = {}
+        d["X"] = sparse_dataset(f["X"])
+        d["layers"] = {k: sparse_dataset(f["layers"][k]) for k in f["layers"].keys()}
+        d.update({k: read_elem(f[k]) for k in full_keys})
+        adata = ad.AnnData(**d)
 
         # This code, and AnnData in general, is optimized for row access.
         # Running backed, with CSC, is prohibitively slow. Read the entire
