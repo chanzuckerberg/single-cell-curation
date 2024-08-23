@@ -50,7 +50,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r ./requirements-dev.txt
-          pip install -e ./cellxgene_schema_cli
+          pip install -e --extra-index-url https://test.pypi.org/simple/./cellxgene_schema_cli
       - name: cellxgene_schema_cli Unit tests
         run: make unit-test
       - name: Upload coverage results as an artifact
@@ -111,7 +111,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          pip install -r scripts/schema_bump_dry_run_ontologies/requirements.txt
+          pip install -r --extra-index-url https://test.pypi.org/simple/ scripts/schema_bump_dry_run_ontologies/requirements.txt
           pip install -r ./requirements-dev.txt
       - name: Ontology Dry Run Unit Tests
         run: make ontology-dry-run-tests

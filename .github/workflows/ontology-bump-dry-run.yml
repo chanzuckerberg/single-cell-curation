@@ -26,7 +26,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
-          pip install -r scripts/schema_bump_dry_run_ontologies/requirements.txt
+          pip install --extra-index-url https://test.pypi.org/simple/ -r scripts/schema_bump_dry_run_ontologies/requirements.txt
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
