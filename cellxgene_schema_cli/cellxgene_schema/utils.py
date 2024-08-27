@@ -121,15 +121,17 @@ from anndata.experimental import read_elem, read_dispatched, sparse_dataset
 
 def read_backed(f):
     def callback(func, elem_name: str, elem, iospec):
-        if iospec.encoding_type in (
-            "csr_matrix",
-            "csc_matrix",
-        ):
-            return sparse_dataset(elem)
-            # Preventing recursing inside of these types
-            return read_elem(elem)
-        elif iospec.encoding_type == "array" and len(elem.shape) > 1:
-            return elem
+        if "layers" in elem_name or ("X" in elem_name and "X_" not in elem_name):
+            if iospec.encoding_type in (
+                "csr_matrix",
+                "csc_matrix",
+            ):
+                return sparse_dataset(elem)
+                # Preventing recursing inside of these types
+                return read_elem(elem)
+            elif iospec.encoding_type == "array" and len(elem.shape) > 1:
+                return elem
+            else: func(elem)
         else:
             return func(elem)
 
