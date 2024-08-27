@@ -126,11 +126,17 @@ def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
     """
     try:
 
+        def convert(f):
+            if isinstance(f, h5py.Dataset): # Dataset is dense, Group is sparse
+                return f
+            else:
+                return sparse_dataset(f)
+    
         f = h5py.File(h5ad_path)
         full_keys = ["obs", "var", "obsm", "varm", "uns", "obsp", "varp"]
         d = {}
-        d["X"] = sparse_dataset(f["X"])
-        d["layers"] = {k: sparse_dataset(f["layers"][k]) for k in f["layers"].keys()}
+        d["X"] = convert(f["X"])
+        d["layers"] = {k: convert(f["layers"][k]) for k in f["layers"].keys()}
         d.update({k: read_elem(f[k]) for k in full_keys})
         adata = ad.AnnData(**d)
 
