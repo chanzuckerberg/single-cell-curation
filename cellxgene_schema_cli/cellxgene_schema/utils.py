@@ -115,6 +115,27 @@ def getattr_anndata(adata: ad.AnnData, attr: str = None):
             return None
     else:
         return getattr(adata, attr)
+    
+import anndata as ad
+from anndata.experimental import read_elem, read_dispatched, sparse_dataset
+
+def read_backed(f):
+    def callback(func, elem_name: str, elem, iospec):
+        if iospec.encoding_type in (
+            "csr_matrix",
+            "csc_matrix",
+        ):
+            return sparse_dataset(elem)
+            # Preventing recursing inside of these types
+            return read_elem(elem)
+        elif iospec.encoding_type == "array" and len(elem.shape) > 1:
+            return elem
+        else:
+            return func(elem)
+
+    adata = read_dispatched(f, callback=callback)
+
+    return adata
 
 
 def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
@@ -126,19 +147,8 @@ def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
     """
     try:
 
-        def convert(f):
-            if isinstance(f, h5py.Dataset): # Dataset is dense, Group is sparse
-                return f
-            else:
-                return sparse_dataset(f)
-    
         f = h5py.File(h5ad_path)
-        full_keys = ["obs", "var", "obsm", "varm", "uns", "obsp", "varp"]
-        d = {}
-        d["X"] = convert(f["X"])
-        d["layers"] = {k: convert(f["layers"][k]) for k in f["layers"].keys()}
-        d.update({k: read_elem(f[k]) for k in full_keys})
-        adata = ad.AnnData(**d)
+        adata = read_backed(f)
 
         # This code, and AnnData in general, is optimized for row access.
         # Running backed, with CSC, is prohibitively slow. Read the entire
