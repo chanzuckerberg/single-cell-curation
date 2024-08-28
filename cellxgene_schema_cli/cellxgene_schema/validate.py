@@ -21,7 +21,7 @@ from .utils import SPARSE_MATRIX_TYPES, get_matrix_format, getattr_anndata, read
 
 logger = logging.getLogger(__name__)
 
-ONTOLOGY_PARSER = OntologyParser(schema_version=f"v{schema.get_current_schema_version()}")
+ONTOLOGY_PARSER = OntologyParser(schema_version="5.1.0")
 
 ASSAY_VISIUM = "EFO:0010961"
 ASSAY_SLIDE_SEQV2 = "EFO:0030062"
@@ -817,6 +817,9 @@ class Validator:
 
         # Mapping from obs column name to number of unique categorical values
         category_mapping = {}
+        # DO NOT MERGE, for testing purposes only
+        if self.adata.uns["title"] == "fails h5ad validation":
+            self.errors.append("This is an intentional failure for migration rollback testing purposes.")
 
         # Check for categorical dtypes in the dataframe directly
         for column_name in df.columns:
