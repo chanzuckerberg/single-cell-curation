@@ -220,11 +220,8 @@ class AnnDataLabelAppender:
         mapping_dict = {}
 
         for i in ids:
-            if i.startswith("ENS"):
-                organism = gencode.get_organism_from_feature_id(i)
-                mapping_dict[i] = self.validator.gene_checkers[organism].get_length(i)
-            else:
-                mapping_dict[i] = 0
+            organism = gencode.get_organism_from_feature_id(i)
+            mapping_dict[i] = self.validator.gene_checkers[organism].get_length(i)
 
         return mapping_dict
 
