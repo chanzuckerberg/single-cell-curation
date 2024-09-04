@@ -168,7 +168,8 @@ class GeneProcessor:
             isoform_lengths = []
             for isoform in isoforms:
                 isoform_lengths.append(isoform_to_length_map[isoform])
-            gene_lengths[gene_id] = statistics.median(isoform_lengths)
+            # GTFTools established standard is to convert to int
+            gene_lengths[gene_id] = int(statistics.median(isoform_lengths))
 
         return gene_lengths
 
