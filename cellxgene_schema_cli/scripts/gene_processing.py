@@ -16,11 +16,12 @@ import env
 
 
 class GeneProcessingResult:
-    def __init__(self, gene_id: str, gene_name: str, gene_version: str, gene_length: str):
+    def __init__(self, gene_id: str, gene_name: str, gene_version: str, gene_length: str, gene_type: str):
         self.gene_id = gene_id  # ex: ENSG00000141510, should be unique
         self.gene_name = gene_name  # ex: TP53, not necessarily unique
         self.gene_version = gene_version
         self.gene_length = gene_length
+        self.gene_type = gene_type
 
 
 class GeneProcessor:
@@ -76,7 +77,8 @@ class GeneProcessor:
 
                 # Desired features based on whether is gene or transcript
                 if line[2] == "gene":
-                    features = ["gene_id", "gene_name", "gene_version"]
+                    feature_type_field = "gene_biotype" if gene_info_description == "sars_cov_2" else "gene_type"
+                    features = ["gene_id", "gene_name", "gene_version", feature_type_field]
                 else:
                     continue
 
@@ -122,6 +124,7 @@ class GeneProcessor:
                     gene_name=target_features[1],
                     gene_version=target_features[2],
                     gene_length=str(current_length),
+                    gene_type=target_features[3],
                 )
                 if gene_info_description in self.gene_ids_by_description:
                     self.gene_ids_by_description[gene_info_description].append(gene_id)
@@ -193,6 +196,7 @@ class GeneProcessor:
                     gene_name=ercc_id + " (spike-in control)",
                     gene_version=errc_version,
                     gene_length=errc_length,
+                    gene_type="synthetic"
                 )
                 if gene_info_description in self.gene_ids_by_description:
                     self.gene_ids_by_description[gene_info_description].append(ercc_id)
@@ -237,6 +241,7 @@ class GeneProcessor:
                                 gene_metadata.gene_name,
                                 gene_metadata.gene_version,
                                 gene_metadata.gene_length,
+                                gene_metadata.gene_type
                             ]
                         )
                         + "\n"

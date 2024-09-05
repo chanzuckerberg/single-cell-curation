@@ -64,6 +64,8 @@ components:
           to_column: feature_biotype
         - type: feature_length
           to_column: feature_length
+        - type: feature_type
+          to_column: feature_type
     # All columns are required
     columns:
       feature_is_filtered:
@@ -93,6 +95,8 @@ components:
           to_column: feature_biotype
         - type: feature_length
           to_column: feature_length
+        - type: feature_type
+          to_column: feature_type
   obs:
     type: dataframe
     required: True
