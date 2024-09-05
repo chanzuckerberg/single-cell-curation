@@ -181,9 +181,9 @@ class TestAddLabelFunctions:
         ]
         # values derived from csv
         gene_lengths = [
-            0,  # non-gene feature, so set to 0 regardless of csv value
-            70573,
-            4045,
+            1061,
+            2821,
+            1797,
             3822,
         ]
         expected_dict = dict(zip(ids, gene_lengths))

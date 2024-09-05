@@ -143,7 +143,7 @@ class GeneProcessor:
         isoform_to_length_map = defaultdict(int)
         with gzip.open(gtf_path, "rb") as gtf:
             for byte_line in gtf:
-                line = byte_line.decode("utf-8")   # type: ignore
+                line = byte_line.decode("utf-8")
                 if line[0] == "#":
                     continue
 
@@ -172,7 +172,6 @@ class GeneProcessor:
             gene_lengths[gene_id] = int(statistics.median(isoform_lengths))
 
         return gene_lengths
-
 
 
     def _process_ercc(self, ercc_path: str, gene_info_description: str):
