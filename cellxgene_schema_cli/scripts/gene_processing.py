@@ -173,7 +173,6 @@ class GeneProcessor:
 
         return gene_lengths
 
-
     def _process_ercc(self, ercc_path: str, gene_info_description: str):
         """
         process the ERCC download, keeps only first column with no header
