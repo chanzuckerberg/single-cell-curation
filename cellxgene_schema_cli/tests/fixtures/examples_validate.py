@@ -51,7 +51,7 @@ good_obs = pd.DataFrame(
         ],
         [
             "CL:0000192",
-            "EFO:0009918",
+            "EFO:0008992",
             "PATO:0000461",
             "NCBITaxon:10090",
             "unknown",
@@ -101,7 +101,7 @@ obs_expected = pd.DataFrame(
         ],
         [
             "smooth muscle cell",
-            "smFISH",
+            "MERFISH",
             "normal",
             "Mus musculus",
             "unknown",
