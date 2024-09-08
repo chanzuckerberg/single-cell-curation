@@ -50,7 +50,7 @@ jobs:
         run: |
           git rm --ignore-unmatch ./cellxgene_schema_cli/cellxgene_schema/gencode_files/*_diff.txt
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           commit-message: 'AUTO: update migrate.py schema_version ${{ env.old_version }}->${{ env.new_version }}'
           title: 'AUTO: update migrate.py schema_version ${{ env.old_version }}->${{ env.new_version }}'
