@@ -566,41 +566,61 @@ class TestObs:
             f"ERROR: '{term}' in 'cell_type_ontology_term_id' is not allowed."
         ] or validator.errors == [f"ERROR: '{term}' in 'cell_type_ontology_term_id' is a deprecated term id of 'CL'."]
 
-    def test_development_stage_ontology_term_id_human(self, validator_with_adata):
+    @pytest.mark.parametrize(
+        "development_stage_ontology_term_id,error",
+        [
+            ("CL:000001", "ERROR: 'CL:000001' in 'development_stage_ontology_term_id' is not a valid ontology term id of 'HsapDv'."),
+            ("HsapDv:0000000", "ERROR: 'HsapDv:0000000' in 'development_stage_ontology_term_id' is not an allowed term id."),
+            ("HsapDv:0000001", "ERROR: 'HsapDv:0000001' in 'development_stage_ontology_term_id' is not an allowed term id."),
+        ],
+    )
+    def test_development_stage_ontology_term_id_human(
+            self, validator_with_adata, development_stage_ontology_term_id, error
+    ):
         """
         development_stage_ontology_term_id categorical with str categories. If unavailable, this MUST be "unknown".
         If organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens,
-        this MUST be the most accurate HsapDv term.
+        this MUST be the most accurate HsapDv:0000001 descendant.
         """
         validator = validator_with_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:9606"
-        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "EFO:0000001"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = development_stage_ontology_term_id
         validator.validate_adata()
+        error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
+            "development_stage_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
         assert validator.errors == [
-            "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is "
-            "not a valid ontology term id of 'HsapDv'. When 'organism_ontology_term_id' is 'NCBITaxon:9606' "
-            "(Homo sapiens), 'development_stage_ontology_term_id' MUST be a term id of 'HsapDv' or unknown."
+            self.get_format_error_message(error_message_suffix, error)
         ]
 
-    def test_development_stage_ontology_term_id_mouse(self, validator_with_adata):
+    @pytest.mark.parametrize(
+        "development_stage_ontology_term_id,error",
+        [
+            ("CL:000001", "ERROR: 'CL:000001' in 'development_stage_ontology_term_id' is not a valid ontology term id of 'MmusDv'."),
+            ("MmusDv:0000000", "ERROR: 'MmusDv:0000000' in 'development_stage_ontology_term_id' is not an allowed term id."),
+            ("MmusDv:0000001", "ERROR: 'MmusDv:0000001' in 'development_stage_ontology_term_id' is not an allowed term id."),
+        ],
+    )
+    def test_development_stage_ontology_term_id_mouse(self, validator_with_adata, development_stage_ontology_term_id, error):
         """
         If organism_ontolology_term_id is "NCBITaxon:10090" for Mus musculus,
-        this MUST be the most accurate MmusDv term
+        this MUST be the most accurate MmusDv:0000001 descendant.
         """
         validator = validator_with_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:10090"
-        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "EFO:0000001"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = development_stage_ontology_term_id
         obs.loc[
             obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
         ] = "na"
         validator.validate_adata()
+        error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
+            "development_stage_ontology_term_id"
+        ]["dependencies"][1]["error_message_suffix"]
         assert validator.errors == [
-            "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is "
-            "not a valid ontology term id of 'MmusDv'. When 'organism_ontology_term_id' is 'NCBITaxon:10090' "
-            "(Mus musculus), 'development_stage_ontology_term_id' MUST be a term id of 'MmusDv' or unknown."
+            self.get_format_error_message(error_message_suffix, error)
         ]
 
     def test_development_stage_ontology_term_id_all_species(self, validator_with_adata):
