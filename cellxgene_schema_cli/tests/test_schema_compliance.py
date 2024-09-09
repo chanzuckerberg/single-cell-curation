@@ -569,13 +569,22 @@ class TestObs:
     @pytest.mark.parametrize(
         "development_stage_ontology_term_id,error",
         [
-            ("CL:000001", "ERROR: 'CL:000001' in 'development_stage_ontology_term_id' is not a valid ontology term id of 'HsapDv'."),
-            ("HsapDv:0000000", "ERROR: 'HsapDv:0000000' in 'development_stage_ontology_term_id' is not an allowed term id."),
-            ("HsapDv:0000001", "ERROR: 'HsapDv:0000001' in 'development_stage_ontology_term_id' is not an allowed term id."),
+            (
+                "CL:000001",
+                "ERROR: 'CL:000001' in 'development_stage_ontology_term_id' is not a valid ontology term id of 'HsapDv'.",
+            ),
+            (
+                "HsapDv:0000000",
+                "ERROR: 'HsapDv:0000000' in 'development_stage_ontology_term_id' is not an allowed term id.",
+            ),
+            (
+                "HsapDv:0000001",
+                "ERROR: 'HsapDv:0000001' in 'development_stage_ontology_term_id' is not an allowed term id.",
+            ),
         ],
     )
     def test_development_stage_ontology_term_id_human(
-            self, validator_with_adata, development_stage_ontology_term_id, error
+        self, validator_with_adata, development_stage_ontology_term_id, error
     ):
         """
         development_stage_ontology_term_id categorical with str categories. If unavailable, this MUST be "unknown".
@@ -590,19 +599,28 @@ class TestObs:
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "development_stage_ontology_term_id"
         ]["dependencies"][0]["error_message_suffix"]
-        assert validator.errors == [
-            self.get_format_error_message(error_message_suffix, error)
-        ]
+        assert validator.errors == [self.get_format_error_message(error_message_suffix, error)]
 
     @pytest.mark.parametrize(
         "development_stage_ontology_term_id,error",
         [
-            ("CL:000001", "ERROR: 'CL:000001' in 'development_stage_ontology_term_id' is not a valid ontology term id of 'MmusDv'."),
-            ("MmusDv:0000000", "ERROR: 'MmusDv:0000000' in 'development_stage_ontology_term_id' is not an allowed term id."),
-            ("MmusDv:0000001", "ERROR: 'MmusDv:0000001' in 'development_stage_ontology_term_id' is not an allowed term id."),
+            (
+                "CL:000001",
+                "ERROR: 'CL:000001' in 'development_stage_ontology_term_id' is not a valid ontology term id of 'MmusDv'.",
+            ),
+            (
+                "MmusDv:0000000",
+                "ERROR: 'MmusDv:0000000' in 'development_stage_ontology_term_id' is not an allowed term id.",
+            ),
+            (
+                "MmusDv:0000001",
+                "ERROR: 'MmusDv:0000001' in 'development_stage_ontology_term_id' is not an allowed term id.",
+            ),
         ],
     )
-    def test_development_stage_ontology_term_id_mouse(self, validator_with_adata, development_stage_ontology_term_id, error):
+    def test_development_stage_ontology_term_id_mouse(
+        self, validator_with_adata, development_stage_ontology_term_id, error
+    ):
         """
         If organism_ontolology_term_id is "NCBITaxon:10090" for Mus musculus,
         this MUST be the most accurate MmusDv:0000001 descendant.
@@ -619,9 +637,7 @@ class TestObs:
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "development_stage_ontology_term_id"
         ]["dependencies"][1]["error_message_suffix"]
-        assert validator.errors == [
-            self.get_format_error_message(error_message_suffix, error)
-        ]
+        assert validator.errors == [self.get_format_error_message(error_message_suffix, error)]
 
     def test_development_stage_ontology_term_id_all_species(self, validator_with_adata):
         """
