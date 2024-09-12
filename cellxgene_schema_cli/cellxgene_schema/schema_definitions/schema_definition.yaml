@@ -374,19 +374,6 @@ components:
               when 'assay_ontology_term_id' is EFO:0007045 or its descendants
             enum:
               - "nucleus"
-          - # If assay_ontology_term_id is EFO:0009294 or its descendants, 'suspension_type' MUST be 'cell'
-            complex_rule:
-              match_ancestors:
-                column: assay_ontology_term_id
-                ancestors:
-                  EFO:
-                    - EFO:0009294
-                inclusive: True
-            type: categorical
-            error_message_suffix: >-
-              when 'assay_ontology_term_id' is EFO:0009294 or its descendants
-            enum:
-              - "cell"
           - # If assay_ontology_term_id is EFO:0010184 or its descendants, 'suspension_type' MUST be 'cell' or 'nucleus'
             complex_rule:
               match_ancestors:
@@ -401,32 +388,6 @@ components:
             enum:
               - "cell"
               - "nucleus"
-          - # If assay_ontology_term_id is EFO:0009918 or its descendants, 'suspension_type' MUST be 'na'
-            complex_rule:
-              match_ancestors:
-                column: assay_ontology_term_id
-                ancestors:
-                  EFO:
-                    - EFO:0009918
-                inclusive: True
-            type: categorical
-            error_message_suffix: >-
-              when 'assay_ontology_term_id' is EFO:0009918 or its descendants
-            enum:
-              - "na"
-          - # If assay_ontology_term_id is EFO:0700000 or its descendants, 'suspension_type' MUST be 'na'
-            complex_rule:
-              match_ancestors:
-                column: assay_ontology_term_id
-                ancestors:
-                  EFO:
-                    - EFO:0700000
-                inclusive: True
-            type: categorical
-            error_message_suffix: >-
-              when 'assay_ontology_term_id' is EFO:0700000 or its descendants
-            enum:
-              - "na"
           - # If assay_ontology_term_id is EFO:0008994 or its descendants, 'suspension_type' MUST be 'na'
             complex_rule:
               match_ancestors:
@@ -453,6 +414,19 @@ components:
               when 'assay_ontology_term_id' is EFO:0008919 or its descendants
             enum:
               - "cell"
+          - # If assay_ontology_term_id is EFO:0002761 or its descendants, 'suspension_type' MUST be 'nucleus'
+            complex_rule:
+              match_ancestors:
+                column: assay_ontology_term_id
+                ancestors:
+                  EFO:
+                    - EFO:0002761
+                inclusive: True
+            type: categorical
+            error_message_suffix: >-
+              when 'assay_ontology_term_id' is EFO:0002761 or its descendants
+            enum:
+              - "nucleus"
           - # If assay_ontology_term_id is EFO:0010010, 'suspension_type' MUST be 'cell' or 'nucleus'
             rule: "assay_ontology_term_id == 'EFO:0010010'"
             type: categorical
@@ -504,20 +478,6 @@ components:
               when 'assay_ontology_term_id' is EFO:0010550
             enum:
               - "cell"
-              - "nucleus"
-          - # If assay_ontology_term_id is EFO:0008939, 'suspension_type' MUST be 'nucleus'
-            rule: "assay_ontology_term_id == 'EFO:0008939'"
-            type: categorical
-            error_message_suffix: >-
-              when 'assay_ontology_term_id' is EFO:0008939
-            enum:
-              - "nucleus"
-          - # If assay_ontology_term_id is EFO:0030027, 'suspension_type' MUST be 'nucleus'
-            rule: "assay_ontology_term_id == 'EFO:0030027'"
-            type: categorical
-            error_message_suffix: >-
-              when 'assay_ontology_term_id' is EFO:0030027
-            enum:
               - "nucleus"
           - # If assay_ontology_term_id is EFO:0008796, 'suspension_type' MUST be 'cell'
             rule: "assay_ontology_term_id == 'EFO:0008796'"
@@ -579,6 +539,37 @@ components:
             enum:
               - "cell"
               - "nucleus"
+          - # If assay_ontology_term_id is EFO:0030060, 'suspension_type' MUST be 'cell' or 'nucleus'
+            rule: "assay_ontology_term_id == 'EFO:0030060'"
+            type: categorical
+            error_message_suffix: >-
+              when 'assay_ontology_term_id' is EFO:0030060
+            enum:
+              - "cell"
+              - "nucleus"
+          - # If assay_ontology_term_id is EFO:0022490, 'suspension_type' MUST be 'cell' or 'nucleus'
+            rule: "assay_ontology_term_id == 'EFO:0022490'"
+            type: categorical
+            error_message_suffix: >-
+              when 'assay_ontology_term_id' is EFO:0022490
+            enum:
+              - "cell"
+              - "nucleus"
+          - # If assay_ontology_term_id is EFO:0030028, 'suspension_type' MUST be 'cell' or 'nucleus'
+            rule: "assay_ontology_term_id == 'EFO:0030028'"
+            type: categorical
+            error_message_suffix: >-
+              when 'assay_ontology_term_id' is EFO:0030028
+            enum:
+              - "cell"
+              - "nucleus"
+          - # If assay_ontology_term_id is EFO:0008992, 'suspension_type' MUST be 'na'
+            rule: "assay_ontology_term_id == 'EFO:0008992'"
+            type: categorical
+            error_message_suffix: >-
+              when 'assay_ontology_term_id' is EFO:0008992
+            enum:
+              - "na"
       tissue_type:
         type: categorical
         enum:
