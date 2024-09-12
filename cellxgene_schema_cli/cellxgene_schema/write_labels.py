@@ -186,6 +186,24 @@ class AnnDataLabelAppender:
 
         return mapping_dict
 
+    def _get_mapping_dict_feature_type(self, ids: List[str]) -> Dict[str, str]:
+        """
+        Creates a mapping dictionary of gene/feature IDs and its feature type.
+
+        :param list[str] ids: Gene/feature IDs use for mapping
+
+        :return a mapping dictionary: {id: feature_type, ...}
+        :rtype dict
+        """
+
+        mapping_dict = {}
+
+        for i in ids:
+            organism = gencode.get_organism_from_feature_id(i)
+            mapping_dict[i] = self.validator.gene_checkers[organism].get_type(i)
+
+        return mapping_dict
+
     def _get_mapping_dict_feature_biotype(self, ids: List[str]) -> Dict[str, str]:
         """
         Creates a mapping dictionary of feature IDs and biotype ("gene" or "spike-in")
@@ -220,11 +238,8 @@ class AnnDataLabelAppender:
         mapping_dict = {}
 
         for i in ids:
-            if i.startswith("ENS"):
-                organism = gencode.get_organism_from_feature_id(i)
-                mapping_dict[i] = self.validator.gene_checkers[organism].get_length(i)
-            else:
-                mapping_dict[i] = 0
+            organism = gencode.get_organism_from_feature_id(i)
+            mapping_dict[i] = self.validator.gene_checkers[organism].get_length(i)
 
         return mapping_dict
 
@@ -283,6 +298,9 @@ class AnnDataLabelAppender:
 
         elif label_type == "feature_length":
             mapping_dict = self._get_mapping_dict_feature_length(ids=ids)
+
+        elif label_type == "feature_type":
+            mapping_dict = self._get_mapping_dict_feature_type(ids=ids)
 
         else:
             raise TypeError(f"'{label_type}' is not supported in 'add-labels' functionality")

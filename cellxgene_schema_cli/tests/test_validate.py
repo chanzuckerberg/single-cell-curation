@@ -181,9 +181,9 @@ class TestAddLabelFunctions:
         ]
         # values derived from csv
         gene_lengths = [
-            0,  # non-gene feature, so set to 0 regardless of csv value
-            70573,
-            4045,
+            1061,
+            2821,
+            1797,
             3822,
         ]
         expected_dict = dict(zip(ids, gene_lengths))
@@ -193,6 +193,29 @@ class TestAddLabelFunctions:
         ids = ["NO_GENE"]
         with pytest.raises(KeyError):
             label_writer._get_mapping_dict_feature_id(ids)
+
+    def test_get_dictionary_mapping_feature_type(self, label_writer):
+        # Good
+        ids = [
+            "ERCC-00002",
+            "ENSG00000127603",
+            "ENSMUSG00000059552",
+            "ENSSASG00005000004",
+        ]
+        # values derived from csv
+        gene_types = [
+            "synthetic",
+            "protein_coding",
+            "protein_coding",
+            "protein_coding",
+        ]
+        expected_dict = dict(zip(ids, gene_types))
+        assert label_writer._get_mapping_dict_feature_type(ids) == expected_dict
+
+        # Bad
+        ids = ["NO_GENE"]
+        with pytest.raises(KeyError):
+            label_writer._get_mapping_dict_feature_type(ids)
 
     @pytest.mark.parametrize(
         "ids,labels,curie_constraints",

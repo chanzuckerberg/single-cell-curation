@@ -2,8 +2,10 @@ import csv
 import gzip
 import hashlib
 import os
+import statistics
 import sys
 import urllib.request
+from collections import defaultdict
 from typing import Dict
 
 import gtf_tools
@@ -14,11 +16,12 @@ import env
 
 
 class GeneProcessingResult:
-    def __init__(self, gene_id: str, gene_name: str, gene_version: str, gene_length: str):
+    def __init__(self, gene_id: str, gene_name: str, gene_version: str, gene_length: str, gene_type: str):
         self.gene_id = gene_id  # ex: ENSG00000141510, should be unique
         self.gene_name = gene_name  # ex: TP53, not necessarily unique
         self.gene_version = gene_version
         self.gene_length = gene_length
+        self.gene_type = gene_type
 
 
 class GeneProcessor:
@@ -74,7 +77,8 @@ class GeneProcessor:
 
                 # Desired features based on whether is gene or transcript
                 if line[2] == "gene":
-                    features = ["gene_id", "gene_name", "gene_version"]
+                    feature_type_field = "gene_biotype" if gene_info_description == "sars_cov_2" else "gene_type"
+                    features = ["gene_id", "gene_name", "gene_version", feature_type_field]
                 else:
                     continue
 
@@ -120,6 +124,7 @@ class GeneProcessor:
                     gene_name=target_features[1],
                     gene_version=target_features[2],
                     gene_length=str(current_length),
+                    gene_type=target_features[3],
                 )
                 if gene_info_description in self.gene_ids_by_description:
                     self.gene_ids_by_description[gene_info_description].append(gene_id)
@@ -129,56 +134,45 @@ class GeneProcessor:
     def _get_gene_lengths_from_gtf(self, gtf_path: str) -> Dict[str, int]:
         """
         Parses a GTF file and calculates gene lengths, which are calculated as follows for each gene:
-        1. Get all different isoforms
-        2. Merge exons to create a set of non-overlapping "meta" exons
-        3. Sum the lengths of these "meta" exons
-
-        Code inspired from http://www.genemine.org/gtftools.php
+        1. Get lengths for all different isoforms
+        2. Get the median of the lengths of these isoforms
 
         :param str gtf_path: path to gzipped gtf file
 
         :rtype  Dict[str]
         :return A dictionary with keys being gene ids and values the corresponding length in base pairs
         """
-
+        gene_to_isoforms_map = defaultdict(set)
+        isoform_to_length_map = defaultdict(int)
         with gzip.open(gtf_path, "rb") as gtf:
-            # Dictionary of list of tuples that will store exon in bed format-like. Elements of the tuples will be the
-            # equivalent  fields from the bed format: chromosome, start, end, strand). Each list of tuples will correspond
-            # to one gene.
-
-            exons_in_bed = {}  # type: ignore
-
             for byte_line in gtf:
                 line = byte_line.decode("utf-8")
-
                 if line[0] == "#":
                     continue
 
-                line = line.rstrip().split("\t")  # type: ignore
+                # See https://www.gencodegenes.org/pages/data_format.html for GTF metadata schema
+                gene_metadata = line.rstrip().split("\t")  # type: ignore
 
-                if line[2] != "exon":
+                if gene_metadata[2] != "exon":
                     continue
 
-                # Convert line to bed-like format: (chromosome, start, end, strand)
-                exon_bed = (line[0], int(line[3]) - 1, int(line[4]), line[6])
-
-                current_features = gtf_tools._get_features(line)  # type: ignore
+                # Calculate exon length using genomic end location and genomic start location
+                exon_length = int(gene_metadata[4]) - int(gene_metadata[3]) + 1
+                current_features = gtf_tools._get_features(gene_metadata)  # type: ignore
                 gene_id = current_features["gene_id"]
-                if gene_id in exons_in_bed:
-                    exons_in_bed[gene_id].append(exon_bed)
-                else:
-                    exons_in_bed[gene_id] = [exon_bed]
+                transcript_id = current_features["transcript_id"]
 
-        # Merge exons from the same gene to create non-overlapping "meta" genes
-        # Then calculate gene length
+                gene_to_isoforms_map[gene_id].add(transcript_id)
+                isoform_to_length_map[transcript_id] += exon_length
+
         gene_lengths = {}
-        for gene in exons_in_bed:
-            meta_exons = gtf_tools.merge_bed_ranges(exons_in_bed[gene])  # type: ignore
-
-            # get length for this gene, i.e. sum of lengths of "meta" exons
-            gene_lengths[gene] = 0
-            for exon in meta_exons:
-                gene_lengths[gene] += exon[2] - exon[1]
+        for gene_id in gene_to_isoforms_map:
+            isoforms = gene_to_isoforms_map[gene_id]
+            isoform_lengths = []
+            for isoform in isoforms:
+                isoform_lengths.append(isoform_to_length_map[isoform])
+            # GTFTools established standard is to convert to int
+            gene_lengths[gene_id] = int(statistics.median(isoform_lengths))
 
         return gene_lengths
 
@@ -202,6 +196,7 @@ class GeneProcessor:
                     gene_name=ercc_id + " (spike-in control)",
                     gene_version=errc_version,
                     gene_length=errc_length,
+                    gene_type="synthetic",
                 )
                 if gene_info_description in self.gene_ids_by_description:
                     self.gene_ids_by_description[gene_info_description].append(ercc_id)
@@ -246,6 +241,7 @@ class GeneProcessor:
                                 gene_metadata.gene_name,
                                 gene_metadata.gene_version,
                                 gene_metadata.gene_length,
+                                gene_metadata.gene_type,
                             ]
                         )
                         + "\n"
