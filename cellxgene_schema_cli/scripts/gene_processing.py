@@ -196,7 +196,7 @@ class GeneProcessor:
                     gene_name=ercc_id + " (spike-in control)",
                     gene_version=errc_version,
                     gene_length=errc_length,
-                    gene_type="synthetic"
+                    gene_type="synthetic",
                 )
                 if gene_info_description in self.gene_ids_by_description:
                     self.gene_ids_by_description[gene_info_description].append(ercc_id)
@@ -241,7 +241,7 @@ class GeneProcessor:
                                 gene_metadata.gene_name,
                                 gene_metadata.gene_version,
                                 gene_metadata.gene_length,
-                                gene_metadata.gene_type
+                                gene_metadata.gene_type,
                             ]
                         )
                         + "\n"
