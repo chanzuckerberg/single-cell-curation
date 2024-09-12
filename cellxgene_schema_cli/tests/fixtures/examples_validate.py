@@ -313,9 +313,9 @@ good_var = pd.DataFrame(
 # these columns are defined in the schema
 var_expected = pd.DataFrame(
     [
-        ["spike-in", False, "ERCC-00002 (spike-in control)", "NCBITaxon:32630", 0],
-        ["gene", False, "MACF1", "NCBITaxon:9606", 70573],
-        ["gene", False, "Trp53", "NCBITaxon:10090", 4045],
+        ["spike-in", False, "ERCC-00002 (spike-in control)", "NCBITaxon:32630", 1061],
+        ["gene", False, "MACF1", "NCBITaxon:9606", 2821],
+        ["gene", False, "Trp53", "NCBITaxon:10090", 1797],
         ["gene", False, "S", "NCBITaxon:2697049", 3822],
     ],
     index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"],
