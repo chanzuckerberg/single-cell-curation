@@ -1316,8 +1316,6 @@ class TestObs:
             "EFO:0008853": ["cell"],
             "EFO:0030026": ["nucleus"],
             "EFO:0010550": ["cell", "nucleus"],
-            "EFO:0008939": ["nucleus"],
-            "EFO:0030027": ["nucleus"],
             "EFO:0008796": ["cell"],
             "EFO:0700003": ["cell"],
             "EFO:0700004": ["cell"],
@@ -1326,6 +1324,10 @@ class TestObs:
             "EFO:0700010": ["cell", "nucleus"],
             "EFO:0700011": ["cell", "nucleus"],
             "EFO:0009919": ["cell", "nucleus"],
+            "EFO:0030060": ["cell", "nucleus"],
+            "EFO:0022490": ["cell", "nucleus"],
+            "EFO:0030028": ["cell", "nucleus"],
+            "EFO:0008992": ["na"],
         }.items(),
     )
     def test_suspension_type(self, validator, assay, suspension_types):
@@ -1340,6 +1342,8 @@ class TestObs:
         validator.warnings = []
 
         invalid_suspension_type = "na"
+        if "na" in suspension_types:
+            invalid_suspension_type = "nucleus" if "nucleus" not in suspension_types else "cell"
         obs = validator.adata.obs
         obs.loc[obs.index[1], "suspension_type"] = invalid_suspension_type
         obs.loc[obs.index[1], "assay_ontology_term_id"] = assay
@@ -1355,12 +1359,10 @@ class TestObs:
         {
             "EFO:0030080": ["cell", "nucleus"],
             "EFO:0007045": ["nucleus"],
-            "EFO:0009294": ["cell"],
             "EFO:0010184": ["cell", "nucleus"],
-            "EFO:0009918": ["na"],
-            "EFO:0700000": ["na"],
             "EFO:0008994": ["na"],
             "EFO:0008919": ["cell"],
+            "EFO:0002761": ["nucleus"],
         }.items(),
     )
     def test_suspension_type_ancestors_inclusive(self, validator_with_adata, assay, suspension_types):
@@ -1373,8 +1375,8 @@ class TestObs:
         obs = validator.adata.obs
 
         invalid_suspension_type = "na"
-        if assay in {"EFO:0009918", "EFO:0700000", "EFO:0008994"}:
-            invalid_suspension_type = "nucleus"
+        if "na" in suspension_types:
+            invalid_suspension_type = "nucleus" if "nucleus" not in suspension_types else "cell"
             obs["suspension_type"] = obs["suspension_type"].cat.remove_unused_categories()
         obs.loc[obs.index[1], "assay_ontology_term_id"] = assay
         obs.loc[obs.index[1], "suspension_type"] = invalid_suspension_type
@@ -1392,14 +1394,14 @@ class TestObs:
         """
         validator = validator_with_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "assay_ontology_term_id"] = "EFO:0030008"  # descendant of EFO:0009294
+        obs.loc[obs.index[0], "assay_ontology_term_id"] = "EFO:0022615"  # descendant of EFO:0008994
         obs.loc[obs.index[0], "suspension_type"] = "nucleus"
 
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
-            "'['nucleus']'. Values must be one of ['cell'] when "
-            "'assay_ontology_term_id' is EFO:0009294 or its descendants"
+            "'['nucleus']'. Values must be one of ['na'] when "
+            "'assay_ontology_term_id' is EFO:0008994 or its descendants"
         ]
 
     def test_suspension_type_with_descendant_term_id_success(self, validator_with_adata):

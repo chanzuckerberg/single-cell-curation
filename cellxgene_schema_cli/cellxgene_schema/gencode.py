@@ -63,8 +63,9 @@ class GeneChecker:
                 gene_id = gene[0]
                 gene_label = gene[1]
                 gene_length = int(gene[3])
+                gene_type = gene[4]
 
-                self.gene_dict[gene_id] = (gene_label, gene_length)
+                self.gene_dict[gene_id] = (gene_label, gene_length, gene_type)
 
     def is_valid_id(self, gene_id: str) -> bool:
         """
@@ -105,5 +106,20 @@ class GeneChecker:
 
         if self.is_valid_id(gene_id):
             return self.gene_dict[gene_id][1]
+        else:
+            raise ValueError(f"The id '{gene_id}' is not a valid ENSEMBL id for '{self.species}'")
+
+    def get_type(self, gene_id: str) -> str:
+        """
+        Gets feature type associated to the ENSEBML id
+
+        :param str gene_id: ENSEMBL gene id
+
+        :rtype str
+        :return A feature type
+        """
+
+        if self.is_valid_id(gene_id):
+            return self.gene_dict[gene_id][2]
         else:
             raise ValueError(f"The id '{gene_id}' is not a valid ENSEMBL id for '{self.species}'")
