@@ -290,22 +290,30 @@ components:
             rule: "organism_ontology_term_id == 'NCBITaxon:9606'"
             error_message_suffix: >-
               When 'organism_ontology_term_id' is 'NCBITaxon:9606' (Homo sapiens),
-              'development_stage_ontology_term_id' MUST be a term id of 'HsapDv' or unknown.
+              'development_stage_ontology_term_id' MUST be the most accurate descendant of 'HsapDv:0000001' or unknown.
             type: curie
             curie_constraints:
               ontologies:
                 - HsapDv
+              allowed:
+                ancestors:
+                  HsapDv:
+                    - HsapDv:0000001
               exceptions:
                 - unknown
           - # If organism is Mouse
             rule: "organism_ontology_term_id == 'NCBITaxon:10090'"
             error_message_suffix: >-
               When 'organism_ontology_term_id' is 'NCBITaxon:10090' (Mus musculus),
-              'development_stage_ontology_term_id' MUST be a term id of 'MmusDv' or unknown.
+              'development_stage_ontology_term_id' MUST be the most accurate descendant of 'MmusDv:0000001' or unknown.
             type: curie
             curie_constraints:
               ontologies:
                 - MmusDv
+              allowed:
+                ancestors:
+                  MmusDv:
+                    - MmusDv:0000001
               exceptions:
                 - unknown
         # If organism is not humnan nor mouse
