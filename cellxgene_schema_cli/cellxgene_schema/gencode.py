@@ -109,7 +109,7 @@ class GeneChecker:
         else:
             raise ValueError(f"The id '{gene_id}' is not a valid ENSEMBL id for '{self.species}'")
 
-    def get_type(self, gene_id: str) -> int:
+    def get_type(self, gene_id: str) -> str:
         """
         Gets feature type associated to the ENSEBML id
 
