@@ -41,6 +41,9 @@ DEPRECATED_FEATURE_IDS = [
 
 # Dictionary for CURATOR-DEFINED remapping of deprecated feature IDs, if any, to new feature IDs.
 GENCODE_MAPPER = {}
+
+with open("donor_updates.json", "r") as file:
+    DONOR_DEV_STAGE_MAP = json.load(file)
 # fmt: on
 
 
@@ -71,6 +74,17 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     # elif collection_id == "<collection_2_id>":
     #   <custom transformation logic beyond scope of replace_ontology_term>
     # ...
+
+    # logic for mapping donor updates 
+    # TODO: currently have private collection titles, not sure if these should be ids or how to map to protect privacy
+    if collection_id in DONOR_DEV_STAGE_MAP:
+        collection_donor_dev_map = DONOR_DEV_STAGE_MAP[collection_id]
+        utils.map_ontology_term(
+            dataset.obs,
+            "development_stage",
+            "donor_id",
+            collection_donor_dev_map
+        )
 
     # https://github.com/chanzuckerberg/single-cell-curation/issues/958
 
