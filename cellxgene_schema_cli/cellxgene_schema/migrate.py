@@ -1,5 +1,4 @@
 import anndata as ad
-import numpy as np
 
 from . import utils
 
@@ -16,6 +15,7 @@ ONTOLOGY_TERM_MAPS = {
     "assay": {
     },
     "cell_type": {
+        "CL:4023070": "CL:4023064", # AUTOMATED
     },
     "development_stage": {
     },
@@ -33,10 +33,10 @@ ONTOLOGY_TERM_MAPS = {
 
 DEPRECATED_FEATURE_IDS = [
 ]
-# fmt: on
 
 # Dictionary for CURATOR-DEFINED remapping of deprecated feature IDs, if any, to new feature IDs.
 GENCODE_MAPPER = {}
+# fmt: on
 
 
 def migrate(input_file, output_file, collection_id, dataset_id):
@@ -67,27 +67,6 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     #   <custom transformation logic beyond scope of replace_ontology_term>
     # ...
 
-    # https://github.com/chanzuckerberg/single-cell-curation/issues/825
-    if collection_id == "0aab20b3-c30c-4606-bd2e-d20dae739c45":
-        utils.replace_ontology_term(dataset.obs, "disease", {"MONDO:0060782": "MONDO:0100542"})
-
-    if "X_spatial" in dataset.obsm_keys():
-        del dataset.obsm["X_spatial"]
-
-    if dataset.uns.get("default_embedding") == "X_spatial":
-        dataset.uns["default_embedding"] = "spatial"
-
-    if dataset.obs["assay_ontology_term_id"].iloc[0] == "EFO:0010961" and dataset.uns["spatial"]["is_single"]:
-        library_id = [k for k in dataset.uns["spatial"] if k != "is_single"][0]
-        for r in ["hires", "fullres"]:
-            if (
-                r in dataset.uns["spatial"][library_id]["images"]
-                and dataset.uns["spatial"][library_id]["images"][r].dtype == "float32"
-            ):
-                float_array = dataset.uns["spatial"][library_id]["images"][r]
-                int_array = (float_array * 255).astype(np.uint8)
-                dataset.uns["spatial"][library_id]["images"][r] = int_array
-
     if GENCODE_MAPPER:
         dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
 
@@ -96,3 +75,4 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
 
     dataset.write(output_file, compression="gzip")
+
