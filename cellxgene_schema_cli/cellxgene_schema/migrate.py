@@ -1,4 +1,5 @@
 import anndata as ad
+import json
 
 from . import utils
 
@@ -11,14 +12,18 @@ from . import utils
 
 # If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
 # add them here.
+
+# We have used this mapping for automigrating terms, not sure if this is accounted for in other migration logic
+with open("automigrate_terms.json", "r") as file:
+    DEV_STAGE_AUTO_MIGRATE_MAP = json.load(file)
+
 ONTOLOGY_TERM_MAPS = {
     "assay": {
     },
     "cell_type": {
         "CL:4023070": "CL:4023064", # AUTOMATED
     },
-    "development_stage": {
-    },
+    "development_stage": DEV_STAGE_AUTO_MIGRATE_MAP,
     "disease": {
     },
     "organism": {
