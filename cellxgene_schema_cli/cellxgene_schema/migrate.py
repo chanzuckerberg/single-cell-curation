@@ -67,6 +67,58 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     #   <custom transformation logic beyond scope of replace_ontology_term>
     # ...
 
+    # https://github.com/chanzuckerberg/single-cell-curation/issues/958
+
+    if collection_id == "c114c20f-1ef4-49a5-9c2e-d965787fb90c":
+        utils.replace_ontology_term(dataset.obs, "assay", {"EFO:0010550": "EFO:0030028"})
+
+    if collection_id == "45d5d2c3-bc28-4814-aed6-0bb6f0e11c82":
+        utils.replace_ontology_term(dataset.obs, "assay", {"EFO:0010550": "EFO:0030028"})
+
+    if collection_id == "962df42d-9675-4d05-bc75-597ec7bf4afb":
+        utils.replace_ontology_term(dataset.obs, "development_stage", {"unknown": "HsapDv:0000264"})
+
+    if collection_id == "48d354f5-a5ca-4f35-a3bb-fa3687502252":
+        utils.map_ontology_term(
+            dataset.obs,
+            "development_stage",
+            "var_time",
+            {"P7": "MmusDv:0000117"}
+        )
+
+    if collection_id == "613f5480-4957-4f80-b804-0e2b85ac454c":
+        utils.map_ontology_term(
+            dataset.obs,
+            "development_stage",
+            "age",
+            {
+                "P4": "MmusDv:0000114",
+                "P7": "MmusDv:0000117",
+            }
+        )
+
+    if collection_id == "d86517f0-fa7e-4266-b82e-a521350d6d36":
+        utils.map_ontology_term(
+            dataset.obs,
+            "development_stage",
+            "Dataset",
+            {
+                "RomanovDev10x": "MmusDv:0000144",
+                "Mickelsen10x": "MmusDv:0000149",
+                "Flynn10x": "MmusDv:0000149",
+            }
+        )
+        utils.map_ontology_term(
+            dataset.obs,
+            "development_stage",
+            "SRA_ID",
+            {
+                "SRR5164436": "MmusDv:0000178",
+                "SRR5164437": "MmusDv:0000178",
+                "SRR5164438": "MmusDv:0000149",
+            }
+        )
+
     if GENCODE_MAPPER:
         dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
 
