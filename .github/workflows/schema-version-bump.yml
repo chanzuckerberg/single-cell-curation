@@ -133,10 +133,6 @@ jobs:
       - name: Run Conversion Script Generator
         run: |
           make generate-conversion-script
-      - name: Get Version
-        id: get_version
-        run: |
-          echo "old_version=$(make show-current-version)" >> $GITHUB_ENV
       - name: setup git
         run: |
           git config user.name github-actions
@@ -144,33 +140,16 @@ jobs:
       - name: remove diff files
         run: |
           git rm --ignore-unmatch ./cellxgene_schema_cli/cellxgene_schema/gencode_files/*_diff.txt
-      - name: Bump Patch Version
-        if: ${{ github.event.inputs.is-major-schema-bump }} == 'false'
-        run: |
-          pip install bumpversion
-          pip install wheel
-          bumpversion --config-file .bumpversion.cfg minor --allow-dirty
-          bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
-          echo "new_version=$(make show-current-version)" >> $GITHUB_ENV
-      - name: Bump RC to Major Version
-        if: ${{ github.event.inputs.is-major-schema-bump }} == 'true'
-        run: |
-          pip install bumpversion
-          pip install wheel
-          bumpversion --config-file .bumpversion.cfg major --allow-dirty
-          bumpversion --config-file .bumpversion.cfg prerel --allow-dirty --tag
-          echo "new_version=$(make show-current-version)" >> $GITHUB_ENV
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: 'AUTO: update migrate.py schema_version ${{ env.old_version }}->${{ env.new_version }}'
-          title: 'AUTO: update migrate.py schema_version ${{ env.old_version }}->${{ env.new_version }}'
-          body: 'This is an automated PR to update migrate.py from schema_version ${{ env.old_version }}->${{ env.new_version }}.'
-          branch: auto/update-convert-py-to-${{ env.new_version }}
+          commit-message: 'AUTO: update migrate.py'
+          title: 'AUTO: update migrate.py'
+          body: 'This is an automated PR to update migrate.py.'
+          branch: auto/migrate-script
           base: main
           reviewers: ${{ vars.MIGRATION_REVIEWERS }}
           add-paths: |
             cellxgene_schema_cli/setup.py
             cellxgene_schema_cli/cellxgene_schema/__init__.py
             cellxgene_schema_cli/cellxgene_schema/migrate.py
-            .bumpversion.cfg
