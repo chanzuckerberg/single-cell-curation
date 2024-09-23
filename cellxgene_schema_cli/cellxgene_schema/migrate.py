@@ -1,7 +1,11 @@
-import anndata as ad
 import json
+import os
+
+import anndata as ad
 
 from . import utils
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # fmt: off
 # ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
@@ -14,7 +18,7 @@ from . import utils
 # add them here.
 
 # We have used this mapping for automigrating terms, not sure if this is accounted for in other migration logic
-with open("automigrate_terms.json", "r") as file:
+with open(os.path.join(BASE_DIR, "migrate_files/automigrate_terms.json"), "r") as file:
     DEV_STAGE_AUTO_MIGRATE_MAP = json.load(file)
 
 ONTOLOGY_TERM_MAPS = {
@@ -42,10 +46,10 @@ DEPRECATED_FEATURE_IDS = [
 # Dictionary for CURATOR-DEFINED remapping of deprecated feature IDs, if any, to new feature IDs.
 GENCODE_MAPPER = {}
 
-with open("donor_updates.json", "r") as file:
+with open(os.path.join(BASE_DIR, "migrate_files/donor_updates.json"), "r") as file:
     DONOR_DEV_STAGE_MAP = json.load(file)
 
-with open("title_donor_updates.json", "r") as file:
+with open(os.path.join(BASE_DIR, "migrate_files/title_donor_updates.json"), "r") as file:
     TITLE_DONOR_DEV_STAGE_MAP = json.load(file)
 # fmt: on
 
@@ -78,25 +82,15 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     #   <custom transformation logic beyond scope of replace_ontology_term>
     # ...
 
-    # logic for mapping donor updates 
+    # logic for mapping donor updates
     if collection_id in DONOR_DEV_STAGE_MAP:
         collection_donor_dev_map = DONOR_DEV_STAGE_MAP[collection_id]
-        utils.map_ontology_term(
-            dataset.obs,
-            "development_stage",
-            "donor_id",
-            collection_donor_dev_map
-        )
+        utils.map_ontology_term(dataset.obs, "development_stage", "donor_id", collection_donor_dev_map)
 
     # private dataset titles in title_donor_updates.json should be unique in corpus
     if dataset.uns["title"] in TITLE_DONOR_DEV_STAGE_MAP:
         dataset_donor_dev_map = TITLE_DONOR_DEV_STAGE_MAP[dataset.uns["title"]]
-        utils.map_ontology_term(
-            dataset.obs,
-            "development_stage",
-            "donor_id",
-            dataset_donor_dev_map
-        )
+        utils.map_ontology_term(dataset.obs, "development_stage", "donor_id", dataset_donor_dev_map)
 
     # https://github.com/chanzuckerberg/single-cell-curation/issues/958
 
@@ -110,12 +104,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         utils.replace_ontology_term(dataset.obs, "development_stage", {"unknown": "HsapDv:0000264"})
 
     if collection_id == "48d354f5-a5ca-4f35-a3bb-fa3687502252":
-        utils.map_ontology_term(
-            dataset.obs,
-            "development_stage",
-            "var_time",
-            {"P7": "MmusDv:0000117"}
-        )
+        utils.map_ontology_term(dataset.obs, "development_stage", "var_time", {"P7": "MmusDv:0000117"})
 
     if collection_id == "613f5480-4957-4f80-b804-0e2b85ac454c":
         utils.map_ontology_term(
@@ -125,7 +114,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
             {
                 "P4": "MmusDv:0000114",
                 "P7": "MmusDv:0000117",
-            }
+            },
         )
 
     if collection_id == "d86517f0-fa7e-4266-b82e-a521350d6d36":
@@ -137,7 +126,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
                 "RomanovDev10x": "MmusDv:0000144",
                 "Mickelsen10x": "MmusDv:0000149",
                 "Flynn10x": "MmusDv:0000149",
-            }
+            },
         )
         utils.map_ontology_term(
             dataset.obs,
@@ -147,7 +136,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
                 "SRR5164436": "MmusDv:0000178",
                 "SRR5164437": "MmusDv:0000178",
                 "SRR5164438": "MmusDv:0000149",
-            }
+            },
         )
 
     if GENCODE_MAPPER:
@@ -158,4 +147,3 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
 
     dataset.write(output_file, compression="gzip")
-
