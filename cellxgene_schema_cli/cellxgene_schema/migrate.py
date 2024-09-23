@@ -44,6 +44,9 @@ GENCODE_MAPPER = {}
 
 with open("donor_updates.json", "r") as file:
     DONOR_DEV_STAGE_MAP = json.load(file)
+
+with open("title_donor_updates.json", "r") as file:
+    TITLE_DONOR_DEV_STAGE_MAP = json.load(file)
 # fmt: on
 
 
@@ -76,7 +79,6 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     # ...
 
     # logic for mapping donor updates 
-    # TODO: currently have private collection titles, not sure if these should be ids or how to map to protect privacy
     if collection_id in DONOR_DEV_STAGE_MAP:
         collection_donor_dev_map = DONOR_DEV_STAGE_MAP[collection_id]
         utils.map_ontology_term(
@@ -84,6 +86,16 @@ def migrate(input_file, output_file, collection_id, dataset_id):
             "development_stage",
             "donor_id",
             collection_donor_dev_map
+        )
+
+    # private dataset titles in title_donor_updates.json should be unique in corpus
+    if dataset.uns["title"] in TITLE_DONOR_DEV_STAGE_MAP:
+        dataset_donor_dev_map = TITLE_DONOR_DEV_STAGE_MAP[dataset.uns["title"]]
+        utils.map_ontology_term(
+            dataset.obs,
+            "development_stage",
+            "donor_id",
+            dataset_donor_dev_map
         )
 
     # https://github.com/chanzuckerberg/single-cell-curation/issues/958
