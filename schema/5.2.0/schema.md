@@ -58,7 +58,7 @@ This document is organized by:
 
 ## General Requirements
 
-**AnnData.** The canonical data format for CELLxGENE Discover is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by version 0.8 of the anndata library.  Part of the rationale for selecting this format is to allow CELLxGENE to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `raw.var`, `obsm`, and `uns` attributes are described below.
+**AnnData.** The canonical data format for CELLxGENE Discover is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by AnnData version 0.8.0 or greater. The on-disk format must be [AnnData specification (v0.1.0)](https://anndata.readthedocs.io/en/latest/fileformat-prose.html#anndata-specification-v0-1-0). Part of the rationale for selecting this format is to allow CELLxGENE to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `raw.var`, `obsm`, and `uns` attributes are described below.
 
 All data submitted to CELLxGENE Discover is automatically converted to a Seurat V5 object that can be loaded by the R package Seurat. See the [Seurat encoding](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.2.0/seurat_encoding.md) for further information.
 
@@ -161,7 +161,7 @@ Reserved Names from previous schema versions that have since been deprecated MUS
 This includes names, emails, or other PII for researchers or curators involved in the data generation and submission.
 
 #### *Note on types*
-The types below are python3 types. Note that a python3 `str` is a sequence of Unicode code points, which is stored null-terminated and UTF-8-encoded by anndata.
+The types below are python3 types. Note that a python3 `str` is a sequence of Unicode code points, which is stored null-terminated and UTF-8-encoded by AnnData.
 
 ## `X` (Matrix Layers)
 
@@ -1409,6 +1409,26 @@ add the feature length.
 </tbody></table>
 <br>
 
+### feature_type
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>feature_type</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>CELLxGENE Discover MUST annotate.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be the gene type assigned to the feature identifier in <code>var.index</code>. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be <code>"synthetic"</code>.<br><br>See  <a href="https://www.gencodegenes.org/pages/biotypes.html ">GENCODE</a> and <a href="https://useast.ensembl.org/info/genome/genebuild/biotypes.html ">Ensembl</a> references.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+
 ## `varm`
 
 The size of the ndarray stored for a key in `varm` MUST NOT be zero.
@@ -1868,6 +1888,8 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 
 ### schema v5.2.0
 
+* General Requirements
+  * Updated AnnData from version 0.8.0 to version 0.8.0 or greater
 * Required Ontologies
   * Updated CL to the 2024-08-16 release
   * Updated EFO to the 2024-08-15 EFO 3.69.0 release
@@ -1894,6 +1916,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
   * Updated `schema_version` to <code>"5.2.0"</code>
 * var and raw.var (Gene metadata)
   * Updated the requirements for `feature_length`. All `feature_biotypes` are now included. The calculation of the value changed from the merged length of isoforms to the median of the lengths of isoforms.
+  * Added `feature_type`
 
 ### schema v5.1.0
 
@@ -2015,7 +2038,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 
 ### schema v3.0.0
 
-* The canonical data format was updated from AnnData 0.7 to 0.8.
+* Updated AnnData version 0.7 to version 0.8.0
 * All references to the "final" matrix has been replaced with "normalized" for clarity.
 * General Requirements
   * Reserved Names from previous schema versions that have since been deprecated MUST NOT be present.

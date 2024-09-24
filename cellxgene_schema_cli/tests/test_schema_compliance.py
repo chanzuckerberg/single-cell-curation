@@ -566,42 +566,78 @@ class TestObs:
             f"ERROR: '{term}' in 'cell_type_ontology_term_id' is not allowed."
         ] or validator.errors == [f"ERROR: '{term}' in 'cell_type_ontology_term_id' is a deprecated term id of 'CL'."]
 
-    def test_development_stage_ontology_term_id_human(self, validator_with_adata):
+    @pytest.mark.parametrize(
+        "development_stage_ontology_term_id,error",
+        [
+            (
+                "CL:000001",
+                "ERROR: 'CL:000001' in 'development_stage_ontology_term_id' is not a valid ontology term id of 'HsapDv'.",
+            ),
+            (
+                "HsapDv:0000000",
+                "ERROR: 'HsapDv:0000000' in 'development_stage_ontology_term_id' is not an allowed term id.",
+            ),
+            (
+                "HsapDv:0000001",
+                "ERROR: 'HsapDv:0000001' in 'development_stage_ontology_term_id' is not an allowed term id.",
+            ),
+        ],
+    )
+    def test_development_stage_ontology_term_id_human(
+        self, validator_with_adata, development_stage_ontology_term_id, error
+    ):
         """
         development_stage_ontology_term_id categorical with str categories. If unavailable, this MUST be "unknown".
         If organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens,
-        this MUST be the most accurate HsapDv term.
+        this MUST be the most accurate HsapDv:0000001 descendant.
         """
         validator = validator_with_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:9606"
-        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "EFO:0000001"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = development_stage_ontology_term_id
         validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is "
-            "not a valid ontology term id of 'HsapDv'. When 'organism_ontology_term_id' is 'NCBITaxon:9606' "
-            "(Homo sapiens), 'development_stage_ontology_term_id' MUST be a term id of 'HsapDv' or unknown."
-        ]
+        error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
+            "development_stage_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
+        assert validator.errors == [self.get_format_error_message(error_message_suffix, error)]
 
-    def test_development_stage_ontology_term_id_mouse(self, validator_with_adata):
+    @pytest.mark.parametrize(
+        "development_stage_ontology_term_id,error",
+        [
+            (
+                "CL:000001",
+                "ERROR: 'CL:000001' in 'development_stage_ontology_term_id' is not a valid ontology term id of 'MmusDv'.",
+            ),
+            (
+                "MmusDv:0000000",
+                "ERROR: 'MmusDv:0000000' in 'development_stage_ontology_term_id' is not an allowed term id.",
+            ),
+            (
+                "MmusDv:0000001",
+                "ERROR: 'MmusDv:0000001' in 'development_stage_ontology_term_id' is not an allowed term id.",
+            ),
+        ],
+    )
+    def test_development_stage_ontology_term_id_mouse(
+        self, validator_with_adata, development_stage_ontology_term_id, error
+    ):
         """
         If organism_ontolology_term_id is "NCBITaxon:10090" for Mus musculus,
-        this MUST be the most accurate MmusDv term
+        this MUST be the most accurate MmusDv:0000001 descendant.
         """
         validator = validator_with_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:10090"
-        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "EFO:0000001"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = development_stage_ontology_term_id
         obs.loc[
             obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
         ] = "na"
         validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is "
-            "not a valid ontology term id of 'MmusDv'. When 'organism_ontology_term_id' is 'NCBITaxon:10090' "
-            "(Mus musculus), 'development_stage_ontology_term_id' MUST be a term id of 'MmusDv' or unknown."
-        ]
+        error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
+            "development_stage_ontology_term_id"
+        ]["dependencies"][1]["error_message_suffix"]
+        assert validator.errors == [self.get_format_error_message(error_message_suffix, error)]
 
     def test_development_stage_ontology_term_id_all_species(self, validator_with_adata):
         """
@@ -1280,8 +1316,6 @@ class TestObs:
             "EFO:0008853": ["cell"],
             "EFO:0030026": ["nucleus"],
             "EFO:0010550": ["cell", "nucleus"],
-            "EFO:0008939": ["nucleus"],
-            "EFO:0030027": ["nucleus"],
             "EFO:0008796": ["cell"],
             "EFO:0700003": ["cell"],
             "EFO:0700004": ["cell"],
@@ -1290,6 +1324,10 @@ class TestObs:
             "EFO:0700010": ["cell", "nucleus"],
             "EFO:0700011": ["cell", "nucleus"],
             "EFO:0009919": ["cell", "nucleus"],
+            "EFO:0030060": ["cell", "nucleus"],
+            "EFO:0022490": ["cell", "nucleus"],
+            "EFO:0030028": ["cell", "nucleus"],
+            "EFO:0008992": ["na"],
         }.items(),
     )
     def test_suspension_type(self, validator, assay, suspension_types):
@@ -1304,6 +1342,8 @@ class TestObs:
         validator.warnings = []
 
         invalid_suspension_type = "na"
+        if "na" in suspension_types:
+            invalid_suspension_type = "nucleus" if "nucleus" not in suspension_types else "cell"
         obs = validator.adata.obs
         obs.loc[obs.index[1], "suspension_type"] = invalid_suspension_type
         obs.loc[obs.index[1], "assay_ontology_term_id"] = assay
@@ -1319,12 +1359,10 @@ class TestObs:
         {
             "EFO:0030080": ["cell", "nucleus"],
             "EFO:0007045": ["nucleus"],
-            "EFO:0009294": ["cell"],
             "EFO:0010184": ["cell", "nucleus"],
-            "EFO:0009918": ["na"],
-            "EFO:0700000": ["na"],
             "EFO:0008994": ["na"],
             "EFO:0008919": ["cell"],
+            "EFO:0002761": ["nucleus"],
         }.items(),
     )
     def test_suspension_type_ancestors_inclusive(self, validator_with_adata, assay, suspension_types):
@@ -1337,8 +1375,8 @@ class TestObs:
         obs = validator.adata.obs
 
         invalid_suspension_type = "na"
-        if assay in {"EFO:0009918", "EFO:0700000", "EFO:0008994"}:
-            invalid_suspension_type = "nucleus"
+        if "na" in suspension_types:
+            invalid_suspension_type = "nucleus" if "nucleus" not in suspension_types else "cell"
             obs["suspension_type"] = obs["suspension_type"].cat.remove_unused_categories()
         obs.loc[obs.index[1], "assay_ontology_term_id"] = assay
         obs.loc[obs.index[1], "suspension_type"] = invalid_suspension_type
@@ -1356,14 +1394,14 @@ class TestObs:
         """
         validator = validator_with_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "assay_ontology_term_id"] = "EFO:0030008"  # descendant of EFO:0009294
+        obs.loc[obs.index[0], "assay_ontology_term_id"] = "EFO:0022615"  # descendant of EFO:0008994
         obs.loc[obs.index[0], "suspension_type"] = "nucleus"
 
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
-            "'['nucleus']'. Values must be one of ['cell'] when "
-            "'assay_ontology_term_id' is EFO:0009294 or its descendants"
+            "'['nucleus']'. Values must be one of ['na'] when "
+            "'assay_ontology_term_id' is EFO:0008994 or its descendants"
         ]
 
     def test_suspension_type_with_descendant_term_id_success(self, validator_with_adata):

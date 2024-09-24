@@ -130,7 +130,7 @@ def dry_run(curator_report_filepath: str, replaced_by_filepath: str) -> None:
     base_url = BASE_API[os.getenv("corpus_env", default="dev")]
     datasets = fetch_public_datasets(base_url)  # type: ignore
     public_curator_report_entry_map = defaultdict(dict)  # type: ignore
-    onto_parser = OntologyParser(schema_version="v5.0.0")
+    onto_parser = OntologyParser()
     with open(curator_report_filepath, "w") as f:
         # for every dataset, check its ontology term metadata to see if any terms are deprecated. If so, report.
         f.write("Deprecated Terms in Public Datasets:\n\n")

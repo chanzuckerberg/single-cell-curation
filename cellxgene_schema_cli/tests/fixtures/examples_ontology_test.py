@@ -4,14 +4,14 @@ from cellxgene_schema import gencode
 invalid_species = ["Caenorhabditis elegans"]
 
 valid_genes = {
-    gencode.SupportedOrganisms.HOMO_SAPIENS: {"ENSG00000141510": ("TP53", 6836)},
-    gencode.SupportedOrganisms.MUS_MUSCULUS: {"ENSMUSG00000059552": ("Trp53", 4045)},
+    gencode.SupportedOrganisms.HOMO_SAPIENS: {"ENSG00000141510": ("TP53", 2404)},
+    gencode.SupportedOrganisms.MUS_MUSCULUS: {"ENSMUSG00000059552": ("Trp53", 1797)},
 }
 
 valid_genes_same_name_diff_species = {
-    gencode.SupportedOrganisms.HOMO_SAPIENS: {"ENSG00000166278": ("C2_ENSG00000166278", 7151)},
+    gencode.SupportedOrganisms.HOMO_SAPIENS: {"ENSG00000166278": ("C2_ENSG00000166278", 1876)},
     gencode.SupportedOrganisms.MUS_MUSCULUS: {
-        "ENSMUSG00000024371": ("C2_ENSMUSG00000024371", 3872),
+        "ENSMUSG00000024371": ("C2_ENSMUSG00000024371", 694),
     },
 }
 
