@@ -775,7 +775,6 @@ class Validator:
                 # Check for categorical column has mixed types, which is not supported by anndata 0.8.0
                 # TODO: check if this can be removed after upgading to anndata 0.10.0
                 categorical_types = {type(x) for x in column.dtype.categories.values}
-                logger.info("Validating mixed types in category column: %s...", column_name)
                 if len(categorical_types) > 1:
                     self.errors.append(
                         f"Column '{column_name}' in dataframe '{df_name}' contains {len(categorical_types)} categorical types. "
