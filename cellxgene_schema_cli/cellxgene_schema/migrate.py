@@ -139,6 +139,48 @@ def migrate(input_file, output_file, collection_id, dataset_id):
             },
         )
 
+    #dev migration revealed column 'feature_type' in var and raw.var, titles should be unique in corpus
+    titles_with_feature_type = [
+        "Healthy reference",
+        "Extended - Neural cells",
+        "Extended - Endothelial cells",
+        "Extended+ - 18485 genes",
+        "Healthy - Small intestine (adult/pediatric)",
+        "Healthy - Mesenchymal (adult/pediatric)",
+        "Healthy - Stomach",
+        "Healthy - Large Intestine (adult/pediatric)",
+        "Healthy - Mesenchymal (first trimester)",
+        "Extended - All genes",
+        "Healthy - Small Intestine (first trimester)",
+        "Healthy - Neural cells",
+        "Healthy - T and NK cells",
+        "Healthy - Myeloid cells",
+        "Extended - Small intestine (adult/pediatric)",
+        "Extended - T and NK cells",
+        "Healthy - Salivary gland",
+        "Extended - Large Intestine (adult/pediatric)",
+        "Healthy - Large Intestine (first trimester)",
+        "Healthy - Oesophagus",
+        "Extended - Stomach",
+        "Healthy - Mesenchymal (second trimester)",
+        "Extended - Small intestine (adult/pediatric)- 18485genes",
+        "Healthy - Oral mucosa",
+        "Extended - B and B plasma cells",
+        "Extended - Myeloid_with_neutrophils",
+        "Healthy - B and B plasma cells",
+        "Healthy - Small Intestine (second trimester)",
+        "Healthy - Endothelial cells",
+        "Extended - Myeloid cells",
+        "Extended - Mesenchymal (adult/pediatric)",
+        "Healthy - Large Intestine (second trimester)",
+    ]
+
+    if dataset.uns["title"] in titles_with_feature_type:
+        if dataset.raw:
+            dataset.raw.var.drop(columns="feature_type", inplace=True)
+
+        dataset.var.drop(columns="feature_type", inplace=True)
+
     if GENCODE_MAPPER:
         dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
 
