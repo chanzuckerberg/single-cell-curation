@@ -7,7 +7,7 @@ from typing import Dict, List, Union
 import anndata as ad
 import h5py
 import numpy as np
-from anndata.experimental import read_elem, sparse_dataset
+from anndata.experimental import read_dispatched, read_elem, sparse_dataset
 from scipy import sparse
 from xxhash import xxh3_64_intdigest
 
