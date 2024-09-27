@@ -5,12 +5,11 @@ from base64 import b85encode
 from typing import Dict, List, Union
 
 import anndata as ad
+import h5py
 import numpy as np
+from anndata.experimental import read_elem, sparse_dataset
 from scipy import sparse
 from xxhash import xxh3_64_intdigest
-
-from anndata.experimental import read_elem, sparse_dataset
-import h5py
 
 logger = logging.getLogger(__name__)
 
@@ -115,10 +114,6 @@ def getattr_anndata(adata: ad.AnnData, attr: str = None):
             return None
     else:
         return getattr(adata, attr)
-
-
-import anndata as ad
-from anndata.experimental import read_elem, read_dispatched, sparse_dataset
 
 
 def read_backed(f):
