@@ -175,7 +175,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         "Healthy - Large Intestine (second trimester)",
     ]
 
-    if dataset.uns["title"] in titles_with_feature_type:
+    if dataset.uns["title"] in titles_with_feature_type or collection_id == "e5f58829-1a66-40b5-a624-9046778e74f5":
         if dataset.raw:
             dataset.raw.var.drop(columns="feature_type", inplace=True)
 
