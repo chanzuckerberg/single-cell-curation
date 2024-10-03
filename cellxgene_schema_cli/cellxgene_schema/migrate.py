@@ -139,7 +139,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
             },
         )
 
-    #dev migration revealed column 'feature_type' in var and raw.var, titles should be unique in corpus
+    # dev migration revealed column 'feature_type' in var and raw.var, titles should be unique in corpus
     titles_with_feature_type = [
         "Healthy reference",
         "Extended - Neural cells",
