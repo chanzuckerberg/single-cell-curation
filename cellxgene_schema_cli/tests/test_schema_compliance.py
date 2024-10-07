@@ -473,9 +473,6 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Dataframe 'obs' is missing column " "'assay_ontology_term_id'.",
-            "ERROR: Checking values with dependencies failed for "
-            "adata.obs['suspension_type'], this is likely due "
-            "to missing dependent column in adata.obs.",
         ]
 
     @pytest.mark.parametrize(
@@ -962,7 +959,7 @@ class TestObs:
         validator = validator_with_adata
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "self_reported_ethnicity_ontology_term_id"
-        ]["error_message_suffix"]
+        ]["dependencies"][-1]["error_message_suffix"]
         # Mouse organism ID
         validator.adata.obs.loc[validator.adata.obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:10090"
         # Required to set to avoid development_stage_ontology_term_id errors
@@ -1095,11 +1092,13 @@ class TestObs:
             "self_reported_ethnicity_ontology_term_id",
         ] = ["HANCESTRO:0005,HANCESTRO:0014"]
         validator.validate_adata()
-        assert validator.errors[1] == self.get_format_error_message(
-            error_message_suffix,
-            "ERROR: '['HANCESTRO:0005,HANCESTRO:0014']' in 'self_reported_ethnicity_ontology_term_id' is not "
-            "a valid ontology term value, it must be a string.",
-        )
+        assert validator.errors == [
+            self.get_format_error_message(
+                error_message_suffix,
+                "ERROR: '['HANCESTRO:0005,HANCESTRO:0014']' in 'self_reported_ethnicity_ontology_term_id' is not "
+                "a valid ontology term value, it must be a string.",
+            )
+        ]
 
     def test_organism_ontology_term_id(self, validator_with_adata):
         """

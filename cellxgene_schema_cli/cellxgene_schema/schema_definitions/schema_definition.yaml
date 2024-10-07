@@ -357,15 +357,17 @@ components:
               multi_term:
                 delimiter: ","
                 sorted: True
-        # If organism is not Human
-        error_message_suffix: >-
-          When 'organism_ontology_term_id' is NOT 'NCBITaxon:9606' (Homo sapiens),
-          self_reported_ethnicity_ontology_term_id MUST be 'na'.
-        curie_constraints:
-          ontologies:
-            - NA
-          exceptions:
-            - na
+          - # If organism is not human
+            rule: "organism_ontology_term_id != 'NCBITaxon:9606'"
+            error_message_suffix: >-
+              When 'organism_ontology_term_id' is NOT 'NCBITaxon:9606' (Homo sapiens),
+              self_reported_ethnicity_ontology_term_id MUST be 'na'.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - NA
+              exceptions:
+                - na
         add_labels:
           - type: curie
             to_column: self_reported_ethnicity
@@ -402,23 +404,25 @@ components:
                     - MmusDv:0000001
               exceptions:
                 - unknown
-        # If organism is not humnan nor mouse
-        error_message_suffix: >-
-          When 'organism_ontology_term_id' is not 'NCBITaxon:10090' nor 'NCBITaxon:9606',
-          'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105'
-          excluding 'UBERON:0000071', or unknown.
-        curie_constraints:
-          ontologies:
-            - UBERON
-          allowed:
-            ancestors:
-              UBERON:
-                - UBERON:0000105
-          exceptions:
-            - unknown
-          forbidden:
-            terms:
-              - UBERON:0000071
+          - # If organism is not human nor mouse
+            rule: "organism_ontology_term_id != 'NCBITaxon:9606' & organism_ontology_term_id != 'NCBITaxon:10090'"
+            error_message_suffix: >-
+              When 'organism_ontology_term_id' is not 'NCBITaxon:10090' nor 'NCBITaxon:9606',
+              'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105'
+              excluding 'UBERON:0000071', or unknown.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - UBERON
+              allowed:
+                ancestors:
+                  UBERON:
+                    - UBERON:0000105
+              exceptions:
+                - unknown
+              forbidden:
+                terms:
+                  - UBERON:0000071
         add_labels:
           - type: curie
             to_column: development_stage

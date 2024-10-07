@@ -560,7 +560,7 @@ class Validator:
     def _validate_column(self, column: pd.Series, column_name: str, df_name: str, column_def: dict):
         """
         Given a schema definition and the column of a dataframe, verify that the column satisfies the schema.
-        If there are any errors, it adds them to self.errors
+        If there are any errors, it adds them to self.errors. Returns whether column is valid.
 
         :param pandas.Series column: Column of a dataframe to validate
         :param str column_name: Name of the column in the dataframe
@@ -568,7 +568,7 @@ class Validator:
         :param dict column_def: schema definition for this specific column,
         e.g. schema_def["obs"]["columns"]["cell_type_ontology_term_id"]
 
-        :rtype None
+        :rtype bool: True if no errors caught, False if errors caught sand thus not valid
         """
 
         # error_original_count will count the number of error messages prior to validating the column, this
@@ -628,20 +628,25 @@ class Validator:
             # Check for NaN values
             if column.isnull().any():
                 self.errors.append(f"Column '{column_name}' in dataframe '{df_name}' must not contain NaN values.")
-                return
+                return False
 
             if "curie_constraints" in column_def:
                 for term_str in column.drop_duplicates():
                     self._validate_curie_str(term_str, column_name, column_def["curie_constraints"])
 
+        error_total_count = len(self.errors)
+
         # Add error suffix to errors found here
         if "error_message_suffix" in column_def:
-            error_total_count = len(self.errors)
             for i in range(error_original_count, error_total_count):
                 self.errors[i] = self.errors[i] + " " + column_def["error_message_suffix"]
 
+        if error_total_count > error_original_count:
+            return False
+        return True
+
     def _validate_column_dependencies(
-        self, df: pd.DataFrame, df_name: str, column_name: str, column_def: dict
+        self, df: pd.DataFrame, df_name: str, column_name: str, dependencies: List[str]
     ) -> pd.Series:
         """
         Validates subset of columns based on dependencies, for instance development_stage_ontology_term_id has
@@ -654,13 +659,8 @@ class Validator:
         :param pd.DataFrame df: pandas dataframe containing the column to be validated
         :param str df_name: the name of dataframe in the adata object, e.g. "obs"
         :param str column_name: the name of the column to be validated
-        :param dict column_def:dict of column definitions, including dependency definitions, which is a list of
-        column definitions with a "rule"
+        :param list[str] dependencies: dependency definitions, which is a list of column definitions with a "rule"
         """
-
-        all_rules = []
-        dependencies = column_def["dependencies"]
-
         for dependency_def in dependencies:
             if "rule" in dependency_def:
                 query_exp = dependency_def["rule"]
@@ -675,17 +675,7 @@ class Validator:
                     f"this is likely due to missing dependent column in adata.{df_name}."
                 )
                 return pd.Series(dtype=np.float64)
-
-            all_rules.append(query_exp)
-
-            self._validate_column(column, column_name, df_name, column_def)
             self._validate_column(column, column_name, df_name, dependency_def)
-
-        # Set column with the data that's left
-        all_rules = " | ".join(all_rules)
-        column = getattr(df.query("not (" + all_rules + " )", engine="python"), column_name)
-
-        return column
 
     def _validate_list(self, list_name: str, current_list: List[str], element_type: str):
         """
@@ -879,13 +869,10 @@ class Validator:
                 column_def = self._get_column_def(df_name, column_name)
                 column = getattr(df, column_name)
 
-                # First check if there are dependencies with other columns and work with a subset of the data if so
-                if "dependencies" in column_def:
-                    column = self._validate_column_dependencies(df, df_name, column_name, column_def)
+                is_column_valid = self._validate_column(column, column_name, df_name, column_def)
 
-                # If after validating dependencies there's still values in the column, validate them.
-                if len(column) > 0:
-                    self._validate_column(column, column_name, df_name, column_def)
+                if is_column_valid and "dependencies" in column_def:
+                    self._validate_column_dependencies(df, df_name, column_name, column_def["dependencies"])
 
     def _validate_uns_dict(self, uns_dict: dict) -> None:
         df = getattr_anndata(self.adata, "obs")
