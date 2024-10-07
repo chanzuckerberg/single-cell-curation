@@ -641,7 +641,7 @@ class Validator:
                 self.errors[i] = self.errors[i] + " " + column_def["error_message_suffix"]
 
     def _validate_column_dependencies(
-        self, df: pd.DataFrame, df_name: str, column_name: str, dependencies: List[dict]
+        self, df: pd.DataFrame, df_name: str, column_name: str, column_def: dict
     ) -> pd.Series:
         """
         Validates subset of columns based on dependencies, for instance development_stage_ontology_term_id has
@@ -654,20 +654,15 @@ class Validator:
         :param pd.DataFrame df: pandas dataframe containing the column to be validated
         :param str df_name: the name of dataframe in the adata object, e.g. "obs"
         :param str column_name: the name of the column to be validated
-        :param list dependencies: a list of dependency definitions, which is a list of column definitions with a "rule"
+        :param dict column_def:dict of column definitions, including dependency definitions, which is a list of
+        column definitions with a "rule"
         """
 
         all_rules = []
+        dependencies = column_def["dependencies"]
 
         for dependency_def in dependencies:
-            if "complex_rule" in dependency_def:
-                if "match_ancestors" in dependency_def["complex_rule"]:
-                    query_fn, args = self._generate_match_ancestors_query_fn(
-                        dependency_def["complex_rule"]["match_ancestors"]
-                    )
-                    term_id, ontologies, ancestors, ancestor_inclusive = args
-                    query_exp = f"@query_fn({term_id}, {ontologies}, {ancestors}, {ancestor_inclusive})"
-            elif "rule" in dependency_def:
+            if "rule" in dependency_def:
                 query_exp = dependency_def["rule"]
             else:
                 continue
@@ -683,6 +678,7 @@ class Validator:
 
             all_rules.append(query_exp)
 
+            self._validate_column(column, column_name, df_name, column_def)
             self._validate_column(column, column_name, df_name, dependency_def)
 
         # Set column with the data that's left
@@ -690,40 +686,6 @@ class Validator:
         column = getattr(df.query("not (" + all_rules + " )", engine="python"), column_name)
 
         return column
-
-    def _generate_match_ancestors_query_fn(self, rule_def: Dict):
-        """
-        Generates vectorized function and args to query a pandas dataframe. Function will determine whether values from
-        a specified column is a descendant term to a group of specified ancestors, returning a Bool.
-        :param rule_def: defines arguments to pass into vectorized ancestor match validation function
-        :return: Tuple(function, Tuple(str, List[str], List[str]))
-        """
-        validate_curie_ancestors_vectorized = np.vectorize(self._validate_curie_ancestors)
-        ancestor_map = rule_def["ancestors"]
-        inclusive = rule_def["inclusive"]
-
-        # hack: pandas dataframe query doesn't support Dict inputs
-        ontology_keys = []
-        ancestor_list = []
-        for key, val in ancestor_map.items():
-            ontology_keys.append(key)
-            ancestor_list.append(val)
-
-        def is_ancestor_match(
-            term_id: str,
-            ontologies: List[str],
-            ancestors: List[str],
-            ancestor_inclusive: bool,
-        ) -> bool:
-            allowed_ancestors = dict(zip(ontologies, ancestors))
-            return validate_curie_ancestors_vectorized(term_id, allowed_ancestors, inclusive=ancestor_inclusive)
-
-        return is_ancestor_match, (
-            rule_def["column"],
-            ontology_keys,
-            ancestor_list,
-            inclusive,
-        )
 
     def _validate_list(self, list_name: str, current_list: List[str], element_type: str):
         """
@@ -919,12 +881,10 @@ class Validator:
 
                 # First check if there are dependencies with other columns and work with a subset of the data if so
                 if "dependencies" in column_def:
-                    column = self._validate_column_dependencies(df, df_name, column_name, column_def["dependencies"])
+                    column = self._validate_column_dependencies(df, df_name, column_name, column_def)
 
                 # If after validating dependencies there's still values in the column, validate them.
                 if len(column) > 0:
-                    if "warning_message" in column_def:
-                        self.warnings.append(column_def["warning_message"])
                     self._validate_column(column, column_name, df_name, column_def)
 
     def _validate_uns_dict(self, uns_dict: dict) -> None:

@@ -1371,9 +1371,9 @@ class TestObs:
         obs.loc[obs.index[1], "assay_ontology_term_id"] = assay
         validator.validate_adata()
         assert validator.errors == [
-            f"ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
-            f"'['{invalid_suspension_type}']'. Values must be one of {suspension_types} when "
-            f"'assay_ontology_term_id' is {assay}"
+            f"ERROR: '{assay}' in 'assay_ontology_term_id' is not an allowed term id. 'suspension_type' is "
+            f"'{invalid_suspension_type}', but 'assay_ontology_term_id' does not match one of the corresponding assays "
+            f"for '{invalid_suspension_type}' in the schema definition."
         ]
 
     @pytest.mark.parametrize(
@@ -1404,9 +1404,9 @@ class TestObs:
         obs.loc[obs.index[1], "suspension_type"] = invalid_suspension_type
         validator.validate_adata()
         assert validator.errors == [
-            f"ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
-            f"'['{invalid_suspension_type}']'. Values must be one of {suspension_types} when "
-            f"'assay_ontology_term_id' is {assay} or its descendants"
+            f"ERROR: '{assay}' in 'assay_ontology_term_id' is not an allowed term id. 'suspension_type' is "
+            f"'{invalid_suspension_type}', but 'assay_ontology_term_id' does not match one of the corresponding assays "
+            f"for '{invalid_suspension_type}' in the schema definition."
         ]
 
     def test_suspension_type_with_descendant_term_id_failure(self, validator_with_adata):
@@ -1421,9 +1421,9 @@ class TestObs:
 
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
-            "'['nucleus']'. Values must be one of ['na'] when "
-            "'assay_ontology_term_id' is EFO:0008994 or its descendants"
+            "ERROR: 'EFO:0022615' in 'assay_ontology_term_id' is not an allowed term id. 'suspension_type' is "
+            "'nucleus', but 'assay_ontology_term_id' does not match one of the corresponding assays "
+            "for 'nucleus' in the schema definition."
         ]
 
     def test_suspension_type_with_descendant_term_id_success(self, validator_with_adata):
@@ -1438,23 +1438,6 @@ class TestObs:
 
         validator.validate_adata()
         assert validator.errors == []
-
-    def test_suspension_type_unrecognized_assay(self, validator_with_adata):
-        """
-        suspension_id categorical with str categories. This field MUST be "cell", "nucleus", or "na". The allowed
-        values depend on the assay_ontology_term_id. MUST warn if the corresponding assay is not recognized.
-        """
-        validator = validator_with_adata
-        obs = validator.adata.obs
-        obs.loc[obs.index[1], "assay_ontology_term_id"] = "EFO:0700005"
-        validator.validate_adata()
-        assert validator.errors == []
-        assert validator.warnings == [
-            "WARNING: Data contains assay(s) that are not represented in the 'suspension_type' schema "
-            "definition table. Ensure you have selected the most appropriate value for the assay(s) between "
-            "'cell', 'nucleus', and 'na'. Please contact cellxgene@chanzuckerberg.com "
-            "during submission so that the assay(s) can be added to the schema definition document."
-        ]
 
     def test_categories_with_zero_values_warn(self, validator_with_adata):
         validator = validator_with_adata
