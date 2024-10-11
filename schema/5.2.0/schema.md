@@ -3,7 +3,7 @@
 
 Contact: brianraymor@chanzuckerberg.com
 
-Document Status: _Draft_
+Document Status: _Approved_
 
 Version: 5.2.0
 
@@ -1304,7 +1304,7 @@ Curators MUST annotate the following column only in the `var` dataframe. This co
 Curators MUST NOT annotate the following columns in the `var` dataframe and if present, the `raw.var` dataframe.
 
 When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matching human-readable name for the corresponding feature biotype, identifier, and the NCBITaxon term for the reference organism to the `var` and `raw.var` dataframes. In addition, it MUST
-add the feature length. 
+add the feature length and type.
 
 ### feature_biotype
 
