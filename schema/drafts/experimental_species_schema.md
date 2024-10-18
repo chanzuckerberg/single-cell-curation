@@ -349,6 +349,3 @@ The following gene annotation dependencies are *pinned* for this version of the 
   * Updated `tissue_type` to require `"tissue"` for *Danio rerio* and *Drosophila melanogaster* 
 * var and raw.var (Gene Metadata)
   * Updated `feature_reference` to support *Danio rerio* and *Drosophila melanogaster*
-
-
-then all observations MUST contain the same value
