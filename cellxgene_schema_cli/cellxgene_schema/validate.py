@@ -394,7 +394,9 @@ class Validator:
         if start < n:
             yield (matrix[start:n], start, n)
 
-    def _count_matrix_nonzero(self, matrix_name: str, matrix: Union[np.ndarray, sparse.spmatrix]) -> int:
+    def _count_matrix_nonzero(
+        self, matrix_name: str, matrix: Union[np.ndarray, sparse.spmatrix], filter_by_column: pd.Series = None
+    ) -> int:
         if matrix_name in self.number_non_zero:
             return self.number_non_zero[matrix_name]
 
@@ -403,6 +405,8 @@ class Validator:
         nnz = 0
         matrix_format = get_matrix_format(self.adata, matrix)
         for matrix_chunk, _, _ in self._chunk_matrix(matrix):
+            if filter_by_column is not None:
+                matrix_chunk = matrix_chunk[:, filter_by_column]
             nnz += matrix_chunk.count_nonzero() if matrix_format != "dense" else np.count_nonzero(matrix_chunk)
 
         self.number_non_zero[matrix_name] = nnz
@@ -424,21 +428,7 @@ class Validator:
             return
 
         if sum(column) > 0:
-            n_nonzero = 0
-
-            X_format = get_matrix_format(self.adata, self.adata.X)
-            if X_format in SPARSE_MATRIX_TYPES:
-                n_nonzero = self.adata.X[:, column].count_nonzero()
-
-            elif X_format == "dense":
-                n_nonzero = np.count_nonzero(self.adata.X[:, column])
-
-            else:
-                self.errors.append(
-                    f"X matrix is of type {type(self.adata.X)}, validation of 'feature_is_filtered' "
-                    f"cannot be completed."
-                )
-
+            n_nonzero = self._count_matrix_nonzero("feature_is_filtered", self.adata.X, column)
             if n_nonzero > 0:
                 self.errors.append(
                     f"Some features are 'True' in '{column_name}' of dataframe '{df_name}', but there are "
