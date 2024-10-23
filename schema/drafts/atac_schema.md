@@ -6,14 +6,14 @@
 
 ## Fragment File Dataset Criteria
 
-A Dataset MUST meet each of the following criteria in order to be eligible for an attached Fragment File:
+A Dataset MUST meet each of the following criteria in order to be eligible for an  Fragment File asset:
 * the <code>obs['assay_ontology_term_id']</code> values MUST all be <i>paired assays</i> or MUST all be <i>unpaired assays</i>
 * the <code>obs['is_primary_data']</code> values MUST be all `True`
 * the <code>var['feature_reference']</code> values MUST include one of <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i> or <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i>, but not both. The value that is present will determine the appropriate Chromosome Table for standards.
 
-If the <code>obs['assay_ontology_term_id']</code> values are all <i>paired assays</i> then a fragment file MAY be attached to the Dataset.
+If the <code>obs['assay_ontology_term_id']</code> values are all <i>paired assays</i> then the Dataset MAY have a fragment file asset.
 
-If the <code>obs['assay_ontology_term_id']</code> values are all <i>unpaired assays</i> then a fragment file MUST be attached to the Dataset.
+If the <code>obs['assay_ontology_term_id']</code> values are all <i>unpaired assays</i> then the Dataset MUST have a fragment file asset.
 
 ## Fragment File
 
