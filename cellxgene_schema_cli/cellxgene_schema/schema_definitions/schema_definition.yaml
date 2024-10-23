@@ -316,7 +316,26 @@ components:
                     - MmusDv:0000001
               exceptions:
                 - unknown
-        # If organism is not humnan nor mouse
+          - # If organism is Zebrafish
+            rule: "organism_ontology_term_id == 'NCBITaxon:7955'"
+            error_message_suffix: >-
+              When 'organism_ontology_term_id' is 'NCBITaxon:7955' (Danio rerio),
+              'development_stage_ontology_term_id' MUST be the most accurate descendant of 'ZFS:0000001' and it
+              MUST NOT be 'ZFS:0000000' for Unknown. The str 'unknown' is acceptable.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - ZFS
+              allowed:
+                ancestors:
+                  ZFS:
+                    - ZFS:0000001
+              forbidden:
+                terms:
+                  - ZFS:0000000
+              exceptions:
+                - unknown
+        # If organism is none of the above
         error_message_suffix: >-
           When 'organism_ontology_term_id' is not 'NCBITaxon:10090' nor 'NCBITaxon:9606',
           'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105'
