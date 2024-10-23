@@ -84,6 +84,11 @@ class GeneProcessor:
 
                 # Extract features (column 9 of GTF)
                 current_features = gtf_tools._get_features(line)  # type: ignore
+
+                # Set gene_name to gene_id if not present in GTF line
+                if "gene_name" not in current_features:
+                    current_features["gene_name"] = current_features["gene_id"]
+
                 # Filter genes suffixed with "PAR_Y"
                 if current_features["gene_id"].endswith("PAR_Y"):
                     continue
@@ -91,7 +96,7 @@ class GeneProcessor:
                 # get gene length
                 current_length = gene_lengths[current_features["gene_id"]]
 
-                # Select  features of interest, raise error if feature of interest not found
+                # Select features of interest, raise error if feature of interest not found
                 target_features = [""] * len(features)
                 for i in range(len(features)):
                     feature = features[i]
