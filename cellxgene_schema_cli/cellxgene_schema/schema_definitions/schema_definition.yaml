@@ -329,7 +329,7 @@ components:
               allowed:
                 ancestors:
                   ZFS:
-                    - ZFS:0000001
+                    - ZFS:0100000
               forbidden:
                 terms:
                   - ZFS:0000000
@@ -337,7 +337,7 @@ components:
                 - unknown
         # If organism is none of the above
         error_message_suffix: >-
-          When 'organism_ontology_term_id' is not 'NCBITaxon:10090' nor 'NCBITaxon:9606',
+          When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition,
           'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105'
           excluding 'UBERON:0000071', or unknown.
         curie_constraints:
