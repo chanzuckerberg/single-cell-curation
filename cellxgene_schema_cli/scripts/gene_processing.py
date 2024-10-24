@@ -257,16 +257,6 @@ class GeneProcessor:
                 if not os.path.exists(previous_ref_filepath):
                     os.replace(new_file, previous_ref_filepath)
 
-                    new_ref_gene_ids = set()
-                    with gzip.open(previous_ref_filepath, "rt") as f:
-                        for row in csv.reader(f):
-                            gene_id = row[0]
-                            new_ref_gene_ids.add(gene_id)
-                    
-                    diff_filepath = os.path.join(env.GENCODE_DIR, f"{gene_info_description}_diff.txt")
-                    with open(diff_filepath, "w") as f:
-                        for gene_id in new_ref_gene_ids:
-                            f.write(f"{gene_id}\n")
                 # Process diff between new file and previous file, if there is a difference
                 else:
                     if self.digest(new_file) == self.digest(previous_ref_filepath):
