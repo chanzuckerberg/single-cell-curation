@@ -655,9 +655,9 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is "
-            "not a valid ontology term id of 'UBERON'. When 'organism_ontology_term_id' is not 'NCBITaxon:10090' "
-            "nor 'NCBITaxon:9606', 'development_stage_ontology_term_id' MUST be a descendant term id of "
-            "'UBERON:0000105' excluding 'UBERON:0000071', or unknown."
+            "not a valid ontology term id of 'UBERON'. When 'organism_ontology_term_id'-specific requirements are "
+            "not defined in the schema definition, 'development_stage_ontology_term_id' MUST be a descendant term "
+            "id of 'UBERON:0000105' excluding 'UBERON:0000071', or unknown."
         ]
 
         # All other it MUST be descendants of UBERON:0000105 and not UBERON:0000071
@@ -672,9 +672,9 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'UBERON:0000071' in 'development_stage_ontology_term_id' is not allowed. When "
-            "'organism_ontology_term_id' is not 'NCBITaxon:10090' "
-            "nor 'NCBITaxon:9606', 'development_stage_ontology_term_id' MUST be a descendant term id of "
-            "'UBERON:0000105' excluding 'UBERON:0000071', or unknown.",
+            "'organism_ontology_term_id'-specific requirements are "
+            "not defined in the schema definition, 'development_stage_ontology_term_id' MUST be a descendant term "
+            "id of 'UBERON:0000105' excluding 'UBERON:0000071', or unknown."
         ]
 
     def test_disease_ontology_term_id(self, validator_with_adata):
@@ -2494,3 +2494,77 @@ class TestAddingLabels:
         case.assertCountEqual(label_writer.adata.obs["donor_id"].dtype.categories, ["donor_1", "donor_2", "donor_3"])
         label_writer._remove_categories_with_zero_values()
         case.assertCountEqual(label_writer.adata.obs["donor_id"].dtype.categories, ["donor_1", "donor_2"])
+
+
+class TestZebrafish:
+    """
+    Tests for the zebrafish schema
+    """
+
+    @pytest.mark.parametrize(
+        "development_stage_ontology_term_id",
+        ["ZFS:0000016", "unknown"],
+    )
+    def test_development_stage_ontology_term_id_zebrafish(
+        self, validator_with_adata, development_stage_ontology_term_id
+    ):
+        """
+        If organism_ontolology_term_id is "NCBITaxon:7955" for Danio rerio,
+        this MUST be the most accurate ZFS:0100000 descendant or "unknown" and MUST NOT be ZFS:0000000.
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:7955"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = development_stage_ontology_term_id
+        # must set to na for non-human organisms
+        obs.loc[
+            obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "na"
+        validator.validate_adata()
+        assert not validator.errors
+
+    @pytest.mark.parametrize(
+        "development_stage_ontology_term_id,error",
+        [
+            (
+                "HsapDv:0000001",  # Wrong ontology
+                "ERROR: 'HsapDv:0000001' in 'development_stage_ontology_term_id' is not a valid ontology term id of "
+                "'ZFA'.",
+            ),
+            (
+                "ZFA:0000001",  # Same ontology, not a descendant of ZFS:0100000
+                "ERROR: 'ZFA:0000001' in 'development_stage_ontology_term_id' is not an allowed term id.",
+            ),
+            (
+                "ZFS:0100000",  # Do not accept ZFS:0100000 itself, must be a descendant
+                "ERROR: 'ZFS:0100000' in 'development_stage_ontology_term_id' is not an allowed term id.",
+            ),
+            (
+                "ZFS:0000000",  # Descendant of ZFS:0100000 but explicitly forbidden term
+                "ERROR: 'ZFS:0000000' in 'development_stage_ontology_term_id' is not allowed.",
+            ),
+        ],
+    )
+    def test_development_stage_ontology_term_id_zebrafish__invalid(
+        self, validator_with_adata, development_stage_ontology_term_id, error
+    ):
+        """
+        If organism_ontolology_term_id is "NCBITaxon:7955" for Danio rerio,
+        this MUST be the most accurate ZFS:0100000 descendant or "unknown" and MUST NOT be ZFS:0000000.
+        """
+        zebrafish_error_message_suffix = (
+            "When 'organism_ontology_term_id' is 'NCBITaxon:7955' (Danio rerio), "
+            "'development_stage_ontology_term_id' MUST be the most accurate descendant of 'ZFS:0100000' and it "
+            "MUST NOT be 'ZFS:0000000' for Unknown. The str 'unknown' is acceptable."
+        )
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:7955"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = development_stage_ontology_term_id
+        obs.loc[
+            obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "na"
+        validator.validate_adata()
+        assert validator.errors == [error + " " + zebrafish_error_message_suffix]
