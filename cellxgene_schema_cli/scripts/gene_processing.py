@@ -84,6 +84,11 @@ class GeneProcessor:
 
                 # Extract features (column 9 of GTF)
                 current_features = gtf_tools._get_features(line)  # type: ignore
+
+                # Set gene_name to gene_id if not present in GTF line
+                if "gene_name" not in current_features:
+                    current_features["gene_name"] = current_features["gene_id"]
+
                 # Filter genes suffixed with "PAR_Y"
                 if current_features["gene_id"].endswith("PAR_Y"):
                     continue
@@ -91,7 +96,7 @@ class GeneProcessor:
                 # get gene length
                 current_length = gene_lengths[current_features["gene_id"]]
 
-                # Select  features of interest, raise error if feature of interest not found
+                # Select features of interest, raise error if feature of interest not found
                 target_features = [""] * len(features)
                 for i in range(len(features)):
                     feature = features[i]
@@ -226,7 +231,7 @@ class GeneProcessor:
         # Write output for each file, and process file diffs
         for gene_info_key in gene_infos:
             gene_info_description = gene_infos[gene_info_key]["description"]
-            print("Writing output for ", gene_info_description)
+            print("Writing output for", gene_info_description)
             new_file = os.path.join(env.GENCODE_DIR, f"new_genes_{gene_info_description}.csv.gz")
             previous_ref_filepath = os.path.join(env.GENCODE_DIR, f"genes_{gene_info_description}.csv.gz")
             gene_ids = self.gene_ids_by_description[gene_info_description]
@@ -248,13 +253,19 @@ class GeneProcessor:
                     )
                 self.write_gzip(output_to_print, new_file)
 
-                if self.digest(new_file) == self.digest(previous_ref_filepath):
-                    print("New gene reference is identical to previous gene reference", gene_info_description)
-                    os.remove(new_file)
-                else:
-                    print("generating gene reference diff for", gene_info_description)
-                    self.generate_gene_ref_diff(gene_info_description, new_file, previous_ref_filepath)
+                # Rename new_genes_{filename} to genes_{filename} if this is the first time we're introducing a new gene file type
+                if not os.path.exists(previous_ref_filepath):
                     os.replace(new_file, previous_ref_filepath)
+
+                # Process diff between new file and previous file, if there is a difference
+                else:
+                    if self.digest(new_file) == self.digest(previous_ref_filepath):
+                        print("New gene reference is identical to previous gene reference", gene_info_description)
+                        os.remove(new_file)
+                    else:
+                        print("generating gene reference diff for", gene_info_description)
+                        self.generate_gene_ref_diff(gene_info_description, new_file, previous_ref_filepath)
+                        os.replace(new_file, previous_ref_filepath)
             except Exception as e:
                 print("Writing to new file failed. Using previous version.", gene_info_description)
                 raise e
