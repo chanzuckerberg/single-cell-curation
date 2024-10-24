@@ -116,7 +116,18 @@ For every fragments file asset, CELLxGENE Discover MUST generate a <a href="http
     <tr>
       <th>Value</th>
         <td>
-          <code>str</code>. The value MUST match a key in <code>obs</code>. If annotated, genome track assets MUST be submitted.
+          <code>str</code>. The value MUST match a key in <code>obs</code>. If annotated, genome track assets MUST be submitted. The following columns MUST NOT be specified:
+      <ul>
+        <li>assay_ontology_term_id</li>
+        <li>cell_type_ontology_term_id</li>
+        <li>development_stage_ontology_term_id</li>
+        <li>disease_ontology_term_id</li>
+        <li>organism_ontology_term_id</li>
+        <li>self_reported_ethnicity_ontology_term_id</li>
+        <li>sex_ontology_term_id</li>
+        <li>tissue_ontology_term_id</li>
+      </ul>
+      Instead specify the corresponding Discover column such as <code>cell_type</code>.<br><br>
         </td>
     </tr>
 </tbody></table>
