@@ -2497,15 +2497,17 @@ class TestAddingLabels:
 
 
 class TestZebrafish:
-
     """
     Tests for the zebrafish schema
     """
+
     @pytest.mark.parametrize(
         "development_stage_ontology_term_id",
         ["ZFS:0000016", "unknown"],
     )
-    def test_development_stage_ontology_term_id_zebrafish(self, validator_with_adata, development_stage_ontology_term_id):
+    def test_development_stage_ontology_term_id_zebrafish(
+        self, validator_with_adata, development_stage_ontology_term_id
+    ):
         """
         If organism_ontolology_term_id is "NCBITaxon:7955" for Danio rerio,
         this MUST be the most accurate ZFS:0100000 descendant or "unknown" and MUST NOT be ZFS:0000000.
@@ -2544,7 +2546,9 @@ class TestZebrafish:
             ),
         ],
     )
-    def test_development_stage_ontology_term_id_zebrafish__invalid(self, validator_with_adata, development_stage_ontology_term_id, error):
+    def test_development_stage_ontology_term_id_zebrafish__invalid(
+        self, validator_with_adata, development_stage_ontology_term_id, error
+    ):
         """
         If organism_ontolology_term_id is "NCBITaxon:7955" for Danio rerio,
         this MUST be the most accurate ZFS:0100000 descendant or "unknown" and MUST NOT be ZFS:0000000.
