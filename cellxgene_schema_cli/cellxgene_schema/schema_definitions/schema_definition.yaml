@@ -319,16 +319,16 @@ components:
           - # If organism is Zebrafish
             rule: "organism_ontology_term_id == 'NCBITaxon:7955'"
             error_message_suffix: >-
-              When 'organism_ontology_term_id' is 'NCBITaxon:7955' (Danio rerio),
-              'development_stage_ontology_term_id' MUST be the most accurate descendant of 'ZFS:0000001' and it
-              MUST NOT be 'ZFS:0000000' for Unknown. The str 'unknown' is acceptable.
+             When 'organism_ontology_term_id' is 'NCBITaxon:7955' (Danio rerio),
+             'development_stage_ontology_term_id' MUST be the most accurate descendant of 'ZFS:0100000' and it
+             MUST NOT be 'ZFS:0000000' for Unknown. The str 'unknown' is acceptable.
             type: curie
             curie_constraints:
               ontologies:
-                - ZFS
+                - ZFA
               allowed:
                 ancestors:
-                  ZFS:
+                  ZFA:
                     - ZFS:0100000
               forbidden:
                 terms:
