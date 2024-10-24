@@ -156,7 +156,10 @@ class TestExpressionMatrix:
         # remove one gene
         validator.adata = validator.adata[:, 1:]
         validator.validate_adata()
-        assert f"ERROR: Number of genes in X ({NUMBER_OF_GENES - 1}) is different than raw.X ({NUMBER_OF_GENES})." in validator.errors
+        assert (
+            f"ERROR: Number of genes in X ({NUMBER_OF_GENES - 1}) is different than raw.X ({NUMBER_OF_GENES})."
+            in validator.errors
+        )
 
     def test_sparsity(self, validator_with_adata):
         """

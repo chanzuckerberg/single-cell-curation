@@ -30,7 +30,6 @@ from fixtures.examples_validate import (
     good_obsm,
     good_uns,
     good_uns_with_visium_spatial,
-    good_var,
     good_var_four_genes,
     h5ad_invalid,
     h5ad_valid,
@@ -154,13 +153,7 @@ class TestAddLabelFunctions:
 
     def test_get_dictionary_mapping_feature_reference(self, label_writer):
         # Good
-        ids = [
-            "ERCC-00002",
-            "ENSG00000127603",
-            "ENSMUSG00000059552",
-            "ENSSASG00005000004",
-            "FBtr0472816_df_nrg"
-        ]
+        ids = ["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004", "FBtr0472816_df_nrg"]
         labels = [
             "NCBITaxon:32630",
             "NCBITaxon:9606",
@@ -178,13 +171,7 @@ class TestAddLabelFunctions:
 
     def test_get_dictionary_mapping_feature_length(self, label_writer):
         # Good
-        ids = [
-            "ERCC-00002",
-            "ENSG00000127603",
-            "ENSMUSG00000059552",
-            "ENSSASG00005000004",
-            "FBtr0472816_df_nrg"
-        ]
+        ids = ["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004", "FBtr0472816_df_nrg"]
         # values derived from csv
         gene_lengths = [
             1061,
@@ -1022,14 +1009,18 @@ class TestSeuratConvertibility:
 
     def test_determine_seurat_convertibility(self):
         # Sparse matrix with too many nonzero values is not Seurat-convertible
-        sparse_matrix_too_large = sparse.csr_matrix(np.ones((good_obs.shape[0], good_var_four_genes.shape[0]), dtype=np.float32))
+        sparse_matrix_too_large = sparse.csr_matrix(
+            np.ones((good_obs.shape[0], good_var_four_genes.shape[0]), dtype=np.float32)
+        )
         self.validation_helper(sparse_matrix_too_large)
         self.validator._validate_seurat_convertibility()
         assert len(self.validator.warnings) == 1
         assert not self.validator.is_seurat_convertible
 
         # Reducing nonzero count by 1, to within limit, makes it Seurat-convertible
-        sparse_matrix_with_zero = sparse.csr_matrix(np.ones((good_obs.shape[0], good_var_four_genes.shape[0]), dtype=np.float32))
+        sparse_matrix_with_zero = sparse.csr_matrix(
+            np.ones((good_obs.shape[0], good_var_four_genes.shape[0]), dtype=np.float32)
+        )
         sparse_matrix_with_zero[0, 0] = 0
         self.validation_helper(sparse_matrix_with_zero)
         self.validator._validate_seurat_convertibility()
