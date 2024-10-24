@@ -31,6 +31,7 @@ from fixtures.examples_validate import (
     good_uns,
     good_uns_with_visium_spatial,
     good_var,
+    good_var_four_genes,
     h5ad_invalid,
     h5ad_valid,
     visium_library_id,
@@ -134,12 +135,14 @@ class TestAddLabelFunctions:
             "ENSG00000127603",
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
+            "FBtr0472816_df_nrg",
         ]
         labels = [
             "ERCC-00002 (spike-in control)",
             "MACF1",
             "Trp53",
             "S",
+            "FBtr0472816_df_nrg",
         ]
         expected_dict = dict(zip(ids, labels))
         assert label_writer._get_mapping_dict_feature_id(ids), expected_dict
@@ -156,12 +159,14 @@ class TestAddLabelFunctions:
             "ENSG00000127603",
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
+            "FBtr0472816_df_nrg"
         ]
         labels = [
             "NCBITaxon:32630",
             "NCBITaxon:9606",
             "NCBITaxon:10090",
             "NCBITaxon:2697049",
+            "NCBITaxon:7227",
         ]
         expected_dict = dict(zip(ids, labels))
         assert label_writer._get_mapping_dict_feature_reference(ids) == expected_dict
@@ -178,6 +183,7 @@ class TestAddLabelFunctions:
             "ENSG00000127603",
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
+            "FBtr0472816_df_nrg"
         ]
         # values derived from csv
         gene_lengths = [
@@ -185,6 +191,7 @@ class TestAddLabelFunctions:
             2821,
             1797,
             3822,
+            22,
         ]
         expected_dict = dict(zip(ids, gene_lengths))
         assert label_writer._get_mapping_dict_feature_length(ids) == expected_dict
@@ -201,6 +208,7 @@ class TestAddLabelFunctions:
             "ENSG00000127603",
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
+            "FBtr0472816_df_nrg",
         ]
         # values derived from csv
         gene_types = [
@@ -208,6 +216,7 @@ class TestAddLabelFunctions:
             "protein_coding",
             "protein_coding",
             "protein_coding",
+            "",
         ]
         expected_dict = dict(zip(ids, gene_types))
         assert label_writer._get_mapping_dict_feature_type(ids) == expected_dict
@@ -1003,7 +1012,7 @@ class TestCheckSpatial:
 
 class TestSeuratConvertibility:
     def validation_helper(self, matrix, raw=None):
-        data = anndata.AnnData(X=matrix, obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var)
+        data = anndata.AnnData(X=matrix, obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var_four_genes)
         if raw:
             data.raw = raw
         self.validator: Validator = Validator()
@@ -1013,14 +1022,14 @@ class TestSeuratConvertibility:
 
     def test_determine_seurat_convertibility(self):
         # Sparse matrix with too many nonzero values is not Seurat-convertible
-        sparse_matrix_too_large = sparse.csr_matrix(np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32))
+        sparse_matrix_too_large = sparse.csr_matrix(np.ones((good_obs.shape[0], good_var_four_genes.shape[0]), dtype=np.float32))
         self.validation_helper(sparse_matrix_too_large)
         self.validator._validate_seurat_convertibility()
         assert len(self.validator.warnings) == 1
         assert not self.validator.is_seurat_convertible
 
         # Reducing nonzero count by 1, to within limit, makes it Seurat-convertible
-        sparse_matrix_with_zero = sparse.csr_matrix(np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32))
+        sparse_matrix_with_zero = sparse.csr_matrix(np.ones((good_obs.shape[0], good_var_four_genes.shape[0]), dtype=np.float32))
         sparse_matrix_with_zero[0, 0] = 0
         self.validation_helper(sparse_matrix_with_zero)
         self.validator._validate_seurat_convertibility()
@@ -1028,7 +1037,7 @@ class TestSeuratConvertibility:
         assert self.validator.is_seurat_convertible
 
         # Dense matrices with a dimension that exceeds limit will fail -- zeros are irrelevant
-        dense_matrix_with_zero = np.zeros((good_obs.shape[0], good_var.shape[0]), dtype=np.float32)
+        dense_matrix_with_zero = np.zeros((good_obs.shape[0], good_var_four_genes.shape[0]), dtype=np.float32)
         self.validation_helper(dense_matrix_with_zero)
         self.validator.schema_def["max_size_for_seurat"] = 2**2 - 1
         self.validator._validate_seurat_convertibility()
@@ -1036,7 +1045,7 @@ class TestSeuratConvertibility:
         assert not self.validator.is_seurat_convertible
 
         # Dense matrices with dimensions in bounds but total count over will succeed
-        dense_matrix = np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32)
+        dense_matrix = np.ones((good_obs.shape[0], good_var_four_genes.shape[0]), dtype=np.float32)
         self.validation_helper(dense_matrix)
         self.validator.schema_def["max_size_for_seurat"] = 2**3 - 1
         self.validator._validate_seurat_convertibility()
