@@ -452,6 +452,8 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Dataframe 'obs' is missing column " "'organism_ontology_term_id'.",
+            "ERROR: Checking values with dependencies failed for adata.obs['organism_cell_type_ontology_term_id'], "
+            "this is likely due to missing dependent column in adata.obs.",
             "ERROR: Checking values with dependencies failed for "
             "adata.obs['self_reported_ethnicity_ontology_term_id'], this is likely due "
             "to missing dependent column in adata.obs.",
@@ -2501,26 +2503,48 @@ class TestZebrafish:
     Tests for the zebrafish schema
     """
 
+    @pytest.fixture
+    def zebrafish_obs(self):
+        obs = examples.adata.copy().obs
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:7955"
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "ZFA:0000003"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "ZFS:0000016"
+        obs.loc[obs.index[0], "self_reported_ethnicity_ontology_term_id"] = "na"
+        return obs
+
+    @pytest.fixture
+    def zebrafish_visium_obs(self):
+        obs = examples.adata_visium.copy().obs
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:7955"
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "unknown"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "ZFS:0000016"
+        obs.loc[obs.index[0], "self_reported_ethnicity_ontology_term_id"] = "na"
+        return obs
+
+    @pytest.fixture
+    def validator_with_zebrafish_adata(self, validator_with_adata, zebrafish_obs):
+        validator_with_adata.adata.obs = zebrafish_obs
+        return validator_with_adata
+
+    @pytest.fixture
+    def validator_with_visium_zebrafish_adata(self, validator_with_visium_assay, zebrafish_visium_obs):
+        validator_with_visium_assay.adata.obs = zebrafish_visium_obs
+        return validator_with_visium_assay
+
     @pytest.mark.parametrize(
         "development_stage_ontology_term_id",
         ["ZFS:0000016", "unknown"],
     )
     def test_development_stage_ontology_term_id_zebrafish(
-        self, validator_with_adata, development_stage_ontology_term_id
+        self, validator_with_zebrafish_adata, development_stage_ontology_term_id
     ):
         """
         If organism_ontolology_term_id is "NCBITaxon:7955" for Danio rerio,
         this MUST be the most accurate ZFS:0100000 descendant or "unknown" and MUST NOT be ZFS:0000000.
         """
-        validator = validator_with_adata
+        validator = validator_with_zebrafish_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:7955"
         obs.loc[obs.index[0], "development_stage_ontology_term_id"] = development_stage_ontology_term_id
-        # must set to na for non-human organisms
-        obs.loc[
-            obs.index[0],
-            "self_reported_ethnicity_ontology_term_id",
-        ] = "na"
         validator.validate_adata()
         assert not validator.errors
 
@@ -2547,7 +2571,7 @@ class TestZebrafish:
         ],
     )
     def test_development_stage_ontology_term_id_zebrafish__invalid(
-        self, validator_with_adata, development_stage_ontology_term_id, error
+        self, validator_with_zebrafish_adata, development_stage_ontology_term_id, error
     ):
         """
         If organism_ontolology_term_id is "NCBITaxon:7955" for Danio rerio,
@@ -2558,13 +2582,76 @@ class TestZebrafish:
             "'development_stage_ontology_term_id' MUST be the most accurate descendant of 'ZFS:0100000' and it "
             "MUST NOT be 'ZFS:0000000' for Unknown. The str 'unknown' is acceptable."
         )
-        validator = validator_with_adata
+        validator = validator_with_zebrafish_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:7955"
         obs.loc[obs.index[0], "development_stage_ontology_term_id"] = development_stage_ontology_term_id
-        obs.loc[
-            obs.index[0],
-            "self_reported_ethnicity_ontology_term_id",
-        ] = "na"
         validator.validate_adata()
         assert validator.errors == [error + " " + zebrafish_error_message_suffix]
+
+    @pytest.mark.parametrize(
+        "organism_cell_type_ontology_term_id",
+        ["ZFA:0000003", "unknown"],
+    )
+    def test_organism_cell_type_ontology_term_id(
+        self, validator_with_zebrafish_adata, organism_cell_type_ontology_term_id
+    ):
+        """
+        If organism_ontolology_term_id is "NCBITaxon:7955" for Danio rerio,
+        MUST be a descendant term id of 'ZFA:0009000' (cell)
+        """
+        validator = validator_with_zebrafish_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = organism_cell_type_ontology_term_id
+        validator.validate_adata()
+        assert not validator.errors
+
+    @pytest.mark.parametrize(
+        "organism_cell_type_ontology_term_id,error",
+        [
+            (
+                "CL:0000001",  # Wrong ontology
+                "ERROR: 'CL:0000001' in 'organism_cell_type_ontology_term_id' is not a valid ontology term id of 'ZFA'.",
+            ),
+            (
+                "ZFA:0001094",  # Same ontology, not a descendant of ZFA:0009000
+                "ERROR: 'ZFA:0001094' in 'organism_cell_type_ontology_term_id' is not an allowed term id.",
+            ),
+            (
+                "ZFA:0009000",  # Do not accept ZFA:0009000 itself, must be a descendant
+                "ERROR: 'ZFA:0009000' in 'organism_cell_type_ontology_term_id' is not an allowed term id.",
+            ),
+        ],
+    )
+    def test_organism_cell_type_ontology_term_id__invalid(
+        self, validator_with_zebrafish_adata, organism_cell_type_ontology_term_id, error
+    ):
+        validator = validator_with_zebrafish_adata
+        zebrafish_error_message_suffix = (
+            "When 'organism_ontology_term_id' is 'NCBITaxon:7955' (Danio rerio), "
+            "'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'ZFA:0009000' (cell)."
+        )
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = organism_cell_type_ontology_term_id
+        validator.validate_adata()
+        assert validator.errors == [error + " " + zebrafish_error_message_suffix]
+
+    def test_organism_cell_type_ontology_term_id__visium_in_tissue_0(self, validator_with_visium_zebrafish_adata):
+        validator = validator_with_visium_zebrafish_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "in_tissue"] = 0
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "unknown"
+        validator.validate_adata()
+        assert not validator.errors
+
+    def test_organism_cell_type_ontology_term_id__visium_in_tissue_0_invalid(
+        self, validator_with_visium_zebrafish_adata
+    ):
+        validator = validator_with_visium_zebrafish_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "in_tissue"] = 0
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "ZFA:0000003"
+        validator.validate_adata()
+        assert (
+            "obs['cell_type_ontology_term_id'] must be 'unknown' and obs['organism_cell_type_ontology_term_id'] must "
+            "be 'unknown' or 'na'" in validator.errors[0]
+        )
