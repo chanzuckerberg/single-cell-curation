@@ -222,7 +222,7 @@ class TestAddLabelFunctions:
         assert label_writer._get_mapping_dict_feature_type(ids) == expected_dict
 
         # Bad
-        ids = ["NO_GENE"]
+        ids = ["NO_GENE_BAD"]
         with pytest.raises(KeyError):
             label_writer._get_mapping_dict_feature_type(ids)
 
