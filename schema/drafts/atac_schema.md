@@ -4,18 +4,20 @@
 
 <i>unpaired assay</i>: <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010891"><code>"EFO:0010891"</code></a> for <i>scATAC-seq</i> or its descendants that is not a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008913"><code>"EFO:0008913"</code></a> for <i>single-cell RNA sequencing</i>
 
-## Fragment File Dataset Criteria
+## scATAC-seq asset Dataset Criteria
 
-A Dataset MUST meet each of the following criteria in order to be eligible for an  Fragment File asset:
+A Dataset MUST meet each of the following criteria in order to be eligible for scATAC-seq assets:
 * the <code>obs['assay_ontology_term_id']</code> values MUST all be <i>paired assays</i> or MUST all be <i>unpaired assays</i>
-* the <code>obs['is_primary_data']</code> values MUST be all `True`
+* the <code>obs['is_primary_data']</code> values MUST be all <code>True</code>
 * the <code>var['feature_reference']</code> values MUST include one of <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i> or <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i>, but not both. The value that is present will determine the appropriate Chromosome Table for standards.
 
-If the <code>obs['assay_ontology_term_id']</code> values are all <i>paired assays</i> then the Dataset MAY have a fragment file asset.
+If the <code>obs['assay_ontology_term_id']</code> values are all <i>paired assays</i> then the Dataset MAY have a fragments file asset.
 
-If the <code>obs['assay_ontology_term_id']</code> values are all <i>unpaired assays</i> then the Dataset MUST have a fragment file asset.
+If the <code>obs['assay_ontology_term_id']</code> values are all <i>unpaired assays</i> then the Dataset MUST have a fragments file asset.
 
-## Fragment File
+If a Dataset has a fragments file asset, it MAY have genome track assets. Otherwise, it MUST NOT have genome track assets.
+
+## scATAC-seq Asset: Fragments File
 
 This MUST be a gzipped tab-separated values (TSV) file.
 
@@ -75,7 +77,7 @@ The curator MUST annotate the following header-less columns. Additional columns 
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>str</code>. This MUST be the cell identifier. The value MUST be found in the <code>obs</code> index of the associated Dataset. Every <code>obs</code> index value of the associated Dataset MUST appear at least once in this column of the fragment file.
+        <td><code>str</code>. This MUST be the cell identifier. The value MUST be found in the <code>obs</code> index of the associated Dataset. Every <code>obs</code> index value of the associated Dataset MUST appear at least once in this column of the fragments file.
         </td>
     </tr>
 </tbody></table>
@@ -96,9 +98,34 @@ The curator MUST annotate the following header-less columns. Additional columns 
 </tbody></table>
 <br>
 
-## Fragment File index
+## scATAC-seq Asset: Fragments File index
 
-CELLxGENE Discover MUST generate a <a href="https://www.htslib.org/doc/tabix.html">tabix</a> index of the fragment intervals from the fragment file. The file name MUST be the name of the corresponding fragment file appended with `.tbi`.
+For every fragments file asset, CELLxGENE Discover MUST generate a <a href="https://www.htslib.org/doc/tabix.html">tabix</a> index of the fragment intervals from the fragments file. The file name MUST be the name of the corresponding fragments file appended with `.tbi`.
+
+## `uns` (Dataset Metadata)
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>peak_grouping</td>
+    </tr>
+    <tr>
+      <th>Annotation</th>
+      <td>Curator MAY annotate if the Dataset has a fragments file asset; otherwise, this key MUST NOT be present.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          <code>str</code>. The value MUST match a key in <code>obs</code>. If annotated, genome track assets MUST be submitted.
+        </td>
+    </tr>
+</tbody></table>
+
+## scATAC-seq Asset: Genome Track
+
+If <code>uns['peak_grouping']</code> is annotated, there MUST be exactly one genome track asset submitted for each unique value in the obs column specified as determined by <code>anndata.obs.{peak_grouping_column}.unique()</code>. Otherwise, this MUST NOT be submitted.
+
+Asset file specifications TBD based on the visualization solution. Accepting <a href="https://genome.ucsc.edu/goldenpath/help/bigWig.html">.bigWig format</a> is a requirement.
 
 ## Chromosome Tables
 
