@@ -1486,7 +1486,7 @@ class Validator:
         # Validate tissue positions.
         self._validate_spatial_tissue_positions()
 
-        # Validate cell type.
+        # Validate cell type
         self._validate_spatial_cell_type_ontology_term_id()
 
         self._validate_spatial_is_primary_data()
@@ -1542,10 +1542,14 @@ class Validator:
         if (
             (self.adata.obs["assay_ontology_term_id"] == ASSAY_VISIUM)
             & (self.adata.obs["in_tissue"] == 0)
-            & (self.adata.obs["cell_type_ontology_term_id"] != "unknown")
+            & (
+                (self.adata.obs["cell_type_ontology_term_id"] != "unknown")
+                | (~self.adata.obs["organism_cell_type_ontology_term_id"].isin(["unknown", "na"]))
+            )
         ).any():
             self.errors.append(
-                f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
+                f"obs['cell_type_ontology_term_id'] must be 'unknown' and obs['organism_cell_type_ontology_term_id'] "
+                f"must be 'unknown' or 'na' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
             )
 
     def _validate_spatial_tissue_position(self, tissue_position_name: str, min: int, max: int):
