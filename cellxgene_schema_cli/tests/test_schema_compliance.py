@@ -2620,6 +2620,10 @@ class TestZebrafish:
                 "ZFA:0009000",  # Do not accept ZFA:0009000 itself, must be a descendant
                 "ERROR: 'ZFA:0009000' in 'organism_cell_type_ontology_term_id' is not an allowed term id.",
             ),
+            (
+                "na",  # Allowed for other organisms, not allowed if organism is zebrafih
+                "ERROR: 'na' in 'organism_cell_type_ontology_term_id' is not a valid ontology term id of 'ZFA'.",
+            ),
         ],
     )
     def test_organism_cell_type_ontology_term_id__invalid(
@@ -2655,3 +2659,17 @@ class TestZebrafish:
             "obs['cell_type_ontology_term_id'] must be 'unknown' and obs['organism_cell_type_ontology_term_id'] must "
             "be 'unknown' or 'na'" in validator.errors[0]
         )
+
+    def test_organism_cell_type_ontology_term_id__visium_in_tissue_0__na(self, validator_with_visium_zebrafish_adata):
+        validator = validator_with_visium_zebrafish_adata
+        error_message = (
+            "ERROR: 'na' in 'organism_cell_type_ontology_term_id' is not a valid ontology term id of 'ZFA'. "
+            "When 'organism_ontology_term_id' is 'NCBITaxon:7955' (Danio rerio), "
+            "'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'ZFA:0009000' (cell)."
+        )
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "in_tissue"] = 0
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "na"
+        validator.validate_adata()
+        # Passes visium check but fails organism_cell_type_ontology_term_id check
+        assert validator.errors == [error_message]

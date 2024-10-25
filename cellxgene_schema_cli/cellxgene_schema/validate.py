@@ -1528,7 +1528,11 @@ class Validator:
 
     def _validate_spatial_cell_type_ontology_term_id(self):
         """
-        Validate cell type ontology term id is "unknown" if Visium, is_single is True and in_tissue is 0.
+        if dataset row obs.assay is Visium, uns.spatial.is_single is True, and obs.in_tissue is 0:
+
+        Validate cell type ontology term id is "unknown"
+        and organism cell type ontology term id is "unknown" (or "na", for when this field is not applicable
+        to the organism).
 
         :rtype none
         """
@@ -1538,7 +1542,6 @@ class Validator:
         if not self._is_visium_and_is_single_true() or "in_tissue" not in self.adata.obs:
             return
 
-        # Validate cell type: must be "unknown" if Visium and is_single is True and in_tissue is 0.
         if (
             (self.adata.obs["assay_ontology_term_id"] == ASSAY_VISIUM)
             & (self.adata.obs["in_tissue"] == 0)
