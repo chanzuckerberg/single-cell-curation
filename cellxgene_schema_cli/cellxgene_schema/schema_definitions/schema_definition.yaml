@@ -192,6 +192,39 @@ components:
               - NA
             exceptions:
               - na
+      organism_tissue_ontology_term_id:
+        type: curie
+        dependencies:
+          - # If organism is Zebrafish
+            rule: "organism_ontology_term_id == 'NCBITaxon:7955'"
+            error_message_suffix: >-
+              When 'organism_ontology_term_id' is 'NCBITaxon:7955' (Danio rerio),
+              'organism_tissue_ontology_term_id' MUST be the most accurate descendant
+              of ZFA:0100000 for zebrafish anatomical entity and MUST NOT be ZFA:0009000
+              for cell or any of its descendants.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - ZFA
+              allowed:
+                ancestors:
+                  ZFA:
+                    - ZFA:0100000
+              forbidden:
+                terms:
+                  - ZFA:0009000
+                ancestors:
+                  ZFA:
+                    - ZFA:0009000
+        # if organism is none of the above
+        error_message_suffix: >-
+          When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition,
+          'organism_tissue_ontology_term_id' MUST be 'na'.
+        curie_constraints:
+          ontologies:
+            - NA
+          exceptions:
+            - na
       sex_ontology_term_id:
         error_message_suffix: "Only 'PATO:0000383', 'PATO:0000384', 'PATO:0001340', or 'unknown' are allowed."
         type: curie
