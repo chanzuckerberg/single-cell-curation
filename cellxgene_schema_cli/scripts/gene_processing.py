@@ -75,10 +75,10 @@ class GeneProcessor:
 
                 line = line.rstrip().split("\t")  # type: ignore
 
-                # Desired features based on whether is gene or transcript
+                # Only process gene lines
                 if line[2] == "gene":
-                    feature_type_field = "gene_biotype" if gene_info_description == "sars_cov_2" else "gene_type"
-                    features = ["gene_id", "gene_name", "gene_version", feature_type_field]
+                    # Attempt to fetch both gene_type and gene_biotype, since some ontologies use gene_type and others use gene_biotype
+                    features = ["gene_id", "gene_name", "gene_version", "gene_type", "gene_biotype"]
                 else:
                     continue
 
@@ -129,7 +129,8 @@ class GeneProcessor:
                     gene_name=target_features[1],
                     gene_version=target_features[2],
                     gene_length=str(current_length),
-                    gene_type=target_features[3],
+                    # Prefer using gene_type, otherwise use gene_biotype
+                    gene_type=target_features[3] if target_features[3] != "" else target_features[4],
                 )
                 if gene_info_description in self.gene_ids_by_description:
                     self.gene_ids_by_description[gene_info_description].append(gene_id)

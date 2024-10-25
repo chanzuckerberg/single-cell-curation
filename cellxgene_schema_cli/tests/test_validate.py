@@ -30,7 +30,7 @@ from fixtures.examples_validate import (
     good_obsm,
     good_uns,
     good_uns_with_visium_spatial,
-    good_var_four_genes,
+    good_var_seurat_testing,
     h5ad_invalid,
     h5ad_valid,
     visium_library_id,
@@ -203,7 +203,7 @@ class TestAddLabelFunctions:
             "protein_coding",
             "protein_coding",
             "protein_coding",
-            "",
+            "ncRNA",
         ]
         expected_dict = dict(zip(ids, gene_types))
         assert label_writer._get_mapping_dict_feature_type(ids) == expected_dict
@@ -999,7 +999,7 @@ class TestCheckSpatial:
 
 class TestSeuratConvertibility:
     def validation_helper(self, matrix, raw=None):
-        data = anndata.AnnData(X=matrix, obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var_four_genes)
+        data = anndata.AnnData(X=matrix, obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var_seurat_testing)
         if raw:
             data.raw = raw
         self.validator: Validator = Validator()
@@ -1010,7 +1010,7 @@ class TestSeuratConvertibility:
     def test_determine_seurat_convertibility(self):
         # Sparse matrix with too many nonzero values is not Seurat-convertible
         sparse_matrix_too_large = sparse.csr_matrix(
-            np.ones((good_obs.shape[0], good_var_four_genes.shape[0]), dtype=np.float32)
+            np.ones((good_obs.shape[0], good_var_seurat_testing.shape[0]), dtype=np.float32)
         )
         self.validation_helper(sparse_matrix_too_large)
         self.validator._validate_seurat_convertibility()
@@ -1019,7 +1019,7 @@ class TestSeuratConvertibility:
 
         # Reducing nonzero count by 1, to within limit, makes it Seurat-convertible
         sparse_matrix_with_zero = sparse.csr_matrix(
-            np.ones((good_obs.shape[0], good_var_four_genes.shape[0]), dtype=np.float32)
+            np.ones((good_obs.shape[0], good_var_seurat_testing.shape[0]), dtype=np.float32)
         )
         sparse_matrix_with_zero[0, 0] = 0
         self.validation_helper(sparse_matrix_with_zero)
@@ -1028,7 +1028,7 @@ class TestSeuratConvertibility:
         assert self.validator.is_seurat_convertible
 
         # Dense matrices with a dimension that exceeds limit will fail -- zeros are irrelevant
-        dense_matrix_with_zero = np.zeros((good_obs.shape[0], good_var_four_genes.shape[0]), dtype=np.float32)
+        dense_matrix_with_zero = np.zeros((good_obs.shape[0], good_var_seurat_testing.shape[0]), dtype=np.float32)
         self.validation_helper(dense_matrix_with_zero)
         self.validator.schema_def["max_size_for_seurat"] = 2**2 - 1
         self.validator._validate_seurat_convertibility()
@@ -1036,7 +1036,7 @@ class TestSeuratConvertibility:
         assert not self.validator.is_seurat_convertible
 
         # Dense matrices with dimensions in bounds but total count over will succeed
-        dense_matrix = np.ones((good_obs.shape[0], good_var_four_genes.shape[0]), dtype=np.float32)
+        dense_matrix = np.ones((good_obs.shape[0], good_var_seurat_testing.shape[0]), dtype=np.float32)
         self.validation_helper(dense_matrix)
         self.validator.schema_def["max_size_for_seurat"] = 2**3 - 1
         self.validator._validate_seurat_convertibility()

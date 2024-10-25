@@ -310,8 +310,8 @@ good_var = pd.DataFrame(
     columns=["feature_is_filtered"],
 )
 
-# Valid var per schema
-good_var_four_genes = pd.DataFrame(
+# Valid var with four genes in it. This is used to test seurat compatibility which involves doing matrix math
+good_var_seurat_testing = pd.DataFrame(
     [
         [False],
         [False],
@@ -330,7 +330,7 @@ var_expected = pd.DataFrame(
         ["gene", False, "MACF1", "NCBITaxon:9606", 2821, "protein_coding"],
         ["gene", False, "Trp53", "NCBITaxon:10090", 1797, "protein_coding"],
         ["gene", False, "S_ENSSASG00005000004", "NCBITaxon:2697049", 3822, "protein_coding"],
-        ["gene", False, "FBtr0472816_df_nrg", "NCBITaxon:7227", 22, ""],
+        ["gene", False, "FBtr0472816_df_nrg", "NCBITaxon:7227", 22, "ncRNA"],
     ],
     index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004", "FBtr0472816_df_nrg"],
     columns=[
