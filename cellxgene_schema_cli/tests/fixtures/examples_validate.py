@@ -38,6 +38,7 @@ good_obs = pd.DataFrame(
     [
         [
             "CL:0000066",
+            "na",
             "EFO:0009899",
             "MONDO:0100096",
             "NCBITaxon:9606",
@@ -58,6 +59,7 @@ good_obs = pd.DataFrame(
         ],
         [
             "CL:0000192",
+            "na",
             "EFO:0008992",
             "PATO:0000461",
             "NCBITaxon:10090",
@@ -80,6 +82,7 @@ good_obs = pd.DataFrame(
     index=["X", "Y"],
     columns=[
         "cell_type_ontology_term_id",
+        "organism_cell_type_ontology_term_id",
         "assay_ontology_term_id",
         "disease_ontology_term_id",
         "organism_ontology_term_id",
@@ -151,7 +154,8 @@ good_obs_visium = pd.DataFrame(
             1,
             1,
             "unknown",
-            "EFO:0022859",
+            "na",
+            "EFO:0010961",
             "MONDO:0100096",
             "NCBITaxon:9606",
             "PATO:0000383",
@@ -174,7 +178,8 @@ good_obs_visium = pd.DataFrame(
             2,
             2,
             "CL:0000192",
-            "EFO:0022859",
+            "na",
+            "EFO:0010961",
             "PATO:0000461",
             "NCBITaxon:10090",
             "unknown",
@@ -199,6 +204,7 @@ good_obs_visium = pd.DataFrame(
         "array_col",
         "array_row",
         "cell_type_ontology_term_id",
+        "organism_cell_type_ontology_term_id",
         "assay_ontology_term_id",
         "disease_ontology_term_id",
         "organism_ontology_term_id",
@@ -229,6 +235,7 @@ good_obs_slide_seqv2 = pd.DataFrame(
     [
         [
             "CL:0000066",
+            "na",
             "EFO:0030062",
             "MONDO:0100096",
             "NCBITaxon:9606",
@@ -249,6 +256,7 @@ good_obs_slide_seqv2 = pd.DataFrame(
         ],
         [
             "CL:0000192",
+            "na",
             "EFO:0030062",
             "PATO:0000461",
             "NCBITaxon:10090",
@@ -271,6 +279,7 @@ good_obs_slide_seqv2 = pd.DataFrame(
     index=["X", "Y"],
     columns=[
         "cell_type_ontology_term_id",
+        "organism_cell_type_ontology_term_id",
         "assay_ontology_term_id",
         "disease_ontology_term_id",
         "organism_ontology_term_id",
@@ -299,7 +308,8 @@ good_obs_visium_is_single_false = pd.DataFrame(
     [
         [
             "CL:0000066",
-            "EFO:0022859",
+            "na",
+            "EFO:0010961",
             "MONDO:0100096",
             "NCBITaxon:9606",
             "PATO:0000383",
@@ -319,7 +329,8 @@ good_obs_visium_is_single_false = pd.DataFrame(
         ],
         [
             "CL:0000192",
-            "EFO:0022859",
+            "na",
+            "EFO:0010961",
             "PATO:0000461",
             "NCBITaxon:10090",
             "unknown",
@@ -341,6 +352,7 @@ good_obs_visium_is_single_false = pd.DataFrame(
     index=["X", "Y"],
     columns=[
         "cell_type_ontology_term_id",
+        "organism_cell_type_ontology_term_id",
         "assay_ontology_term_id",
         "disease_ontology_term_id",
         "organism_ontology_term_id",

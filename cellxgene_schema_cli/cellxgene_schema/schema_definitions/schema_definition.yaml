@@ -165,6 +165,33 @@ components:
         add_labels:
           - type: curie
             to_column: organism
+      organism_cell_type_ontology_term_id:
+        type: curie
+        dependencies:
+            - # If organism is Zebrafish
+                rule: "organism_ontology_term_id == 'NCBITaxon:7955'"
+                error_message_suffix: >-
+                    When 'organism_ontology_term_id' is 'NCBITaxon:7955' (Danio rerio),
+                    'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'ZFA:0009000' (cell).
+                type: curie
+                curie_constraints:
+                    ontologies:
+                      - ZFA
+                    allowed:
+                      ancestors:
+                        ZFA:
+                        - ZFA:0009000
+                    exceptions:
+                      - unknown
+        # if organism is none of the above
+        error_message_suffix: >-
+            When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition,
+            'organism_cell_type_ontology_term_id' MUST be 'na'.
+        curie_constraints:
+            ontologies:
+              - NA
+            exceptions:
+              - na
       sex_ontology_term_id:
         error_message_suffix: "Only 'PATO:0000383', 'PATO:0000384', 'PATO:0001340', or 'unknown' are allowed."
         type: curie

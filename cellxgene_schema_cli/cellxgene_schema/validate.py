@@ -1590,7 +1590,7 @@ class Validator:
         # Validate tissue positions.
         self._validate_spatial_tissue_positions()
 
-        # Validate cell type.
+        # Validate cell type
         self._validate_spatial_cell_type_ontology_term_id()
 
         self._validate_spatial_is_primary_data()
@@ -1629,7 +1629,11 @@ class Validator:
 
     def _validate_spatial_cell_type_ontology_term_id(self):
         """
-        Validate cell type ontology term id is "unknown" if Visium, is_single is True and in_tissue is 0.
+        if dataset row obs.assay is Visium, uns.spatial.is_single is True, and obs.in_tissue is 0:
+
+        Validate cell type ontology term id is "unknown"
+        and organism cell type ontology term id is "unknown" (or "na", for when this field is not applicable
+        to the organism).
 
         :rtype none
         """
@@ -1655,7 +1659,9 @@ class Validator:
         is_not_unknown = self.adata.obs["cell_type_ontology_term_id"] != "unknown"
         if (is_spatial & is_not_tissue & is_not_unknown).any():
             self.errors.append(
-                f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
+                f"obs['cell_type_ontology_term_id'] must be 'unknown' and obs['organism_cell_type_ontology_term_id'] "
+                f"must be 'unknown' or 'na' depending on the value of 'organism_ontology_term_id' (see schema "
+                f"definition) when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
             )
 
     def _validate_spatial_tissue_position(self, tissue_position_name: str, min: int, max: int):
