@@ -212,6 +212,26 @@ class TestAddLabelFunctions:
         ids = ["NO_GENE_BAD"]
         with pytest.raises(KeyError):
             label_writer._get_mapping_dict_feature_type(ids)
+    
+    def test_get_dictionary_mapping_feature_biotype(self, label_writer):
+        # Good
+        ids = [
+            "ERCC-00002",
+            "ENSG00000127603",
+            "ENSMUSG00000059552",
+            "ENSSASG00005000004",
+            "FBtr0472816_df_nrg",
+        ]
+        # values derived from csv
+        biotypes = [
+            "spike-in",
+            "gene",
+            "gene",
+            "gene",
+            "gene",
+        ]
+        expected_dict = dict(zip(ids, biotypes))
+        assert label_writer._get_mapping_dict_feature_biotype(ids) == expected_dict
 
     @pytest.mark.parametrize(
         "ids,labels,curie_constraints",
