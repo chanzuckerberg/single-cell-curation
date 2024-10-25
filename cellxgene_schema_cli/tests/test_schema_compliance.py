@@ -2608,7 +2608,7 @@ class TestZebrafish:
     ):
         """
         If organism_ontolology_term_id is "NCBITaxon:7955" for Danio rerio,
-        MUST be a descendant term id of 'ZFA:0009000' (cell)
+        MUST be a descendant term id of 'ZFA:0009000' (cell) or 'unknown'
         """
         validator = validator_with_zebrafish_adata
         obs = validator.adata.obs
@@ -2749,39 +2749,143 @@ class TestFruitFly:
     Tests for the fruit fly schema
     """
 
-    def test_development_stage_ontology_term_id_fruitfly(self, validator_with_adata):
+    @pytest.fixture
+    def fruitfly_obs(self):
+        obs = examples.adata.copy().obs
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:7227"
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "FBbt:00049192"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "FBdv:00005370"
+        obs.loc[obs.index[0], "self_reported_ethnicity_ontology_term_id"] = "na"
+        obs.loc[obs.index[0], "organism_tissue_ontology_term_id"] = "FBbt:00000450"
+        return obs
+
+    @pytest.fixture
+    def fruitfly_visium_obs(self):
+        obs = examples.adata_visium.copy().obs
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:7227"
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "unknown"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "FBdv:00005370"
+        obs.loc[obs.index[0], "self_reported_ethnicity_ontology_term_id"] = "na"
+        obs.loc[obs.index[0], "organism_tissue_ontology_term_id"] = "FBbt:00000450"
+        return obs
+
+    @pytest.fixture
+    def validator_with_fruitfly_adata(self, validator_with_adata, fruitfly_obs):
+        validator_with_adata.adata.obs = fruitfly_obs
+        return validator_with_adata
+
+    @pytest.fixture
+    def validator_with_visium_fruitfly_adata(self, validator_with_visium_assay, fruitfly_visium_obs):
+        validator_with_visium_assay.adata.obs = fruitfly_visium_obs
+        return validator_with_visium_assay
+    
+    def test_development_stage_ontology_term_id_fruitfly(self, validator_with_fruitfly_adata):
         """
         If organism_ontolology_term_id is "NCBITaxon:7227" for Drosophila melanogaster,
         this MUST be the most accurate FBdv term
         """
-        validator = validator_with_adata
-        obs = validator.adata.obs
-        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:7227"
-        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "FBdv:00005370"
-        # must set to na for non-human organisms
-        obs.loc[
-            obs.index[0],
-            "self_reported_ethnicity_ontology_term_id",
-        ] = "na"
+        validator = validator_with_fruitfly_adata
         validator.validate_adata()
         assert not validator.errors
 
-    def test_development_stage_ontology_term_id_fruitfly__invalid(self, validator_with_adata):
+    def test_development_stage_ontology_term_id_fruitfly__invalid(self, validator_with_fruitfly_adata):
         """
         If organism_ontolology_term_id is "NCBITaxon:7227" for Drosophila melanogaster,
         this MUST be the most accurate FBdv term
         """
         validator = validator_with_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:7227"
         obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "HsapDv:0000001"
-        obs.loc[
-            obs.index[0],
-            "self_reported_ethnicity_ontology_term_id",
-        ] = "na"
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: 'HsapDv:0000001' in 'development_stage_ontology_term_id' is not a valid ontology "
             "term id of 'FBdv'. When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster), "
             "'development_stage_ontology_term_id' MUST be the most accurate FBdv term."
         ]
+    
+    @pytest.mark.parametrize(
+        "organism_cell_type_ontology_term_id",
+        ["FBbt:00049192", "unknown"],
+    )
+    def test_organism_cell_type_ontology_term_id(
+        self, validator_with_fruitfly_adata, organism_cell_type_ontology_term_id
+    ):
+        """
+        If organism_ontolology_term_id is "NCBITaxon:7227" for Drosophila melanogaster,
+        MUST be a descendant term id of 'FBbt:0007002' (cell) or 'unknown'
+        """
+        validator = validator_with_fruitfly_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = organism_cell_type_ontology_term_id
+        validator.validate_adata()
+        assert not validator.errors
+
+    @pytest.mark.parametrize(
+        "organism_cell_type_ontology_term_id,error",
+        [
+            (
+                "CL:0000001",  # Wrong ontology
+                "ERROR: 'CL:0000001' in 'organism_cell_type_ontology_term_id' is not a valid ontology term id of 'FBbt'.",
+            ),
+            (
+                "FBbt:00007001",  # Same ontology, not a descendant of FBbt:0007002
+                "ERROR: 'FBbt:00007001' in 'organism_cell_type_ontology_term_id' is not an allowed term id.",
+            ),
+            (
+                "FBbt:0007002",  # Do not accept FBbt:0007002 itself, must be a descendant
+                "ERROR: 'FBbt:0007002' in 'organism_cell_type_ontology_term_id' is not an allowed term id.",
+            ),
+            (
+                "na",  # Allowed for other organisms, not allowed if organism is zebrafih
+                "ERROR: 'na' in 'organism_cell_type_ontology_term_id' is not a valid ontology term id of 'FBbt'.",
+            ),
+        ],
+    )
+    def test_organism_cell_type_ontology_term_id__invalid(
+        self, validator_with_fruitfly_adata, organism_cell_type_ontology_term_id, error
+    ):
+        validator = validator_with_fruitfly_adata
+        fruitfly_error_message_suffix = (
+            "When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster), "
+            "'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'FBbt:00007001' (cell)."
+        )
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = organism_cell_type_ontology_term_id
+        validator.validate_adata()
+        assert validator.errors == [error + " " + fruitfly_error_message_suffix]
+
+    def test_organism_cell_type_ontology_term_id__visium_in_tissue_0(self, validator_with_visium_fruitfly_adata):
+        validator = validator_with_visium_fruitfly_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "in_tissue"] = 0
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "unknown"
+        validator.validate_adata()
+        assert not validator.errors
+
+    def test_organism_cell_type_ontology_term_id__visium_in_tissue_0_invalid(
+        self, validator_with_visium_fruitfly_adata
+    ):
+        validator = validator_with_visium_fruitfly_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "in_tissue"] = 0
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "FBbt:00049192"
+        validator.validate_adata()
+        assert (
+            "obs['cell_type_ontology_term_id'] must be 'unknown' and obs['organism_cell_type_ontology_term_id'] must "
+            "be 'unknown' or 'na' depending on the value of 'organism_ontology_term_id' (see schema definition)"
+            in validator.errors[0]
+        )
+
+    def test_organism_cell_type_ontology_term_id__visium_in_tissue_0__na(self, validator_with_visium_fruitfly_adata):
+        validator = validator_with_visium_fruitfly_adata
+        error_message = (
+            "ERROR: 'na' in 'organism_cell_type_ontology_term_id' is not a valid ontology term id of 'FBbt'. "
+            "When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster), "
+            "'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'FBbt:00007001' (cell)."
+        )
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "in_tissue"] = 0
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "na"
+        validator.validate_adata()
+        # Passes visium check but fails organism_cell_type_ontology_term_id check
+        assert validator.errors == [error_message]
