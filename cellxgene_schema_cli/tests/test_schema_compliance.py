@@ -2793,7 +2793,7 @@ class TestFruitFly:
         If organism_ontolology_term_id is "NCBITaxon:7227" for Drosophila melanogaster,
         this MUST be the most accurate FBdv term
         """
-        validator = validator_with_adata
+        validator = validator_with_fruitfly_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "HsapDv:0000001"
         validator.validate_adata()
