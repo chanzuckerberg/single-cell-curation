@@ -212,7 +212,7 @@ class TestAddLabelFunctions:
         ids = ["NO_GENE_BAD"]
         with pytest.raises(KeyError):
             label_writer._get_mapping_dict_feature_type(ids)
-    
+
     def test_get_dictionary_mapping_feature_biotype(self, label_writer):
         # Good
         ids = [
