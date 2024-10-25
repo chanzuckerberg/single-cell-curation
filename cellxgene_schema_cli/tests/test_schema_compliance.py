@@ -2828,8 +2828,8 @@ class TestFruitFly:
                 "ERROR: 'CL:0000001' in 'organism_cell_type_ontology_term_id' is not a valid ontology term id of 'FBbt'.",
             ),
             (
-                "FBbt:00007001",  # Same ontology, not a descendant of FBbt:0007002
-                "ERROR: 'FBbt:00007001' in 'organism_cell_type_ontology_term_id' is not an allowed term id.",
+                "FBbt:00007002",  # Same ontology, not a descendant of FBbt:0007002
+                "ERROR: 'FBbt:00007002' in 'organism_cell_type_ontology_term_id' is not an allowed term id.",
             ),
             (
                 "FBbt:0007002",  # Do not accept FBbt:0007002 itself, must be a descendant
@@ -2847,7 +2847,7 @@ class TestFruitFly:
         validator = validator_with_fruitfly_adata
         fruitfly_error_message_suffix = (
             "When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster), "
-            "'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'FBbt:00007001' (cell)."
+            "'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'FBbt:00007002' (cell)."
         )
         obs = validator.adata.obs
         obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = organism_cell_type_ontology_term_id
@@ -2881,7 +2881,7 @@ class TestFruitFly:
         error_message = (
             "ERROR: 'na' in 'organism_cell_type_ontology_term_id' is not a valid ontology term id of 'FBbt'. "
             "When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster), "
-            "'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'FBbt:00007001' (cell)."
+            "'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'FBbt:00007002' (cell)."
         )
         obs = validator.adata.obs
         obs.loc[obs.index[0], "in_tissue"] = 0
