@@ -222,7 +222,7 @@ class TestAddLabelFunctions:
             "ENSSASG00005000004",
             "FBtr0472816_df_nrg",
         ]
-        # values derived from csv
+        # Values derived from csv
         biotypes = [
             "spike-in",
             "gene",
