@@ -997,7 +997,8 @@ class TestCheckSpatial:
         assert validator.errors
         assert (
             f"obs['cell_type_ontology_term_id'] must be 'unknown' and obs['organism_cell_type_ontology_term_id'] must "
-            f"be 'unknown' or 'na' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}." in validator.errors[0]
+            f"be 'unknown' or 'na' depending on the value of 'organism_ontology_term_id' (see schema definition) "
+            f"when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}." in validator.errors[0]
         )
 
 

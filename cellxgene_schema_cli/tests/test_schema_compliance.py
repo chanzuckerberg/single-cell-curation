@@ -2657,7 +2657,8 @@ class TestZebrafish:
         validator.validate_adata()
         assert (
             "obs['cell_type_ontology_term_id'] must be 'unknown' and obs['organism_cell_type_ontology_term_id'] must "
-            "be 'unknown' or 'na'" in validator.errors[0]
+            "be 'unknown' or 'na' depending on the value of 'organism_ontology_term_id' (see schema definition)"
+            in validator.errors[0]
         )
 
     def test_organism_cell_type_ontology_term_id__visium_in_tissue_0__na(self, validator_with_visium_zebrafish_adata):
