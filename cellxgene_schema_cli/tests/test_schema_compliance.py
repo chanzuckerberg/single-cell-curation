@@ -2756,7 +2756,6 @@ class TestFruitFly:
         obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "FBbt:00049192"
         obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "FBdv:00005370"
         obs.loc[obs.index[0], "self_reported_ethnicity_ontology_term_id"] = "na"
-        obs.loc[obs.index[0], "organism_tissue_ontology_term_id"] = "FBbt:00000450"
         return obs
 
     @pytest.fixture
@@ -2766,7 +2765,6 @@ class TestFruitFly:
         obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "unknown"
         obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "FBdv:00005370"
         obs.loc[obs.index[0], "self_reported_ethnicity_ontology_term_id"] = "na"
-        obs.loc[obs.index[0], "organism_tissue_ontology_term_id"] = "FBbt:00000450"
         return obs
 
     @pytest.fixture
