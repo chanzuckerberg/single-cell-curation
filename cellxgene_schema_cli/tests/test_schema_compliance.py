@@ -2754,7 +2754,6 @@ class TestFruitFly:
         obs = examples.adata.copy().obs
         obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:7227"
         obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "FBbt:00049192"
-        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "FBdv:00005370"
         obs.loc[obs.index[0], "self_reported_ethnicity_ontology_term_id"] = "na"
         return obs
 
@@ -2763,7 +2762,6 @@ class TestFruitFly:
         obs = examples.adata_visium.copy().obs
         obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:7227"
         obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "unknown"
-        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "FBdv:00005370"
         obs.loc[obs.index[0], "self_reported_ethnicity_ontology_term_id"] = "na"
         return obs
 
