@@ -246,7 +246,7 @@ components:
                 - FBbt
               allowed:
                 ancestors:
-                  ZFA:
+                  FBbt:
                     - FBbt:10000000
               forbidden:
                 terms:
