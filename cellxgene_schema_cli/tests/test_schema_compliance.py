@@ -33,7 +33,7 @@ from fixtures.examples_validate import visium_library_id
 schema_def = get_schema_definition()
 
 # Number of genes in valid adata
-NUMBER_OF_GENES = 5
+NUMBER_OF_GENES = examples.NUMBER_OF_GENES
 
 
 @pytest.fixture(scope="module")
@@ -172,7 +172,7 @@ class TestExpressionMatrix:
         validator.adata.X = from_array(sparse_X)
         validator.validate_adata()
         assert validator.warnings == [
-            "WARNING: Sparsity of 'X' is 0.8 which is greater than 0.5, "
+            "WARNING: Sparsity of 'X' is 0.8333333333333334 which is greater than 0.5, "
             "and it is not a 'scipy.sparse.csr_matrix'. It is "
             "STRONGLY RECOMMENDED to use this type of matrix for "
             "the given sparsity."

@@ -12,6 +12,7 @@ class SupportedOrganisms(enum.Enum):
     SARS_COV_2 = "NCBITaxon:2697049"
     ERCC = "NCBITaxon:32630"
     DROSOPHILA_MELANOGASTER = "NCBITaxon:7227"
+    DANIO_RERIO = "NCBITaxon:7955"
 
 
 def get_organism_from_feature_id(
@@ -36,6 +37,8 @@ def get_organism_from_feature_id(
         return SupportedOrganisms.ERCC
     elif feature_id.startswith("FB"):
         return SupportedOrganisms.DROSOPHILA_MELANOGASTER
+    elif feature_id.startswith("ENSDARG"):
+        return SupportedOrganisms.DANIO_RERIO
     else:
         return None
 
@@ -51,6 +54,7 @@ class GeneChecker:
         SupportedOrganisms.DROSOPHILA_MELANOGASTER: os.path.join(
             env.GENCODE_DIR, "genes_drosophila_melanogaster.csv.gz"
         ),
+        SupportedOrganisms.DANIO_RERIO: os.path.join(env.GENCODE_DIR, "genes_danio_rerio.csv.gz"),
     }
 
     def __init__(self, species: SupportedOrganisms):
