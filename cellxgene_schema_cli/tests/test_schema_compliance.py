@@ -3042,8 +3042,8 @@ class TestZebrafish:
                 "ERROR: 'na' in 'organism_tissue_ontology_term_id' is not a valid ontology term id of 'ZFA'.",
             ),
             (
-                "unkown",
-                "ERROR: 'unkown' in 'organism_tissue_ontology_term_id' is not a valid ontology term id of 'ZFA'.",
+                "unknown",
+                "ERROR: 'unknown' in 'organism_tissue_ontology_term_id' is not a valid ontology term id of 'ZFA'.",
             ),
         ],
     )
@@ -3075,6 +3075,7 @@ class TestFruitFly:
         obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "FBbt:00049192"
         obs.loc[obs.index[0], "self_reported_ethnicity_ontology_term_id"] = "na"
         obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "FBdv:00005370"
+        obs.loc[obs.index[0], "organism_tissue_ontology_term_id"] = "FBbt:00007337"
         return obs
 
     @pytest.fixture
@@ -3084,6 +3085,7 @@ class TestFruitFly:
         obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "unknown"
         obs.loc[obs.index[0], "self_reported_ethnicity_ontology_term_id"] = "na"
         obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "FBdv:00005370"
+        obs.loc[obs.index[0], "organism_tissue_ontology_term_id"] = "FBbt:00007337"
         return obs
 
     @pytest.fixture
@@ -3214,3 +3216,56 @@ class TestFruitFly:
         validator.validate_adata()
         # Passes visium check but fails organism_cell_type_ontology_term_id check
         assert validator.errors == [error_message]
+
+    def test_organism_tissue_type_ontology_term_id(self, validator_with_fruitfly_adata):
+        validator = validator_with_fruitfly_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "organism_tissue_ontology_term_id"] = "FBbt:00007337"  # valid descendant of FBbt:10000000
+        validator.validate_adata()
+        assert not validator.errors
+
+    @pytest.mark.parametrize(
+        "organism_tissue_ontology_term_id,error",
+        [
+            (
+                "UBERON:0000001",  # Wrong ontology
+                "ERROR: 'UBERON:0000001' in 'organism_tissue_ontology_term_id' is not a valid ontology term id "
+                "of 'FBbt'.",
+            ),
+            (
+                "FBbt:10000000",  # Must be descendant of FBbt:10000000, not itself
+                "ERROR: 'FBbt:10000000' in 'organism_tissue_ontology_term_id' is not an allowed term id.",
+            ),
+            (
+                "FBbt:00007002",  # FBbt:00007002 is an explicitly forbidden term
+                "ERROR: 'FBbt:00007002' in 'organism_tissue_ontology_term_id' is not allowed.",
+            ),
+            (
+                "FBbt:00007294",  # FBbt:00007002 descendant, an explicitly forbidden ancestor
+                "ERROR: 'FBbt:00007294' in 'organism_tissue_ontology_term_id' is not allowed. Descendant terms of "
+                "'FBbt:00007002' are not allowed.",
+            ),
+            (
+                "na",  # Allowed for other organisms, not allowed if organism is zebrafih
+                "ERROR: 'na' in 'organism_tissue_ontology_term_id' is not a valid ontology term id of 'FBbt'.",
+            ),
+            (
+                "unknown",
+                "ERROR: 'unknown' in 'organism_tissue_ontology_term_id' is not a valid ontology term id of 'FBbt'.",
+            ),
+        ],
+    )
+    def test_organism_tissue_ontology_term_id__invalid(
+        self, validator_with_fruitfly_adata, organism_tissue_ontology_term_id, error
+    ):
+        validator = validator_with_fruitfly_adata
+        zebrafish_error_message_suffix = (
+            "When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster), "
+            "'organism_tissue_ontology_term_id' MUST be the most accurate descendant "
+            "of FBbt:10000000 for fruit fly anatomical entity and MUST NOT be FBbt:00007002 "
+            "for cell or any of its descendants."
+        )
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "organism_tissue_ontology_term_id"] = organism_tissue_ontology_term_id
+        validator.validate_adata()
+        assert validator.errors == [error + " " + zebrafish_error_message_suffix]
