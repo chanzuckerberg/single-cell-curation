@@ -401,6 +401,19 @@ good_var = pd.DataFrame(
         [False],
         [False],
         [False],
+        [False],
+    ],
+    index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004", "FBtr0472816_df_nrg"],
+    columns=["feature_is_filtered"],
+)
+
+# Valid var with four genes in it. This is used to test seurat compatibility which involves doing matrix math
+good_var_seurat_testing = pd.DataFrame(
+    [
+        [False],
+        [False],
+        [False],
+        [False],
     ],
     index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"],
     columns=["feature_is_filtered"],
@@ -413,9 +426,10 @@ var_expected = pd.DataFrame(
         ["spike-in", False, "ERCC-00002 (spike-in control)", "NCBITaxon:32630", 1061, "synthetic"],
         ["gene", False, "MACF1", "NCBITaxon:9606", 2821, "protein_coding"],
         ["gene", False, "Trp53", "NCBITaxon:10090", 1797, "protein_coding"],
-        ["gene", False, "S", "NCBITaxon:2697049", 3822, "protein_coding"],
+        ["gene", False, "S_ENSSASG00005000004", "NCBITaxon:2697049", 3822, "protein_coding"],
+        ["gene", False, "FBtr0472816_df_nrg", "NCBITaxon:7227", 22, "ncRNA"],
     ],
-    index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"],
+    index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004", "FBtr0472816_df_nrg"],
     columns=[
         "feature_biotype",
         "feature_is_filtered",

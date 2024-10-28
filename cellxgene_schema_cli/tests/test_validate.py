@@ -34,6 +34,7 @@ from fixtures.examples_validate import (
     good_obs,
     good_uns,
     good_uns_with_visium_spatial,
+    good_var_seurat_testing,
     h5ad_invalid,
     h5ad_valid,
     visium_library_id,
@@ -134,12 +135,14 @@ class TestAddLabelFunctions:
             "ENSG00000127603",
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
+            "FBtr0472816_df_nrg",
         ]
         labels = [
             "ERCC-00002 (spike-in control)",
             "MACF1",
             "Trp53",
             "S",
+            "FBtr0472816_df_nrg",
         ]
         expected_dict = dict(zip(ids, labels))
         assert label_writer._get_mapping_dict_feature_id(ids), expected_dict
@@ -151,17 +154,13 @@ class TestAddLabelFunctions:
 
     def test_get_dictionary_mapping_feature_reference(self, label_writer):
         # Good
-        ids = [
-            "ERCC-00002",
-            "ENSG00000127603",
-            "ENSMUSG00000059552",
-            "ENSSASG00005000004",
-        ]
+        ids = ["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004", "FBtr0472816_df_nrg"]
         labels = [
             "NCBITaxon:32630",
             "NCBITaxon:9606",
             "NCBITaxon:10090",
             "NCBITaxon:2697049",
+            "NCBITaxon:7227",
         ]
         expected_dict = dict(zip(ids, labels))
         assert label_writer._get_mapping_dict_feature_reference(ids) == expected_dict
@@ -173,18 +172,14 @@ class TestAddLabelFunctions:
 
     def test_get_dictionary_mapping_feature_length(self, label_writer):
         # Good
-        ids = [
-            "ERCC-00002",
-            "ENSG00000127603",
-            "ENSMUSG00000059552",
-            "ENSSASG00005000004",
-        ]
+        ids = ["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004", "FBtr0472816_df_nrg"]
         # values derived from csv
         gene_lengths = [
             1061,
             2821,
             1797,
             3822,
+            22,
         ]
         expected_dict = dict(zip(ids, gene_lengths))
         assert label_writer._get_mapping_dict_feature_length(ids) == expected_dict
@@ -201,6 +196,7 @@ class TestAddLabelFunctions:
             "ENSG00000127603",
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
+            "FBtr0472816_df_nrg",
         ]
         # values derived from csv
         gene_types = [
@@ -208,14 +204,35 @@ class TestAddLabelFunctions:
             "protein_coding",
             "protein_coding",
             "protein_coding",
+            "ncRNA",
         ]
         expected_dict = dict(zip(ids, gene_types))
         assert label_writer._get_mapping_dict_feature_type(ids) == expected_dict
 
         # Bad
-        ids = ["NO_GENE"]
-        with pytest.raises(ValueError):
+        ids = ["NO_GENE_BAD"]
+        with pytest.raises(KeyError):
             label_writer._get_mapping_dict_feature_type(ids)
+
+    def test_get_dictionary_mapping_feature_biotype(self, label_writer):
+        # Good
+        ids = [
+            "ERCC-00002",
+            "ENSG00000127603",
+            "ENSMUSG00000059552",
+            "ENSSASG00005000004",
+            "FBtr0472816_df_nrg",
+        ]
+        # Values derived from csv
+        biotypes = [
+            "spike-in",
+            "gene",
+            "gene",
+            "gene",
+            "gene",
+        ]
+        expected_dict = dict(zip(ids, biotypes))
+        assert label_writer._get_mapping_dict_feature_biotype(ids) == expected_dict
 
     @pytest.mark.parametrize(
         "ids,labels,curie_constraints",

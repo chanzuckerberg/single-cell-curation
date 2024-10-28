@@ -37,7 +37,9 @@ jobs:
         run: |
           make gene-processing -C cellxgene_schema_cli
           git add ./cellxgene_schema_cli/cellxgene_schema/gencode_files/genes_*.csv.gz
-          git add ./cellxgene_schema_cli/cellxgene_schema/gencode_files/*_diff.txt
+          ls ./cellxgene_schema_cli/cellxgene_schema/gencode_files/*_diff.txt 1> /dev/null 2>&1 && \
+          git add ./cellxgene_schema_cli/cellxgene_schema/gencode_files/*_diff.txt || \
+          echo "No matching files found. Skipping git add for diff files."
       - name: Commit
         run: |
           git commit -m "AUTO: update gencode files"
