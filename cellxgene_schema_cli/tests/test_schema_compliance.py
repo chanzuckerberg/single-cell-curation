@@ -469,6 +469,8 @@ class TestObs:
             "ERROR: Checking values with dependencies failed for "
             "adata.obs['development_stage_ontology_term_id'], this is likely due "
             "to missing dependent column in adata.obs.",
+            "ERROR: Checking values with dependencies failed for adata.obs['tissue_type'], this is likely due to "
+            "missing dependent column in adata.obs.",
         ]
 
     def test_column_presence_assay(self, validator_with_adata):
@@ -2743,6 +2745,28 @@ class TestZebrafish:
         validator.validate_adata()
         assert validator.errors == [error + " " + zebrafish_error_message_suffix]
 
+    def test_organism_tissue_type_valid(self, validator_with_zebrafish_adata):
+        validator = validator_with_zebrafish_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_type"] = "tissue"
+        assert not validator.errors
+
+    @pytest.mark.parametrize(
+        "tissue_type",
+        ["cell culture", "organoid"],
+    )
+    def test_organism_tissue_type__invalid(self, validator_with_zebrafish_adata, tissue_type):
+        validator = validator_with_zebrafish_adata
+        obs = validator.adata.obs
+        obs.tissue_type = obs.tissue_type.cat.add_categories(["organoid"])
+        obs.loc[obs.index[0], "tissue_type"] = tissue_type
+        validator.validate_adata()
+        error_message = (
+            f"ERROR: Column 'tissue_type' in dataframe 'obs' contains invalid values '['{tissue_type}']'. "
+            f"Values must be one of ['tissue'] when 'organism_ontology_term_id' is NCBITaxon:7955 or NCBITaxon:7227"
+        )
+        assert error_message in validator.errors
+
 
 class TestFruitFly:
     """
@@ -2950,3 +2974,24 @@ class TestFruitFly:
         obs.loc[obs.index[0], "organism_tissue_ontology_term_id"] = organism_tissue_ontology_term_id
         validator.validate_adata()
         assert validator.errors == [error + " " + zebrafish_error_message_suffix]
+    def test_organism_tissue_type_valid(self, validator_with_fruitfly_adata):
+        validator = validator_with_fruitfly_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_type"] = "tissue"
+        assert not validator.errors
+
+    @pytest.mark.parametrize(
+        "tissue_type",
+        ["cell culture", "organoid"],
+    )
+    def test_organism_tissue_type__invalid(self, validator_with_fruitfly_adata, tissue_type):
+        validator = validator_with_fruitfly_adata
+        obs = validator.adata.obs
+        obs.tissue_type = obs.tissue_type.cat.add_categories(["organoid"])
+        obs.loc[obs.index[0], "tissue_type"] = tissue_type
+        validator.validate_adata()
+        error_message = (
+            f"ERROR: Column 'tissue_type' in dataframe 'obs' contains invalid values '['{tissue_type}']'. "
+            f"Values must be one of ['tissue'] when 'organism_ontology_term_id' is NCBITaxon:7955 or NCBITaxon:7227"
+        )
+        assert error_message in validator.errors
