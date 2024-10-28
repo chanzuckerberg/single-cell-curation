@@ -23,7 +23,7 @@ from cellxgene_schema.write_labels import AnnDataLabelAppender
 schema_def = get_schema_definition()
 
 # Number of genes in valid adata
-NUMBER_OF_GENES = 5
+NUMBER_OF_GENES = examples.NUMBER_OF_GENES
 
 
 @pytest.fixture(scope="module")

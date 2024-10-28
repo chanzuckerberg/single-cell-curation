@@ -135,14 +135,9 @@ class TestAddLabelFunctions:
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
             "FBtr0472816_df_nrg",
+            "ENSDARG00000009657",
         ]
-        labels = [
-            "ERCC-00002 (spike-in control)",
-            "MACF1",
-            "Trp53",
-            "S",
-            "FBtr0472816_df_nrg",
-        ]
+        labels = ["ERCC-00002 (spike-in control)", "MACF1", "Trp53", "S", "FBtr0472816_df_nrg", "fgfr1op2"]
         expected_dict = dict(zip(ids, labels))
         assert label_writer._get_mapping_dict_feature_id(ids), expected_dict
 
@@ -153,13 +148,21 @@ class TestAddLabelFunctions:
 
     def test_get_dictionary_mapping_feature_reference(self, label_writer):
         # Good
-        ids = ["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004", "FBtr0472816_df_nrg"]
+        ids = [
+            "ERCC-00002",
+            "ENSG00000127603",
+            "ENSMUSG00000059552",
+            "ENSSASG00005000004",
+            "FBtr0472816_df_nrg",
+            "ENSDARG00000009657",
+        ]
         labels = [
             "NCBITaxon:32630",
             "NCBITaxon:9606",
             "NCBITaxon:10090",
             "NCBITaxon:2697049",
             "NCBITaxon:7227",
+            "NCBITaxon:7955",
         ]
         expected_dict = dict(zip(ids, labels))
         assert label_writer._get_mapping_dict_feature_reference(ids) == expected_dict
@@ -171,15 +174,16 @@ class TestAddLabelFunctions:
 
     def test_get_dictionary_mapping_feature_length(self, label_writer):
         # Good
-        ids = ["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004", "FBtr0472816_df_nrg"]
-        # values derived from csv
-        gene_lengths = [
-            1061,
-            2821,
-            1797,
-            3822,
-            22,
+        ids = [
+            "ERCC-00002",
+            "ENSG00000127603",
+            "ENSMUSG00000059552",
+            "ENSSASG00005000004",
+            "FBtr0472816_df_nrg",
+            "ENSDARG00000009657",
         ]
+        # values derived from csv
+        gene_lengths = [1061, 2821, 1797, 3822, 22, 8021]
         expected_dict = dict(zip(ids, gene_lengths))
         assert label_writer._get_mapping_dict_feature_length(ids) == expected_dict
 
@@ -196,6 +200,7 @@ class TestAddLabelFunctions:
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
             "FBtr0472816_df_nrg",
+            "ENSDARG00000009657",
         ]
         # values derived from csv
         gene_types = [
@@ -204,6 +209,7 @@ class TestAddLabelFunctions:
             "protein_coding",
             "protein_coding",
             "ncRNA",
+            "protein_coding",
         ]
         expected_dict = dict(zip(ids, gene_types))
         assert label_writer._get_mapping_dict_feature_type(ids) == expected_dict
@@ -221,10 +227,12 @@ class TestAddLabelFunctions:
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
             "FBtr0472816_df_nrg",
+            "ENSDARG00000009657",
         ]
         # Values derived from csv
         biotypes = [
             "spike-in",
+            "gene",
             "gene",
             "gene",
             "gene",
