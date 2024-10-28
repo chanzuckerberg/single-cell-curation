@@ -2897,7 +2897,7 @@ class TestFruitFly:
         validator.validate_adata()
         # Passes visium check but fails organism_cell_type_ontology_term_id check
         assert validator.errors == [error_message]
-    
+
     def test_organism_tissue_type_ontology_term_id(self, validator_with_fruitfly_adata):
         validator = validator_with_fruitfly_adata
         obs = validator.adata.obs
