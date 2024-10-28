@@ -323,14 +323,15 @@ good_obs_visium_is_single_false["tissue_type"] = good_obs_visium_is_single_false
 
 # Valid var per schema
 good_var = pd.DataFrame(
-    [
-        [False],
-        [False],
-        [False],
-        [False],
-        [False],
+    [[False], [False], [False], [False], [False], [False]],
+    index=[
+        "ERCC-00002",
+        "ENSG00000127603",
+        "ENSMUSG00000059552",
+        "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
     ],
-    index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004", "FBtr0472816_df_nrg"],
     columns=["feature_is_filtered"],
 )
 
@@ -355,8 +356,16 @@ var_expected = pd.DataFrame(
         ["gene", False, "Trp53", "NCBITaxon:10090", 1797, "protein_coding"],
         ["gene", False, "S_ENSSASG00005000004", "NCBITaxon:2697049", 3822, "protein_coding"],
         ["gene", False, "FBtr0472816_df_nrg", "NCBITaxon:7227", 22, "ncRNA"],
+        ["gene", False, "fgfr1op2", "NCBITaxon:7955", 1088, "protein_coding"],
     ],
-    index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004", "FBtr0472816_df_nrg"],
+    index=[
+        "ERCC-00002",
+        "ENSG00000127603",
+        "ENSMUSG00000059552",
+        "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+    ],
     columns=[
         "feature_biotype",
         "feature_is_filtered",
@@ -366,6 +375,8 @@ var_expected = pd.DataFrame(
         "feature_type",
     ],
 )
+
+NUMBER_OF_GENES = len(var_expected.index)
 
 # ---
 # 3. Creating individual uns component
