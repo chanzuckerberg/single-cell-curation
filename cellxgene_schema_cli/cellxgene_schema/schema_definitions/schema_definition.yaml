@@ -233,6 +233,27 @@ components:
                 ancestors:
                   ZFA:
                     - ZFA:0009000
+          - # If organism is fruit fly
+            rule: "organism_ontology_term_id == 'NCBITaxon:7227'"
+            error_message_suffix: >-
+              When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster),
+              'organism_tissue_ontology_term_id' MUST be the most accurate descendant
+              of FBbt:10000000 for fruit fly anatomical entity and MUST NOT be FBbt:00007002
+              for cell or any of its descendants.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - FBbt
+              allowed:
+                ancestors:
+                  FBbt:
+                    - FBbt:10000000
+              forbidden:
+                terms:
+                  - FBbt:00007002
+                ancestors:
+                  FBbt:
+                    - FBbt:00007002
         # if organism is none of the above
         error_message_suffix: >-
           When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition,
