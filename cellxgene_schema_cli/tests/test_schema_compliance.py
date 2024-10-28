@@ -2723,8 +2723,8 @@ class TestZebrafish:
                 "ERROR: 'na' in 'organism_tissue_ontology_term_id' is not a valid ontology term id of 'ZFA'.",
             ),
             (
-                "unkown",
-                "ERROR: 'unkown' in 'organism_tissue_ontology_term_id' is not a valid ontology term id of 'ZFA'.",
+                "unknown",
+                "ERROR: 'unknown' in 'organism_tissue_ontology_term_id' is not a valid ontology term id of 'ZFA'.",
             ),
         ],
     )
@@ -2931,8 +2931,8 @@ class TestFruitFly:
                 "ERROR: 'na' in 'organism_tissue_ontology_term_id' is not a valid ontology term id of 'FBbt'.",
             ),
             (
-                "unkown",
-                "ERROR: 'unkown' in 'organism_tissue_ontology_term_id' is not a valid ontology term id of 'FBbt'.",
+                "unknown",
+                "ERROR: 'unknown' in 'organism_tissue_ontology_term_id' is not a valid ontology term id of 'FBbt'.",
             ),
         ],
     )
