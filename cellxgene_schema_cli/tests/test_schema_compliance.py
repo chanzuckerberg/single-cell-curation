@@ -2974,6 +2974,7 @@ class TestFruitFly:
         obs.loc[obs.index[0], "organism_tissue_ontology_term_id"] = organism_tissue_ontology_term_id
         validator.validate_adata()
         assert validator.errors == [error + " " + zebrafish_error_message_suffix]
+
     def test_organism_tissue_type_valid(self, validator_with_fruitfly_adata):
         validator = validator_with_fruitfly_adata
         obs = validator.adata.obs
