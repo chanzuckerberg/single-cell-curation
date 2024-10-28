@@ -173,7 +173,7 @@ class TestExpressionMatrix:
         validator.adata.X = sparse_X
         validator.validate_adata()
         assert validator.warnings == [
-            "WARNING: Sparsity of 'X' is 0.8 which is greater than 0.5, "
+            "WARNING: Sparsity of 'X' is 0.8333333333333334 which is greater than 0.5, "
             "and it is not a 'scipy.sparse.csr_matrix'. It is "
             "STRONGLY RECOMMENDED to use this type of matrix for "
             "the given sparsity."

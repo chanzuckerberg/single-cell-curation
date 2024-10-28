@@ -356,7 +356,7 @@ var_expected = pd.DataFrame(
         ["gene", False, "Trp53", "NCBITaxon:10090", 1797, "protein_coding"],
         ["gene", False, "S_ENSSASG00005000004", "NCBITaxon:2697049", 3822, "protein_coding"],
         ["gene", False, "FBtr0472816_df_nrg", "NCBITaxon:7227", 22, "ncRNA"],
-        ["gene", False, "fgfr1op2", "NCBITaxon:7955", 8021, "protein_coding"],
+        ["gene", False, "fgfr1op2", "NCBITaxon:7955", 1088, "protein_coding"],
     ],
     index=[
         "ERCC-00002",

@@ -183,7 +183,7 @@ class TestAddLabelFunctions:
             "ENSDARG00000009657",
         ]
         # values derived from csv
-        gene_lengths = [1061, 2821, 1797, 3822, 22, 8021]
+        gene_lengths = [1061, 2821, 1797, 3822, 22, 1088]
         expected_dict = dict(zip(ids, gene_lengths))
         assert label_writer._get_mapping_dict_feature_length(ids) == expected_dict
 
