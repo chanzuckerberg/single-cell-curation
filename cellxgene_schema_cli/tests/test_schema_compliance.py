@@ -2755,6 +2755,7 @@ class TestFruitFly:
         obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:7227"
         obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "FBbt:00049192"
         obs.loc[obs.index[0], "self_reported_ethnicity_ontology_term_id"] = "na"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "FBdv:00005370"
         return obs
 
     @pytest.fixture
@@ -2763,6 +2764,7 @@ class TestFruitFly:
         obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:7227"
         obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "unknown"
         obs.loc[obs.index[0], "self_reported_ethnicity_ontology_term_id"] = "na"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "FBdv:00005370"
         return obs
 
     @pytest.fixture
@@ -2824,12 +2826,12 @@ class TestFruitFly:
                 "ERROR: 'CL:0000001' in 'organism_cell_type_ontology_term_id' is not a valid ontology term id of 'FBbt'.",
             ),
             (
-                "FBbt:00007002",  # Same ontology, not a descendant of FBbt:0007002
-                "ERROR: 'FBbt:00007002' in 'organism_cell_type_ontology_term_id' is not an allowed term id.",
+                "FBbt:00007001",  # Same ontology, not a descendant of FBbt:00007002
+                "ERROR: 'FBbt:00007001' in 'organism_cell_type_ontology_term_id' is not an allowed term id.",
             ),
             (
-                "FBbt:0007002",  # Do not accept FBbt:0007002 itself, must be a descendant
-                "ERROR: 'FBbt:0007002' in 'organism_cell_type_ontology_term_id' is not an allowed term id.",
+                "FBbt:00007002",  # Do not accept FBbt:00007002 itself, must be a descendant
+                "ERROR: 'FBbt:00007002' in 'organism_cell_type_ontology_term_id' is not an allowed term id.",
             ),
             (
                 "na",  # Allowed for other organisms, not allowed if organism is zebrafih
