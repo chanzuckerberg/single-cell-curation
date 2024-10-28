@@ -22,6 +22,9 @@ from cellxgene_schema.write_labels import AnnDataLabelAppender
 
 schema_def = get_schema_definition()
 
+# Number of genes in valid adata
+NUMBER_OF_GENES = 5
+
 
 @pytest.fixture(scope="module")
 def validator() -> Validator:
@@ -153,7 +156,10 @@ class TestExpressionMatrix:
         # remove one gene
         validator.adata = validator.adata[:, 1:]
         validator.validate_adata()
-        assert "ERROR: Number of genes in X (3) is different than raw.X (4)." in validator.errors
+        assert (
+            f"ERROR: Number of genes in X ({NUMBER_OF_GENES - 1}) is different than raw.X ({NUMBER_OF_GENES})."
+            in validator.errors
+        )
 
     def test_sparsity(self, validator_with_adata):
         """
@@ -167,7 +173,7 @@ class TestExpressionMatrix:
         validator.adata.X = sparse_X
         validator.validate_adata()
         assert validator.warnings == [
-            "WARNING: Sparsity of 'X' is 0.75 which is greater than 0.5, "
+            "WARNING: Sparsity of 'X' is 0.8 which is greater than 0.5, "
             "and it is not a 'scipy.sparse.csr_matrix'. It is "
             "STRONGLY RECOMMENDED to use this type of matrix for "
             "the given sparsity."
@@ -1660,7 +1666,7 @@ class TestVar:
         validator.schema_def["components"]["var"]["warn_if_less_than_rows"] = 100
         validator.validate_adata()
         assert validator.warnings == [
-            "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix."
+            f"WARNING: Dataframe 'var' only has {NUMBER_OF_GENES} rows. Features SHOULD NOT be filtered from expression matrix."
         ]
 
     @pytest.mark.parametrize(
@@ -2172,7 +2178,7 @@ class TestObsm:
         ]
         assert validator.is_spatial is False
         assert validator.warnings == [
-            "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
+            f"WARNING: Dataframe 'var' only has {NUMBER_OF_GENES} rows. Features SHOULD NOT be filtered from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' harmony is not 'spatial' nor does it start with 'X_'. "
             "Thus, it will not be available in Explorer",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
@@ -2222,7 +2228,7 @@ class TestObsm:
         validator.adata.obsm["harmony"] = pd.DataFrame(validator.adata.obsm["X_umap"], index=validator.adata.obs_names)
         validator.validate_adata()
         assert validator.warnings == [
-            "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
+            f"WARNING: Dataframe 'var' only has {NUMBER_OF_GENES} rows. Features SHOULD NOT be filtered from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' harmony is not 'spatial' nor does it start with 'X_'. "
             "Thus, it will not be available in Explorer",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
@@ -2256,7 +2262,7 @@ class TestObsm:
             "'pandas.core.frame.DataFrame'>').",
         ]
         assert validator.warnings == [
-            "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
+            f"WARNING: Dataframe 'var' only has {NUMBER_OF_GENES} rows. Features SHOULD NOT be filtered from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' 3D is not 'spatial' nor does it start with 'X_'. "
             "Thus, it will not be available in Explorer",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
@@ -2380,7 +2386,7 @@ class TestVarm:
         """
         validator = validator_with_adata
         adata = validator.adata
-        adata.varm["badsize"] = numpy.empty((4, 0))
+        adata.varm["badsize"] = numpy.empty((NUMBER_OF_GENES, 0))
         validator.adata = save_and_read_adata(adata)
         validator.validate_adata()
         assert validator.errors == [
@@ -2395,7 +2401,7 @@ class TestVarp:
         """
         validator = validator_with_adata
         adata = validator.adata
-        adata.varp["badsize"] = numpy.empty((4, 4, 0))
+        adata.varp["badsize"] = numpy.empty((NUMBER_OF_GENES, NUMBER_OF_GENES, 0))
         validator.adata = save_and_read_adata(adata)
         validator.validate_adata()
         assert validator.errors == [

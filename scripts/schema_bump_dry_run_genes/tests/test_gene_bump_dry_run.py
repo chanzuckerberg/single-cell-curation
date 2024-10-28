@@ -18,9 +18,9 @@ def test_get_diff_map(tmp_path):  # type: ignore
             fp.write("test")
     with patch("scripts.schema_bump_dry_run_genes.gene_bump_dry_run.GENCODE_DIR", tmp_path):
         diff_map = get_diff_map()
-    assert len(diff_map) == 4
+    assert len(diff_map) == 5
     for key in diff_map:  # type: ignore
-        assert key in ["NCBITaxon:9606", "NCBITaxon:10090", "NCBITaxon:2697049", "NCBITaxon:32630"]  # type: ignore
+        assert key in ["NCBITaxon:9606", "NCBITaxon:10090", "NCBITaxon:2697049", "NCBITaxon:32630", "NCBITaxon:7227"]  # type: ignore
 
 
 @pytest.fixture

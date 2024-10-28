@@ -218,10 +218,8 @@ class AnnDataLabelAppender:
         for i in ids:
             if i.startswith("ERCC"):
                 mapping_dict[i] = "spike-in"
-            elif i.startswith("ENS"):
-                mapping_dict[i] = "gene"
             else:
-                raise ValueError(f"{i} is not a recognized `feature_name` and cannot be assigned a `feature_type`")
+                mapping_dict[i] = "gene"
 
         return mapping_dict
 
