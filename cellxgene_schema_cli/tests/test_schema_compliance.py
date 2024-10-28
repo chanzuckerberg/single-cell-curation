@@ -2777,12 +2777,20 @@ class TestFruitFly:
         validator_with_visium_assay.adata.obs = fruitfly_visium_obs
         return validator_with_visium_assay
 
-    def test_development_stage_ontology_term_id_fruitfly(self, validator_with_fruitfly_adata):
+    @pytest.mark.parametrize(
+        "development_stage_ontology_term_id",
+        ["FBdv:00005370", "unknown"],
+    )
+    def test_development_stage_ontology_term_id_fruitfly(
+        self, validator_with_fruitfly_adata, development_stage_ontology_term_id
+    ):
         """
         If organism_ontolology_term_id is "NCBITaxon:7227" for Drosophila melanogaster,
-        this MUST be the most accurate FBdv term
+        this MUST be the most accurate FBdv term or 'unknown'
         """
         validator = validator_with_fruitfly_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = development_stage_ontology_term_id
         validator.validate_adata()
         assert not validator.errors
 
