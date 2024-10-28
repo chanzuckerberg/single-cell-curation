@@ -572,6 +572,14 @@ components:
           - "cell culture"
           - "organoid"
           - "tissue"
+        dependencies:
+        - # If organism_ontology_term_id is NCBITaxon:7955 or NCBITaxon:7227, 'tissue_type' MUST be 'tissue'
+          rule: "organism_ontology_term_id == 'NCBITaxon:7955' | organism_ontology_term_id == 'NCBITaxon:7227'"
+          type: categorical
+          error_message_suffix: >-
+            when 'organism_ontology_term_id' is NCBITaxon:7955 or NCBITaxon:7227
+          enum:
+            - "tissue"
       genetic_ancestry_African:
         type: genetic_ancestry_value
       genetic_ancestry_East_Asian:
