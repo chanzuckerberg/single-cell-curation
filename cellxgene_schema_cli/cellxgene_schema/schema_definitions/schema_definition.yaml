@@ -395,6 +395,17 @@ components:
                   - ZFS:0000000
               exceptions:
                 - unknown
+          - # If organism is Fruit fly
+            rule: "organism_ontology_term_id == 'NCBITaxon:7227'"
+            error_message_suffix: >-
+             When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster),
+             'development_stage_ontology_term_id' MUST be the most accurate FBdv term.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - FBdv
+              exceptions:
+                - unknown
         # If organism is none of the above
         error_message_suffix: >-
           When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition,

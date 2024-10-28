@@ -2742,3 +2742,46 @@ class TestZebrafish:
         obs.loc[obs.index[0], "organism_tissue_ontology_term_id"] = organism_tissue_ontology_term_id
         validator.validate_adata()
         assert validator.errors == [error + " " + zebrafish_error_message_suffix]
+
+
+class TestFruitFly:
+    """
+    Tests for the fruit fly schema
+    """
+
+    def test_development_stage_ontology_term_id_fruitfly(self, validator_with_adata):
+        """
+        If organism_ontolology_term_id is "NCBITaxon:7227" for Drosophila melanogaster,
+        this MUST be the most accurate FBdv term
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:7227"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "FBdv:00005370"
+        # must set to na for non-human organisms
+        obs.loc[
+            obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "na"
+        validator.validate_adata()
+        assert not validator.errors
+
+    def test_development_stage_ontology_term_id_fruitfly__invalid(self, validator_with_adata):
+        """
+        If organism_ontolology_term_id is "NCBITaxon:7227" for Drosophila melanogaster,
+        this MUST be the most accurate FBdv term
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:7227"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "HsapDv:0000001"
+        obs.loc[
+            obs.index[0],
+            "self_reported_ethnicity_ontology_term_id",
+        ] = "na"
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: 'HsapDv:0000001' in 'development_stage_ontology_term_id' is not a valid ontology "
+            "term id of 'FBdv'. When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster), "
+            "'development_stage_ontology_term_id' MUST be the most accurate FBdv term."
+        ]
