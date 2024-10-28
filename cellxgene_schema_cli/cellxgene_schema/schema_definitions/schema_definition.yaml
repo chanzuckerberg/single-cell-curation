@@ -185,6 +185,21 @@ components:
                         - ZFA:0009000
                     exceptions:
                       - unknown
+            - # If organism is fruit fly
+                rule: "organism_ontology_term_id == 'NCBITaxon:7227'"
+                error_message_suffix: >-
+                    When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster),
+                    'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'FBbt:00007002' (cell).
+                type: curie
+                curie_constraints:
+                    ontologies:
+                      - FBbt
+                    allowed:
+                      ancestors:
+                        FBbt:
+                        - FBbt:00007002
+                    exceptions:
+                      - unknown
         # if organism is none of the above
         error_message_suffix: >-
             When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition,
@@ -393,6 +408,17 @@ components:
               forbidden:
                 terms:
                   - ZFS:0000000
+              exceptions:
+                - unknown
+          - # If organism is Fruit fly
+            rule: "organism_ontology_term_id == 'NCBITaxon:7227'"
+            error_message_suffix: >-
+             When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster),
+             'development_stage_ontology_term_id' MUST be the most accurate FBdv term.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - FBdv
               exceptions:
                 - unknown
         # If organism is none of the above
