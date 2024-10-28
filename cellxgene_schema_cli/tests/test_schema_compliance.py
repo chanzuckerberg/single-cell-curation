@@ -2834,7 +2834,7 @@ class TestFruitFly:
                 "ERROR: 'FBbt:00007002' in 'organism_cell_type_ontology_term_id' is not an allowed term id.",
             ),
             (
-                "na",  # Allowed for other organisms, not allowed if organism is zebrafih
+                "na",  # Allowed for other organisms, not allowed if organism is fruit fly
                 "ERROR: 'na' in 'organism_cell_type_ontology_term_id' is not a valid ontology term id of 'FBbt'.",
             ),
         ],
