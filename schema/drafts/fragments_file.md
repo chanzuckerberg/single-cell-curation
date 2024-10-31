@@ -99,11 +99,11 @@ The curator MUST annotate the following header-less columns. Additional columns 
 
 ## scATAC-seq Asset: Fragments File (processed)
 
-From every fragments file asset, CELLxGENE Discover MUST generate a tab-separated values (TSV) file position-sorted and compressed by bgzip.
+From every fragments file asset, CELLxGENE Discover MUST generate <code>{dataset_version_id}-fragments.tsv.gz</code>, a tab-separated values (TSV) file position-sorted and compressed by bgzip.
 
 ## scATAC-seq Asset: Fragments File index
 
-From every fragments file (processed) asset, CELLxGENE Discover MUST generate a <a href="https://www.htslib.org/doc/tabix.html">tabix</a> index of the fragment intervals from the fragments file. The file name MUST be the name of the corresponding fragments file appended with `.tbi`.
+From every fragments file (processed) asset, CELLxGENE Discover MUST generate <code>{dataset_version_id}-fragments.tsv.gz.tbi</code>, a <a href="https://www.htslib.org/doc/tabix.html">tabix</a> index of the fragment intervals from the fragments file.
 
 ## Chromosome Tables
 
