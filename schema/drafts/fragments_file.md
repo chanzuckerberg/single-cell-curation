@@ -15,9 +15,8 @@ If the <code>obs['assay_ontology_term_id']</code> values are all <i>paired assay
 
 If the <code>obs['assay_ontology_term_id']</code> values are all <i>unpaired assays</i> then the Dataset MUST have a fragments file asset.
 
-If a Dataset has a fragments file asset, it MAY have genome track assets. Otherwise, it MUST NOT have genome track assets.
 
-## scATAC-seq Asset: Fragments File
+## scATAC-seq Asset: Fragments File (submitted)
 
 This MUST be a gzipped tab-separated values (TSV) file.
 
@@ -98,45 +97,13 @@ The curator MUST annotate the following header-less columns. Additional columns 
 </tbody></table>
 <br>
 
+## scATAC-seq Asset: Fragments File (processed)
+
+From every fragments file asset, CELLxGENE Discover MUST generate a tab-separated values (TSV) file position-sorted and compressed by bgzip.
+
 ## scATAC-seq Asset: Fragments File index
 
-For every fragments file asset, CELLxGENE Discover MUST generate a <a href="https://www.htslib.org/doc/tabix.html">tabix</a> index of the fragment intervals from the fragments file. The file name MUST be the name of the corresponding fragments file appended with `.tbi`.
-
-## `uns` (Dataset Metadata)
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>peak_grouping</td>
-    </tr>
-    <tr>
-      <th>Annotation</th>
-      <td>Curator MAY annotate if the Dataset has a fragments file asset; otherwise, this key MUST NOT be present.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>
-          <code>str</code>. The value MUST match a key in <code>obs</code>. If annotated, genome track assets MUST be submitted. The following columns MUST NOT be specified:
-      <ul>
-        <li>assay_ontology_term_id</li>
-        <li>cell_type_ontology_term_id</li>
-        <li>development_stage_ontology_term_id</li>
-        <li>disease_ontology_term_id</li>
-        <li>organism_ontology_term_id</li>
-        <li>self_reported_ethnicity_ontology_term_id</li>
-        <li>sex_ontology_term_id</li>
-        <li>tissue_ontology_term_id</li>
-      </ul>
-      Instead specify the corresponding Discover column such as <code>cell_type</code>.<br><br>
-        </td>
-    </tr>
-</tbody></table>
-
-## scATAC-seq Asset: Genome Track
-
-If <code>uns['peak_grouping']</code> is annotated, there MUST be exactly one genome track asset submitted for each unique value in the obs column specified as determined by <code>anndata.obs.{peak_grouping_column}.unique()</code>. Otherwise, this MUST NOT be submitted.
-
-Asset file specifications TBD based on the visualization solution. Accepting <a href="https://genome.ucsc.edu/goldenpath/help/bigWig.html">.bigWig format</a> is a requirement.
+From every fragments file (processed) asset, CELLxGENE Discover MUST generate a <a href="https://www.htslib.org/doc/tabix.html">tabix</a> index of the fragment intervals from the fragments file. The file name MUST be the name of the corresponding fragments file appended with `.tbi`.
 
 ## Chromosome Tables
 
