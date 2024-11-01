@@ -94,9 +94,24 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     migrate(input_file, output_file, collection_id, dataset_id)
 
 
+@click.command(
+    name="map-species",
+    short_help="Annotate non-human, non-mouse anndata with CL and UBERON equivalent terms",
+    help="Annotate non-human, non-mouse anndata with CL and UBERON equivalent terms, based on values in"
+    "organism-specific columns (e.g. organism_cell_type_ontology_term_id and organism_tissue_ontology_term_id)",
+)
+@click.argument("input_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.argument("output_file", nargs=1, type=click.Path(exists=False, dir_okay=False))
+def map_species(input_file, output_file):
+    from .map_species import map_species
+
+    map_species(input_file, output_file)
+
+
 schema_cli.add_command(schema_validate)
 schema_cli.add_command(migrate)
 schema_cli.add_command(remove_labels)
+schema_cli.add_command(map_species)
 
 if __name__ == "__main__":
     schema_cli()
