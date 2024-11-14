@@ -1975,7 +1975,6 @@ def validate(
     h5ad_path: Union[str, bytes, os.PathLike],
     add_labels_file: str = None,
     ignore_labels: bool = False,
-    verbose: bool = False,
 ) -> (bool, list, bool):
     from .write_labels import AnnDataLabelAppender
 
@@ -1992,10 +1991,6 @@ def validate(
 
     # Perform validation
     start = datetime.now()
-    if verbose:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO, format="%(message)s")
     validator = Validator(
         ignore_labels=ignore_labels,
     )
