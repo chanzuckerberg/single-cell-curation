@@ -150,6 +150,10 @@ def process_fragment(fragment_file: str, anndata_file: str, generate_index: bool
             if generate_index and not errors:
                 logging.info(f"Sorting fragment and generating index for {fragment_file}")
                 index_fragment(fragment_file, parquet_file, tempdir)
+            else:
+                logging.info("Errors found in Fragment and/or Anndata file")
+                logging.error(errors)
+                return False
 
 
 def validate(parquet_file: str, anndata_file: str):

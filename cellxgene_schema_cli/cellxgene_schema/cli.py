@@ -65,7 +65,8 @@ def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose):
 def fragment_validate(h5ad_file, fragment_file, index):
     from atac_seq import process_fragment
 
-    process_fragment(fragment_file, h5ad_file, generate_index=index)
+    if not process_fragment(fragment_file, h5ad_file, generate_index=index):
+        sys.exit(1)
 
 
 @schema_cli.command(
