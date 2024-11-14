@@ -13,7 +13,7 @@ def schema_cli():
     pass
 
 
-@click.command(
+@schema_cli.command(
     name="validate",
     short_help="Check that an h5ad follows the cellxgene data integration schema.",
     help="Check that an h5ad follows the cellxgene data integration schema. If validation fails this command will "
@@ -51,7 +51,24 @@ def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose):
         sys.exit(1)
 
 
-@click.command(
+@schema_cli.command(
+    name="validate-fragment",
+    short_help="Check that an ATAC SEQ fragment follows the cellxgene data integration schema.",
+    help="Check that an ATAC SEQ fragment follows the cellxgene data integration schema. If validation fails this "
+    "command will return an exit status of 1 otherwise 0. When the '--generate-index' tag is present, "
+    "the command will generate a tabix compatible version of the fragment and tabix index. The generated "
+    "fragment will have the file suffix .bgz and the index will have the file suffix .bgz.tbi.",
+)
+@click.argument("h5ad_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.argument("fragment_file", nargs=1, type=click.Path(exists=False, dir_okay=False))
+@click.option("-i", "--generate-index", help="Generate index for fragment", is_flag=True)
+def fragment_validate(h5ad_file, fragment_file, index):
+    from atac_seq import process_fragment
+
+    process_fragment(fragment_file, h5ad_file, generate_index=index)
+
+
+@schema_cli.command(
     name="remove-labels",
     short_help="Create a copy of an h5ad without portal-added labels",
     help="Create a copy of an h5ad without portal-added labels.",
@@ -78,7 +95,7 @@ def remove_labels(input_file, output_file):
     anndata_label_remover.adata.write(output_file, compression="gzip")
 
 
-@click.command(
+@schema_cli.command(
     name="migrate",
     short_help="Convert an h5ad to the latest schema version.",
     help="Convert an h5ad from the previous to latest minor schema version. No validation will be "
@@ -93,10 +110,6 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     migrate(input_file, output_file, collection_id, dataset_id)
 
-
-schema_cli.add_command(schema_validate)
-schema_cli.add_command(migrate)
-schema_cli.add_command(remove_labels)
 
 if __name__ == "__main__":
     schema_cli()

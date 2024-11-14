@@ -9,3 +9,7 @@ scipy<2
 semver<4
 xxhash<4
 matplotlib<4
+pysam
+dask
+dask-expr
+distributed
