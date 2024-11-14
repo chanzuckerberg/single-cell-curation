@@ -13,6 +13,7 @@ import dask.distributed as dd
 import pandas as pd
 import pysam
 from dask import delayed
+from dask.delayed import Delayed
 
 # TODO: these chromosome tables should be calculated from the fasta file?
 # location of fasta https://www.gencodegenes.org/human/release_44.html and file name GRCh38.primary_assembly.genome.fa
@@ -106,6 +107,7 @@ mouse_chromosome_by_length = {
     "JH584303.1": 158099,
     "JH584304.1": 114452,
 }
+
 column_ordering = ["chromosome", "start coordinate", "stop coordinate", "barcode", "read support"]
 allowed_chromosomes = list(set(itertools.chain(human_chromosome_by_length.keys(), mouse_chromosome_by_length.keys())))
 allowed_chromosomes.sort()
@@ -132,7 +134,8 @@ def process_fragment(fragment_file: str, anndata_file: str, generate_index: bool
         # the python gzip library.
         unzipped_file = Path(tempdir) / Path(fragment_file).name.replace(".gz", "")
         logging.info(f"Unzipping {fragment_file}")
-        subprocess.run(["gunzip", "-c", fragment_file], stdout=unzipped_file, check=True)
+        with open(unzipped_file, "wb") as fp:
+            subprocess.run(["gunzip", "-c", fragment_file], stdout=fp, check=True)
 
         with dd.LocalCluster(silence_logs=logging.ERROR, dashboard_address=None) as cluster, dd.Client(cluster):
             # convert the fragment to a parquet file
@@ -151,7 +154,7 @@ def process_fragment(fragment_file: str, anndata_file: str, generate_index: bool
                 logging.info(f"Sorting fragment and generating index for {fragment_file}")
                 index_fragment(fragment_file, parquet_file, tempdir)
             else:
-                logging.info("Errors found in Fragment and/or Anndata file")
+                logging.error("Errors found in Fragment and/or Anndata file")
                 logging.error(errors)
                 return False
 
@@ -191,22 +194,23 @@ def validate_fragment_stop_greater_than_start_coordinate(parquet_file: Path) -> 
 
 def validate_fragment_stop_coordinate_within_chromosome(parquet_file: Path, anndata_file: Path) -> Optional[str]:
     # check that the stop coordinate is within the length of the chromosome
-    # determine what organism the data is from
     chromome_length_table = pd.DataFrame(
         {"NCBITaxon:9606": human_chromosome_by_length, "NCBITaxon:10090": mouse_chromosome_by_length}
     )
-
-    def check_stop_length(row, mapping) -> bool:
-        chromosome_length = mapping[row["organism_ontology_term_id"]][row["chromosome"]]
-        return row["stop coordinate"] < chromosome_length
-
-    obs = ad.read_h5ad(anndata_file, backed="r").obs
-    obs = obs[["organism_ontology_term_id"]]
-    df = ddf.read_parquet(parquet_file, columns=["barcode", "chromosome", "stop coordinate"])
+    obs: pd.DataFrame = ad.read_h5ad(anndata_file, backed="r").obs
+    obs = obs[["organism_ontology_term_id"]]  # only the organism_ontology_term_id is needed
+    unique_organism_ontology_term_id = obs["organism_ontology_term_id"].unique()
+    df: ddf.DataFrame = ddf.read_parquet(
+        parquet_file, columns=["barcode", "chromosome", "stop coordinate"], chunksize=1000
+    )
     df = df.merge(obs, left_on="barcode", right_index=True)
-    length_ok = df.apply(check_stop_length, axis=1, meta=("bool"), mapping=chromome_length_table)
-    if not length_ok.all().compute():
-        return "Stop coordinate is greater than the length of the chromosome"
+    df = df.merge(chromome_length_table, left_on="chromosome", right_index=True)
+
+    for organism_ontology_term_id in unique_organism_ontology_term_id:
+        df_ = df[df["organism_ontology_term_id"] == organism_ontology_term_id]
+        df_ = df_["stop coordinate"] < df_[organism_ontology_term_id]
+        if not df_.all().compute():
+            return "Stop coordinate is greater than the length of the chromosome"
 
 
 def validate_fragment_read_support(parquet_file: Path) -> Optional[str]:
@@ -243,7 +247,7 @@ def index_fragment(fragment_file: str, parquet_file: Path, tempdir: tempfile.Tem
     # TODO: investigate why
     step = 4
     for i in range(0, len(jobs), step):
-        dd.compute(jobs[i : i + step])
+        dask.compute(jobs[i : i + step])
 
     pysam.tabix_index(bgzip_output_file, preset="bed", force=True)
 
@@ -282,7 +286,7 @@ def prepare_fragment(
     tempdir: str,
     write_lock: dd.Lock,
     write_algorithm: callable,
-) -> list[dd.Delayed]:
+) -> list[Delayed]:
     jobs = []
     for chromosome in chromosomes:
         temp_data = sort_fragment(parquet_file, tempdir, chromosome)

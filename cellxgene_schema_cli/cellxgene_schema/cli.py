@@ -1,6 +1,10 @@
+import logging
 import sys
 
 import click
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 
 @click.group(
@@ -62,10 +66,18 @@ def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose):
 @click.argument("h5ad_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
 @click.argument("fragment_file", nargs=1, type=click.Path(exists=False, dir_okay=False))
 @click.option("-i", "--generate-index", help="Generate index for fragment", is_flag=True)
-def fragment_validate(h5ad_file, fragment_file, index):
-    from atac_seq import process_fragment
+@click.option("-v", "--verbose", help="When present will set logging level to debug", is_flag=True)
+def fragment_validate(h5ad_file, fragment_file, generate_index, verbose):
+    from .atac_seq import process_fragment
 
-    if not process_fragment(fragment_file, h5ad_file, generate_index=index):
+    logging.basicConfig(level=logging.ERROR, format="%(message)s")
+    if verbose:
+
+        logging.getLogger("cellxgene-schema").setLevel(logging.DEBUG)
+    else:
+        logging.getLogger("cellxgene-schema").setLevel(logging.INFO)
+
+    if not process_fragment(fragment_file, h5ad_file, generate_index=generate_index):
         sys.exit(1)
 
 
