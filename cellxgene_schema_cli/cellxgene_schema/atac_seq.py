@@ -121,13 +121,16 @@ column_types = {
 }
 
 
-def process_fragment(fragment_file: str, anndata_file: str, generate_index: bool = False) -> bool:
+def process_fragment(
+    fragment_file: str, anndata_file: str, generate_index: bool = False, dask_cluster_config: Optional[dict] = None
+) -> bool:
     """
     Validate the fragment against the anndata file and generate the index if the fragment is valid.
 
     :param str fragment_file: The fragment file to process
     :param str anndata_file: The anndata file to validate against
     :param bool generate_index: Whether to generate the index for the fragment
+    :param dask_cluster_config: dask cluster configuration parameters passed to dask.distributed.LocalCluster
     """
     with tempfile.TemporaryDirectory() as tempdir:
         # unzip the fragment. Subprocess is used here because gzip on the cli uses less memory with comparable speed to
@@ -137,7 +140,11 @@ def process_fragment(fragment_file: str, anndata_file: str, generate_index: bool
         with open(unzipped_file, "wb") as fp:
             subprocess.run(["gunzip", "-c", fragment_file], stdout=fp, check=True)
 
-        with dd.LocalCluster(silence_logs=logging.ERROR, dashboard_address=None) as cluster, dd.Client(cluster):
+        _dask_cluster_config = dict(silence_logs=logging.ERROR, dashboard_address=None)
+        if dask_cluster_config:
+            _dask_cluster_config.update(dask_cluster_config)
+
+        with dd.LocalCluster(**_dask_cluster_config) as cluster, dd.Client(cluster):
             # convert the fragment to a parquet file
             logging.info(f"Converting {fragment_file} to parquet")
             parquet_file = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet")
@@ -222,8 +229,8 @@ def validate_fragment_read_support(parquet_file: Path) -> Optional[str]:
 
 def detect_chromosomes(parquet_file: Path) -> list[str]:
     logging.info("detecting chromosomes")
-    df = ddf.read_parquet(parquet_file, columns=["chromosome"]).drop_duplicates().persist()
-    return df["chromosome"].values
+    df = ddf.read_parquet(parquet_file, columns=["chromosome"]).drop_duplicates()
+    return df["chromosome"].values.compute()
 
 
 def index_fragment(fragment_file: str, parquet_file: Path, tempdir: tempfile.TemporaryDirectory):
@@ -253,7 +260,7 @@ def index_fragment(fragment_file: str, parquet_file: Path, tempdir: tempfile.Tem
 
 
 @delayed
-def sort_fragment(parquet_file: Path, write_path: Path, chromosome: str) -> Path:
+def sort_fragment(parquet_file: Path, write_path: str, chromosome: str) -> Path:
     temp_data = Path(write_path) / f"temp_{chromosome}.tsv"
     df = ddf.read_parquet(parquet_file, filters=[("chromosome", "==", chromosome)])
     df = df[column_ordering]
@@ -283,7 +290,7 @@ def prepare_fragment(
     chromosomes: list[str],
     parquet_file: Path,
     bgzip_output_file: str,
-    tempdir: str,
+    tempdir: tempfile.TemporaryDirectory,
     write_lock: dd.Lock,
     write_algorithm: callable,
 ) -> list[Delayed]:
