@@ -43,6 +43,19 @@ cellxgene-schema validate input.h5ad
 
 If the validation succeeds, the command returns a zero exit code; otherwise, it returns a non-zero exit code and prints validation failure messages.
 
+---
+
+This experimental validator also offers the option to annotate required columns `cell_type_ontology_term_id` and `tissue_ontology_term_id` in Zebrafish or Fruit Fly anndata BEFORE running validation commands above. 
+
+This relies on your anndata having the appropriate ZFA or FBbt terms labeled in `organism_cell_type_ontology_term_id` and `organism_tissue_ontology_term_id`, respectively. 
+
+```
+cellxgene-schema map-species output.h5ad input.h5ad
+```
+
+The command will find the closest CL (for cell_type) or UBERON (for tissue) mapping for the given term, offering either an exact match for the given term or a match from the closest possible ancestor term. 
+
+If there are multiple closest ancestors of the same distance with a match, the command will NOT annotate those rows and instead log your closest ancestor match options for your manual curation.
 
 ---
 
@@ -55,14 +68,6 @@ cellxgene-schema validate --add-labels output.h5ad input.h5ad
 This execution validates the dataset as above AND adds the human-readable labels for the ontology and gene IDs as defined in the schema. If the validation is successful, a new AnnData file (output.h5ad) is written to disk with the labels appended.
 
 This option SHOULD NOT be used by data contributors.
-
----
-
-This experimental validator also offers the option to annotate required columns 'cell_type_ontology_term_id' and 'tissue_ontology_term_id' in Zebrafish or Fruit Fly anndata BEFORE running validation commands above. It relies on your anndata having the appropriate ZFA or FBbt terms labeled in 'organism_cell_type_ontology_term_id' and 'organism_tissue_ontology_term_id', respectively. The command will find the closest CL (for cell_type) or UBERON (for tissue) mapping for the given term, offering either an exact match for the given term or a match from the closest possible ancestor term. If there are multiple closest ancestors of the same distance with a match, the command will NOT annotate those rows and instead log your closest ancestor match options for your manual curation.
-
-```
-cellxgene-schema map-species output.h5ad input.h5ad
-```
 
 ## Contributing
 
