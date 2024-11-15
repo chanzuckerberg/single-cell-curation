@@ -56,6 +56,14 @@ This execution validates the dataset as above AND adds the human-readable labels
 
 This option SHOULD NOT be used by data contributors.
 
+---
+
+This experimental validator also offers the option to annotate required columns 'cell_type_ontology_term_id' and 'tissue_ontology_term_id' in Zebrafish or Fruit Fly anndata BEFORE running validation commands above. It relies on your anndata having the appropriate ZFA or FBbt terms labeled in 'organism_cell_type_ontology_term_id' and 'organism_tissue_ontology_term_id', respectively. The command will find the closest CL (for cell_type) or UBERON (for tissue) mapping for the given term, offering either an exact match for the given term or a match from the closest possible ancestor term. If there are multiple closest ancestors of the same distance with a match, the command will NOT annotate those rows and instead log your closest ancestor match options for your manual curation.
+
+```
+cellxgene-schema map-species output.h5ad input.h5ad
+```
+
 ## Contributing
 
 Please read our contributing [guidelines](CONTRIBUTING.md) and make sure adhere to the Contributor Covenant [code of conduct](https://github.com/chanzuckerberg/.github/blob/master/CODE_OF_CONDUCT.md). 
