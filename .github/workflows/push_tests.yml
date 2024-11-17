@@ -182,7 +182,7 @@ jobs:
         run: |
           make coverage/report-xml
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           env_vars: OS,PYTHON
           files: ./coverage.xml
