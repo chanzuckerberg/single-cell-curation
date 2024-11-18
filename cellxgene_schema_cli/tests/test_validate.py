@@ -27,10 +27,8 @@ from fixtures.examples_validate import (
     adata_visium,
     adata_with_labels,
     good_obs,
-    good_obsm,
     good_uns,
     good_uns_with_visium_spatial,
-    good_var,
     h5ad_invalid,
     h5ad_valid,
     visium_library_id,
@@ -995,6 +993,7 @@ class TestCheckSpatial:
             f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
             in validator.errors[0]
         )
+
 
 class TestValidatorValidateDataFrame:
     @pytest.mark.parametrize("_type", [np.int64, np.int32, int, np.float64, np.float32, float, str])

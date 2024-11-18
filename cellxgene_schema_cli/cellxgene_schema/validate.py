@@ -1827,10 +1827,6 @@ class Validator:
         # Checks spatial
         self._check_spatial()
 
-        # Checks Seurat convertibility
-        logger.debug("Validating Seurat convertibility...")
-        self._validate_seurat_convertibility()
-
         # Checks each component
         for component_name, component_def in self.schema_def["components"].items():
             logger.debug(f"Validating component: {component_name}")
@@ -1954,9 +1950,6 @@ def validate(
             f"{writer.was_writing_successful}"
         )
 
-        return (
-            validator.is_valid and writer.was_writing_successful,
-            validator.errors + writer.errors
-        )
+        return (validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors)
 
     return True, validator.errors
