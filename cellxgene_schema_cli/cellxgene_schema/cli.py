@@ -72,7 +72,6 @@ def fragment_validate(h5ad_file, fragment_file, generate_index, verbose):
 
     logging.basicConfig(level=logging.ERROR, format="%(message)s")
     if verbose:
-
         logging.getLogger("cellxgene-schema").setLevel(logging.DEBUG)
     else:
         logging.getLogger("cellxgene-schema").setLevel(logging.INFO)

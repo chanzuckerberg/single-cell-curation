@@ -15,6 +15,8 @@ import pysam
 from dask import delayed
 from dask.delayed import Delayed
 
+logger = logging.getLogger(__name__)
+
 # TODO: these chromosome tables should be calculated from the fasta file?
 # location of fasta https://www.gencodegenes.org/human/release_44.html and file name GRCh38.primary_assembly.genome.fa
 human_chromosome_by_length = {
@@ -136,7 +138,7 @@ def process_fragment(
         # unzip the fragment. Subprocess is used here because gzip on the cli uses less memory with comparable speed to
         # the python gzip library.
         unzipped_file = Path(tempdir) / Path(fragment_file).name.replace(".gz", "")
-        logging.info(f"Unzipping {fragment_file}")
+        logger.info(f"Unzipping {fragment_file}")
         with open(unzipped_file, "wb") as fp:
             subprocess.run(["gunzip", "-c", fragment_file], stdout=fp, check=True)
 
@@ -146,24 +148,26 @@ def process_fragment(
 
         with dd.LocalCluster(**_dask_cluster_config) as cluster, dd.Client(cluster):
             # convert the fragment to a parquet file
-            logging.info(f"Converting {fragment_file} to parquet")
+            logger.info(f"Converting {fragment_file} to parquet")
             parquet_file = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet")
             ddf.read_csv(unzipped_file, sep="\t", names=column_ordering, dtype=column_types).to_parquet(
                 parquet_file, partition_on=["chromosome"], compute=True
             )
 
             # remove the unzipped file
-            logging.debug(f"Removing {unzipped_file}")
+            logger.debug(f"Removing {unzipped_file}")
             unzipped_file.unlink()
 
             errors = validate(parquet_file, anndata_file)
             if generate_index and not errors:
-                logging.info(f"Sorting fragment and generating index for {fragment_file}")
+                logger.info(f"Sorting fragment and generating index for {fragment_file}")
                 index_fragment(fragment_file, parquet_file, tempdir)
             else:
-                logging.error("Errors found in Fragment and/or Anndata file")
-                logging.error(errors)
+                logger.error("Errors found in Fragment and/or Anndata file")
+                logger.error(errors)
                 return False
+            logger.info("cleaning up")
+        logger.info(f"Fragment {fragment_file} processed successfully")
 
 
 def validate(parquet_file: str, anndata_file: str):
@@ -228,7 +232,7 @@ def validate_fragment_read_support(parquet_file: Path) -> Optional[str]:
 
 
 def detect_chromosomes(parquet_file: Path) -> list[str]:
-    logging.info("detecting chromosomes")
+    logger.info("detecting chromosomes")
     df = ddf.read_parquet(parquet_file, columns=["chromosome"]).drop_duplicates()
     return df["chromosome"].values.compute()
 
@@ -242,7 +246,7 @@ def index_fragment(fragment_file: str, parquet_file: Path, tempdir: tempfile.Tem
     bgzip_write_lock = dd.Lock()  # lock to preserver write order
 
     if not shutil.which("bgzip"):  # check if bgzip cli is installed
-        logging.warning("bgzip is not installed, using slower pysam implementation")
+        logger.warning("bgzip is not installed, using slower pysam implementation")
         write_algorithm = write_algorithm_by_callable["pysam"]
     else:
         write_algorithm = write_algorithm_by_callable["cli"]
@@ -253,6 +257,7 @@ def index_fragment(fragment_file: str, parquet_file: Path, tempdir: tempfile.Tem
     # step variable. If we run all the jobs in the same call to dask.compute, the local cluster hangs.
     # TODO: investigate why
     step = 4
+    # print the progress of the jobs
     for i in range(0, len(jobs), step):
         dask.compute(jobs[i : i + step])
 
