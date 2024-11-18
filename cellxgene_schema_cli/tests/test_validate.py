@@ -27,10 +27,8 @@ from fixtures.examples_validate import (
     adata_visium,
     adata_with_labels,
     good_obs,
-    good_obsm,
     good_uns,
     good_uns_with_visium_spatial,
-    good_var,
     h5ad_invalid,
     h5ad_valid,
     visium_library_id,
@@ -297,7 +295,7 @@ class TestValidate:
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
 
-            success, errors, is_seurat_convertible = validate(h5ad_valid, labels_path)
+            success, errors = validate(h5ad_valid, labels_path)
 
             import anndata as ad
 
@@ -306,36 +304,32 @@ class TestValidate:
             assert adata.raw.X.has_canonical_format
             assert success
             assert not errors
-            assert is_seurat_convertible
             assert os.path.exists(labels_path)
             expected_hash = "55fbc095218a01cad33390f534d6690af0ecd6593f27d7cd4d26e91072ea8835"
             original_hash = self.hash_file(h5ad_valid)
             assert original_hash != expected_hash, "Writing labels did not change the dataset from the original."
 
     def test__validate_with_h5ad_valid_and_without_labels(self):
-        success, errors, is_seurat_convertible = validate(h5ad_valid)
+        success, errors = validate(h5ad_valid)
 
         assert success
         assert not errors
-        assert is_seurat_convertible
 
     def test__validate_with_h5ad_invalid_and_with_labels(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
 
-            success, errors, is_seurat_convertible = validate(h5ad_invalid, labels_path)
+            success, errors = validate(h5ad_invalid, labels_path)
 
             assert not success
             assert errors
-            assert is_seurat_convertible
             assert not os.path.exists(labels_path)
 
     def test__validate_with_h5ad_invalid_and_without_labels(self):
-        success, errors, is_seurat_convertible = validate(h5ad_invalid)
+        success, errors = validate(h5ad_invalid)
 
         assert not success
         assert errors
-        assert is_seurat_convertible
 
 
 class TestCheckSpatial:
@@ -999,56 +993,6 @@ class TestCheckSpatial:
             f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
             in validator.errors[0]
         )
-
-
-class TestSeuratConvertibility:
-    def validation_helper(self, matrix, raw=None):
-        data = anndata.AnnData(X=matrix, obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var)
-        if raw:
-            data.raw = raw
-        self.validator: Validator = Validator()
-        self.validator._set_schema_def()
-        self.validator.schema_def["max_size_for_seurat"] = 2**3 - 1  # Reduce size required to fail (faster tests)
-        self.validator.adata = data
-
-    def test_determine_seurat_convertibility(self):
-        # Sparse matrix with too many nonzero values is not Seurat-convertible
-        sparse_matrix_too_large = sparse.csr_matrix(np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32))
-        self.validation_helper(sparse_matrix_too_large)
-        self.validator._validate_seurat_convertibility()
-        assert len(self.validator.warnings) == 1
-        assert not self.validator.is_seurat_convertible
-
-        # Reducing nonzero count by 1, to within limit, makes it Seurat-convertible
-        sparse_matrix_with_zero = sparse.csr_matrix(np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32))
-        sparse_matrix_with_zero[0, 0] = 0
-        self.validation_helper(sparse_matrix_with_zero)
-        self.validator._validate_seurat_convertibility()
-        assert len(self.validator.warnings) == 0
-        assert self.validator.is_seurat_convertible
-
-        # Dense matrices with a dimension that exceeds limit will fail -- zeros are irrelevant
-        dense_matrix_with_zero = np.zeros((good_obs.shape[0], good_var.shape[0]), dtype=np.float32)
-        self.validation_helper(dense_matrix_with_zero)
-        self.validator.schema_def["max_size_for_seurat"] = 2**2 - 1
-        self.validator._validate_seurat_convertibility()
-        assert len(self.validator.warnings) == 1
-        assert not self.validator.is_seurat_convertible
-
-        # Dense matrices with dimensions in bounds but total count over will succeed
-        dense_matrix = np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32)
-        self.validation_helper(dense_matrix)
-        self.validator.schema_def["max_size_for_seurat"] = 2**3 - 1
-        self.validator._validate_seurat_convertibility()
-        assert len(self.validator.warnings) == 0
-        assert self.validator.is_seurat_convertible
-
-        # Visium datasets are not Seurat-convertible
-        self.validation_helper(sparse_matrix_with_zero)
-        self.validator.adata.obs = adata_visium.obs.copy()
-        self.validator._validate_seurat_convertibility()
-        assert len(self.validator.warnings) == 1
-        assert not self.validator.is_seurat_convertible
 
 
 class TestValidatorValidateDataFrame:
