@@ -159,15 +159,17 @@ def process_fragment(
             unzipped_file.unlink()
 
             errors = validate(parquet_file, anndata_file)
-            if generate_index and not errors:
-                logger.info(f"Sorting fragment and generating index for {fragment_file}")
-                index_fragment(fragment_file, parquet_file, tempdir)
-            else:
+            if any(errors):
                 logger.error("Errors found in Fragment and/or Anndata file")
                 logger.error(errors)
                 return False
-            logger.info("cleaning up")
-        logger.info(f"Fragment {fragment_file} processed successfully")
+            else:
+                logger.info("Fragment and Anndata file are valid")
+
+            if generate_index:
+                logger.info(f"Sorting fragment and generating index for {fragment_file}")
+                index_fragment(fragment_file, parquet_file, tempdir)
+        logger.debug("cleaning up")
 
 
 def validate(parquet_file: str, anndata_file: str):
@@ -211,9 +213,7 @@ def validate_fragment_stop_coordinate_within_chromosome(parquet_file: Path, annd
     obs: pd.DataFrame = ad.read_h5ad(anndata_file, backed="r").obs
     obs = obs[["organism_ontology_term_id"]]  # only the organism_ontology_term_id is needed
     unique_organism_ontology_term_id = obs["organism_ontology_term_id"].unique()
-    df: ddf.DataFrame = ddf.read_parquet(
-        parquet_file, columns=["barcode", "chromosome", "stop coordinate"], chunksize=1000
-    )
+    df: ddf.DataFrame = ddf.read_parquet(parquet_file, columns=["barcode", "chromosome", "stop coordinate"])
     df = df.merge(obs, left_on="barcode", right_index=True)
     df = df.merge(chromome_length_table, left_on="chromosome", right_index=True)
 
@@ -261,7 +261,11 @@ def index_fragment(fragment_file: str, parquet_file: Path, tempdir: tempfile.Tem
     for i in range(0, len(jobs), step):
         dask.compute(jobs[i : i + step])
 
+    logger.info(f"Fragment sorted and compressed: {bgzip_output_file}")
+
     pysam.tabix_index(bgzip_output_file, preset="bed", force=True)
+    tabix_output_file = bgzip_output_file + ".tbi"
+    logger.info(f"Index file generated: {tabix_output_file}")
 
 
 @delayed

@@ -3,9 +3,6 @@ import sys
 
 import click
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-
 
 @click.group(
     name="schema",
@@ -70,11 +67,11 @@ def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose):
 def fragment_validate(h5ad_file, fragment_file, generate_index, verbose):
     from .atac_seq import process_fragment
 
-    logging.basicConfig(level=logging.ERROR, format="%(message)s")
+    logging.basicConfig(level=logging.ERROR)
     if verbose:
-        logging.getLogger("cellxgene-schema").setLevel(logging.DEBUG)
+        logging.getLogger("cellxgene_schema").setLevel(logging.DEBUG)
     else:
-        logging.getLogger("cellxgene-schema").setLevel(logging.INFO)
+        logging.getLogger("cellxgene_schema").setLevel(logging.INFO)
 
     if not process_fragment(fragment_file, h5ad_file, generate_index=generate_index):
         sys.exit(1)
