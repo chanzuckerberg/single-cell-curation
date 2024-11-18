@@ -333,6 +333,32 @@ class TestValidate:
 
 
 class TestCheckSpatial:
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, expected_is_visium",
+        [
+            # Parent term for Visium Spatial Gene Expression. This term and all its descendants are Visium
+            ("EFO:0010961", True),
+            # TODO: figure out how to pull in updated COG terms
+            # Visium Spatial Gene Expression V1
+            ("EFO:0022857", True),
+            # Visium CytAssist Spatial Gene Expression V2
+            ("EFO:0022858", True),
+            # Visium CytAssist Spatial Gene Expression, 11mm
+            ("EFO:0022860", True),
+            # Visium CytAssist Spatial Gene Expression, 6.5mm
+            ("EFO:0022859", True),
+            # Random other EFO term
+            ("EFO:0003740", False),
+        ],
+    )
+    def test__is_visium_descendant(self, assay_ontology_term_id, expected_is_visium):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+
+        assert validator._is_visium() == expected_is_visium
+
     def test__validate_spatial_visium_ok(self):
         validator: Validator = Validator()
         validator._set_schema_def()

@@ -29,7 +29,7 @@ ASSAY_SLIDE_SEQV2 = "EFO:0030062"
 VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 4992
 SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE = 2000
 
-ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = "obs['assay_ontology_term_id'] 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True"
+ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = "descendants of obs['assay_ontology_term_id'] 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN = f"is only allowed for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED = f"is required for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0 = f"{ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE} and in_tissue is 0"
@@ -1480,7 +1480,7 @@ class Validator:
 
         # Validate cell type: must be "unknown" if Visium and is_single is True and in_tissue is 0.
         if (
-            (self.adata.obs["assay_ontology_term_id"] == ASSAY_VISIUM)
+            self._is_visium()
             & (self.adata.obs["in_tissue"] == 0)
             & (self.adata.obs["cell_type_ontology_term_id"] != "unknown")
         ).any():
@@ -1750,14 +1750,22 @@ class Validator:
 
     def _is_visium(self) -> bool:
         """
-        Determine if the assay_ontology_term_id is Visium (EFO:0010961).
+        Determine if the assay_ontology_term_id is Visium (descendant of EFO:0010961).
 
         :return True if assay_ontology_term_id is Visium, False otherwise.
         :rtype bool
         """
         if self.is_visium is None:
             assay_ontology_term_id = self.adata.obs.get("assay_ontology_term_id")
-            self.is_visium = assay_ontology_term_id is not None and (assay_ontology_term_id == ASSAY_VISIUM).any()
+
+            if assay_ontology_term_id is not None:
+                # Ensure assay_ontology_term_id is a Series and process each term
+                self.is_visium = assay_ontology_term_id.apply(
+                    lambda term: ONTOLOGY_PARSER.get_lowest_common_ancestors(ASSAY_VISIUM, term) == [ASSAY_VISIUM]
+                ).any()
+            else:
+                self.is_visium = False
+
         return self.is_visium
 
     def _validate_spatial_image_shape(self, image_name: str, image: np.ndarray, max_dimension: int = None):
