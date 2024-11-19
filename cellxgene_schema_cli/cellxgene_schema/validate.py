@@ -21,7 +21,7 @@ from .utils import SPARSE_MATRIX_TYPES, get_matrix_format, getattr_anndata, read
 
 logger = logging.getLogger(__name__)
 
-ONTOLOGY_PARSER = OntologyParser(schema_version=f"v{schema.get_current_schema_version()}")
+ONTOLOGY_PARSER = OntologyParser(schema_version="v5.3.0")
 
 ASSAY_VISIUM = "EFO:0010961"
 ASSAY_SLIDE_SEQV2 = "EFO:0030062"
@@ -1760,9 +1760,15 @@ class Validator:
 
             if assay_ontology_term_id is not None:
                 # Ensure assay_ontology_term_id is a Series and process each term
-                self.is_visium = assay_ontology_term_id.apply(
-                    lambda term: ONTOLOGY_PARSER.get_lowest_common_ancestors(ASSAY_VISIUM, term) == [ASSAY_VISIUM]
-                ).any()
+                try:
+                    self.is_visium = assay_ontology_term_id.apply(
+                        lambda term: ONTOLOGY_PARSER.get_lowest_common_ancestors(ASSAY_VISIUM, term) == [ASSAY_VISIUM]
+                    ).any()
+                except KeyError as e:
+                    # This generally means the assay_ontology_term_id is invalid, but we want the error to be raised
+                    # by our explicit validator checks, not this implicit one.
+                    logger.warning(f"KeyError processing assay_ontology_term_id ontology: {e}")
+                    self.is_visium = False
             else:
                 self.is_visium = False
 
