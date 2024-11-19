@@ -1475,7 +1475,7 @@ class Validator:
         # Exit if:
         # - not Visium and is_single is True as no further checks are necessary
         # - in_tissue is not specified as checks are dependent on this value
-        if not self._is_visium_and_is_single_true() or "in_tissue" not in self.adata.obs:
+        if not self._is_visium_including_descendants() and self._is_single() or "in_tissue" not in self.adata.obs:
             return
 
         # Validate cell type: must be "unknown" if Visium and is_single is True and in_tissue is 0.

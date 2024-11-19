@@ -537,9 +537,6 @@ class TestObs:
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"]["assay_ontology_term_id"][
             "error_message_suffix"
         ]
-        print(validator.adata.obs.loc[validator.adata.obs.index[0], "assay_ontology_term_id"])
-        print(validator.validate_adata())
-        print(validator.errors)
         assert validator.errors == [self.get_format_error_message(error_message_suffix, error)]
 
     def test_cell_type_ontology_term_id_invalid_term(self, validator_with_adata):

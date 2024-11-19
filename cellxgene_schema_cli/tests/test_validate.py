@@ -983,33 +983,54 @@ class TestCheckSpatial:
         assert f"obs['{tissue_position_name}'] must be {error_message_token}" in validator.errors[0]
 
     @pytest.mark.parametrize(
-        "cell_type_ontology_term_id, in_tissue",
-        [("unknown", 0), (["unknown", "CL:0000066"], [0, 1]), ("CL:0000066", 1)],
+        "cell_type_ontology_term_id, in_tissue, assay_ontology_term_id",
+        [
+            # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium Spatial Gene Expression
+            ("unknown", 0, "EFO:0010961"),
+            # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium CytAssist Spatial Gene Expression, 11mm
+            ("unknown", 0, "EFO:0022860"),
+            # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium Spatial Gene Expression V1
+            # valid CL term is ok when in_tissue = 1 and assay_ontology_term_id = Visium CytAssist Spatial Gene Expression, 11mm
+            (["unknown", "CL:0000066"], [0, 1], ["EFO:0022857", "EFO:0022860"]),
+            # normal CL term for in_tissue = 1 and assay_ontology_term_id = 10x 3' v2
+            ("CL:0000066", 1, "EFO:0009899"),
+        ],
     )
-    def test__validate_cell_type_ontology_term_id_ok(self, cell_type_ontology_term_id, in_tissue):
+    def test__validate_cell_type_ontology_term_id_ok(
+        self, cell_type_ontology_term_id, in_tissue, assay_ontology_term_id
+    ):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
         validator.adata.obs.cell_type_ontology_term_id = cell_type_ontology_term_id
         validator.adata.obs.in_tissue = in_tissue
+        validator.adata.obs.assay_ontology_term_id = assay_ontology_term_id
 
         # Confirm cell type is valid.
         validator._validate_spatial_cell_type_ontology_term_id()
         assert not validator.errors
 
     @pytest.mark.parametrize(
-        "cell_type_ontology_term_id, in_tissue",
+        "cell_type_ontology_term_id, in_tissue, assay_ontology_term_id",
         [
-            ("CL:0000066", 0),
-            (["CL:0000066", "unknown"], [0, 1]),
+            # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium Spatial Gene Expression
+            ("CL:0000066", 0, "EFO:0010961"),
+            (["CL:0000066", "unknown"], [0, 1], ["EFO:0010961", "EFO:0010961"]),
+            # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium CytAssist Spatial Gene Expression, 11mm
+            ("CL:0000066", 0, "EFO:0022860"),
+            # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium Spatial Gene Expression V1
+            ("CL:0000066", 0, "EFO:0022857"),
         ],
     )
-    def test__validate_cell_type_ontology_term_id_error(self, cell_type_ontology_term_id, in_tissue):
+    def test__validate_cell_type_ontology_term_id_error(
+        self, cell_type_ontology_term_id, in_tissue, assay_ontology_term_id
+    ):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
         validator.adata.obs.cell_type_ontology_term_id = cell_type_ontology_term_id
         validator.adata.obs.in_tissue = in_tissue
+        validator.adata.obs.assay_ontology_term_id = assay_ontology_term_id
 
         # Confirm errors.
         validator._validate_spatial_cell_type_ontology_term_id()
