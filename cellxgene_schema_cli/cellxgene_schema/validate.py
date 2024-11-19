@@ -1759,11 +1759,16 @@ class Validator:
             assay_ontology_term_id = self.adata.obs.get("assay_ontology_term_id")
 
             if assay_ontology_term_id is not None:
-                # Ensure assay_ontology_term_id is a Series and process each term
+                # Convert to a regular Series if it's Categorical
+                assay_ontology_term_id = pd.Series(assay_ontology_term_id)
+
+                # Check if any term is a descendant of ASSAY_VISIUM
                 try:
-                    self.is_visium = assay_ontology_term_id.apply(
-                        lambda term: ONTOLOGY_PARSER.get_lowest_common_ancestors(ASSAY_VISIUM, term) == [ASSAY_VISIUM]
-                    ).any()
+                    visium_results = assay_ontology_term_id.apply(
+                        lambda term: ASSAY_VISIUM
+                        in list(ONTOLOGY_PARSER.get_lowest_common_ancestors(ASSAY_VISIUM, term))
+                    )
+                    self.is_visium = visium_results.astype(bool).any()
                 except KeyError as e:
                     # This generally means the assay_ontology_term_id is invalid, but we want the error to be raised
                     # by our explicit validator checks, not this implicit one.

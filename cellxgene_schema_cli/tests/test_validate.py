@@ -338,7 +338,6 @@ class TestCheckSpatial:
         [
             # Parent term for Visium Spatial Gene Expression. This term and all its descendants are Visium
             ("EFO:0010961", True),
-            # TODO: figure out how to pull in updated COG terms
             # Visium Spatial Gene Expression V1
             ("EFO:0022857", True),
             # Visium CytAssist Spatial Gene Expression V2
