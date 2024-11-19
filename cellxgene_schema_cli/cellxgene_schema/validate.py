@@ -1480,7 +1480,7 @@ class Validator:
 
         # Validate cell type: must be "unknown" if Visium and is_single is True and in_tissue is 0.
         if (
-            self._is_visium()
+            self._is_visium_including_descendants()
             & (self.adata.obs["in_tissue"] == 0)
             & (self.adata.obs["cell_type_ontology_term_id"] != "unknown")
         ).any():
@@ -1749,6 +1749,18 @@ class Validator:
         return len(image.shape) == 3 and image.shape[2] in [3, 4]
 
     def _is_visium(self) -> bool:
+        """
+        Determine if the assay_ontology_term_id is Visium (EFO:0010961).
+
+        :return True if assay_ontology_term_id is Visium, False otherwise.
+        :rtype bool
+        """
+        if self.is_visium is None:
+            assay_ontology_term_id = self.adata.obs.get("assay_ontology_term_id")
+            self.is_visium = assay_ontology_term_id is not None and (assay_ontology_term_id == ASSAY_VISIUM).any()
+        return self.is_visium
+
+    def _is_visium_including_descendants(self) -> bool:
         """
         Determine if the assay_ontology_term_id is Visium (descendant of EFO:0010961).
 

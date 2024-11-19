@@ -356,7 +356,7 @@ class TestCheckSpatial:
         validator.adata = adata_visium.copy()
         validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
 
-        assert validator._is_visium() == expected_is_visium
+        assert validator._is_visium_including_descendants() == expected_is_visium
 
     def test__validate_spatial_visium_ok(self):
         validator: Validator = Validator()
