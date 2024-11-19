@@ -21,7 +21,7 @@ from .utils import SPARSE_MATRIX_TYPES, get_matrix_format, getattr_anndata, read
 
 logger = logging.getLogger(__name__)
 
-ONTOLOGY_PARSER = OntologyParser(schema_version=f"v{schema.get_current_schema_version()}")
+ONTOLOGY_PARSER = OntologyParser(schema_version="v5.3.0")
 
 ASSAY_VISIUM = "EFO:0010961"
 ASSAY_SLIDE_SEQV2 = "EFO:0030062"
@@ -29,7 +29,7 @@ ASSAY_SLIDE_SEQV2 = "EFO:0030062"
 VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 4992
 SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE = 2000
 
-ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = "obs['assay_ontology_term_id'] 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True"
+ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = "descendants of obs['assay_ontology_term_id'] 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN = f"is only allowed for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED = f"is required for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0 = f"{ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE} and in_tissue is 0"
@@ -1475,12 +1475,12 @@ class Validator:
         # Exit if:
         # - not Visium and is_single is True as no further checks are necessary
         # - in_tissue is not specified as checks are dependent on this value
-        if not self._is_visium_and_is_single_true() or "in_tissue" not in self.adata.obs:
+        if not self._is_visium_including_descendants() and self._is_single() or "in_tissue" not in self.adata.obs:
             return
 
         # Validate cell type: must be "unknown" if Visium and is_single is True and in_tissue is 0.
         if (
-            (self.adata.obs["assay_ontology_term_id"] == ASSAY_VISIUM)
+            self._is_visium_including_descendants()
             & (self.adata.obs["in_tissue"] == 0)
             & (self.adata.obs["cell_type_ontology_term_id"] != "unknown")
         ).any():
@@ -1758,6 +1758,37 @@ class Validator:
         if self.is_visium is None:
             assay_ontology_term_id = self.adata.obs.get("assay_ontology_term_id")
             self.is_visium = assay_ontology_term_id is not None and (assay_ontology_term_id == ASSAY_VISIUM).any()
+        return self.is_visium
+
+    def _is_visium_including_descendants(self) -> bool:
+        """
+        Determine if the assay_ontology_term_id is Visium (descendant of EFO:0010961).
+
+        :return True if assay_ontology_term_id is Visium, False otherwise.
+        :rtype bool
+        """
+        if self.is_visium is None:
+            assay_ontology_term_id = self.adata.obs.get("assay_ontology_term_id")
+
+            if assay_ontology_term_id is not None:
+                # Convert to a regular Series if it's Categorical
+                assay_ontology_term_id = pd.Series(assay_ontology_term_id)
+
+                # Check if any term is a descendant of ASSAY_VISIUM
+                try:
+                    visium_results = assay_ontology_term_id.apply(
+                        lambda term: ASSAY_VISIUM
+                        in list(ONTOLOGY_PARSER.get_lowest_common_ancestors(ASSAY_VISIUM, term))
+                    )
+                    self.is_visium = visium_results.astype(bool).any()
+                except KeyError as e:
+                    # This generally means the assay_ontology_term_id is invalid, but we want the error to be raised
+                    # by our explicit validator checks, not this implicit one.
+                    logger.warning(f"KeyError processing assay_ontology_term_id ontology: {e}")
+                    self.is_visium = False
+            else:
+                self.is_visium = False
+
         return self.is_visium
 
     def _validate_spatial_image_shape(self, image_name: str, image: np.ndarray, max_dimension: int = None):
