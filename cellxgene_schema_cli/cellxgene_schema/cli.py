@@ -61,7 +61,7 @@ def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose):
     "fragment will have the file suffix .bgz and the index will have the file suffix .bgz.tbi.",
 )
 @click.argument("h5ad_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
-@click.argument("fragment_file", nargs=1, type=click.Path(exists=False, dir_okay=False))
+@click.argument("fragment_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
 @click.option("-i", "--generate-index", help="Generate index for fragment", is_flag=True)
 @click.option("-v", "--verbose", help="When present will set logging level to debug", is_flag=True)
 def fragment_validate(h5ad_file, fragment_file, generate_index, verbose):
