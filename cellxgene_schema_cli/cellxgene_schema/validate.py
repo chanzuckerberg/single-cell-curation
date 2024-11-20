@@ -1004,7 +1004,7 @@ class Validator:
                 if np.isinf(value).any():
                     issue_list.append(f"adata.obsm['{key}'] contains positive infinity or negative infinity values.")
 
-                # spatial embeddings can't have any NaN
+                # spatial embeddings can't have any NaN; other embeddings can't be all NaNs
                 if key_is_spatial and np.any(np.isnan(value)):
                     issue_list.append("adata.obs['spatial] contains at least one NaN value.")
                 elif np.all(np.isnan(value)):
