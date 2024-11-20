@@ -172,7 +172,7 @@ def process_fragment(
         logger.debug("cleaning up")
 
 
-def validate(parquet_file: str, anndata_file: str):
+def validate(parquet_file: str, anndata_file: str) -> list[Optional[str]]:
     jobs = [
         validate_fragment_start_coordinate_greater_than_0(parquet_file),
         validate_fragment_barcode_in_adata_index(parquet_file, anndata_file),
@@ -180,7 +180,7 @@ def validate(parquet_file: str, anndata_file: str):
         validate_fragment_stop_greater_than_start_coordinate(parquet_file),
         validate_fragment_read_support(parquet_file),
     ]
-    return [i for i in dask.compute(*jobs) if i]
+    return jobs
 
 
 def validate_fragment_start_coordinate_greater_than_0(parquet_file: Path) -> Optional[str]:
