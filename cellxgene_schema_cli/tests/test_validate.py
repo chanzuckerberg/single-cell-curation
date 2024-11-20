@@ -27,10 +27,8 @@ from fixtures.examples_validate import (
     adata_visium,
     adata_with_labels,
     good_obs,
-    good_obsm,
     good_uns,
     good_uns_with_visium_spatial,
-    good_var,
     h5ad_invalid,
     h5ad_valid,
     visium_library_id,
@@ -297,7 +295,7 @@ class TestValidate:
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
 
-            success, errors, is_seurat_convertible = validate(h5ad_valid, labels_path)
+            success, errors = validate(h5ad_valid, labels_path)
 
             import anndata as ad
 
@@ -306,39 +304,60 @@ class TestValidate:
             assert adata.raw.X.has_canonical_format
             assert success
             assert not errors
-            assert is_seurat_convertible
             assert os.path.exists(labels_path)
             expected_hash = "55fbc095218a01cad33390f534d6690af0ecd6593f27d7cd4d26e91072ea8835"
             original_hash = self.hash_file(h5ad_valid)
             assert original_hash != expected_hash, "Writing labels did not change the dataset from the original."
 
     def test__validate_with_h5ad_valid_and_without_labels(self):
-        success, errors, is_seurat_convertible = validate(h5ad_valid)
+        success, errors = validate(h5ad_valid)
 
         assert success
         assert not errors
-        assert is_seurat_convertible
 
     def test__validate_with_h5ad_invalid_and_with_labels(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
 
-            success, errors, is_seurat_convertible = validate(h5ad_invalid, labels_path)
+            success, errors = validate(h5ad_invalid, labels_path)
 
             assert not success
             assert errors
-            assert is_seurat_convertible
             assert not os.path.exists(labels_path)
 
     def test__validate_with_h5ad_invalid_and_without_labels(self):
-        success, errors, is_seurat_convertible = validate(h5ad_invalid)
+        success, errors = validate(h5ad_invalid)
 
         assert not success
         assert errors
-        assert is_seurat_convertible
 
 
 class TestCheckSpatial:
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, expected_is_visium",
+        [
+            # Parent term for Visium Spatial Gene Expression. This term and all its descendants are Visium
+            ("EFO:0010961", True),
+            # Visium Spatial Gene Expression V1
+            ("EFO:0022857", True),
+            # Visium CytAssist Spatial Gene Expression V2
+            ("EFO:0022858", True),
+            # Visium CytAssist Spatial Gene Expression, 11mm
+            ("EFO:0022860", True),
+            # Visium CytAssist Spatial Gene Expression, 6.5mm
+            ("EFO:0022859", True),
+            # Random other EFO term
+            ("EFO:0003740", False),
+        ],
+    )
+    def test__is_visium_descendant(self, assay_ontology_term_id, expected_is_visium):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+
+        assert validator._is_visium_including_descendants() == expected_is_visium
+
     def test__validate_spatial_visium_ok(self):
         validator: Validator = Validator()
         validator._set_schema_def()
@@ -964,33 +983,54 @@ class TestCheckSpatial:
         assert f"obs['{tissue_position_name}'] must be {error_message_token}" in validator.errors[0]
 
     @pytest.mark.parametrize(
-        "cell_type_ontology_term_id, in_tissue",
-        [("unknown", 0), (["unknown", "CL:0000066"], [0, 1]), ("CL:0000066", 1)],
+        "cell_type_ontology_term_id, in_tissue, assay_ontology_term_id",
+        [
+            # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium Spatial Gene Expression
+            ("unknown", 0, "EFO:0010961"),
+            # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium CytAssist Spatial Gene Expression, 11mm
+            ("unknown", 0, "EFO:0022860"),
+            # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium Spatial Gene Expression V1
+            # valid CL term is ok when in_tissue = 1 and assay_ontology_term_id = Visium CytAssist Spatial Gene Expression, 11mm
+            (["unknown", "CL:0000066"], [0, 1], ["EFO:0022857", "EFO:0022860"]),
+            # normal CL term for in_tissue = 1 and assay_ontology_term_id = 10x 3' v2
+            ("CL:0000066", 1, "EFO:0009899"),
+        ],
     )
-    def test__validate_cell_type_ontology_term_id_ok(self, cell_type_ontology_term_id, in_tissue):
+    def test__validate_cell_type_ontology_term_id_ok(
+        self, cell_type_ontology_term_id, in_tissue, assay_ontology_term_id
+    ):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
         validator.adata.obs.cell_type_ontology_term_id = cell_type_ontology_term_id
         validator.adata.obs.in_tissue = in_tissue
+        validator.adata.obs.assay_ontology_term_id = assay_ontology_term_id
 
         # Confirm cell type is valid.
         validator._validate_spatial_cell_type_ontology_term_id()
         assert not validator.errors
 
     @pytest.mark.parametrize(
-        "cell_type_ontology_term_id, in_tissue",
+        "cell_type_ontology_term_id, in_tissue, assay_ontology_term_id",
         [
-            ("CL:0000066", 0),
-            (["CL:0000066", "unknown"], [0, 1]),
+            # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium Spatial Gene Expression
+            ("CL:0000066", 0, "EFO:0010961"),
+            (["CL:0000066", "unknown"], [0, 1], ["EFO:0010961", "EFO:0010961"]),
+            # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium CytAssist Spatial Gene Expression, 11mm
+            ("CL:0000066", 0, "EFO:0022860"),
+            # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium Spatial Gene Expression V1
+            ("CL:0000066", 0, "EFO:0022857"),
         ],
     )
-    def test__validate_cell_type_ontology_term_id_error(self, cell_type_ontology_term_id, in_tissue):
+    def test__validate_cell_type_ontology_term_id_error(
+        self, cell_type_ontology_term_id, in_tissue, assay_ontology_term_id
+    ):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
         validator.adata.obs.cell_type_ontology_term_id = cell_type_ontology_term_id
         validator.adata.obs.in_tissue = in_tissue
+        validator.adata.obs.assay_ontology_term_id = assay_ontology_term_id
 
         # Confirm errors.
         validator._validate_spatial_cell_type_ontology_term_id()
@@ -999,56 +1039,6 @@ class TestCheckSpatial:
             f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
             in validator.errors[0]
         )
-
-
-class TestSeuratConvertibility:
-    def validation_helper(self, matrix, raw=None):
-        data = anndata.AnnData(X=matrix, obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var)
-        if raw:
-            data.raw = raw
-        self.validator: Validator = Validator()
-        self.validator._set_schema_def()
-        self.validator.schema_def["max_size_for_seurat"] = 2**3 - 1  # Reduce size required to fail (faster tests)
-        self.validator.adata = data
-
-    def test_determine_seurat_convertibility(self):
-        # Sparse matrix with too many nonzero values is not Seurat-convertible
-        sparse_matrix_too_large = sparse.csr_matrix(np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32))
-        self.validation_helper(sparse_matrix_too_large)
-        self.validator._validate_seurat_convertibility()
-        assert len(self.validator.warnings) == 1
-        assert not self.validator.is_seurat_convertible
-
-        # Reducing nonzero count by 1, to within limit, makes it Seurat-convertible
-        sparse_matrix_with_zero = sparse.csr_matrix(np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32))
-        sparse_matrix_with_zero[0, 0] = 0
-        self.validation_helper(sparse_matrix_with_zero)
-        self.validator._validate_seurat_convertibility()
-        assert len(self.validator.warnings) == 0
-        assert self.validator.is_seurat_convertible
-
-        # Dense matrices with a dimension that exceeds limit will fail -- zeros are irrelevant
-        dense_matrix_with_zero = np.zeros((good_obs.shape[0], good_var.shape[0]), dtype=np.float32)
-        self.validation_helper(dense_matrix_with_zero)
-        self.validator.schema_def["max_size_for_seurat"] = 2**2 - 1
-        self.validator._validate_seurat_convertibility()
-        assert len(self.validator.warnings) == 1
-        assert not self.validator.is_seurat_convertible
-
-        # Dense matrices with dimensions in bounds but total count over will succeed
-        dense_matrix = np.ones((good_obs.shape[0], good_var.shape[0]), dtype=np.float32)
-        self.validation_helper(dense_matrix)
-        self.validator.schema_def["max_size_for_seurat"] = 2**3 - 1
-        self.validator._validate_seurat_convertibility()
-        assert len(self.validator.warnings) == 0
-        assert self.validator.is_seurat_convertible
-
-        # Visium datasets are not Seurat-convertible
-        self.validation_helper(sparse_matrix_with_zero)
-        self.validator.adata.obs = adata_visium.obs.copy()
-        self.validator._validate_seurat_convertibility()
-        assert len(self.validator.warnings) == 1
-        assert not self.validator.is_seurat_convertible
 
 
 class TestValidatorValidateDataFrame:

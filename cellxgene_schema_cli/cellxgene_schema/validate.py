@@ -21,7 +21,7 @@ from .utils import SPARSE_MATRIX_TYPES, get_matrix_format, getattr_anndata, read
 
 logger = logging.getLogger(__name__)
 
-ONTOLOGY_PARSER = OntologyParser(schema_version=f"v{schema.get_current_schema_version()}")
+ONTOLOGY_PARSER = OntologyParser(schema_version="v5.3.0")
 
 ASSAY_VISIUM = "EFO:0010961"
 ASSAY_SLIDE_SEQV2 = "EFO:0030062"
@@ -29,7 +29,7 @@ ASSAY_SLIDE_SEQV2 = "EFO:0030062"
 VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 4992
 SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE = 2000
 
-ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = "obs['assay_ontology_term_id'] 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True"
+ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = "descendants of obs['assay_ontology_term_id'] 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN = f"is only allowed for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED = f"is required for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0 = f"{ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE} and in_tissue is 0"
@@ -54,7 +54,6 @@ class Validator:
         self.is_valid = False
         self.h5ad_path = ""
         self._raw_layer_exists = None
-        self.is_seurat_convertible: bool = True
         self.is_spatial = None
         self.is_visium = None
         self.is_visium_and_is_single_true = None
@@ -926,65 +925,6 @@ class Validator:
                     f"to use this type of matrix for the given sparsity."
                 )
 
-    def _validate_seurat_convertibility(self):
-        """
-        Use length of component matrices to determine if the anndata object will be unable to be converted to Seurat by
-        virtue of the R language's array size limit (4-byte signed int length). Add warning for each matrix which is
-        too large.
-        rtype: None
-        """
-        # Seurat conversion is not supported for Visium datasets.
-        if self._is_visium():
-            self.warnings.append(
-                "Datasets with assay_ontology_term_id 'EFO:0010961' (Visium Spatial Gene Expression) are not compatible with Seurat."
-            )
-            self.is_seurat_convertible = False
-            return
-
-        to_validate = [(self.adata.X, "X")]
-        # check if there's raw data
-        if self.adata.raw:
-            to_validate.append((self.adata.raw.X, "raw.X"))
-        # Check length of component arrays
-        for matrix, matrix_name in to_validate:
-            matrix_format = get_matrix_format(self.adata, matrix)
-            if matrix_format in SPARSE_MATRIX_TYPES:
-                effective_r_array_size = self._count_matrix_nonzero(matrix_name, matrix)
-                is_sparse = True
-            elif matrix_format == "dense":
-                effective_r_array_size = max(matrix.shape)
-                is_sparse = False
-            else:
-                self.warnings.append(
-                    f"Unable to verify seurat convertibility for matrix {matrix_name} " f"of type {type(matrix)}"
-                )
-                continue
-
-            if effective_r_array_size > self.schema_def["max_size_for_seurat"]:
-                if is_sparse:
-                    self.warnings.append(
-                        f"This dataset cannot be converted to the .rds (Seurat v4) format. "
-                        f"{effective_r_array_size} nonzero elements in matrix {matrix_name} exceed the "
-                        f"limitations in the R dgCMatrix sparse matrix class (2^31 - 1 nonzero "
-                        f"elements)."
-                    )
-                else:
-                    self.warnings.append(
-                        f"This dataset cannot be converted to the .rds (Seurat v4) format. "
-                        f"{effective_r_array_size} elements in at least one dimension of matrix "
-                        f"{matrix_name} exceed the limitations in the R dgCMatrix sparse matrix class "
-                        f"(2^31 - 1 nonzero elements)."
-                    )
-
-                self.is_seurat_convertible = False
-
-        if self.adata.raw and self.adata.raw.X.shape[1] != self.adata.raw.var.shape[0]:
-            self.errors.append(
-                "This dataset has a mismatch between 1) the number of features in raw.X and 2) the number of features "
-                "in raw.var. These counts must be identical."
-            )
-            self.is_seurat_convertible = False
-
     def _validate_obsm(self):
         """
         Validates the embedding dictionary -- it checks that all values of adata.obsm are numpy arrays with the correct
@@ -1535,12 +1475,12 @@ class Validator:
         # Exit if:
         # - not Visium and is_single is True as no further checks are necessary
         # - in_tissue is not specified as checks are dependent on this value
-        if not self._is_visium_and_is_single_true() or "in_tissue" not in self.adata.obs:
+        if not self._is_visium_including_descendants() and self._is_single() or "in_tissue" not in self.adata.obs:
             return
 
         # Validate cell type: must be "unknown" if Visium and is_single is True and in_tissue is 0.
         if (
-            (self.adata.obs["assay_ontology_term_id"] == ASSAY_VISIUM)
+            self._is_visium_including_descendants()
             & (self.adata.obs["in_tissue"] == 0)
             & (self.adata.obs["cell_type_ontology_term_id"] != "unknown")
         ).any():
@@ -1820,6 +1760,37 @@ class Validator:
             self.is_visium = assay_ontology_term_id is not None and (assay_ontology_term_id == ASSAY_VISIUM).any()
         return self.is_visium
 
+    def _is_visium_including_descendants(self) -> bool:
+        """
+        Determine if the assay_ontology_term_id is Visium (descendant of EFO:0010961).
+
+        :return True if assay_ontology_term_id is Visium, False otherwise.
+        :rtype bool
+        """
+        if self.is_visium is None:
+            assay_ontology_term_id = self.adata.obs.get("assay_ontology_term_id")
+
+            if assay_ontology_term_id is not None:
+                # Convert to a regular Series if it's Categorical
+                assay_ontology_term_id = pd.Series(assay_ontology_term_id)
+
+                # Check if any term is a descendant of ASSAY_VISIUM
+                try:
+                    visium_results = assay_ontology_term_id.apply(
+                        lambda term: ASSAY_VISIUM
+                        in list(ONTOLOGY_PARSER.get_lowest_common_ancestors(ASSAY_VISIUM, term))
+                    )
+                    self.is_visium = visium_results.astype(bool).any()
+                except KeyError as e:
+                    # This generally means the assay_ontology_term_id is invalid, but we want the error to be raised
+                    # by our explicit validator checks, not this implicit one.
+                    logger.warning(f"KeyError processing assay_ontology_term_id ontology: {e}")
+                    self.is_visium = False
+            else:
+                self.is_visium = False
+
+        return self.is_visium
+
     def _validate_spatial_image_shape(self, image_name: str, image: np.ndarray, max_dimension: int = None):
         """
         Validate the spatial image is of shape (,,3 or 4) and has a max dimension, if specified. A spatial image
@@ -1886,10 +1857,6 @@ class Validator:
 
         # Checks spatial
         self._check_spatial()
-
-        # Checks Seurat convertibility
-        logger.debug("Validating Seurat convertibility...")
-        self._validate_seurat_convertibility()
 
         # Checks each component
         for component_name, component_def in self.schema_def["components"].items():
@@ -1976,7 +1943,7 @@ def validate(
     add_labels_file: str = None,
     ignore_labels: bool = False,
     verbose: bool = False,
-) -> (bool, list, bool):
+) -> (bool, list):
     from .write_labels import AnnDataLabelAppender
 
     """
@@ -1985,8 +1952,7 @@ def validate(
     :param Union[str, bytes, os.PathLike] h5ad_path: Path to h5ad file to validate
     :param str add_labels_file: Path to new h5ad file with ontology/gene labels added
 
-    :return (True, [], <bool>) if successful validation, (False, [list_of_errors], <bool>) otherwise; last bool is for
-    seurat convertibility
+    :return (True, []) if successful validation, (False, [list_of_errors]) otherwise
     :rtype tuple
     """
 
@@ -2004,7 +1970,7 @@ def validate(
 
     # Stop if validation was unsuccessful
     if not validator.is_valid:
-        return False, validator.errors, validator.is_seurat_convertible
+        return False, validator.errors
 
     if add_labels_file:
         label_start = datetime.now()
@@ -2015,10 +1981,6 @@ def validate(
             f"{writer.was_writing_successful}"
         )
 
-        return (
-            validator.is_valid and writer.was_writing_successful,
-            validator.errors + writer.errors,
-            validator.is_seurat_convertible,
-        )
+        return (validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors)
 
-    return True, validator.errors, validator.is_seurat_convertible
+    return True, validator.errors
