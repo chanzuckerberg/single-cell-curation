@@ -944,6 +944,7 @@ class Validator:
             issue_list = self.errors
 
             regex_pattern = r"^[a-zA-Z][a-zA-Z0-9_.-]*$"
+            key_is_spatial = key.lower() == "spatial"
 
             unknown_key = False  # an unknown key does not match 'spatial' or 'X_{suffix}'
             if key.startswith("X_"):
@@ -954,7 +955,7 @@ class Validator:
                     self.errors.append(
                         f"Suffix for embedding key in 'adata.obsm' {key} does not match the regex pattern {regex_pattern}."
                     )
-            elif key.lower() != "spatial":
+            elif not key_is_spatial:
                 if not re.match(regex_pattern, key):
                     self.errors.append(
                         f"Embedding key in 'adata.obsm' {key} does not match the regex pattern {regex_pattern}."
@@ -1002,7 +1003,11 @@ class Validator:
                 # Check for inf/NaN values only if the dtype is numeric
                 if np.isinf(value).any():
                     issue_list.append(f"adata.obsm['{key}'] contains positive infinity or negative infinity values.")
-                if np.all(np.isnan(value)):
+
+                # spatial embeddings can't have any NaN
+                if key_is_spatial and np.any(np.isnan(value)):
+                    issue_list.append("adata.obs['spatial] contains at least one NaN value.")
+                elif np.all(np.isnan(value)):
                     issue_list.append(f"adata.obsm['{key}'] contains all NaN values.")
 
         if self._is_supported_spatial_assay() is False and obsm_with_x_prefix == 0:
