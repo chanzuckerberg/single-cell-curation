@@ -1477,8 +1477,9 @@ class Validator:
 
         :rtype none
         """
-        self._is_visium_and_is_single_true()
+        self._is_visium_including_descendants()
         self._is_single()
+        self._is_visium_and_is_single_true()
 
         # skip checks if not a valid spatial assay with a corresponding "in_tissue" column
         if not self.is_visium_and_is_single_true:
@@ -1507,11 +1508,12 @@ class Validator:
         # check for visium status and then is visium and single
         #techdebt: the following lines are order dependent. Violates idempotence.
         self._is_visium_including_descendants()
+        self._is_single()
         self._is_visium_and_is_single_true()
 
         # Tissue position is foribidden if assay is not Visium and is_single is True.
         if tissue_position_name in self.adata.obs and (
-            not (self._is_visium_and_is_single_true)
+            not (self.is_visium_and_is_single_true)
             or (
                 ~(self.adata.obs["assay_ontology_term_id"].apply(lambda t: is_ontological_descendant_of(t, ASSAY_VISIUM, True)))
                 & (self.adata.obs[tissue_position_name].notnull())
@@ -1793,7 +1795,7 @@ class Validator:
         
         # save state and return
         self.is_visium = includes_and_visium
-        return self.is_visium
+        return includes_and_visium
 
     def _validate_spatial_image_shape(self, image_name: str, image: np.ndarray, max_dimension: int = None):
         """
