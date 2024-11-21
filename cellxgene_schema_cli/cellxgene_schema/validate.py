@@ -1477,18 +1477,22 @@ class Validator:
 
         :rtype none
         """
-        # Exit if:
-        # - not Visium and is_single is True as no further checks are necessary
-        # - in_tissue is not specified as checks are dependent on this value
-        if not self._is_visium_including_descendants() and self._is_single() or "in_tissue" not in self.adata.obs:
+        self._is_visium_and_is_single_true()
+        self._is_single()
+
+        # skip checks if not a valid spatial assay with a corresponding "in_tissue" column
+        if not self.is_visium_and_is_single_true:
+            # not a valid spatial assay
+            return
+        elif self.is_visium_and_is_single_true and "in_tissue" not in self.adata.obs.columns:
+            # valid spatial assay, but missing "in_tissue" column
             return
 
-        # Validate cell type: must be "unknown" if Visium and is_single is True and in_tissue is 0.
-        if (
-            self._is_visium_including_descendants()
-            & (self.adata.obs["in_tissue"] == 0)
-            & (self.adata.obs["cell_type_ontology_term_id"] != "unknown")
-        ).any():
+        # Validate all out of tissue (in_tissue==0) spatial spots have unknown cell ontology term
+        is_spatial = self.adata.obs["assay_ontology_term_id"].apply(lambda assay: is_ontological_descendant_of(assay, ASSAY_VISIUM, True))
+        is_not_tissue = self.adata.obs["in_tissue"]==0
+        is_not_unknown = self.adata.obs["cell_type_ontology_term_id"] != "unknown"
+        if (is_spatial & is_not_tissue & is_not_unknown).any():
             self.errors.append(
                 f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
             )
