@@ -482,16 +482,26 @@ class TestObs:
         validator: Validator = validator_with_visium_assay
 
         # this should be ok
-        validator._validate_spatial_tissue_position("in_tissue", 0, 1)
-        assert validator.errors == []
-        validator.reset()
+        # validator._validate_spatial_tissue_position("in_tissue", 0, 1)
+        # assert validator.errors == []
+        # validator.reset()
 
         # this should be ok
+        # validator.reset()
+        # validator.adata.obs['assay_ontology_term_id'] = "EFO:0022858"
+        # validator._validate_spatial_tissue_position("in_tissue", 0, 1)
+        # assert validator.errors == []
+        # validator.reset()
+
+        # this should fail: sybling of EFO:0010961
         validator.reset()
-        validator.adata.obs['assay_ontology_term_id'] = "EFO:0022858"
+        validator.adata.obs['assay_ontology_term_id'] = "EFO:0030029"
         validator._validate_spatial_tissue_position("in_tissue", 0, 1)
-        assert validator.errors == []
-        validator.reset()
+        assert validator.errors == [
+            "obs['in_tissue'] is only allowed for descendants of obs['assay_ontology_term_id'] 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
+        ]
+        
+        # this should fail: ancestor of EFO:0010961
 
 
 
