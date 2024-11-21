@@ -2,21 +2,21 @@ import logging
 import os
 import sys
 from base64 import b85encode
-from typing import Dict, List, Union
 from functools import lru_cache
+from typing import Dict, List, Union
 
 import anndata as ad
 import numpy as np
+from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from scipy import sparse
 from xxhash import xxh3_64_intdigest
-
-from cellxgene_ontology_guide.ontology_parser import OntologyParser
 
 logger = logging.getLogger(__name__)
 
 SPARSE_MATRIX_TYPES = {"csc", "csr", "coo"}
 
 ONTOLOGY_PARSER = OntologyParser(schema_version="v5.3.0")
+
 
 def replace_ontology_term(dataframe, ontology_name, update_map):
     column_name = f"{ontology_name}_ontology_term_id"
@@ -156,13 +156,14 @@ def get_hash_digest_column(dataframe):
         .apply(lambda v: b85encode(v.to_bytes(8, "big")).decode("ascii"))
     )
 
+
 @lru_cache()
 def is_ontological_descendant_of(term: str, target: str, include_self: bool = True) -> bool:
-    '''
+    """
     Determines if :term is an ontological descendant of :target and whether to include :term==:target.
 
     This function is cached and is safe to call many times.
 
     #TODO:[EM] needs testing
-    '''
+    """
     return term in set(ONTOLOGY_PARSER.get_term_descendants(target, include_self))

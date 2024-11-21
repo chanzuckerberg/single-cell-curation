@@ -477,12 +477,10 @@ class TestObs:
             "to missing dependent column in adata.obs.",
         ]
 
-    @pytest.mark.parametrize("assay_ontology_term_id, is_descendant",[
-        ("EFO:0010961", True),
-        ("EFO:0022858", True),
-        ("EFO:0030029", False),
-        ("EFO:0002697", False)
-    ])
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, is_descendant",
+        [("EFO:0010961", True), ("EFO:0022858", True), ("EFO:0030029", False), ("EFO:0002697", False)],
+    )
     def test_column_presence_in_tissue(self, validator_with_visium_assay, assay_ontology_term_id, is_descendant):
         """
         Spatial assays that are descendants of visium must have a valid "in_tissue" column.
