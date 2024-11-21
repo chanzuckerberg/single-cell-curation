@@ -1491,7 +1491,7 @@ class Validator:
 
         # Validate all out of tissue (in_tissue==0) spatial spots have unknown cell ontology term
         is_spatial = self.adata.obs["assay_ontology_term_id"].apply(
-            lambda assay: is_ontological_descendant_of(assay, ASSAY_VISIUM, True)
+            lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, True)
         )
         is_not_tissue = self.adata.obs["in_tissue"] == 0
         is_not_unknown = self.adata.obs["cell_type_ontology_term_id"] != "unknown"
@@ -1519,7 +1519,7 @@ class Validator:
             or (
                 ~(
                     self.adata.obs["assay_ontology_term_id"].apply(
-                        lambda t: is_ontological_descendant_of(t, ASSAY_VISIUM, True)
+                        lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, True)
                     )
                 )
                 & (self.adata.obs[tissue_position_name].notnull())
@@ -1540,7 +1540,7 @@ class Validator:
             or (
                 (
                     self.adata.obs["assay_ontology_term_id"].apply(
-                        lambda t: is_ontological_descendant_of(t, ASSAY_VISIUM, True)
+                        lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, True)
                     )
                 )
                 & (self.adata.obs[tissue_position_name].isnull())
@@ -1802,7 +1802,7 @@ class Validator:
             # check if any assay_ontology_term_ids are descendants of VISIUM
             includes_and_visium = (
                 self.adata.obs[_assay_key]
-                .apply(lambda assay: is_ontological_descendant_of(assay, ASSAY_VISIUM, True))
+                .apply(lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, True))
                 .any()
             )
 
