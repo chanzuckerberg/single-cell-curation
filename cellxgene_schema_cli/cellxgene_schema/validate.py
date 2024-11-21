@@ -1500,6 +1500,18 @@ class Validator:
 
         :rtype none
         """
+
+        #NOTE:[EM] idempotency issue -------------
+        _before_ = ONTOLOGY_PARSER.get_term_ancestors("EFO:0002772",False)
+        
+        # the following line changes the result of ONTOLOGY_PARSER.get_term_ancestors(...)
+        ONTOLOGY_PARSER.get_lowest_common_ancestors(ASSAY_VISIUM, "EFO:0002772")
+
+        _after_ = ONTOLOGY_PARSER.get_term_ancestors("EFO:0002772",False)
+        assert len(_before_) < len(_after_)
+
+        #--------------------------------------------------------------------
+
         # Tissue position is foribidden if assay is not Visium and is_single is True.
         if tissue_position_name in self.adata.obs and (
             not self._is_visium_and_is_single_true()
