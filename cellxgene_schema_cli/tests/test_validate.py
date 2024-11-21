@@ -1040,6 +1040,18 @@ class TestCheckSpatial:
             in validator.errors[0]
         )
 
+    def test__validate_embeddings_non_nans(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.visium_and_is_single_true_matrix_size = 2
+
+        # invalidate spatial embeddings with NaN value
+        validator.adata.obsm["spatial"][0, 1] = np.nan
+        # Confirm spatial is valid.
+        validator.validate_adata()
+        assert validator.errors == ["ERROR: adata.obs['spatial] contains at least one NaN value."]
+
 
 class TestValidatorValidateDataFrame:
     @pytest.mark.parametrize("_type", [np.int64, np.int32, int, np.float64, np.float32, float, str])
