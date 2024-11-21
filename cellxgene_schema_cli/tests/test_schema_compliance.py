@@ -477,6 +477,24 @@ class TestObs:
             "to missing dependent column in adata.obs.",
         ]
 
+    def test_column_presence_in_tissue(self, validator_with_visium_assay):
+        # should work for visium and descendants
+        validator: Validator = validator_with_visium_assay
+
+        # this should be ok
+        validator._validate_spatial_tissue_position("in_tissue", 0, 1)
+        assert validator.errors == []
+        validator.reset()
+
+        # this should be ok
+        validator.reset()
+        validator.adata.obs['assay_ontology_term_id'] = "EFO:0022858"
+        validator._validate_spatial_tissue_position("in_tissue", 0, 1)
+        assert validator.errors == []
+        validator.reset()
+
+
+
     @pytest.mark.parametrize("reserved_column", schema_def["components"]["obs"]["reserved_columns"])
     def test_obs_reserved_columns_presence(self, validator_with_adata, reserved_column):
         """
