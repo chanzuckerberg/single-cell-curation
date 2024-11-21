@@ -477,33 +477,28 @@ class TestObs:
             "to missing dependent column in adata.obs.",
         ]
 
-    def test_column_presence_in_tissue(self, validator_with_visium_assay):
-        # should work for visium and descendants
+    @pytest.mark.parametrize("assay_ontology_term_id, is_descendant",[
+        ("EFO:0010961", True),
+        ("EFO:0022858", True),
+        ("EFO:0030029", False),
+        ("EFO:0002697", False)
+    ])
+    def test_column_presence_in_tissue(self, validator_with_visium_assay, assay_ontology_term_id, is_descendant):
+        """
+        Spatial assays that are descendants of visium must have a valid "in_tissue" column.
+        """
         validator: Validator = validator_with_visium_assay
 
-        # this should be ok
-        # validator._validate_spatial_tissue_position("in_tissue", 0, 1)
-        # assert validator.errors == []
-        # validator.reset()
-
-        # this should be ok
-        # validator.reset()
-        # validator.adata.obs['assay_ontology_term_id'] = "EFO:0022858"
-        # validator._validate_spatial_tissue_position("in_tissue", 0, 1)
-        # assert validator.errors == []
-        # validator.reset()
-
-        # this should fail: sybling of EFO:0010961
+        # reset and test
         validator.reset()
-        validator.adata.obs['assay_ontology_term_id'] = "EFO:0030029"
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
         validator._validate_spatial_tissue_position("in_tissue", 0, 1)
-        assert validator.errors == [
-            "obs['in_tissue'] is only allowed for descendants of obs['assay_ontology_term_id'] 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
-        ]
-        
-        # this should fail: ancestor of EFO:0010961
-
-
+        if is_descendant:
+            assert validator.errors == []
+        else:
+            assert validator.errors == [
+                "obs['in_tissue'] is only allowed for descendants of obs['assay_ontology_term_id'] 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
+            ]
 
     @pytest.mark.parametrize("reserved_column", schema_def["components"]["obs"]["reserved_columns"])
     def test_obs_reserved_columns_presence(self, validator_with_adata, reserved_column):
