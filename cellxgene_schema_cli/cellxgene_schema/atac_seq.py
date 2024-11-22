@@ -219,7 +219,7 @@ def validate_fragment_stop_coordinate_within_chromosome(parquet_file: Path, annd
 
     for organism_ontology_term_id in unique_organism_ontology_term_id:
         df_ = df[df["organism_ontology_term_id"] == organism_ontology_term_id]
-        df_ = df_["stop coordinate"] < df_[organism_ontology_term_id]
+        df_ = df_["stop coordinate"] <= df_[organism_ontology_term_id]
         if not df_.all().compute():
             return "Stop coordinate is greater than the length of the chromosome"
 
