@@ -156,7 +156,7 @@ def get_hash_digest_column(dataframe):
 
 
 @lru_cache()
-def is_ontological_descendant_of(onto:OntologyParser, term: str, target: str, include_self: bool = True) -> bool:
+def is_ontological_descendant_of(onto: OntologyParser, term: str, target: str, include_self: bool = True) -> bool:
     """
     Determines if :term is an ontological descendant of :target and whether to include :term==:target.
 
