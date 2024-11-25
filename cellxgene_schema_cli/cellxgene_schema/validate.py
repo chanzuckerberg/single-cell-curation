@@ -1700,7 +1700,7 @@ class Validator:
                 _assay_term = self.adata.obs["assay_ontology_term_id"].values[0]
                 _max_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE
                 if is_ontological_descendant_of(ONTOLOGY_PARSER, _assay_term, "EFO:0022860", True):
-                    _max_size = SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM                
+                    _max_size = SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM
                 self._validate_spatial_image_shape("hires", uns_images["hires"], _max_size)
 
             # fullres is optional.

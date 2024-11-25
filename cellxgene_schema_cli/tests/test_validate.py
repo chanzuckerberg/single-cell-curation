@@ -15,8 +15,8 @@ from cellxgene_schema.validate import (
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED,
-    SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE,
     SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM,
+    SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE,
     Validator,
     validate,
 )
@@ -524,10 +524,10 @@ class TestCheckSpatial:
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.obs['assay_ontology_term_id'] = assay_ontology_term_id
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
         validator.adata.uns["spatial"].pop("is_single")
         validator._check_spatial_uns()
-        
+
         if is_descendant:
             # if spatial, MUST specify `is_single`
             assert "uns['spatial'] must contain the key 'is_single'." in validator.errors[0]
@@ -590,7 +590,6 @@ class TestCheckSpatial:
         assert len(validator.errors) == 1
         assert f"uns['spatial'][library_id] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}." in validator.errors[0]
 
-    
     @pytest.mark.parametrize(
         "assay_ontology_term_id, is_descendant",
         [("EFO:0010961", True), ("EFO:0022858", True), ("EFO:0030029", False), ("EFO:0002697", False)],
@@ -615,7 +614,7 @@ class TestCheckSpatial:
             ]
         else:
             # if not spatial, MUST NOT define `library_id`
-            validator.adata.uns["spatial"][visium_library_id] = {"images":[]}
+            validator.adata.uns["spatial"][visium_library_id] = {"images": []}
             validator._check_spatial_uns()
             # Report the most general top level error
             assert validator.errors == [
@@ -782,17 +781,23 @@ class TestCheckSpatial:
             "for example) or 4 (RGBA color model for example) for its last dimension" in validator.errors[0]
         )
 
-
     @pytest.mark.parametrize(
         "assay_ontology_term_id, hi_res_size, image_max",
-        [("EFO:0022858", 2001, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE), ("EFO:0022860", 4001, SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM)],
+        [
+            ("EFO:0022858", 2001, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE),
+            ("EFO:0022860", 4001, SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM),
+        ],
     )
-    def test__validate_images_hires_max_dimension_greater_than_error(self, assay_ontology_term_id, hi_res_size, image_max):
+    def test__validate_images_hires_max_dimension_greater_than_error(
+        self, assay_ontology_term_id, hi_res_size, image_max
+    ):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
         validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
-        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros((1, hi_res_size, 3), dtype=np.uint8)
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros(
+            (1, hi_res_size, 3), dtype=np.uint8
+        )
 
         # Confirm hires is identified as invalid.
         validator._check_spatial_uns()
@@ -800,19 +805,27 @@ class TestCheckSpatial:
             f"The largest dimension of uns['spatial'][library_id]['images']['hires'] must be {image_max} pixels, it has a largest dimension of {hi_res_size} pixels."
         ]
 
-    def test__validate_images_hires_max_dimension_less_than_error(self):
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, hi_res_size, image_max",
+        [
+            ("EFO:0022858", 1999, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE),
+            ("EFO:0022860", 3999, SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM),
+        ],
+    )
+    def test__validate_images_hires_max_dimension_less_than_error(self, assay_ontology_term_id, hi_res_size, image_max):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros((1, 1999, 3), dtype=np.uint8)
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros(
+            (1, hi_res_size, 3), dtype=np.uint8
+        )
 
         # Confirm hires is identified as invalid.
         validator._check_spatial_uns()
-        assert validator.errors
-        assert (
-            "The largest dimension of uns['spatial'][library_id]['images']['hires'] must be 2000 pixels"
-            in validator.errors[0]
-        )
+        assert validator.errors == [
+            f"The largest dimension of uns['spatial'][library_id]['images']['hires'] must be {image_max} pixels, it has a largest dimension of {hi_res_size} pixels."
+        ]
 
     def test__validate_scalefactors_required_error(self):
         validator: Validator = Validator()
