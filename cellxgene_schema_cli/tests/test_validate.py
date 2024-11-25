@@ -514,16 +514,26 @@ class TestCheckSpatial:
             "More than two top-level keys detected:" in validator.errors[0]
         )
 
-    def test__validate_is_single_required_visium_error(self):
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, is_descendant",
+        [("EFO:0010961", True), ("EFO:0022858", True), ("EFO:0030029", False), ("EFO:0002697", False)],
+    )
+    def test__validate_is_single_required_visium_error(self, assay_ontology_term_id, is_descendant):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
+        validator.adata.obs['assay_ontology_term_id'] = assay_ontology_term_id
         validator.adata.uns["spatial"].pop("is_single")
-
-        # Confirm is_single is identified as required.
         validator._check_spatial_uns()
-        assert validator.errors
-        assert "uns['spatial'] must contain the key 'is_single'." in validator.errors[0]
+        
+        if is_descendant:
+            # if spatial, MUST specify `is_single`
+            assert "uns['spatial'] must contain the key 'is_single'." in validator.errors[0]
+        else:
+            # if not spatial, MUST NOT speciffy `is_single`
+            assert validator.errors == [
+                "uns['spatial'] is only allowed for obs['assay_ontology_term_id'] values 'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)."
+            ]
 
     def test__validate_is_single_required_slide_seqV2_error(self):
         validator: Validator = Validator()
