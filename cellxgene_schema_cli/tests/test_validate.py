@@ -462,7 +462,7 @@ class TestCheckSpatial:
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.obs['assay_ontology_id'] = assay_ontology_term_id
+        validator.adata.obs['assay_ontology_term_id'] = assay_ontology_term_id
 
         if is_descendant:
             # check pass if 'spatial' included
