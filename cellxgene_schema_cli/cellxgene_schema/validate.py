@@ -100,8 +100,7 @@ class Validator:
                     self._is_visium_including_descendants()
                     or self.adata.obs.assay_ontology_term_id.isin([ASSAY_SLIDE_SEQV2]).any()
                 )
-                # NOTE:EM setting property to intermediate variable avoids a strange `False is False = False` error
-                self.is_spatial = True if _spatial else False
+                self.is_spatial = bool(_spatial)
             except AttributeError:
                 # specific error reporting will occur downstream in the validation
                 self.is_spatial = False
