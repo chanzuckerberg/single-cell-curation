@@ -1918,7 +1918,7 @@ class Validator:
                 .any()
             )
             self.is_visium = includes_and_visium
-        
+
         return includes_and_visium
 
     def _validate_spatial_image_shape(self, image_name: str, image: np.ndarray, max_dimension: int = None):
