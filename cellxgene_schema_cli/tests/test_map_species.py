@@ -31,7 +31,7 @@ def zebrafish_adata():
     obs["organism_tissue_ontology_term_id"] = "ZFA:0000047"
 
     zebrafish_adata.var = pd.DataFrame(
-        [[False], [False], [False], [False], [False], [False]],
+        [[False], [False], [False], [False], [False], [False], [False]],
         index=[
             "ENSDARG00000103202",
             "ENSDARG00000096156",
@@ -39,6 +39,7 @@ def zebrafish_adata():
             "ENSDARG00000117163",
             "ENSDARG00000096187",
             "ENSDARG00000009657",
+            "ENSDARG00000098510",
         ],
         columns=["feature_is_filtered"],
     )
