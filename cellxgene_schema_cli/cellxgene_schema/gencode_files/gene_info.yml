@@ -4,11 +4,11 @@ ercc:
   url: https://assets.thermofisher.com/TFS-Assets/LSG/manuals/cms_095047.txt
 human:
   description: homo_sapiens
-  url: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_{version}/gencode.v{version}.primary_assembly.annotation.gtf.gz
+  url: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_{version}/gencode.v{version}.primary_assembly.annotation.gtf.gz
   version: 44
 mouse:
   description: mus_musculus
-  url: http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_{version}/gencode.v{version}.primary_assembly.annotation.gtf.gz
+  url: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_{version}/gencode.v{version}.primary_assembly.annotation.gtf.gz
   version: M33
 sars_cov_2:
   description: sars_cov_2
