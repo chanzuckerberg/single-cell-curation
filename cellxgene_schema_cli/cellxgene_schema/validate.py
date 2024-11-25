@@ -28,6 +28,7 @@ ASSAY_SLIDE_SEQV2 = "EFO:0030062"
 
 VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 4992
 SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE = 2000
+SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM = 4000
 
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = "descendants of obs['assay_ontology_term_id'] 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN = f"is only allowed for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
@@ -1696,7 +1697,11 @@ class Validator:
                 self.errors.append("uns['spatial'][library_id]['images'] must contain the key 'hires'.")
             # hires is specified: proceed with validation of hires.
             else:
-                self._validate_spatial_image_shape("hires", uns_images["hires"], SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE)
+                _assay_term = self.adata.obs["assay_ontology_term_id"].values[0]
+                _max_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE
+                if is_ontological_descendant_of(ONTOLOGY_PARSER, _assay_term, "EFO:0022860", True):
+                    _max_size = SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM                
+                self._validate_spatial_image_shape("hires", uns_images["hires"], _max_size)
 
             # fullres is optional.
             uns_fullres = uns_images.get("fullres")
