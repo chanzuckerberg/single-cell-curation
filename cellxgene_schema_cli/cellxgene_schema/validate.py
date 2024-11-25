@@ -95,9 +95,12 @@ class Validator:
         """
         if self.is_spatial is None:
             try:
-                _spatial = self._is_visium_including_descendants() or self.adata.obs.assay_ontology_term_id.isin([ASSAY_SLIDE_SEQV2]).any()
-                #NOTE:EM setting property to intermediate variable avoids a strange `False is False = False` error
-                self.is_spatial = True if _spatial else False 
+                _spatial = (
+                    self._is_visium_including_descendants()
+                    or self.adata.obs.assay_ontology_term_id.isin([ASSAY_SLIDE_SEQV2]).any()
+                )
+                # NOTE:EM setting property to intermediate variable avoids a strange `False is False = False` error
+                self.is_spatial = True if _spatial else False
             except AttributeError:
                 # specific error reporting will occur downstream in the validation
                 self.is_spatial = False
@@ -1802,11 +1805,12 @@ class Validator:
             # check if any assay_ontology_term_ids are descendants of VISIUM
             includes_and_visium = (
                 self.adata.obs[_assay_key]
+                .astype("string")
                 .apply(lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, True))
                 .any()
             )
             self.is_visium = includes_and_visium
-        
+
         return includes_and_visium
 
     def _validate_spatial_image_shape(self, image_name: str, image: np.ndarray, max_dimension: int = None):

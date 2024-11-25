@@ -462,13 +462,13 @@ class TestCheckSpatial:
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.obs['assay_ontology_term_id'] = assay_ontology_term_id
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
 
         if is_descendant:
             # check pass if 'spatial' included
             validator.adata.uns = good_uns_with_visium_spatial.copy()
             validator._check_spatial_uns()
-            assert len(validator.errors)==0
+            assert len(validator.errors) == 0
             validator.reset()
 
             # check fail if 'spatial' not included
@@ -483,7 +483,7 @@ class TestCheckSpatial:
             # check fail if 'spatial' included
             validator.adata.uns = good_uns_with_visium_spatial.copy()
             validator._check_spatial_uns()
-            assert len(validator.errors)==1
+            assert len(validator.errors) == 1
             validator.reset()
 
     def test__validate_spatial_required_if_slide_seqV2(self):

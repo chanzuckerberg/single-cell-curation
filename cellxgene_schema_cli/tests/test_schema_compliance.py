@@ -4,6 +4,7 @@ Tests for schema compliance of an AnnData object
 
 import tempfile
 import unittest
+from copy import deepcopy
 
 import anndata
 import fixtures.examples_validate as examples
@@ -1673,11 +1674,16 @@ class TestVar:
         Raise a warning if there are too few genes
         """
         validator = validator_with_adata
+        # NOTE:[EM] changing the schema def here is stateful and results in unpredictable test results.
+        #  Reset after mutating.
+        _old_schema = deepcopy(validator.schema_def.copy())
+
         validator.schema_def["components"]["var"]["warn_if_less_than_rows"] = 100
         validator.validate_adata()
         assert validator.warnings == [
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix."
         ]
+        validator.schema_def = _old_schema
 
     @pytest.mark.parametrize(
         "df,column",
