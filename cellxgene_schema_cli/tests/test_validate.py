@@ -588,19 +588,37 @@ class TestCheckSpatial:
         assert len(validator.errors) == 1
         assert f"uns['spatial'][library_id] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}." in validator.errors[0]
 
-    def test__validate_library_id_required_if_visium(self):
+    
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, is_descendant",
+        [("EFO:0010961", True), ("EFO:0022858", True), ("EFO:0030029", False), ("EFO:0002697", False)],
+    )
+    def test__validate_library_id_required_if_visium(self, assay_ontology_term_id, is_descendant):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.uns["spatial"].pop(visium_library_id)
 
-        # Confirm library_id is identified as required.
-        validator._check_spatial_uns()
-        assert validator.errors
-        assert (
-            f"uns['spatial'] must contain at least one key representing the library_id when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}."
-            in validator.errors[0]
-        )
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+        if is_descendant:
+            # if spatial, `library_id` must exist
+            validator._check_spatial_uns()
+            assert len(validator.errors) == 0
+            validator.reset()
+
+            # if spatial, but missing from `uns`
+            validator.adata.uns["spatial"].pop(visium_library_id)
+            validator._check_spatial_uns()
+            assert validator.errors == [
+                f"uns['spatial'] must contain at least one key representing the library_id when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}."
+            ]
+        else:
+            # if not spatial, MUST NOT define `library_id`
+            validator.adata.uns["spatial"][visium_library_id] = {"images":[]}
+            validator._check_spatial_uns()
+            # Report the most general top level error
+            assert validator.errors == [
+                "uns['spatial'] is only allowed for obs['assay_ontology_term_id'] values 'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)."
+            ]
 
     @pytest.mark.parametrize("library_id", [None, "invalid", 1, 1.0, True])
     def test__validate_library_id_type_error(self, library_id):
