@@ -17,7 +17,7 @@ from pandas.errors import UndefinedVariableError
 from scipy import sparse
 
 from . import gencode, schema
-from .utils import SPARSE_MATRIX_TYPES, get_matrix_format, getattr_anndata, read_h5ad
+from .utils import SPARSE_MATRIX_TYPES, get_matrix_format, getattr_anndata, is_ontological_descendant_of, read_h5ad
 
 logger = logging.getLogger(__name__)
 
@@ -211,7 +211,7 @@ class Validator:
                 is_valid_term_id = ONTOLOGY_PARSER.is_valid_term_id(term_id)
                 is_valid_ancestor_id = ONTOLOGY_PARSER.is_valid_term_id(ancestor)
                 if is_valid_term_id & is_valid_ancestor_id:
-                    is_descendant = ancestor in ONTOLOGY_PARSER.get_term_ancestors(term_id)
+                    is_descendant = ancestor in ONTOLOGY_PARSER.get_term_ancestors(term_id, inclusive)
                     checks.append(is_descendant)
 
         if True not in checks:
@@ -1477,18 +1477,25 @@ class Validator:
 
         :rtype none
         """
-        # Exit if:
-        # - not Visium and is_single is True as no further checks are necessary
-        # - in_tissue is not specified as checks are dependent on this value
-        if not self._is_visium_including_descendants() and self._is_single() or "in_tissue" not in self.adata.obs:
+        self._is_visium_including_descendants()
+        self._is_single()
+        self._is_visium_and_is_single_true()
+
+        # skip checks if not a valid spatial assay with a corresponding "in_tissue" column
+        if not self.is_visium_and_is_single_true:
+            # not a valid spatial assay
+            return
+        elif self.is_visium_and_is_single_true and "in_tissue" not in self.adata.obs.columns:
+            # valid spatial assay, but missing "in_tissue" column
             return
 
-        # Validate cell type: must be "unknown" if Visium and is_single is True and in_tissue is 0.
-        if (
-            self._is_visium_including_descendants()
-            & (self.adata.obs["in_tissue"] == 0)
-            & (self.adata.obs["cell_type_ontology_term_id"] != "unknown")
-        ).any():
+        # Validate all out of tissue (in_tissue==0) spatial spots have unknown cell ontology term
+        is_spatial = self.adata.obs["assay_ontology_term_id"].apply(
+            lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, True)
+        )
+        is_not_tissue = self.adata.obs["in_tissue"] == 0
+        is_not_unknown = self.adata.obs["cell_type_ontology_term_id"] != "unknown"
+        if (is_spatial & is_not_tissue & is_not_unknown).any():
             self.errors.append(
                 f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
             )
@@ -1500,11 +1507,21 @@ class Validator:
 
         :rtype none
         """
+        # check for visium status and then is visium and single
+        # techdebt: the following lines are order dependent. Violates idempotence.
+        self._is_visium_including_descendants()
+        self._is_single()
+        self._is_visium_and_is_single_true()
+
         # Tissue position is foribidden if assay is not Visium and is_single is True.
         if tissue_position_name in self.adata.obs and (
-            not self._is_visium_and_is_single_true()
+            not (self.is_visium_and_is_single_true)
             or (
-                ~(self.adata.obs["assay_ontology_term_id"] == ASSAY_VISIUM)
+                ~(
+                    self.adata.obs["assay_ontology_term_id"].apply(
+                        lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, True)
+                    )
+                )
                 & (self.adata.obs[tissue_position_name].notnull())
             ).any()
         ):
@@ -1521,7 +1538,11 @@ class Validator:
         if (
             tissue_position_name not in self.adata.obs
             or (
-                (self.adata.obs["assay_ontology_term_id"] == ASSAY_VISIUM)
+                (
+                    self.adata.obs["assay_ontology_term_id"].apply(
+                        lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, True)
+                    )
+                )
                 & (self.adata.obs[tissue_position_name].isnull())
             ).any()
         ):
@@ -1767,34 +1788,27 @@ class Validator:
 
     def _is_visium_including_descendants(self) -> bool:
         """
-        Determine if the assay_ontology_term_id is Visium (descendant of EFO:0010961).
+        Determine if the assay_ontology_term_id is Visium (inclusive descendant of EFO:0010961).
+        Returns True if ANY assay_ontology_term_id is a Visium descendant
 
         :return True if assay_ontology_term_id is Visium, False otherwise.
         :rtype bool
         """
-        if self.is_visium is None:
-            assay_ontology_term_id = self.adata.obs.get("assay_ontology_term_id")
+        _assay_key = "assay_ontology_term_id"
+        includes_and_visium = False
 
-            if assay_ontology_term_id is not None:
-                # Convert to a regular Series if it's Categorical
-                assay_ontology_term_id = pd.Series(assay_ontology_term_id)
+        # only compute if not already stored
+        if self.is_visium is None and _assay_key in self.adata.obs.columns:
+            # check if any assay_ontology_term_ids are descendants of VISIUM
+            includes_and_visium = (
+                self.adata.obs[_assay_key]
+                .apply(lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, True))
+                .any()
+            )
 
-                # Check if any term is a descendant of ASSAY_VISIUM
-                try:
-                    visium_results = assay_ontology_term_id.apply(
-                        lambda term: ASSAY_VISIUM
-                        in list(ONTOLOGY_PARSER.get_lowest_common_ancestors(ASSAY_VISIUM, term))
-                    )
-                    self.is_visium = visium_results.astype(bool).any()
-                except KeyError as e:
-                    # This generally means the assay_ontology_term_id is invalid, but we want the error to be raised
-                    # by our explicit validator checks, not this implicit one.
-                    logger.warning(f"KeyError processing assay_ontology_term_id ontology: {e}")
-                    self.is_visium = False
-            else:
-                self.is_visium = False
-
-        return self.is_visium
+        # save state and return
+        self.is_visium = includes_and_visium
+        return includes_and_visium
 
     def _validate_spatial_image_shape(self, image_name: str, image: np.ndarray, max_dimension: int = None):
         """
