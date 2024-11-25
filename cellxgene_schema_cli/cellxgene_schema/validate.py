@@ -95,9 +95,7 @@ class Validator:
         """
         if self.is_spatial is None:
             try:
-                self.is_spatial = False
-                if self.adata.obs.assay_ontology_term_id.isin([ASSAY_VISIUM, ASSAY_SLIDE_SEQV2]).any():
-                    self.is_spatial = True
+                self.is_spatial = self._is_visium() or self.adata.obs.assay_ontology_term_id.isin([ASSAY_SLIDE_SEQV2]).any()
             except AttributeError:
                 # specific error reporting will occur downstream in the validation
                 self.is_spatial = False

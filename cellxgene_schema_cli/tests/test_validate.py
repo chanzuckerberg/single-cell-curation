@@ -454,19 +454,37 @@ class TestCheckSpatial:
             "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)." in validator.errors[0]
         )
 
-    def test__validate_spatial_required_if_visium(self):
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, is_descendant",
+        [("EFO:0010961", True), ("EFO:0022858", True), ("EFO:0030029", False), ("EFO:0002697", False)],
+    )
+    def test__validate_spatial_required_if_visium(self, assay_ontology_term_id, is_descendant):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.uns = good_uns.copy()
+        validator.adata.obs['assay_ontology_id'] = assay_ontology_term_id
 
-        # Confirm spatial is required for Visium.
-        validator._check_spatial_uns()
-        assert len(validator.errors) == 1
-        assert (
-            "A dict in uns['spatial'] is required for obs['assay_ontology_term_id'] values "
-            "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)." in validator.errors[0]
-        )
+        if is_descendant:
+            # check pass if 'spatial' included
+            validator.adata.uns = good_uns_with_visium_spatial.copy()
+            validator._check_spatial_uns()
+            assert len(validator.errors)==0
+            validator.reset()
+
+            # check fail if 'spatial' not included
+            validator.adata.uns = good_uns.copy()
+            validator._check_spatial_uns()
+            assert validator.errors == [
+                "A dict in uns['spatial'] is required for obs['assay_ontology_term_id'] values "
+                "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)."
+            ]
+            validator.reset()
+        else:
+            # check fail if 'spatial' included
+            validator.adata.uns = good_uns_with_visium_spatial.copy()
+            validator._check_spatial_uns()
+            assert len(validator.errors)==1
+            validator.reset()
 
     def test__validate_spatial_required_if_slide_seqV2(self):
         validator: Validator = Validator()
