@@ -13,6 +13,7 @@ class SupportedOrganisms(enum.Enum):
     ERCC = "NCBITaxon:32630"
     DROSOPHILA_MELANOGASTER = "NCBITaxon:7227"
     DANIO_RERIO = "NCBITaxon:7955"
+    CAENORHABDITIS_ELEGANS = "NCBITaxon:6239"
 
 
 def get_organism_from_feature_id(
@@ -39,6 +40,8 @@ def get_organism_from_feature_id(
         return SupportedOrganisms.DROSOPHILA_MELANOGASTER
     elif feature_id.startswith("ENSDARG"):
         return SupportedOrganisms.DANIO_RERIO
+    elif feature_id.startswith("WBGene"):
+        return SupportedOrganisms.CAENORHABDITIS_ELEGANS
     else:
         return None
 
@@ -55,6 +58,7 @@ class GeneChecker:
             env.GENCODE_DIR, "genes_drosophila_melanogaster.csv.gz"
         ),
         SupportedOrganisms.DANIO_RERIO: os.path.join(env.GENCODE_DIR, "genes_danio_rerio.csv.gz"),
+        SupportedOrganisms.CAENORHABDITIS_ELEGANS: os.path.join(env.GENCODE_DIR, "genes_caenorhabditis_elegans.csv.gz"),
     }
 
     def __init__(self, species: SupportedOrganisms):

@@ -20,7 +20,7 @@ def test_get_diff_map(tmp_path):  # type: ignore
         diff_map = get_diff_map()
     assert len(diff_map) == 6
     for key in diff_map:  # type: ignore
-        assert key in ["NCBITaxon:9606", "NCBITaxon:10090", "NCBITaxon:2697049", "NCBITaxon:32630", "NCBITaxon:7227", "NCBITaxon:7955"]  # type: ignore
+        assert key in ["NCBITaxon:9606", "NCBITaxon:10090", "NCBITaxon:2697049", "NCBITaxon:32630", "NCBITaxon:7227", "NCBITaxon:7955", "NCBITaxon:6239"]  # type: ignore
 
 
 @pytest.fixture
