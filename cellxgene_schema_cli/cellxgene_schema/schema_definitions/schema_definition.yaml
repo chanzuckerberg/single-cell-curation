@@ -283,9 +283,6 @@ components:
                 ancestors:
                   WBbt:
                     - WBbt:0005766
-              forbidden:
-                terms:
-                  - WBbt:0005766
         # if organism is none of the above
         error_message_suffix: >-
           When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition,
@@ -505,9 +502,6 @@ components:
                 ancestors:
                   WBls:
                     - WBls:0000075
-              forbidden:
-                terms:
-                  - WBls:0000075
               exceptions:
                 - unknown
         # If organism is none of the above

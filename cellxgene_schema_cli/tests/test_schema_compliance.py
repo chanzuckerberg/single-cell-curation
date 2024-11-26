@@ -3066,7 +3066,7 @@ class TestRoundworm:
             ),
             (
                 "WBls:0000075",  # Do not accept WBls:0000075 itself, must be a descendant
-                "ERROR: 'WBls:0000075' in 'development_stage_ontology_term_id' is not allowed.",
+                "ERROR: 'WBls:0000075' in 'development_stage_ontology_term_id' is not an allowed term id.",
             ),
         ],
     )
@@ -3193,7 +3193,7 @@ class TestRoundworm:
             ),
             (
                 "WBbt:0005766",  # Must be descendant of WBbt:0005766, not itself
-                "ERROR: 'WBbt:0005766' in 'organism_tissue_ontology_term_id' is not allowed.",
+                "ERROR: 'WBbt:0005766' in 'organism_tissue_ontology_term_id' is not an allowed term id.",
             ),
             (
                 "na",  # Allowed for other organisms, not allowed if organism is c. elegans
