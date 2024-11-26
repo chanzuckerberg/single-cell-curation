@@ -198,6 +198,21 @@ components:
                         - FBbt:00007002
                     exceptions:
                       - unknown
+            - # If organism is c. elegans
+                rule: "organism_ontology_term_id == 'NCBITaxon:6239'"
+                error_message_suffix: >-
+                    When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans),
+                    'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'WBbt:0004017' (cell).
+                type: curie
+                curie_constraints:
+                    ontologies:
+                      - WBbt
+                    allowed:
+                      ancestors:
+                        WBbt:
+                        - WBbt:0004017
+                    exceptions:
+                      - unknown
         # if organism is none of the above
         error_message_suffix: >-
             When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition,
@@ -252,6 +267,20 @@ components:
                 ancestors:
                   FBbt:
                     - FBbt:00007002
+          - # If organism is c. elegans
+            rule: "organism_ontology_term_id == 'NCBITaxon:6239'"
+            error_message_suffix: >-
+              When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans),
+              'organism_tissue_ontology_term_id' MUST be the most accurate descendant
+              of WBbt:0005766 for Anatomy
+            type: curie
+            curie_constraints:
+              ontologies:
+                - WBbt
+              allowed:
+                ancestors:
+                  WBbt:
+                    - WBbt:0005766
         # if organism is none of the above
         error_message_suffix: >-
           When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition,
@@ -262,8 +291,26 @@ components:
           exceptions:
             - na
       sex_ontology_term_id:
-        error_message_suffix: "Only 'PATO:0000383', 'PATO:0000384', 'PATO:0001340', or 'unknown' are allowed."
         type: curie
+        dependencies:
+          - # If organism is c. elegans
+            rule: "organism_ontology_term_id == 'NCBITaxon:6239'"
+            error_message_suffix: >-
+              When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans),
+              'sex_ontology_term_id' MUST be 'PATO:0000384' for male, 'PATO:0001340' for hermaphrodite, or 'unknown'.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - PATO
+              allowed:
+                terms:
+                  PATO:
+                    - PATO:0000384
+                    - PATO:0001340
+              exceptions:
+                - unknown
+        # if organism is none of the above
+        error_message_suffix: "Only 'PATO:0000383', 'PATO:0000384', 'PATO:0001340', or 'unknown' are allowed."
         curie_constraints:
           ontologies:
             - PATO
@@ -461,6 +508,21 @@ components:
                 - FBdv
               exceptions:
                 - unknown
+          - # If organism is C. elegans
+            rule: "organism_ontology_term_id == 'NCBITaxon:6239'"
+            error_message_suffix: >-
+             When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans),
+             'development_stage_ontology_term_id' MUST be the most accurate descendant of 'WBls:0000075'.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - WBls
+              allowed:
+                ancestors:
+                  WBls:
+                    - WBls:0000075
+              exceptions:
+                - unknown
         # If organism is none of the above
         error_message_suffix: >-
           When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition,
@@ -573,13 +635,13 @@ components:
           - "organoid"
           - "tissue"
         dependencies:
-        - # If organism_ontology_term_id is NCBITaxon:7955 or NCBITaxon:7227, 'tissue_type' MUST be 'tissue'
-          rule: "organism_ontology_term_id == 'NCBITaxon:7955' | organism_ontology_term_id == 'NCBITaxon:7227'"
-          type: categorical
-          error_message_suffix: >-
-            when 'organism_ontology_term_id' is NCBITaxon:7955 or NCBITaxon:7227
-          enum:
-            - "tissue"
+        - # If organism_ontology_term_id is NCBITaxon:7955, NCBITaxon:7227, or NCBITaxon:6239 'tissue_type' MUST be 'tissue'
+            rule: "organism_ontology_term_id == 'NCBITaxon:7955' | organism_ontology_term_id == 'NCBITaxon:7227' | organism_ontology_term_id == 'NCBITaxon:6239'"
+            type: categorical
+            error_message_suffix: >-
+              when 'organism_ontology_term_id' is NCBITaxon:7955, NCBITaxon:7227, or NCBITaxon:6239
+            enum:
+              - "tissue"
       genetic_ancestry_African:
         type: genetic_ancestry_value
       genetic_ancestry_East_Asian:

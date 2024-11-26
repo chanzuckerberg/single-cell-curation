@@ -535,6 +535,8 @@ class TestObs:
             "ERROR: Checking values with dependencies failed for "
             "adata.obs['organism_tissue_ontology_term_id'], this is likely due "
             "to missing dependent column in adata.obs.",
+            "ERROR: Checking values with dependencies failed for adata.obs['sex_ontology_term_id'], "
+            "this is likely due to missing dependent column in adata.obs.",
             "ERROR: Checking values with dependencies failed for "
             "adata.obs['self_reported_ethnicity_ontology_term_id'], this is likely due "
             "to missing dependent column in adata.obs.",
@@ -3082,7 +3084,8 @@ class TestZebrafish:
         validator.validate_adata()
         error_message = (
             f"ERROR: Column 'tissue_type' in dataframe 'obs' contains invalid values '['{tissue_type}']'. "
-            f"Values must be one of ['tissue'] when 'organism_ontology_term_id' is NCBITaxon:7955 or NCBITaxon:7227"
+            f"Values must be one of ['tissue'] when 'organism_ontology_term_id' is NCBITaxon:7955, NCBITaxon:7227, "
+            f"or NCBITaxon:6239"
         )
         assert error_message in validator.errors
 
@@ -3312,6 +3315,271 @@ class TestFruitFly:
         validator.validate_adata()
         error_message = (
             f"ERROR: Column 'tissue_type' in dataframe 'obs' contains invalid values '['{tissue_type}']'. "
-            f"Values must be one of ['tissue'] when 'organism_ontology_term_id' is NCBITaxon:7955 or NCBITaxon:7227"
+            f"Values must be one of ['tissue'] when 'organism_ontology_term_id' is NCBITaxon:7955, NCBITaxon:7227, or "
+            f"NCBITaxon:6239"
+        )
+        assert error_message in validator.errors
+
+
+class TestRoundworm:
+    """
+    Tests for the roundworm / c. elegans schema
+    """
+
+    @pytest.fixture
+    def roundworm_obs(self):
+        obs = examples.adata.copy().obs
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:6239"
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "WBbt:0008611"
+        obs.loc[obs.index[0], "self_reported_ethnicity_ontology_term_id"] = "na"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "WBls:0000001"
+        obs.loc[obs.index[0], "organism_tissue_ontology_term_id"] = "WBbt:0006749"
+        obs.loc[obs.index[0], "sex_ontology_term_id"] = "PATO:0000384"
+        return obs
+
+    @pytest.fixture
+    def roundworm_visium_obs(self):
+        obs = examples.adata_visium.copy().obs
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:6239"
+        obs.loc[obs.index[0], "self_reported_ethnicity_ontology_term_id"] = "na"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "WBls:0000001"
+        obs.loc[obs.index[0], "organism_tissue_ontology_term_id"] = "WBbt:0006749"
+        obs.loc[obs.index[0], "sex_ontology_term_id"] = "PATO:0000384"
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "unknown"
+        return obs
+
+    @pytest.fixture
+    def validator_with_roundworm_adata(self, validator_with_adata, roundworm_obs):
+        validator_with_adata.adata.obs = roundworm_obs
+        return validator_with_adata
+
+    @pytest.fixture
+    def validator_with_visium_roundworm_adata(self, validator_with_visium_assay, roundworm_visium_obs):
+        validator_with_visium_assay.adata.obs = roundworm_visium_obs
+        return validator_with_visium_assay
+
+    @pytest.mark.parametrize(
+        "development_stage_ontology_term_id",
+        ["WBls:0000104", "unknown"],
+    )
+    def test_development_stage_ontology_term_id_roundworm(
+        self, validator_with_roundworm_adata, development_stage_ontology_term_id
+    ):
+        """
+        If organism_ontolology_term_id is "NCBITaxon:6239" for C. elegans,
+        this MUST be the most accurate WBls term or 'unknown'
+        """
+        validator = validator_with_roundworm_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = development_stage_ontology_term_id
+        validator.validate_adata()
+        assert not validator.errors
+
+    @pytest.mark.parametrize(
+        "development_stage_ontology_term_id,error",
+        [
+            (
+                "HsapDv:0000001",  # Wrong ontology
+                "ERROR: 'HsapDv:0000001' in 'development_stage_ontology_term_id' is not a valid ontology term id of "
+                "'WBls'.",
+            ),
+            (
+                "WBls:0000075",  # Do not accept WBls:0000075 itself, must be a descendant
+                "ERROR: 'WBls:0000075' in 'development_stage_ontology_term_id' is not an allowed term id.",
+            ),
+        ],
+    )
+    def test_development_stage_ontology_term_id_roundworm__invalid(
+        self, validator_with_roundworm_adata, development_stage_ontology_term_id, error
+    ):
+        """
+        If organism_ontolology_term_id is "NCBITaxon:6239" for C. elegans,
+        this MUST be the most accurate WBls:0000075 descendant.
+
+        NOTE: as of current implementation, all WBls terms are descendants of WBls:0000075
+        """
+        roundworm_error_message_suffix = (
+            "When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans), "
+            "'development_stage_ontology_term_id' MUST be the most accurate descendant of 'WBls:0000075'."
+        )
+        validator = validator_with_roundworm_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = development_stage_ontology_term_id
+        validator.validate_adata()
+        assert validator.errors == [error + " " + roundworm_error_message_suffix]
+
+    @pytest.mark.parametrize(
+        "organism_cell_type_ontology_term_id",
+        ["WBbt:0005762", "unknown"],
+    )
+    def test_organism_cell_type_ontology_term_id(
+        self, validator_with_roundworm_adata, organism_cell_type_ontology_term_id
+    ):
+        """
+        If organism_ontolology_term_id is "NCBITaxon:6239" for C. elegans,
+        MUST be a descendant term id of 'WBbt:0004017' (cell) or 'unknown'
+        """
+        validator = validator_with_roundworm_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = organism_cell_type_ontology_term_id
+        validator.validate_adata()
+        assert not validator.errors
+
+    @pytest.mark.parametrize(
+        "organism_cell_type_ontology_term_id,error",
+        [
+            (
+                "CL:0000001",  # Wrong ontology
+                "ERROR: 'CL:0000001' in 'organism_cell_type_ontology_term_id' is not a valid ontology term id of 'WBbt'.",
+            ),
+            (
+                "WBbt:0000100",  # Same ontology, not a descendant of WBbt:0004017
+                "ERROR: 'WBbt:0000100' in 'organism_cell_type_ontology_term_id' is not an allowed term id.",
+            ),
+            (
+                "WBbt:0004017",  # Do not accept WBbt:0004017 itself, must be a descendant
+                "ERROR: 'WBbt:0004017' in 'organism_cell_type_ontology_term_id' is not an allowed term id.",
+            ),
+            (
+                "na",  # Allowed for other organisms, not allowed if organism is fruit fly
+                "ERROR: 'na' in 'organism_cell_type_ontology_term_id' is not a valid ontology term id of 'WBbt'.",
+            ),
+        ],
+    )
+    def test_organism_cell_type_ontology_term_id__invalid(
+        self, validator_with_roundworm_adata, organism_cell_type_ontology_term_id, error
+    ):
+        validator = validator_with_roundworm_adata
+        roundworm_error_message_suffix = (
+            "When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans), "
+            "'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'WBbt:0004017' (cell)."
+        )
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = organism_cell_type_ontology_term_id
+        validator.validate_adata()
+        assert validator.errors == [error + " " + roundworm_error_message_suffix]
+
+    def test_organism_cell_type_ontology_term_id__visium_in_tissue_0(self, validator_with_visium_roundworm_adata):
+        validator = validator_with_visium_roundworm_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "in_tissue"] = 0
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "unknown"
+        validator.validate_adata()
+        assert not validator.errors
+
+    def test_organism_cell_type_ontology_term_id__visium_in_tissue_0_invalid(
+        self, validator_with_visium_roundworm_adata
+    ):
+        validator = validator_with_visium_roundworm_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "in_tissue"] = 0
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "WBbt:0005739"
+        validator.validate_adata()
+        assert (
+            "obs['cell_type_ontology_term_id'] must be 'unknown' and obs['organism_cell_type_ontology_term_id'] must "
+            "be 'unknown' or 'na' depending on the value of 'organism_ontology_term_id' (see schema definition)"
+            in validator.errors[0]
+        )
+
+    def test_organism_cell_type_ontology_term_id__visium_in_tissue_0__na(self, validator_with_visium_roundworm_adata):
+        validator = validator_with_visium_roundworm_adata
+        error_message = (
+            "ERROR: 'na' in 'organism_cell_type_ontology_term_id' is not a valid ontology term id of 'WBbt'. "
+            "When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans), "
+            "'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'WBbt:0004017' (cell)."
+        )
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "in_tissue"] = 0
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "na"
+        validator.validate_adata()
+        # Passes visium check but fails organism_cell_type_ontology_term_id check
+        assert validator.errors == [error_message]
+
+    def test_organism_tissue_type_ontology_term_id(self, validator_with_roundworm_adata):
+        validator = validator_with_roundworm_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "organism_tissue_ontology_term_id"] = "WBbt:0006750"  # valid descendant of WBbt:0005766
+        validator.validate_adata()
+        assert not validator.errors
+
+    @pytest.mark.parametrize(
+        "organism_tissue_ontology_term_id,error",
+        [
+            (
+                "UBERON:0000001",  # Wrong ontology
+                "ERROR: 'UBERON:0000001' in 'organism_tissue_ontology_term_id' is not a valid ontology term id "
+                "of 'WBbt'.",
+            ),
+            (
+                "WBbt:0005766",  # Must be descendant of WBbt:0005766, not itself
+                "ERROR: 'WBbt:0005766' in 'organism_tissue_ontology_term_id' is not an allowed term id.",
+            ),
+            (
+                "na",  # Allowed for other organisms, not allowed if organism is c. elegans
+                "ERROR: 'na' in 'organism_tissue_ontology_term_id' is not a valid ontology term id of 'WBbt'.",
+            ),
+            (
+                "unknown",
+                "ERROR: 'unknown' in 'organism_tissue_ontology_term_id' is not a valid ontology term id of 'WBbt'.",
+            ),
+        ],
+    )
+    def test_organism_tissue_ontology_term_id__invalid(
+        self, validator_with_roundworm_adata, organism_tissue_ontology_term_id, error
+    ):
+        validator = validator_with_roundworm_adata
+        roundworm_error_message_suffix = (
+            "When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans), "
+            "'organism_tissue_ontology_term_id' MUST be the most accurate descendant "
+            "of WBbt:0005766 for Anatomy"
+        )
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "organism_tissue_ontology_term_id"] = organism_tissue_ontology_term_id
+        validator.validate_adata()
+        assert validator.errors == [error + " " + roundworm_error_message_suffix]
+
+    def test_organism_tissue_type_valid(self, validator_with_roundworm_adata):
+        validator = validator_with_roundworm_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_type"] = "tissue"
+        assert not validator.errors
+
+    @pytest.mark.parametrize(
+        "tissue_type",
+        ["cell culture", "organoid"],
+    )
+    def test_organism_tissue_type__invalid(self, validator_with_roundworm_adata, tissue_type):
+        validator = validator_with_roundworm_adata
+        obs = validator.adata.obs
+        obs.tissue_type = obs.tissue_type.cat.add_categories(["organoid"])
+        obs.loc[obs.index[0], "tissue_type"] = tissue_type
+        validator.validate_adata()
+        error_message = (
+            f"ERROR: Column 'tissue_type' in dataframe 'obs' contains invalid values '['{tissue_type}']'. "
+            f"Values must be one of ['tissue'] when 'organism_ontology_term_id' is NCBITaxon:7955, NCBITaxon:7227, "
+            f"or NCBITaxon:6239"
+        )
+        assert error_message in validator.errors
+
+    @pytest.mark.parametrize(
+        "sex_ontology_term_id",
+        ["unknown", "PATO:0000384", "PATO:0001340"],
+    )
+    def test_sex_ontology_term_id_valid(self, validator_with_roundworm_adata, sex_ontology_term_id):
+        validator = validator_with_roundworm_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "sex_ontology_term_id"] = sex_ontology_term_id
+        validator.validate_adata()
+        assert not validator.errors
+
+    def test_sex_ontology_term_id__invalid(self, validator_with_roundworm_adata):
+        validator = validator_with_roundworm_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "sex_ontology_term_id"] = "PATO:0000383"  # allowed for other organisms, not c. elegans
+        validator.validate_adata()
+        error_message = (
+            "ERROR: 'PATO:0000383' in 'sex_ontology_term_id' is not an allowed term id. When "
+            "'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans), "
+            "'sex_ontology_term_id' MUST be 'PATO:0000384' for male, 'PATO:0001340' for hermaphrodite, or 'unknown'."
         )
         assert error_message in validator.errors
