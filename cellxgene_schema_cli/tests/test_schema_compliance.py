@@ -4,6 +4,7 @@ Tests for schema compliance of an AnnData object
 
 import tempfile
 import unittest
+from copy import deepcopy
 
 import anndata
 import fixtures.examples_validate as examples
@@ -495,7 +496,7 @@ class TestObs:
             assert validator.errors == []
         else:
             assert validator.errors == [
-                "obs['in_tissue'] is only allowed for descendants of obs['assay_ontology_term_id'] 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
+                "obs['in_tissue'] is only allowed for obs['assay_ontology_term_id'] is a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
             ]
 
     @pytest.mark.parametrize("reserved_column", schema_def["components"]["obs"]["reserved_columns"])
@@ -1673,11 +1674,16 @@ class TestVar:
         Raise a warning if there are too few genes
         """
         validator = validator_with_adata
+        # NOTE:[EM] changing the schema def here is stateful and results in unpredictable test results.
+        #  Reset after mutating.
+        _old_schema = deepcopy(validator.schema_def.copy())
+
         validator.schema_def["components"]["var"]["warn_if_less_than_rows"] = 100
         validator.validate_adata()
         assert validator.warnings == [
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix."
         ]
+        validator.schema_def = _old_schema
 
     @pytest.mark.parametrize(
         "df,column",
@@ -2198,7 +2204,6 @@ class TestObsm:
         ]
         assert validator.is_spatial is False
         assert validator.warnings == [
-            "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' harmony is not 'spatial' nor does it start with 'X_'. "
             "Thus, it will not be available in Explorer",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
@@ -2248,7 +2253,6 @@ class TestObsm:
         validator.adata.obsm["harmony"] = pd.DataFrame(validator.adata.obsm["X_umap"], index=validator.adata.obs_names)
         validator.validate_adata()
         assert validator.warnings == [
-            "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' harmony is not 'spatial' nor does it start with 'X_'. "
             "Thus, it will not be available in Explorer",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
@@ -2282,7 +2286,6 @@ class TestObsm:
             "'pandas.core.frame.DataFrame'>').",
         ]
         assert validator.warnings == [
-            "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' 3D is not 'spatial' nor does it start with 'X_'. "
             "Thus, it will not be available in Explorer",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",

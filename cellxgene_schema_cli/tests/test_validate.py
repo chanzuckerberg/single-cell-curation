@@ -15,6 +15,8 @@ from cellxgene_schema.validate import (
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED,
+    SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE,
+    SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
     Validator,
     validate,
 )
@@ -423,10 +425,9 @@ class TestCheckSpatial:
 
         # Confirm key type dict is required.
         validator.validate_adata()
-        assert validator.errors
         assert (
-            "A dict in uns['spatial'] is required for obs['assay_ontology_term_id'] values 'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)."
-            in validator.errors[0]
+            validator.errors[0]
+            == "ERROR: A dict in uns['spatial'] is required when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)."
         )
 
     def test__validate_spatial_is_single_false_ok(self):
@@ -448,25 +449,42 @@ class TestCheckSpatial:
 
         # Confirm spatial is not allowed for 10x 3' v2.
         validator._check_spatial_uns()
-        assert len(validator.errors) == 1
-        assert (
-            "uns['spatial'] is only allowed for obs['assay_ontology_term_id'] values "
-            "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)." in validator.errors[0]
-        )
+        assert validator.errors == [
+            "uns['spatial'] is only allowed when obs['assay_ontology_term_id'] is either "
+            "a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)"
+        ]
 
-    def test__validate_spatial_required_if_visium(self):
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, is_descendant",
+        [("EFO:0010961", True), ("EFO:0022858", True), ("EFO:0030029", False), ("EFO:0002697", False)],
+    )
+    def test__validate_spatial_required_if_visium(self, assay_ontology_term_id, is_descendant):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.uns = good_uns.copy()
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
 
-        # Confirm spatial is required for Visium.
-        validator._check_spatial_uns()
-        assert len(validator.errors) == 1
-        assert (
-            "A dict in uns['spatial'] is required for obs['assay_ontology_term_id'] values "
-            "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)." in validator.errors[0]
-        )
+        if is_descendant:
+            # check pass if 'spatial' included
+            validator.adata.uns = good_uns_with_visium_spatial.copy()
+            validator._check_spatial_uns()
+            assert len(validator.errors) == 0
+            validator.reset()
+
+            # check fail if 'spatial' not included
+            validator.adata.uns = good_uns.copy()
+            validator._check_spatial_uns()
+            assert validator.errors == [
+                "A dict in uns['spatial'] is required when obs['assay_ontology_term_id'] is "
+                "either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)."
+            ]
+            validator.reset()
+        else:
+            # check fail if 'spatial' included
+            validator.adata.uns = good_uns_with_visium_spatial.copy()
+            validator._check_spatial_uns()
+            assert len(validator.errors) == 1
+            validator.reset()
 
     def test__validate_spatial_required_if_slide_seqV2(self):
         validator: Validator = Validator()
@@ -476,11 +494,9 @@ class TestCheckSpatial:
 
         # Confirm spatial is required for Slide-seqV2.
         validator._check_spatial_uns()
-        assert len(validator.errors) == 1
-        assert (
-            "A dict in uns['spatial'] is required for obs['assay_ontology_term_id'] values "
-            "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)." in validator.errors[0]
-        )
+        assert validator.errors == [
+            "A dict in uns['spatial'] is required when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)."
+        ]
 
     def test__validate_spatial_allowed_keys_error(self):
         validator: Validator = Validator()
@@ -496,16 +512,26 @@ class TestCheckSpatial:
             "More than two top-level keys detected:" in validator.errors[0]
         )
 
-    def test__validate_is_single_required_visium_error(self):
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, is_descendant",
+        [("EFO:0010961", True), ("EFO:0022858", True), ("EFO:0030029", False), ("EFO:0002697", False)],
+    )
+    def test__validate_is_single_required_visium_error(self, assay_ontology_term_id, is_descendant):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
         validator.adata.uns["spatial"].pop("is_single")
-
-        # Confirm is_single is identified as required.
         validator._check_spatial_uns()
-        assert validator.errors
-        assert "uns['spatial'] must contain the key 'is_single'." in validator.errors[0]
+
+        if is_descendant:
+            # if spatial, MUST specify `is_single`
+            assert "uns['spatial'] must contain the key 'is_single'." in validator.errors[0]
+        else:
+            # if not spatial, MUST NOT speciffy `is_single`
+            assert validator.errors == [
+                "uns['spatial'] is only allowed when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)"
+            ]
 
     def test__validate_is_single_required_slide_seqV2_error(self):
         validator: Validator = Validator()
@@ -560,19 +586,36 @@ class TestCheckSpatial:
         assert len(validator.errors) == 1
         assert f"uns['spatial'][library_id] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN}." in validator.errors[0]
 
-    def test__validate_library_id_required_if_visium(self):
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, is_descendant",
+        [("EFO:0010961", True), ("EFO:0022858", True), ("EFO:0030029", False), ("EFO:0002697", False)],
+    )
+    def test__validate_library_id_required_if_visium(self, assay_ontology_term_id, is_descendant):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.uns["spatial"].pop(visium_library_id)
 
-        # Confirm library_id is identified as required.
-        validator._check_spatial_uns()
-        assert validator.errors
-        assert (
-            f"uns['spatial'] must contain at least one key representing the library_id when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}."
-            in validator.errors[0]
-        )
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+        if is_descendant:
+            # if spatial, `library_id` must exist
+            validator._check_spatial_uns()
+            assert len(validator.errors) == 0
+            validator.reset()
+
+            # if spatial, but missing from `uns`
+            validator.adata.uns["spatial"].pop(visium_library_id)
+            validator._check_spatial_uns()
+            assert validator.errors == [
+                f"uns['spatial'] must contain at least one key representing the library_id when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}."
+            ]
+        else:
+            # if not spatial, MUST NOT define `library_id`
+            validator.adata.uns["spatial"][visium_library_id] = {"images": []}
+            validator._check_spatial_uns()
+            # Report the most general top level error
+            assert validator.errors == [
+                "uns['spatial'] is only allowed when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)"
+            ]
 
     @pytest.mark.parametrize("library_id", [None, "invalid", 1, 1.0, True])
     def test__validate_library_id_type_error(self, library_id):
@@ -610,7 +653,11 @@ class TestCheckSpatial:
         assert validator.errors
         assert "uns['spatial'][library_id] must contain the key 'images'." in validator.errors[0]
 
-    def test__validate_images_allowed_keys_error(self):
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, is_descendant",
+        [("EFO:0010961", True), ("EFO:0022858", True), ("EFO:0030029", False), ("EFO:0002697", False)],
+    )
+    def test__validate_images_allowed_keys_error(self, assay_ontology_term_id, is_descendant):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
@@ -730,33 +777,83 @@ class TestCheckSpatial:
             "for example) or 4 (RGBA color model for example) for its last dimension" in validator.errors[0]
         )
 
-    def test__validate_images_hires_max_dimension_greater_than_error(self):
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, hi_res_size, image_max",
+        [
+            ("EFO:0022858", 2001, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE),
+            ("EFO:0022860", 4001, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM),
+        ],
+    )
+    def test__validate_images_hires_max_dimension_greater_than_error(
+        self, assay_ontology_term_id, hi_res_size, image_max
+    ):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros((1, 2001, 3), dtype=np.uint8)
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros(
+            (1, hi_res_size, 3), dtype=np.uint8
+        )
 
         # Confirm hires is identified as invalid.
         validator._check_spatial_uns()
-        assert validator.errors
-        assert (
-            "The largest dimension of uns['spatial'][library_id]['images']['hires'] must be 2000 pixels"
-            in validator.errors[0]
-        )
+        assert validator.errors == [
+            f"The largest dimension of uns['spatial'][library_id]['images']['hires'] must be {image_max} pixels, it has a largest dimension of {hi_res_size} pixels."
+        ]
 
-    def test__validate_images_hires_max_dimension_less_than_error(self):
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, hi_res_size, size_requirement",
+        [
+            ("EFO:0022858", SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE),
+            ("EFO:0022858", SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE),
+            ("EFO:0022860", SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM),
+            (
+                "EFO:0022860",
+                SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
+                SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
+            ),
+        ],
+    )
+    def test__validate_images_hires_max_dimension(self, assay_ontology_term_id, hi_res_size, size_requirement):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros((1, 1999, 3), dtype=np.uint8)
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros(
+            (1, hi_res_size, 3), dtype=np.uint8
+        )
+
+        # Confirm hires is identified as invalid.
+        validator.reset()
+        validator._check_spatial_uns()
+        if hi_res_size == size_requirement:
+            assert validator.errors == []
+        else:
+            assert validator.errors == [
+                f"The largest dimension of uns['spatial'][library_id]['images']['hires'] must be {size_requirement} pixels, it has a largest dimension of {hi_res_size} pixels."
+            ]
+
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, hi_res_size, image_max",
+        [
+            ("EFO:0022858", 1999, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE),
+            ("EFO:0022860", 3999, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM),
+        ],
+    )
+    def test__validate_images_hires_max_dimension_less_than_error(self, assay_ontology_term_id, hi_res_size, image_max):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros(
+            (1, hi_res_size, 3), dtype=np.uint8
+        )
 
         # Confirm hires is identified as invalid.
         validator._check_spatial_uns()
-        assert validator.errors
-        assert (
-            "The largest dimension of uns['spatial'][library_id]['images']['hires'] must be 2000 pixels"
-            in validator.errors[0]
-        )
+        assert validator.errors == [
+            f"The largest dimension of uns['spatial'][library_id]['images']['hires'] must be {image_max} pixels, it has a largest dimension of {hi_res_size} pixels."
+        ]
 
     def test__validate_scalefactors_required_error(self):
         validator: Validator = Validator()
@@ -861,8 +958,8 @@ class TestCheckSpatial:
         validator._validate_spatial_assay_ontology_term_id()
         assert validator.errors
         assert (
-            "When obs['assay_ontology_term_id'] is either 'EFO:0010961' (Visium Spatial Gene Expression) or "
-            "'EFO:0030062' (Slide-seqV2), all observations must contain the same value."
+            "When obs['assay_ontology_term_id'] is either a descendant"
+            " of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2), all observations must contain the same value."
         ) in validator.errors[0]
 
     def test__validate_assay_type_ontology_term_id_not_unique_ok(self, valid_adata):
