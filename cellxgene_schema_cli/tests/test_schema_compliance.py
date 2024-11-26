@@ -496,7 +496,7 @@ class TestObs:
             assert validator.errors == []
         else:
             assert validator.errors == [
-                "obs['in_tissue'] is only allowed for obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2) and uns['spatial']['is_single'] is True."
+                "obs['in_tissue'] is only allowed for obs['assay_ontology_term_id'] is a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
             ]
 
     @pytest.mark.parametrize("reserved_column", schema_def["components"]["obs"]["reserved_columns"])
