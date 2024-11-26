@@ -17,7 +17,13 @@ from cellxgene_schema.utils import getattr_anndata
 from cellxgene_schema.validate import (
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE,
     VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE,
+    VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE,
+    SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE,
+    SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM,
     Validator,
+)
+from fixtures.examples_validate import (
+    visium_library_id
 )
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 
@@ -30,6 +36,7 @@ def validator() -> Validator:
 
     # Override the schema definition here
     validator._set_schema_def()
+
 
     # lower threshold for low gene count warning
     validator.schema_def["components"]["var"]["warn_if_less_than_rows"] = 1
@@ -77,7 +84,8 @@ def validator_with_spatial_and_is_single_false(validator) -> Validator:
 @pytest.fixture
 def validator_with_visium_assay(validator) -> Validator:
     validator.adata = examples.adata_visium.copy()
-    validator.visium_and_is_single_true_matrix_size = 2
+    validator._visium_and_is_single_true_matrix_size = 2
+    validator._hires_max_dimension_size = None
     return validator
 
 
@@ -247,6 +255,7 @@ class TestExpressionMatrix:
             "ERROR: Each cell must have at least one non-zero value in its row in the raw matrix.",
             "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
         ]
+    
     # TODO:[EM] try multiple combinations 
     def test_raw_values__contains_zero_row_in_tissue_1_mixed_in_tissue_values(self, validator_with_visium_assay):
         """
@@ -299,21 +308,39 @@ class TestExpressionMatrix:
         validator.validate_adata()
         assert validator.errors == []
 
-    def test_raw_values__invalid_visium_and_is_single_true_row_length(self, validator_with_visium_assay):
+    # TODO:[EM] test row lengths for generic visium and specifically visium 11m.
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, req_matrix_size, image_size",
+        [
+            ("EFO:0022858", VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE),
+            ("EFO:0022860", VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE, SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM),
+        ],
+    )
+    def test_raw_values__invalid_visium_and_is_single_true_row_length(self, validator_with_visium_assay, assay_ontology_term_id, req_matrix_size, image_size):
         """
         Dataset is visium and uns['is_single'] is True, but raw.X is the wrong length.
         """
-        validator = validator_with_visium_assay
-        validator.visium_and_is_single_true_matrix_size = VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
-
+        validator: Validator = validator_with_visium_assay
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+        
+        # hires image size must be present in order to validate the raw.
+        validator._hires_max_dimension_size = image_size
+        validator._visium_and_is_single_true_matrix_size = None
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = numpy.zeros(
+            (1, image_size, 3), dtype=numpy.uint8
+        )
+        
         validator.validate_adata()
         assert validator.errors == [
             f"ERROR: When {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}, the raw matrix must be the "
             "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
-            f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2.",
+            f"{req_matrix_size} rows. Raw matrix row count is 2.",
             "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
         ]
+        validator.reset()
 
+
+    # TODO:[EM] test that multiple errors raise for both visium assays and visium 11mm assays.
     def test_raw_values__multiple_invalid_in_tissue_errors(self, validator_with_visium_assay):
         """
         Dataset is visium and uns['is_single'] is True, in_tissue has both 0 and 1 values and there
@@ -321,7 +348,7 @@ class TestExpressionMatrix:
         """
 
         validator = validator_with_visium_assay
-        validator.visium_and_is_single_true_matrix_size = VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
+        validator._visium_and_is_single_true_matrix_size = None
         validator.adata.X = numpy.zeros(
             [validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32
         )
