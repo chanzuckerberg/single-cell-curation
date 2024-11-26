@@ -15,8 +15,8 @@ from cellxgene_schema.validate import (
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED,
-    SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM,
     SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE,
+    SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
     Validator,
     validate,
 )
@@ -781,7 +781,7 @@ class TestCheckSpatial:
         "assay_ontology_term_id, hi_res_size, image_max",
         [
             ("EFO:0022858", 2001, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE),
-            ("EFO:0022860", 4001, SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM),
+            ("EFO:0022860", 4001, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM),
         ],
     )
     def test__validate_images_hires_max_dimension_greater_than_error(
@@ -802,10 +802,42 @@ class TestCheckSpatial:
         ]
 
     @pytest.mark.parametrize(
+        "assay_ontology_term_id, hi_res_size, size_requirement",
+        [
+            ("EFO:0022858", SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE),
+            ("EFO:0022858", SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE),
+            ("EFO:0022860", SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM),
+            (
+                "EFO:0022860",
+                SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
+                SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
+            ),
+        ],
+    )
+    def test__validate_images_hires_max_dimension(self, assay_ontology_term_id, hi_res_size, size_requirement):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = np.zeros(
+            (1, hi_res_size, 3), dtype=np.uint8
+        )
+
+        # Confirm hires is identified as invalid.
+        validator.reset()
+        validator._check_spatial_uns()
+        if hi_res_size == size_requirement:
+            assert validator.errors == []
+        else:
+            assert validator.errors == [
+                f"The largest dimension of uns['spatial'][library_id]['images']['hires'] must be {size_requirement} pixels, it has a largest dimension of {hi_res_size} pixels."
+            ]
+
+    @pytest.mark.parametrize(
         "assay_ontology_term_id, hi_res_size, image_max",
         [
             ("EFO:0022858", 1999, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE),
-            ("EFO:0022860", 3999, SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM),
+            ("EFO:0022860", 3999, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM),
         ],
     )
     def test__validate_images_hires_max_dimension_less_than_error(self, assay_ontology_term_id, hi_res_size, image_max):

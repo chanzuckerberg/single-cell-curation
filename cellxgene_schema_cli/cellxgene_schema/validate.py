@@ -34,8 +34,8 @@ CONDITION_IS_VISIUM = "a descendant of 'EFO:0010961' (Visium Spatial Gene Expres
 CONDITION_IS_SEQV2 = f"'{ASSAY_SLIDE_SEQV2}' (Slide-seqV2)"
 
 
-ERROR_SUFFIX_VISIUM = f"obs['assay_ontology_term_id'] is either {CONDITION_IS_VISIUM} or {CONDITION_IS_SEQV2}"
-ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = f"{ERROR_SUFFIX_VISIUM} and uns['spatial']['is_single'] is True"
+ERROR_SUFFIX_SPATIAL = f"obs['assay_ontology_term_id'] is either {CONDITION_IS_VISIUM} or {CONDITION_IS_SEQV2}"
+ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = f"{ERROR_SUFFIX_SPATIAL} and uns['spatial']['is_single'] is True"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN = f"is only allowed for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED = f"is required for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0 = f"{ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE} and in_tissue is 0"
@@ -1474,7 +1474,7 @@ class Validator:
         # Validate assay ontology term ids are identical.
         term_count = obs["assay_ontology_term_id"].nunique()
         if term_count > 1:
-            self.errors.append(f"When {ERROR_SUFFIX_VISIUM}" ", all observations must contain the same value.")
+            self.errors.append(f"When {ERROR_SUFFIX_SPATIAL}" ", all observations must contain the same value.")
 
     def _validate_spatial_cell_type_ontology_term_id(self):
         """
@@ -1604,7 +1604,7 @@ class Validator:
         uns_spatial = self.adata.uns.get("spatial")
         is_supported_spatial_assay = self._is_supported_spatial_assay()
         if uns_spatial is not None and not is_supported_spatial_assay:
-            self.errors.append(f"uns['spatial'] is only allowed when {ERROR_SUFFIX_VISIUM}")
+            self.errors.append(f"uns['spatial'] is only allowed when {ERROR_SUFFIX_SPATIAL}")
             return
 
         # Exit if we aren't dealing with a supported spatial assay as no further checks are necessary.
@@ -1613,7 +1613,7 @@ class Validator:
 
         # spatial is required for supported spatial assays.
         if not isinstance(uns_spatial, dict):
-            self.errors.append("A dict in uns['spatial'] is required when " f"{ERROR_SUFFIX_VISIUM}.")
+            self.errors.append("A dict in uns['spatial'] is required when " f"{ERROR_SUFFIX_SPATIAL}.")
             return
 
         # is_single is required.
@@ -1695,7 +1695,7 @@ class Validator:
                 _assay_term = self.adata.obs["assay_ontology_term_id"].values[0]
                 _max_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE
                 if is_ontological_descendant_of(ONTOLOGY_PARSER, _assay_term, "EFO:0022860", True):
-                    _max_size = SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM
+                    _max_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM
                 self._validate_spatial_image_shape("hires", uns_images["hires"], _max_size)
 
             # fullres is optional.
