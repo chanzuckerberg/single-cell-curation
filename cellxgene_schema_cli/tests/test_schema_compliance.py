@@ -247,13 +247,13 @@ class TestExpressionMatrix:
             "ERROR: Each cell must have at least one non-zero value in its row in the raw matrix.",
             "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
         ]
-
+    # TODO:[EM] try multiple combinations 
     def test_raw_values__contains_zero_row_in_tissue_1_mixed_in_tissue_values(self, validator_with_visium_assay):
         """
         Raw Matrix contains a row with all zeros and in_tissue is 1, and there are also values with in_tissue 0.
         """
 
-        validator = validator_with_visium_assay
+        validator: Validator = validator_with_visium_assay
         validator.adata.X[1] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
         validator.adata.raw.X[1] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
         validator.validate_adata()
@@ -262,6 +262,7 @@ class TestExpressionMatrix:
             "non-zero value in its row in the raw matrix.",
             "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
         ]
+
 
     def test_raw_values__contains_all_zero_rows_in_tissue_0(self, validator_with_visium_assay):
         """
