@@ -458,9 +458,11 @@ class Validator:
                 return False
 
             # The sum of genetic ancestry values should be approximately 1.0
-            if ancestry_values.apply(lambda x: isinstance(x, (float, int))).all():
-                if abs(ancestry_values.sum() - 1.0) <= 1e-6:
-                    return True
+            if (
+                ancestry_values.apply(lambda x: isinstance(x, (float, int))).all()
+                and abs(ancestry_values.sum() - 1.0) <= 1e-6
+            ):
+                return True
 
             return False
 
