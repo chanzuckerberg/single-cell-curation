@@ -1510,6 +1510,97 @@ class TestObs:
             in validator.errors
         )
 
+    @pytest.mark.parametrize(
+        "genetic_ancestry_African, genetic_ancestry_East_Asian, genetic_ancestry_European, "
+        "genetic_ancestry_Indigenous_American, genetic_ancestry_Oceanian, genetic_ancestry_South_Asian",
+        [
+            (0.0, 0.0, 0.0, 0.0, 0.0, 1.0),
+            (0.5, 0.5, 0.0, 0.0, 0.0, 0.0),
+            (0.0, 0.25, 0.25, 0.25, 0.25, 0.0),
+            (float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), float("nan")),
+            (numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan),
+        ],
+    )
+    def test_genetic_ancestry__OK(
+        self,
+        validator_with_adata,
+        genetic_ancestry_African,
+        genetic_ancestry_East_Asian,
+        genetic_ancestry_European,
+        genetic_ancestry_Indigenous_American,
+        genetic_ancestry_Oceanian,
+        genetic_ancestry_South_Asian,
+    ):
+        """
+        genetic_ancestry_X fields must all be floats between 0 and 1 and sum to 1
+        OR they can all be NaN
+        """
+        validator = validator_with_adata
+        # Second organism in adata is not homo sapiens
+        validator.adata.obs["genetic_ancestry_African"] = [genetic_ancestry_African, float("nan")]
+        validator.adata.obs["genetic_ancestry_East_Asian"] = [genetic_ancestry_East_Asian, float("nan")]
+        validator.adata.obs["genetic_ancestry_European"] = [genetic_ancestry_European, float("nan")]
+        validator.adata.obs["genetic_ancestry_Indigenous_American"] = [
+            genetic_ancestry_Indigenous_American,
+            float("nan"),
+        ]
+        validator.adata.obs["genetic_ancestry_Oceanian"] = [genetic_ancestry_Oceanian, float("nan")]
+        validator.adata.obs["genetic_ancestry_South_Asian"] = [genetic_ancestry_South_Asian, float("nan")]
+        validator.validate_adata()
+        assert validator.errors == []
+
+    @pytest.mark.parametrize(
+        "genetic_ancestry_African, genetic_ancestry_East_Asian, genetic_ancestry_European, "
+        "genetic_ancestry_Indigenous_American, genetic_ancestry_Oceanian, genetic_ancestry_South_Asian",
+        [
+            # Non-float value of "random string"
+            (0.0, 0.0, 0.0, 1.0, 0.0, "random string"),
+            # Non-float value of True
+            (0.0, 0.0, 0.0, 1.0, 0.0, True),
+            # Non-float value of None
+            (0.0, 0.0, 0.0, 1.0, 0.0, None),
+            # Non-float value of numpy True
+            (0.0, 0.0, 0.0, 1.0, 0.0, numpy.True_),
+            # Non-float value of numpy NaN
+            (0.0, numpy.nan, 0.0, 1.0, 0.0, 0.0),
+            # One value is > 1
+            (0.0, 0.0, 1.1, 0.0, 0.0, 0.0),
+            # One value is < 0.0
+            (0.0, 0.0, -0.25, 1.0, 0.25, 0.0),
+            # Sum is > 1.0
+            (0.0, 0.1, 1.0, 0.0, 0.0, 0.0),
+            # Sum is < 1.0
+            (0.0, 0.25, 0.25, 0.25, 0.0, 0.0),
+            # Only all NaN is valid
+            (float("nan"), 0.0, 0.0, 0.0, 0.0, 0.0),
+            # Only all NaN is valid
+            (numpy.nan, 0.0, 0.0, 0.0, 0.0, 0.0),
+        ],
+    )
+    def test_genetic_ancestry__invalid(
+        self,
+        validator_with_adata,
+        genetic_ancestry_African,
+        genetic_ancestry_East_Asian,
+        genetic_ancestry_European,
+        genetic_ancestry_Indigenous_American,
+        genetic_ancestry_Oceanian,
+        genetic_ancestry_South_Asian,
+    ):
+        validator = validator_with_adata
+        # Second organism in adata is not homo sapiens
+        validator.adata.obs["genetic_ancestry_African"] = [genetic_ancestry_African, float("nan")]
+        validator.adata.obs["genetic_ancestry_East_Asian"] = [genetic_ancestry_East_Asian, float("nan")]
+        validator.adata.obs["genetic_ancestry_European"] = [genetic_ancestry_European, float("nan")]
+        validator.adata.obs["genetic_ancestry_Indigenous_American"] = [
+            genetic_ancestry_Indigenous_American,
+            float("nan"),
+        ]
+        validator.adata.obs["genetic_ancestry_Oceanian"] = [genetic_ancestry_Oceanian, float("nan")]
+        validator.adata.obs["genetic_ancestry_South_Asian"] = [genetic_ancestry_South_Asian, float("nan")]
+        validator.validate_adata()
+        assert len(validator.errors) > 0
+
 
 class TestVar:
     """
