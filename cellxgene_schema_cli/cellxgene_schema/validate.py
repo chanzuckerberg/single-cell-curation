@@ -4,7 +4,7 @@ import numbers
 import os
 import re
 from datetime import datetime
-from typing import Dict, List, Mapping, Optional, Union
+from typing import Dict, List, Mapping, Optional, Union, Tuple
 
 import anndata
 import matplotlib.colors as mcolors
@@ -33,11 +33,13 @@ SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE = 2000
 SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM = 4000
 
 CONDITION_IS_VISIUM = "a descendant of 'EFO:0010961' (Visium Spatial Gene Expression)"
+CONDITION_IS_VISIUM_11M = f"'{ASSAY_VISIUM_11M} (Visium CytAssist Spatial Gene Expression, 11mm)"
 CONDITION_IS_SEQV2 = f"'{ASSAY_SLIDE_SEQV2}' (Slide-seqV2)"
 
 
-ERROR_SUFFIX_SPATIAL = f"obs['assay_ontology_term_id'] is either {CONDITION_IS_VISIUM} or {CONDITION_IS_SEQV2}"
-ERROR_SUFFIX_VISIUM = f"obs['assay_ontology_term_id'] is {CONDITION_IS_VISIUM}"
+
+ERROR_SUFFIX_VISIUM = f"obs['assay_ontology_term_id'] is either {CONDITION_IS_VISIUM} or {CONDITION_IS_SEQV2}"
+ERROR_SUFFIX_VISIUM_11M = f"obs['assay_ontology_term_id'] is {CONDITION_IS_VISIUM_11M}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = f"{ERROR_SUFFIX_VISIUM} and uns['spatial']['is_single'] is True"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN = f"is only allowed for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED = f"is required for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
@@ -53,6 +55,7 @@ class Validator:
         self.ignore_labels = ignore_labels
         self._visium_and_is_single_true_matrix_size = None
         self._hires_max_dimension_size = None
+        self._visium_error_suffix = None
 
         # Values will be instances of gencode.GeneChecker,
         # keys will be one of gencode.SupportedOrganisms
@@ -81,26 +84,37 @@ class Validator:
         self._adata = adata
 
     @property
-    def visium_and_is_single_true_matrix_size(self) -> int:
+    def visium_and_is_single_true_matrix_size(self) -> Optional[int]:
+        '''
+        Returns the required matrix size based on assay type, if applicable, else returns None.
+        '''
         if self._visium_and_is_single_true_matrix_size is None:
-            # Visium 11M's raw amtrix size is distinct from other visium assays
+            # Visium 11M's raw matrix size is distinct from other visium assays
             if bool(self.adata.obs['assay_ontology_term_id'].apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True)).any()):
+                self._visium_error_suffix = ERROR_SUFFIX_VISIUM_11M
                 self._visium_and_is_single_true_matrix_size = VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
             elif self._is_visium_including_descendants():
+                self._visium_error_suffix = ERROR_SUFFIX_VISIUM
                 self._visium_and_is_single_true_matrix_size = VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
         return self._visium_and_is_single_true_matrix_size
-    
+
     @property
-    def hires_max_dimension_size(self) -> int:
+    def hires_max_dimension_size(self) -> Optional[int]:
+        '''
+        Returns the restricted hires image dimension based on assay type, if applicable, else returns None.
+        '''
         if self._hires_max_dimension_size is None:
             # Visium 11M's max dimension size is distinct from other visium assays
             if bool(self.adata.obs['assay_ontology_term_id'].apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True)).any()):
+                self._visium_error_suffix = ERROR_SUFFIX_VISIUM_11M
                 self._hires_max_dimension_size = SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM
             elif self._is_visium_including_descendants():
+                self._visium_error_suffix = ERROR_SUFFIX_VISIUM
                 self._hires_max_dimension_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE
         return self._hires_max_dimension_size
 
-    
+
+
     def _is_single(self) -> bool | None:
         """
         Determine value of uns.spatial.is_single. None if non-spatial.
@@ -1248,11 +1262,12 @@ class Validator:
             self._raw_layer_exists = True
             is_sparse_matrix = matrix_format in SPARSE_MATRIX_TYPES
 
+            
             is_visium_and_is_single_true = self._is_visium_and_is_single_true()
             if is_visium_and_is_single_true and x.shape[0] != self.visium_and_is_single_true_matrix_size:
                 self._raw_layer_exists = False
                 self.errors.append(
-                    f"When {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}, the raw matrix must be the "
+                    f"When {self._visium_error_suffix}, the raw matrix must be the "
                     f"unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
                     f"{self.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is "
                     f"{x.shape[0]}."
