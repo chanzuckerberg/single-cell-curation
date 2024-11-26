@@ -436,7 +436,7 @@ class Validator:
         organism_column = "organism_ontology_term_id"
 
         # Skip any additional validation if the genetic ancestry or organism columns are not present
-        # An error for missing columns will be raised at a different point in
+        # An error for missing columns will be raised at a different point
         required_columns = ancestry_columns + [organism_column]
         for column in required_columns:
             if column not in self.adata.obs.columns:
@@ -444,19 +444,20 @@ class Validator:
 
         def is_valid_row(row):
             ancestry_values = row[ancestry_columns]
-            # All values are NaN
+            # All values are NaN. This is always valid, regardless of organism
             if ancestry_values.isna().all():
                 return True
 
-            # If one value is NaN, then all must be NaN
+            # If any values are NaN, and we didn't return earlier, then this is invalid
             if ancestry_values.isna().any():
                 return False
 
-            # If organism is not homo sapiens, then it must be all NaN
+            # If organism is not homo sapiens, and we didn't return in the earlier all NaN check,
+            # then this row is invalid
             if row[organism_column] != "NCBITaxon:9606":
                 return False
 
-            # The sum of values is approximately 1.0
+            # The sum of genetic ancestry values should be approximately 1.0
             if ancestry_values.apply(lambda x: isinstance(x, (float, int))).all():
                 if abs(ancestry_values.sum() - 1.0) <= 1e-6:
                     return True
@@ -473,9 +474,8 @@ class Validator:
                 f"obs rows with indices {invalid_indices} have invalid genetic ancestry values. If "
                 f"organism_ontolology_term_id is NOT 'NCBITaxon:9606' for Homo sapiens, then the value "
                 f"MUST be float('nan'). If organism_ontolology_term_id is 'NCBITaxon:9606' for Homo sapiens, "
-                f"then the value MUST be a float('nan') if unavailable; otherwise, the value MUST be "
-                f"the genetic ancestry percentage of 'HANCESTRO:0010' for African expressed as a float "
-                f"greater than or equal to 0.0 and less than or equal to 1.0"
+                f"then the value MUST be a float('nan') if unavailable; otherwise, the sum of all "
+                f"genetic_ancestry_* fields must be equal to 1.0"
             )
 
     def _validate_individual_genetic_ancestry_value(self, column: pd.Series, column_name: str):
