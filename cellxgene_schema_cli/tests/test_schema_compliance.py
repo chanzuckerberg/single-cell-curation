@@ -23,7 +23,7 @@ from cellxgene_schema.validate import (
     VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE,
     VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE,
     SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE,
-    SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM,
+    SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
     Validator,
 )
 from fixtures.examples_validate import (
@@ -314,7 +314,7 @@ class TestExpressionMatrix:
         "assay_ontology_term_id, req_matrix_size, image_size",
         [
             ("EFO:0022858", VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE),
-            ("EFO:0022860", VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE, SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM),
+            ("EFO:0022860", VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM),
         ],
     )
     def test_raw_values__invalid_visium_and_is_single_true_row_length(self, validator_with_visium_assay, assay_ontology_term_id, req_matrix_size, image_size):
@@ -350,7 +350,7 @@ class TestExpressionMatrix:
         "assay_ontology_term_id, req_matrix_size, image_size",
         [
             ("EFO:0022858", VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE),
-            ("EFO:0022860", VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE, SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM),
+            ("EFO:0022860", VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM),
         ],
     )
     def test_raw_values__multiple_invalid_in_tissue_errors(self, validator_with_visium_assay, assay_ontology_term_id, req_matrix_size, image_size):
@@ -549,7 +549,7 @@ class TestObs:
             assert validator.errors == []
         else:
             assert validator.errors == [
-                "obs['in_tissue'] is only allowed for obs['assay_ontology_term_id'] is a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
+                f"obs['in_tissue'] is only allowed for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}."
             ]
 
     @pytest.mark.parametrize("reserved_column", schema_def["components"]["obs"]["reserved_columns"])

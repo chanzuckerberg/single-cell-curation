@@ -36,10 +36,14 @@ CONDITION_IS_VISIUM = "a descendant of 'EFO:0010961' (Visium Spatial Gene Expres
 CONDITION_IS_VISIUM_11M = f"'{ASSAY_VISIUM_11M} (Visium CytAssist Spatial Gene Expression, 11mm)"
 CONDITION_IS_SEQV2 = f"'{ASSAY_SLIDE_SEQV2}' (Slide-seqV2)"
 
+CONDITION_IS_VISIUM = "a descendant of 'EFO:0010961' (Visium Spatial Gene Expression)"
+CONDITION_IS_SEQV2 = f"'{ASSAY_SLIDE_SEQV2}' (Slide-seqV2)"
 
 
-ERROR_SUFFIX_VISIUM = f"obs['assay_ontology_term_id'] is either {CONDITION_IS_VISIUM} or {CONDITION_IS_SEQV2}"
+ERROR_SUFFIX_SPATIAL = f"obs['assay_ontology_term_id'] is either {CONDITION_IS_VISIUM} or {CONDITION_IS_SEQV2}"
+ERROR_SUFFIX_VISIUM = f"obs['assay_ontology_term_id'] is {CONDITION_IS_VISIUM}"
 ERROR_SUFFIX_VISIUM_11M = f"obs['assay_ontology_term_id'] is {CONDITION_IS_VISIUM_11M}"
+
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = f"{ERROR_SUFFIX_VISIUM} and uns['spatial']['is_single'] is True"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN = f"is only allowed for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED = f"is required for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
@@ -107,7 +111,7 @@ class Validator:
             # Visium 11M's max dimension size is distinct from other visium assays
             if bool(self.adata.obs['assay_ontology_term_id'].apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True)).any()):
                 self._visium_error_suffix = ERROR_SUFFIX_VISIUM_11M
-                self._hires_max_dimension_size = SPATIAL_HIRES_IMAGE_MAX_DIEMSNION_SIZE_VISIUM_11MM
+                self._hires_max_dimension_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM
             elif self._is_visium_including_descendants():
                 self._visium_error_suffix = ERROR_SUFFIX_VISIUM
                 self._hires_max_dimension_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE
