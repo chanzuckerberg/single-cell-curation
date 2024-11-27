@@ -422,7 +422,6 @@ class Validator:
         - all float('nan') if organism is not homo sapiens or info is unavailable
         - sum to 1.0
         """
-        # Extract the relevant genetic ancestry columns
         ancestry_columns = [
             "genetic_ancestry_African",
             "genetic_ancestry_East_Asian",
@@ -432,7 +431,6 @@ class Validator:
             "genetic_ancestry_South_Asian",
         ]
 
-        # Extract the organism ontology column
         organism_column = "organism_ontology_term_id"
 
         # Skip any additional validation if the genetic ancestry or organism columns are not present
@@ -448,7 +446,8 @@ class Validator:
             if ancestry_values.isna().all():
                 return True
 
-            # If any values are NaN, and we didn't return earlier, then this is invalid
+            # If any values are NaN, and we didn't return in the earlier all NaN check, then
+            # this is invalid
             if ancestry_values.isna().any():
                 return False
 
@@ -466,18 +465,16 @@ class Validator:
 
             return False
 
-        # Identify invalid rows
         invalid_rows = ~self.adata.obs.apply(is_valid_row, axis=1)
 
-        # If there are invalid rows, raise an error
         if invalid_rows.any():
             invalid_indices = self.adata.obs.index[invalid_rows].tolist()
             self.errors.append(
-                f"obs rows with indices {invalid_indices} have invalid genetic ancestry values. If "
-                f"organism_ontolology_term_id is NOT 'NCBITaxon:9606' for Homo sapiens, then the value "
-                f"MUST be float('nan'). If organism_ontolology_term_id is 'NCBITaxon:9606' for Homo sapiens, "
-                f"then the value MUST be a float('nan') if unavailable; otherwise, the sum of all "
-                f"genetic_ancestry_* fields must be equal to 1.0"
+                f"obs rows with indices {invalid_indices} have invalid genetic_ancestry_* values. If "
+                f"organism_ontolology_term_id is NOT 'NCBITaxon:9606' for Homo sapiens, then all genetic"
+                f"ancestry values MUST be float('nan'). If organism_ontolology_term_id is 'NCBITaxon:9606' "
+                f"for Homo sapiens, then the value MUST be a float('nan') if unavailable; otherwise, the "
+                f"sum of all genetic_ancestry_* fields must be equal to 1.0"
             )
 
     def _validate_individual_genetic_ancestry_value(self, column: pd.Series, column_name: str):
@@ -493,7 +490,7 @@ class Validator:
         def is_individual_value_valid(value):
             if isinstance(value, (float, int)) and 0 <= value <= 1:
                 return True
-            # Ensures only float('nan') is valid, None is invalid
+            # Ensures only float('nan') or numpy.nan is valid, None is invalid
             if isinstance(value, float) and pd.isna(value):
                 return True
             return False
