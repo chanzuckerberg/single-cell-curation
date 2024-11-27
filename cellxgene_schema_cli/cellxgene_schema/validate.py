@@ -421,6 +421,8 @@ class Validator:
         Performs row-based validation of the genetic_ancestry_X fields. This ensures that a valid row must be:
         - all float('nan') if organism is not homo sapiens or info is unavailable
         - sum to 1.0
+
+        Additionally, verifies that all rows with the same donor_id must have the same genetic ancestry values
         """
         ancestry_columns = [
             "genetic_ancestry_African",
@@ -432,16 +434,28 @@ class Validator:
         ]
 
         organism_column = "organism_ontology_term_id"
+        donor_id_column = "donor_id"
 
         # Skip any additional validation if the genetic ancestry or organism columns are not present
         # An error for missing columns will be raised at a different point
-        required_columns = ancestry_columns + [organism_column]
+        required_columns = ancestry_columns + [organism_column, donor_id_column]
         for column in required_columns:
             if column not in self.adata.obs.columns:
                 return
 
+        donor_id_to_ancestry_values = dict()
+
         def is_valid_row(row):
             ancestry_values = row[ancestry_columns]
+
+            # If ancestry values are different for the same donor id, then this row is invalid
+            donor_id = row[donor_id_column]
+            if donor_id in donor_id_to_ancestry_values:
+                if not donor_id_to_ancestry_values[donor_id].equals(ancestry_values):
+                    return False
+            else:
+                donor_id_to_ancestry_values[donor_id] = ancestry_values
+
             # All values are NaN. This is always valid, regardless of organism
             if ancestry_values.isna().all():
                 return True
@@ -470,7 +484,8 @@ class Validator:
         if invalid_rows.any():
             invalid_indices = self.adata.obs.index[invalid_rows].tolist()
             self.errors.append(
-                f"obs rows with indices {invalid_indices} have invalid genetic_ancestry_* values. If "
+                f"obs rows with indices {invalid_indices} have invalid genetic_ancestry_* values. All "
+                f"observations with the same donor_id must contain the same genetic_ancestry_* values. If "
                 f"organism_ontolology_term_id is NOT 'NCBITaxon:9606' for Homo sapiens, then all genetic"
                 f"ancestry values MUST be float('nan'). If organism_ontolology_term_id is 'NCBITaxon:9606' "
                 f"for Homo sapiens, then the value MUST be a float('nan') if unavailable; otherwise, the "

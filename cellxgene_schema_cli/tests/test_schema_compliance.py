@@ -1601,6 +1601,33 @@ class TestObs:
         validator.validate_adata()
         assert len(validator.errors) > 0
 
+    def test_genetic_ancestry_same_donor_id(self, validator_with_adata):
+        """
+        genetic_ancestry_X fields must be the same when the donor id is the same
+        """
+        validator = validator_with_adata
+        original_donor_id_column = validator.adata.obs["donor_id"].copy()
+
+        # Second row should have identical donor id + genetic ancestry values, so this should pass validation
+        validator.adata.obs.iloc[1] = validator.adata.obs.iloc[0].values
+        validator.validate_adata()
+        assert validator.errors == []
+
+        # Update the genetic ancestry values to be different. This should now fail validation
+        validator.adata.obs["genetic_ancestry_African"] = [1.0, 0.0]
+        validator.adata.obs["genetic_ancestry_East_Asian"] = [0.0, 1.0]
+        validator.adata.obs["genetic_ancestry_European"] = [0.0, 0.0]
+        validator.adata.obs["genetic_ancestry_Indigenous_American"] = [0.0, 0.0]
+        validator.adata.obs["genetic_ancestry_Oceanian"] = [0.0, 0.0]
+        validator.adata.obs["genetic_ancestry_South_Asian"] = [0.0, 0.0]
+        validator.validate_adata()
+        assert len(validator.errors) > 0
+
+        # Change the donor id back to two different donor id's. Now, this should pass validation
+        validator.adata.obs["donor_id"] = original_donor_id_column
+        validator.validate_adata()
+        assert validator.errors == []
+
 
 class TestVar:
     """
