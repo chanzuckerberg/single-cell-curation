@@ -4,7 +4,7 @@ import numbers
 import os
 import re
 from datetime import datetime
-from typing import Dict, List, Mapping, Optional, Union, Tuple
+from typing import Dict, List, Mapping, Optional, Union
 
 import anndata
 import matplotlib.colors as mcolors
@@ -89,12 +89,16 @@ class Validator:
 
     @property
     def visium_and_is_single_true_matrix_size(self) -> Optional[int]:
-        '''
+        """
         Returns the required matrix size based on assay type, if applicable, else returns None.
-        '''
+        """
         if self._visium_and_is_single_true_matrix_size is None:
             # Visium 11M's raw matrix size is distinct from other visium assays
-            if bool(self.adata.obs['assay_ontology_term_id'].apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True)).any()):
+            if bool(
+                self.adata.obs["assay_ontology_term_id"]
+                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
+                .any()
+            ):
                 self._visium_error_suffix = ERROR_SUFFIX_VISIUM_11M
                 self._visium_and_is_single_true_matrix_size = VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
             elif self._is_visium_including_descendants():
@@ -104,20 +108,22 @@ class Validator:
 
     @property
     def hires_max_dimension_size(self) -> Optional[int]:
-        '''
+        """
         Returns the restricted hires image dimension based on assay type, if applicable, else returns None.
-        '''
+        """
         if self._hires_max_dimension_size is None:
             # Visium 11M's max dimension size is distinct from other visium assays
-            if bool(self.adata.obs['assay_ontology_term_id'].apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True)).any()):
+            if bool(
+                self.adata.obs["assay_ontology_term_id"]
+                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
+                .any()
+            ):
                 self._visium_error_suffix = ERROR_SUFFIX_VISIUM_11M
                 self._hires_max_dimension_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM
             elif self._is_visium_including_descendants():
                 self._visium_error_suffix = ERROR_SUFFIX_VISIUM
                 self._hires_max_dimension_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE
         return self._hires_max_dimension_size
-
-
 
     def _is_single(self) -> bool | None:
         """
@@ -1266,7 +1272,6 @@ class Validator:
             self._raw_layer_exists = True
             is_sparse_matrix = matrix_format in SPARSE_MATRIX_TYPES
 
-            
             is_visium_and_is_single_true = self._is_visium_and_is_single_true()
             if is_visium_and_is_single_true and x.shape[0] != self.visium_and_is_single_true_matrix_size:
                 self._raw_layer_exists = False
@@ -1956,7 +1961,7 @@ class Validator:
                 .apply(lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, True))
                 .any()
             )
-      
+
         return self.is_visium
 
     def _validate_spatial_image_shape(self, image_name: str, image: np.ndarray, max_dimension: int = None):
