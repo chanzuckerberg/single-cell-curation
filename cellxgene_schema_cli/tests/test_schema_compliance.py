@@ -2436,7 +2436,10 @@ class TestObsm:
             assert validator.errors == ["ERROR: adata.obs['spatial] contains at least one NaN value."]
 
     def test_obsm_values_no_X_embedding__non_spatial_dataset(self, validator_with_adata):
-        validator = validator_with_adata
+        """
+        X_{suffix} embeddings MUST exist for non-spatial datasets
+        """
+        validator: Validator = validator_with_adata
         validator.adata.obsm["harmony"] = validator.adata.obsm["X_umap"]
         validator.adata.uns["default_embedding"] = "harmony"
         del validator.adata.obsm["X_umap"]
@@ -2451,14 +2454,27 @@ class TestObsm:
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
         ]
 
-    def test_obsm_values_no_X_embedding__visium_dataset(self, validator_with_visium_assay):
-        validator = validator_with_visium_assay
+    @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0010961", "EFO:0030062", "EFO:0022860"])
+    def test_obsm_values_no_X_embedding__visium_dataset(self, validator_with_visium_assay, assay_ontology_term_id):
+        """
+        X_{suffix} embeddings MAY exist for spatial datasets
+        """
+        validator: Validator = validator_with_visium_assay
         validator.adata.uns["default_embedding"] = "spatial"
-        del validator.adata.obsm["X_umap"]
-        validator.reset(None, 2)
-        validator.validate_adata()
-        assert validator.errors == []
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+        
+        # may have X_{suffix} embedding
+        validator._validate_obsm()
         assert validator.is_spatial is True
+        assert validator.errors == []
+        validator.reset()
+
+        # may also have no X_{suffix} embedding
+        del validator.adata.obsm["X_umap"]
+        validator._validate_obsm()
+        assert validator.is_spatial is True
+        assert validator.errors == []
+        validator.reset()
 
     def test_obsm_values_no_X_embedding__slide_seq_v2_dataset(self, validator_with_slide_seq_v2_assay):
         validator = validator_with_slide_seq_v2_assay
