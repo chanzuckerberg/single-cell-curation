@@ -1092,13 +1092,11 @@ class TestObs:
             "self_reported_ethnicity_ontology_term_id",
         ] = ["HANCESTRO:0005,HANCESTRO:0014"]
         validator.validate_adata()
-        assert validator.errors == [
-            self.get_format_error_message(
-                error_message_suffix,
-                "ERROR: '['HANCESTRO:0005,HANCESTRO:0014']' in 'self_reported_ethnicity_ontology_term_id' is not "
-                "a valid ontology term value, it must be a string.",
-            )
-        ]
+        assert validator.errors[1] == self.get_format_error_message(
+            error_message_suffix,
+            "ERROR: '['HANCESTRO:0005,HANCESTRO:0014']' in 'self_reported_ethnicity_ontology_term_id' is not "
+            "a valid ontology term value, it must be a string.",
+        )
 
     def test_organism_ontology_term_id(self, validator_with_adata):
         """

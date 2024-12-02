@@ -568,7 +568,7 @@ class Validator:
         :param dict column_def: schema definition for this specific column,
         e.g. schema_def["obs"]["columns"]["cell_type_ontology_term_id"]
 
-        :rtype bool: True if no errors caught, False if errors caught sand thus not valid
+        :rtype bool: True if no errors caught, False if errors caught and thus not valid
         """
 
         # error_original_count will count the number of error messages prior to validating the column, this
