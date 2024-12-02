@@ -19,6 +19,7 @@ from cellxgene_schema.validate import (
     ERROR_SUFFIX_VISIUM,
     ERROR_SUFFIX_VISIUM_11M,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE,
+    ERROR_SUFFIX_IS_SINGLE,
     SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE,
     SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
     VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE,
@@ -336,14 +337,14 @@ class TestExpressionMatrix:
         validator.validate_adata()
         if assay_ontology_term_id == ASSAY_VISIUM_11M:
             _errors = [
-                f"ERROR: When {ERROR_SUFFIX_VISIUM_11M}, the raw matrix must be the "
+                f"ERROR: When {ERROR_SUFFIX_VISIUM_11M} and {ERROR_SUFFIX_IS_SINGLE}, the raw matrix must be the "
                 "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
                 f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2.",
                 "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
             ]
         else:
             _errors = [
-                f"ERROR: When {ERROR_SUFFIX_VISIUM}, the raw matrix must be the "
+                f"ERROR: When {ERROR_SUFFIX_VISIUM} and {ERROR_SUFFIX_IS_SINGLE}, the raw matrix must be the "
                 "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
                 f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2.",
                 "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
@@ -387,13 +388,13 @@ class TestExpressionMatrix:
         validator.validate_adata()
         if assay_ontology_term_id == ASSAY_VISIUM_11M:
             assert (
-                validator.errors[0] == f"ERROR: When {ERROR_SUFFIX_VISIUM_11M}, the raw matrix must be the "
+                validator.errors[0] == f"ERROR: When {ERROR_SUFFIX_VISIUM_11M} and {ERROR_SUFFIX_IS_SINGLE}, the raw matrix must be the "
                 "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
                 f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2."
             )
         else:
             assert (
-                validator.errors[0] == f"ERROR: When {ERROR_SUFFIX_VISIUM}, the raw matrix must be the "
+                validator.errors[0] == f"ERROR: When {ERROR_SUFFIX_VISIUM} and {ERROR_SUFFIX_IS_SINGLE}, the raw matrix must be the "
                 "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
                 f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2."
             )
