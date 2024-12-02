@@ -562,6 +562,7 @@ class TestObs:
         # reset and test
         validator.reset()
         validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+        validator.adata.obs["assay_ontology_term_id"] = validator.adata.obs["assay_ontology_term_id"].astype("category")
         validator._validate_spatial_tissue_position("in_tissue", 0, 1)
         if is_descendant:
             assert validator.errors == []
@@ -631,6 +632,16 @@ class TestObs:
             "error_message_suffix"
         ]
         assert validator.errors == [self.get_format_error_message(error_message_suffix, error)]
+
+    def test_assay_ontology_term_id__is_categorical(self, validator_with_visium_assay):
+        """
+        Formally, assay_ontology_term_id is expected to be a categorical variable of type string. However, it should work for categorical dtypes as well.
+        """
+        validator: Validator = validator_with_visium_assay
+        # force encoding as 'categorical'
+        validator.adata.obs["assay_ontology_term_id"] = validator.adata.obs["assay_ontology_term_id"].astype("category")
+        validator.validate_adata()
+        assert validator.errors == []
 
     def test_cell_type_ontology_term_id_invalid_term(self, validator_with_adata):
         validator = validator_with_adata
