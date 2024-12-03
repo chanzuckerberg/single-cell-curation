@@ -4,7 +4,7 @@ import numbers
 import os
 import re
 from datetime import datetime
-from typing import Dict, List, Mapping, Optional, Union
+from typing import Dict, List, Mapping, Optional, Tuple, Union
 
 import anndata
 import matplotlib.colors as mcolors
@@ -29,6 +29,8 @@ ASSAY_SLIDE_SEQV2 = "EFO:0030062"
 
 VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 4992
 VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 14336
+VISIUM_TISSUE_POSITION_MAX = (77, 127)  # (row,col)
+VISIUM_11MM_TISSUE_POSITION_MAX = (127, 223)  # (row,col)
 SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE = 2000
 SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM = 4000
 
@@ -57,6 +59,7 @@ class Validator:
         self._visium_and_is_single_true_matrix_size = None
         self._hires_max_dimension_size = None
         self._visium_error_suffix = None
+        self._visium_tissue_position_max = None
 
         # Values will be instances of gencode.GeneChecker,
         # keys will be one of gencode.SupportedOrganisms
@@ -121,6 +124,21 @@ class Validator:
                 self._visium_error_suffix = ERROR_SUFFIX_VISIUM
                 self._hires_max_dimension_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE
         return self._hires_max_dimension_size
+
+    @property
+    def tissue_position_maxes(self) -> Tuple[int, int]:
+        if self._visium_tissue_position_max is None and self._is_visium_and_is_single_true:
+            # visium 11 has different requirements than other visium
+            if (
+                self.adata.obs["assay_ontology_term_id"]
+                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
+                .astype(bool)
+                .any()
+            ):
+                self._visium_tissue_position_max = VISIUM_11MM_TISSUE_POSITION_MAX
+            else:
+                self._visium_tissue_position_max = VISIUM_TISSUE_POSITION_MAX
+        return self._visium_tissue_position_max
 
     def _is_single(self) -> bool | None:
         """
@@ -1732,8 +1750,8 @@ class Validator:
 
         :rtype none
         """
-        self._validate_spatial_tissue_position("array_col", 0, 127)
-        self._validate_spatial_tissue_position("array_row", 0, 77)
+        self._validate_spatial_tissue_position("array_col", 0, self.tissue_position_maxes[1])
+        self._validate_spatial_tissue_position("array_row", 0, self.tissue_position_maxes[0])
         self._validate_spatial_tissue_position("in_tissue", 0, 1)
 
     def _check_spatial_uns(self):
