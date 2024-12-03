@@ -15,11 +15,19 @@ import scipy.sparse
 from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.utils import getattr_anndata
 from cellxgene_schema.validate import (
+    ASSAY_VISIUM_11M,
+    ERROR_SUFFIX_IS_SINGLE,
+    ERROR_SUFFIX_VISIUM,
+    ERROR_SUFFIX_VISIUM_11M,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE,
+    SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE,
+    SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
+    VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE,
     VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE,
     Validator,
 )
 from cellxgene_schema.write_labels import AnnDataLabelAppender
+from fixtures.examples_validate import visium_library_id
 
 schema_def = get_schema_definition()
 
@@ -77,7 +85,8 @@ def validator_with_spatial_and_is_single_false(validator) -> Validator:
 @pytest.fixture
 def validator_with_visium_assay(validator) -> Validator:
     validator.adata = examples.adata_visium.copy()
-    validator.visium_and_is_single_true_matrix_size = 2
+    validator._visium_and_is_single_true_matrix_size = 2
+    validator._hires_max_dimension_size = None
     return validator
 
 
@@ -253,7 +262,7 @@ class TestExpressionMatrix:
         Raw Matrix contains a row with all zeros and in_tissue is 1, and there are also values with in_tissue 0.
         """
 
-        validator = validator_with_visium_assay
+        validator: Validator = validator_with_visium_assay
         validator.adata.X[1] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
         validator.adata.raw.X[1] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
         validator.validate_adata()
@@ -298,39 +307,101 @@ class TestExpressionMatrix:
         validator.validate_adata()
         assert validator.errors == []
 
-    def test_raw_values__invalid_visium_and_is_single_true_row_length(self, validator_with_visium_assay):
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, req_matrix_size, image_size",
+        [
+            ("EFO:0022858", VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE),
+            (
+                "EFO:0022860",
+                VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE,
+                SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
+            ),
+        ],
+    )
+    def test_raw_values__invalid_visium_and_is_single_true_row_length(
+        self, validator_with_visium_assay, assay_ontology_term_id, req_matrix_size, image_size
+    ):
         """
         Dataset is visium and uns['is_single'] is True, but raw.X is the wrong length.
         """
-        validator = validator_with_visium_assay
-        validator.visium_and_is_single_true_matrix_size = VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
+        validator: Validator = validator_with_visium_assay
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+
+        # hires image size must be present in order to validate the raw.
+        validator._visium_and_is_single_true_matrix_size = None
+        validator._hires_max_dimension_size = image_size
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = numpy.zeros(
+            (1, image_size, 3), dtype=numpy.uint8
+        )
 
         validator.validate_adata()
-        assert validator.errors == [
-            f"ERROR: When {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}, the raw matrix must be the "
-            "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
-            f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2.",
-            "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
-        ]
+        if assay_ontology_term_id == ASSAY_VISIUM_11M:
+            _errors = [
+                f"ERROR: When {ERROR_SUFFIX_VISIUM_11M} and {ERROR_SUFFIX_IS_SINGLE}, the raw matrix must be the "
+                "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
+                f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2.",
+                "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
+            ]
+        else:
+            _errors = [
+                f"ERROR: When {ERROR_SUFFIX_VISIUM} and {ERROR_SUFFIX_IS_SINGLE}, the raw matrix must be the "
+                "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
+                f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2.",
+                "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
+            ]
 
-    def test_raw_values__multiple_invalid_in_tissue_errors(self, validator_with_visium_assay):
+        assert validator.errors == _errors
+
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, req_matrix_size, image_size",
+        [
+            ("EFO:0022858", VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE),
+            (
+                "EFO:0022860",
+                VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE,
+                SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
+            ),
+        ],
+    )
+    def test_raw_values__multiple_invalid_in_tissue_errors(
+        self, validator_with_visium_assay, assay_ontology_term_id, req_matrix_size, image_size
+    ):
         """
         Dataset is visium and uns['is_single'] is True, in_tissue has both 0 and 1 values and there
         are issues validating rows of both in the matrix.
         """
 
         validator = validator_with_visium_assay
-        validator.visium_and_is_single_true_matrix_size = VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
+
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+        # hires image size must be present in order to validate the raw.
+        validator._visium_and_is_single_true_matrix_size = None
+        validator._hires_max_dimension_size = image_size
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = numpy.zeros(
+            (1, image_size, 3), dtype=numpy.uint8
+        )
         validator.adata.X = numpy.zeros(
             [validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32
         )
         validator.adata.raw = validator.adata.copy()
         validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
         validator.validate_adata()
-        assert validator.errors == [
-            f"ERROR: When {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}, the raw matrix must be the "
-            "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
-            f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2.",
+        if assay_ontology_term_id == ASSAY_VISIUM_11M:
+            assert (
+                validator.errors[0]
+                == f"ERROR: When {ERROR_SUFFIX_VISIUM_11M} and {ERROR_SUFFIX_IS_SINGLE}, the raw matrix must be the "
+                "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
+                f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2."
+            )
+        else:
+            assert (
+                validator.errors[0]
+                == f"ERROR: When {ERROR_SUFFIX_VISIUM} and {ERROR_SUFFIX_IS_SINGLE}, the raw matrix must be the "
+                "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
+                f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2."
+            )
+
+        assert validator.errors[1:] == [
             "ERROR: If obs['in_tissue'] contains at least one value 0, then there must be at least "
             "one row with obs['in_tissue'] == 0 that has a non-zero value in the raw matrix.",
             "ERROR: Each observation with obs['in_tissue'] == 1 must have at least one "
@@ -496,7 +567,7 @@ class TestObs:
             assert validator.errors == []
         else:
             assert validator.errors == [
-                "obs['in_tissue'] is only allowed for obs['assay_ontology_term_id'] is a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True."
+                f"obs['in_tissue'] is only allowed for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}."
             ]
 
     @pytest.mark.parametrize("reserved_column", schema_def["components"]["obs"]["reserved_columns"])

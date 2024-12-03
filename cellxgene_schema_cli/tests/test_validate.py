@@ -364,7 +364,7 @@ class TestCheckSpatial:
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.visium_and_is_single_true_matrix_size = 2
+        validator._visium_and_is_single_true_matrix_size = 2
         # Confirm spatial is valid.
         validator.validate_adata()
         assert not validator.errors
@@ -384,7 +384,7 @@ class TestCheckSpatial:
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.visium_and_is_single_true_matrix_size = 2
+        validator._visium_and_is_single_true_matrix_size = 2
         validator.adata.X = validator.adata.X.toarray()
         validator.adata.raw = validator.adata.copy()
         validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
@@ -1141,7 +1141,7 @@ class TestCheckSpatial:
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.visium_and_is_single_true_matrix_size = 2
+        validator._visium_and_is_single_true_matrix_size = 2
 
         # invalidate spatial embeddings with NaN value
         validator.adata.obsm["spatial"][0, 1] = np.nan

@@ -24,19 +24,24 @@ logger = logging.getLogger(__name__)
 ONTOLOGY_PARSER = OntologyParser(schema_version="v5.3.0")
 
 ASSAY_VISIUM = "EFO:0010961"
+ASSAY_VISIUM_11M = "EFO:0022860"
 ASSAY_SLIDE_SEQV2 = "EFO:0030062"
 
 VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 4992
+VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 14336
 SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE = 2000
 SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM = 4000
 
 CONDITION_IS_VISIUM = "a descendant of 'EFO:0010961' (Visium Spatial Gene Expression)"
+CONDITION_IS_VISIUM_11M = f"'{ASSAY_VISIUM_11M} (Visium CytAssist Spatial Gene Expression, 11mm)"
 CONDITION_IS_SEQV2 = f"'{ASSAY_SLIDE_SEQV2}' (Slide-seqV2)"
-
 
 ERROR_SUFFIX_SPATIAL = f"obs['assay_ontology_term_id'] is either {CONDITION_IS_VISIUM} or {CONDITION_IS_SEQV2}"
 ERROR_SUFFIX_VISIUM = f"obs['assay_ontology_term_id'] is {CONDITION_IS_VISIUM}"
-ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = f"{ERROR_SUFFIX_VISIUM} and uns['spatial']['is_single'] is True"
+ERROR_SUFFIX_VISIUM_11M = f"obs['assay_ontology_term_id'] is {CONDITION_IS_VISIUM_11M}"
+
+ERROR_SUFFIX_IS_SINGLE = "uns['spatial']['is_single'] is True"
+ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = f"{ERROR_SUFFIX_VISIUM} and {ERROR_SUFFIX_IS_SINGLE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN = f"is only allowed for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED = f"is required for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0 = f"{ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE} and in_tissue is 0"
@@ -49,7 +54,9 @@ class Validator:
         self.schema_def = dict()
         self.schema_version: str = None
         self.ignore_labels = ignore_labels
-        self.visium_and_is_single_true_matrix_size = VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
+        self._visium_and_is_single_true_matrix_size = None
+        self._hires_max_dimension_size = None
+        self._visium_error_suffix = None
 
         # Values will be instances of gencode.GeneChecker,
         # keys will be one of gencode.SupportedOrganisms
@@ -76,6 +83,44 @@ class Validator:
     def adata(self, adata: anndata.AnnData):
         self.reset()
         self._adata = adata
+
+    @property
+    def visium_and_is_single_true_matrix_size(self) -> Optional[int]:
+        """
+        Returns the required matrix size based on assay type, if applicable, else returns None.
+        """
+        if self._visium_and_is_single_true_matrix_size is None:
+            # Visium 11M's raw matrix size is distinct from other visium assays
+            if bool(
+                self.adata.obs["assay_ontology_term_id"]
+                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
+                .any()
+            ):
+                self._visium_error_suffix = f"{ERROR_SUFFIX_VISIUM_11M} and {ERROR_SUFFIX_IS_SINGLE}"
+                self._visium_and_is_single_true_matrix_size = VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
+            elif self._is_visium_including_descendants():
+                self._visium_error_suffix = f"{ERROR_SUFFIX_VISIUM} and {ERROR_SUFFIX_IS_SINGLE}"
+                self._visium_and_is_single_true_matrix_size = VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
+        return self._visium_and_is_single_true_matrix_size
+
+    @property
+    def hires_max_dimension_size(self) -> Optional[int]:
+        """
+        Returns the restricted hires image dimension based on assay type, if applicable, else returns None.
+        """
+        if self._hires_max_dimension_size is None:
+            # Visium 11M's max dimension size is distinct from other visium assays
+            if bool(
+                self.adata.obs["assay_ontology_term_id"]
+                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
+                .any()
+            ):
+                self._visium_error_suffix = ERROR_SUFFIX_VISIUM_11M
+                self._hires_max_dimension_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM
+            elif self._is_visium_including_descendants():
+                self._visium_error_suffix = ERROR_SUFFIX_VISIUM
+                self._hires_max_dimension_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE
+        return self._hires_max_dimension_size
 
     def _is_single(self) -> bool | None:
         """
@@ -1228,7 +1273,7 @@ class Validator:
             if is_visium_and_is_single_true and x.shape[0] != self.visium_and_is_single_true_matrix_size:
                 self._raw_layer_exists = False
                 self.errors.append(
-                    f"When {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}, the raw matrix must be the "
+                    f"When {self._visium_error_suffix}, the raw matrix must be the "
                     f"unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
                     f"{self.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is "
                     f"{x.shape[0]}."
@@ -1800,10 +1845,7 @@ class Validator:
                 self.errors.append("uns['spatial'][library_id]['images'] must contain the key 'hires'.")
             # hires is specified: proceed with validation of hires.
             else:
-                _assay_term = self.adata.obs["assay_ontology_term_id"].values[0]
-                _max_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE
-                if is_ontological_descendant_of(ONTOLOGY_PARSER, _assay_term, "EFO:0022860", True):
-                    _max_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM
+                _max_size = self.hires_max_dimension_size
                 self._validate_spatial_image_shape("hires", uns_images["hires"], _max_size)
 
             # fullres is optional.
@@ -1906,20 +1948,18 @@ class Validator:
         :rtype bool
         """
         _assay_key = "assay_ontology_term_id"
-        includes_and_visium = False
 
         # only compute if not already stored
         if self.is_visium is None and _assay_key in self.adata.obs.columns:
             # check if any assay_ontology_term_ids are descendants of VISIUM
-            includes_and_visium = (
+            self.is_visium = bool(
                 self.adata.obs[_assay_key]
                 .astype("string")
                 .apply(lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, True))
                 .any()
             )
-            self.is_visium = includes_and_visium
 
-        return includes_and_visium
+        return self.is_visium
 
     def _validate_spatial_image_shape(self, image_name: str, image: np.ndarray, max_dimension: int = None):
         """
