@@ -658,15 +658,22 @@ class Validator:
         """
 
         all_rules = []
-
         for dependency_def in dependencies:
             if "complex_rule" in dependency_def:
+                query_exp = ""
                 if "match_ancestors" in dependency_def["complex_rule"]:
                     query_fn, args = self._generate_match_ancestors_query_fn(
                         dependency_def["complex_rule"]["match_ancestors"]
                     )
                     term_id, ontologies, ancestors, ancestor_inclusive = args
                     query_exp = f"@query_fn({term_id}, {ontologies}, {ancestors}, {ancestor_inclusive})"
+                if "match_exact" in dependency_def["complex_rule"]:
+                    column_to_match = dependency_def["complex_rule"]["match_exact"]["column"]
+                    terms_to_match = dependency_def["complex_rule"]["match_exact"]["terms"]
+                    for term in terms_to_match:
+                        if query_exp:
+                            query_exp += " | "
+                        query_exp += f"{column_to_match} == '{term}'"
             elif "rule" in dependency_def:
                 query_exp = dependency_def["rule"]
             else:
