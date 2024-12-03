@@ -2130,10 +2130,6 @@ def validate(
 
     # Perform validation
     start = datetime.now()
-    if verbose:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO, format="%(message)s")
     validator = Validator(
         ignore_labels=ignore_labels,
     )
