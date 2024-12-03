@@ -633,14 +633,20 @@ class TestObs:
         ]
         assert validator.errors == [self.get_format_error_message(error_message_suffix, error)]
 
-    def test_assay_ontology_term_id__is_categorical(self, validator_with_visium_assay):
+    def test_assay_ontology_term_id__as_categorical(self, validator_with_visium_assay):
         """
         Formally, assay_ontology_term_id is expected to be a categorical variable of type string. However, it should work for categorical dtypes as well.
         """
         validator: Validator = validator_with_visium_assay
+        
+        # check encoding as string
+        validator._validate_obsm()
+        assert validator.errors == []
+        validator.reset()
+        
         # force encoding as 'categorical'
         validator.adata.obs["assay_ontology_term_id"] = validator.adata.obs["assay_ontology_term_id"].astype("category")
-        validator.validate_adata()
+        validator._validate_obsm()
         assert validator.errors == []
 
     def test_cell_type_ontology_term_id_invalid_term(self, validator_with_adata):
