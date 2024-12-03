@@ -640,13 +640,13 @@ class TestObs:
         validator: Validator = validator_with_visium_assay
 
         # check encoding as string
-        validator._validate_obsm()
+        validator._check_spatial_obs()
         assert validator.errors == []
         validator.reset()
 
         # force encoding as 'categorical'
         validator.adata.obs["assay_ontology_term_id"] = validator.adata.obs["assay_ontology_term_id"].astype("category")
-        validator._validate_obsm()
+        validator._check_spatial_obs()
         assert validator.errors == []
 
     def test_cell_type_ontology_term_id_invalid_term(self, validator_with_adata):
