@@ -638,12 +638,12 @@ class TestObs:
         Formally, assay_ontology_term_id is expected to be a categorical variable of type string. However, it should work for categorical dtypes as well.
         """
         validator: Validator = validator_with_visium_assay
-        
+
         # check encoding as string
         validator._validate_obsm()
         assert validator.errors == []
         validator.reset()
-        
+
         # force encoding as 'categorical'
         validator.adata.obs["assay_ontology_term_id"] = validator.adata.obs["assay_ontology_term_id"].astype("category")
         validator._validate_obsm()
