@@ -172,7 +172,7 @@ class Validator:
             try:
                 _spatial = (
                     self._is_visium_including_descendants()
-                    or self.adata.obs.assay_ontology_term_id.isin([ASSAY_SLIDE_SEQV2]).any()
+                    or self.adata.obs.assay_ontology_term_id.isin([ASSAY_SLIDE_SEQV2]).astype(bool).any()
                 )
                 self.is_spatial = bool(_spatial)
             except AttributeError:

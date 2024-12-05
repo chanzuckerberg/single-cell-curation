@@ -17,6 +17,7 @@ from cellxgene_schema.utils import getattr_anndata
 from cellxgene_schema.validate import (
     ASSAY_VISIUM_11M,
     ERROR_SUFFIX_IS_SINGLE,
+    ERROR_SUFFIX_SPATIAL,
     ERROR_SUFFIX_VISIUM,
     ERROR_SUFFIX_VISIUM_11M,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE,
@@ -648,6 +649,28 @@ class TestObs:
         validator.adata.obs["assay_ontology_term_id"] = validator.adata.obs["assay_ontology_term_id"].astype("category")
         validator._check_spatial_obs()
         assert validator.errors == []
+
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, all_same",
+        [("EFO:0010961", True), ("EFO:0030062", True), ("EFO:0022860", True), ("EFO:0008995", False)],
+    )
+    def test_assay_ontology_term_id__all_same(self, validator_with_visium_assay, assay_ontology_term_id, all_same):
+        """
+        Spatial assays (descendants of Visium Spatia Gene Expression, or Slide-SeqV2) require all values in the column to be identical.
+        """
+        validator: Validator = validator_with_visium_assay
+
+        # mix values (with otherwise allowed values)
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+        validator.adata.obs["assay_ontology_term_id"].iloc[0] = "EFO:0010183"
+
+        # check that unique values are allowed
+        validator._check_spatial_obs()
+        EXPECTED_ERROR = f"When {ERROR_SUFFIX_SPATIAL}, all observations must contain the same value."
+        if all_same:
+            assert EXPECTED_ERROR in validator.errors
+        else:
+            assert validator.errors not in validator.errors
 
     def test_cell_type_ontology_term_id_invalid_term(self, validator_with_adata):
         validator = validator_with_adata
