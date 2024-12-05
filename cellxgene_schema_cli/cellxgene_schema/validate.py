@@ -67,7 +67,7 @@ class Validator:
         # keys will be one of gencode.SupportedOrganisms
         self.gene_checkers = dict()
 
-    def reset(self):
+    def reset(self, hi_res_size: Optional[int] = None, true_mat_size: Optional[int] = None):
         self.errors = []
         self.warnings = []
         self.is_valid = False
@@ -76,6 +76,8 @@ class Validator:
         self.is_spatial = None
         self.is_visium = None
         self.is_visium_and_is_single_true = None
+        self._hires_max_dimension_size = hi_res_size
+        self._visium_and_is_single_true_matrix_size = true_mat_size
 
         # Matrix (e.g., X, raw.X, ...) number non-zero cache
         self.number_non_zero = dict()
@@ -99,6 +101,7 @@ class Validator:
             if bool(
                 self.adata.obs["assay_ontology_term_id"]
                 .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
+                .astype(bool)
                 .any()
             ):
                 self._visium_error_suffix = f"{ERROR_SUFFIX_VISIUM_11M} and {ERROR_SUFFIX_IS_SINGLE}"
@@ -118,6 +121,7 @@ class Validator:
             if bool(
                 self.adata.obs["assay_ontology_term_id"]
                 .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
+                .astype(bool)
                 .any()
             ):
                 self._visium_error_suffix = ERROR_SUFFIX_VISIUM_11M
@@ -1981,6 +1985,7 @@ class Validator:
                 self.adata.obs[_assay_key]
                 .astype("string")
                 .apply(lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, True))
+                .astype(bool)
                 .any()
             )
 
@@ -2099,8 +2104,6 @@ class Validator:
         :rtype bool
         """
         logger.info("Starting validation...")
-        # Re-start errors in case a new h5ad is being validated
-        self.reset()
 
         if h5ad_path:
             logger.debug("Reading the h5ad file...")
@@ -2108,6 +2111,8 @@ class Validator:
             self.h5ad_path = h5ad_path
             self._validate_encoding_version()
             logger.debug("Successfully read the h5ad file")
+            # Re-start errors in case a new h5ad is being validated
+            self.reset()
 
         # Fetches schema def for latest major schema version
         self._set_schema_def()
