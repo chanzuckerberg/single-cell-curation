@@ -2115,7 +2115,7 @@ def validate(
     add_labels_file: str = None,
     ignore_labels: bool = False,
     verbose: bool = False,
-) -> (bool, list):
+) -> (bool, list, bool):
     from .write_labels import AnnDataLabelAppender
 
     """
@@ -2124,7 +2124,8 @@ def validate(
     :param Union[str, bytes, os.PathLike] h5ad_path: Path to h5ad file to validate
     :param str add_labels_file: Path to new h5ad file with ontology/gene labels added
 
-    :return (True, []) if successful validation, (False, [list_of_errors]) otherwise
+    :return (True, [], False) if successful validation, (False, [list_of_errors], False) otherwise;
+    last bool is for seurat convertability which is deprecated / unused
     :rtype tuple
     """
 
@@ -2138,7 +2139,7 @@ def validate(
 
     # Stop if validation was unsuccessful
     if not validator.is_valid:
-        return False, validator.errors
+        return False, validator.errors, False
 
     if add_labels_file:
         label_start = datetime.now()
@@ -2149,6 +2150,6 @@ def validate(
             f"{writer.was_writing_successful}"
         )
 
-        return (validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors)
+        return (validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors, False)
 
-    return True, validator.errors
+    return True, validator.errors, False

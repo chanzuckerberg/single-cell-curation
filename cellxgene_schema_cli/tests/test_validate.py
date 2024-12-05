@@ -297,7 +297,7 @@ class TestValidate:
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
 
-            success, errors = validate(h5ad_valid, labels_path)
+            success, errors, _ = validate(h5ad_valid, labels_path)
 
             import anndata as ad
 
@@ -312,7 +312,7 @@ class TestValidate:
             assert original_hash != expected_hash, "Writing labels did not change the dataset from the original."
 
     def test__validate_with_h5ad_valid_and_without_labels(self):
-        success, errors = validate(h5ad_valid)
+        success, errors, _ = validate(h5ad_valid)
 
         assert success
         assert not errors
@@ -321,14 +321,14 @@ class TestValidate:
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
 
-            success, errors = validate(h5ad_invalid, labels_path)
+            success, errors, _ = validate(h5ad_invalid, labels_path)
 
             assert not success
             assert errors
             assert not os.path.exists(labels_path)
 
     def test__validate_with_h5ad_invalid_and_without_labels(self):
-        success, errors = validate(h5ad_invalid)
+        success, errors, _ = validate(h5ad_invalid)
 
         assert not success
         assert errors
