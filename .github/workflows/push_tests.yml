@@ -152,6 +152,7 @@ jobs:
           name: coverage-genes-dry-run
           path: /home/runner/work/single-cell-curation/single-cell-curation/.coverage*
           retention-days: 3
+          include-hidden-files: true
 
   submit-codecoverage:
     needs:
