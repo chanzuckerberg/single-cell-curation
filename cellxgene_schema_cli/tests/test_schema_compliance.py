@@ -17,6 +17,7 @@ from cellxgene_schema.utils import getattr_anndata
 from cellxgene_schema.validate import (
     ASSAY_VISIUM_11M,
     ERROR_SUFFIX_IS_SINGLE,
+    ERROR_SUFFIX_SPATIAL,
     ERROR_SUFFIX_VISIUM,
     ERROR_SUFFIX_VISIUM_11M,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE,
@@ -85,8 +86,8 @@ def validator_with_spatial_and_is_single_false(validator) -> Validator:
 @pytest.fixture
 def validator_with_visium_assay(validator) -> Validator:
     validator.adata = examples.adata_visium.copy()
-    validator._visium_and_is_single_true_matrix_size = 2
-    validator._hires_max_dimension_size = None
+    validator.reset(None, None)
+
     return validator
 
 
@@ -207,6 +208,7 @@ class TestExpressionMatrix:
 
         validator = validator_with_visium_assay
         validator.adata.raw.X[0, 1] = invalid_value
+        validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: All non-zero values in raw matrix must be positive integers of type numpy.float32.",
@@ -247,7 +249,8 @@ class TestExpressionMatrix:
         Raw Matrix contains a row with all zeros and in_tissue is 1, but no values are in_tissue 0.
         """
 
-        validator = validator_with_visium_assay
+        validator: Validator = validator_with_visium_assay
+        validator.reset(None, 2)
         validator.adata.obs["in_tissue"] = 1
         validator.adata.X[0] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
         validator.adata.raw.X[0] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
@@ -265,6 +268,7 @@ class TestExpressionMatrix:
         validator: Validator = validator_with_visium_assay
         validator.adata.X[1] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
         validator.adata.raw.X[1] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
+        validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Each observation with obs['in_tissue'] == 1 must have at least one "
@@ -286,6 +290,7 @@ class TestExpressionMatrix:
         )
         validator.adata.raw = validator.adata.copy()
         validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+        validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: If obs['in_tissue'] contains at least one value 0, then there must be at least "
@@ -304,6 +309,7 @@ class TestExpressionMatrix:
         validator.adata.obs["cell_type_ontology_term_id"] = "unknown"
         validator.adata.X[0] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
         validator.adata.raw.X[0] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
+        validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == []
 
@@ -328,8 +334,6 @@ class TestExpressionMatrix:
         validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
 
         # hires image size must be present in order to validate the raw.
-        validator._visium_and_is_single_true_matrix_size = None
-        validator._hires_max_dimension_size = image_size
         validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = numpy.zeros(
             (1, image_size, 3), dtype=numpy.uint8
         )
@@ -640,14 +644,39 @@ class TestObs:
         validator: Validator = validator_with_visium_assay
 
         # check encoding as string
-        validator._check_spatial_obs()
+        validator.reset(None, 2)
+        validator._check_spatial()
+        validator._validate_raw()
         assert validator.errors == []
-        validator.reset()
 
         # force encoding as 'categorical'
+        validator.reset(None, 2)
         validator.adata.obs["assay_ontology_term_id"] = validator.adata.obs["assay_ontology_term_id"].astype("category")
-        validator._check_spatial_obs()
+        validator._check_spatial()
+        validator._validate_raw()
         assert validator.errors == []
+
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, all_same",
+        [("EFO:0010961", True), ("EFO:0030062", True), ("EFO:0022860", True), ("EFO:0008995", False)],
+    )
+    def test_assay_ontology_term_id__all_same(self, validator_with_visium_assay, assay_ontology_term_id, all_same):
+        """
+        Spatial assays (descendants of Visium Spatia Gene Expression, or Slide-SeqV2) require all values in the column to be identical.
+        """
+        validator: Validator = validator_with_visium_assay
+
+        # mix values (with otherwise allowed values)
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+        validator.adata.obs["assay_ontology_term_id"].iloc[0] = "EFO:0010183"
+
+        # check that unique values are allowed
+        validator._check_spatial_obs()
+        EXPECTED_ERROR = f"When {ERROR_SUFFIX_SPATIAL}, all observations must contain the same value."
+        if all_same:
+            assert EXPECTED_ERROR in validator.errors
+        else:
+            assert validator.errors not in validator.errors
 
     def test_cell_type_ontology_term_id_invalid_term(self, validator_with_adata):
         validator = validator_with_adata
@@ -1698,6 +1727,7 @@ class TestObs:
 
         # Second row should have identical donor id + genetic ancestry values, so this should pass validation
         validator.adata.obs.iloc[1] = validator.adata.obs.iloc[0].values
+
         validator.validate_adata()
         assert validator.errors == []
 
@@ -1708,11 +1738,13 @@ class TestObs:
         validator.adata.obs["genetic_ancestry_Indigenous_American"] = [0.0, 0.0]
         validator.adata.obs["genetic_ancestry_Oceanian"] = [0.0, 0.0]
         validator.adata.obs["genetic_ancestry_South_Asian"] = [0.0, 0.0]
+        validator.reset(None, 2)
         validator.validate_adata()
         assert len(validator.errors) > 0
 
         # Change the donor id back to two different donor id's. Now, this should pass validation
         validator.adata.obs["donor_id"] = original_donor_id_column
+        validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == []
 
@@ -1795,6 +1827,7 @@ class TestVar:
             X[i, 0] = 0
         X[0, 0] = 1
 
+        validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Some features are 'True' in 'feature_is_filtered' of dataframe 'var', "
@@ -1804,6 +1837,7 @@ class TestVar:
 
         # Test that feature_is_filtered is a bool and not a string
         var["feature_is_filtered"] = "string"
+        validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Column 'feature_is_filtered' in dataframe 'var' must be boolean, not 'object'."
@@ -2383,6 +2417,7 @@ class TestObsm:
 
         # Check embedding has any NaN
         obsm[key][0:100, 1] = numpy.nan
+        validator.reset(None, 2)
         validator.validate_adata()
 
         if key != "spatial":
@@ -2393,6 +2428,7 @@ class TestObsm:
         # Check embedding has all NaNs
         all_nan = numpy.full(obsm[key].shape, numpy.nan)
         obsm[key] = all_nan
+        validator.reset(None, 2)
         validator.validate_adata()
         if key != "spatial":
             assert validator.errors == [f"ERROR: adata.obsm['{key}'] contains all NaN values."]
@@ -2419,6 +2455,7 @@ class TestObsm:
         validator = validator_with_visium_assay
         validator.adata.uns["default_embedding"] = "spatial"
         del validator.adata.obsm["X_umap"]
+        validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == []
         assert validator.is_spatial is True
@@ -2522,6 +2559,7 @@ class TestObsm:
 
         del obsm["X_ umap"]
         obsm["u m a p"] = obsm["X_umap"]
+        validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Embedding key in 'adata.obsm' u m a p does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$."
