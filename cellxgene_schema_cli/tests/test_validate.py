@@ -1,5 +1,6 @@
 import hashlib
 import os
+import re
 import tempfile
 from typing import Union
 from unittest import mock
@@ -1011,21 +1012,32 @@ class TestCheckSpatial:
         validator.adata = adata_visium.copy()
         validator.adata.obs.pop(tissue_position_name)
 
+        # check visium
+        validator.adata.obs["assay_ontology_term_id"] = "EFO:0010961"
         validator._check_spatial_obs()
         assert validator.errors
         assert (
             f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED}." in validator.errors[0]
         )
+        validator.reset()
 
-    @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0010961", "EFO:0030062"])
+        # check visium descendant
+        validator.adata.obs["assay_ontology_term_id"] = "EFO:0022860"
+        validator._check_spatial_obs()
+        assert validator.errors
+        assert (
+            f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED}." in validator.errors[0]
+        )
+        validator.reset()
+
+    @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0010961", "EFO:0030062", "EFO:0022860"])
     def test__validate_tissue_position_not_required(self, assay_ontology_term_id):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_slide_seqv2.copy()
         validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
-        validator.adata.uns["spatial"]["is_single"] = False
+        validator.adata.uns["spatial"]["is_single"] = False  # setting to false removes the requirement
         validator.adata.obs["is_primary_data"] = False
-
         validator._check_spatial_obs()
         assert not validator.errors
 
@@ -1041,43 +1053,52 @@ class TestCheckSpatial:
         assert validator.errors
         assert f"obs['{tissue_position_name}'] must be of int type" in validator.errors[0]
 
-    @pytest.mark.parametrize(
-        "tissue_position_name, min, error_message_token",
-        [
-            ("array_col", 0, "between 0 and 127"),
-            ("array_row", 0, "between 0 and 77"),
-            ("in_tissue", 0, "0 or 1"),
-        ],
-    )
-    def test__validate_tissue_position_int_min_error(self, tissue_position_name, min, error_message_token):
+    @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0010961", "EFO:0022860", "EFO:0022859"])
+    @pytest.mark.parametrize("tissue_position_name, min", [("array_col", 0), ("array_row", 0), ("in_tissue", 0)])
+    def test__validate_tissue_position_int_min_error(self, assay_ontology_term_id, tissue_position_name, min):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
         validator.adata.obs[tissue_position_name] = min - 1
 
         # Confirm tissue_position is identified as invalid.
         validator._check_spatial_obs()
-        assert validator.errors
-        assert f"obs['{tissue_position_name}'] must be {error_message_token}" in validator.errors[0]
+        assert (
+            re.match(f"^obs\['{tissue_position_name}'\] must be (between )?{min} (and|or) [0-9]+", validator.errors[0])
+            is not None
+        )
 
     @pytest.mark.parametrize(
-        "tissue_position_name, max, error_message_token",
+        "assay_ontology_term_id, tissue_position_name, tissue_position_max",
         [
-            ("array_col", 127, "between 0 and 127"),
-            ("array_row", 77, "between 0 and 77"),
-            ("in_tissue", 1, "0 or 1"),
+            ("EFO:0010961", "array_col", 127),
+            ("EFO:0010961", "array_row", 77),
+            ("EFO:0022860", "array_col", 223),
+            ("EFO:0022860", "array_row", 127),
+            ("EFO:0022859", "array_col", 127),
+            ("EFO:0022859", "array_row", 77),
+            ("EFO:0022859", "in_tissue", 1),
         ],
     )
-    def test__validate_tissue_position_int_max_error(self, tissue_position_name, max, error_message_token):
+    def test__validate_tissue_position_int_max_error(
+        self, assay_ontology_term_id, tissue_position_name, tissue_position_max
+    ):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.obs[tissue_position_name] = max + 1
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+        validator.adata.obs[tissue_position_name] = tissue_position_max + 1
 
         # Confirm tissue_position is identified as invalid.
         validator._check_spatial_obs()
-        assert validator.errors
-        assert f"obs['{tissue_position_name}'] must be {error_message_token}" in validator.errors[0]
+        assert (
+            re.match(
+                f"^obs\['{tissue_position_name}'\] must be (between )?[0-9]+ (and|or) {tissue_position_max}",
+                validator.errors[0],
+            )
+            is not None
+        )
 
     @pytest.mark.parametrize(
         "cell_type_ontology_term_id, in_tissue, assay_ontology_term_id",
