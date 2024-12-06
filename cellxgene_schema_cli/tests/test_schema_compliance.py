@@ -2462,7 +2462,7 @@ class TestObsm:
         validator: Validator = validator_with_visium_assay
         validator.adata.uns["default_embedding"] = "spatial"
         validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
-        
+
         # may have X_{suffix} embedding
         validator._validate_obsm()
         assert validator.is_spatial is True
