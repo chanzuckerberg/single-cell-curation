@@ -13,9 +13,6 @@ component_management:
       name: cellxgene_schema_cli
       paths:
         - cellxgene_schema_cli/**
-#        - cellxgene_schema_cli/cellxgene_schema/**
-#        - cellxgene_schema_cli/tests/**
-#        - cellxgene_schema_cli/scripts/**
     - component_id: module_migration_assistant
       name: migration_assistant
       paths:
