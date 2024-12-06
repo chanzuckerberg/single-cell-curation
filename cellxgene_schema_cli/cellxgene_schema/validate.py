@@ -11,7 +11,6 @@ import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 import scipy
-from anndata._core.sparse_dataset import SparseDataset
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from pandas.errors import UndefinedVariableError
 from scipy import sparse
@@ -474,7 +473,9 @@ class Validator:
         if start < n:
             yield (matrix[start:n], start, n)
 
-    def _count_matrix_nonzero(self, matrix_name: str, matrix: Union[np.ndarray, sparse.spmatrix]) -> int:
+    def _count_matrix_nonzero(
+        self, matrix_name: str, matrix: Union[np.ndarray, sparse.spmatrix], filter_by_column: pd.Series = None
+    ) -> int:
         if matrix_name in self.number_non_zero:
             return self.number_non_zero[matrix_name]
 
@@ -483,6 +484,8 @@ class Validator:
         nnz = 0
         matrix_format = get_matrix_format(self.adata, matrix)
         for matrix_chunk, _, _ in self._chunk_matrix(matrix):
+            if filter_by_column is not None:
+                matrix_chunk = matrix_chunk[:, filter_by_column]
             nnz += matrix_chunk.count_nonzero() if matrix_format != "dense" else np.count_nonzero(matrix_chunk)
 
         self.number_non_zero[matrix_name] = nnz
@@ -607,20 +610,7 @@ class Validator:
             return
 
         if sum(column) > 0:
-            n_nonzero = 0
-
-            X_format = get_matrix_format(self.adata, self.adata.X)
-            if X_format in SPARSE_MATRIX_TYPES:
-                n_nonzero = self.adata.X[:, column].count_nonzero()
-
-            elif X_format == "dense":
-                n_nonzero = np.count_nonzero(self.adata.X[:, column])
-
-            else:
-                self.errors.append(
-                    f"X matrix is of type {type(self.adata.X)}, validation of 'feature_is_filtered' "
-                    f"cannot be completed."
-                )
+            n_nonzero = self._count_matrix_nonzero("feature_is_filtered", self.adata.X, column)
 
             if n_nonzero > 0:
                 self.errors.append(
@@ -1350,33 +1340,45 @@ class Validator:
             self._raw_layer_exists = False
             self.errors.append("All non-zero values in raw matrix must be positive integers of type numpy.float32.")
 
-    def _validate_raw_data_with_in_tissue_0(
-        self, x: Union[np.ndarray, sparse.spmatrix, SparseDataset], is_sparse_matrix: bool
-    ):
+    def _validate_raw_data_with_in_tissue_0(self, x: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool):
         """
         Special case validation checks for Visium data with is_single = True and in_tissue column in obs where in_tissue
-        has at least one value 0. Static matrix size of 4992 rows, so chunking is not required.
+        has at least one value 0.
 
         :param x: raw matrix
-        :param is_sparse_matrix: bool indicating if the matrix is sparse {csc, csr, coo}
+        :param is_sparse_matrix: bool indicating if the matrix is sparse
         """
         has_tissue_0_non_zero_row = False
         has_tissue_1_zero_row = False
-        if isinstance(x, SparseDataset):
-            x = x.to_memory()
-        if is_sparse_matrix:
-            nonzero_row_indices, _ = x.nonzero()
-        else:  # must be dense matrix
-            nonzero_row_indices = np.where(np.any(x != 0, axis=1))[0]
-        for i in range(x.shape[0]):
-            if not has_tissue_0_non_zero_row and i in nonzero_row_indices and self.adata.obs["in_tissue"].iloc[i] == 0:
-                has_tissue_0_non_zero_row = True
-            elif (
-                not has_tissue_1_zero_row and i not in nonzero_row_indices and self.adata.obs["in_tissue"].iloc[i] == 1
-            ):
-                has_tissue_1_zero_row = True
-            if has_tissue_0_non_zero_row and has_tissue_1_zero_row:
-                # exit early and report
+        has_invalid_nonzero_values = False
+
+        for matrix_chunk, start, _ in self._chunk_matrix(x):
+            if not has_invalid_nonzero_values and self._matrix_has_invalid_nonzero_values(matrix_chunk):
+                has_invalid_nonzero_values = True
+
+            if is_sparse_matrix:
+                nonzero_row_indices, _ = matrix_chunk.nonzero()
+            else:  # must be dense matrix
+                nonzero_row_indices = np.where(np.any(matrix_chunk != 0, axis=1))[0]
+            for i in range(matrix_chunk.shape[0]):
+                if has_tissue_0_non_zero_row and has_tissue_1_zero_row:
+                    # exit inner loop early
+                    break
+                unchunked_i = i + start
+                if (
+                    not has_tissue_0_non_zero_row
+                    and i in nonzero_row_indices
+                    and self.adata.obs["in_tissue"].iloc[unchunked_i] == 0
+                ):
+                    has_tissue_0_non_zero_row = True
+                elif (
+                    not has_tissue_1_zero_row
+                    and i not in nonzero_row_indices
+                    and self.adata.obs["in_tissue"].iloc[unchunked_i] == 1
+                ):
+                    has_tissue_1_zero_row = True
+            if has_tissue_0_non_zero_row and has_tissue_1_zero_row and has_invalid_nonzero_values:
+                # exit outer loop early and report
                 break
 
         if not has_tissue_0_non_zero_row:
@@ -1391,7 +1393,7 @@ class Validator:
                 "Each observation with obs['in_tissue'] == 1 must have at least one "
                 "non-zero value in its row in the raw matrix."
             )
-        if self._matrix_has_invalid_nonzero_values(x):
+        if has_invalid_nonzero_values:
             self._raw_layer_exists = False
             self.errors.append("All non-zero values in raw matrix must be positive integers of type numpy.float32.")
 

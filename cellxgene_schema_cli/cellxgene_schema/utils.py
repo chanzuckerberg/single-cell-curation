@@ -6,7 +6,10 @@ from functools import lru_cache
 from typing import Dict, List, Union
 
 import anndata as ad
+import h5py
 import numpy as np
+from anndata.experimental import read_dispatched
+from anndata.io import read_elem, sparse_dataset
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from scipy import sparse
 from xxhash import xxh3_64_intdigest
@@ -116,6 +119,28 @@ def getattr_anndata(adata: ad.AnnData, attr: str = None):
         return getattr(adata, attr)
 
 
+def read_backed(f):
+    def callback(func, elem_name: str, elem, iospec):
+        if "layers" in elem_name or ("X" in elem_name and "X_" not in elem_name):
+            if iospec.encoding_type in (
+                "csr_matrix",
+                "csc_matrix",
+            ):
+                return sparse_dataset(elem)
+                # Preventing recursing inside of these types
+                return read_elem(elem)
+            elif iospec.encoding_type == "array" and len(elem.shape) > 1:
+                return elem
+            else:
+                func(elem)
+        else:
+            return func(elem)
+
+    adata = read_dispatched(f, callback=callback)
+
+    return adata
+
+
 def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
     """
     Reads h5ad into adata
@@ -124,7 +149,8 @@ def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
     :rtype None
     """
     try:
-        adata = ad.read_h5ad(h5ad_path, backed="r")
+        f = h5py.File(h5ad_path)
+        adata = read_backed(f)
 
         # This code, and AnnData in general, is optimized for row access.
         # Running backed, with CSC, is prohibitively slow. Read the entire
