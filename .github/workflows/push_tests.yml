@@ -150,7 +150,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-genes-dry-run
-          path: /home/runner/work/single-cell-curation/single-cell-curation/.coverage*
+          path: .coverage*
           retention-days: 3
           include-hidden-files: true
 
