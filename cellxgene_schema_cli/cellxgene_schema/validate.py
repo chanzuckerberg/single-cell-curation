@@ -29,8 +29,10 @@ ASSAY_SLIDE_SEQV2 = "EFO:0030062"
 
 VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 4992
 VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 14336
-VISIUM_TISSUE_POSITION_MAX = (77, 127)  # (row,col)
-VISIUM_11MM_TISSUE_POSITION_MAX = (127, 223)  # (row,col)
+VISIUM_TISSUE_POSITION_MAX_ROW = 77
+VISIUM_TISSUE_POSITION_MAX_COL = 127
+VISIUM_11MM_TISSUE_POSITION_MAX_ROW = 127
+VISIUM_11MM_TISSUE_POSITION_MAX_COL = 223
 SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE = 2000
 SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM = 4000
 
@@ -135,9 +137,12 @@ class Validator:
                 .astype(bool)
                 .any()
             ):
-                self._visium_tissue_position_max = VISIUM_11MM_TISSUE_POSITION_MAX
+                self._visium_tissue_position_max = (
+                    VISIUM_11MM_TISSUE_POSITION_MAX_ROW,
+                    VISIUM_11MM_TISSUE_POSITION_MAX_COL,
+                )
             else:
-                self._visium_tissue_position_max = VISIUM_TISSUE_POSITION_MAX
+                self._visium_tissue_position_max = (VISIUM_TISSUE_POSITION_MAX_ROW, VISIUM_TISSUE_POSITION_MAX_COL)
         return self._visium_tissue_position_max
 
     def _is_single(self) -> bool | None:
