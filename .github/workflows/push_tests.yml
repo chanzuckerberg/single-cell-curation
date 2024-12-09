@@ -57,8 +57,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-cli
-          path: ./.coverage*
+          path: .coverage*
           retention-days: 3
+          include-hidden-files: true
 
   unit-tests-migration-assistant:
     runs-on: ubuntu-latest
@@ -88,8 +89,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-migration-assisstant
-          path: ./.coverage*
+          path: .coverage*
           retention-days: 3
+          include-hidden-files: true
 
   unit-test-ontology-dry-run:
     runs-on: ubuntu-latest
@@ -119,8 +121,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-ontology-dry-run
-          path: ./.coverage*
+          path: .coverage*
           retention-days: 3
+          include-hidden-files: true
 
   unit-test-genes-dry-run:
     runs-on: ubuntu-latest
@@ -150,8 +153,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-genes-dry-run
-          path: ./.coverage*
+          path: .coverage*
           retention-days: 3
+          include-hidden-files: true
 
   submit-codecoverage:
     needs:
@@ -184,6 +188,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           env_vars: OS,PYTHON
           files: ./coverage.xml
           flags: unittests
