@@ -1740,7 +1740,7 @@ class TestObs:
         validator.adata.obs["genetic_ancestry_South_Asian"] = [0.0, 0.0]
         validator.reset(None, 2)
         validator.validate_adata()
-        assert len(validator.errors) > 0
+        assert len(validator.errors) == 1
 
         # Change the donor id back to two different donor id's. Now, this should pass validation
         validator.adata.obs["donor_id"] = original_donor_id_column
