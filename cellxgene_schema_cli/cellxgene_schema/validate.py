@@ -554,9 +554,10 @@ class Validator:
         invalid_rows = ~self.adata.obs.apply(is_valid_row, axis=1)
 
         if invalid_rows.any():
-            invalid_indices = self.adata.obs.index[invalid_rows].tolist()
+            donor_ids = self.adata.obs[donor_id_column].tolist()
+            unique_donor_ids = list(set(donor_ids))
             self.errors.append(
-                f"obs rows with indices {invalid_indices} have invalid genetic_ancestry_* values. All "
+                f"obs rows with donor ids {unique_donor_ids} have invalid genetic_ancestry_* values. All "
                 f"observations with the same donor_id must contain the same genetic_ancestry_* values. If "
                 f"organism_ontolology_term_id is NOT 'NCBITaxon:9606' for Homo sapiens, then all genetic"
                 f"ancestry values MUST be float('nan'). If organism_ontolology_term_id is 'NCBITaxon:9606' "
