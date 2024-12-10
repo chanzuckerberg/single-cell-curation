@@ -933,8 +933,7 @@ class Validator:
         for column_name in df.columns:
             column = df[column_name]
             if column.dtype.name != "category":
-                # Check for columns with mixed values, which is not supported by anndata 0.8.0
-                # TODO: check if this can be removed after upgading to anndata 0.10.0
+                # Check for columns with mixed values, which is not supported by anndata
                 value_types = {type(x) for x in column.values}
                 if len(value_types) != 1:
                     self.errors.append(
@@ -951,16 +950,14 @@ class Validator:
                             )
                     self._validate_genetic_ancestry()
                 categorical_types = {type(x) for x in column.dtype.categories.values}
-                # Check for columns that have illegal categories, which are not supported by anndata 0.8.0
-                # TODO: check if this can be removed after upgading to anndata 0.10.0
+                # Check for columns that have illegal categories, which are not supported by anndata
                 blocked_categorical_types = {bool}
                 illegal_categorical_types = categorical_types & blocked_categorical_types
                 if illegal_categorical_types:
                     self.errors.append(
                         f"Column '{column_name}' in dataframe '{df_name}' contains {illegal_categorical_types=}."
                     )
-                # Check for categorical column has mixed types, which is not supported by anndata 0.8.0
-                # TODO: check if this can be removed after upgading to anndata 0.10.0
+                # Check for categorical column has mixed types, which is not supported by anndata
                 categorical_types = {type(x) for x in column.dtype.categories.values}
                 if len(categorical_types) > 1:
                     self.errors.append(
