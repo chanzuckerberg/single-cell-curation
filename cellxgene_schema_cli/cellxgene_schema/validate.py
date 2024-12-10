@@ -960,7 +960,6 @@ class Validator:
                                 f"Column '{column_name}' in dataframe '{df_name}' contains a category '{category}' with "
                                 f"zero observations. These categories will be removed when `--add-labels` flag is present."
                             )
-                    self._validate_genetic_ancestry()
                 categorical_types = {type(x) for x in column.dtype.categories.values}
                 # Check for columns that have illegal categories, which are not supported by anndata 0.8.0
                 # TODO: check if this can be removed after upgading to anndata 0.10.0
@@ -2058,6 +2057,9 @@ class Validator:
 
         # Checks spatial
         self._check_spatial()
+
+        # Validate genetic ancestry
+        self._validate_genetic_ancestry()
 
         # Checks each component
         for component_name, component_def in self.schema_def["components"].items():
