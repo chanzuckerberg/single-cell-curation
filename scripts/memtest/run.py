@@ -2,7 +2,7 @@ import tempfile
 
 from cellxgene_schema.validate import validate
 
-H5AD_FILE = "/memtest/data/slow_cxg.h5ad"
+H5AD_FILE = "/data/dataset_34gb_unlabeled.h5ad"
 
 
 if __name__ == "__main__":
