@@ -370,13 +370,15 @@ class TestCheckSpatial:
         validator.validate_adata()
         assert not validator.errors
 
+    @mock.patch("cellxgene_schema.validate.VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE", 2)
     def test__validate_from_file(self):
-        """Testing compatibility with SparseDatset types in Anndata"""
+        """Testing compatibility with SparseDataset types in Anndata"""
         validator: Validator = Validator()
         validator._set_schema_def()
+        validator._visium_and_is_single_true_matrix_size = 2
         with tempfile.TemporaryDirectory() as temp_dir:
-            file_path = os.path.join(temp_dir, "slide_seqv2.h5ad")
-            adata_slide_seqv2.write_h5ad(file_path)
+            file_path = os.path.join(temp_dir, "visium.h5ad")
+            adata_visium.write_h5ad(file_path)
             # Confirm spatial is valid.
             validator.validate_adata(file_path)
         assert not validator.errors
