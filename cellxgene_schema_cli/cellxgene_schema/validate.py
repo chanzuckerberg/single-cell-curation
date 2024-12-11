@@ -1069,6 +1069,20 @@ class Validator:
                     self.errors.append(
                         f"Colors in uns[{key}] must be either all hex colors or all CSS4 named colors. Found: {value}"
                     )
+    
+    def _validate_X(self):
+        to_validate = [(self.adata.X, "X")]
+
+        # check if there's raw data
+        if self.adata.raw:
+            to_validate.append((self.adata.raw.X, "raw.X"))
+        
+        for x, x_name in to_validate:
+            matrix_format = get_matrix_format(self.adata, x)
+            if matrix_format != "csr":
+                self.errors.append(
+                    f"Matrix '{x_name}' is not a 'scipy.sparse.csr_matrix'. Please convert to CSR format."
+                )
 
     def _validate_sparsity(self):
         """
@@ -2054,6 +2068,8 @@ class Validator:
         # Checks sparsity
         logger.debug("Validating sparsity...")
         self._validate_sparsity()
+
+        self._validate_X()
 
         # Checks spatial
         self._check_spatial()

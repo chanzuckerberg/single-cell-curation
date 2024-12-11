@@ -125,16 +125,6 @@ def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
     """
     try:
         adata = ad.read_h5ad(h5ad_path, backed="r")
-
-        # This code, and AnnData in general, is optimized for row access.
-        # Running backed, with CSC, is prohibitively slow. Read the entire
-        # AnnData into memory if it is CSC.
-        if (get_matrix_format(adata, adata.X) == "csc") or (
-            (adata.raw is not None) and (get_matrix_format(adata, adata.raw.X) == "csc")
-        ):
-            logger.warning("Matrices are in CSC format; loading entire dataset into memory.")
-            adata = adata.to_memory()
-
     except (OSError, TypeError):
         logger.info(f"Unable to open '{h5ad_path}' with AnnData")
         sys.exit(1)
