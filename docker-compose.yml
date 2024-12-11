@@ -2,7 +2,6 @@ name: cellxgene-schema-cli
 
 services:
   memtest:
-    platform: linux/amd64
     build:
       context: .
       dockerfile: ./scripts/memtest/Dockerfile

@@ -11,6 +11,7 @@ import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 import scipy
+from anndata.compat import DaskArray
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from pandas.errors import UndefinedVariableError
 from scipy import sparse
@@ -77,9 +78,6 @@ class Validator:
         self.is_visium_and_is_single_true = None
         self._hires_max_dimension_size = hi_res_size
         self._visium_and_is_single_true_matrix_size = true_mat_size
-
-        # Matrix (e.g., X, raw.X, ...) number non-zero cache
-        self.number_non_zero = dict()
 
     @property
     def adata(self) -> anndata.AnnData:
@@ -449,8 +447,8 @@ class Validator:
         return
 
     @staticmethod
-    def _chunk_matrix(
-        matrix: Union[np.ndarray, sparse.spmatrix],
+    def chunk_matrix(
+        matrix: Union[np.ndarray, sparse.spmatrix, DaskArray],
         obs_chunk_size: Optional[int] = 10_000,
     ):
         """
@@ -468,27 +466,26 @@ class Validator:
         for i in range(int(n // obs_chunk_size)):
             logger.debug(f"_chunk_matrix [{i} of {math.ceil(n / obs_chunk_size)}]")
             end = start + obs_chunk_size
-            yield (matrix[start:end], start, end)
+            matrix_chunk = matrix[start:end]
+            if isinstance(matrix_chunk, DaskArray):
+                matrix_chunk = matrix_chunk.compute()
+            yield (matrix_chunk, start, end)
             start = end
         if start < n:
-            yield (matrix[start:n], start, n)
+            matrix_chunk = matrix[start:n]
+            if isinstance(matrix_chunk, DaskArray):
+                matrix_chunk = matrix_chunk.compute()
+            yield (matrix_chunk, start, n)
 
-    def _count_matrix_nonzero(
-        self, matrix_name: str, matrix: Union[np.ndarray, sparse.spmatrix], filter_by_column: pd.Series = None
-    ) -> int:
-        if matrix_name in self.number_non_zero:
-            return self.number_non_zero[matrix_name]
-
-        logger.debug(f"Counting non-zero values in {matrix_name}")
-
+    @staticmethod
+    def count_matrix_nonzero(matrix: Union[np.ndarray, sparse.spmatrix], filter_by_column: pd.Series = None) -> int:
         nnz = 0
-        matrix_format = get_matrix_format(self.adata, matrix)
-        for matrix_chunk, _, _ in self._chunk_matrix(matrix):
+        matrix_format = get_matrix_format(matrix)
+        for matrix_chunk, _, _ in Validator.chunk_matrix(matrix):
             if filter_by_column is not None:
                 matrix_chunk = matrix_chunk[:, filter_by_column]
             nnz += matrix_chunk.count_nonzero() if matrix_format != "dense" else np.count_nonzero(matrix_chunk)
 
-        self.number_non_zero[matrix_name] = nnz
         return nnz
 
     def _validate_genetic_ancestry(self):
@@ -611,7 +608,7 @@ class Validator:
             return
 
         if sum(column) > 0:
-            n_nonzero = self._count_matrix_nonzero("feature_is_filtered", self.adata.X, column)
+            n_nonzero = self.count_matrix_nonzero(self.adata.X, column)
 
             if n_nonzero > 0:
                 self.errors.append(
@@ -1079,7 +1076,7 @@ class Validator:
 
         # Check sparsity
         for x, x_name in to_validate:
-            matrix_format = get_matrix_format(self.adata, x)
+            matrix_format = get_matrix_format(x)
             if matrix_format == "csr":
                 continue
             assert matrix_format != "unknown"
@@ -1091,7 +1088,7 @@ class Validator:
             # function is to recommend CSR for _any_ matrix with sparsity beyond
             # a given limit.
 
-            nnz = self._count_matrix_nonzero(x_name, x)
+            nnz = self.count_matrix_nonzero(x)
             sparsity = 1 - nnz / np.prod(x.shape)
             if sparsity > max_sparsity:
                 self.warnings.append(
@@ -1278,7 +1275,7 @@ class Validator:
                 self.errors.append("Raw matrix values must have type numpy.float32.")
                 return self._raw_layer_exists
 
-            matrix_format = get_matrix_format(self.adata, x)
+            matrix_format = get_matrix_format(x)
             assert matrix_format != "unknown"
             self._raw_layer_exists = True
             is_sparse_matrix = matrix_format in SPARSE_MATRIX_TYPES
@@ -1313,7 +1310,7 @@ class Validator:
         """
         has_row_of_zeros = False
         has_invalid_nonzero_value = False
-        for matrix_chunk, _, _ in self._chunk_matrix(x):
+        for matrix_chunk, _, _ in self.chunk_matrix(x):
             if not has_row_of_zeros:
                 if is_sparse_matrix:
                     row_indices, _ = matrix_chunk.nonzero()
@@ -1349,7 +1346,7 @@ class Validator:
         has_tissue_1_zero_row = False
         has_invalid_nonzero_values = False
 
-        for matrix_chunk, start, _ in self._chunk_matrix(x):
+        for matrix_chunk, start, _ in self.chunk_matrix(x):
             if not has_invalid_nonzero_values and self._matrix_has_invalid_nonzero_values(matrix_chunk):
                 has_invalid_nonzero_values = True
 

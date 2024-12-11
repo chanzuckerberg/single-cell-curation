@@ -8,8 +8,8 @@ from typing import Dict, List, Union
 import anndata as ad
 import h5py
 import numpy as np
-from anndata.experimental import read_dispatched
-from anndata.io import read_elem, sparse_dataset
+from anndata.compat import DaskArray
+from anndata.experimental import read_dispatched, read_elem_as_dask
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from scipy import sparse
 from xxhash import xxh3_64_intdigest
@@ -71,7 +71,7 @@ def remap_deprecated_features(*, adata: ad.AnnData, remapped_features: Dict[str,
     return adata
 
 
-def get_matrix_format(adata: ad.AnnData, matrix: Union[np.ndarray, sparse.spmatrix]) -> str:
+def get_matrix_format(matrix: Union[np.ndarray, sparse.spmatrix, DaskArray]) -> str:
     """
     Given a matrix, returns the format as one of: csc, csr, coo, dense
     or unknown.
@@ -87,14 +87,13 @@ def get_matrix_format(adata: ad.AnnData, matrix: Union[np.ndarray, sparse.spmatr
     # >>> return getattr(matrix, "format_str", "dense)
     #
     matrix_format = "unknown"
-    if adata.n_obs == 0 or adata.n_vars == 0:
+    matrix_slice = matrix[0:1, 0:1]
+    if isinstance(matrix_slice, DaskArray):
+        matrix_slice = matrix_slice.compute()
+    if isinstance(matrix_slice, sparse.spmatrix):
+        matrix_format = matrix_slice.format
+    elif isinstance(matrix_slice, np.ndarray):
         matrix_format = "dense"
-    else:
-        matrix_slice = matrix[0:1, 0:1]
-        if isinstance(matrix_slice, sparse.spmatrix):
-            matrix_format = matrix_slice.format
-        elif isinstance(matrix_slice, np.ndarray):
-            matrix_format = "dense"
 
     assert matrix_format in ["unknown", "csr", "csc", "coo", "dense"]
     return matrix_format
@@ -126,11 +125,10 @@ def read_backed(f):
                 "csr_matrix",
                 "csc_matrix",
             ):
-                return sparse_dataset(elem)
-                # Preventing recursing inside of these types
-                return read_elem(elem)
+                n_vars = elem.attrs.get("shape")[1]
+                return read_elem_as_dask(elem, chunks=(10_000, n_vars))
             elif iospec.encoding_type == "array" and len(elem.shape) > 1:
-                return elem
+                return read_elem_as_dask(elem)
             else:
                 func(elem)
         else:
@@ -155,8 +153,8 @@ def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
         # This code, and AnnData in general, is optimized for row access.
         # Running backed, with CSC, is prohibitively slow. Read the entire
         # AnnData into memory if it is CSC.
-        if (get_matrix_format(adata, adata.X) == "csc") or (
-            (adata.raw is not None) and (get_matrix_format(adata, adata.raw.X) == "csc")
+        if (get_matrix_format(adata.X) == "csc") or (
+            (adata.raw is not None) and (get_matrix_format(adata.raw.X) == "csc")
         ):
             logger.warning("Matrices are in CSC format; loading entire dataset into memory.")
             adata = adata.to_memory()
