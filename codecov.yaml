@@ -1,0 +1,27 @@
+comment:
+  layout: "header, diff, components"
+
+component_management:
+  default_rules:
+    statuses:
+      - type: project
+        target: auto
+        branches:
+          - "!main"
+  individual_components:
+    - component_id: module_cellxgene_schema_cli
+      name: cellxgene_schema_cli
+      paths:
+        - cellxgene_schema_cli/**
+    - component_id: module_migration_assistant
+      name: migration_assistant
+      paths:
+        - scripts/migration_assistant/**
+    - component_id: module_schema_bump_dry_run_genes
+      name: schema_bump_dry_run_genes
+      paths:
+        - scripts/schema_bump_dry_run_genes/**
+    - component_id: module_schema_bump_dry_run_ontologies
+      name: schema_bump_dry_run_ontologies
+      paths:
+        - scripts/schema_bump_dry_run_ontologies/**
