@@ -557,9 +557,10 @@ class Validator:
         invalid_rows = ~self.adata.obs.apply(is_valid_row, axis=1)
 
         if invalid_rows.any():
-            invalid_indices = self.adata.obs.index[invalid_rows].tolist()
+            donor_ids = self.adata.obs[donor_id_column].tolist()
+            unique_donor_ids = list(set(donor_ids))
             self.errors.append(
-                f"obs rows with indices {invalid_indices} have invalid genetic_ancestry_* values. All "
+                f"obs rows with donor ids {unique_donor_ids} have invalid genetic_ancestry_* values. All "
                 f"observations with the same donor_id must contain the same genetic_ancestry_* values. If "
                 f"organism_ontolology_term_id is NOT 'NCBITaxon:9606' for Homo sapiens, then all genetic"
                 f"ancestry values MUST be float('nan'). If organism_ontolology_term_id is 'NCBITaxon:9606' "
@@ -948,7 +949,6 @@ class Validator:
                                 f"Column '{column_name}' in dataframe '{df_name}' contains a category '{category}' with "
                                 f"zero observations. These categories will be removed when `--add-labels` flag is present."
                             )
-                    self._validate_genetic_ancestry()
                 categorical_types = {type(x) for x in column.dtype.categories.values}
                 # Check for columns that have illegal categories, which are not supported by anndata
                 blocked_categorical_types = {bool}
@@ -2056,6 +2056,9 @@ class Validator:
 
         # Checks spatial
         self._check_spatial()
+
+        # Validate genetic ancestry
+        self._validate_genetic_ancestry()
 
         # Checks each component
         for component_name, component_def in self.schema_def["components"].items():
