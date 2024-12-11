@@ -525,8 +525,8 @@ class Validator:
         invalid_rows = ~self.adata.obs.apply(is_valid_row, axis=1)
 
         if invalid_rows.any():
-            donor_ids = self.adata.obs[donor_id_column].tolist()
-            unique_donor_ids = list(set(donor_ids))
+            invalid_donor_ids = self.adata.obs.loc[invalid_rows, "donor_id"]
+            unique_donor_ids = list(set(invalid_donor_ids))
             self.errors.append(
                 f"obs rows with donor ids {unique_donor_ids} have invalid genetic_ancestry_* values. All "
                 f"observations with the same donor_id must contain the same genetic_ancestry_* values. If "
