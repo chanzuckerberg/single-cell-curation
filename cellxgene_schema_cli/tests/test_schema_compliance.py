@@ -1367,13 +1367,15 @@ class TestObs:
         if "na" in suspension_types:
             invalid_suspension_type = "nucleus" if "nucleus" not in suspension_types else "cell"
         obs = validator.adata.obs
-        obs.loc[obs.index[1], "suspension_type"] = invalid_suspension_type
-        obs.loc[obs.index[1], "assay_ontology_term_id"] = assay
+        obs["suspension_type"] = invalid_suspension_type
+        obs["assay_ontology_term_id"] = assay
+        obs["suspension_type"] = obs["suspension_type"].astype("category")
+        obs["assay_ontology_term_id"] = obs["assay_ontology_term_id"].astype("category")
         validator.validate_adata()
         assert validator.errors == [
             f"ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
             f"'['{invalid_suspension_type}']'. Values must be one of {suspension_types} when "
-            f"'assay_ontology_term_id' is {assay}"
+            f"'assay_ontology_term_id' is in ['{assay}']"
         ]
 
     @pytest.mark.parametrize(
@@ -1400,13 +1402,15 @@ class TestObs:
         if "na" in suspension_types:
             invalid_suspension_type = "nucleus" if "nucleus" not in suspension_types else "cell"
             obs["suspension_type"] = obs["suspension_type"].cat.remove_unused_categories()
-        obs.loc[obs.index[1], "assay_ontology_term_id"] = assay
-        obs.loc[obs.index[1], "suspension_type"] = invalid_suspension_type
+        obs["suspension_type"] = invalid_suspension_type
+        obs["assay_ontology_term_id"] = assay
+        obs["suspension_type"] = obs["suspension_type"].astype("category")
+        obs["assay_ontology_term_id"] = obs["assay_ontology_term_id"].astype("category")
         validator.validate_adata()
         assert validator.errors == [
             f"ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
             f"'['{invalid_suspension_type}']'. Values must be one of {suspension_types} when "
-            f"'assay_ontology_term_id' is {assay} or its descendants"
+            f"'assay_ontology_term_id' is in ['{assay}']"
         ]
 
     def test_suspension_type_with_descendant_term_id_failure(self, validator_with_adata):
@@ -1416,14 +1420,15 @@ class TestObs:
         """
         validator = validator_with_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "assay_ontology_term_id"] = "EFO:0022615"  # descendant of EFO:0008994
-        obs.loc[obs.index[0], "suspension_type"] = "nucleus"
-
+        obs["suspension_type"] = "nucleus"
+        obs["assay_ontology_term_id"] = "EFO:0022615"  # descendant of EFO:0008994
+        obs["suspension_type"] = obs["suspension_type"].astype("category")
+        obs["assay_ontology_term_id"] = obs["assay_ontology_term_id"].astype("category")
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
             "'['nucleus']'. Values must be one of ['na'] when "
-            "'assay_ontology_term_id' is EFO:0008994 or its descendants"
+            "'assay_ontology_term_id' is in ['EFO:0022615']"
         ]
 
     def test_suspension_type_with_descendant_term_id_success(self, validator_with_adata):

@@ -557,7 +557,9 @@ class Validator:
                     f"these features must be 0."
                 )
 
-    def _validate_column(self, column: pd.Series, column_name: str, df_name: str, column_def: dict):
+    def _validate_column(
+        self, column: pd.Series, column_name: str, df_name: str, column_def: dict, error_message_suffix=None
+    ):
         """
         Given a schema definition and the column of a dataframe, verify that the column satisfies the schema.
         If there are any errors, it adds them to self.errors
@@ -635,10 +637,11 @@ class Validator:
                     self._validate_curie_str(term_str, column_name, column_def["curie_constraints"])
 
         # Add error suffix to errors found here
-        if "error_message_suffix" in column_def:
+        error_message = column_def.get("error_message_suffix", error_message_suffix)
+        if error_message:
             error_total_count = len(self.errors)
             for i in range(error_original_count, error_total_count):
-                self.errors[i] = self.errors[i] + " " + column_def["error_message_suffix"]
+                self.errors[i] = self.errors[i] + " " + error_message
 
     def _validate_column_dependencies(
         self, df: pd.DataFrame, df_name: str, column_name: str, dependencies: List[dict]
@@ -659,28 +662,26 @@ class Validator:
 
         all_rules = []
         for dependency_def in dependencies:
-            if "complex_rule" in dependency_def:
-                query_exp = ""
-                if "match_ancestors" in dependency_def["complex_rule"]:
-                    query_fn, args = self._generate_match_ancestors_query_fn(
-                        dependency_def["complex_rule"]["match_ancestors"]
-                    )
-                    term_id, ontologies, ancestors, ancestor_inclusive = args
-                    query_exp = f"@query_fn({term_id}, {ontologies}, {ancestors}, {ancestor_inclusive})"
-                if "match_exact" in dependency_def["complex_rule"]:
-                    column_to_match = dependency_def["complex_rule"]["match_exact"]["column"]
-                    terms_to_match = dependency_def["complex_rule"]["match_exact"]["terms"]
-                    for term in terms_to_match:
-                        if query_exp:
-                            query_exp += " | "
-                        query_exp += f"{column_to_match} == '{term}'"
-            elif "rule" in dependency_def:
-                query_exp = dependency_def["rule"]
-            else:
-                continue
+            query_exp = ""
+            column_to_match = dependency_def["rule"]["column"]
+            if "match_ancestors" in dependency_def["rule"]:
+                query_fn, args = self._generate_match_ancestors_query_fn(dependency_def["rule"]["match_ancestors"])
+                ontologies, ancestors, ancestor_inclusive = args
+                query_exp = f"@query_fn({column_to_match}, {ontologies}, {ancestors}, {ancestor_inclusive})"
+            if "match_exact" in dependency_def["rule"]:
+                terms_to_match = dependency_def["rule"]["match_exact"]["terms"]
+                for term in terms_to_match:
+                    if query_exp:
+                        query_exp += " | "
+                    query_exp += f"{column_to_match} == '{term}'"
 
             try:
-                column = getattr(df.query(query_exp, engine="python"), column_name)
+                query_df = df.query(query_exp, engine="python")
+                column = getattr(query_df, column_name)
+                error_message_suffix = dependency_def.get("error_message_suffix", None)
+                if not error_message_suffix:
+                    matched_values = list(getattr(query_df, column_to_match).unique())
+                    error_message_suffix = f"when '{column_to_match}' is in {matched_values}"
             except UndefinedVariableError:
                 self.errors.append(
                     f"Checking values with dependencies failed for adata.{df_name}['{column_name}'], "
@@ -689,8 +690,7 @@ class Validator:
                 return pd.Series(dtype=np.float64)
 
             all_rules.append(query_exp)
-
-            self._validate_column(column, column_name, df_name, dependency_def)
+            self._validate_column(column, column_name, df_name, dependency_def, error_message_suffix)
 
         # Set column with the data that's left
         all_rules = " | ".join(all_rules)
@@ -726,7 +726,6 @@ class Validator:
             return validate_curie_ancestors_vectorized(term_id, allowed_ancestors, inclusive=ancestor_inclusive)
 
         return is_ancestor_match, (
-            rule_def["column"],
             ontology_keys,
             ancestor_list,
             inclusive,

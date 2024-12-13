@@ -186,7 +186,12 @@ components:
         type: curie
         dependencies:
           - # If tissue_type is tissue OR organoid
-            rule: "tissue_type == 'tissue' | tissue_type == 'organoid'"
+            rule:
+              column: tissue_type
+              match_exact:
+                terms:
+                  - tissue
+                  - organoid
             error_message_suffix: >-
               When 'tissue_type' is 'tissue' or 'organoid',
               'tissue_ontology_term_id' MUST be a descendant term id of 'UBERON:0001062' (anatomical entity).
@@ -199,7 +204,11 @@ components:
                   UBERON:
                     - UBERON:0001062
           - # If tissue_type is cell culture
-            rule: "tissue_type == 'cell culture'"
+            rule:
+              column: tissue_type
+              match_exact:
+                terms:
+                  - cell culture
             error_message_suffix: >-
               When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be either a CL term
               (excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell),
@@ -222,7 +231,11 @@ components:
         type: curie
         dependencies:
           - # If organism is Human
-            rule: "organism_ontology_term_id == 'NCBITaxon:9606'"
+            rule:
+              column: organism_ontology_term_id
+              match_exact:
+                terms:
+                  - NCBITaxon:9606
             error_message_suffix: >-
               When 'organism_ontology_term_id' is 'NCBITaxon:9606' (Homo sapiens),
               self_reported_ethnicity_ontology_term_id MUST be formatted as one
@@ -285,7 +298,11 @@ components:
         type: curie
         dependencies:
           - # If organism is Human
-            rule: "organism_ontology_term_id == 'NCBITaxon:9606'"
+            rule:
+              column: organism_ontology_term_id
+              match_exact:
+                terms:
+                  - NCBITaxon:9606
             error_message_suffix: >-
               When 'organism_ontology_term_id' is 'NCBITaxon:9606' (Homo sapiens),
               'development_stage_ontology_term_id' MUST be the most accurate descendant of 'HsapDv:0000001' or unknown.
@@ -300,7 +317,11 @@ components:
               exceptions:
                 - unknown
           - # If organism is Mouse
-            rule: "organism_ontology_term_id == 'NCBITaxon:10090'"
+            rule:
+              column: organism_ontology_term_id
+              match_exact:
+                terms:
+                  - NCBITaxon:10090
             error_message_suffix: >-
               When 'organism_ontology_term_id' is 'NCBITaxon:10090' (Mus musculus),
               'development_stage_ontology_term_id' MUST be the most accurate descendant of 'MmusDv:0000001' or unknown.
@@ -354,16 +375,15 @@ components:
           during submission so that the assay(s) can be added to the schema definition document.
         dependencies:
           - # 'suspension_type' MUST be 'cell' or 'nucleus'
-            complex_rule:
+            rule:
+              column: assay_ontology_term_id
               match_ancestors:
-                column: assay_ontology_term_id
                 ancestors:
                   EFO:
                     - EFO:0030080
                     - EFO:0010184
                 inclusive: True
               match_exact:
-                column: assay_ontology_term_id
                 terms:
                   - EFO:0010010
                   - EFO:0008722
@@ -376,22 +396,19 @@ components:
                   - EFO:0022490
                   - EFO:0030028
             type: categorical
-            error_message_suffix: >-
-              when 'assay_ontology_term_id' is EFO:0030080 or its descendants
             enum:
               - "cell"
               - "nucleus"
           - # 'suspension_type' MUST be 'nucleus'
-            complex_rule:
+            rule:
+              column: assay_ontology_term_id
               match_ancestors:
-                column: assay_ontology_term_id
                 ancestors:
                   EFO:
                     - EFO:0007045
                     - EFO:0002761
                 inclusive: True
               match_exact:
-                column: assay_ontology_term_id
                 terms:
                   - EFO:0008720
                   - EFO:0030026
@@ -399,15 +416,14 @@ components:
             enum:
               - "nucleus"
           - #'suspension_type' MUST be 'cell'
-            complex_rule:
+            rule:
+              column: assay_ontology_term_id
               match_ancestors:
-                column: assay_ontology_term_id
                 ancestors:
                   EFO:
                     - EFO:0008919
                 inclusive: True
               match_exact:
-                column: assay_ontology_term_id
                 terms:
                   - EFO:0030002
                   - EFO:0008853
@@ -419,15 +435,14 @@ components:
             enum:
               - "cell"
           - # 'suspension_type' MUST be 'na'
-            complex_rule:
+            rule:
+              column: assay_ontology_term_id
               match_ancestors:
-                column: assay_ontology_term_id
                 ancestors:
                   EFO:
                     - EFO:0008994
                 inclusive: True
               match_exact:
-                column: assay_ontology_term_id
                 terms:
                   - EFO:0008992
             type: categorical
