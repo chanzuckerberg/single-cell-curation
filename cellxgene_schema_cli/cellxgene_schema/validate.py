@@ -13,7 +13,6 @@ import pandas as pd
 import scipy
 from anndata._core.sparse_dataset import SparseDataset
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
-from pandas.errors import UndefinedVariableError
 from scipy import sparse
 
 from . import gencode, schema
@@ -631,7 +630,7 @@ class Validator:
                 )
 
     def _validate_column(
-        self, column: pd.Series, column_name: str, df_name: str, column_def: dict, error_message_suffix=None
+        self, column: pd.Series, column_name: str, df_name: str, column_def: dict, default_error_message_suffix=None
     ):
         """
         Given a schema definition and the column of a dataframe, verify that the column satisfies the schema.
@@ -642,6 +641,7 @@ class Validator:
         :param str df_name: Name of the dataframe
         :param dict column_def: schema definition for this specific column,
         e.g. schema_def["obs"]["columns"]["cell_type_ontology_term_id"]
+        :param str default_error_message_suffix: default error message suffix to be added to errors found here
 
         :rtype None
         """
@@ -710,11 +710,11 @@ class Validator:
                     self._validate_curie_str(term_str, column_name, column_def["curie_constraints"])
 
         # Add error suffix to errors found here
-        error_message = column_def.get("error_message_suffix", error_message_suffix)
-        if error_message:
+        error_message_suffix = column_def.get("error_message_suffix", default_error_message_suffix)
+        if error_message_suffix:
             error_total_count = len(self.errors)
             for i in range(error_original_count, error_total_count):
-                self.errors[i] = self.errors[i] + " " + error_message
+                self.errors[i] = self.errors[i] + " " + error_message_suffix
 
     def _validate_column_dependencies(
         self, df: pd.DataFrame, df_name: str, column_name: str, dependencies: List[dict]
@@ -735,74 +735,36 @@ class Validator:
 
         all_rules = []
         for dependency_def in dependencies:
-            query_exp = ""
+            terms_to_match = set()
             column_to_match = dependency_def["rule"]["column"]
             if "match_ancestors" in dependency_def["rule"]:
-                query_fn, args = self._generate_match_ancestors_query_fn(dependency_def["rule"]["match_ancestors"])
-                ontologies, ancestors, ancestor_inclusive = args
-                query_exp = f"@query_fn({column_to_match}, {ontologies}, {ancestors}, {ancestor_inclusive})"
+                ancestors = dependency_def["rule"]["match_ancestors"]["ancestors"]
+                for ancestor in ancestors:
+                    terms_to_match.update(ONTOLOGY_PARSER.get_term_descendants(ancestor, include_self=True))
             if "match_exact" in dependency_def["rule"]:
-                terms_to_match = dependency_def["rule"]["match_exact"]["terms"]
-                for term in terms_to_match:
-                    if query_exp:
-                        query_exp += " | "
-                    query_exp += f"{column_to_match} == '{term}'"
-
+                terms_to_match.update(dependency_def["rule"]["match_exact"]["terms"])
             try:
-                query_df = df.query(query_exp, engine="python")
-                column = getattr(query_df, column_name)
+                match_query = df[column_to_match].isin(terms_to_match)
+                match_df = df[match_query]
+                column = getattr(match_df, column_name)
                 error_message_suffix = dependency_def.get("error_message_suffix", None)
                 if not error_message_suffix:
-                    matched_values = list(getattr(query_df, column_to_match).unique())
+                    matched_values = list(getattr(match_df, column_to_match).unique())
                     error_message_suffix = f"when '{column_to_match}' is in {matched_values}"
-            except UndefinedVariableError:
+            except KeyError:
                 self.errors.append(
                     f"Checking values with dependencies failed for adata.{df_name}['{column_name}'], "
                     f"this is likely due to missing dependent column in adata.{df_name}."
                 )
                 return pd.Series(dtype=np.float64)
 
-            all_rules.append(query_exp)
+            all_rules.append(match_query)
             self._validate_column(column, column_name, df_name, dependency_def, error_message_suffix)
 
-        # Set column with the data that's left
-        all_rules = " | ".join(all_rules)
-        column = getattr(df.query("not (" + all_rules + " )", engine="python"), column_name)
+        # Return column of data that was not matched by any of the rules
+        column = getattr(df[~np.logical_or.reduce(all_rules)], column_name)
 
         return column
-
-    def _generate_match_ancestors_query_fn(self, rule_def: Dict):
-        """
-        Generates vectorized function and args to query a pandas dataframe. Function will determine whether values from
-        a specified column is a descendant term to a group of specified ancestors, returning a Bool.
-        :param rule_def: defines arguments to pass into vectorized ancestor match validation function
-        :return: Tuple(function, Tuple(str, List[str], List[str]))
-        """
-        validate_curie_ancestors_vectorized = np.vectorize(self._validate_curie_ancestors)
-        ancestor_map = rule_def["ancestors"]
-        inclusive = rule_def["inclusive"]
-
-        # hack: pandas dataframe query doesn't support Dict inputs
-        ontology_keys = []
-        ancestor_list = []
-        for key, val in ancestor_map.items():
-            ontology_keys.append(key)
-            ancestor_list.append(val)
-
-        def is_ancestor_match(
-            term_id: str,
-            ontologies: List[str],
-            ancestors: List[str],
-            ancestor_inclusive: bool,
-        ) -> bool:
-            allowed_ancestors = dict(zip(ontologies, ancestors))
-            return validate_curie_ancestors_vectorized(term_id, allowed_ancestors, inclusive=ancestor_inclusive)
-
-        return is_ancestor_match, (
-            ontology_keys,
-            ancestor_list,
-            inclusive,
-        )
 
     def _validate_list(self, list_name: str, current_list: List[str], element_type: str):
         """

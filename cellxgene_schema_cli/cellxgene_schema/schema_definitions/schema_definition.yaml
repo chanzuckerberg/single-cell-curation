@@ -379,9 +379,8 @@ components:
               column: assay_ontology_term_id
               match_ancestors:
                 ancestors:
-                  EFO:
-                    - EFO:0030080
-                    - EFO:0010184
+                  - EFO:0030080
+                  - EFO:0010184
                 inclusive: True
               match_exact:
                 terms:
@@ -404,9 +403,8 @@ components:
               column: assay_ontology_term_id
               match_ancestors:
                 ancestors:
-                  EFO:
-                    - EFO:0007045
-                    - EFO:0002761
+                  - EFO:0007045
+                  - EFO:0002761
                 inclusive: True
               match_exact:
                 terms:
@@ -420,8 +418,7 @@ components:
               column: assay_ontology_term_id
               match_ancestors:
                 ancestors:
-                  EFO:
-                    - EFO:0008919
+                  - EFO:0008919
                 inclusive: True
               match_exact:
                 terms:
@@ -439,8 +436,7 @@ components:
               column: assay_ontology_term_id
               match_ancestors:
                 ancestors:
-                  EFO:
-                    - EFO:0008994
+                  - EFO:0008994
                 inclusive: True
               match_exact:
                 terms:
