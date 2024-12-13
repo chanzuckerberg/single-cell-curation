@@ -737,8 +737,8 @@ class Validator:
         for dependency_def in dependencies:
             terms_to_match = set()
             column_to_match = dependency_def["rule"]["column"]
-            if "match_ancestors" in dependency_def["rule"]:
-                ancestors = dependency_def["rule"]["match_ancestors"]["ancestors"]
+            if "match_ancestors_inclusive" in dependency_def["rule"]:
+                ancestors = dependency_def["rule"]["match_ancestors_inclusive"]["ancestors"]
                 for ancestor in ancestors:
                     terms_to_match.update(ONTOLOGY_PARSER.get_term_descendants(ancestor, include_self=True))
             if "match_exact" in dependency_def["rule"]:

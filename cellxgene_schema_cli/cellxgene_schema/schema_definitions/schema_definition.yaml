@@ -377,11 +377,10 @@ components:
           - # 'suspension_type' MUST be 'cell' or 'nucleus'
             rule:
               column: assay_ontology_term_id
-              match_ancestors:
+              match_ancestors_inclusive:
                 ancestors:
                   - EFO:0030080
                   - EFO:0010184
-                inclusive: True
               match_exact:
                 terms:
                   - EFO:0010010
@@ -401,11 +400,10 @@ components:
           - # 'suspension_type' MUST be 'nucleus'
             rule:
               column: assay_ontology_term_id
-              match_ancestors:
+              match_ancestors_inclusive:
                 ancestors:
                   - EFO:0007045
                   - EFO:0002761
-                inclusive: True
               match_exact:
                 terms:
                   - EFO:0008720
@@ -416,10 +414,9 @@ components:
           - #'suspension_type' MUST be 'cell'
             rule:
               column: assay_ontology_term_id
-              match_ancestors:
+              match_ancestors_inclusive:
                 ancestors:
                   - EFO:0008919
-                inclusive: True
               match_exact:
                 terms:
                   - EFO:0030002
@@ -434,10 +431,9 @@ components:
           - # 'suspension_type' MUST be 'na'
             rule:
               column: assay_ontology_term_id
-              match_ancestors:
+              match_ancestors_inclusive:
                 ancestors:
                   - EFO:0008994
-                inclusive: True
               match_exact:
                 terms:
                   - EFO:0008992
