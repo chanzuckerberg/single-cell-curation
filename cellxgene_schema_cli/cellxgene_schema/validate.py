@@ -4,7 +4,7 @@ import numbers
 import os
 import re
 from datetime import datetime
-from typing import Dict, List, Mapping, Optional, Union
+from typing import Dict, List, Mapping, Optional, Tuple, Union
 
 import anndata
 import matplotlib.colors as mcolors
@@ -24,19 +24,28 @@ logger = logging.getLogger(__name__)
 ONTOLOGY_PARSER = OntologyParser(schema_version="v5.3.0")
 
 ASSAY_VISIUM = "EFO:0010961"
+ASSAY_VISIUM_11M = "EFO:0022860"
 ASSAY_SLIDE_SEQV2 = "EFO:0030062"
 
 VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 4992
+VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 14336
+VISIUM_TISSUE_POSITION_MAX_ROW = 77
+VISIUM_TISSUE_POSITION_MAX_COL = 127
+VISIUM_11MM_TISSUE_POSITION_MAX_ROW = 127
+VISIUM_11MM_TISSUE_POSITION_MAX_COL = 223
 SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE = 2000
 SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM = 4000
 
 CONDITION_IS_VISIUM = "a descendant of 'EFO:0010961' (Visium Spatial Gene Expression)"
+CONDITION_IS_VISIUM_11M = f"'{ASSAY_VISIUM_11M} (Visium CytAssist Spatial Gene Expression, 11mm)"
 CONDITION_IS_SEQV2 = f"'{ASSAY_SLIDE_SEQV2}' (Slide-seqV2)"
-
 
 ERROR_SUFFIX_SPATIAL = f"obs['assay_ontology_term_id'] is either {CONDITION_IS_VISIUM} or {CONDITION_IS_SEQV2}"
 ERROR_SUFFIX_VISIUM = f"obs['assay_ontology_term_id'] is {CONDITION_IS_VISIUM}"
-ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = f"{ERROR_SUFFIX_VISIUM} and uns['spatial']['is_single'] is True"
+ERROR_SUFFIX_VISIUM_11M = f"obs['assay_ontology_term_id'] is {CONDITION_IS_VISIUM_11M}"
+
+ERROR_SUFFIX_IS_SINGLE = "uns['spatial']['is_single'] is True"
+ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = f"{ERROR_SUFFIX_VISIUM} and {ERROR_SUFFIX_IS_SINGLE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN = f"is only allowed for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED = f"is required for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0 = f"{ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE} and in_tissue is 0"
@@ -49,13 +58,16 @@ class Validator:
         self.schema_def = dict()
         self.schema_version: str = None
         self.ignore_labels = ignore_labels
-        self.visium_and_is_single_true_matrix_size = VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
+        self._visium_and_is_single_true_matrix_size = None
+        self._hires_max_dimension_size = None
+        self._visium_error_suffix = None
+        self._visium_tissue_position_max = None
 
         # Values will be instances of gencode.GeneChecker,
         # keys will be one of gencode.SupportedOrganisms
         self.gene_checkers = dict()
 
-    def reset(self):
+    def reset(self, hi_res_size: Optional[int] = None, true_mat_size: Optional[int] = None):
         self.errors = []
         self.warnings = []
         self.is_valid = False
@@ -64,6 +76,8 @@ class Validator:
         self.is_spatial = None
         self.is_visium = None
         self.is_visium_and_is_single_true = None
+        self._hires_max_dimension_size = hi_res_size
+        self._visium_and_is_single_true_matrix_size = true_mat_size
 
         # Matrix (e.g., X, raw.X, ...) number non-zero cache
         self.number_non_zero = dict()
@@ -76,6 +90,64 @@ class Validator:
     def adata(self, adata: anndata.AnnData):
         self.reset()
         self._adata = adata
+
+    @property
+    def visium_and_is_single_true_matrix_size(self) -> Optional[int]:
+        """
+        Returns the required matrix size based on assay type, if applicable, else returns None.
+        """
+        if self._visium_and_is_single_true_matrix_size is None:
+            # Visium 11M's raw matrix size is distinct from other visium assays
+            if bool(
+                self.adata.obs["assay_ontology_term_id"]
+                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
+                .astype(bool)
+                .any()
+            ):
+                self._visium_error_suffix = f"{ERROR_SUFFIX_VISIUM_11M} and {ERROR_SUFFIX_IS_SINGLE}"
+                self._visium_and_is_single_true_matrix_size = VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
+            elif self._is_visium_including_descendants():
+                self._visium_error_suffix = f"{ERROR_SUFFIX_VISIUM} and {ERROR_SUFFIX_IS_SINGLE}"
+                self._visium_and_is_single_true_matrix_size = VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
+        return self._visium_and_is_single_true_matrix_size
+
+    @property
+    def hires_max_dimension_size(self) -> Optional[int]:
+        """
+        Returns the restricted hires image dimension based on assay type, if applicable, else returns None.
+        """
+        if self._hires_max_dimension_size is None:
+            # Visium 11M's max dimension size is distinct from other visium assays
+            if bool(
+                self.adata.obs["assay_ontology_term_id"]
+                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
+                .astype(bool)
+                .any()
+            ):
+                self._visium_error_suffix = ERROR_SUFFIX_VISIUM_11M
+                self._hires_max_dimension_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM
+            elif self._is_visium_including_descendants():
+                self._visium_error_suffix = ERROR_SUFFIX_VISIUM
+                self._hires_max_dimension_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE
+        return self._hires_max_dimension_size
+
+    @property
+    def tissue_position_maxes(self) -> Tuple[int, int]:
+        if self._visium_tissue_position_max is None and self._is_visium_and_is_single_true:
+            # visium 11 has different requirements than other visium
+            if (
+                self.adata.obs["assay_ontology_term_id"]
+                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
+                .astype(bool)
+                .any()
+            ):
+                self._visium_tissue_position_max = (
+                    VISIUM_11MM_TISSUE_POSITION_MAX_ROW,
+                    VISIUM_11MM_TISSUE_POSITION_MAX_COL,
+                )
+            else:
+                self._visium_tissue_position_max = (VISIUM_TISSUE_POSITION_MAX_ROW, VISIUM_TISSUE_POSITION_MAX_COL)
+        return self._visium_tissue_position_max
 
     def _is_single(self) -> bool | None:
         """
@@ -104,7 +176,7 @@ class Validator:
             try:
                 _spatial = (
                     self._is_visium_including_descendants()
-                    or self.adata.obs.assay_ontology_term_id.isin([ASSAY_SLIDE_SEQV2]).any()
+                    or self.adata.obs.assay_ontology_term_id.isin([ASSAY_SLIDE_SEQV2]).astype(bool).any()
                 )
                 self.is_spatial = bool(_spatial)
             except AttributeError:
@@ -482,9 +554,10 @@ class Validator:
         invalid_rows = ~self.adata.obs.apply(is_valid_row, axis=1)
 
         if invalid_rows.any():
-            invalid_indices = self.adata.obs.index[invalid_rows].tolist()
+            donor_ids = self.adata.obs[donor_id_column].tolist()
+            unique_donor_ids = list(set(donor_ids))
             self.errors.append(
-                f"obs rows with indices {invalid_indices} have invalid genetic_ancestry_* values. All "
+                f"obs rows with donor ids {unique_donor_ids} have invalid genetic_ancestry_* values. All "
                 f"observations with the same donor_id must contain the same genetic_ancestry_* values. If "
                 f"organism_ontolology_term_id is NOT 'NCBITaxon:9606' for Homo sapiens, then all genetic"
                 f"ancestry values MUST be float('nan'). If organism_ontolology_term_id is 'NCBITaxon:9606' "
@@ -893,7 +966,6 @@ class Validator:
                                 f"Column '{column_name}' in dataframe '{df_name}' contains a category '{category}' with "
                                 f"zero observations. These categories will be removed when `--add-labels` flag is present."
                             )
-                    self._validate_genetic_ancestry()
                 categorical_types = {type(x) for x in column.dtype.categories.values}
                 # Check for columns that have illegal categories, which are not supported by anndata 0.8.0
                 # TODO: check if this can be removed after upgading to anndata 0.10.0
@@ -1234,7 +1306,7 @@ class Validator:
             if is_visium_and_is_single_true and x.shape[0] != self.visium_and_is_single_true_matrix_size:
                 self._raw_layer_exists = False
                 self.errors.append(
-                    f"When {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}, the raw matrix must be the "
+                    f"When {self._visium_error_suffix}, the raw matrix must be the "
                     f"unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
                     f"{self.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is "
                     f"{x.shape[0]}."
@@ -1609,8 +1681,10 @@ class Validator:
             return
 
         # Validate all out of tissue (in_tissue==0) spatial spots have unknown cell ontology term
-        is_spatial = self.adata.obs["assay_ontology_term_id"].apply(
-            lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, True)
+        is_spatial = (
+            self.adata.obs["assay_ontology_term_id"]
+            .apply(lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, True))
+            .astype(bool)
         )
         is_not_tissue = self.adata.obs["in_tissue"] == 0
         is_not_unknown = self.adata.obs["cell_type_ontology_term_id"] != "unknown"
@@ -1637,9 +1711,9 @@ class Validator:
             not (self.is_visium_and_is_single_true)
             or (
                 ~(
-                    self.adata.obs["assay_ontology_term_id"].apply(
-                        lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, True)
-                    )
+                    self.adata.obs["assay_ontology_term_id"]
+                    .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, True))
+                    .astype(bool)
                 )
                 & (self.adata.obs[tissue_position_name].notnull())
             ).any()
@@ -1658,9 +1732,9 @@ class Validator:
             tissue_position_name not in self.adata.obs
             or (
                 (
-                    self.adata.obs["assay_ontology_term_id"].apply(
-                        lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, True)
-                    )
+                    self.adata.obs["assay_ontology_term_id"]
+                    .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, True))
+                    .astype(bool)
                 )
                 & (self.adata.obs[tissue_position_name].isnull())
             ).any()
@@ -1691,8 +1765,8 @@ class Validator:
 
         :rtype none
         """
-        self._validate_spatial_tissue_position("array_col", 0, 127)
-        self._validate_spatial_tissue_position("array_row", 0, 77)
+        self._validate_spatial_tissue_position("array_col", 0, self.tissue_position_maxes[1])
+        self._validate_spatial_tissue_position("array_row", 0, self.tissue_position_maxes[0])
         self._validate_spatial_tissue_position("in_tissue", 0, 1)
 
     def _check_spatial_uns(self):
@@ -1806,10 +1880,7 @@ class Validator:
                 self.errors.append("uns['spatial'][library_id]['images'] must contain the key 'hires'.")
             # hires is specified: proceed with validation of hires.
             else:
-                _assay_term = self.adata.obs["assay_ontology_term_id"].values[0]
-                _max_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE
-                if is_ontological_descendant_of(ONTOLOGY_PARSER, _assay_term, "EFO:0022860", True):
-                    _max_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM
+                _max_size = self.hires_max_dimension_size
                 self._validate_spatial_image_shape("hires", uns_images["hires"], _max_size)
 
             # fullres is optional.
@@ -1912,20 +1983,19 @@ class Validator:
         :rtype bool
         """
         _assay_key = "assay_ontology_term_id"
-        includes_and_visium = False
 
         # only compute if not already stored
         if self.is_visium is None and _assay_key in self.adata.obs.columns:
             # check if any assay_ontology_term_ids are descendants of VISIUM
-            includes_and_visium = (
+            self.is_visium = bool(
                 self.adata.obs[_assay_key]
                 .astype("string")
                 .apply(lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, True))
+                .astype(bool)
                 .any()
             )
-            self.is_visium = includes_and_visium
 
-        return includes_and_visium
+        return self.is_visium
 
     def _validate_spatial_image_shape(self, image_name: str, image: np.ndarray, max_dimension: int = None):
         """
@@ -1994,6 +2064,9 @@ class Validator:
         # Checks spatial
         self._check_spatial()
 
+        # Validate genetic ancestry
+        self._validate_genetic_ancestry()
+
         # Checks each component
         for component_name, component_def in self.schema_def["components"].items():
             logger.debug(f"Validating component: {component_name}")
@@ -2040,8 +2113,6 @@ class Validator:
         :rtype bool
         """
         logger.info("Starting validation...")
-        # Re-start errors in case a new h5ad is being validated
-        self.reset()
 
         if h5ad_path:
             logger.debug("Reading the h5ad file...")
@@ -2049,6 +2120,8 @@ class Validator:
             self.h5ad_path = h5ad_path
             self._validate_encoding_version()
             logger.debug("Successfully read the h5ad file")
+            # Re-start errors in case a new h5ad is being validated
+            self.reset()
 
         # Fetches schema def for latest major schema version
         self._set_schema_def()
@@ -2079,7 +2152,7 @@ def validate(
     add_labels_file: str = None,
     ignore_labels: bool = False,
     verbose: bool = False,
-) -> (bool, list):
+) -> (bool, list, bool):
     from .write_labels import AnnDataLabelAppender
 
     """
@@ -2088,16 +2161,13 @@ def validate(
     :param Union[str, bytes, os.PathLike] h5ad_path: Path to h5ad file to validate
     :param str add_labels_file: Path to new h5ad file with ontology/gene labels added
 
-    :return (True, []) if successful validation, (False, [list_of_errors]) otherwise
+    :return (True, [], False) if successful validation, (False, [list_of_errors], False) otherwise;
+    last bool is for seurat convertability which is deprecated / unused
     :rtype tuple
     """
 
     # Perform validation
     start = datetime.now()
-    if verbose:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO, format="%(message)s")
     validator = Validator(
         ignore_labels=ignore_labels,
     )
@@ -2106,7 +2176,7 @@ def validate(
 
     # Stop if validation was unsuccessful
     if not validator.is_valid:
-        return False, validator.errors
+        return False, validator.errors, False
 
     if add_labels_file:
         label_start = datetime.now()
@@ -2117,6 +2187,6 @@ def validate(
             f"{writer.was_writing_successful}"
         )
 
-        return (validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors)
+        return (validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors, False)
 
-    return True, validator.errors
+    return True, validator.errors, False
