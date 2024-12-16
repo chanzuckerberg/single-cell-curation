@@ -71,7 +71,7 @@ def remap_deprecated_features(*, adata: ad.AnnData, remapped_features: Dict[str,
     return adata
 
 
-def get_matrix_format(matrix: Union[np.ndarray, sparse.spmatrix, DaskArray]) -> str:
+def get_matrix_format(matrix: DaskArray) -> str:
     """
     Given a matrix, returns the format as one of: csc, csr, coo, dense
     or unknown.
@@ -87,14 +87,11 @@ def get_matrix_format(matrix: Union[np.ndarray, sparse.spmatrix, DaskArray]) -> 
     # >>> return getattr(matrix, "format_str", "dense)
     #
     matrix_format = "unknown"
-    matrix_slice = matrix[0:1, 0:1]
-    if isinstance(matrix_slice, DaskArray):
-        matrix_slice = matrix_slice.compute()
+    matrix_slice = matrix[0:1, 0:1].compute()
     if isinstance(matrix_slice, sparse.spmatrix):
         matrix_format = matrix_slice.format
     elif isinstance(matrix_slice, np.ndarray):
         matrix_format = "dense"
-
     assert matrix_format in ["unknown", "csr", "csc", "coo", "dense"]
     return matrix_format
 
@@ -118,7 +115,16 @@ def getattr_anndata(adata: ad.AnnData, attr: str = None):
         return getattr(adata, attr)
 
 
-def read_backed(f):
+def read_backed(f: h5py.File, chunk_size: int = 10_000) -> ad.AnnData:
+    """
+    Read an AnnData object from a h5py.File object, reading in matrices (dense or sparse) as dask arrays. Does not
+    read full matrices into memory.
+
+    :param f: h5py.File object
+    :param chunk_size: size of chunks to read matrices in
+    :return: ad.AnnData object
+    """
+
     def callback(func, elem_name: str, elem, iospec):
         if "layers" in elem_name or ("X" in elem_name and "X_" not in elem_name):
             if iospec.encoding_type in (
@@ -126,11 +132,11 @@ def read_backed(f):
                 "csc_matrix",
             ):
                 n_vars = elem.attrs.get("shape")[1]
-                return read_elem_as_dask(elem, chunks=(10_000, n_vars))
+                return read_elem_as_dask(elem, chunks=(chunk_size, n_vars))
             elif iospec.encoding_type == "array" and len(elem.shape) > 1:
                 return read_elem_as_dask(elem)
             else:
-                func(elem)
+                return func(elem)
         else:
             return func(elem)
 
