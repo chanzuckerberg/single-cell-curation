@@ -1,10 +1,12 @@
 # flake8: noqa
+from pathlib import Path
+
 import pandas as pd
 import numpy
 import anndata
 import os
 from scipy import sparse
-from cellxgene_schema.utils import get_hash_digest_column
+from cellxgene_schema.utils import get_hash_digest_column, read_h5ad
 
 # -----------------------------------------------------------------#
 # General example information
@@ -628,3 +630,9 @@ adata_with_labels_unmigrated = anndata.AnnData(
     obsm={"X_umap": numpy.zeros([unmigrated_X.shape[0], 2])},
 )
 adata_with_labels_unmigrated.raw = adata_with_labels_unmigrated.copy()
+
+
+def read_anndata_for_testing(path: Path, adata: anndata.AnnData) -> anndata.AnnData:
+    adata_path = path.joinpath("adata.h5ad")
+    adata.write(filename=adata_path)
+    return read_h5ad(adata_path)

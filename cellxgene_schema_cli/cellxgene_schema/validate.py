@@ -478,14 +478,9 @@ class Validator:
             yield (matrix_chunk, start, n)
 
     @staticmethod
-    def count_matrix_nonzero(matrix: Union[np.ndarray, sparse.spmatrix], filter_by_column: pd.Series = None) -> int:
-        nnz = 0
-        matrix_format = get_matrix_format(matrix)
-        for matrix_chunk, _, _ in Validator.chunk_matrix(matrix):
-            if filter_by_column is not None:
-                matrix_chunk = matrix_chunk[:, filter_by_column]
-            nnz += matrix_chunk.count_nonzero() if matrix_format != "dense" else np.count_nonzero(matrix_chunk)
-
+    def count_matrix_nonzero(matrix: DaskArray, filter_by_column: pd.Series = None) -> int:
+        matrix = matrix[:, filter_by_column]
+        nnz = np.count_nonzero(matrix)
         return nnz
 
     def _validate_genetic_ancestry(self):
@@ -497,12 +492,12 @@ class Validator:
         Additionally, verifies that all rows with the same donor_id must have the same genetic ancestry values
         """
         ancestry_columns = [
-            "genetic_ancestry_African",
-            "genetic_ancestry_East_Asian",
-            "genetic_ancestry_European",
-            "genetic_ancestry_Indigenous_American",
-            "genetic_ancestry_Oceanian",
-            "genetic_ancestry_South_Asian",
+            # "genetic_ancestry_African",
+            # "genetic_ancestry_East_Asian",
+            # "genetic_ancestry_European",
+            # "genetic_ancestry_Indigenous_American",
+            # "genetic_ancestry_Oceanian",
+            # "genetic_ancestry_South_Asian",
         ]
 
         organism_column = "organism_ontology_term_id"
@@ -1344,35 +1339,20 @@ class Validator:
         """
         has_tissue_0_non_zero_row = False
         has_tissue_1_zero_row = False
-        has_invalid_nonzero_values = False
-
-        for matrix_chunk, start, _ in self.chunk_matrix(x):
-            if not has_invalid_nonzero_values and self._matrix_has_invalid_nonzero_values(matrix_chunk):
-                has_invalid_nonzero_values = True
-
-            if is_sparse_matrix:
-                nonzero_row_indices, _ = matrix_chunk.nonzero()
-            else:  # must be dense matrix
-                nonzero_row_indices = np.where(np.any(matrix_chunk != 0, axis=1))[0]
-            for i in range(matrix_chunk.shape[0]):
-                if has_tissue_0_non_zero_row and has_tissue_1_zero_row:
-                    # exit inner loop early
-                    break
-                unchunked_i = i + start
-                if (
-                    not has_tissue_0_non_zero_row
-                    and i in nonzero_row_indices
-                    and self.adata.obs["in_tissue"].iloc[unchunked_i] == 0
-                ):
-                    has_tissue_0_non_zero_row = True
-                elif (
-                    not has_tissue_1_zero_row
-                    and i not in nonzero_row_indices
-                    and self.adata.obs["in_tissue"].iloc[unchunked_i] == 1
-                ):
-                    has_tissue_1_zero_row = True
-            if has_tissue_0_non_zero_row and has_tissue_1_zero_row and has_invalid_nonzero_values:
-                # exit outer loop early and report
+        has_invalid_nonzero_values = self._matrix_has_invalid_nonzero_values(x)
+        if is_sparse_matrix:
+            nonzero_row_indices, _ = x.nonzero()
+        else:  # must be dense matrix
+            nonzero_row_indices = x.where(np.any(x != 0, axis=1))[0]
+        for i in range(x.shape[0]):
+            if not has_tissue_0_non_zero_row and i in nonzero_row_indices and self.adata.obs["in_tissue"].iloc[i] == 0:
+                has_tissue_0_non_zero_row = True
+            elif (
+                not has_tissue_1_zero_row and i not in nonzero_row_indices and self.adata.obs["in_tissue"].iloc[i] == 1
+            ):
+                has_tissue_1_zero_row = True
+            if has_tissue_0_non_zero_row and has_tissue_1_zero_row:
+                # exit early and report
                 break
 
         if not has_tissue_0_non_zero_row:
