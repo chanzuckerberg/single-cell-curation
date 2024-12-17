@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Dict, List, Mapping, Optional, Tuple, Union
 
 import anndata
+import dask
 import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
@@ -19,6 +20,8 @@ from . import gencode, schema
 from .utils import SPARSE_MATRIX_TYPES, get_matrix_format, getattr_anndata, is_ontological_descendant_of, read_h5ad
 
 logger = logging.getLogger(__name__)
+
+dask.config.set(scheduler="single-threaded")
 
 ONTOLOGY_PARSER = OntologyParser(schema_version="v5.3.0")
 
@@ -455,13 +458,15 @@ class Validator:
             nnz = matrix_chunk.count_nonzero() if is_sparse_matrix else np.count_nonzero(matrix_chunk)
             return np.array([nnz])
 
-        # Use map_blocks to handle mixed formats
         is_sparse_matrix = get_matrix_format(matrix) in SPARSE_MATRIX_TYPES
-        nonzeros = (
-            map_blocks(count_nonzeros, matrix, is_sparse_matrix, filter_by_column, drop_axis=1, dtype=int)
-            .compute()
-            .sum()
-        )
+        if len(matrix.chunks[0]) > 1:
+            nonzeros = (
+                map_blocks(count_nonzeros, matrix, is_sparse_matrix, filter_by_column, drop_axis=1, dtype=int)
+                .compute()
+                .sum()
+            )
+        else:
+            nonzeros = count_nonzeros(matrix.compute(), is_sparse_matrix, filter_by_column)[0]
         return nonzeros
 
     def _validate_genetic_ancestry(self):
@@ -1271,10 +1276,13 @@ class Validator:
 
             return np.array([np.array([chunk_has_row_of_zeros, chunk_has_invalid_nonzero_value], dtype=object)])
 
-        results = map_blocks(validate_chunk, x, is_sparse_matrix, dtype=object).compute()
-        # Combine the results from all chunks
-        has_row_of_zeros = any(chunk_result[0] for chunk_result in results)
-        has_invalid_nonzero_value = any(chunk_result[1] for chunk_result in results)
+        if len(x.chunks[0]) > 1:
+            results = map_blocks(validate_chunk, x, is_sparse_matrix, dtype=object).compute()
+            # Combine the results from all chunks
+            has_row_of_zeros = any(chunk_result[0] for chunk_result in results)
+            has_invalid_nonzero_value = any(chunk_result[1] for chunk_result in results)
+        else:
+            has_row_of_zeros, has_invalid_nonzero_value = validate_chunk(x.compute(), is_sparse_matrix)[0]
 
         if has_row_of_zeros:
             self._raw_layer_exists = False
@@ -1298,7 +1306,7 @@ class Validator:
             chunk_has_tissue_0_non_zero_row = False
             chunk_has_tissue_1_zero_row = False
             chunk_has_invalid_nonzero_values = False
-            chunk_start_row = block_info[0]["array-location"][0][0] if block_info.get(0) else 0
+            chunk_start_row = block_info[0]["array-location"][0][0] if (block_info and block_info.get(0)) else 0
             if self._matrix_has_invalid_nonzero_values(matrix_chunk):
                 chunk_has_invalid_nonzero_values = True
             if is_sparse_matrix:
@@ -1335,12 +1343,16 @@ class Validator:
                 ]
             )
 
-        results = map_blocks(validate_chunk, x, is_sparse_matrix, dtype=object).compute()
-
-        # Combine the results from all chunks
-        has_tissue_0_non_zero_row = any(chunk_result[0] for chunk_result in results)
-        has_tissue_1_zero_row = any(chunk_result[1] for chunk_result in results)
-        has_invalid_nonzero_values = any(chunk_result[2] for chunk_result in results)
+        if len(x.chunks[0]) > 1:
+            results = map_blocks(validate_chunk, x, is_sparse_matrix, dtype=object).compute()
+            # Combine the results from all chunks
+            has_tissue_0_non_zero_row = any(chunk_result[0] for chunk_result in results)
+            has_tissue_1_zero_row = any(chunk_result[1] for chunk_result in results)
+            has_invalid_nonzero_values = any(chunk_result[2] for chunk_result in results)
+        else:
+            has_tissue_0_non_zero_row, has_tissue_1_zero_row, has_invalid_nonzero_values = validate_chunk(
+                x.compute(), is_sparse_matrix
+            )[0]
 
         if not has_tissue_0_non_zero_row:
             self._raw_layer_exists = False
