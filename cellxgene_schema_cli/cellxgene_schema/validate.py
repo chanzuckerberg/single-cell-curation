@@ -449,24 +449,16 @@ class Validator:
         return
 
     @staticmethod
-    def count_matrix_nonzero(matrix: DaskArray, filter_by_column: pd.Series = None) -> int:
-        def count_nonzeros(
-            matrix_chunk: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool, filter_by_column: pd.Series
-        ) -> np.array:
-            if filter_by_column is not None:
-                matrix_chunk = matrix_chunk[:, filter_by_column]
+    def count_matrix_nonzero(matrix: DaskArray) -> int:
+        def count_nonzeros(matrix_chunk: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool) -> np.array:
             nnz = matrix_chunk.count_nonzero() if is_sparse_matrix else np.count_nonzero(matrix_chunk)
             return np.array([nnz])
 
         is_sparse_matrix = get_matrix_format(matrix) in SPARSE_MATRIX_TYPES
         if len(matrix.chunks[0]) > 1:
-            nonzeros = (
-                map_blocks(count_nonzeros, matrix, is_sparse_matrix, filter_by_column, drop_axis=1, dtype=int)
-                .compute()
-                .sum()
-            )
+            nonzeros = map_blocks(count_nonzeros, matrix, is_sparse_matrix, drop_axis=1, dtype=int).compute().sum()
         else:
-            nonzeros = count_nonzeros(matrix.compute(), is_sparse_matrix, filter_by_column)[0]
+            nonzeros = count_nonzeros(matrix.compute(), is_sparse_matrix)[0]
         return nonzeros
 
     def _validate_genetic_ancestry(self):
@@ -589,7 +581,7 @@ class Validator:
             return
 
         if sum(column) > 0:
-            n_nonzero = self.count_matrix_nonzero(self.adata.X, column)
+            n_nonzero = self.count_matrix_nonzero(self.adata.X[:, column])
 
             if n_nonzero > 0:
                 self.errors.append(
