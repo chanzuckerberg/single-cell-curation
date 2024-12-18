@@ -22,6 +22,7 @@ from cellxgene_schema.validate import (
     validate,
 )
 from cellxgene_schema.write_labels import AnnDataLabelAppender
+from dask.array import from_array
 from fixtures.examples_validate import adata as adata_valid
 from fixtures.examples_validate import (
     adata_minimal,
@@ -370,13 +371,15 @@ class TestCheckSpatial:
         validator.validate_adata()
         assert not validator.errors
 
+    @mock.patch("cellxgene_schema.validate.VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE", 2)
     def test__validate_from_file(self):
-        """Testing compatibility with SparseDatset types in Anndata"""
+        """Testing compatibility with SparseDataset types in Anndata"""
         validator: Validator = Validator()
         validator._set_schema_def()
+        validator._visium_and_is_single_true_matrix_size = 2
         with tempfile.TemporaryDirectory() as temp_dir:
-            file_path = os.path.join(temp_dir, "slide_seqv2.h5ad")
-            adata_slide_seqv2.write_h5ad(file_path)
+            file_path = os.path.join(temp_dir, "visium.h5ad")
+            adata_visium.write_h5ad(file_path)
             # Confirm spatial is valid.
             validator.validate_adata(file_path)
         assert not validator.errors
@@ -386,7 +389,7 @@ class TestCheckSpatial:
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
         validator._visium_and_is_single_true_matrix_size = 2
-        validator.adata.X = validator.adata.X.toarray()
+        validator.adata.X = from_array(validator.adata.X.compute().toarray())
         validator.adata.raw = validator.adata.copy()
         validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
         # Confirm spatial is valid.
@@ -1251,15 +1254,15 @@ class TestIsRaw:
         "data, matrix_format, expected_result",
         [
             # Test case with integer values in a dense matrix
-            (np.array([[1, 2, 3], [4, 5, 6]], dtype=np.float32), "dense", True),
+            (from_array(np.array([[1, 2, 3], [4, 5, 6]], dtype=np.float32)), "dense", True),
             # Test case with float values in a dense matrix
-            (np.array([[1.1, 2.2, 3.3], [4.4, 5.5, 6.6]]), "dense", False),
+            (from_array(np.array([[1.1, 2.2, 3.3], [4.4, 5.5, 6.6]])), "dense", False),
             # Test case with integer values in a sparse matrix (CSR format)
-            (sparse.csr_matrix([[1, 0, 3], [0, 5, 0]], dtype=np.float32), "csr", True),
+            (from_array(sparse.csr_matrix([[1, 0, 3], [0, 5, 0]], dtype=np.float32)), "csr", True),
             # Test case with float values in a sparse matrix (CSC format)
-            (sparse.csc_matrix([[1.1, 0, 3.3], [0, 5.5, 0]]), "csc", False),
+            (from_array(sparse.csc_matrix([[1.1, 0, 3.3], [0, 5.5, 0]])), "csc", False),
             # Test case with mixed integer and float values in a dense matrix
-            (np.array([[1, 2.2, 3], [4.4, 5, 6.6]]), "dense", False),
+            (from_array(np.array([[1, 2.2, 3], [4.4, 5, 6.6]])), "dense", False),
         ],
     )
     def test_has_valid_raw(self, data, matrix_format, expected_result):

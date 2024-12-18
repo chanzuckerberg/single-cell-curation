@@ -1,5 +1,4 @@
 import logging
-import math
 import numbers
 import os
 import re
@@ -7,18 +6,22 @@ from datetime import datetime
 from typing import Dict, List, Mapping, Optional, Tuple, Union
 
 import anndata
+import dask
 import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 import scipy
-from anndata._core.sparse_dataset import SparseDataset
+from anndata.compat import DaskArray
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
+from dask.array import map_blocks
 from scipy import sparse
 
 from . import gencode, schema
 from .utils import SPARSE_MATRIX_TYPES, get_matrix_format, getattr_anndata, is_ontological_descendant_of, read_h5ad
 
 logger = logging.getLogger(__name__)
+
+dask.config.set(scheduler="single-threaded")
 
 ONTOLOGY_PARSER = OntologyParser(schema_version="v5.3.0")
 
@@ -77,9 +80,6 @@ class Validator:
         self.is_visium_and_is_single_true = None
         self._hires_max_dimension_size = hi_res_size
         self._visium_and_is_single_true_matrix_size = true_mat_size
-
-        # Matrix (e.g., X, raw.X, ...) number non-zero cache
-        self.number_non_zero = dict()
 
     @property
     def adata(self) -> anndata.AnnData:
@@ -449,43 +449,17 @@ class Validator:
         return
 
     @staticmethod
-    def _chunk_matrix(
-        matrix: Union[np.ndarray, sparse.spmatrix],
-        obs_chunk_size: Optional[int] = 10_000,
-    ):
-        """
-        Iterator which chunks the _named_ or _specified_ matrix by the
-        first (obs) dimension
+    def count_matrix_nonzero(matrix: DaskArray) -> int:
+        def count_nonzeros(matrix_chunk: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool) -> np.array:
+            nnz = matrix_chunk.count_nonzero() if is_sparse_matrix else np.count_nonzero(matrix_chunk)
+            return np.array([nnz])
 
-        The parameter type restrictions are strictly for ensuring that the
-        AnnData read fast-path is used (as of AnnData 0.8.0).
-
-        Iterator produces a sequence of tuples, each containing
-        (chunk, start, end)
-        """
-        start = 0
-        n = matrix.shape[0]
-        for i in range(int(n // obs_chunk_size)):
-            logger.debug(f"_chunk_matrix [{i} of {math.ceil(n / obs_chunk_size)}]")
-            end = start + obs_chunk_size
-            yield (matrix[start:end], start, end)
-            start = end
-        if start < n:
-            yield (matrix[start:n], start, n)
-
-    def _count_matrix_nonzero(self, matrix_name: str, matrix: Union[np.ndarray, sparse.spmatrix]) -> int:
-        if matrix_name in self.number_non_zero:
-            return self.number_non_zero[matrix_name]
-
-        logger.debug(f"Counting non-zero values in {matrix_name}")
-
-        nnz = 0
-        matrix_format = get_matrix_format(self.adata, matrix)
-        for matrix_chunk, _, _ in self._chunk_matrix(matrix):
-            nnz += matrix_chunk.count_nonzero() if matrix_format != "dense" else np.count_nonzero(matrix_chunk)
-
-        self.number_non_zero[matrix_name] = nnz
-        return nnz
+        is_sparse_matrix = get_matrix_format(matrix) in SPARSE_MATRIX_TYPES
+        if len(matrix.chunks[0]) > 1:
+            nonzeros = map_blocks(count_nonzeros, matrix, is_sparse_matrix, drop_axis=1, dtype=int).compute().sum()
+        else:
+            nonzeros = count_nonzeros(matrix.compute(), is_sparse_matrix)[0]
+        return nonzeros
 
     def _validate_genetic_ancestry(self):
         """
@@ -607,20 +581,7 @@ class Validator:
             return
 
         if sum(column) > 0:
-            n_nonzero = 0
-
-            X_format = get_matrix_format(self.adata, self.adata.X)
-            if X_format in SPARSE_MATRIX_TYPES:
-                n_nonzero = self.adata.X[:, column].count_nonzero()
-
-            elif X_format == "dense":
-                n_nonzero = np.count_nonzero(self.adata.X[:, column])
-
-            else:
-                self.errors.append(
-                    f"X matrix is of type {type(self.adata.X)}, validation of 'feature_is_filtered' "
-                    f"cannot be completed."
-                )
+            n_nonzero = self.count_matrix_nonzero(self.adata.X[:, column])
 
             if n_nonzero > 0:
                 self.errors.append(
@@ -912,8 +873,7 @@ class Validator:
         for column_name in df.columns:
             column = df[column_name]
             if column.dtype.name != "category":
-                # Check for columns with mixed values, which is not supported by anndata 0.8.0
-                # TODO: check if this can be removed after upgading to anndata 0.10.0
+                # Check for columns with mixed values, which is not supported by anndata
                 value_types = {type(x) for x in column.values}
                 if len(value_types) != 1:
                     self.errors.append(
@@ -929,16 +889,14 @@ class Validator:
                                 f"zero observations. These categories will be removed when `--add-labels` flag is present."
                             )
                 categorical_types = {type(x) for x in column.dtype.categories.values}
-                # Check for columns that have illegal categories, which are not supported by anndata 0.8.0
-                # TODO: check if this can be removed after upgading to anndata 0.10.0
+                # Check for columns that have illegal categories, which are not supported by anndata
                 blocked_categorical_types = {bool}
                 illegal_categorical_types = categorical_types & blocked_categorical_types
                 if illegal_categorical_types:
                     self.errors.append(
                         f"Column '{column_name}' in dataframe '{df_name}' contains {illegal_categorical_types=}."
                     )
-                # Check for categorical column has mixed types, which is not supported by anndata 0.8.0
-                # TODO: check if this can be removed after upgading to anndata 0.10.0
+                # Check for categorical column has mixed types, which is not supported by anndata
                 categorical_types = {type(x) for x in column.dtype.categories.values}
                 if len(categorical_types) > 1:
                     self.errors.append(
@@ -1060,7 +1018,7 @@ class Validator:
 
         # Check sparsity
         for x, x_name in to_validate:
-            matrix_format = get_matrix_format(self.adata, x)
+            matrix_format = get_matrix_format(x)
             if matrix_format == "csr":
                 continue
             assert matrix_format != "unknown"
@@ -1072,7 +1030,7 @@ class Validator:
             # function is to recommend CSR for _any_ matrix with sparsity beyond
             # a given limit.
 
-            nnz = self._count_matrix_nonzero(x_name, x)
+            nnz = self.count_matrix_nonzero(x)
             sparsity = 1 - nnz / np.prod(x.shape)
             if sparsity > max_sparsity:
                 self.warnings.append(
@@ -1259,7 +1217,7 @@ class Validator:
                 self.errors.append("Raw matrix values must have type numpy.float32.")
                 return self._raw_layer_exists
 
-            matrix_format = get_matrix_format(self.adata, x)
+            matrix_format = get_matrix_format(x)
             assert matrix_format != "unknown"
             self._raw_layer_exists = True
             is_sparse_matrix = matrix_format in SPARSE_MATRIX_TYPES
@@ -1285,31 +1243,38 @@ class Validator:
 
         return self._raw_layer_exists
 
-    def _validate_raw_data(self, x: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool):
+    def _validate_raw_data(self, x: DaskArray, is_sparse_matrix: bool):
         """
         Validates the data values in the raw matrix. Matrix size is chunked for large matrices.
 
         :param x: raw matrix
         :param is_sparse_matrix: bool indicating if the matrix is sparse {csc, csr, coo}
         """
-        has_row_of_zeros = False
-        has_invalid_nonzero_value = False
-        for matrix_chunk, _, _ in self._chunk_matrix(x):
-            if not has_row_of_zeros:
+
+        def validate_chunk(matrix_chunk: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool) -> np.array:
+            chunk_has_row_of_zeros = False
+            chunk_has_invalid_nonzero_value = False
+            if not chunk_has_row_of_zeros:
                 if is_sparse_matrix:
                     row_indices, _ = matrix_chunk.nonzero()
                     if len(set(row_indices)) != matrix_chunk.shape[0]:
-                        has_row_of_zeros = True
+                        chunk_has_row_of_zeros = True
                 # else, must be dense matrix, confirm that all rows have at least 1 nonzero value
                 elif not all(np.apply_along_axis(np.any, axis=1, arr=matrix_chunk)):
-                    has_row_of_zeros = True
+                    chunk_has_row_of_zeros = True
 
-            if not has_invalid_nonzero_value and self._matrix_has_invalid_nonzero_values(matrix_chunk):
-                has_invalid_nonzero_value = True
+            if not chunk_has_invalid_nonzero_value and self._matrix_has_invalid_nonzero_values(matrix_chunk):
+                chunk_has_invalid_nonzero_value = True
 
-            if has_row_of_zeros and has_invalid_nonzero_value:
-                # Fail fast, exit loop and report
-                break
+            return np.array([np.array([chunk_has_row_of_zeros, chunk_has_invalid_nonzero_value], dtype=object)])
+
+        if len(x.chunks[0]) > 1:
+            results = map_blocks(validate_chunk, x, is_sparse_matrix, dtype=object).compute()
+            # Combine the results from all chunks
+            has_row_of_zeros = any(chunk_result[0] for chunk_result in results)
+            has_invalid_nonzero_value = any(chunk_result[1] for chunk_result in results)
+        else:
+            has_row_of_zeros, has_invalid_nonzero_value = validate_chunk(x.compute(), is_sparse_matrix)[0]
 
         if has_row_of_zeros:
             self._raw_layer_exists = False
@@ -1318,34 +1283,68 @@ class Validator:
             self._raw_layer_exists = False
             self.errors.append("All non-zero values in raw matrix must be positive integers of type numpy.float32.")
 
-    def _validate_raw_data_with_in_tissue_0(
-        self, x: Union[np.ndarray, sparse.spmatrix, SparseDataset], is_sparse_matrix: bool
-    ):
+    def _validate_raw_data_with_in_tissue_0(self, x: DaskArray, is_sparse_matrix: bool):
         """
         Special case validation checks for Visium data with is_single = True and in_tissue column in obs where in_tissue
-        has at least one value 0. Static matrix size of 4992 rows, so chunking is not required.
+        has at least one value 0.
 
         :param x: raw matrix
-        :param is_sparse_matrix: bool indicating if the matrix is sparse {csc, csr, coo}
+        :param is_sparse_matrix: bool indicating if the matrix is sparse
         """
-        has_tissue_0_non_zero_row = False
-        has_tissue_1_zero_row = False
-        if isinstance(x, SparseDataset):
-            x = x.to_memory()
-        if is_sparse_matrix:
-            nonzero_row_indices, _ = x.nonzero()
-        else:  # must be dense matrix
-            nonzero_row_indices = np.where(np.any(x != 0, axis=1))[0]
-        for i in range(x.shape[0]):
-            if not has_tissue_0_non_zero_row and i in nonzero_row_indices and self.adata.obs["in_tissue"].iloc[i] == 0:
-                has_tissue_0_non_zero_row = True
-            elif (
-                not has_tissue_1_zero_row and i not in nonzero_row_indices and self.adata.obs["in_tissue"].iloc[i] == 1
-            ):
-                has_tissue_1_zero_row = True
-            if has_tissue_0_non_zero_row and has_tissue_1_zero_row:
-                # exit early and report
-                break
+
+        def validate_chunk(
+            matrix_chunk: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool, block_info: dict = None
+        ) -> np.array:
+            chunk_has_tissue_0_non_zero_row = False
+            chunk_has_tissue_1_zero_row = False
+            chunk_has_invalid_nonzero_values = False
+            chunk_start_row = block_info[0]["array-location"][0][0] if (block_info and block_info.get(0)) else 0
+            if self._matrix_has_invalid_nonzero_values(matrix_chunk):
+                chunk_has_invalid_nonzero_values = True
+            if is_sparse_matrix:
+                nonzero_row_indices, _ = matrix_chunk.nonzero()
+            else:  # must be dense matrix
+                nonzero_row_indices = np.where(np.any(matrix_chunk != 0, axis=1))[0]
+            for i in range(matrix_chunk.shape[0]):
+                if chunk_has_tissue_0_non_zero_row and chunk_has_tissue_1_zero_row:
+                    # exit inner loop early
+                    break
+                unchunked_i = i + chunk_start_row
+                if (
+                    not chunk_has_tissue_0_non_zero_row
+                    and i in nonzero_row_indices
+                    and self.adata.obs["in_tissue"].iloc[unchunked_i] == 0
+                ):
+                    chunk_has_tissue_0_non_zero_row = True
+                elif (
+                    not chunk_has_tissue_1_zero_row
+                    and i not in nonzero_row_indices
+                    and self.adata.obs["in_tissue"].iloc[unchunked_i] == 1
+                ):
+                    chunk_has_tissue_1_zero_row = True
+            return np.array(
+                [
+                    np.array(
+                        [
+                            chunk_has_tissue_0_non_zero_row,
+                            chunk_has_tissue_1_zero_row,
+                            chunk_has_invalid_nonzero_values,
+                        ],
+                        dtype=object,
+                    )
+                ]
+            )
+
+        if len(x.chunks[0]) > 1:
+            results = map_blocks(validate_chunk, x, is_sparse_matrix, dtype=object).compute()
+            # Combine the results from all chunks
+            has_tissue_0_non_zero_row = any(chunk_result[0] for chunk_result in results)
+            has_tissue_1_zero_row = any(chunk_result[1] for chunk_result in results)
+            has_invalid_nonzero_values = any(chunk_result[2] for chunk_result in results)
+        else:
+            has_tissue_0_non_zero_row, has_tissue_1_zero_row, has_invalid_nonzero_values = validate_chunk(
+                x.compute(), is_sparse_matrix
+            )[0]
 
         if not has_tissue_0_non_zero_row:
             self._raw_layer_exists = False
@@ -1359,7 +1358,7 @@ class Validator:
                 "Each observation with obs['in_tissue'] == 1 must have at least one "
                 "non-zero value in its row in the raw matrix."
             )
-        if self._matrix_has_invalid_nonzero_values(x):
+        if has_invalid_nonzero_values:
             self._raw_layer_exists = False
             self.errors.append("All non-zero values in raw matrix must be positive integers of type numpy.float32.")
 
