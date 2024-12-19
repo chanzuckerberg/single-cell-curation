@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 dask.config.set(scheduler="single-threaded")
 
-ONTOLOGY_PARSER = OntologyParser(schema_version="v5.3.0")
+ONTOLOGY_PARSER = OntologyParser(schema_version="v5.2.0")
 
 ASSAY_VISIUM = "EFO:0010961"
 ASSAY_VISIUM_11M = "EFO:0022860"
