@@ -1732,7 +1732,6 @@ class TestObs:
 
         # Second row should have identical donor id + genetic ancestry values, so this should pass validation
         validator.adata.obs.iloc[1] = validator.adata.obs.iloc[0].values
-
         validator.validate_adata()
         assert validator.errors == []
 
