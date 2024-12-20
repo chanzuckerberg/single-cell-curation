@@ -134,7 +134,8 @@ def read_backed(f: h5py.File, chunk_size: int = 10_000) -> ad.AnnData:
                 n_vars = elem.attrs.get("shape")[1]
                 return read_elem_as_dask(elem, chunks=(chunk_size, n_vars))
             elif iospec.encoding_type == "array" and len(elem.shape) > 1:
-                return read_elem_as_dask(elem)
+                n_vars = elem.shape[1]
+                return read_elem_as_dask(elem, chunks=(chunk_size, n_vars))
             else:
                 return func(elem)
         else:
