@@ -146,7 +146,7 @@ def read_backed(f: h5py.File, chunk_size: int) -> ad.AnnData:
     return adata
 
 
-def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike], chunk_size: int = 10_000) -> ad.AnnData:
+def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike], chunk_size: int = 5000) -> ad.AnnData:
     """
     Reads h5ad into adata
     :params Union[str, bytes, os.PathLike] h5ad_path: path to h5ad to read

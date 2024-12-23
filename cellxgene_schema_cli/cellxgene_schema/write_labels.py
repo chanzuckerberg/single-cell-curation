@@ -2,7 +2,6 @@ import logging
 import traceback
 from typing import Dict, List, Optional
 
-import dask
 import pandas as pd
 from cellxgene_schema import gencode
 from cellxgene_schema.env import SCHEMA_REFERENCE_BASE_URL, SCHEMA_REFERENCE_FILE_NAME
@@ -382,8 +381,7 @@ class AnnDataLabelAppender:
 
         # Write file
         try:
-            with dask.config.set(scheduler="single-threaded"):
-                self.adata.write_h5ad(add_labels_file, compression="gzip")
+            self.adata.write_h5ad(add_labels_file, compression="gzip")
         except Exception as e:
             tb = traceback.format_exc()
             self.errors.append((f"Writing h5ad was unsuccessful, got exception '{e}'.", tb))
