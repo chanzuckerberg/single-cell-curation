@@ -115,7 +115,7 @@ def getattr_anndata(adata: ad.AnnData, attr: str = None):
         return getattr(adata, attr)
 
 
-def read_backed(f: h5py.File, chunk_size: int = 10_000) -> ad.AnnData:
+def read_backed(f: h5py.File, chunk_size: int) -> ad.AnnData:
     """
     Read an AnnData object from a h5py.File object, reading in matrices (dense or sparse) as dask arrays. Does not
     read full matrices into memory.
@@ -146,7 +146,7 @@ def read_backed(f: h5py.File, chunk_size: int = 10_000) -> ad.AnnData:
     return adata
 
 
-def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
+def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike], chunk_size: int = 10_000) -> ad.AnnData:
     """
     Reads h5ad into adata
     :params Union[str, bytes, os.PathLike] h5ad_path: path to h5ad to read
@@ -155,7 +155,7 @@ def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
     """
     try:
         f = h5py.File(h5ad_path)
-        adata = read_backed(f)
+        adata = read_backed(f, chunk_size)
 
         # This code, and AnnData in general, is optimized for row access.
         # Running backed, with CSC, is prohibitively slow. Read the entire
