@@ -1820,7 +1820,7 @@ class TestVar:
         for i in range(X.shape[0]):
             X[i, 0] = 0
         X[0, 0] = 1
-
+        validator.adata.X = X.map_blocks(lambda x: (x.eliminate_zeros() or x), dtype=X.dtype, meta=X._meta)
         validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == [

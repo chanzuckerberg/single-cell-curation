@@ -451,7 +451,7 @@ class Validator:
     @staticmethod
     def count_matrix_nonzero(matrix: DaskArray) -> int:
         def count_nonzeros(matrix_chunk: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool) -> np.array:
-            nnz = matrix_chunk.count_nonzero() if is_sparse_matrix else np.count_nonzero(matrix_chunk)
+            nnz = matrix_chunk.nnz if is_sparse_matrix else np.count_nonzero(matrix_chunk)
             return np.array([nnz])
 
         is_sparse_matrix = get_matrix_format(matrix) in SPARSE_MATRIX_TYPES
