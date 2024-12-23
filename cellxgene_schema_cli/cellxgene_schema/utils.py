@@ -126,7 +126,7 @@ def read_backed(f: h5py.File, chunk_size: int = 10_000) -> ad.AnnData:
     """
 
     def callback(func, elem_name: str, elem, iospec):
-        if "layers" in elem_name or elem_name == "/X" or elem_name == "/raw/X":
+        if "/layers" in elem_name or elem_name == "/X" or elem_name == "/raw/X":
             if iospec.encoding_type in (
                 "csr_matrix",
                 "csc_matrix",
