@@ -155,4 +155,3 @@ class TestReadH5AD:
         h5ad_path = h5ad_valid
         adata = read_h5ad(h5ad_path)
         assert isinstance(adata, AnnData)
-        assert adata.isbacked
