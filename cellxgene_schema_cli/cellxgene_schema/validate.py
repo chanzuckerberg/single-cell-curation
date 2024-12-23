@@ -21,8 +21,6 @@ from .utils import SPARSE_MATRIX_TYPES, get_matrix_format, getattr_anndata, is_o
 
 logger = logging.getLogger(__name__)
 
-dask.config.set(scheduler="single-threaded")
-
 ONTOLOGY_PARSER = OntologyParser(schema_version="v5.3.0")
 
 ASSAY_VISIUM = "EFO:0010961"
@@ -2112,7 +2110,7 @@ def validate(
     h5ad_path: Union[str, bytes, os.PathLike],
     add_labels_file: str = None,
     ignore_labels: bool = False,
-    verbose: bool = False,
+    n_workers: int = 1,
 ) -> (bool, list, bool):
     from .write_labels import AnnDataLabelAppender
 
@@ -2132,22 +2130,30 @@ def validate(
     validator = Validator(
         ignore_labels=ignore_labels,
     )
-    validator.validate_adata(h5ad_path)
-    logger.info(f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}")
+    with dask.config.set(
+        {
+            "num_workers": n_workers,
+            "threads_per_worker": 1,
+            "distributed.worker.memory.limit": "6GB",
+            "scheduler": "threads",
+        }
+    ):
+        validator.validate_adata(h5ad_path)
+        logger.info(f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}")
 
-    # Stop if validation was unsuccessful
-    if not validator.is_valid:
-        return False, validator.errors, False
+        # Stop if validation was unsuccessful
+        if not validator.is_valid:
+            return False, validator.errors, False
 
-    if add_labels_file:
-        label_start = datetime.now()
-        writer = AnnDataLabelAppender(validator)
-        writer.write_labels(add_labels_file)
-        logger.info(
-            f"H5AD label writing complete in {datetime.now() - label_start}, was_writing_successful: "
-            f"{writer.was_writing_successful}"
-        )
+        if add_labels_file:
+            label_start = datetime.now()
+            writer = AnnDataLabelAppender(validator)
+            writer.write_labels(add_labels_file)
+            logger.info(
+                f"H5AD label writing complete in {datetime.now() - label_start}, was_writing_successful: "
+                f"{writer.was_writing_successful}"
+            )
 
-        return (validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors, False)
+            return (validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors, False)
 
-    return True, validator.errors, False
+        return True, validator.errors, False
