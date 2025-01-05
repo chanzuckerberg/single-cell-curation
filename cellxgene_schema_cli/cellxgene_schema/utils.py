@@ -166,7 +166,8 @@ def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike], chunk_size: int = 5000)
             logger.warning("Matrices are in CSC format; loading entire dataset into memory.")
             adata = adata.to_memory()
 
-    except (OSError, TypeError):
+    except (OSError, TypeError) as e:
+        logger.error(e)
         logger.info(f"Unable to open '{h5ad_path}' with AnnData")
         sys.exit(1)
 
