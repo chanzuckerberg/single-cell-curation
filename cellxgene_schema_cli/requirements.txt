@@ -6,7 +6,7 @@ dask[array,dataframe,distributed]==2024.12.0
 numpy<2
 pandas>2,<3
 PyYAML<7
-scipy<2
+scipy<1.15
 semver<4
 xxhash<4
 matplotlib<4
