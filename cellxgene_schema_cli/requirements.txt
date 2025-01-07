@@ -5,7 +5,7 @@ Cython<4
 numpy<3
 pandas>2,<3
 PyYAML<7
-scipy==1.14.1 # broken in 1.15.0 see https://github.com/chanzuckerberg/single-cell-curation/issues/1165
+scipy<1.15 # broken in 1.15.0 see https://github.com/chanzuckerberg/single-cell-curation/issues/1165
 semver<4
 xxhash<4
 matplotlib<4
