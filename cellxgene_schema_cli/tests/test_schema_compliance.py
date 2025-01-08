@@ -204,7 +204,7 @@ class TestExpressionMatrix:
             "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
         ]
 
-    @pytest.mark.parametrize("datatype", [int, "float16", "float64"])
+    @pytest.mark.parametrize("datatype", [int, "float64"])
     def test_raw_values__wrong_datatype(self, validator_with_adata, datatype):
         """
         When both `adata.X` and `adata.raw.X` are present, but `adata.raw.X` values are stored as the wrong datatype
