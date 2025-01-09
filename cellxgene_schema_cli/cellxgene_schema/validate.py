@@ -875,7 +875,8 @@ class Validator:
                 value_types = {type(x) for x in column.values}
                 if len(value_types) != 1:
                     self.errors.append(
-                        f"Column '{column_name}' in dataframe '{df_name}' cannot contain mixed types. Found {value_types}."
+                        f"Column '{column_name}' in dataframe '{df_name}' cannot contain mixed types. Found "
+                        f"{value_types}."
                     )
             else:
                 # Check for columns that have a category defined 0 times (obs only)
@@ -883,8 +884,10 @@ class Validator:
                     for category in column.dtype.categories:
                         if category not in column.values:
                             self.warnings.append(
-                                f"Column '{column_name}' in dataframe '{df_name}' contains a category '{category}' with "
-                                f"zero observations. These categories will be removed when `--add-labels` flag is present."
+                                f"Column '{column_name}' in dataframe '{df_name}' contains a category '{category}' "
+                                f"with "
+                                f"zero observations. These categories will be removed when `--add-labels` flag is "
+                                f"present."
                             )
                 categorical_types = {type(x) for x in column.dtype.categories.values}
                 # Check for columns that have illegal categories, which are not supported by anndata
@@ -898,7 +901,8 @@ class Validator:
                 categorical_types = {type(x) for x in column.dtype.categories.values}
                 if len(categorical_types) > 1:
                     self.errors.append(
-                        f"Column '{column_name}' in dataframe '{df_name}' contains {len(categorical_types)} categorical types. "
+                        f"Column '{column_name}' in dataframe '{df_name}' contains {len(categorical_types)} "
+                        f"categorical types. "
                         f"Only one type is allowed."
                     )
 
@@ -983,7 +987,8 @@ class Validator:
                 # 4. Verify that we have at least as many colors as unique values in the corresponding categorical field
                 if len(value) < obs_unique_values:
                     self.errors.append(
-                        f"Annotated categorical field {key.replace('_colors', '')} must have at least {obs_unique_values} color options "
+                        f"Annotated categorical field {key.replace('_colors', '')} must have at least "
+                        f"{obs_unique_values} color options "
                         f"in uns[{key}]. Found: {value}"
                     )
                 # 5. Verify that either all colors are hex OR all colors are CSS4 named colors strings
@@ -1065,7 +1070,8 @@ class Validator:
                     self.errors.append(f"Embedding key in 'adata.obsm' {key} cannot be used.")
                 elif not re.match(regex_pattern, key[2:]):
                     self.errors.append(
-                        f"Suffix for embedding key in 'adata.obsm' {key} does not match the regex pattern {regex_pattern}."
+                        f"Suffix for embedding key in 'adata.obsm' {key} does not match the regex pattern "
+                        f"{regex_pattern}."
                     )
             elif not key_is_spatial:
                 if not re.match(regex_pattern, key):
@@ -1088,22 +1094,26 @@ class Validator:
 
             if len(value.shape) < 2:
                 self.errors.append(
-                    f"All embeddings must at least two dimensions. 'adata.obsm['{key}']' has a shape length of '{len(value.shape)}'."
+                    f"All embeddings must at least two dimensions. 'adata.obsm['{key}']' has a shape length of '"
+                    f"{len(value.shape)}'."
                 )
             else:
                 if value.shape[0] != self.adata.n_obs:
                     self.errors.append(
-                        f"All embeddings must have as many rows as cells. 'adata.obsm['{key}']' has rows='{value.shape[0]}'."
+                        f"All embeddings must have as many rows as cells. 'adata.obsm['{key}']' has rows='"
+                        f"{value.shape[0]}'."
                     )
 
                 if unknown_key and value.shape[1] < 1:
                     self.errors.append(
-                        f"All unspecified embeddings must have at least one column. 'adata.obsm['{key}']' has columns='{value.shape[1]}'."
+                        f"All unspecified embeddings must have at least one column. 'adata.obsm['{key}']' has "
+                        f"columns='{value.shape[1]}'."
                     )
 
                 if not unknown_key and value.shape[1] < 2:
                     self.errors.append(
-                        f"All 'X_' and 'spatial' embeddings must have at least two columns. 'adata.obsm['{key}']' has columns='{value.shape[1]}'."
+                        f"All 'X_' and 'spatial' embeddings must have at least two columns. 'adata.obsm['{key}']' has "
+                        f"columns='{value.shape[1]}'."
                     )
 
             if not (np.issubdtype(value.dtype, np.integer) or np.issubdtype(value.dtype, np.floating)):
@@ -2133,7 +2143,13 @@ def validate(
         ignore_labels=ignore_labels,
     )
 
-    def run():
+    with dask.config.set(
+        {
+            "thread_per_worker": 2,
+            "num_workers": n_workers,
+            "scheduler": "threads" if n_workers == 1 else "processes",
+        }
+    ):
         validator.validate_adata(h5ad_path)
         logger.info(f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}")
 
@@ -2153,24 +2169,3 @@ def validate(
             return (validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors, False)
 
         return True, validator.errors, False
-
-    if n_workers > 1:
-        with dask.config.set(
-            {
-                "num_workers": n_workers,
-                "threads_per_worker": 2,
-                "scheduler": "processes",
-            }
-        ):
-            return run()
-
-    else:
-        with dask.config.set(
-            {
-                "num_workers": 1,
-                "threads_per_worker": 2,
-                "distributed.worker.memory.limit": "6GB",
-                "scheduler": "threads",
-            }
-        ):
-            return run()
