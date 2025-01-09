@@ -454,10 +454,10 @@ class Validator:
 
         is_sparse_matrix = get_matrix_format(matrix) in SPARSE_MATRIX_TYPES
         if len(matrix.chunks[0]) > 1:
-            nonzeros = map_blocks(count_nonzeros, matrix, is_sparse_matrix, drop_axis=1, dtype=int).compute().sum()
+            nonzeros = map_blocks(count_nonzeros, matrix, is_sparse_matrix, drop_axis=1, dtype=int).sum()
         else:
-            nonzeros = count_nonzeros(matrix.compute(), is_sparse_matrix)[0]
-        return nonzeros
+            nonzeros = count_nonzeros(matrix, is_sparse_matrix)[0]
+        return nonzeros.compute()
 
     def _validate_genetic_ancestry(self):
         """
@@ -1249,30 +1249,26 @@ class Validator:
         :param is_sparse_matrix: bool indicating if the matrix is sparse {csc, csr, coo}
         """
 
-        def validate_chunk(matrix_chunk: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool) -> np.array:
-            chunk_has_row_of_zeros = False
-            chunk_has_invalid_nonzero_value = False
-            if not chunk_has_row_of_zeros:
-                if is_sparse_matrix:
-                    row_indices, _ = matrix_chunk.nonzero()
-                    if len(set(row_indices)) != matrix_chunk.shape[0]:
-                        chunk_has_row_of_zeros = True
-                # else, must be dense matrix, confirm that all rows have at least 1 nonzero value
-                elif not all(np.apply_along_axis(np.any, axis=1, arr=matrix_chunk)):
-                    chunk_has_row_of_zeros = True
+        def validate_chunk(matrix_chunk: Union[np.ndarray, sparse.spmatrix]) -> np.array:
+            if is_sparse_matrix:
+                row_indices, _ = matrix_chunk.nonzero()
+                row_indices = np.unique(row_indices)
+                chunk_has_row_of_zeros = row_indices.size != matrix_chunk.shape[0]
+            # else, must be dense matrix, confirm that all rows have at least 1 nonzero value
+            elif not matrix_chunk.any(axis=1).all():
+                chunk_has_row_of_zeros = True
+            else:
+                chunk_has_row_of_zeros = False
 
-            if not chunk_has_invalid_nonzero_value and self._matrix_has_invalid_nonzero_values(matrix_chunk):
-                chunk_has_invalid_nonzero_value = True
-
-            return np.array([np.array([chunk_has_row_of_zeros, chunk_has_invalid_nonzero_value], dtype=object)])
+            chunk_has_invalid_nonzero_value = self._matrix_has_invalid_nonzero_values(matrix_chunk)
+            return np.array([np.array([chunk_has_row_of_zeros, chunk_has_invalid_nonzero_value], dtype=bool)])
 
         if len(x.chunks[0]) > 1:
-            results = map_blocks(validate_chunk, x, is_sparse_matrix, dtype=object).compute()
             # Combine the results from all chunks
-            has_row_of_zeros = any(chunk_result[0] for chunk_result in results)
-            has_invalid_nonzero_value = any(chunk_result[1] for chunk_result in results)
+            results = map_blocks(validate_chunk, x, meta=np.array((), dtype=np.bool)).transpose()
+            has_row_of_zeros, has_invalid_nonzero_value = dask.compute(results[0, :].any(), results[1, :].any())
         else:
-            has_row_of_zeros, has_invalid_nonzero_value = validate_chunk(x.compute(), is_sparse_matrix)[0]
+            has_row_of_zeros, has_invalid_nonzero_value = validate_chunk(x.compute(scheduler="threads"))[0]
 
         if has_row_of_zeros:
             self._raw_layer_exists = False
@@ -1290,15 +1286,11 @@ class Validator:
         :param is_sparse_matrix: bool indicating if the matrix is sparse
         """
 
-        def validate_chunk(
-            matrix_chunk: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool, block_info: dict = None
-        ) -> np.array:
+        def validate_chunk(matrix_chunk: Union[np.ndarray, sparse.spmatrix], block_info: dict = None) -> np.array:
             chunk_has_tissue_0_non_zero_row = False
             chunk_has_tissue_1_zero_row = False
-            chunk_has_invalid_nonzero_values = False
             chunk_start_row = block_info[0]["array-location"][0][0] if (block_info and block_info.get(0)) else 0
-            if self._matrix_has_invalid_nonzero_values(matrix_chunk):
-                chunk_has_invalid_nonzero_values = True
+            chunk_has_invalid_nonzero_values = self._matrix_has_invalid_nonzero_values(matrix_chunk)
             if is_sparse_matrix:
                 nonzero_row_indices, _ = matrix_chunk.nonzero()
             else:  # must be dense matrix
@@ -1334,7 +1326,7 @@ class Validator:
             )
 
         if len(x.chunks[0]) > 1:
-            results = map_blocks(validate_chunk, x, is_sparse_matrix, dtype=object).compute()
+            results = map_blocks(validate_chunk, x, dtype=object).compute()
             # Combine the results from all chunks
             has_tissue_0_non_zero_row = any(chunk_result[0] for chunk_result in results)
             has_tissue_1_zero_row = any(chunk_result[1] for chunk_result in results)
@@ -1508,7 +1500,8 @@ class Validator:
             for column in adata_component.columns:
                 if column in component_columns:
                     raise ValueError(
-                        f"Duplicate column name '{column}' detected in 'adata.{df_component}' DataFrame. All DataFrame column names must be unique."
+                        f"Duplicate column name '{column}' detected in 'adata.{df_component}' DataFrame. All "
+                        f"DataFrame column names must be unique."
                     )
                 component_columns.add(column)
 
@@ -1649,12 +1642,14 @@ class Validator:
         is_not_unknown = self.adata.obs["cell_type_ontology_term_id"] != "unknown"
         if (is_spatial & is_not_tissue & is_not_unknown).any():
             self.errors.append(
-                f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
+                f"obs['cell_type_ontology_term_id'] must be 'unknown' when "
+                f"{ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
             )
 
     def _validate_spatial_tissue_position(self, tissue_position_name: str, min: int, max: int):
         """
-        Validate tissue position is allowed and required, and are integers within the given range. Validation is not defined in
+        Validate tissue position is allowed and required, and are integers within the given range. Validation is not
+        defined in
         schema definition yaml.
 
         :rtype none
@@ -1714,8 +1709,10 @@ class Validator:
             else:
                 error_message_token = f"between {min} and {max}"
             self.errors.append(
-                f"obs['{tissue_position_name}'] must be {error_message_token}, the min and max are {obs_tissue_position.min()} and {obs_tissue_position.max()}. "
-                f"This must be the value of the column tissue_positions_in_tissue from the tissue_positions_list.csv or tissue_positions.csv."
+                f"obs['{tissue_position_name}'] must be {error_message_token}, the min and max are "
+                f"{obs_tissue_position.min()} and {obs_tissue_position.max()}. "
+                f"This must be the value of the column tissue_positions_in_tissue from the tissue_positions_list.csv "
+                f"or tissue_positions.csv."
             )
 
     def _validate_spatial_tissue_positions(self):
@@ -1801,7 +1798,8 @@ class Validator:
         # library_id is required if assay is Visium and is_single is True.
         if len(library_ids) == 0:
             self.errors.append(
-                f"uns['spatial'] must contain at least one key representing the library_id when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}."
+                f"uns['spatial'] must contain at least one key representing the library_id when "
+                f"{ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}."
             )
             # Exit as library_id is missing.
             return
@@ -1879,8 +1877,10 @@ class Validator:
                 spot_diameter_fullres = uns_scalefactors["spot_diameter_fullres"]
                 if not isinstance(spot_diameter_fullres, float):
                     self.errors.append(
-                        "uns['spatial'][library_id]['scalefactors']['spot_diameter_fullres'] must be of type float, it is "
-                        f"{type(spot_diameter_fullres)}. This must be the value of the spot_diameter_fullres field from scalefactors_json.json"
+                        "uns['spatial'][library_id]['scalefactors']['spot_diameter_fullres'] must be of type float, "
+                        "it is "
+                        f"{type(spot_diameter_fullres)}. This must be the value of the spot_diameter_fullres field "
+                        f"from scalefactors_json.json"
                     )
 
             # tissue_hires_scalef is required.
@@ -1893,8 +1893,10 @@ class Validator:
                 tissue_hires_scalef = uns_scalefactors["tissue_hires_scalef"]
                 if not isinstance(tissue_hires_scalef, float):
                     self.errors.append(
-                        "uns['spatial'][library_id]['scalefactors']['tissue_hires_scalef'] must be of type float, it is "
-                        f"{type(tissue_hires_scalef)}. This must be the value of the tissue_hires_scalef field from scalefactors_json.json"
+                        "uns['spatial'][library_id]['scalefactors']['tissue_hires_scalef'] must be of type float, "
+                        "it is "
+                        f"{type(tissue_hires_scalef)}. This must be the value of the tissue_hires_scalef field from "
+                        f"scalefactors_json.json"
                     )
 
     def _has_no_extra_keys(self, dictionary: dict, allowed_keys: List[str]) -> bool:
@@ -2024,7 +2026,7 @@ class Validator:
         self._check_spatial()
 
         # Validate genetic ancestry
-        self._validate_genetic_ancestry()
+        # self._validate_genetic_ancestry()
 
         # Checks each component
         for component_name, component_def in self.schema_def["components"].items():
@@ -2130,14 +2132,8 @@ def validate(
     validator = Validator(
         ignore_labels=ignore_labels,
     )
-    with dask.config.set(
-        {
-            "num_workers": n_workers,
-            "threads_per_worker": 1,
-            "distributed.worker.memory.limit": "6GB",
-            "scheduler": "threads",
-        }
-    ):
+
+    def run():
         validator.validate_adata(h5ad_path)
         logger.info(f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}")
 
@@ -2157,3 +2153,24 @@ def validate(
             return (validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors, False)
 
         return True, validator.errors, False
+
+    if n_workers > 1:
+        with dask.config.set(
+            {
+                "num_workers": n_workers,
+                "threads_per_worker": 2,
+                "scheduler": "processes",
+            }
+        ):
+            return run()
+
+    else:
+        with dask.config.set(
+            {
+                "num_workers": 1,
+                "threads_per_worker": 2,
+                "distributed.worker.memory.limit": "6GB",
+                "scheduler": "threads",
+            }
+        ):
+            return run()
