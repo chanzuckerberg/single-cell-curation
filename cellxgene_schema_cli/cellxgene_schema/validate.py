@@ -875,8 +875,7 @@ class Validator:
                 value_types = {type(x) for x in column.values}
                 if len(value_types) != 1:
                     self.errors.append(
-                        f"Column '{column_name}' in dataframe '{df_name}' cannot contain mixed types. Found "
-                        f"{value_types}."
+                        f"Column '{column_name}' in dataframe '{df_name}' cannot contain mixed types. Found {value_types}."
                     )
             else:
                 # Check for columns that have a category defined 0 times (obs only)
@@ -884,10 +883,8 @@ class Validator:
                     for category in column.dtype.categories:
                         if category not in column.values:
                             self.warnings.append(
-                                f"Column '{column_name}' in dataframe '{df_name}' contains a category '{category}' "
-                                f"with "
-                                f"zero observations. These categories will be removed when `--add-labels` flag is "
-                                f"present."
+                                f"Column '{column_name}' in dataframe '{df_name}' contains a category '{category}' with "
+                                f"zero observations. These categories will be removed when `--add-labels` flag is present."
                             )
                 categorical_types = {type(x) for x in column.dtype.categories.values}
                 # Check for columns that have illegal categories, which are not supported by anndata
@@ -901,8 +898,7 @@ class Validator:
                 categorical_types = {type(x) for x in column.dtype.categories.values}
                 if len(categorical_types) > 1:
                     self.errors.append(
-                        f"Column '{column_name}' in dataframe '{df_name}' contains {len(categorical_types)} "
-                        f"categorical types. "
+                        f"Column '{column_name}' in dataframe '{df_name}' contains {len(categorical_types)} categorical types. "
                         f"Only one type is allowed."
                     )
 
@@ -987,8 +983,7 @@ class Validator:
                 # 4. Verify that we have at least as many colors as unique values in the corresponding categorical field
                 if len(value) < obs_unique_values:
                     self.errors.append(
-                        f"Annotated categorical field {key.replace('_colors', '')} must have at least "
-                        f"{obs_unique_values} color options "
+                        f"Annotated categorical field {key.replace('_colors', '')} must have at least {obs_unique_values} color options "
                         f"in uns[{key}]. Found: {value}"
                     )
                 # 5. Verify that either all colors are hex OR all colors are CSS4 named colors strings
@@ -1070,8 +1065,7 @@ class Validator:
                     self.errors.append(f"Embedding key in 'adata.obsm' {key} cannot be used.")
                 elif not re.match(regex_pattern, key[2:]):
                     self.errors.append(
-                        f"Suffix for embedding key in 'adata.obsm' {key} does not match the regex pattern "
-                        f"{regex_pattern}."
+                        f"Suffix for embedding key in 'adata.obsm' {key} does not match the regex pattern {regex_pattern}."
                     )
             elif not key_is_spatial:
                 if not re.match(regex_pattern, key):
@@ -1094,26 +1088,22 @@ class Validator:
 
             if len(value.shape) < 2:
                 self.errors.append(
-                    f"All embeddings must at least two dimensions. 'adata.obsm['{key}']' has a shape length of '"
-                    f"{len(value.shape)}'."
+                    f"All embeddings must at least two dimensions. 'adata.obsm['{key}']' has a shape length of '{len(value.shape)}'."
                 )
             else:
                 if value.shape[0] != self.adata.n_obs:
                     self.errors.append(
-                        f"All embeddings must have as many rows as cells. 'adata.obsm['{key}']' has rows='"
-                        f"{value.shape[0]}'."
+                        f"All embeddings must have as many rows as cells. 'adata.obsm['{key}']' has rows='{value.shape[0]}'."
                     )
 
                 if unknown_key and value.shape[1] < 1:
                     self.errors.append(
-                        f"All unspecified embeddings must have at least one column. 'adata.obsm['{key}']' has "
-                        f"columns='{value.shape[1]}'."
+                        f"All unspecified embeddings must have at least one column. 'adata.obsm['{key}']' has columns='{value.shape[1]}'."
                     )
 
                 if not unknown_key and value.shape[1] < 2:
                     self.errors.append(
-                        f"All 'X_' and 'spatial' embeddings must have at least two columns. 'adata.obsm['{key}']' has "
-                        f"columns='{value.shape[1]}'."
+                        f"All 'X_' and 'spatial' embeddings must have at least two columns. 'adata.obsm['{key}']' has columns='{value.shape[1]}'."
                     )
 
             if not (np.issubdtype(value.dtype, np.integer) or np.issubdtype(value.dtype, np.floating)):
@@ -1510,8 +1500,7 @@ class Validator:
             for column in adata_component.columns:
                 if column in component_columns:
                     raise ValueError(
-                        f"Duplicate column name '{column}' detected in 'adata.{df_component}' DataFrame. All "
-                        f"DataFrame column names must be unique."
+                        f"Duplicate column name '{column}' detected in 'adata.{df_component}' DataFrame. All DataFrame column names must be unique."
                     )
                 component_columns.add(column)
 
@@ -1652,14 +1641,12 @@ class Validator:
         is_not_unknown = self.adata.obs["cell_type_ontology_term_id"] != "unknown"
         if (is_spatial & is_not_tissue & is_not_unknown).any():
             self.errors.append(
-                f"obs['cell_type_ontology_term_id'] must be 'unknown' when "
-                f"{ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
+                f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
             )
 
     def _validate_spatial_tissue_position(self, tissue_position_name: str, min: int, max: int):
         """
-        Validate tissue position is allowed and required, and are integers within the given range. Validation is not
-        defined in
+        Validate tissue position is allowed and required, and are integers within the given range. Validation is not defined in
         schema definition yaml.
 
         :rtype none
@@ -1719,10 +1706,8 @@ class Validator:
             else:
                 error_message_token = f"between {min} and {max}"
             self.errors.append(
-                f"obs['{tissue_position_name}'] must be {error_message_token}, the min and max are "
-                f"{obs_tissue_position.min()} and {obs_tissue_position.max()}. "
-                f"This must be the value of the column tissue_positions_in_tissue from the tissue_positions_list.csv "
-                f"or tissue_positions.csv."
+                f"obs['{tissue_position_name}'] must be {error_message_token}, the min and max are {obs_tissue_position.min()} and {obs_tissue_position.max()}. "
+                f"This must be the value of the column tissue_positions_in_tissue from the tissue_positions_list.csv or tissue_positions.csv."
             )
 
     def _validate_spatial_tissue_positions(self):
@@ -1808,8 +1793,7 @@ class Validator:
         # library_id is required if assay is Visium and is_single is True.
         if len(library_ids) == 0:
             self.errors.append(
-                f"uns['spatial'] must contain at least one key representing the library_id when "
-                f"{ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}."
+                f"uns['spatial'] must contain at least one key representing the library_id when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}."
             )
             # Exit as library_id is missing.
             return
@@ -1887,10 +1871,8 @@ class Validator:
                 spot_diameter_fullres = uns_scalefactors["spot_diameter_fullres"]
                 if not isinstance(spot_diameter_fullres, float):
                     self.errors.append(
-                        "uns['spatial'][library_id]['scalefactors']['spot_diameter_fullres'] must be of type float, "
-                        "it is "
-                        f"{type(spot_diameter_fullres)}. This must be the value of the spot_diameter_fullres field "
-                        f"from scalefactors_json.json"
+                        "uns['spatial'][library_id]['scalefactors']['spot_diameter_fullres'] must be of type float, it is "
+                        f"{type(spot_diameter_fullres)}. This must be the value of the spot_diameter_fullres field from scalefactors_json.json"
                     )
 
             # tissue_hires_scalef is required.
@@ -1903,10 +1885,8 @@ class Validator:
                 tissue_hires_scalef = uns_scalefactors["tissue_hires_scalef"]
                 if not isinstance(tissue_hires_scalef, float):
                     self.errors.append(
-                        "uns['spatial'][library_id]['scalefactors']['tissue_hires_scalef'] must be of type float, "
-                        "it is "
-                        f"{type(tissue_hires_scalef)}. This must be the value of the tissue_hires_scalef field from "
-                        f"scalefactors_json.json"
+                        "uns['spatial'][library_id]['scalefactors']['tissue_hires_scalef'] must be of type float, it is "
+                        f"{type(tissue_hires_scalef)}. This must be the value of the tissue_hires_scalef field from scalefactors_json.json"
                     )
 
     def _has_no_extra_keys(self, dictionary: dict, allowed_keys: List[str]) -> bool:
@@ -2036,7 +2016,7 @@ class Validator:
         self._check_spatial()
 
         # Validate genetic ancestry
-        # self._validate_genetic_ancestry()
+        self._validate_genetic_ancestry()
 
         # Checks each component
         for component_name, component_def in self.schema_def["components"].items():
@@ -2142,10 +2122,9 @@ def validate(
     validator = Validator(
         ignore_labels=ignore_labels,
     )
-
     with dask.config.set(
         {
-            "thread_per_worker": 2,
+            "thread_per_worker": 1,
             "num_workers": n_workers,
             "scheduler": "threads" if n_workers == 1 else "processes",
         }
