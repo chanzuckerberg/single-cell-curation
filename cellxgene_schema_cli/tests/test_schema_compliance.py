@@ -2,7 +2,6 @@
 Tests for schema compliance of an AnnData object
 """
 
-import tempfile
 import unittest
 from copy import deepcopy
 
@@ -13,7 +12,7 @@ import pandas as pd
 import pytest
 import scipy.sparse
 from cellxgene_schema.schema import get_schema_definition
-from cellxgene_schema.utils import getattr_anndata
+from cellxgene_schema.utils import getattr_anndata, read_h5ad
 from cellxgene_schema.validate import (
     ASSAY_VISIUM_11M,
     ERROR_SUFFIX_IS_SINGLE,
@@ -28,6 +27,7 @@ from cellxgene_schema.validate import (
     Validator,
 )
 from cellxgene_schema.write_labels import AnnDataLabelAppender
+from dask.array import from_array
 from fixtures.examples_validate import visium_library_id
 
 schema_def = get_schema_definition()
@@ -107,17 +107,6 @@ def label_writer(validator_with_validated_adata) -> AnnDataLabelAppender:
     return label_writer
 
 
-def save_and_read_adata(adata: anndata.AnnData) -> anndata.AnnData:
-    """
-    Saves adata to a temporary file and reads it back. Used to test read/write errors.
-    :param adata: AnnData object
-    :return: AnnData object
-    """
-    with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
-        adata.write_h5ad(f.name)
-        return anndata.read_h5ad(f.name)
-
-
 class TestValidAnndata:
     """
     Tests a valid AnnData object. Most other tests below modify this AnnData object and test for failure cases.
@@ -175,7 +164,7 @@ class TestExpressionMatrix:
         sparse_X = numpy.zeros([validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32)
         sparse_X[0, 1] = 1
         sparse_X[1, 1] = 1
-        validator.adata.X = sparse_X
+        validator.adata.X = from_array(sparse_X)
         validator.validate_adata()
         assert validator.warnings == [
             "WARNING: Sparsity of 'X' is 0.75 which is greater than 0.5, "
@@ -215,7 +204,7 @@ class TestExpressionMatrix:
             "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
         ]
 
-    @pytest.mark.parametrize("datatype", [int, "float16", "float64"])
+    @pytest.mark.parametrize("datatype", [int, "float64"])
     def test_raw_values__wrong_datatype(self, validator_with_adata, datatype):
         """
         When both `adata.X` and `adata.raw.X` are present, but `adata.raw.X` values are stored as the wrong datatype
@@ -285,8 +274,8 @@ class TestExpressionMatrix:
         validator = validator_with_visium_assay
         validator.adata.obs["in_tissue"] = 0
         validator.adata.obs["cell_type_ontology_term_id"] = "unknown"
-        validator.adata.X = numpy.zeros(
-            [validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32
+        validator.adata.X = from_array(
+            numpy.zeros([validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32)
         )
         validator.adata.raw = validator.adata.copy()
         validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
@@ -384,8 +373,8 @@ class TestExpressionMatrix:
         validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = numpy.zeros(
             (1, image_size, 3), dtype=numpy.uint8
         )
-        validator.adata.X = numpy.zeros(
-            [validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32
+        validator.adata.X = from_array(
+            numpy.zeros([validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32)
         )
         validator.adata.raw = validator.adata.copy()
         validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
@@ -451,7 +440,7 @@ class TestExpressionMatrix:
         """
         Test adata is validated correctly when matrix is larger than the chunk size
         """
-        with unittest.mock.patch.object(validator_with_adata._chunk_matrix, "__defaults__", (1,)):
+        with unittest.mock.patch.object(read_h5ad, "__defaults__", (1,)):
             validator = validator_with_adata
             validator.validate_adata()
             assert validator.errors == []
@@ -1831,7 +1820,7 @@ class TestVar:
         for i in range(X.shape[0]):
             X[i, 0] = 0
         X[0, 0] = 1
-
+        validator.adata.X = X.map_blocks(lambda x: (x.eliminate_zeros() or x), dtype=X.dtype, meta=X._meta)
         validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == [
@@ -2643,7 +2632,6 @@ class TestObsm:
         validator = validator_with_adata
         adata = validator.adata
         adata.obsm["badsize"] = numpy.empty((2, 0))
-        validator.adata = save_and_read_adata(adata)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: The size of the ndarray stored for a 'adata.obsm['badsize']' MUST NOT " "be zero.",
@@ -2660,7 +2648,6 @@ class TestObsp:
         validator = validator_with_adata
         adata = validator.adata
         adata.obsp["badsize"] = numpy.empty((2, 2, 0))
-        validator.adata = save_and_read_adata(adata)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: The size of the ndarray stored for a 'adata.obsp['badsize']' MUST NOT be zero."
@@ -2675,7 +2662,6 @@ class TestVarm:
         validator = validator_with_adata
         adata = validator.adata
         adata.varm["badsize"] = numpy.empty((4, 0))
-        validator.adata = save_and_read_adata(adata)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: The size of the ndarray stored for a 'adata.varm['badsize']' MUST NOT be " "zero."
@@ -2690,7 +2676,6 @@ class TestVarp:
         validator = validator_with_adata
         adata = validator.adata
         adata.varp["badsize"] = numpy.empty((4, 4, 0))
-        validator.adata = save_and_read_adata(adata)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: The size of the ndarray stored for a 'adata.varp['badsize']' MUST NOT be zero."
