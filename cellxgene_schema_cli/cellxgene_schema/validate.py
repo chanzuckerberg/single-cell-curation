@@ -4,7 +4,7 @@ import numbers
 import os
 import re
 from datetime import datetime
-from typing import Dict, List, Mapping, Optional, Union
+from typing import Dict, List, Mapping, Optional, Tuple, Union
 
 import anndata
 import matplotlib.colors as mcolors
@@ -13,23 +13,38 @@ import pandas as pd
 import scipy
 from anndata._core.sparse_dataset import SparseDataset
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
-from pandas.errors import UndefinedVariableError
 from scipy import sparse
 
 from . import gencode, schema
-from .utils import SPARSE_MATRIX_TYPES, get_matrix_format, getattr_anndata, read_h5ad
+from .utils import SPARSE_MATRIX_TYPES, get_matrix_format, getattr_anndata, is_ontological_descendant_of, read_h5ad
 
 logger = logging.getLogger(__name__)
 
-ONTOLOGY_PARSER = OntologyParser(schema_version=f"v{schema.get_current_schema_version()}")
+ONTOLOGY_PARSER = OntologyParser(schema_version="v5.3.0")
 
 ASSAY_VISIUM = "EFO:0010961"
+ASSAY_VISIUM_11M = "EFO:0022860"
 ASSAY_SLIDE_SEQV2 = "EFO:0030062"
 
 VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 4992
+VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 14336
+VISIUM_TISSUE_POSITION_MAX_ROW = 77
+VISIUM_TISSUE_POSITION_MAX_COL = 127
+VISIUM_11MM_TISSUE_POSITION_MAX_ROW = 127
+VISIUM_11MM_TISSUE_POSITION_MAX_COL = 223
 SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE = 2000
+SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM = 4000
 
-ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = "obs['assay_ontology_term_id'] 'EFO:0010961' (Visium Spatial Gene Expression) and uns['spatial']['is_single'] is True"
+CONDITION_IS_VISIUM = "a descendant of 'EFO:0010961' (Visium Spatial Gene Expression)"
+CONDITION_IS_VISIUM_11M = f"'{ASSAY_VISIUM_11M} (Visium CytAssist Spatial Gene Expression, 11mm)"
+CONDITION_IS_SEQV2 = f"'{ASSAY_SLIDE_SEQV2}' (Slide-seqV2)"
+
+ERROR_SUFFIX_SPATIAL = f"obs['assay_ontology_term_id'] is either {CONDITION_IS_VISIUM} or {CONDITION_IS_SEQV2}"
+ERROR_SUFFIX_VISIUM = f"obs['assay_ontology_term_id'] is {CONDITION_IS_VISIUM}"
+ERROR_SUFFIX_VISIUM_11M = f"obs['assay_ontology_term_id'] is {CONDITION_IS_VISIUM_11M}"
+
+ERROR_SUFFIX_IS_SINGLE = "uns['spatial']['is_single'] is True"
+ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = f"{ERROR_SUFFIX_VISIUM} and {ERROR_SUFFIX_IS_SINGLE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN = f"is only allowed for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED = f"is required for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0 = f"{ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE} and in_tissue is 0"
@@ -42,22 +57,26 @@ class Validator:
         self.schema_def = dict()
         self.schema_version: str = None
         self.ignore_labels = ignore_labels
-        self.visium_and_is_single_true_matrix_size = VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
+        self._visium_and_is_single_true_matrix_size = None
+        self._hires_max_dimension_size = None
+        self._visium_error_suffix = None
+        self._visium_tissue_position_max = None
 
         # Values will be instances of gencode.GeneChecker,
         # keys will be one of gencode.SupportedOrganisms
         self.gene_checkers = dict()
 
-    def reset(self):
+    def reset(self, hi_res_size: Optional[int] = None, true_mat_size: Optional[int] = None):
         self.errors = []
         self.warnings = []
         self.is_valid = False
         self.h5ad_path = ""
         self._raw_layer_exists = None
-        self.is_seurat_convertible: bool = True
         self.is_spatial = None
         self.is_visium = None
         self.is_visium_and_is_single_true = None
+        self._hires_max_dimension_size = hi_res_size
+        self._visium_and_is_single_true_matrix_size = true_mat_size
 
         # Matrix (e.g., X, raw.X, ...) number non-zero cache
         self.number_non_zero = dict()
@@ -70,6 +89,64 @@ class Validator:
     def adata(self, adata: anndata.AnnData):
         self.reset()
         self._adata = adata
+
+    @property
+    def visium_and_is_single_true_matrix_size(self) -> Optional[int]:
+        """
+        Returns the required matrix size based on assay type, if applicable, else returns None.
+        """
+        if self._visium_and_is_single_true_matrix_size is None:
+            # Visium 11M's raw matrix size is distinct from other visium assays
+            if bool(
+                self.adata.obs["assay_ontology_term_id"]
+                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
+                .astype(bool)
+                .any()
+            ):
+                self._visium_error_suffix = f"{ERROR_SUFFIX_VISIUM_11M} and {ERROR_SUFFIX_IS_SINGLE}"
+                self._visium_and_is_single_true_matrix_size = VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
+            elif self._is_visium_including_descendants():
+                self._visium_error_suffix = f"{ERROR_SUFFIX_VISIUM} and {ERROR_SUFFIX_IS_SINGLE}"
+                self._visium_and_is_single_true_matrix_size = VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
+        return self._visium_and_is_single_true_matrix_size
+
+    @property
+    def hires_max_dimension_size(self) -> Optional[int]:
+        """
+        Returns the restricted hires image dimension based on assay type, if applicable, else returns None.
+        """
+        if self._hires_max_dimension_size is None:
+            # Visium 11M's max dimension size is distinct from other visium assays
+            if bool(
+                self.adata.obs["assay_ontology_term_id"]
+                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
+                .astype(bool)
+                .any()
+            ):
+                self._visium_error_suffix = ERROR_SUFFIX_VISIUM_11M
+                self._hires_max_dimension_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM
+            elif self._is_visium_including_descendants():
+                self._visium_error_suffix = ERROR_SUFFIX_VISIUM
+                self._hires_max_dimension_size = SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE
+        return self._hires_max_dimension_size
+
+    @property
+    def tissue_position_maxes(self) -> Tuple[int, int]:
+        if self._visium_tissue_position_max is None and self._is_visium_and_is_single_true:
+            # visium 11 has different requirements than other visium
+            if (
+                self.adata.obs["assay_ontology_term_id"]
+                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
+                .astype(bool)
+                .any()
+            ):
+                self._visium_tissue_position_max = (
+                    VISIUM_11MM_TISSUE_POSITION_MAX_ROW,
+                    VISIUM_11MM_TISSUE_POSITION_MAX_COL,
+                )
+            else:
+                self._visium_tissue_position_max = (VISIUM_TISSUE_POSITION_MAX_ROW, VISIUM_TISSUE_POSITION_MAX_COL)
+        return self._visium_tissue_position_max
 
     def _is_single(self) -> bool | None:
         """
@@ -96,9 +173,11 @@ class Validator:
         """
         if self.is_spatial is None:
             try:
-                self.is_spatial = False
-                if self.adata.obs.assay_ontology_term_id.isin([ASSAY_VISIUM, ASSAY_SLIDE_SEQV2]).any():
-                    self.is_spatial = True
+                _spatial = (
+                    self._is_visium_including_descendants()
+                    or self.adata.obs.assay_ontology_term_id.isin([ASSAY_SLIDE_SEQV2]).astype(bool).any()
+                )
+                self.is_spatial = bool(_spatial)
             except AttributeError:
                 # specific error reporting will occur downstream in the validation
                 self.is_spatial = False
@@ -212,7 +291,7 @@ class Validator:
                 is_valid_term_id = ONTOLOGY_PARSER.is_valid_term_id(term_id)
                 is_valid_ancestor_id = ONTOLOGY_PARSER.is_valid_term_id(ancestor)
                 if is_valid_term_id & is_valid_ancestor_id:
-                    is_descendant = ancestor in ONTOLOGY_PARSER.get_term_ancestors(term_id)
+                    is_descendant = ancestor in ONTOLOGY_PARSER.get_term_ancestors(term_id, inclusive)
                     checks.append(is_descendant)
 
         if True not in checks:
@@ -408,6 +487,110 @@ class Validator:
         self.number_non_zero[matrix_name] = nnz
         return nnz
 
+    def _validate_genetic_ancestry(self):
+        """
+        Performs row-based validation of the genetic_ancestry_X fields. This ensures that a valid row must be:
+        - all float('nan') if organism is not homo sapiens or info is unavailable
+        - sum to 1.0
+
+        Additionally, verifies that all rows with the same donor_id must have the same genetic ancestry values
+        """
+        ancestry_columns = [
+            "genetic_ancestry_African",
+            "genetic_ancestry_East_Asian",
+            "genetic_ancestry_European",
+            "genetic_ancestry_Indigenous_American",
+            "genetic_ancestry_Oceanian",
+            "genetic_ancestry_South_Asian",
+        ]
+
+        organism_column = "organism_ontology_term_id"
+        donor_id_column = "donor_id"
+
+        # Skip any additional validation if the genetic ancestry or organism columns are not present
+        # An error for missing columns will be raised at a different point
+        required_columns = ancestry_columns + [organism_column, donor_id_column]
+        for column in required_columns:
+            if column not in self.adata.obs.columns:
+                return
+
+        donor_id_to_ancestry_values = dict()
+
+        def is_valid_row(row):
+            ancestry_values = row[ancestry_columns]
+
+            # If ancestry values are different for the same donor id, then this row is invalid
+            donor_id = row[donor_id_column]
+            if donor_id in donor_id_to_ancestry_values:
+                if not donor_id_to_ancestry_values[donor_id].equals(ancestry_values):
+                    return False
+            else:
+                donor_id_to_ancestry_values[donor_id] = ancestry_values
+
+            # All values are NaN. This is always valid, regardless of organism
+            if ancestry_values.isna().all():
+                return True
+
+            # If any values are NaN, and we didn't return in the earlier all NaN check, then
+            # this is invalid
+            if ancestry_values.isna().any():
+                return False
+
+            # If organism is not homo sapiens, and we didn't return in the earlier all NaN check,
+            # then this row is invalid
+            if row[organism_column] != "NCBITaxon:9606":
+                return False
+
+            # The sum of genetic ancestry values should be approximately 1.0
+            if (
+                ancestry_values.apply(lambda x: isinstance(x, (float, int))).all()
+                and abs(ancestry_values.sum() - 1.0) <= 1e-6
+            ):
+                return True
+
+            return False
+
+        invalid_rows = ~self.adata.obs.apply(is_valid_row, axis=1)
+
+        if invalid_rows.any():
+            donor_ids = self.adata.obs[donor_id_column].tolist()
+            unique_donor_ids = list(set(donor_ids))
+            self.errors.append(
+                f"obs rows with donor ids {unique_donor_ids} have invalid genetic_ancestry_* values. All "
+                f"observations with the same donor_id must contain the same genetic_ancestry_* values. If "
+                f"organism_ontolology_term_id is NOT 'NCBITaxon:9606' for Homo sapiens, then all genetic"
+                f"ancestry values MUST be float('nan'). If organism_ontolology_term_id is 'NCBITaxon:9606' "
+                f"for Homo sapiens, then the value MUST be a float('nan') if unavailable; otherwise, the "
+                f"sum of all genetic_ancestry_* fields must be equal to 1.0"
+            )
+
+    def _validate_individual_genetic_ancestry_value(self, column: pd.Series, column_name: str):
+        """
+        The following fields are valid for genetic_ancestry_value columns:
+        - float values between 0 and 1
+        - float('nan')
+        """
+        if column.dtype != float:
+            self.errors.append(f"Column '{column_name}' in obs must be float, not '{column.dtype.name}'.")
+            return
+
+        def is_individual_value_valid(value):
+            if isinstance(value, (float, int)) and 0 <= value <= 1:
+                return True
+            # Ensures only float('nan') or numpy.nan is valid, None is invalid
+            if isinstance(value, float) and pd.isna(value):
+                return True
+            return False
+
+        # Identify invalid values
+        invalid_values = column[~column.map(is_individual_value_valid)]
+
+        if not invalid_values.empty:
+            self.errors.append(
+                f"Column '{column_name}' in obs contains invalid values: {invalid_values.to_list()}. "
+                f"Valid values are floats between 0 and 1 or float('nan')."
+            )
+
     def _validate_column_feature_is_filtered(self, column: pd.Series, column_name: str, df_name: str):
         """
         Validates the "is_feature_filtered" in adata.var. This column must be bool, and for genes that are set to
@@ -446,7 +629,9 @@ class Validator:
                     f"these features must be 0."
                 )
 
-    def _validate_column(self, column: pd.Series, column_name: str, df_name: str, column_def: dict):
+    def _validate_column(
+        self, column: pd.Series, column_name: str, df_name: str, column_def: dict, default_error_message_suffix=None
+    ):
         """
         Given a schema definition and the column of a dataframe, verify that the column satisfies the schema.
         If there are any errors, it adds them to self.errors
@@ -456,6 +641,7 @@ class Validator:
         :param str df_name: Name of the dataframe
         :param dict column_def: schema definition for this specific column,
         e.g. schema_def["obs"]["columns"]["cell_type_ontology_term_id"]
+        :param str default_error_message_suffix: default error message suffix to be added to errors found here
 
         :rtype None
         """
@@ -497,6 +683,9 @@ class Validator:
         if column_def.get("type") == "feature_is_filtered":
             self._validate_column_feature_is_filtered(column, column_name, df_name)
 
+        if column_def.get("type") == "genetic_ancestry_value":
+            self._validate_individual_genetic_ancestry_value(column, column_name)
+
         if "enum" in column_def:
             bad_enums = [v for v in column.drop_duplicates() if v not in column_def["enum"]]
             if bad_enums:
@@ -521,10 +710,11 @@ class Validator:
                     self._validate_curie_str(term_str, column_name, column_def["curie_constraints"])
 
         # Add error suffix to errors found here
-        if "error_message_suffix" in column_def:
+        error_message_suffix = column_def.get("error_message_suffix", default_error_message_suffix)
+        if error_message_suffix:
             error_total_count = len(self.errors)
             for i in range(error_original_count, error_total_count):
-                self.errors[i] = self.errors[i] + " " + column_def["error_message_suffix"]
+                self.errors[i] = self.errors[i] + " " + error_message_suffix
 
     def _validate_column_dependencies(
         self, df: pd.DataFrame, df_name: str, column_name: str, dependencies: List[dict]
@@ -544,72 +734,37 @@ class Validator:
         """
 
         all_rules = []
-
         for dependency_def in dependencies:
-            if "complex_rule" in dependency_def:
-                if "match_ancestors" in dependency_def["complex_rule"]:
-                    query_fn, args = self._generate_match_ancestors_query_fn(
-                        dependency_def["complex_rule"]["match_ancestors"]
-                    )
-                    term_id, ontologies, ancestors, ancestor_inclusive = args
-                    query_exp = f"@query_fn({term_id}, {ontologies}, {ancestors}, {ancestor_inclusive})"
-            elif "rule" in dependency_def:
-                query_exp = dependency_def["rule"]
-            else:
-                continue
-
+            terms_to_match = set()
+            column_to_match = dependency_def["rule"]["column"]
+            if "match_ancestors_inclusive" in dependency_def["rule"]:
+                ancestors = dependency_def["rule"]["match_ancestors_inclusive"]["ancestors"]
+                for ancestor in ancestors:
+                    terms_to_match.update(ONTOLOGY_PARSER.get_term_descendants(ancestor, include_self=True))
+            if "match_exact" in dependency_def["rule"]:
+                terms_to_match.update(dependency_def["rule"]["match_exact"]["terms"])
             try:
-                column = getattr(df.query(query_exp, engine="python"), column_name)
-            except UndefinedVariableError:
+                match_query = df[column_to_match].isin(terms_to_match)
+                match_df = df[match_query]
+                column = getattr(match_df, column_name)
+                error_message_suffix = dependency_def.get("error_message_suffix", None)
+                if not error_message_suffix:
+                    matched_values = list(getattr(match_df, column_to_match).unique())
+                    error_message_suffix = f"when '{column_to_match}' is in {matched_values}"
+            except KeyError:
                 self.errors.append(
                     f"Checking values with dependencies failed for adata.{df_name}['{column_name}'], "
                     f"this is likely due to missing dependent column in adata.{df_name}."
                 )
                 return pd.Series(dtype=np.float64)
 
-            all_rules.append(query_exp)
+            all_rules.append(match_query)
+            self._validate_column(column, column_name, df_name, dependency_def, error_message_suffix)
 
-            self._validate_column(column, column_name, df_name, dependency_def)
-
-        # Set column with the data that's left
-        all_rules = " | ".join(all_rules)
-        column = getattr(df.query("not (" + all_rules + " )", engine="python"), column_name)
+        # Return column of data that was not matched by any of the rules
+        column = getattr(df[~np.logical_or.reduce(all_rules)], column_name)
 
         return column
-
-    def _generate_match_ancestors_query_fn(self, rule_def: Dict):
-        """
-        Generates vectorized function and args to query a pandas dataframe. Function will determine whether values from
-        a specified column is a descendant term to a group of specified ancestors, returning a Bool.
-        :param rule_def: defines arguments to pass into vectorized ancestor match validation function
-        :return: Tuple(function, Tuple(str, List[str], List[str]))
-        """
-        validate_curie_ancestors_vectorized = np.vectorize(self._validate_curie_ancestors)
-        ancestor_map = rule_def["ancestors"]
-        inclusive = rule_def["inclusive"]
-
-        # hack: pandas dataframe query doesn't support Dict inputs
-        ontology_keys = []
-        ancestor_list = []
-        for key, val in ancestor_map.items():
-            ontology_keys.append(key)
-            ancestor_list.append(val)
-
-        def is_ancestor_match(
-            term_id: str,
-            ontologies: List[str],
-            ancestors: List[str],
-            ancestor_inclusive: bool,
-        ) -> bool:
-            allowed_ancestors = dict(zip(ontologies, ancestors))
-            return validate_curie_ancestors_vectorized(term_id, allowed_ancestors, inclusive=ancestor_inclusive)
-
-        return is_ancestor_match, (
-            rule_def["column"],
-            ontology_keys,
-            ancestor_list,
-            inclusive,
-        )
 
     def _validate_list(self, list_name: str, current_list: List[str], element_type: str):
         """
@@ -926,65 +1081,6 @@ class Validator:
                     f"to use this type of matrix for the given sparsity."
                 )
 
-    def _validate_seurat_convertibility(self):
-        """
-        Use length of component matrices to determine if the anndata object will be unable to be converted to Seurat by
-        virtue of the R language's array size limit (4-byte signed int length). Add warning for each matrix which is
-        too large.
-        rtype: None
-        """
-        # Seurat conversion is not supported for Visium datasets.
-        if self._is_visium():
-            self.warnings.append(
-                "Datasets with assay_ontology_term_id 'EFO:0010961' (Visium Spatial Gene Expression) are not compatible with Seurat."
-            )
-            self.is_seurat_convertible = False
-            return
-
-        to_validate = [(self.adata.X, "X")]
-        # check if there's raw data
-        if self.adata.raw:
-            to_validate.append((self.adata.raw.X, "raw.X"))
-        # Check length of component arrays
-        for matrix, matrix_name in to_validate:
-            matrix_format = get_matrix_format(self.adata, matrix)
-            if matrix_format in SPARSE_MATRIX_TYPES:
-                effective_r_array_size = self._count_matrix_nonzero(matrix_name, matrix)
-                is_sparse = True
-            elif matrix_format == "dense":
-                effective_r_array_size = max(matrix.shape)
-                is_sparse = False
-            else:
-                self.warnings.append(
-                    f"Unable to verify seurat convertibility for matrix {matrix_name} " f"of type {type(matrix)}"
-                )
-                continue
-
-            if effective_r_array_size > self.schema_def["max_size_for_seurat"]:
-                if is_sparse:
-                    self.warnings.append(
-                        f"This dataset cannot be converted to the .rds (Seurat v4) format. "
-                        f"{effective_r_array_size} nonzero elements in matrix {matrix_name} exceed the "
-                        f"limitations in the R dgCMatrix sparse matrix class (2^31 - 1 nonzero "
-                        f"elements)."
-                    )
-                else:
-                    self.warnings.append(
-                        f"This dataset cannot be converted to the .rds (Seurat v4) format. "
-                        f"{effective_r_array_size} elements in at least one dimension of matrix "
-                        f"{matrix_name} exceed the limitations in the R dgCMatrix sparse matrix class "
-                        f"(2^31 - 1 nonzero elements)."
-                    )
-
-                self.is_seurat_convertible = False
-
-        if self.adata.raw and self.adata.raw.X.shape[1] != self.adata.raw.var.shape[0]:
-            self.errors.append(
-                "This dataset has a mismatch between 1) the number of features in raw.X and 2) the number of features "
-                "in raw.var. These counts must be identical."
-            )
-            self.is_seurat_convertible = False
-
     def _validate_obsm(self):
         """
         Validates the embedding dictionary -- it checks that all values of adata.obsm are numpy arrays with the correct
@@ -1004,6 +1100,7 @@ class Validator:
             issue_list = self.errors
 
             regex_pattern = r"^[a-zA-Z][a-zA-Z0-9_.-]*$"
+            key_is_spatial = key.lower() == "spatial"
 
             unknown_key = False  # an unknown key does not match 'spatial' or 'X_{suffix}'
             if key.startswith("X_"):
@@ -1014,7 +1111,7 @@ class Validator:
                     self.errors.append(
                         f"Suffix for embedding key in 'adata.obsm' {key} does not match the regex pattern {regex_pattern}."
                     )
-            elif key.lower() != "spatial":
+            elif not key_is_spatial:
                 if not re.match(regex_pattern, key):
                     self.errors.append(
                         f"Embedding key in 'adata.obsm' {key} does not match the regex pattern {regex_pattern}."
@@ -1062,7 +1159,11 @@ class Validator:
                 # Check for inf/NaN values only if the dtype is numeric
                 if np.isinf(value).any():
                     issue_list.append(f"adata.obsm['{key}'] contains positive infinity or negative infinity values.")
-                if np.all(np.isnan(value)):
+
+                # spatial embeddings can't have any NaN; other embeddings can't be all NaNs
+                if key_is_spatial and np.any(np.isnan(value)):
+                    issue_list.append("adata.obs['spatial] contains at least one NaN value.")
+                elif np.all(np.isnan(value)):
                     issue_list.append(f"adata.obsm['{key}'] contains all NaN values.")
 
         if self._is_supported_spatial_assay() is False and obsm_with_x_prefix == 0:
@@ -1167,7 +1268,7 @@ class Validator:
             if is_visium_and_is_single_true and x.shape[0] != self.visium_and_is_single_true_matrix_size:
                 self._raw_layer_exists = False
                 self.errors.append(
-                    f"When {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}, the raw matrix must be the "
+                    f"When {self._visium_error_suffix}, the raw matrix must be the "
                     f"unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
                     f"{self.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is "
                     f"{x.shape[0]}."
@@ -1521,10 +1622,7 @@ class Validator:
         # Validate assay ontology term ids are identical.
         term_count = obs["assay_ontology_term_id"].nunique()
         if term_count > 1:
-            self.errors.append(
-                "When obs['assay_ontology_term_id'] is either 'EFO:0010961' (Visium Spatial Gene Expression) or "
-                "'EFO:0030062' (Slide-seqV2), all observations must contain the same value."
-            )
+            self.errors.append(f"When {ERROR_SUFFIX_SPATIAL}" ", all observations must contain the same value.")
 
     def _validate_spatial_cell_type_ontology_term_id(self):
         """
@@ -1532,18 +1630,27 @@ class Validator:
 
         :rtype none
         """
-        # Exit if:
-        # - not Visium and is_single is True as no further checks are necessary
-        # - in_tissue is not specified as checks are dependent on this value
-        if not self._is_visium_and_is_single_true() or "in_tissue" not in self.adata.obs:
+        self._is_visium_including_descendants()
+        self._is_single()
+        self._is_visium_and_is_single_true()
+
+        # skip checks if not a valid spatial assay with a corresponding "in_tissue" column
+        if not self.is_visium_and_is_single_true:
+            # not a valid spatial assay
+            return
+        elif self.is_visium_and_is_single_true and "in_tissue" not in self.adata.obs.columns:
+            # valid spatial assay, but missing "in_tissue" column
             return
 
-        # Validate cell type: must be "unknown" if Visium and is_single is True and in_tissue is 0.
-        if (
-            (self.adata.obs["assay_ontology_term_id"] == ASSAY_VISIUM)
-            & (self.adata.obs["in_tissue"] == 0)
-            & (self.adata.obs["cell_type_ontology_term_id"] != "unknown")
-        ).any():
+        # Validate all out of tissue (in_tissue==0) spatial spots have unknown cell ontology term
+        is_spatial = (
+            self.adata.obs["assay_ontology_term_id"]
+            .apply(lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, True))
+            .astype(bool)
+        )
+        is_not_tissue = self.adata.obs["in_tissue"] == 0
+        is_not_unknown = self.adata.obs["cell_type_ontology_term_id"] != "unknown"
+        if (is_spatial & is_not_tissue & is_not_unknown).any():
             self.errors.append(
                 f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
             )
@@ -1555,11 +1662,21 @@ class Validator:
 
         :rtype none
         """
+        # check for visium status and then is visium and single
+        # techdebt: the following lines are order dependent. Violates idempotence.
+        self._is_visium_including_descendants()
+        self._is_single()
+        self._is_visium_and_is_single_true()
+
         # Tissue position is foribidden if assay is not Visium and is_single is True.
         if tissue_position_name in self.adata.obs and (
-            not self._is_visium_and_is_single_true()
+            not (self.is_visium_and_is_single_true)
             or (
-                ~(self.adata.obs["assay_ontology_term_id"] == ASSAY_VISIUM)
+                ~(
+                    self.adata.obs["assay_ontology_term_id"]
+                    .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, True))
+                    .astype(bool)
+                )
                 & (self.adata.obs[tissue_position_name].notnull())
             ).any()
         ):
@@ -1576,7 +1693,11 @@ class Validator:
         if (
             tissue_position_name not in self.adata.obs
             or (
-                (self.adata.obs["assay_ontology_term_id"] == ASSAY_VISIUM)
+                (
+                    self.adata.obs["assay_ontology_term_id"]
+                    .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, True))
+                    .astype(bool)
+                )
                 & (self.adata.obs[tissue_position_name].isnull())
             ).any()
         ):
@@ -1606,8 +1727,8 @@ class Validator:
 
         :rtype none
         """
-        self._validate_spatial_tissue_position("array_col", 0, 127)
-        self._validate_spatial_tissue_position("array_row", 0, 77)
+        self._validate_spatial_tissue_position("array_col", 0, self.tissue_position_maxes[1])
+        self._validate_spatial_tissue_position("array_row", 0, self.tissue_position_maxes[0])
         self._validate_spatial_tissue_position("in_tissue", 0, 1)
 
     def _check_spatial_uns(self):
@@ -1633,10 +1754,7 @@ class Validator:
         uns_spatial = self.adata.uns.get("spatial")
         is_supported_spatial_assay = self._is_supported_spatial_assay()
         if uns_spatial is not None and not is_supported_spatial_assay:
-            self.errors.append(
-                "uns['spatial'] is only allowed for obs['assay_ontology_term_id'] values "
-                "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)."
-            )
+            self.errors.append(f"uns['spatial'] is only allowed when {ERROR_SUFFIX_SPATIAL}")
             return
 
         # Exit if we aren't dealing with a supported spatial assay as no further checks are necessary.
@@ -1645,10 +1763,7 @@ class Validator:
 
         # spatial is required for supported spatial assays.
         if not isinstance(uns_spatial, dict):
-            self.errors.append(
-                "A dict in uns['spatial'] is required for obs['assay_ontology_term_id'] values "
-                "'EFO:0010961' (Visium Spatial Gene Expression) and 'EFO:0030062' (Slide-seqV2)."
-            )
+            self.errors.append("A dict in uns['spatial'] is required when " f"{ERROR_SUFFIX_SPATIAL}.")
             return
 
         # is_single is required.
@@ -1727,7 +1842,8 @@ class Validator:
                 self.errors.append("uns['spatial'][library_id]['images'] must contain the key 'hires'.")
             # hires is specified: proceed with validation of hires.
             else:
-                self._validate_spatial_image_shape("hires", uns_images["hires"], SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE)
+                _max_size = self.hires_max_dimension_size
+                self._validate_spatial_image_shape("hires", uns_images["hires"], _max_size)
 
             # fullres is optional.
             uns_fullres = uns_images.get("fullres")
@@ -1820,6 +1936,29 @@ class Validator:
             self.is_visium = assay_ontology_term_id is not None and (assay_ontology_term_id == ASSAY_VISIUM).any()
         return self.is_visium
 
+    def _is_visium_including_descendants(self) -> bool:
+        """
+        Determine if the assay_ontology_term_id is Visium (inclusive descendant of EFO:0010961).
+        Returns True if ANY assay_ontology_term_id is a Visium descendant
+
+        :return True if assay_ontology_term_id is Visium, False otherwise.
+        :rtype bool
+        """
+        _assay_key = "assay_ontology_term_id"
+
+        # only compute if not already stored
+        if self.is_visium is None and _assay_key in self.adata.obs.columns:
+            # check if any assay_ontology_term_ids are descendants of VISIUM
+            self.is_visium = bool(
+                self.adata.obs[_assay_key]
+                .astype("string")
+                .apply(lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, True))
+                .astype(bool)
+                .any()
+            )
+
+        return self.is_visium
+
     def _validate_spatial_image_shape(self, image_name: str, image: np.ndarray, max_dimension: int = None):
         """
         Validate the spatial image is of shape (,,3 or 4) and has a max dimension, if specified. A spatial image
@@ -1887,9 +2026,8 @@ class Validator:
         # Checks spatial
         self._check_spatial()
 
-        # Checks Seurat convertibility
-        logger.debug("Validating Seurat convertibility...")
-        self._validate_seurat_convertibility()
+        # Validate genetic ancestry
+        self._validate_genetic_ancestry()
 
         # Checks each component
         for component_name, component_def in self.schema_def["components"].items():
@@ -1937,8 +2075,6 @@ class Validator:
         :rtype bool
         """
         logger.info("Starting validation...")
-        # Re-start errors in case a new h5ad is being validated
-        self.reset()
 
         if h5ad_path:
             logger.debug("Reading the h5ad file...")
@@ -1946,6 +2082,8 @@ class Validator:
             self.h5ad_path = h5ad_path
             self._validate_encoding_version()
             logger.debug("Successfully read the h5ad file")
+            # Re-start errors in case a new h5ad is being validated
+            self.reset()
 
         # Fetches schema def for latest major schema version
         self._set_schema_def()
@@ -1985,17 +2123,13 @@ def validate(
     :param Union[str, bytes, os.PathLike] h5ad_path: Path to h5ad file to validate
     :param str add_labels_file: Path to new h5ad file with ontology/gene labels added
 
-    :return (True, [], <bool>) if successful validation, (False, [list_of_errors], <bool>) otherwise; last bool is for
-    seurat convertibility
+    :return (True, [], False) if successful validation, (False, [list_of_errors], False) otherwise;
+    last bool is for seurat convertability which is deprecated / unused
     :rtype tuple
     """
 
     # Perform validation
     start = datetime.now()
-    if verbose:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO, format="%(message)s")
     validator = Validator(
         ignore_labels=ignore_labels,
     )
@@ -2004,7 +2138,7 @@ def validate(
 
     # Stop if validation was unsuccessful
     if not validator.is_valid:
-        return False, validator.errors, validator.is_seurat_convertible
+        return False, validator.errors, False
 
     if add_labels_file:
         label_start = datetime.now()
@@ -2015,10 +2149,6 @@ def validate(
             f"{writer.was_writing_successful}"
         )
 
-        return (
-            validator.is_valid and writer.was_writing_successful,
-            validator.errors + writer.errors,
-            validator.is_seurat_convertible,
-        )
+        return (validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors, False)
 
-    return True, validator.errors, validator.is_seurat_convertible
+    return True, validator.errors, False
