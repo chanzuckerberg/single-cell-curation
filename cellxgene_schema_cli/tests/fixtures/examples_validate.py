@@ -5,6 +5,7 @@ import anndata
 import os
 from scipy import sparse
 from cellxgene_schema.utils import get_hash_digest_column
+from dask.array import from_array
 
 # -----------------------------------------------------------------#
 # General example information
@@ -473,8 +474,10 @@ good_uns_with_slide_seqV2_spatial = {
 # ---
 # 4. Creating expression matrix,
 # X has integer values and non_raw_X has real values
-X = numpy.ones([good_obs.shape[0], good_var.shape[0]], dtype=numpy.float32)
-non_raw_X = sparse.csr_matrix(X.copy())
+X = from_array(sparse.csr_matrix((good_obs.shape[0], good_var.shape[0]), dtype=numpy.float32))
+X[0, 0] = 1
+X[1, 0] = 1
+non_raw_X = X.copy()
 non_raw_X[0, 0] = 1.5
 
 # ---
@@ -487,14 +490,14 @@ good_obsm_spatial = {"X_umap": numpy.zeros([X.shape[0], 2]), "spatial": numpy.ze
 #   the unittests
 
 # Valid anndata
-adata = anndata.AnnData(X=sparse.csr_matrix(X), obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var)
+adata = anndata.AnnData(X=X.copy(), obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var)
 adata.raw = adata.copy()
 adata.X = non_raw_X
 adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
 
 # Anndata with "X" and "raw.X" but neither has actual raw values
 adata_no_raw_values = anndata.AnnData(
-    X=sparse.csr_matrix(non_raw_X),
+    X=non_raw_X.copy(),
     obs=good_obs,
     uns=good_uns,
     obsm=good_obsm,
@@ -504,11 +507,11 @@ adata_no_raw_values.raw = adata_no_raw_values.copy()
 adata_no_raw_values.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
 
 # Anndata with no obs nor var
-adata_minimal = anndata.AnnData(X=sparse.csr_matrix(X), uns=good_uns, obsm=good_obsm)
+adata_minimal = anndata.AnnData(X=X.copy(), uns=good_uns, obsm=good_obsm)
 
 # Anndata with a expression matrix that is not raw
 adata_non_raw = anndata.AnnData(
-    X=sparse.csr_matrix(non_raw_X),
+    X=non_raw_X.copy(),
     obs=good_obs,
     uns=good_uns,
     obsm=good_obsm,
@@ -517,7 +520,7 @@ adata_non_raw = anndata.AnnData(
 
 # Expected anndata with labels that the validator must write in obs and var
 adata_with_labels = anndata.AnnData(
-    X=sparse.csr_matrix(X),
+    X=X.copy(),
     obs=pd.concat([good_obs, obs_expected], axis=1),
     var=var_expected,
     uns=good_uns_with_labels,
@@ -525,20 +528,18 @@ adata_with_labels = anndata.AnnData(
 )
 
 # Expected anndata with colors for categorical obs fields
-adata_with_colors = anndata.AnnData(
-    X=sparse.csr_matrix(X), obs=good_obs, uns=good_uns_with_colors, obsm=good_obsm, var=good_var
-)
+adata_with_colors = anndata.AnnData(X=X.copy(), obs=good_obs, uns=good_uns_with_colors, obsm=good_obsm, var=good_var)
 
 # Expected anndata with Visium spatial data
 adata_visium = anndata.AnnData(
-    X=sparse.csr_matrix(X), obs=good_obs_visium, uns=good_uns_with_visium_spatial, obsm=good_obsm_spatial, var=good_var
+    X=X.copy(), obs=good_obs_visium, uns=good_uns_with_visium_spatial, obsm=good_obsm_spatial, var=good_var
 )
 adata_visium.raw = adata_visium.copy()
 adata_visium.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
 
 # Expected anndata with Slide-seqV2 spatial data
 adata_slide_seqv2 = anndata.AnnData(
-    X=sparse.csr_matrix(X),
+    X=X.copy(),
     obs=good_obs_slide_seqv2,
     uns=good_uns_with_slide_seqV2_spatial,
     obsm=good_obsm_spatial,
@@ -546,7 +547,7 @@ adata_slide_seqv2 = anndata.AnnData(
 )
 
 adata_spatial_is_single_false = anndata.AnnData(
-    X=sparse.csr_matrix(X),
+    X=X.copy(),
     obs=good_obs_visium_is_single_false,
     uns=good_uns_with_is_single_false,
     obsm=good_obsm_spatial,
@@ -619,9 +620,11 @@ var_unmigrated = pd.DataFrame(
     ],
 )
 
-unmigrated_X = numpy.zeros([unmigrated_obs.shape[0], var_unmigrated.shape[0]], dtype=numpy.float32)
+unmigrated_X = from_array(
+    sparse.csr_matrix(numpy.zeros([unmigrated_obs.shape[0], var_unmigrated.shape[0]], dtype=numpy.float32))
+)
 adata_with_labels_unmigrated = anndata.AnnData(
-    X=sparse.csr_matrix(unmigrated_X),
+    X=unmigrated_X.copy(),
     obs=unmigrated_obs,
     uns=good_uns_with_labels,
     var=var_unmigrated,
