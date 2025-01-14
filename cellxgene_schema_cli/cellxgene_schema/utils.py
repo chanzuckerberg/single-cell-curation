@@ -16,7 +16,7 @@ from xxhash import xxh3_64_intdigest
 
 logger = logging.getLogger(__name__)
 
-SPARSE_MATRIX_TYPES = {"csc", "csr", "coo"}
+SPARSE_MATRIX_TYPES = {"csr"}
 
 
 def replace_ontology_term(dataframe, ontology_name, update_map):
