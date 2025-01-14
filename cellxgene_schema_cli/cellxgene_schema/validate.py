@@ -996,8 +996,8 @@ class Validator:
 
     def _validate_sparsity(self):
         """
-        calculates sparsity of x and raw.x, if bigger than indicated in the schema and not a scipy sparse matrix, then
-        adds to warnings
+        calculates sparsity of x and raw.x, if bigger than indicated in the schema and not a scipy sparse (CSR encoded) matrix, then
+        adds to errors
 
         :rtype none
         """
@@ -1031,10 +1031,10 @@ class Validator:
             nnz = self.count_matrix_nonzero(x)
             sparsity = 1 - nnz / np.prod(x.shape)
             if sparsity > max_sparsity:
-                self.warnings.append(
+                self.errors.append(
                     f"Sparsity of '{x_name}' is {sparsity} which is greater than {max_sparsity}, "
-                    f"and it is not a 'scipy.sparse.csr_matrix'. It is STRONGLY RECOMMENDED "
-                    f"to use this type of matrix for the given sparsity."
+                    f"and it is not a 'scipy.sparse.csr_matrix'. The matrix MUST "
+                    f"use this type of matrix for the given sparsity."
                 )
 
     def _validate_obsm(self):
