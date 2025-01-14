@@ -385,11 +385,16 @@ class TestCheckSpatial:
         assert not validator.errors
 
     def test__validate_spatial_visium_dense_matrix_ok(self):
+        '''
+        Test visium specific requirements on a dense X matrix
+        '''
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
         validator._visium_and_is_single_true_matrix_size = 2
-        validator.adata.X = from_array(validator.adata.X.compute().toarray()).map_blocks(sparse.csr_matrix)
+        _Xdense = validator.adata.X.compute()
+        _Xdense[_Xdense==0] = 1 # ensure the matrix doesn't trigger sparsity error
+        validator.adata.X = from_array(_Xdense.toarray()) # daskify
         validator.adata.raw = validator.adata.copy()
         validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
         # Confirm spatial is valid.
