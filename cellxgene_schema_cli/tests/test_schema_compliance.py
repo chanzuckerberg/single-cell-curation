@@ -167,11 +167,9 @@ class TestExpressionMatrix:
         sparse_X[1, 1] = 1
         validator.adata.X = from_array(sparse_X)
         validator.validate_adata()
-        assert validator.warnings == [
-            "WARNING: Sparsity of 'X' is 0.75 which is greater than 0.5, "
-            "and it is not a 'scipy.sparse.csr_matrix'. It is "
-            "STRONGLY RECOMMENDED to use this type of matrix for "
-            "the given sparsity."
+        assert validator.errors == [
+            "ERROR: Sparsity of 'X' is 0.75 which is greater than 0.5, "
+            "and it is not a 'scipy.sparse.csr_matrix'. The matrix MUST use this type of matrix for the given sparsity."
         ]
 
     @pytest.mark.parametrize("invalid_value", [1.5, -1])
@@ -381,6 +379,10 @@ class TestExpressionMatrix:
         validator.adata.X = from_array(
             numpy.zeros([validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32)
         )
+
+        # encode X with csr
+        validator.adata.X = validator.adata.X.map_blocks(scipy.sparse.csr_matrix)
+
         validator.adata.raw = validator.adata.copy()
         validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
         validator.validate_adata()
