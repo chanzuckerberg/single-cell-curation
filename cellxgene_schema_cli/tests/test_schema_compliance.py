@@ -158,8 +158,7 @@ class TestExpressionMatrix:
 
     def test_sparsity(self, validator_with_adata):
         """
-        In any layer, if a matrix has 50% or more values that are zeros, it is STRONGLY RECOMMENDED that
-        the matrix be encoded as a scipy.sparse.csr_matrix
+        In any layer, if a matrix has 50% or more values that are zeros, the matrix MUST be encoded as a scipy.sparse.csr_matrix
         """
         validator = validator_with_adata
         sparse_X = numpy.zeros([validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32)
