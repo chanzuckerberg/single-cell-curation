@@ -10,7 +10,7 @@ import fixtures.examples_validate as examples
 import numpy
 import pandas as pd
 import pytest
-import scipy.sparse
+import scipy.sparse 
 from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.utils import getattr_anndata, read_h5ad
 from cellxgene_schema.validate import (
@@ -28,6 +28,7 @@ from cellxgene_schema.validate import (
 )
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 from dask.array import from_array
+
 from fixtures.examples_validate import visium_library_id
 
 schema_def = get_schema_definition()
@@ -277,6 +278,10 @@ class TestExpressionMatrix:
         validator.adata.X = from_array(
             numpy.zeros([validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32)
         )
+
+        # make sure it's encoded as a sparse matrix to isolate the validation to the contents of the matrix.
+        validator.adata.X = validator.adata.X.map_blocks(scipy.sparse.csr_matrix)
+        
         validator.adata.raw = validator.adata.copy()
         validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
         validator.reset(None, 2)
