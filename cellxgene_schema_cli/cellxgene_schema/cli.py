@@ -38,21 +38,10 @@ def schema_cli(verbose):
 @click.option("-i", "--ignore-labels", help="Ignore ontology labels when validating", is_flag=True)
 @click.option("-n", "--num-workers", help="Number of workers to use for parallel processing", default=1, type=int)
 def schema_validate(h5ad_file, add_labels_file, ignore_labels, num_workers):
-    # Imports are very slow so we defer loading until Click arg validation has passed
-    logger.info("Loading dependencies")
-    try:
-        import anndata  # noqa: F401
-    except ImportError:
-        raise click.ClickException("[cellxgene] cellxgene-schema requires anndata") from None
+    import pytest
 
-    logger.info("Loading validator modules")
-    from .validate import validate
-
-    is_valid, _, _ = validate(h5ad_file, add_labels_file, ignore_labels=ignore_labels, n_workers=num_workers)
-    if is_valid:
-        sys.exit(0)
-    else:
-        sys.exit(1)
+    result = pytest.main(["cellxgene_schema/validation/tests/test_hello_world.py"])
+    sys.exit(result)
 
 
 @schema_cli.command(
