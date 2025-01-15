@@ -50,6 +50,7 @@ ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN = f"is only allowed for {ERROR_
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED = f"is required for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0 = f"{ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE} and in_tissue is 0"
 
+ERROR_SUFFIX_SPARSE_FORMAT = f"Please ensure it is either a dense array or one of the supported sparse matrix encodings ({','.join(SUPPORTED_SPARSE_MATRIX_TYPES)})"
 
 class Validator:
     """Handles validation of AnnData"""
@@ -936,7 +937,8 @@ class Validator:
                 category_mapping[column_name] = column.nunique()
 
         for key, value in uns_dict.items():
-            if isinstance(value, scipy.sparse.csr_matrix) and value.nnz == 0:
+            if isinstance(value, scipy.sparse.csr_matrix):
+                if value.nnz == 0:
                     self.errors.append(f"uns['{key}'] cannot be an empty value.")
             elif value is not None and not isinstance(value, (np.bool_, bool, numbers.Number)) and len(value) == 0:
                 self.errors.append(f"uns['{key}'] cannot be an empty value.")
@@ -1019,7 +1021,7 @@ class Validator:
                 self.errors.append(f"Invalid sparse encoding for {x_name} with encoding {matrix_format}. Onle {','.join(SUPPORTED_SPARSE_MATRIX_TYPES)} sparse encodings are supported.")
                 continue
             elif matrix_format == "unknown":
-                self.errors.append(f"Unknown encoding for matrix {x_name}. Please ensure it is either a dense array or one of {','.join(SUPPORTED_SPARSE_MATRIX_TYPES)} sparse encodings.")
+                self.errors.append(f"Unknown encoding for matrix {x_name}. {ERROR_SUFFIX_SPARSE_FORMAT}")
                 continue
 
             # It seems silly to perform this test for 'coo' and 'csc' formats,
@@ -1219,7 +1221,7 @@ class Validator:
 
             matrix_format = get_matrix_format(x)
             if matrix_format == "unknown":
-                self.errors.append(f"Unknown encoding for matrix {xloc}. Please ensure it is either a dense array or one of {','.join(SUPPORTED_SPARSE_MATRIX_TYPES)} sparse encodings.")
+                self.errors.append(f"Unknown encoding for matrix {xloc}. {ERROR_SUFFIX_SPARSE_FORMAT}")
                 self._raw_layer_exists = False
                 return self._raw_layer_exists
             

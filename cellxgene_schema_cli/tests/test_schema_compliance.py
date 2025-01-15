@@ -2224,7 +2224,7 @@ class TestUns:
         assert validator.errors == []
 
     def test_uns_scipy_matrices_cannot_be_empty(self, validator_with_adata):
-        validator = validator_with_adata
+        validator: Validator = validator_with_adata
 
         validator.adata.uns["test"] = scipy.sparse.csr_matrix([[1]], dtype=int)
         validator.validate_adata()

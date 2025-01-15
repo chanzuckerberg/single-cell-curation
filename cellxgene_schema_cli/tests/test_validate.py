@@ -18,6 +18,7 @@ from cellxgene_schema.validate import (
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED,
     SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE,
     SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
+    ERROR_SUFFIX_SPARSE_FORMAT,
     Validator,
     validate,
 )
@@ -1276,7 +1277,10 @@ class TestIsRaw:
 
     @mock.patch("cellxgene_schema.validate.get_matrix_format", return_value="unknown")
     def test_has_valid_raw_with_unknown_format(self, mock_get_matrix_format):
+        # a matrix with unknown format should be invalid
         data = np.array([[1, 2, 3], [4, 5, 6]], dtype=np.float32)
         validator = self.create_validator(data, "unknown")
-        with pytest.raises(AssertionError):
-            validator._has_valid_raw()
+        assert validator._has_valid_raw() is False
+        assert validator.errors == [
+            f'Unknown encoding for matrix X. {ERROR_SUFFIX_SPARSE_FORMAT}'
+        ]
