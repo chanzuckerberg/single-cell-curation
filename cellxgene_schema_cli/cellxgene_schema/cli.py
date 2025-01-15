@@ -36,8 +36,7 @@ def schema_cli(verbose):
     type=click.Path(exists=False, dir_okay=False, writable=True),
 )
 @click.option("-i", "--ignore-labels", help="Ignore ontology labels when validating", is_flag=True)
-@click.option("-n", "--num-workers", help="Number of workers to use for parallel processing", default=1, type=int)
-def schema_validate(h5ad_file, add_labels_file, ignore_labels, num_workers):
+def schema_validate(h5ad_file, add_labels_file, ignore_labels):
     # Imports are very slow so we defer loading until Click arg validation has passed
     logger.info("Loading dependencies")
     try:
@@ -48,7 +47,7 @@ def schema_validate(h5ad_file, add_labels_file, ignore_labels, num_workers):
     logger.info("Loading validator modules")
     from .validate import validate
 
-    is_valid, _, _ = validate(h5ad_file, add_labels_file, ignore_labels=ignore_labels, n_workers=num_workers)
+    is_valid, _, _ = validate(h5ad_file, add_labels_file, ignore_labels=ignore_labels)
     if is_valid:
         sys.exit(0)
     else:

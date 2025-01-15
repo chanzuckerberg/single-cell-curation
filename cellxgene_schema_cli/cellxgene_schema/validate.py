@@ -2110,7 +2110,6 @@ def validate(
     h5ad_path: Union[str, bytes, os.PathLike],
     add_labels_file: str = None,
     ignore_labels: bool = False,
-    n_workers: int = 1,
 ) -> (bool, list, bool):
     from .write_labels import AnnDataLabelAppender
 
