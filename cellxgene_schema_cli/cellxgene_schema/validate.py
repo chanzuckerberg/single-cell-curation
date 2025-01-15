@@ -17,7 +17,14 @@ from dask.array import map_blocks
 from scipy import sparse
 
 from . import gencode, schema
-from .utils import SPARSE_MATRIX_TYPES, SUPPORTED_SPARSE_MATRIX_TYPES, get_matrix_format, getattr_anndata, is_ontological_descendant_of, read_h5ad
+from .utils import (
+    SPARSE_MATRIX_TYPES,
+    SUPPORTED_SPARSE_MATRIX_TYPES,
+    get_matrix_format,
+    getattr_anndata,
+    is_ontological_descendant_of,
+    read_h5ad,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +58,7 @@ ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED = f"is required for {ERROR_SUFFI
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0 = f"{ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE} and in_tissue is 0"
 
 ERROR_SUFFIX_SPARSE_FORMAT = f"Please ensure it is either a dense array or one of the supported sparse matrix encodings ({','.join(SUPPORTED_SPARSE_MATRIX_TYPES)})"
+
 
 class Validator:
     """Handles validation of AnnData"""
@@ -1018,7 +1026,9 @@ class Validator:
             if matrix_format in SUPPORTED_SPARSE_MATRIX_TYPES:
                 continue
             elif matrix_format in SPARSE_MATRIX_TYPES and matrix_format not in SUPPORTED_SPARSE_MATRIX_TYPES:
-                self.errors.append(f"Invalid sparse encoding for {x_name} with encoding {matrix_format}. Onle {','.join(SUPPORTED_SPARSE_MATRIX_TYPES)} sparse encodings are supported.")
+                self.errors.append(
+                    f"Invalid sparse encoding for {x_name} with encoding {matrix_format}. Onle {','.join(SUPPORTED_SPARSE_MATRIX_TYPES)} sparse encodings are supported."
+                )
                 continue
             elif matrix_format == "unknown":
                 self.errors.append(f"Unknown encoding for matrix {x_name}. {ERROR_SUFFIX_SPARSE_FORMAT}")
@@ -1224,7 +1234,7 @@ class Validator:
                 self.errors.append(f"Unknown encoding for matrix {xloc}. {ERROR_SUFFIX_SPARSE_FORMAT}")
                 self._raw_layer_exists = False
                 return self._raw_layer_exists
-            
+
             self._raw_layer_exists = True
             is_sparse_matrix = matrix_format in SPARSE_MATRIX_TYPES
 

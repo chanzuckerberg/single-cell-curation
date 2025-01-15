@@ -16,7 +16,7 @@ from xxhash import xxh3_64_intdigest
 
 logger = logging.getLogger(__name__)
 
-SPARSE_MATRIX_TYPES = {"csr","csc","coo"}
+SPARSE_MATRIX_TYPES = {"csr", "csc", "coo"}
 SUPPORTED_SPARSE_MATRIX_TYPES = {"csr"}
 
 
@@ -93,7 +93,7 @@ def get_matrix_format(matrix: DaskArray) -> str:
         matrix_format = matrix_slice.format
     elif isinstance(matrix_slice, np.ndarray):
         matrix_format = "dense"
-    assert matrix_format in SPARSE_MATRIX_TYPES.union({"unknown","dense"})
+    assert matrix_format in SPARSE_MATRIX_TYPES.union({"unknown", "dense"})
     return matrix_format
 
 

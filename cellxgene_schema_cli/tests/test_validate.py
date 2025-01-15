@@ -12,13 +12,13 @@ import pytest
 from cellxgene_ontology_guide.entities import Ontology
 from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.validate import (
+    ERROR_SUFFIX_SPARSE_FORMAT,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED,
     SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE,
     SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
-    ERROR_SUFFIX_SPARSE_FORMAT,
     Validator,
     validate,
 )
@@ -386,16 +386,16 @@ class TestCheckSpatial:
         assert not validator.errors
 
     def test__validate_spatial_visium_dense_matrix_ok(self):
-        '''
+        """
         Test visium specific requirements on a dense X matrix
-        '''
+        """
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
         validator._visium_and_is_single_true_matrix_size = 2
         _Xdense = validator.adata.X.compute()
-        _Xdense[_Xdense==0] = 1 # ensure the matrix doesn't trigger sparsity error
-        validator.adata.X = from_array(_Xdense.toarray()) # daskify
+        _Xdense[_Xdense == 0] = 1  # ensure the matrix doesn't trigger sparsity error
+        validator.adata.X = from_array(_Xdense.toarray())  # daskify
         validator.adata.raw = validator.adata.copy()
         validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
         # Confirm spatial is valid.
@@ -1281,6 +1281,4 @@ class TestIsRaw:
         data = np.array([[1, 2, 3], [4, 5, 6]], dtype=np.float32)
         validator = self.create_validator(data, "unknown")
         assert validator._has_valid_raw() is False
-        assert validator.errors == [
-            f'Unknown encoding for matrix X. {ERROR_SUFFIX_SPARSE_FORMAT}'
-        ]
+        assert validator.errors == [f"Unknown encoding for matrix X. {ERROR_SUFFIX_SPARSE_FORMAT}"]
