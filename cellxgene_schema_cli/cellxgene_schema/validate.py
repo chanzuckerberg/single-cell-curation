@@ -2130,14 +2130,8 @@ def validate(
     validator = Validator(
         ignore_labels=ignore_labels,
     )
-    with dask.config.set(
-        {
-            "num_workers": n_workers,
-            "threads_per_worker": 1,
-            "distributed.worker.memory.limit": "6GB",
-            "scheduler": "threads",
-        }
-    ):
+
+    with dask.config.set({"scheduler": "threads"}):
         validator.validate_adata(h5ad_path)
         logger.info(f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}")
 
