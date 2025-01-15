@@ -17,7 +17,7 @@ from dask.array import map_blocks
 from scipy import sparse
 
 from . import gencode, schema
-from .utils import SPARSE_MATRIX_TYPES, get_matrix_format, getattr_anndata, is_ontological_descendant_of, read_h5ad
+from .utils import SPARSE_MATRIX_TYPES, SUPPORTED_SPARSE_MATRIX_TYPES, get_matrix_format, getattr_anndata, is_ontological_descendant_of, read_h5ad
 
 logger = logging.getLogger(__name__)
 
@@ -936,11 +936,7 @@ class Validator:
                 category_mapping[column_name] = column.nunique()
 
         for key, value in uns_dict.items():
-            if any(
-                isinstance(value, sparse_class)
-                for sparse_class in (scipy.sparse.csr_matrix, scipy.sparse.csc_matrix, scipy.sparse.coo_matrix)
-            ):
-                if value.nnz == 0:  # number non-zero
+            if isinstance(value, scipy.sparse.csr_matrix) and value.nnz == 0:
                     self.errors.append(f"uns['{key}'] cannot be an empty value.")
             elif value is not None and not isinstance(value, (np.bool_, bool, numbers.Number)) and len(value) == 0:
                 self.errors.append(f"uns['{key}'] cannot be an empty value.")
@@ -1017,9 +1013,14 @@ class Validator:
         # Check sparsity
         for x, x_name in to_validate:
             matrix_format = get_matrix_format(x)
-            if matrix_format == "csr":
+            if matrix_format in SUPPORTED_SPARSE_MATRIX_TYPES:
                 continue
-            assert matrix_format != "unknown"
+            elif matrix_format in SPARSE_MATRIX_TYPES and matrix_format not in SUPPORTED_SPARSE_MATRIX_TYPES:
+                self.errors.append(f"Invalid sparse encoding for {x_name} with encoding {matrix_format}. Onle {','.join(SUPPORTED_SPARSE_MATRIX_TYPES)} sparse encodings are supported.")
+                continue
+            elif matrix_format == "unknown":
+                self.errors.append(f"Unknown encoding for matrix {x_name}. Please ensure it is either a dense array or one of {','.join(SUPPORTED_SPARSE_MATRIX_TYPES)} sparse encodings.")
+                continue
 
             # It seems silly to perform this test for 'coo' and 'csc' formats,
             # which are, by definition, already sparse. But the old code
@@ -1171,7 +1172,7 @@ class Validator:
 
         return False
 
-    def _get_raw_x(self) -> Union[np.ndarray, sparse.csc_matrix, sparse.csr_matrix]:
+    def _get_raw_x(self) -> Union[np.ndarray, sparse.csr_matrix]:
         """
         gets raw x (best guess, i.e. not guarantee it's actually raw)
         """
@@ -1210,13 +1211,18 @@ class Validator:
         if self._raw_layer_exists is None:
             # Get potential raw_X
             x = self._get_raw_x()
+            xloc = self._get_raw_x_loc()
             if x.dtype != np.float32:
                 self._raw_layer_exists = False
                 self.errors.append("Raw matrix values must have type numpy.float32.")
                 return self._raw_layer_exists
 
             matrix_format = get_matrix_format(x)
-            assert matrix_format != "unknown"
+            if matrix_format == "unknown":
+                self.errors.append(f"Unknown encoding for matrix {xloc}. Please ensure it is either a dense array or one of {','.join(SUPPORTED_SPARSE_MATRIX_TYPES)} sparse encodings.")
+                self._raw_layer_exists = False
+                return self._raw_layer_exists
+            
             self._raw_layer_exists = True
             is_sparse_matrix = matrix_format in SPARSE_MATRIX_TYPES
 
@@ -1246,7 +1252,7 @@ class Validator:
         Validates the data values in the raw matrix. Matrix size is chunked for large matrices.
 
         :param x: raw matrix
-        :param is_sparse_matrix: bool indicating if the matrix is sparse {csc, csr, coo}
+        :param is_sparse_matrix: bool indicating if the matrix is sparse {csr}
         """
 
         def validate_chunk(matrix_chunk: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool) -> np.array:
