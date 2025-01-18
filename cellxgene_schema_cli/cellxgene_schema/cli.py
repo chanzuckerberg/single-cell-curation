@@ -40,7 +40,7 @@ def schema_cli(verbose):
 def schema_validate(h5ad_file, add_labels_file, ignore_labels, num_workers):
     import pytest
 
-    result = pytest.main(["cellxgene_schema/validation/tests/test_hello_world.py"])
+    result = pytest.main(["cellxgene_schema/validation/tests", "--dataset", h5ad_file])
     sys.exit(result)
 
 
