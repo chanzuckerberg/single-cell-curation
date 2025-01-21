@@ -1171,7 +1171,7 @@ class TestCheckSpatial:
         validator.adata.obsm["spatial"][0, 1] = np.nan
         # Confirm spatial is valid.
         validator.validate_adata()
-        assert validator.errors == ["ERROR: adata.obsm['spatial'] contains at least one NaN value."]
+        assert validator.errors == ["ERROR: adata.obs['spatial] contains at least one NaN value."]
 
 
 class TestValidatorValidateDataFrame:
