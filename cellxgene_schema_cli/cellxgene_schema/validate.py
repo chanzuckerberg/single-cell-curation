@@ -1027,20 +1027,14 @@ class Validator:
                 continue
             elif matrix_format in SPARSE_MATRIX_TYPES and matrix_format not in SUPPORTED_SPARSE_MATRIX_TYPES:
                 self.errors.append(
-                    f"Invalid sparse encoding for {x_name} with encoding {matrix_format}. Onle {','.join(SUPPORTED_SPARSE_MATRIX_TYPES)} sparse encodings are supported."
+                    f"Invalid sparse encoding for {x_name} with encoding {matrix_format}. Only {','.join(SUPPORTED_SPARSE_MATRIX_TYPES)} sparse encodings are supported."
                 )
                 continue
             elif matrix_format == "unknown":
                 self.errors.append(f"Unknown encoding for matrix {x_name}. {ERROR_SUFFIX_SPARSE_FORMAT}")
                 continue
 
-            # It seems silly to perform this test for 'coo' and 'csc' formats,
-            # which are, by definition, already sparse. But the old code
-            # performs test, and so we continue the tradition. It is possible
-            # that the prolog comment is incorrect, and the purpose of this
-            # function is to recommend CSR for _any_ matrix with sparsity beyond
-            # a given limit.
-
+            # check if it should be sparse encoded
             nnz = self.count_matrix_nonzero(x)
             sparsity = 1 - nnz / np.prod(x.shape)
             if sparsity > max_sparsity:
