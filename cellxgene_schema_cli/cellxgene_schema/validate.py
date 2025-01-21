@@ -1118,7 +1118,7 @@ class Validator:
 
                 # spatial embeddings can't have any NaN; other embeddings can't be all NaNs
                 if key_is_spatial and np.any(np.isnan(value)):
-                    issue_list.append("adata.obsm['spatial] contains at least one NaN value.")
+                    issue_list.append("adata.obsm['spatial'] contains at least one NaN value.")
                 elif np.all(np.isnan(value)):
                     issue_list.append(f"adata.obsm['{key}'] contains all NaN values.")
 

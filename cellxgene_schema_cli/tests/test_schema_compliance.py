@@ -2416,7 +2416,7 @@ class TestObsm:
         if key != "spatial":
             assert validator.errors == []
         else:
-            assert validator.errors == ["ERROR: adata.obsm['spatial] contains at least one NaN value."]
+            assert validator.errors == ["ERROR: adata.obsm['spatial'] contains at least one NaN value."]
 
         # Check embedding has all NaNs
         all_nan = numpy.full(obsm[key].shape, numpy.nan)
@@ -2426,7 +2426,7 @@ class TestObsm:
         if key != "spatial":
             assert validator.errors == [f"ERROR: adata.obsm['{key}'] contains all NaN values."]
         else:
-            assert validator.errors == ["ERROR: adata.obsm['spatial] contains at least one NaN value."]
+            assert validator.errors == ["ERROR: adata.obsm['spatial'] contains at least one NaN value."]
 
     def test_obsm_values_no_X_embedding__non_spatial_dataset(self, validator_with_adata):
         """
