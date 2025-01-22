@@ -35,6 +35,7 @@ def test_generate_script__without_gencode_changes(template, tmpdir):  # type: ig
     # Verify the output
     expected_output = """
 import anndata as ad
+import dask
 
 from . import utils
 
@@ -77,9 +78,7 @@ GENCODE_MAPPER = {}
 def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
 
-    dataset = ad.read_h5ad(input_file, backed="r")
-    if dataset.raw is not None and DEPRECATED_FEATURE_IDS:
-        dataset = dataset.to_memory()
+    dataset = utils.read_h5ad(input_file)
 
     # AUTOMATED, DO NOT CHANGE
     for ontology_name, deprecated_term_map in ONTOLOGY_TERM_MAPS.items():
@@ -109,7 +108,8 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     if DEPRECATED_FEATURE_IDS:
         dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
 
-    dataset.write(output_file, compression="gzip")"""
+    with dask.config.set(scheduler="single-threaded"):
+        dataset.write_h5ad(output_file, compression="gzip")"""
 
     with open(os.path.join(mock_target_file), "r") as fp:
         actual_output = fp.read().strip()
@@ -137,6 +137,7 @@ def test_generate_script__with_automated_replaced_by_map(template, tmpdir):  # t
         # Verify the output
         expected_output = """
 import anndata as ad
+import dask
 
 from . import utils
 
@@ -182,9 +183,7 @@ GENCODE_MAPPER = {}
 def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
 
-    dataset = ad.read_h5ad(input_file, backed="r")
-    if dataset.raw is not None and DEPRECATED_FEATURE_IDS:
-        dataset = dataset.to_memory()
+    dataset = utils.read_h5ad(input_file)
 
     # AUTOMATED, DO NOT CHANGE
     for ontology_name, deprecated_term_map in ONTOLOGY_TERM_MAPS.items():
@@ -214,7 +213,8 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     if DEPRECATED_FEATURE_IDS:
         dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
 
-    dataset.write(output_file, compression="gzip")"""
+    with dask.config.set(scheduler="single-threaded"):
+        dataset.write_h5ad(output_file, compression="gzip")"""
 
         with open(os.path.join(mock_target_file), "r") as fp:
             actual_output = fp.read().strip()
@@ -249,6 +249,7 @@ def test_generate_script__with_gencode_changes(template, tmpdir):  # type: ignor
     # Verify the output
     expected_output = """
 import anndata as ad
+import dask
 
 from . import utils
 
@@ -293,9 +294,7 @@ GENCODE_MAPPER = {}
 def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
 
-    dataset = ad.read_h5ad(input_file, backed="r")
-    if dataset.raw is not None and DEPRECATED_FEATURE_IDS:
-        dataset = dataset.to_memory()
+    dataset = utils.read_h5ad(input_file)
 
     # AUTOMATED, DO NOT CHANGE
     for ontology_name, deprecated_term_map in ONTOLOGY_TERM_MAPS.items():
@@ -325,7 +324,9 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     if DEPRECATED_FEATURE_IDS:
         dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
 
-    dataset.write(output_file, compression="gzip")"""
+    with dask.config.set(scheduler="single-threaded"):
+        dataset.write_h5ad(output_file, compression="gzip")"""
+
     mock.patch("scripts.migration_assistant.generate_script.get_current_version", return_value=expected_output)
 
     with open(os.path.join(mock_target_file), "r") as fp:
