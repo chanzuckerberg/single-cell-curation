@@ -1,5 +1,6 @@
 import logging
 import sys
+from datetime import datetime
 
 import click
 
@@ -36,11 +37,23 @@ def schema_cli(verbose):
     type=click.Path(exists=False, dir_okay=False, writable=True),
 )
 @click.option("-i", "--ignore-labels", help="Ignore ontology labels when validating", is_flag=True)
-@click.option("-n", "--num-workers", help="Number of workers to use for parallel processing", default=1, type=int)
-def schema_validate(h5ad_file, add_labels_file, ignore_labels, num_workers):
+def schema_validate(h5ad_file, add_labels_file, ignore_labels):
+    # Imports are very slow so we defer loading until Click arg validation has passed
+    logger.info("Loading dependencies")
+
+    import dask
     import pytest
 
-    result = pytest.main(["cellxgene_schema/validation/tests", "--dataset", h5ad_file])
+    start = datetime.now()
+    pytest_params = ["cellxgene_schema/validation/tests", "--dataset", h5ad_file]
+    if ignore_labels:
+        pytest_params.append("--ignore-labels")
+    with dask.config.set({"scheduler": "threads"}):
+        result = pytest.main(["cellxgene_schema/validation/tests", "--dataset", h5ad_file])
+        logger.info(f"Validation complete in {datetime.now() - start} with status is_valid={result}")
+    if add_labels_file:
+        # TODO add labels
+        pass
     sys.exit(result)
 
 

@@ -525,8 +525,8 @@ class Validator:
         invalid_rows = ~self.adata.obs.apply(is_valid_row, axis=1)
 
         if invalid_rows.any():
-            donor_ids = self.adata.obs[donor_id_column].tolist()
-            unique_donor_ids = list(set(donor_ids))
+            invalid_donor_ids = self.adata.obs.loc[invalid_rows, "donor_id"]
+            unique_donor_ids = list(set(invalid_donor_ids))
             self.errors.append(
                 f"obs rows with donor ids {unique_donor_ids} have invalid genetic_ancestry_* values. All "
                 f"observations with the same donor_id must contain the same genetic_ancestry_* values. If "
@@ -1118,7 +1118,7 @@ class Validator:
 
                 # spatial embeddings can't have any NaN; other embeddings can't be all NaNs
                 if key_is_spatial and np.any(np.isnan(value)):
-                    issue_list.append("adata.obs['spatial] contains at least one NaN value.")
+                    issue_list.append("adata.obsm['spatial'] contains at least one NaN value.")
                 elif np.all(np.isnan(value)):
                     issue_list.append(f"adata.obsm['{key}'] contains all NaN values.")
 
@@ -2110,7 +2110,6 @@ def validate(
     h5ad_path: Union[str, bytes, os.PathLike],
     add_labels_file: str = None,
     ignore_labels: bool = False,
-    n_workers: int = 1,
 ) -> (bool, list, bool):
     from .write_labels import AnnDataLabelAppender
 
@@ -2130,14 +2129,8 @@ def validate(
     validator = Validator(
         ignore_labels=ignore_labels,
     )
-    with dask.config.set(
-        {
-            "num_workers": n_workers,
-            "threads_per_worker": 1,
-            "distributed.worker.memory.limit": "6GB",
-            "scheduler": "threads",
-        }
-    ):
+
+    with dask.config.set({"scheduler": "threads"}):
         validator.validate_adata(h5ad_path)
         logger.info(f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}")
 
