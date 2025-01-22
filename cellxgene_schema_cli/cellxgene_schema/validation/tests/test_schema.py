@@ -379,7 +379,8 @@ def test_components(adata, component_name, component_def):
     if component is None:
         # Check for required components
         if component_def.get("required", False):
-            pytest.fail(f"'{component_name}' is missing from adata and is required.")
+            check.fail(f"'{component_name}' is missing from adata and is required.")
+            return
         pytest.skip(f"'{component_name}' is not present in adata.")
     elif component_def["type"] == "dataframe":
         _validate_dataframe(adata, component_name, component_def)
@@ -1178,6 +1179,7 @@ def test_spatial_embeddings(adata, is_single):
         )
 
 
+@pytest.mark.depends(on=[""])
 def test_validate_spatial_assay_ontology_term_id(adata, is_supported_spatial_assay):
     """
     If assay is spatial, all assay ontology term ids should be identical.
@@ -1200,7 +1202,7 @@ def test_validate_spatial_assay_ontology_term_id(adata, is_supported_spatial_ass
 
 
 def test_validate_spatial_cell_type_ontology_term_id(
-    adata, is_supported_spatial_assay, is_visium_including_descendants, is_single, is_visium_and_is_single_true
+    adata, is_supported_spatial_assay, is_single, is_visium_and_is_single_true
 ):
     """
     Validate cell type ontology term id is "unknown" if Visium, is_single is True and in_tissue is 0.
@@ -1228,6 +1230,17 @@ def test_validate_spatial_cell_type_ontology_term_id(
         )
 
 
+def test_validate_spatial_is_primary_data(adata, is_single):
+    """
+    Validate is_primary_data for spatial datasets.
+    """
+    obs = getattr_anndata(adata, "obs")
+    if obs is None or "is_primary_data" not in obs:
+        return
+    if is_single is False and obs["is_primary_data"].any():
+        check.fail("When uns['spatial']['is_single'] is False, obs['is_primary_data'] must be False for all rows.")
+
+
 @pytest.fixture(scope="session")
 def tissue_position_maxes(adata, is_visium_and_is_single_true) -> Optional[Tuple[int, int]]:
     if is_visium_and_is_single_true:
@@ -1244,28 +1257,13 @@ def tissue_position_maxes(adata, is_visium_and_is_single_true) -> Optional[Tuple
             )
         else:
             return VISIUM_TISSUE_POSITION_MAX_ROW, VISIUM_TISSUE_POSITION_MAX_COL
-    return None
-
-
-def test_validate_spatial_is_primary_data(adata, is_single):
-    """
-    Validate is_primary_data for spatial datasets.
-    """
-    obs = getattr_anndata(adata, "obs")
-    if obs is None or "is_primary_data" not in obs:
-        return
-    if is_single is False and obs["is_primary_data"].any():
-        check.fail("When uns['spatial']['is_single'] is False, obs['is_primary_data'] must be False for all rows.")
+    pytest.skip("not a valid spatial assay")
 
 
 def test_validate_spatial_tissue_positions(adata, tissue_position_maxes, is_visium_and_is_single_true):
     """
     Validate tissue positions of spatial datasets.
-
-    :rtype none
     """
-    if tissue_position_maxes is None:
-        pytest.skip("not a valid spatial assay")
 
     def validate_spatial_tissue_position(tissue_position_name: str, min: int, max: int):
         """
@@ -1625,7 +1623,7 @@ def has_valid_raw(
     visium_and_is_single_true_matrix_size, visium_error_suffix = visium_and_is_single_true_matrix_size_with_error_suffix
     # Get potential raw_X
     if raw_x.dtype != np.float32:
-        pytest.fail("Raw matrix values must have type numpy.float32.")
+        check.fail("Raw matrix values must have type numpy.float32.")
         return False
 
     matrix_format = get_matrix_format(raw_x)
