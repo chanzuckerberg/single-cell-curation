@@ -2,10 +2,15 @@ import logging
 import os
 import sys
 from base64 import b85encode
+from functools import lru_cache
 from typing import Dict, List, Union
 
 import anndata as ad
+import h5py
 import numpy as np
+from anndata.compat import DaskArray
+from anndata.experimental import read_dispatched, read_elem_as_dask
+from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from scipy import sparse
 from xxhash import xxh3_64_intdigest
 
@@ -66,7 +71,7 @@ def remap_deprecated_features(*, adata: ad.AnnData, remapped_features: Dict[str,
     return adata
 
 
-def get_matrix_format(adata: ad.AnnData, matrix: Union[np.ndarray, sparse.spmatrix]) -> str:
+def get_matrix_format(matrix: DaskArray) -> str:
     """
     Given a matrix, returns the format as one of: csc, csr, coo, dense
     or unknown.
@@ -82,15 +87,11 @@ def get_matrix_format(adata: ad.AnnData, matrix: Union[np.ndarray, sparse.spmatr
     # >>> return getattr(matrix, "format_str", "dense)
     #
     matrix_format = "unknown"
-    if adata.n_obs == 0 or adata.n_vars == 0:
+    matrix_slice = matrix[0:1, 0:1].compute()
+    if isinstance(matrix_slice, sparse.spmatrix):
+        matrix_format = matrix_slice.format
+    elif isinstance(matrix_slice, np.ndarray):
         matrix_format = "dense"
-    else:
-        matrix_slice = matrix[0:1, 0:1]
-        if isinstance(matrix_slice, sparse.spmatrix):
-            matrix_format = matrix_slice.format
-        elif isinstance(matrix_slice, np.ndarray):
-            matrix_format = "dense"
-
     assert matrix_format in ["unknown", "csr", "csc", "coo", "dense"]
     return matrix_format
 
@@ -114,7 +115,38 @@ def getattr_anndata(adata: ad.AnnData, attr: str = None):
         return getattr(adata, attr)
 
 
-def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
+def read_backed(f: h5py.File, chunk_size: int) -> ad.AnnData:
+    """
+    Read an AnnData object from a h5py.File object, reading in matrices (dense or sparse) as dask arrays. Does not
+    read full matrices into memory.
+
+    :param f: h5py.File object
+    :param chunk_size: size of chunks to read matrices in
+    :return: ad.AnnData object
+    """
+
+    def callback(func, elem_name: str, elem, iospec):
+        if "/layers" in elem_name or elem_name == "/X" or elem_name == "/raw/X":
+            if iospec.encoding_type in (
+                "csr_matrix",
+                "csc_matrix",
+            ):
+                n_vars = elem.attrs.get("shape")[1]
+                return read_elem_as_dask(elem, chunks=(chunk_size, n_vars))
+            elif iospec.encoding_type == "array" and len(elem.shape) == 2:
+                n_vars = elem.shape[1]
+                return read_elem_as_dask(elem, chunks=(chunk_size, n_vars))
+            else:
+                return func(elem)
+        else:
+            return func(elem)
+
+    adata = read_dispatched(f, callback=callback)
+
+    return adata
+
+
+def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike], chunk_size: int = 5000) -> ad.AnnData:
     """
     Reads h5ad into adata
     :params Union[str, bytes, os.PathLike] h5ad_path: path to h5ad to read
@@ -122,13 +154,14 @@ def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike]) -> ad.AnnData:
     :rtype None
     """
     try:
-        adata = ad.read_h5ad(h5ad_path, backed="r")
+        f = h5py.File(h5ad_path)
+        adata = read_backed(f, chunk_size)
 
         # This code, and AnnData in general, is optimized for row access.
         # Running backed, with CSC, is prohibitively slow. Read the entire
         # AnnData into memory if it is CSC.
-        if (get_matrix_format(adata, adata.X) == "csc") or (
-            (adata.raw is not None) and (get_matrix_format(adata, adata.raw.X) == "csc")
+        if (get_matrix_format(adata.X) == "csc") or (
+            (adata.raw is not None) and (get_matrix_format(adata.raw.X) == "csc")
         ):
             logger.warning("Matrices are in CSC format; loading entire dataset into memory.")
             adata = adata.to_memory()
@@ -151,3 +184,15 @@ def get_hash_digest_column(dataframe):
         .astype(np.uint64)
         .apply(lambda v: b85encode(v.to_bytes(8, "big")).decode("ascii"))
     )
+
+
+@lru_cache()
+def is_ontological_descendant_of(onto: OntologyParser, term: str, target: str, include_self: bool = True) -> bool:
+    """
+    Determines if :term is an ontological descendant of :target and whether to include :term==:target.
+
+    This function is cached and is safe to call many times.
+
+    #TODO:[EM] needs testing
+    """
+    return term in set(onto.get_term_descendants(target, include_self))

@@ -3,6 +3,8 @@ import sys
 
 import click
 
+logger = logging.getLogger("cellxgene_schema")
+
 
 @click.group(
     name="schema",
@@ -10,8 +12,10 @@ import click
     short_help="Apply and validate the cellxgene data integration schema to an h5ad file.",
     context_settings=dict(max_content_width=85, help_option_names=["-h", "--help"]),
 )
-def schema_cli():
-    pass
+@click.option("-v", "--verbose", help="When present will set logging level to debug", is_flag=True)
+def schema_cli(verbose):
+    logging.basicConfig(level=logging.ERROR)
+    logger.setLevel(logging.DEBUG if verbose else logging.INFO)
 
 
 @schema_cli.command(
@@ -32,20 +36,18 @@ def schema_cli():
     type=click.Path(exists=False, dir_okay=False, writable=True),
 )
 @click.option("-i", "--ignore-labels", help="Ignore ontology labels when validating", is_flag=True)
-@click.option("-v", "--verbose", help="When present will set logging level to debug", is_flag=True)
-def schema_validate(h5ad_file, add_labels_file, ignore_labels, verbose):
+def schema_validate(h5ad_file, add_labels_file, ignore_labels):
     # Imports are very slow so we defer loading until Click arg validation has passed
-
-    print("Loading dependencies")
+    logger.info("Loading dependencies")
     try:
         import anndata  # noqa: F401
     except ImportError:
         raise click.ClickException("[cellxgene] cellxgene-schema requires anndata") from None
 
-    print("Loading validator modules")
+    logger.info("Loading validator modules")
     from .validate import validate
 
-    is_valid, _, _ = validate(h5ad_file, add_labels_file, ignore_labels=ignore_labels, verbose=verbose)
+    is_valid, _, _ = validate(h5ad_file, add_labels_file, ignore_labels=ignore_labels)
     if is_valid:
         sys.exit(0)
     else:
@@ -87,20 +89,20 @@ def fragment_validate(h5ad_file, fragment_file, generate_index, verbose):
 def remove_labels(input_file, output_file):
     from .remove_labels import AnnDataLabelRemover
 
-    print("Loading dependencies")
+    logger.info("Loading dependencies")
     try:
         import anndata  # noqa: F401
     except ImportError:
         raise click.ClickException("[cellxgene] cellxgene-schema requires anndata") from None
 
-    print(f"Loading h5ad from {input_file}")
+    logger.info(f"Loading h5ad from {input_file}")
     adata = anndata.read_h5ad(input_file)
     anndata_label_remover = AnnDataLabelRemover(adata)
     if not anndata_label_remover.schema_def:
         return
-    print("Removing labels")
+    logger.info("Removing labels")
     anndata_label_remover.remove_labels()
-    print(f"Labels have been removed. Writing to {output_file}")
+    logger.info(f"Labels have been removed. Writing to {output_file}")
     anndata_label_remover.adata.write(output_file, compression="gzip")
 
 

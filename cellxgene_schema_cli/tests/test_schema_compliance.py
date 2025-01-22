@@ -2,8 +2,8 @@
 Tests for schema compliance of an AnnData object
 """
 
-import tempfile
 import unittest
+from copy import deepcopy
 
 import anndata
 import fixtures.examples_validate as examples
@@ -12,13 +12,23 @@ import pandas as pd
 import pytest
 import scipy.sparse
 from cellxgene_schema.schema import get_schema_definition
-from cellxgene_schema.utils import getattr_anndata
+from cellxgene_schema.utils import getattr_anndata, read_h5ad
 from cellxgene_schema.validate import (
+    ASSAY_VISIUM_11M,
+    ERROR_SUFFIX_IS_SINGLE,
+    ERROR_SUFFIX_SPATIAL,
+    ERROR_SUFFIX_VISIUM,
+    ERROR_SUFFIX_VISIUM_11M,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE,
+    SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE,
+    SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
+    VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE,
     VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE,
     Validator,
 )
 from cellxgene_schema.write_labels import AnnDataLabelAppender
+from dask.array import from_array
+from fixtures.examples_validate import visium_library_id
 
 schema_def = get_schema_definition()
 
@@ -76,7 +86,8 @@ def validator_with_spatial_and_is_single_false(validator) -> Validator:
 @pytest.fixture
 def validator_with_visium_assay(validator) -> Validator:
     validator.adata = examples.adata_visium.copy()
-    validator.visium_and_is_single_true_matrix_size = 2
+    validator.reset(None, None)
+
     return validator
 
 
@@ -94,17 +105,6 @@ def label_writer(validator_with_validated_adata) -> AnnDataLabelAppender:
     label_writer = AnnDataLabelAppender(validator_with_validated_adata)
     label_writer._add_labels()
     return label_writer
-
-
-def save_and_read_adata(adata: anndata.AnnData) -> anndata.AnnData:
-    """
-    Saves adata to a temporary file and reads it back. Used to test read/write errors.
-    :param adata: AnnData object
-    :return: AnnData object
-    """
-    with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
-        adata.write_h5ad(f.name)
-        return anndata.read_h5ad(f.name)
 
 
 class TestValidAnndata:
@@ -164,7 +164,7 @@ class TestExpressionMatrix:
         sparse_X = numpy.zeros([validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32)
         sparse_X[0, 1] = 1
         sparse_X[1, 1] = 1
-        validator.adata.X = sparse_X
+        validator.adata.X = from_array(sparse_X)
         validator.validate_adata()
         assert validator.warnings == [
             "WARNING: Sparsity of 'X' is 0.75 which is greater than 0.5, "
@@ -197,13 +197,14 @@ class TestExpressionMatrix:
 
         validator = validator_with_visium_assay
         validator.adata.raw.X[0, 1] = invalid_value
+        validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: All non-zero values in raw matrix must be positive integers of type numpy.float32.",
             "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
         ]
 
-    @pytest.mark.parametrize("datatype", [int, "float16", "float64"])
+    @pytest.mark.parametrize("datatype", [int, "float64"])
     def test_raw_values__wrong_datatype(self, validator_with_adata, datatype):
         """
         When both `adata.X` and `adata.raw.X` are present, but `adata.raw.X` values are stored as the wrong datatype
@@ -237,7 +238,8 @@ class TestExpressionMatrix:
         Raw Matrix contains a row with all zeros and in_tissue is 1, but no values are in_tissue 0.
         """
 
-        validator = validator_with_visium_assay
+        validator: Validator = validator_with_visium_assay
+        validator.reset(None, 2)
         validator.adata.obs["in_tissue"] = 1
         validator.adata.X[0] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
         validator.adata.raw.X[0] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
@@ -252,9 +254,10 @@ class TestExpressionMatrix:
         Raw Matrix contains a row with all zeros and in_tissue is 1, and there are also values with in_tissue 0.
         """
 
-        validator = validator_with_visium_assay
+        validator: Validator = validator_with_visium_assay
         validator.adata.X[1] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
         validator.adata.raw.X[1] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
+        validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Each observation with obs['in_tissue'] == 1 must have at least one "
@@ -271,11 +274,12 @@ class TestExpressionMatrix:
         validator = validator_with_visium_assay
         validator.adata.obs["in_tissue"] = 0
         validator.adata.obs["cell_type_ontology_term_id"] = "unknown"
-        validator.adata.X = numpy.zeros(
-            [validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32
+        validator.adata.X = from_array(
+            numpy.zeros([validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32)
         )
         validator.adata.raw = validator.adata.copy()
         validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+        validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: If obs['in_tissue'] contains at least one value 0, then there must be at least "
@@ -294,42 +298,103 @@ class TestExpressionMatrix:
         validator.adata.obs["cell_type_ontology_term_id"] = "unknown"
         validator.adata.X[0] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
         validator.adata.raw.X[0] = numpy.zeros(validator.adata.var.shape[0], dtype=numpy.float32)
+        validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == []
 
-    def test_raw_values__invalid_visium_and_is_single_true_row_length(self, validator_with_visium_assay):
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, req_matrix_size, image_size",
+        [
+            ("EFO:0022858", VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE),
+            (
+                "EFO:0022860",
+                VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE,
+                SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
+            ),
+        ],
+    )
+    def test_raw_values__invalid_visium_and_is_single_true_row_length(
+        self, validator_with_visium_assay, assay_ontology_term_id, req_matrix_size, image_size
+    ):
         """
         Dataset is visium and uns['is_single'] is True, but raw.X is the wrong length.
         """
-        validator = validator_with_visium_assay
-        validator.visium_and_is_single_true_matrix_size = VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
+        validator: Validator = validator_with_visium_assay
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+
+        # hires image size must be present in order to validate the raw.
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = numpy.zeros(
+            (1, image_size, 3), dtype=numpy.uint8
+        )
 
         validator.validate_adata()
-        assert validator.errors == [
-            f"ERROR: When {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}, the raw matrix must be the "
-            "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
-            f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2.",
-            "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
-        ]
+        if assay_ontology_term_id == ASSAY_VISIUM_11M:
+            _errors = [
+                f"ERROR: When {ERROR_SUFFIX_VISIUM_11M} and {ERROR_SUFFIX_IS_SINGLE}, the raw matrix must be the "
+                "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
+                f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2.",
+                "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
+            ]
+        else:
+            _errors = [
+                f"ERROR: When {ERROR_SUFFIX_VISIUM} and {ERROR_SUFFIX_IS_SINGLE}, the raw matrix must be the "
+                "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
+                f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2.",
+                "ERROR: Raw data may be missing: data in 'raw.X' does not meet schema requirements.",
+            ]
 
-    def test_raw_values__multiple_invalid_in_tissue_errors(self, validator_with_visium_assay):
+        assert validator.errors == _errors
+
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, req_matrix_size, image_size",
+        [
+            ("EFO:0022858", VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE, SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE),
+            (
+                "EFO:0022860",
+                VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE,
+                SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
+            ),
+        ],
+    )
+    def test_raw_values__multiple_invalid_in_tissue_errors(
+        self, validator_with_visium_assay, assay_ontology_term_id, req_matrix_size, image_size
+    ):
         """
         Dataset is visium and uns['is_single'] is True, in_tissue has both 0 and 1 values and there
         are issues validating rows of both in the matrix.
         """
 
         validator = validator_with_visium_assay
-        validator.visium_and_is_single_true_matrix_size = VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE
-        validator.adata.X = numpy.zeros(
-            [validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32
+
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+        # hires image size must be present in order to validate the raw.
+        validator._visium_and_is_single_true_matrix_size = None
+        validator._hires_max_dimension_size = image_size
+        validator.adata.uns["spatial"][visium_library_id]["images"]["hires"] = numpy.zeros(
+            (1, image_size, 3), dtype=numpy.uint8
+        )
+        validator.adata.X = from_array(
+            numpy.zeros([validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32)
         )
         validator.adata.raw = validator.adata.copy()
         validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
         validator.validate_adata()
-        assert validator.errors == [
-            f"ERROR: When {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}, the raw matrix must be the "
-            "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
-            f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2.",
+        if assay_ontology_term_id == ASSAY_VISIUM_11M:
+            assert (
+                validator.errors[0]
+                == f"ERROR: When {ERROR_SUFFIX_VISIUM_11M} and {ERROR_SUFFIX_IS_SINGLE}, the raw matrix must be the "
+                "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
+                f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2."
+            )
+        else:
+            assert (
+                validator.errors[0]
+                == f"ERROR: When {ERROR_SUFFIX_VISIUM} and {ERROR_SUFFIX_IS_SINGLE}, the raw matrix must be the "
+                "unfiltered feature-barcode matrix 'raw_feature_bc_matrix'. It must have exactly "
+                f"{validator.visium_and_is_single_true_matrix_size} rows. Raw matrix row count is 2."
+            )
+
+        assert validator.errors[1:] == [
             "ERROR: If obs['in_tissue'] contains at least one value 0, then there must be at least "
             "one row with obs['in_tissue'] == 0 that has a non-zero value in the raw matrix.",
             "ERROR: Each observation with obs['in_tissue'] == 1 must have at least one "
@@ -375,7 +440,7 @@ class TestExpressionMatrix:
         """
         Test adata is validated correctly when matrix is larger than the chunk size
         """
-        with unittest.mock.patch.object(validator_with_adata._chunk_matrix, "__defaults__", (1,)):
+        with unittest.mock.patch.object(read_h5ad, "__defaults__", (1,)):
             validator = validator_with_adata
             validator.validate_adata()
             assert validator.errors == []
@@ -477,6 +542,28 @@ class TestObs:
             "to missing dependent column in adata.obs.",
         ]
 
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, is_descendant",
+        [("EFO:0010961", True), ("EFO:0022858", True), ("EFO:0030029", False), ("EFO:0002697", False)],
+    )
+    def test_column_presence_in_tissue(self, validator_with_visium_assay, assay_ontology_term_id, is_descendant):
+        """
+        Spatial assays that are descendants of visium must have a valid "in_tissue" column.
+        """
+        validator: Validator = validator_with_visium_assay
+
+        # reset and test
+        validator.reset()
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+        validator.adata.obs["assay_ontology_term_id"] = validator.adata.obs["assay_ontology_term_id"].astype("category")
+        validator._validate_spatial_tissue_position("in_tissue", 0, 1)
+        if is_descendant:
+            assert validator.errors == []
+        else:
+            assert validator.errors == [
+                f"obs['in_tissue'] is only allowed for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}."
+            ]
+
     @pytest.mark.parametrize("reserved_column", schema_def["components"]["obs"]["reserved_columns"])
     def test_obs_reserved_columns_presence(self, validator_with_adata, reserved_column):
         """
@@ -538,6 +625,47 @@ class TestObs:
             "error_message_suffix"
         ]
         assert validator.errors == [self.get_format_error_message(error_message_suffix, error)]
+
+    def test_assay_ontology_term_id__as_categorical(self, validator_with_visium_assay):
+        """
+        Formally, assay_ontology_term_id is expected to be a categorical variable of type string. However, it should work for categorical dtypes as well.
+        """
+        validator: Validator = validator_with_visium_assay
+
+        # check encoding as string
+        validator.reset(None, 2)
+        validator._check_spatial()
+        validator._validate_raw()
+        assert validator.errors == []
+
+        # force encoding as 'categorical'
+        validator.reset(None, 2)
+        validator.adata.obs["assay_ontology_term_id"] = validator.adata.obs["assay_ontology_term_id"].astype("category")
+        validator._check_spatial()
+        validator._validate_raw()
+        assert validator.errors == []
+
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id, all_same",
+        [("EFO:0010961", True), ("EFO:0030062", True), ("EFO:0022860", True), ("EFO:0008995", False)],
+    )
+    def test_assay_ontology_term_id__all_same(self, validator_with_visium_assay, assay_ontology_term_id, all_same):
+        """
+        Spatial assays (descendants of Visium Spatia Gene Expression, or Slide-SeqV2) require all values in the column to be identical.
+        """
+        validator: Validator = validator_with_visium_assay
+
+        # mix values (with otherwise allowed values)
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+        validator.adata.obs["assay_ontology_term_id"].iloc[0] = "EFO:0010183"
+
+        # check that unique values are allowed
+        validator._check_spatial_obs()
+        EXPECTED_ERROR = f"When {ERROR_SUFFIX_SPATIAL}, all observations must contain the same value."
+        if all_same:
+            assert EXPECTED_ERROR in validator.errors
+        else:
+            assert validator.errors not in validator.errors
 
     def test_cell_type_ontology_term_id_invalid_term(self, validator_with_adata):
         validator = validator_with_adata
@@ -1345,13 +1473,15 @@ class TestObs:
         if "na" in suspension_types:
             invalid_suspension_type = "nucleus" if "nucleus" not in suspension_types else "cell"
         obs = validator.adata.obs
-        obs.loc[obs.index[1], "suspension_type"] = invalid_suspension_type
-        obs.loc[obs.index[1], "assay_ontology_term_id"] = assay
+        obs["suspension_type"] = invalid_suspension_type
+        obs["assay_ontology_term_id"] = assay
+        obs["suspension_type"] = obs["suspension_type"].astype("category")
+        obs["assay_ontology_term_id"] = obs["assay_ontology_term_id"].astype("category")
         validator.validate_adata()
         assert validator.errors == [
             f"ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
             f"'['{invalid_suspension_type}']'. Values must be one of {suspension_types} when "
-            f"'assay_ontology_term_id' is {assay}"
+            f"'assay_ontology_term_id' is in ['{assay}']"
         ]
 
     @pytest.mark.parametrize(
@@ -1378,13 +1508,15 @@ class TestObs:
         if "na" in suspension_types:
             invalid_suspension_type = "nucleus" if "nucleus" not in suspension_types else "cell"
             obs["suspension_type"] = obs["suspension_type"].cat.remove_unused_categories()
-        obs.loc[obs.index[1], "assay_ontology_term_id"] = assay
-        obs.loc[obs.index[1], "suspension_type"] = invalid_suspension_type
+        obs["suspension_type"] = invalid_suspension_type
+        obs["assay_ontology_term_id"] = assay
+        obs["suspension_type"] = obs["suspension_type"].astype("category")
+        obs["assay_ontology_term_id"] = obs["assay_ontology_term_id"].astype("category")
         validator.validate_adata()
         assert validator.errors == [
             f"ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
             f"'['{invalid_suspension_type}']'. Values must be one of {suspension_types} when "
-            f"'assay_ontology_term_id' is {assay} or its descendants"
+            f"'assay_ontology_term_id' is in ['{assay}']"
         ]
 
     def test_suspension_type_with_descendant_term_id_failure(self, validator_with_adata):
@@ -1394,14 +1526,15 @@ class TestObs:
         """
         validator = validator_with_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "assay_ontology_term_id"] = "EFO:0022615"  # descendant of EFO:0008994
-        obs.loc[obs.index[0], "suspension_type"] = "nucleus"
-
+        obs["suspension_type"] = "nucleus"
+        obs["assay_ontology_term_id"] = "EFO:0022615"  # descendant of EFO:0008994
+        obs["suspension_type"] = obs["suspension_type"].astype("category")
+        obs["assay_ontology_term_id"] = obs["assay_ontology_term_id"].astype("category")
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
             "'['nucleus']'. Values must be one of ['na'] when "
-            "'assay_ontology_term_id' is EFO:0008994 or its descendants"
+            "'assay_ontology_term_id' is in ['EFO:0022615']"
         ]
 
     def test_suspension_type_with_descendant_term_id_success(self, validator_with_adata):
@@ -1488,6 +1621,126 @@ class TestObs:
             in validator.errors
         )
 
+    @pytest.mark.parametrize(
+        "genetic_ancestry_African, genetic_ancestry_East_Asian, genetic_ancestry_European, "
+        "genetic_ancestry_Indigenous_American, genetic_ancestry_Oceanian, genetic_ancestry_South_Asian",
+        [
+            (0.0, 0.0, 0.0, 0.0, 0.0, 1.0),
+            (0.5, 0.5, 0.0, 0.0, 0.0, 0.0),
+            (0.0, 0.25, 0.25, 0.25, 0.25, 0.0),
+            (float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), float("nan")),
+            (numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan),
+        ],
+    )
+    def test_genetic_ancestry__OK(
+        self,
+        validator_with_adata,
+        genetic_ancestry_African,
+        genetic_ancestry_East_Asian,
+        genetic_ancestry_European,
+        genetic_ancestry_Indigenous_American,
+        genetic_ancestry_Oceanian,
+        genetic_ancestry_South_Asian,
+    ):
+        """
+        genetic_ancestry_X fields must all be floats between 0 and 1 and sum to 1
+        OR they can all be NaN
+        """
+        validator = validator_with_adata
+        # Second organism in adata is not homo sapiens
+        validator.adata.obs["genetic_ancestry_African"] = [genetic_ancestry_African, float("nan")]
+        validator.adata.obs["genetic_ancestry_East_Asian"] = [genetic_ancestry_East_Asian, float("nan")]
+        validator.adata.obs["genetic_ancestry_European"] = [genetic_ancestry_European, float("nan")]
+        validator.adata.obs["genetic_ancestry_Indigenous_American"] = [
+            genetic_ancestry_Indigenous_American,
+            float("nan"),
+        ]
+        validator.adata.obs["genetic_ancestry_Oceanian"] = [genetic_ancestry_Oceanian, float("nan")]
+        validator.adata.obs["genetic_ancestry_South_Asian"] = [genetic_ancestry_South_Asian, float("nan")]
+        validator.validate_adata()
+        assert validator.errors == []
+
+    @pytest.mark.parametrize(
+        "genetic_ancestry_African, genetic_ancestry_East_Asian, genetic_ancestry_European, "
+        "genetic_ancestry_Indigenous_American, genetic_ancestry_Oceanian, genetic_ancestry_South_Asian",
+        [
+            # Non-float value of "random string"
+            (0.0, 0.0, 0.0, 1.0, 0.0, "random string"),
+            # Non-float value of True
+            (0.0, 0.0, 0.0, 1.0, 0.0, True),
+            # Non-float value of None
+            (0.0, 0.0, 0.0, 1.0, 0.0, None),
+            # Non-float value of numpy True
+            (0.0, 0.0, 0.0, 1.0, 0.0, numpy.True_),
+            # Non-float value of numpy NaN
+            (0.0, numpy.nan, 0.0, 1.0, 0.0, 0.0),
+            # One value is > 1
+            (0.0, 0.0, 1.1, 0.0, 0.0, 0.0),
+            # One value is < 0.0
+            (0.0, 0.0, -0.25, 1.0, 0.25, 0.0),
+            # Sum is > 1.0
+            (0.0, 0.1, 1.0, 0.0, 0.0, 0.0),
+            # Sum is < 1.0
+            (0.0, 0.25, 0.25, 0.25, 0.0, 0.0),
+            # Only all NaN is valid
+            (float("nan"), 0.0, 0.0, 0.0, 0.0, 0.0),
+            # Only all NaN is valid
+            (numpy.nan, 0.0, 0.0, 0.0, 0.0, 0.0),
+        ],
+    )
+    def test_genetic_ancestry__invalid(
+        self,
+        validator_with_adata,
+        genetic_ancestry_African,
+        genetic_ancestry_East_Asian,
+        genetic_ancestry_European,
+        genetic_ancestry_Indigenous_American,
+        genetic_ancestry_Oceanian,
+        genetic_ancestry_South_Asian,
+    ):
+        validator = validator_with_adata
+        # Second organism in adata is not homo sapiens
+        validator.adata.obs["genetic_ancestry_African"] = [genetic_ancestry_African, float("nan")]
+        validator.adata.obs["genetic_ancestry_East_Asian"] = [genetic_ancestry_East_Asian, float("nan")]
+        validator.adata.obs["genetic_ancestry_European"] = [genetic_ancestry_European, float("nan")]
+        validator.adata.obs["genetic_ancestry_Indigenous_American"] = [
+            genetic_ancestry_Indigenous_American,
+            float("nan"),
+        ]
+        validator.adata.obs["genetic_ancestry_Oceanian"] = [genetic_ancestry_Oceanian, float("nan")]
+        validator.adata.obs["genetic_ancestry_South_Asian"] = [genetic_ancestry_South_Asian, float("nan")]
+        validator.validate_adata()
+        assert len(validator.errors) > 0
+
+    def test_genetic_ancestry_same_donor_id(self, validator_with_adata):
+        """
+        genetic_ancestry_X fields must be the same when the donor id is the same
+        """
+        validator = validator_with_adata
+        original_donor_id_column = validator.adata.obs["donor_id"].copy()
+
+        # Second row should have identical donor id + genetic ancestry values, so this should pass validation
+        validator.adata.obs.iloc[1] = validator.adata.obs.iloc[0].values
+        validator.validate_adata()
+        assert validator.errors == []
+
+        # Update the genetic ancestry values to be different. This should now fail validation
+        validator.adata.obs["genetic_ancestry_African"] = [1.0, 0.0]
+        validator.adata.obs["genetic_ancestry_East_Asian"] = [0.0, 1.0]
+        validator.adata.obs["genetic_ancestry_European"] = [0.0, 0.0]
+        validator.adata.obs["genetic_ancestry_Indigenous_American"] = [0.0, 0.0]
+        validator.adata.obs["genetic_ancestry_Oceanian"] = [0.0, 0.0]
+        validator.adata.obs["genetic_ancestry_South_Asian"] = [0.0, 0.0]
+        validator.reset(None, 2)
+        validator.validate_adata()
+        assert len(validator.errors) == 1
+
+        # Change the donor id back to two different donor id's. Now, this should pass validation
+        validator.adata.obs["donor_id"] = original_donor_id_column
+        validator.reset(None, 2)
+        validator.validate_adata()
+        assert validator.errors == []
+
 
 class TestVar:
     """
@@ -1566,7 +1819,8 @@ class TestVar:
         for i in range(X.shape[0]):
             X[i, 0] = 0
         X[0, 0] = 1
-
+        validator.adata.X = X.map_blocks(lambda x: (x.eliminate_zeros() or x), dtype=X.dtype, meta=X._meta)
+        validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Some features are 'True' in 'feature_is_filtered' of dataframe 'var', "
@@ -1576,6 +1830,7 @@ class TestVar:
 
         # Test that feature_is_filtered is a bool and not a string
         var["feature_is_filtered"] = "string"
+        validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Column 'feature_is_filtered' in dataframe 'var' must be boolean, not 'object'."
@@ -1652,11 +1907,16 @@ class TestVar:
         Raise a warning if there are too few genes
         """
         validator = validator_with_adata
+        # NOTE:[EM] changing the schema def here is stateful and results in unpredictable test results.
+        #  Reset after mutating.
+        _old_schema = deepcopy(validator.schema_def.copy())
+
         validator.schema_def["components"]["var"]["warn_if_less_than_rows"] = 100
         validator.validate_adata()
         assert validator.warnings == [
             "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix."
         ]
+        validator.schema_def = _old_schema
 
     @pytest.mark.parametrize(
         "df,column",
@@ -2141,23 +2401,38 @@ class TestObsm:
     @pytest.mark.parametrize("key", ["X_umap", "spatial"])
     def test_obsm_values_nan(self, validator_with_visium_assay, key):
         """
-        values in obsm cannot all be NaN
+        test obsm NaN restrictions for different embedding types.
+        feature embeddings: X_* cannot be all NaN
+        spatial emeddings: 'spatial' cannot have any NaNs
         """
         validator = validator_with_visium_assay
         obsm = validator.adata.obsm
-        # It's okay if only one value is NaN
-        obsm[key][0:100, 1] = numpy.nan
-        validator.validate_adata()
-        assert validator.errors == []
 
-        # It's not okay if all values are NaN
+        # Check embedding has any NaN
+        obsm[key][0:100, 1] = numpy.nan
+        validator.reset(None, 2)
+        validator.validate_adata()
+
+        if key != "spatial":
+            assert validator.errors == []
+        else:
+            assert validator.errors == ["ERROR: adata.obsm['spatial'] contains at least one NaN value."]
+
+        # Check embedding has all NaNs
         all_nan = numpy.full(obsm[key].shape, numpy.nan)
         obsm[key] = all_nan
+        validator.reset(None, 2)
         validator.validate_adata()
-        assert validator.errors == [f"ERROR: adata.obsm['{key}'] contains all NaN values."]
+        if key != "spatial":
+            assert validator.errors == [f"ERROR: adata.obsm['{key}'] contains all NaN values."]
+        else:
+            assert validator.errors == ["ERROR: adata.obsm['spatial'] contains at least one NaN value."]
 
     def test_obsm_values_no_X_embedding__non_spatial_dataset(self, validator_with_adata):
-        validator = validator_with_adata
+        """
+        X_{suffix} embeddings MUST exist for non-spatial datasets
+        """
+        validator: Validator = validator_with_adata
         validator.adata.obsm["harmony"] = validator.adata.obsm["X_umap"]
         validator.adata.uns["default_embedding"] = "harmony"
         del validator.adata.obsm["X_umap"]
@@ -2167,19 +2442,32 @@ class TestObsm:
         ]
         assert validator.is_spatial is False
         assert validator.warnings == [
-            "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' harmony is not 'spatial' nor does it start with 'X_'. "
             "Thus, it will not be available in Explorer",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
         ]
 
-    def test_obsm_values_no_X_embedding__visium_dataset(self, validator_with_visium_assay):
-        validator = validator_with_visium_assay
+    @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0010961", "EFO:0030062", "EFO:0022860"])
+    def test_obsm_values_no_X_embedding__visium_dataset(self, validator_with_visium_assay, assay_ontology_term_id):
+        """
+        X_{suffix} embeddings MAY exist for spatial datasets
+        """
+        validator: Validator = validator_with_visium_assay
         validator.adata.uns["default_embedding"] = "spatial"
-        del validator.adata.obsm["X_umap"]
-        validator.validate_adata()
-        assert validator.errors == []
+        validator.adata.obs["assay_ontology_term_id"] = assay_ontology_term_id
+
+        # may have X_{suffix} embedding
+        validator._validate_obsm()
         assert validator.is_spatial is True
+        assert validator.errors == []
+        validator.reset()
+
+        # may also have no X_{suffix} embedding
+        del validator.adata.obsm["X_umap"]
+        validator._validate_obsm()
+        assert validator.is_spatial is True
+        assert validator.errors == []
+        validator.reset()
 
     def test_obsm_values_no_X_embedding__slide_seq_v2_dataset(self, validator_with_slide_seq_v2_assay):
         validator = validator_with_slide_seq_v2_assay
@@ -2217,7 +2505,6 @@ class TestObsm:
         validator.adata.obsm["harmony"] = pd.DataFrame(validator.adata.obsm["X_umap"], index=validator.adata.obs_names)
         validator.validate_adata()
         assert validator.warnings == [
-            "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' harmony is not 'spatial' nor does it start with 'X_'. "
             "Thus, it will not be available in Explorer",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
@@ -2251,7 +2538,6 @@ class TestObsm:
             "'pandas.core.frame.DataFrame'>').",
         ]
         assert validator.warnings == [
-            "WARNING: Dataframe 'var' only has 4 rows. Features SHOULD NOT be filtered from expression matrix.",
             "WARNING: Embedding key in 'adata.obsm' 3D is not 'spatial' nor does it start with 'X_'. "
             "Thus, it will not be available in Explorer",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
@@ -2282,6 +2568,7 @@ class TestObsm:
 
         del obsm["X_ umap"]
         obsm["u m a p"] = obsm["X_umap"]
+        validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Embedding key in 'adata.obsm' u m a p does not match the regex pattern ^[a-zA-Z][a-zA-Z0-9_.-]*$."
@@ -2344,7 +2631,6 @@ class TestObsm:
         validator = validator_with_adata
         adata = validator.adata
         adata.obsm["badsize"] = numpy.empty((2, 0))
-        validator.adata = save_and_read_adata(adata)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: The size of the ndarray stored for a 'adata.obsm['badsize']' MUST NOT " "be zero.",
@@ -2361,7 +2647,6 @@ class TestObsp:
         validator = validator_with_adata
         adata = validator.adata
         adata.obsp["badsize"] = numpy.empty((2, 2, 0))
-        validator.adata = save_and_read_adata(adata)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: The size of the ndarray stored for a 'adata.obsp['badsize']' MUST NOT be zero."
@@ -2376,7 +2661,6 @@ class TestVarm:
         validator = validator_with_adata
         adata = validator.adata
         adata.varm["badsize"] = numpy.empty((4, 0))
-        validator.adata = save_and_read_adata(adata)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: The size of the ndarray stored for a 'adata.varm['badsize']' MUST NOT be " "zero."
@@ -2391,7 +2675,6 @@ class TestVarp:
         validator = validator_with_adata
         adata = validator.adata
         adata.varp["badsize"] = numpy.empty((4, 4, 0))
-        validator.adata = save_and_read_adata(adata)
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: The size of the ndarray stored for a 'adata.varp['badsize']' MUST NOT be zero."

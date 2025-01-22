@@ -41,6 +41,7 @@ class TestMigrate:
             assert any(adata_with_labels_unmigrated.var.index.isin(["DUMMY"]))
             assert any(adata_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004"]))
             assert not any(adata_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004_NEW"]))
+            assert adata_with_labels_unmigrated.X.shape == (2, 2)
 
             # Verify raw adata is what we expect before migration
             adata_raw_with_labels_unmigrated = anndata.AnnData(
@@ -51,6 +52,7 @@ class TestMigrate:
             assert any(adata_raw_with_labels_unmigrated.var.index.isin(["DUMMY"]))
             assert any(adata_raw_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004"]))
             assert not any(adata_raw_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004_NEW"]))
+            assert adata_raw_with_labels_unmigrated.X.shape == (2, 2)
 
             migrate(
                 input_file=test_h5ad,
@@ -64,9 +66,11 @@ class TestMigrate:
             assert not any(adata.var.index.isin(["DUMMY"]))
             assert not any(adata.var.index.isin(["ENSSASG00005000004"]))
             assert any(adata.var.index.isin(["ENSSASG00005000004_NEW"]))
+            assert adata.X.shape == (2, 1)
 
             # Verify raw adata is what we expect after migration
             raw_adata = anndata.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
             assert not any(raw_adata.var.index.isin(["DUMMY"]))
             assert not any(raw_adata.var.index.isin(["ENSSASG00005000004"]))
             assert any(raw_adata.var.index.isin(["ENSSASG00005000004_NEW"]))
+            assert raw_adata.X.shape == (2, 1)

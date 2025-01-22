@@ -1,4 +1,5 @@
 import anndata as ad
+import dask
 
 from . import utils
 
@@ -68,9 +69,7 @@ GENCODE_MAPPER = {}
 def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
 
-    dataset = ad.read_h5ad(input_file, backed="r")
-    if dataset.raw is not None and DEPRECATED_FEATURE_IDS:
-        dataset = dataset.to_memory()
+    dataset = utils.read_h5ad(input_file)
 
     # AUTOMATED, DO NOT CHANGE
     for ontology_name, deprecated_term_map in ONTOLOGY_TERM_MAPS.items():
@@ -100,5 +99,5 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     if DEPRECATED_FEATURE_IDS:
         dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
 
-    dataset.write(output_file, compression="gzip")
-
+    with dask.config.set(scheduler="single-threaded"):
+        dataset.write_h5ad(output_file, compression="gzip")
