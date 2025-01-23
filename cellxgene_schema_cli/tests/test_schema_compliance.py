@@ -157,8 +157,7 @@ class TestExpressionMatrix:
 
     def test_sparsity(self, validator_with_adata):
         """
-        In any layer, if a matrix has 50% or more values that are zeros, it is STRONGLY RECOMMENDED that
-        the matrix be encoded as a scipy.sparse.csr_matrix
+        In any layer, if a matrix has 50% or more values that are zeros, the matrix MUST be encoded as a scipy.sparse.csr_matrix
         """
         validator = validator_with_adata
         sparse_X = numpy.zeros([validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32)
@@ -166,11 +165,9 @@ class TestExpressionMatrix:
         sparse_X[1, 1] = 1
         validator.adata.X = from_array(sparse_X)
         validator.validate_adata()
-        assert validator.warnings == [
-            "WARNING: Sparsity of 'X' is 0.75 which is greater than 0.5, "
-            "and it is not a 'scipy.sparse.csr_matrix'. It is "
-            "STRONGLY RECOMMENDED to use this type of matrix for "
-            "the given sparsity."
+        assert validator.errors == [
+            "ERROR: Sparsity of 'X' is 0.75 which is greater than 0.5, "
+            "and it is not a 'scipy.sparse.csr_matrix'. The matrix MUST use this type of matrix for the given sparsity."
         ]
 
     @pytest.mark.parametrize("invalid_value", [1.5, -1])
@@ -277,6 +274,10 @@ class TestExpressionMatrix:
         validator.adata.X = from_array(
             numpy.zeros([validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32)
         )
+
+        # make sure it's encoded as a sparse matrix to isolate the validation to the contents of the matrix.
+        validator.adata.X = validator.adata.X.map_blocks(scipy.sparse.csr_matrix)
+
         validator.adata.raw = validator.adata.copy()
         validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
         validator.reset(None, 2)
@@ -376,6 +377,10 @@ class TestExpressionMatrix:
         validator.adata.X = from_array(
             numpy.zeros([validator.adata.obs.shape[0], validator.adata.var.shape[0]], dtype=numpy.float32)
         )
+
+        # encode X with csr
+        validator.adata.X = validator.adata.X.map_blocks(scipy.sparse.csr_matrix)
+
         validator.adata.raw = validator.adata.copy()
         validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
         validator.validate_adata()
@@ -2218,7 +2223,7 @@ class TestUns:
         assert validator.errors == []
 
     def test_uns_scipy_matrices_cannot_be_empty(self, validator_with_adata):
-        validator = validator_with_adata
+        validator: Validator = validator_with_adata
 
         validator.adata.uns["test"] = scipy.sparse.csr_matrix([[1]], dtype=int)
         validator.validate_adata()
