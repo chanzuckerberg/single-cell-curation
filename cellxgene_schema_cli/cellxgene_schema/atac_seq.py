@@ -9,7 +9,7 @@ from typing import Optional
 import anndata as ad
 import dask
 import dask.dataframe as ddf
-import dask.distributed as dd
+import dask.distributed as dd  # TODO: see if distributed mode can be avoided.
 import pandas as pd
 import pysam
 from dask import delayed
@@ -181,6 +181,9 @@ def validate(parquet_file: str, anndata_file: str) -> list[Optional[str]]:
         validate_fragment_read_support(parquet_file),
     ]
     return jobs
+
+
+# TODO validate anndata is atac-seq
 
 
 def validate_fragment_start_coordinate_greater_than_0(parquet_file: Path) -> Optional[str]:

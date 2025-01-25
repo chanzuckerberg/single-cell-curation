@@ -48,7 +48,7 @@ def mock_read_parquet(fragment_dataframe):
 
 def test_process_fragment(expected_artifacts):
     anndata_file = FIXTURES_ROOT + "/atac_seq/small_atac_seq.h5ad"
-    fragments_file = FIXTURES_ROOT + "/atac_seq/fragments_sortedasd.tsv.gz"
+    fragments_file = FIXTURES_ROOT + "/atac_seq/fragments_sorted.tsv.gz"
     atac_seq.process_fragment(
         fragments_file,
         anndata_file,
