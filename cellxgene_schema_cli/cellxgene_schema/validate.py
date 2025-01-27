@@ -14,10 +14,10 @@ import scipy
 from anndata.compat import DaskArray
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from dask.array import map_blocks
-from gencode import get_gene_checker
 from scipy import sparse
 
 from . import gencode, schema
+from .gencode import get_gene_checker
 from .utils import (
     SPARSE_MATRIX_TYPES,
     SUPPORTED_SPARSE_MATRIX_TYPES,
@@ -2146,13 +2146,13 @@ def validate(
 
         if add_labels_file:
             label_start = datetime.now()
-            writer = AnnDataLabelAppender(h5ad_path)
-            writer.write_labels(add_labels_file)
+            writer = AnnDataLabelAppender(validator.adata)
+            was_writing_successful = writer.write_labels(add_labels_file)
             logger.info(
                 f"H5AD label writing complete in {datetime.now() - label_start}, was_writing_successful: "
-                f"{writer.was_writing_successful}"
+                f"{was_writing_successful}"
             )
 
-            return (validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors, False)
+            return (validator.is_valid and was_writing_successful, validator.errors + writer.errors, False)
 
         return True, validator.errors, False
