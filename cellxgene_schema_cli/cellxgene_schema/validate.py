@@ -522,10 +522,10 @@ class Validator:
             if row[organism_column] != "NCBITaxon:9606":
                 return False
 
-            # The sum of genetic ancestry values should be approximately 1.0
+            # The sum of genetic ancestry values should be 1.0 ± 0.0002
             if (
                 ancestry_values.apply(lambda x: isinstance(x, (float, int))).all()
-                and abs(ancestry_values.sum() - 1.0) <= 1e-6
+                and abs(ancestry_values.sum() - 1.0) <= 0.0002
             ):
                 return True
 
@@ -542,7 +542,7 @@ class Validator:
                 f"organism_ontolology_term_id is NOT 'NCBITaxon:9606' for Homo sapiens, then all genetic"
                 f"ancestry values MUST be float('nan'). If organism_ontolology_term_id is 'NCBITaxon:9606' "
                 f"for Homo sapiens, then the value MUST be a float('nan') if unavailable; otherwise, the "
-                f"sum of all genetic_ancestry_* fields must be equal to 1.0"
+                f"sum of all genetic_ancestry_* fields must be equal to 1.0 ± 0.0002"
             )
 
     def _validate_individual_genetic_ancestry_value(self, column: pd.Series, column_name: str):
