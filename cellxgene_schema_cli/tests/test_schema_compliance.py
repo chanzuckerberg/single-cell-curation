@@ -1630,9 +1630,15 @@ class TestObs:
         "genetic_ancestry_African, genetic_ancestry_East_Asian, genetic_ancestry_European, "
         "genetic_ancestry_Indigenous_American, genetic_ancestry_Oceanian, genetic_ancestry_South_Asian",
         [
+            # sum to exactly 1.0 ok
             (0.0, 0.0, 0.0, 0.0, 0.0, 1.0),
             (0.5, 0.5, 0.0, 0.0, 0.0, 0.0),
             (0.0, 0.25, 0.25, 0.25, 0.25, 0.0),
+            # sum to 1.0 ± 0.0002 ok
+            (0.0, 0.0, 0.0, 0.0, 0.0, 0.9998),
+            (0.0, 0.2498, 0.25, 0.25, 0.25, 0.0),
+            (0.0, 0.2502, 0.25, 0.25, 0.25, 0.0),
+            # all NaN ok
             (float("nan"), float("nan"), float("nan"), float("nan"), float("nan"), float("nan")),
             (numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan),
         ],
