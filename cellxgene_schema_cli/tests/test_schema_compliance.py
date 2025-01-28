@@ -549,7 +549,7 @@ class TestObs:
 
     @pytest.mark.parametrize(
         "assay_ontology_term_id, is_descendant",
-        [("EFO:0010961", True), ("EFO:0022858", True), ("EFO:0030029", False), ("EFO:0002697", False)],
+        [("EFO:0022859", True), ("EFO:0022858", True), ("EFO:0030029", False), ("EFO:0002697", False)],
     )
     def test_column_presence_in_tissue(self, validator_with_visium_assay, assay_ontology_term_id, is_descendant):
         """
@@ -652,7 +652,7 @@ class TestObs:
 
     @pytest.mark.parametrize(
         "assay_ontology_term_id, all_same",
-        [("EFO:0010961", True), ("EFO:0030062", True), ("EFO:0022860", True), ("EFO:0008995", False)],
+        [("EFO:0022859", True), ("EFO:0030062", True), ("EFO:0022860", True), ("EFO:0008995", False)],
     )
     def test_assay_ontology_term_id__all_same(self, validator_with_visium_assay, assay_ontology_term_id, all_same):
         """
@@ -2459,7 +2459,7 @@ class TestObsm:
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
         ]
 
-    @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0010961", "EFO:0030062", "EFO:0022860"])
+    @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0022859", "EFO:0030062", "EFO:0022860"])
     def test_obsm_values_no_X_embedding__visium_dataset(self, validator_with_visium_assay, assay_ontology_term_id):
         """
         X_{suffix} embeddings MAY exist for spatial datasets

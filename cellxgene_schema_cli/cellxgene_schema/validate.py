@@ -31,8 +31,8 @@ logger = logging.getLogger(__name__)
 
 ONTOLOGY_PARSER = OntologyParser(schema_version="v5.3.0")
 
-ASSAY_VISIUM = "EFO:0010961"
-ASSAY_VISIUM_11M = "EFO:0022860"
+ASSAY_VISIUM = "EFO:0010961"  # generic term
+ASSAY_VISIUM_11M = "EFO:0022860"  # specific visium assay
 ASSAY_SLIDE_SEQV2 = "EFO:0030062"
 
 VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 4992
@@ -1648,7 +1648,7 @@ class Validator:
         # Validate all out of tissue (in_tissue==0) spatial spots have unknown cell ontology term
         is_spatial = (
             self.adata.obs["assay_ontology_term_id"]
-            .apply(lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, True))
+            .apply(lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, False))
             .astype(bool)
         )
         is_not_tissue = self.adata.obs["in_tissue"] == 0
@@ -1677,7 +1677,7 @@ class Validator:
             or (
                 ~(
                     self.adata.obs["assay_ontology_term_id"]
-                    .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, True))
+                    .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, False))
                     .astype(bool)
                 )
                 & (self.adata.obs[tissue_position_name].notnull())
@@ -1698,7 +1698,7 @@ class Validator:
             or (
                 (
                     self.adata.obs["assay_ontology_term_id"]
-                    .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, True))
+                    .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, False))
                     .astype(bool)
                 )
                 & (self.adata.obs[tissue_position_name].isnull())
@@ -1955,10 +1955,19 @@ class Validator:
             self.is_visium = bool(
                 self.adata.obs[_assay_key]
                 .astype("string")
-                .apply(lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, True))
+                .apply(lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, False))
                 .astype(bool)
                 .any()
             )
+
+            # explicitly forbid EFO:0010961
+            _contains_generic_visium = (
+                self.adata.obs["assay_ontology_term_id"].apply(lambda assay: assay == ASSAY_VISIUM).astype(bool).any()
+            )
+            if _contains_generic_visium:
+                self.errors.append(
+                    f"Invalid spatial assay. obs['assay_ontology_term_id'] must be a descendant of {ASSAY_VISIUM} but NOT {ASSAY_VISIUM} itself. "
+                )
 
         return self.is_visium
 
