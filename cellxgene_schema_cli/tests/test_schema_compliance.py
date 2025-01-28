@@ -98,11 +98,11 @@ def validator_with_slide_seq_v2_assay(validator) -> Validator:
 
 
 @pytest.fixture
-def label_writer(validator_with_validated_adata) -> AnnDataLabelAppender:
+def label_writer() -> AnnDataLabelAppender:
     """
     Fixture that returns an AnnDataLabelAppender object
     """
-    label_writer = AnnDataLabelAppender(validator_with_validated_adata)
+    label_writer = AnnDataLabelAppender(examples.adata.copy())
     label_writer._add_labels()
     return label_writer
 
@@ -2329,7 +2329,8 @@ class TestUns:
         validator.adata.uns["suspension_type_colors"] = numpy.array(["", "green"])
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. Found: ['' 'green']"
+            "ERROR: Colors in uns[suspension_type_colors] must be either all hex colors or all CSS4 named colors. "
+            "Found: ['' 'green']"
         ]
 
     def test_invalid_named_color_option_integer(self, validator_with_adata):
@@ -2752,25 +2753,25 @@ class TestAddingLabels:
         for i, j in zip(expected_column.tolist(), obtained_column.tolist()):
             assert i == j
 
-    def test_obs_added_tissue_type_label__unknown(self, validator_with_adata):
-        obs = validator_with_adata.adata.obs
+    def test_obs_added_tissue_type_label__unknown(self):
+        adata = examples.adata.copy()
+        obs = adata.obs
 
         # Arrange
         obs.at["Y", "tissue_type"] = "cell culture"  # Already set in example data, just setting explicitly here
         obs.at["Y", "tissue_ontology_term_id"] = "unknown"  # Testing this term case
-        validator_with_adata.validate_adata()  # Validate
-        labeler = AnnDataLabelAppender(validator_with_adata)
+        labeler = AnnDataLabelAppender(adata)
         labeler._add_labels()  # Annotate
 
         assert labeler.adata.obs.at["Y", "tissue"] == "unknown"
 
-    def test_obs_added_cell_type_label__unknown(self, validator_with_adata):
-        obs = validator_with_adata.adata.obs
+    def test_obs_added_cell_type_label__unknown(self):
+        adata = examples.adata.copy()
+        obs = adata.obs
 
         # Arrange
         obs.at["Y", "cell_type_ontology_term_id"] = "unknown"  # Testing this term case
-        validator_with_adata.validate_adata()  # Validate
-        labeler = AnnDataLabelAppender(validator_with_adata)
+        labeler = AnnDataLabelAppender(adata)
         labeler._add_labels()  # Annotate
 
         assert labeler.adata.obs.at["Y", "cell_type"] == "unknown"

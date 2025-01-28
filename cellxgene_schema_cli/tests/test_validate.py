@@ -58,11 +58,8 @@ def validator_with_minimal_adata():
 
 
 @pytest.fixture
-def label_writer():
-    validator = Validator()
-    validator.adata = adata_valid.copy()
-    validator.validate_adata()
-    return AnnDataLabelAppender(validator)
+def label_writer(valid_adata):
+    return AnnDataLabelAppender(adata_valid)
 
 
 @pytest.fixture
@@ -149,7 +146,7 @@ class TestAddLabelFunctions:
 
         # Bad
         ids = ["NO_GENE"]
-        with pytest.raises(KeyError):
+        with pytest.raises(ValueError):
             label_writer._get_mapping_dict_feature_id(ids)
 
     def test_get_dictionary_mapping_feature_reference(self, label_writer):
@@ -171,7 +168,7 @@ class TestAddLabelFunctions:
 
         # Bad
         ids = ["NO_GENE"]
-        with pytest.raises(KeyError):
+        with pytest.raises(ValueError):
             label_writer._get_mapping_dict_feature_id(ids)
 
     def test_get_dictionary_mapping_feature_length(self, label_writer):
@@ -194,7 +191,7 @@ class TestAddLabelFunctions:
 
         # Bad
         ids = ["NO_GENE"]
-        with pytest.raises(KeyError):
+        with pytest.raises(ValueError):
             label_writer._get_mapping_dict_feature_id(ids)
 
     def test_get_dictionary_mapping_feature_type(self, label_writer):
@@ -217,7 +214,7 @@ class TestAddLabelFunctions:
 
         # Bad
         ids = ["NO_GENE"]
-        with pytest.raises(KeyError):
+        with pytest.raises(ValueError):
             label_writer._get_mapping_dict_feature_type(ids)
 
     @pytest.mark.parametrize(
@@ -256,16 +253,14 @@ class TestAddLabelFunctions:
     def test__write__Success(self, label_writer):
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
-            label_writer.write_labels(labels_path)
-        assert label_writer.was_writing_successful
+            assert label_writer.write_labels(labels_path)
         assert not label_writer.errors
 
     def test__write__Fail(self, label_writer):
         label_writer.adata.write_h5ad = mock.Mock(side_effect=Exception("Test Fail"))
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
-            label_writer.write_labels(labels_path)
-        assert not label_writer.was_writing_successful
+            assert not label_writer.write_labels(labels_path)
         assert label_writer.errors
 
 

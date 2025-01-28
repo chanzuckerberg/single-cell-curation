@@ -123,3 +123,15 @@ class GeneChecker:
             return self.gene_dict[gene_id][2]
         else:
             raise ValueError(f"The id '{gene_id}' is not a valid ENSEMBL id for '{self.species}'")
+
+
+# cache the gene checkers
+_gene_checkers = {}
+
+
+def get_gene_checker(species: SupportedOrganisms) -> GeneChecker:
+    # Values will be instances of gencode.GeneChecker,
+    # keys will be one of gencode.SupportedOrganisms
+    if species not in _gene_checkers:
+        _gene_checkers[species] = GeneChecker(species)
+    return _gene_checkers[species]
