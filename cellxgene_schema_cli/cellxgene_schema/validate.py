@@ -103,7 +103,7 @@ class Validator:
             # Visium 11M's raw matrix size is distinct from other visium assays
             if bool(
                 self.adata.obs["assay_ontology_term_id"]
-                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, False))
+                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
                 .astype(bool)
                 .any()
             ):
@@ -123,7 +123,7 @@ class Validator:
             # Visium 11M's max dimension size is distinct from other visium assays
             if bool(
                 self.adata.obs["assay_ontology_term_id"]
-                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, False))
+                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
                 .astype(bool)
                 .any()
             ):
@@ -140,7 +140,7 @@ class Validator:
             # visium 11 has different requirements than other visium
             if (
                 self.adata.obs["assay_ontology_term_id"]
-                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, False))
+                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
                 .astype(bool)
                 .any()
             ):
