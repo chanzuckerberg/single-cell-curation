@@ -1,2 +1,2 @@
 requests<3
-cellxgene-ontology-guide==1.3.0
+cellxgene-ontology-guide==1.4.0
