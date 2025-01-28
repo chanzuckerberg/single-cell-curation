@@ -2471,10 +2471,7 @@ class TestObsm:
         ]
         assert validator.is_spatial is False
         assert validator.warnings == [
-<<<<<<< HEAD
-=======
             f"WARNING: Dataframe 'var' only has {NUMBER_OF_GENES} rows. Features SHOULD NOT be filtered from expression matrix.",
->>>>>>> 358e45e (feat: add fruit fly gencode file (#1061))
             "WARNING: Embedding key in 'adata.obsm' harmony is not 'spatial' nor does it start with 'X_'. "
             "Thus, it will not be available in Explorer",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
@@ -2538,10 +2535,7 @@ class TestObsm:
         validator.adata.obsm["harmony"] = pd.DataFrame(validator.adata.obsm["X_umap"], index=validator.adata.obs_names)
         validator.validate_adata()
         assert validator.warnings == [
-<<<<<<< HEAD
-=======
             f"WARNING: Dataframe 'var' only has {NUMBER_OF_GENES} rows. Features SHOULD NOT be filtered from expression matrix.",
->>>>>>> 358e45e (feat: add fruit fly gencode file (#1061))
             "WARNING: Embedding key in 'adata.obsm' harmony is not 'spatial' nor does it start with 'X_'. "
             "Thus, it will not be available in Explorer",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
@@ -2575,10 +2569,7 @@ class TestObsm:
             "'pandas.core.frame.DataFrame'>').",
         ]
         assert validator.warnings == [
-<<<<<<< HEAD
-=======
             f"WARNING: Dataframe 'var' only has {NUMBER_OF_GENES} rows. Features SHOULD NOT be filtered from expression matrix.",
->>>>>>> 358e45e (feat: add fruit fly gencode file (#1061))
             "WARNING: Embedding key in 'adata.obsm' 3D is not 'spatial' nor does it start with 'X_'. "
             "Thus, it will not be available in Explorer",
             "WARNING: Validation of raw layer was not performed due to current errors, try again after fixing current errors.",
@@ -2701,12 +2692,7 @@ class TestVarm:
         """
         validator = validator_with_adata
         adata = validator.adata
-<<<<<<< HEAD
-        adata.varm["badsize"] = numpy.empty((4, 0))
-=======
         adata.varm["badsize"] = numpy.empty((NUMBER_OF_GENES, 0))
-        validator.adata = save_and_read_adata(adata)
->>>>>>> 358e45e (feat: add fruit fly gencode file (#1061))
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: The size of the ndarray stored for a 'adata.varm['badsize']' MUST NOT be " "zero."
@@ -2720,12 +2706,7 @@ class TestVarp:
         """
         validator = validator_with_adata
         adata = validator.adata
-<<<<<<< HEAD
-        adata.varp["badsize"] = numpy.empty((4, 4, 0))
-=======
         adata.varp["badsize"] = numpy.empty((NUMBER_OF_GENES, NUMBER_OF_GENES, 0))
-        validator.adata = save_and_read_adata(adata)
->>>>>>> 358e45e (feat: add fruit fly gencode file (#1061))
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: The size of the ndarray stored for a 'adata.varp['badsize']' MUST NOT be zero."

@@ -34,7 +34,6 @@ from fixtures.examples_validate import (
     good_obs,
     good_uns,
     good_uns_with_visium_spatial,
-    good_var_seurat_testing,
     h5ad_invalid,
     h5ad_valid,
     visium_library_id,
