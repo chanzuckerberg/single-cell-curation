@@ -151,7 +151,7 @@ good_obs_visium = pd.DataFrame(
             1,
             1,
             "unknown",
-            "EFO:0010961",
+            "EFO:0022859",
             "MONDO:0100096",
             "NCBITaxon:9606",
             "PATO:0000383",
@@ -174,7 +174,7 @@ good_obs_visium = pd.DataFrame(
             2,
             2,
             "CL:0000192",
-            "EFO:0010961",
+            "EFO:0022859",
             "PATO:0000461",
             "NCBITaxon:10090",
             "unknown",
@@ -299,7 +299,7 @@ good_obs_visium_is_single_false = pd.DataFrame(
     [
         [
             "CL:0000066",
-            "EFO:0010961",
+            "EFO:0022859",
             "MONDO:0100096",
             "NCBITaxon:9606",
             "PATO:0000383",
@@ -319,7 +319,7 @@ good_obs_visium_is_single_false = pd.DataFrame(
         ],
         [
             "CL:0000192",
-            "EFO:0010961",
+            "EFO:0022859",
             "PATO:0000461",
             "NCBITaxon:10090",
             "unknown",
