@@ -31,8 +31,8 @@ logger = logging.getLogger(__name__)
 
 ONTOLOGY_PARSER = OntologyParser(schema_version="v5.3.0")
 
-ASSAY_VISIUM = "EFO:0010961" #generic term
-ASSAY_VISIUM_11M = "EFO:0022860" #specific visium assay
+ASSAY_VISIUM = "EFO:0010961"  # generic term
+ASSAY_VISIUM_11M = "EFO:0022860"  # specific visium assay
 ASSAY_SLIDE_SEQV2 = "EFO:0030062"
 
 VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 4992
@@ -1959,6 +1959,15 @@ class Validator:
                 .astype(bool)
                 .any()
             )
+
+            # explicitly forbid EFO:0010961
+            _contains_generic_visium = (
+                self.adata.obs["assay_ontology_term_id"].apply(lambda assay: assay == ASSAY_VISIUM).astype(bool).any()
+            )
+            if _contains_generic_visium:
+                self.errors.append(
+                    f"Invalid spatial assay. obs['assay_ontology_term_id'] must be a descendant of {ASSAY_VISIUM} but NOT {ASSAY_VISIUM} itself. "
+                )
 
         return self.is_visium
 

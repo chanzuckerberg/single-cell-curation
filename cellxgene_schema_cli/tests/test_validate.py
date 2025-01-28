@@ -367,6 +367,21 @@ class TestCheckSpatial:
         validator.validate_adata()
         assert not validator.errors
 
+    def test__forbid_generic_visium(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator._visium_and_is_single_true_matrix_size = 2
+
+        # set assay to the generic visium term
+        validator.adata.obs["assay_ontology_term_id"] = "EFO:0010961"
+
+        # Confirm this triggers FORBIDDIN ERROR and downstream errors due to invalid spatial term.
+        validator.validate_adata()
+        EXPECTED_FORBIDDEN_ERROR = "ERROR: Invalid spatial assay. obs['assay_ontology_term_id'] must be a descendant of EFO:0010961 but NOT EFO:0010961 itself. "
+        assert len(validator.errors) == 5
+        assert EXPECTED_FORBIDDEN_ERROR in validator.errors
+
     @mock.patch("cellxgene_schema.validate.VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE", 2)
     def test__validate_from_file(self):
         """Testing compatibility with SparseDataset types in Anndata"""
@@ -957,7 +972,7 @@ class TestCheckSpatial:
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.obs.assay_ontology_term_id = ["EFO:0010961", "EFO:0030062"]
+        validator.adata.obs.assay_ontology_term_id = ["EFO:0022858", "EFO:0030062"]
 
         # Confirm assay ontology term id is identified as invalid.
         validator._validate_spatial_assay_ontology_term_id()
@@ -979,9 +994,9 @@ class TestCheckSpatial:
     @pytest.mark.parametrize(
         "assay_ontology_term_id, is_single",
         [
-            (["EFO:0010961", "EFO:0030062"], True),
-            (["EFO:0010961", "EFO:0030062"], False),
-            ("EFO:0010961", False),
+            (["EFO:0022858", "EFO:0030062"], True),
+            (["EFO:0022858", "EFO:0030062"], False),
+            ("EFO:0022858", False),
             ("EFO:0030062", True),
             ("EFO:0030062", False),
             ("EFO:0030062", False),
@@ -1034,7 +1049,7 @@ class TestCheckSpatial:
         )
         validator.reset()
 
-    @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0010961", "EFO:0030062", "EFO:0022860"])
+    @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0022858", "EFO:0030062", "EFO:0022860"])
     def test__validate_tissue_position_not_required(self, assay_ontology_term_id):
         validator: Validator = Validator()
         validator._set_schema_def()
@@ -1107,8 +1122,8 @@ class TestCheckSpatial:
     @pytest.mark.parametrize(
         "cell_type_ontology_term_id, in_tissue, assay_ontology_term_id",
         [
-            # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium Spatial Gene Expression
-            ("unknown", 0, "EFO:0010961"),
+            # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium Spatial Gene Expression v2
+            ("unknown", 0, "EFO:0022858"),
             # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium CytAssist Spatial Gene Expression, 11mm
             ("unknown", 0, "EFO:0022860"),
             # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium Spatial Gene Expression V1
