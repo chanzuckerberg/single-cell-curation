@@ -17,6 +17,7 @@ from dask.array import map_blocks
 from scipy import sparse
 
 from . import gencode, schema
+from .gencode import get_gene_checker
 from .utils import (
     SPARSE_MATRIX_TYPES,
     SUPPORTED_SPARSE_MATRIX_TYPES,
@@ -71,10 +72,6 @@ class Validator:
         self._hires_max_dimension_size = None
         self._visium_error_suffix = None
         self._visium_tissue_position_max = None
-
-        # Values will be instances of gencode.GeneChecker,
-        # keys will be one of gencode.SupportedOrganisms
-        self.gene_checkers = dict()
 
     def reset(self, hi_res_size: Optional[int] = None, true_mat_size: Optional[int] = None):
         self.errors = []
@@ -447,10 +444,7 @@ class Validator:
             )
             return
 
-        if organism not in self.gene_checkers:
-            self.gene_checkers[organism] = gencode.GeneChecker(organism)
-
-        if not self.gene_checkers[organism].is_valid_id(feature_id):
+        if not get_gene_checker(organism).is_valid_id(feature_id):
             self.errors.append(f"'{feature_id}' is not a valid feature ID in '{df_name}'.")
 
         return
@@ -2152,13 +2146,13 @@ def validate(
 
         if add_labels_file:
             label_start = datetime.now()
-            writer = AnnDataLabelAppender(validator)
-            writer.write_labels(add_labels_file)
+            writer = AnnDataLabelAppender(validator.adata)
+            was_writing_successful = writer.write_labels(add_labels_file)
             logger.info(
                 f"H5AD label writing complete in {datetime.now() - label_start}, was_writing_successful: "
-                f"{writer.was_writing_successful}"
+                f"{was_writing_successful}"
             )
 
-            return (validator.is_valid and writer.was_writing_successful, validator.errors + writer.errors, False)
+            return (validator.is_valid and was_writing_successful, validator.errors + writer.errors, False)
 
         return True, validator.errors, False

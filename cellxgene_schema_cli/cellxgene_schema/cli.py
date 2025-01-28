@@ -55,6 +55,29 @@ def schema_validate(h5ad_file, add_labels_file, ignore_labels):
 
 
 @schema_cli.command(
+    name="add-labels",
+    short_help="Create a copy of an h5ad with portal-added labels",
+    help="Create a copy of an h5ad with portal-added labels. The labels are added based on the IDs in the "
+    "provided file.",
+)
+@click.argument("input_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.argument("output_file", nargs=1, type=click.Path(exists=False, dir_okay=False))
+def add_labels(input_file, output_file):
+    from utils import read_h5ad
+
+    from .write_labels import AnnDataLabelAppender
+
+    logger.info(f"Loading h5ad from {input_file}")
+    adata = read_h5ad(input_file)
+    anndata_label_adder = AnnDataLabelAppender(adata)
+    logger.info("Adding labels")
+    if anndata_label_adder.write_labels(output_file):
+        sys.exit(0)
+    else:
+        sys.exit(1)
+
+
+@schema_cli.command(
     name="remove-labels",
     short_help="Create a copy of an h5ad without portal-added labels",
     help="Create a copy of an h5ad without portal-added labels.",
