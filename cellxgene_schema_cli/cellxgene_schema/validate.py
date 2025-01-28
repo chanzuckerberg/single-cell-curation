@@ -103,7 +103,7 @@ class Validator:
             # Visium 11M's raw matrix size is distinct from other visium assays
             if bool(
                 self.adata.obs["assay_ontology_term_id"]
-                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
+                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, False))
                 .astype(bool)
                 .any()
             ):
@@ -123,7 +123,7 @@ class Validator:
             # Visium 11M's max dimension size is distinct from other visium assays
             if bool(
                 self.adata.obs["assay_ontology_term_id"]
-                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
+                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, False))
                 .astype(bool)
                 .any()
             ):
@@ -140,7 +140,7 @@ class Validator:
             # visium 11 has different requirements than other visium
             if (
                 self.adata.obs["assay_ontology_term_id"]
-                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
+                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, False))
                 .astype(bool)
                 .any()
             ):
@@ -1648,7 +1648,7 @@ class Validator:
         # Validate all out of tissue (in_tissue==0) spatial spots have unknown cell ontology term
         is_spatial = (
             self.adata.obs["assay_ontology_term_id"]
-            .apply(lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, True))
+            .apply(lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, False))
             .astype(bool)
         )
         is_not_tissue = self.adata.obs["in_tissue"] == 0
@@ -1677,7 +1677,7 @@ class Validator:
             or (
                 ~(
                     self.adata.obs["assay_ontology_term_id"]
-                    .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, True))
+                    .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, False))
                     .astype(bool)
                 )
                 & (self.adata.obs[tissue_position_name].notnull())
@@ -1698,7 +1698,7 @@ class Validator:
             or (
                 (
                     self.adata.obs["assay_ontology_term_id"]
-                    .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, True))
+                    .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, False))
                     .astype(bool)
                 )
                 & (self.adata.obs[tissue_position_name].isnull())
@@ -1955,7 +1955,7 @@ class Validator:
             self.is_visium = bool(
                 self.adata.obs[_assay_key]
                 .astype("string")
-                .apply(lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, True))
+                .apply(lambda assay: is_ontological_descendant_of(ONTOLOGY_PARSER, assay, ASSAY_VISIUM, False))
                 .astype(bool)
                 .any()
             )
