@@ -169,7 +169,11 @@ components:
         type: curie
         dependencies:
             - # If organism is Zebrafish
-                rule: "organism_ontology_term_id == 'NCBITaxon:7955'"
+                rule:
+                  column: organism_ontology_term_id
+                  match_exact:
+                    terms:
+                      - NCBITaxon:7955
                 error_message_suffix: >-
                     When 'organism_ontology_term_id' is 'NCBITaxon:7955' (Danio rerio),
                     'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'ZFA:0009000' (cell).
@@ -184,7 +188,11 @@ components:
                     exceptions:
                       - unknown
             - # If organism is fruit fly
-                rule: "organism_ontology_term_id == 'NCBITaxon:7227'"
+                rule:
+                  column: organism_ontology_term_id
+                  match_exact:
+                    terms:
+                      - NCBITaxon:7227
                 error_message_suffix: >-
                     When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster),
                     'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'FBbt:00007002' (cell).
@@ -199,7 +207,11 @@ components:
                     exceptions:
                       - unknown
             - # If organism is c. elegans
-                rule: "organism_ontology_term_id == 'NCBITaxon:6239'"
+                rule:
+                  column: organism_ontology_term_id
+                  match_exact:
+                    terms:
+                      - NCBITaxon:6239
                 error_message_suffix: >-
                     When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans),
                     'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'WBbt:0004017' (cell).
@@ -226,7 +238,11 @@ components:
         type: curie
         dependencies:
           - # If organism is Zebrafish
-            rule: "organism_ontology_term_id == 'NCBITaxon:7955'"
+            rule:
+              column: organism_ontology_term_id
+              match_exact:
+                terms:
+                  - NCBITaxon:7955
             error_message_suffix: >-
               When 'organism_ontology_term_id' is 'NCBITaxon:7955' (Danio rerio),
               'organism_tissue_ontology_term_id' MUST be the most accurate descendant
@@ -247,7 +263,11 @@ components:
                   ZFA:
                     - ZFA:0009000
           - # If organism is fruit fly
-            rule: "organism_ontology_term_id == 'NCBITaxon:7227'"
+            rule:
+              column: organism_ontology_term_id
+              match_exact:
+                terms:
+                  - NCBITaxon:7227
             error_message_suffix: >-
               When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster),
               'organism_tissue_ontology_term_id' MUST be the most accurate descendant
@@ -268,7 +288,11 @@ components:
                   FBbt:
                     - FBbt:00007002
           - # If organism is c. elegans
-            rule: "organism_ontology_term_id == 'NCBITaxon:6239'"
+            rule:
+                column: organism_ontology_term_id
+                match_exact:
+                  terms:
+                    - NCBITaxon:6239
             error_message_suffix: >-
               When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans),
               'organism_tissue_ontology_term_id' MUST be the most accurate descendant
@@ -294,7 +318,11 @@ components:
         type: curie
         dependencies:
           - # If organism is c. elegans
-            rule: "organism_ontology_term_id == 'NCBITaxon:6239'"
+            rule:
+                column: organism_ontology_term_id
+                match_exact:
+                  terms:
+                    - NCBITaxon:6239
             error_message_suffix: >-
               When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans),
               'sex_ontology_term_id' MUST be 'PATO:0000384' for male, 'PATO:0001340' for hermaphrodite, or 'unknown'.
@@ -479,7 +507,11 @@ components:
               exceptions:
                 - unknown
           - # If organism is Zebrafish
-            rule: "organism_ontology_term_id == 'NCBITaxon:7955'"
+            rule:
+              column: organism_ontology_term_id
+              match_exact:
+                terms:
+                  - NCBITaxon:7955
             error_message_suffix: >-
              When 'organism_ontology_term_id' is 'NCBITaxon:7955' (Danio rerio),
              'development_stage_ontology_term_id' MUST be the most accurate descendant of 'ZFS:0100000' and it
@@ -498,7 +530,11 @@ components:
               exceptions:
                 - unknown
           - # If organism is Fruit fly
-            rule: "organism_ontology_term_id == 'NCBITaxon:7227'"
+            rule:
+              column: organism_ontology_term_id
+              match_exact:
+                terms:
+                  - NCBITaxon:7227
             error_message_suffix: >-
              When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster),
              'development_stage_ontology_term_id' MUST be the most accurate FBdv term.
@@ -509,7 +545,11 @@ components:
               exceptions:
                 - unknown
           - # If organism is C. elegans
-            rule: "organism_ontology_term_id == 'NCBITaxon:6239'"
+            rule:
+                column: organism_ontology_term_id
+                match_exact:
+                  terms:
+                    - NCBITaxon:6239
             error_message_suffix: >-
              When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans),
              'development_stage_ontology_term_id' MUST be the most accurate descendant of 'WBls:0000075'.
@@ -636,7 +676,13 @@ components:
           - "tissue"
         dependencies:
         - # If organism_ontology_term_id is NCBITaxon:7955, NCBITaxon:7227, or NCBITaxon:6239 'tissue_type' MUST be 'tissue'
-            rule: "organism_ontology_term_id == 'NCBITaxon:7955' | organism_ontology_term_id == 'NCBITaxon:7227' | organism_ontology_term_id == 'NCBITaxon:6239'"
+            rule:
+              column: organism_ontology_term_id
+              match_exact:
+                terms:
+                  - NCBITaxon:7955
+                  - NCBITaxon:7227
+                  - NCBITaxon:6239
             type: categorical
             error_message_suffix: >-
               when 'organism_ontology_term_id' is NCBITaxon:7955, NCBITaxon:7227, or NCBITaxon:6239

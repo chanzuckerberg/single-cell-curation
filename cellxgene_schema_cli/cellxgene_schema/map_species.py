@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 def map_species(input_file, output_file):
-    ontology_parser = OntologyParser("5.2.1-experimental")
+    ontology_parser = OntologyParser("5.3.0")
     adata = ad.read_h5ad(input_file, backed="r")
     map_columns = [
         ("organism_cell_type_ontology_term_id", "cell_type_ontology_term_id", "CL"),
