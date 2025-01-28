@@ -31,8 +31,8 @@ logger = logging.getLogger(__name__)
 
 ONTOLOGY_PARSER = OntologyParser(schema_version="v5.3.0")
 
-ASSAY_VISIUM = "EFO:0010961"
-ASSAY_VISIUM_11M = "EFO:0022860"
+ASSAY_VISIUM = "EFO:0010961" #generic term
+ASSAY_VISIUM_11M = "EFO:0022860" #specific visium assay
 ASSAY_SLIDE_SEQV2 = "EFO:0030062"
 
 VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 4992
