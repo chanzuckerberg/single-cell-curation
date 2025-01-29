@@ -698,6 +698,7 @@ class Validator:
         all_rules = []
         for dependency_def in dependencies:
             terms_to_match = set()
+            terms_to_exclude = set()
             column_to_match = dependency_def["rule"]["column"]
             if "match_ancestors_inclusive" in dependency_def["rule"]:
                 ancestors = dependency_def["rule"]["match_ancestors_inclusive"]["ancestors"]
@@ -705,6 +706,8 @@ class Validator:
                     terms_to_match.update(ONTOLOGY_PARSER.get_term_descendants(ancestor, include_self=True))
             if "match_exact" in dependency_def["rule"]:
                 terms_to_match.update(dependency_def["rule"]["match_exact"]["terms"])
+            if "excluding_exact" in dependency_def["rule"]:
+                terms_to_exclude.update(dependency_def["rule"]["excluding_exact"]["terms"])
             try:
                 match_query = df[column_to_match].isin(terms_to_match)
                 match_df = df[match_query]
@@ -713,6 +716,14 @@ class Validator:
                 if not error_message_suffix:
                     matched_values = list(getattr(match_df, column_to_match).unique())
                     error_message_suffix = f"when '{column_to_match}' is in {matched_values}"
+                
+                excluding_query = df[column_to_match].isin(terms_to_exclude)
+                excluding_df = df[excluding_query]
+                column = getattr(excluding_df, column_name)
+                error_message_suffix = dependency_def.get("error_message_suffix", None)
+                if not error_message_suffix:
+                    excluded_values = list(getattr(match_df, column_to_match).unique())
+                    error_message_suffix = f"when '{column_to_match}' is in {excluded_values}"
             except KeyError:
                 self.errors.append(
                     f"Checking values with dependencies failed for adata.{df_name}['{column_name}'], "
