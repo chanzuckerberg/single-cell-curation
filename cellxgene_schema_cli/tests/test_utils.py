@@ -47,8 +47,20 @@ def test_remove_deprecated_features__with_raw(adata_with_raw, deprecated_feature
     result = remove_deprecated_features(adata=adata_with_raw, deprecated=deprecated_features)
 
     # Check if the deprecated features are removed
-    assert result.var_names.tolist() == ["ENSMUSG00000059552", "ENSSASG00005000004"]
-    assert result.raw.var_names.tolist() == ["ENSMUSG00000059552", "ENSSASG00005000004"]
+    assert result.var_names.tolist() == [
+        "ENSMUSG00000059552",
+        "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
+    ]
+    assert result.raw.var_names.tolist() == [
+        "ENSMUSG00000059552",
+        "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
+    ]
 
 
 def test_remove_deprecated_features__without_raw(adata_without_raw, deprecated_features):
@@ -58,13 +70,22 @@ def test_remove_deprecated_features__without_raw(adata_without_raw, deprecated_f
         "ENSG00000127603",
         "ENSMUSG00000059552",
         "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
     ]
 
     # Call the function under test
     result = remove_deprecated_features(adata=adata_without_raw, deprecated=deprecated_features)
 
     # Check if the deprecated features are removed
-    assert result.var_names.tolist() == ["ENSMUSG00000059552", "ENSSASG00005000004"]
+    assert result.var_names.tolist() == [
+        "ENSMUSG00000059552",
+        "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
+    ]
     assert result.raw is None
 
 
@@ -75,12 +96,18 @@ def test_remap_deprecated_features__with_raw(adata_with_raw, remapped_features):
         "ENSG00000127603",
         "ENSMUSG00000059552",
         "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
     ]
     assert adata_with_raw.raw.var_names.tolist() == [
         "ERCC-00002",
         "ENSG00000127603",
         "ENSMUSG00000059552",
         "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
     ]
 
     # Call the function under test
@@ -92,12 +119,18 @@ def test_remap_deprecated_features__with_raw(adata_with_raw, remapped_features):
         "ENSG00000127603",
         "ENSMUSG00000059552_NEW",
         "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
     ]
     assert result.raw.var_names.tolist() == [
         "ERCC-00002",
         "ENSG00000127603",
         "ENSMUSG00000059552_NEW",
         "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
     ]
 
 
@@ -111,6 +144,9 @@ def test_remap_deprecated_features__without_raw(adata_without_raw, remapped_feat
         "ENSG00000127603",
         "ENSMUSG00000059552_NEW",
         "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
     ]
     assert result.raw is None
 

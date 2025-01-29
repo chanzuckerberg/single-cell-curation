@@ -38,11 +38,13 @@ good_obs = pd.DataFrame(
     [
         [
             "CL:0000066",
+            "na",
             "EFO:0009899",
             "MONDO:0100096",
             "NCBITaxon:9606",
             "PATO:0000383",
             "UBERON:0002048",
+            "na",
             "tissue",
             True,
             "HANCESTRO:0575",
@@ -58,11 +60,13 @@ good_obs = pd.DataFrame(
         ],
         [
             "CL:0000192",
+            "na",
             "EFO:0008992",
             "PATO:0000461",
             "NCBITaxon:10090",
             "unknown",
             "CL:0000192",
+            "na",
             "cell culture",
             False,
             "na",
@@ -80,11 +84,13 @@ good_obs = pd.DataFrame(
     index=["X", "Y"],
     columns=[
         "cell_type_ontology_term_id",
+        "organism_cell_type_ontology_term_id",
         "assay_ontology_term_id",
         "disease_ontology_term_id",
         "organism_ontology_term_id",
         "sex_ontology_term_id",
         "tissue_ontology_term_id",
+        "organism_tissue_ontology_term_id",
         "tissue_type",
         "is_primary_data",
         "self_reported_ethnicity_ontology_term_id",
@@ -151,11 +157,13 @@ good_obs_visium = pd.DataFrame(
             1,
             1,
             "unknown",
+            "na",
             "EFO:0022859",
             "MONDO:0100096",
             "NCBITaxon:9606",
             "PATO:0000383",
             "UBERON:0002048",
+            "na",
             "tissue",
             True,
             "HANCESTRO:0575",
@@ -174,11 +182,13 @@ good_obs_visium = pd.DataFrame(
             2,
             2,
             "CL:0000192",
+            "na",
             "EFO:0022859",
             "PATO:0000461",
             "NCBITaxon:10090",
             "unknown",
             "CL:0000192",
+            "na",
             "cell culture",
             False,
             "na",
@@ -199,11 +209,13 @@ good_obs_visium = pd.DataFrame(
         "array_col",
         "array_row",
         "cell_type_ontology_term_id",
+        "organism_cell_type_ontology_term_id",
         "assay_ontology_term_id",
         "disease_ontology_term_id",
         "organism_ontology_term_id",
         "sex_ontology_term_id",
         "tissue_ontology_term_id",
+        "organism_tissue_ontology_term_id",
         "tissue_type",
         "is_primary_data",
         "self_reported_ethnicity_ontology_term_id",
@@ -229,11 +241,13 @@ good_obs_slide_seqv2 = pd.DataFrame(
     [
         [
             "CL:0000066",
+            "na",
             "EFO:0030062",
             "MONDO:0100096",
             "NCBITaxon:9606",
             "PATO:0000383",
             "UBERON:0002048",
+            "na",
             "tissue",
             True,
             "HANCESTRO:0575",
@@ -249,11 +263,13 @@ good_obs_slide_seqv2 = pd.DataFrame(
         ],
         [
             "CL:0000192",
+            "na",
             "EFO:0030062",
             "PATO:0000461",
             "NCBITaxon:10090",
             "unknown",
             "CL:0000192",
+            "na",
             "cell culture",
             False,
             "na",
@@ -271,11 +287,13 @@ good_obs_slide_seqv2 = pd.DataFrame(
     index=["X", "Y"],
     columns=[
         "cell_type_ontology_term_id",
+        "organism_cell_type_ontology_term_id",
         "assay_ontology_term_id",
         "disease_ontology_term_id",
         "organism_ontology_term_id",
         "sex_ontology_term_id",
         "tissue_ontology_term_id",
+        "organism_tissue_ontology_term_id",
         "tissue_type",
         "is_primary_data",
         "self_reported_ethnicity_ontology_term_id",
@@ -299,11 +317,13 @@ good_obs_visium_is_single_false = pd.DataFrame(
     [
         [
             "CL:0000066",
+            "na",
             "EFO:0022859",
             "MONDO:0100096",
             "NCBITaxon:9606",
             "PATO:0000383",
             "UBERON:0002048",
+            "na",
             "tissue",
             False,
             "HANCESTRO:0575",
@@ -319,11 +339,13 @@ good_obs_visium_is_single_false = pd.DataFrame(
         ],
         [
             "CL:0000192",
+            "na",
             "EFO:0022859",
             "PATO:0000461",
             "NCBITaxon:10090",
             "unknown",
             "CL:0000192",
+            "na",
             "cell culture",
             False,
             "na",
@@ -341,11 +363,13 @@ good_obs_visium_is_single_false = pd.DataFrame(
     index=["X", "Y"],
     columns=[
         "cell_type_ontology_term_id",
+        "organism_cell_type_ontology_term_id",
         "assay_ontology_term_id",
         "disease_ontology_term_id",
         "organism_ontology_term_id",
         "sex_ontology_term_id",
         "tissue_ontology_term_id",
+        "organism_tissue_ontology_term_id",
         "tissue_type",
         "is_primary_data",
         "self_reported_ethnicity_ontology_term_id",
@@ -372,6 +396,21 @@ good_obs_visium_is_single_false["tissue_type"] = good_obs_visium_is_single_false
 
 # Valid var per schema
 good_var = pd.DataFrame(
+    [[False], [False], [False], [False], [False], [False], [False]],
+    index=[
+        "ERCC-00002",
+        "ENSG00000127603",
+        "ENSMUSG00000059552",
+        "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
+    ],
+    columns=["feature_is_filtered"],
+)
+
+# Valid var with four genes in it. This is used to test seurat compatibility which involves doing matrix math
+good_var_seurat_testing = pd.DataFrame(
     [
         [False],
         [False],
@@ -389,9 +428,20 @@ var_expected = pd.DataFrame(
         ["spike-in", False, "ERCC-00002 (spike-in control)", "NCBITaxon:32630", 1061, "synthetic"],
         ["gene", False, "MACF1", "NCBITaxon:9606", 2821, "protein_coding"],
         ["gene", False, "Trp53", "NCBITaxon:10090", 1797, "protein_coding"],
-        ["gene", False, "S", "NCBITaxon:2697049", 3822, "protein_coding"],
+        ["gene", False, "S_ENSSASG00005000004", "NCBITaxon:2697049", 3822, "protein_coding"],
+        ["gene", False, "FBtr0472816_df_nrg", "NCBITaxon:7227", 22, "ncRNA"],
+        ["gene", False, "fgfr1op2", "NCBITaxon:7955", 1088, "protein_coding"],
+        ["gene", False, "aat-2", "NCBITaxon:6239", 1738, "protein_coding"],
     ],
-    index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"],
+    index=[
+        "ERCC-00002",
+        "ENSG00000127603",
+        "ENSMUSG00000059552",
+        "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
+    ],
     columns=[
         "feature_biotype",
         "feature_is_filtered",
@@ -401,6 +451,8 @@ var_expected = pd.DataFrame(
         "feature_type",
     ],
 )
+
+NUMBER_OF_GENES = len(var_expected.index)
 
 # ---
 # 3. Creating individual uns component

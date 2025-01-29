@@ -11,6 +11,9 @@ class SupportedOrganisms(enum.Enum):
     MUS_MUSCULUS = "NCBITaxon:10090"
     SARS_COV_2 = "NCBITaxon:2697049"
     ERCC = "NCBITaxon:32630"
+    DROSOPHILA_MELANOGASTER = "NCBITaxon:7227"
+    DANIO_RERIO = "NCBITaxon:7955"
+    CAENORHABDITIS_ELEGANS = "NCBITaxon:6239"
 
 
 def get_organism_from_feature_id(
@@ -33,6 +36,12 @@ def get_organism_from_feature_id(
         return SupportedOrganisms.SARS_COV_2
     elif feature_id.startswith("ERCC-"):
         return SupportedOrganisms.ERCC
+    elif feature_id.startswith("FB"):
+        return SupportedOrganisms.DROSOPHILA_MELANOGASTER
+    elif feature_id.startswith("ENSDARG"):
+        return SupportedOrganisms.DANIO_RERIO
+    elif feature_id.startswith("WBGene"):
+        return SupportedOrganisms.CAENORHABDITIS_ELEGANS
     else:
         return None
 
@@ -45,6 +54,11 @@ class GeneChecker:
         SupportedOrganisms.MUS_MUSCULUS: os.path.join(env.GENCODE_DIR, "genes_mus_musculus.csv.gz"),
         SupportedOrganisms.SARS_COV_2: os.path.join(env.GENCODE_DIR, "genes_sars_cov_2.csv.gz"),
         SupportedOrganisms.ERCC: os.path.join(env.GENCODE_DIR, "genes_ercc.csv.gz"),
+        SupportedOrganisms.DROSOPHILA_MELANOGASTER: os.path.join(
+            env.GENCODE_DIR, "genes_drosophila_melanogaster.csv.gz"
+        ),
+        SupportedOrganisms.DANIO_RERIO: os.path.join(env.GENCODE_DIR, "genes_danio_rerio.csv.gz"),
+        SupportedOrganisms.CAENORHABDITIS_ELEGANS: os.path.join(env.GENCODE_DIR, "genes_caenorhabditis_elegans.csv.gz"),
     }
 
     def __init__(self, species: SupportedOrganisms):

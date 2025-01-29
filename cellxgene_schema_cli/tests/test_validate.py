@@ -134,13 +134,11 @@ class TestAddLabelFunctions:
             "ENSG00000127603",
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
+            "FBtr0472816_df_nrg",
+            "ENSDARG00000009657",
+            "WBGene00000003",
         ]
-        labels = [
-            "ERCC-00002 (spike-in control)",
-            "MACF1",
-            "Trp53",
-            "S",
-        ]
+        labels = ["ERCC-00002 (spike-in control)", "MACF1", "Trp53", "S", "FBtr0472816_df_nrg", "fgfr1op2", "aat-2"]
         expected_dict = dict(zip(ids, labels))
         assert label_writer._get_mapping_dict_feature_id(ids), expected_dict
 
@@ -156,12 +154,18 @@ class TestAddLabelFunctions:
             "ENSG00000127603",
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
+            "FBtr0472816_df_nrg",
+            "ENSDARG00000009657",
+            "WBGene00000003",
         ]
         labels = [
             "NCBITaxon:32630",
             "NCBITaxon:9606",
             "NCBITaxon:10090",
             "NCBITaxon:2697049",
+            "NCBITaxon:7227",
+            "NCBITaxon:7955",
+            "NCBITaxon:6239",
         ]
         expected_dict = dict(zip(ids, labels))
         assert label_writer._get_mapping_dict_feature_reference(ids) == expected_dict
@@ -178,14 +182,12 @@ class TestAddLabelFunctions:
             "ENSG00000127603",
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
+            "FBtr0472816_df_nrg",
+            "ENSDARG00000009657",
+            "WBGene00000003",
         ]
         # values derived from csv
-        gene_lengths = [
-            1061,
-            2821,
-            1797,
-            3822,
-        ]
+        gene_lengths = [1061, 2821, 1797, 3822, 22, 1088, 1738]
         expected_dict = dict(zip(ids, gene_lengths))
         assert label_writer._get_mapping_dict_feature_length(ids) == expected_dict
 
@@ -201,6 +203,9 @@ class TestAddLabelFunctions:
             "ENSG00000127603",
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
+            "FBtr0472816_df_nrg",
+            "ENSDARG00000009657",
+            "WBGene00000003",
         ]
         # values derived from csv
         gene_types = [
@@ -208,14 +213,41 @@ class TestAddLabelFunctions:
             "protein_coding",
             "protein_coding",
             "protein_coding",
+            "ncRNA",
+            "protein_coding",
+            "protein_coding",
         ]
         expected_dict = dict(zip(ids, gene_types))
         assert label_writer._get_mapping_dict_feature_type(ids) == expected_dict
 
         # Bad
-        ids = ["NO_GENE"]
+        ids = ["NO_GENE_BAD"]
         with pytest.raises(ValueError):
             label_writer._get_mapping_dict_feature_type(ids)
+
+    def test_get_dictionary_mapping_feature_biotype(self, label_writer):
+        # Good
+        ids = [
+            "ERCC-00002",
+            "ENSG00000127603",
+            "ENSMUSG00000059552",
+            "ENSSASG00005000004",
+            "FBtr0472816_df_nrg",
+            "ENSDARG00000009657",
+            "WBGene00000003",
+        ]
+        # Values derived from csv
+        biotypes = [
+            "spike-in",
+            "gene",
+            "gene",
+            "gene",
+            "gene",
+            "gene",
+            "gene",
+        ]
+        expected_dict = dict(zip(ids, biotypes))
+        assert label_writer._get_mapping_dict_feature_biotype(ids) == expected_dict
 
     @pytest.mark.parametrize(
         "ids,labels,curie_constraints",
@@ -1173,8 +1205,9 @@ class TestCheckSpatial:
         validator._validate_spatial_cell_type_ontology_term_id()
         assert validator.errors
         assert (
-            f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
-            in validator.errors[0]
+            f"obs['cell_type_ontology_term_id'] must be 'unknown' and obs['organism_cell_type_ontology_term_id'] must "
+            f"be 'unknown' or 'na' depending on the value of 'organism_ontology_term_id' (see schema definition) "
+            f"when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}." in validator.errors[0]
         )
 
     def test__validate_embeddings_non_nans(self):
