@@ -2906,13 +2906,13 @@ class TestZebrafish:
         assert len(validator.errors) > 0
 
     def test_organism_cell_type_ontology_term_id__visium_in_tissue_0(self, validator_with_visium_zebrafish_adata):
-        validator = validator_with_visium_zebrafish_adata
+        validator: Validator = validator_with_visium_zebrafish_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "in_tissue"] = 0
         obs.loc[obs.index[0], "cell_type_ontology_term_id"] = "unknown"
+        validator.reset(None,2)
         validator.validate_adata()
         assert not validator.errors
-
 
     def test_organism_cell_type_ontology_term_id__visium_in_tissue_0_invalid(
         self, validator_with_visium_zebrafish_adata
@@ -3098,16 +3098,18 @@ class TestFruitFly:
         obs = validator.adata.obs
         obs.loc[obs.index[0], "in_tissue"] = 0
         obs.loc[obs.index[0], "cell_type_ontology_term_id"] = "unknown"
+        validator.reset(None, 2)
         validator.validate_adata()
         assert not validator.errors
 
     def test_organism_cell_type_ontology_term_id__visium_in_tissue_0_invalid(
         self, validator_with_visium_fruitfly_adata
     ):
-        validator = validator_with_visium_fruitfly_adata
+        validator: Validator = validator_with_visium_fruitfly_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "in_tissue"] = 0
         obs.loc[obs.index[0], "cell_type_ontology_term_id"] = "FBbt:00049192"
+        validator.reset(None, 2)
         validator.validate_adata()
         assert (
             "obs['cell_type_ontology_term_id'] must be 'unknown' and obs['cell_type_ontology_term_id'] must "
@@ -3315,7 +3317,7 @@ class TestRoundworm:
         validator: Validator = validator_with_visium_roundworm_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "in_tissue"] = 0
-        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "WBbt:0005739"
+        obs.loc[obs.index[0], "cell_type_ontology_term_id"] = "WBbt:0005739"
         validator.reset(None, 2)
         validator.validate_adata()
         assert (
