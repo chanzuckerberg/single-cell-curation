@@ -2905,10 +2905,7 @@ class TestZebrafish:
         validator.validate_adata()
         assert len(validator.errors) > 0
 
-    @pytest.mark.skip(
-        reason="Skipping this test to unblock downstream multispecies work. TODO: fix before 5.3.0 release"
-    )
-    def test_cell_type_ontology_term_id__visium_in_tissue_0(self, validator_with_visium_zebrafish_adata):
+    def test_organism_cell_type_ontology_term_id__visium_in_tissue_0(self, validator_with_visium_zebrafish_adata):
         validator = validator_with_visium_zebrafish_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "in_tissue"] = 0
@@ -2916,10 +2913,10 @@ class TestZebrafish:
         validator.validate_adata()
         assert not validator.errors
 
-    @pytest.mark.skip(
-        reason="Skipping this test to unblock downstream multispecies work. TODO: fix before 5.3.0 release"
-    )
-    def test_cell_type_ontology_term_id__visium_in_tissue_0_invalid(self, validator_with_visium_zebrafish_adata):
+
+    def test_organism_cell_type_ontology_term_id__visium_in_tissue_0_invalid(
+        self, validator_with_visium_zebrafish_adata
+    ):
         validator = validator_with_visium_zebrafish_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "in_tissue"] = 0
@@ -3096,10 +3093,7 @@ class TestFruitFly:
         validator.validate_adata()
         assert len(validator.errors) > 0
 
-    @pytest.mark.skip(
-        reason="Skipping this test to unblock downstream multispecies work. TODO: fix before 5.3.0 release"
-    )
-    def test_cell_type_ontology_term_id__visium_in_tissue_0(self, validator_with_visium_fruitfly_adata):
+    def test_organism_cell_type_ontology_term_id__visium_in_tissue_0(self, validator_with_visium_fruitfly_adata):
         validator = validator_with_visium_fruitfly_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "in_tissue"] = 0
@@ -3107,10 +3101,9 @@ class TestFruitFly:
         validator.validate_adata()
         assert not validator.errors
 
-    @pytest.mark.skip(
-        reason="Skipping this test to unblock downstream multispecies work. TODO: fix before 5.3.0 release"
-    )
-    def test_cell_type_ontology_term_id__visium_in_tissue_0_invalid(self, validator_with_visium_fruitfly_adata):
+    def test_organism_cell_type_ontology_term_id__visium_in_tissue_0_invalid(
+        self, validator_with_visium_fruitfly_adata
+    ):
         validator = validator_with_visium_fruitfly_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "in_tissue"] = 0
@@ -3306,25 +3299,24 @@ class TestRoundworm:
         validator.validate_adata()
         assert len(validator.errors) > 0
 
-    @pytest.mark.skip(
-        reason="Skipping this test to unblock downstream multispecies work. TODO: fix before 5.3.0 release"
-    )
-    def test_cell_type_ontology_term_id__visium_in_tissue_0(self, validator_with_visium_roundworm_adata):
-        validator = validator_with_visium_roundworm_adata
+    
+    def test_organism_cell_type_ontology_term_id__visium_in_tissue_0(self, validator_with_visium_roundworm_adata):
+        validator: Validator = validator_with_visium_roundworm_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "in_tissue"] = 0
-        obs.loc[obs.index[0], "cell_type_ontology_term_id"] = "unknown"
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "unknown"
+        validator.reset(None, 2)
         validator.validate_adata()
         assert not validator.errors
 
-    @pytest.mark.skip(
-        reason="Skipping this test to unblock downstream multispecies work. TODO: fix before 5.3.0 release"
-    )
-    def test_cell_type_ontology_term_id__visium_in_tissue_0_invalid(self, validator_with_visium_roundworm_adata):
-        validator = validator_with_visium_roundworm_adata
+    def test_organism_cell_type_ontology_term_id__visium_in_tissue_0_invalid(
+        self, validator_with_visium_roundworm_adata
+    ):
+        validator: Validator = validator_with_visium_roundworm_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "in_tissue"] = 0
-        obs.loc[obs.index[0], "cell_type_ontology_term_id"] = "WBbt:0005739"
+        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "WBbt:0005739"
+        validator.reset(None, 2)
         validator.validate_adata()
         assert (
             "obs['cell_type_ontology_term_id'] must be 'unknown' and obs['cell_type_ontology_term_id'] must "
