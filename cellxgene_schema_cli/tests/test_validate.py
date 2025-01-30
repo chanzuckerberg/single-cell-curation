@@ -17,6 +17,7 @@ from cellxgene_schema.validate import (
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED,
+    ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_NOTNULL,
     SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE,
     SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
     Validator,
@@ -1103,6 +1104,17 @@ class TestCheckSpatial:
         validator._check_spatial_obs()
         assert validator.errors
         assert f"obs['{tissue_position_name}'] must be of int type" in validator.errors[0]
+
+    @pytest.mark.parametrize("tissue_position_name", ["array_col", "array_row", "in_tissue"])
+    def test__validate_tissue_position_nan_error(self, tissue_position_name):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.obs[tissue_position_name] = np.nan
+
+        # Confirm tissue_position is identified as invalid.
+        validator._check_spatial_obs()
+        assert validator.errors[0] == f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_NOTNULL}."
 
     @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0022857", "EFO:0022860", "EFO:0022859"])
     @pytest.mark.parametrize("tissue_position_name, min", [("array_col", 0), ("array_row", 0), ("in_tissue", 0)])

@@ -56,6 +56,7 @@ ERROR_SUFFIX_IS_SINGLE = "uns['spatial']['is_single'] is True"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE = f"{ERROR_SUFFIX_VISIUM} and {ERROR_SUFFIX_IS_SINGLE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN = f"is only allowed for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED = f"is required for {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
+ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_NOTNULL = f"cannot have missing or NaN values when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE}"
 ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0 = f"{ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE} and in_tissue is 0"
 
 ERROR_SUFFIX_SPARSE_FORMAT = f"Please ensure it is either a dense array or one of the supported sparse matrix encodings ({','.join(SUPPORTED_SPARSE_MATRIX_TYPES)})"
@@ -1781,21 +1782,19 @@ class Validator:
         if not self._is_visium_and_is_single_true():
             return
 
-        # At this point, is_single is True and:
-        # - there's at least one row with Visum, tissue position column is required
-        # - for any Visium row, tissue position is required.
-        if (
-            tissue_position_name not in self.adata.obs
-            or (
-                (
-                    self.adata.obs["assay_ontology_term_id"]
-                    .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, False))
-                    .astype(bool)
-                )
-                & (self.adata.obs[tissue_position_name].isnull())
-            ).any()
-        ):
+        # visium rows require tissue_position columns
+        if tissue_position_name not in self.adata.obs:
+            # report column is required
             self.errors.append(f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED}.")
+            return
+        elif ((
+                self.adata.obs["assay_ontology_term_id"]
+                .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM, False))
+                .astype(bool)
+            )
+            & (self.adata.obs[tissue_position_name].isnull())).any():
+            # report column has bad values
+            self.errors.append(f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_NOTNULL}.")
             return
 
         # Tissue position must be an int.
