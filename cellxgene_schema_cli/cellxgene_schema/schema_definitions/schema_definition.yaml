@@ -111,13 +111,30 @@ components:
         curie_constraints:
           ontologies:
             - CL
+            - ZFA
+            - FBbt
+            - WBbt
           exceptions:
             - unknown
+          allowed:
+            ancestors:
+              ZFA:
+              - ZFA:0009000
+              FBbt:
+              - FBbt:00007002
+              WBbt:
+              - WBbt:0004017
+              CL:
+              - CL:0000000
           forbidden:
+            ancestors:
+              WBbt:
+              - WBbt:0006803
             terms:
               - CL:0000255
               - CL:0000257
               - CL:0000548
+              - WBbt:0006803
         add_labels:
           - type: curie
             to_column: cell_type
@@ -165,155 +182,6 @@ components:
         add_labels:
           - type: curie
             to_column: organism
-      organism_cell_type_ontology_term_id:
-        type: curie
-        dependencies:
-          - # If organism is Zebrafish
-              rule:
-                column: organism_ontology_term_id
-                match_exact:
-                  terms:
-                    - NCBITaxon:7955
-              error_message_suffix: >-
-                  When 'organism_ontology_term_id' is 'NCBITaxon:7955' (Danio rerio),
-                  'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'ZFA:0009000' (cell).
-              type: curie
-              curie_constraints:
-                  ontologies:
-                    - ZFA
-                  allowed:
-                    ancestors:
-                      ZFA:
-                      - ZFA:0009000
-                  exceptions:
-                    - unknown
-          - # If organism is fruit fly
-              rule:
-                column: organism_ontology_term_id
-                match_exact:
-                  terms:
-                    - NCBITaxon:7227
-              error_message_suffix: >-
-                  When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster),
-                  'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'FBbt:00007002' (cell).
-              type: curie
-              curie_constraints:
-                  ontologies:
-                    - FBbt
-                  allowed:
-                    ancestors:
-                      FBbt:
-                      - FBbt:00007002
-                  exceptions:
-                    - unknown
-          - # If organism is c. elegans
-              rule:
-                column: organism_ontology_term_id
-                match_exact:
-                  terms:
-                    - NCBITaxon:6239
-              error_message_suffix: >-
-                  When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans),
-                  'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'WBbt:0004017' (cell).
-              type: curie
-              curie_constraints:
-                  ontologies:
-                    - WBbt
-                  allowed:
-                    ancestors:
-                      WBbt:
-                      - WBbt:0004017
-                  exceptions:
-                    - unknown
-        # if organism is none of the above
-        error_message_suffix: >-
-            When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition,
-            'organism_cell_type_ontology_term_id' MUST be 'na'.
-        curie_constraints:
-            ontologies:
-              - NA
-            exceptions:
-              - na
-      organism_tissue_ontology_term_id:
-        type: curie
-        dependencies:
-          - # If organism is Zebrafish
-            rule:
-              column: organism_ontology_term_id
-              match_exact:
-                terms:
-                  - NCBITaxon:7955
-            error_message_suffix: >-
-              When 'organism_ontology_term_id' is 'NCBITaxon:7955' (Danio rerio),
-              'organism_tissue_ontology_term_id' MUST be the most accurate descendant
-              of ZFA:0100000 for zebrafish anatomical entity and MUST NOT be ZFA:0009000
-              for cell or any of its descendants.
-            type: curie
-            curie_constraints:
-              ontologies:
-                - ZFA
-              allowed:
-                ancestors:
-                  ZFA:
-                    - ZFA:0100000
-              forbidden:
-                terms:
-                  - ZFA:0009000
-                ancestors:
-                  ZFA:
-                    - ZFA:0009000
-          - # If organism is fruit fly
-            rule:
-              column: organism_ontology_term_id
-              match_exact:
-                terms:
-                  - NCBITaxon:7227
-            error_message_suffix: >-
-              When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster),
-              'organism_tissue_ontology_term_id' MUST be the most accurate descendant
-              of FBbt:10000000 for fruit fly anatomical entity and MUST NOT be FBbt:00007002
-              for cell or any of its descendants.
-            type: curie
-            curie_constraints:
-              ontologies:
-                - FBbt
-              allowed:
-                ancestors:
-                  FBbt:
-                    - FBbt:10000000
-              forbidden:
-                terms:
-                  - FBbt:00007002
-                ancestors:
-                  FBbt:
-                    - FBbt:00007002
-          - # If organism is c. elegans
-            rule:
-                column: organism_ontology_term_id
-                match_exact:
-                  terms:
-                    - NCBITaxon:6239
-            error_message_suffix: >-
-              When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans),
-              'organism_tissue_ontology_term_id' MUST be the most accurate descendant
-              of WBbt:0005766 for Anatomy
-            type: curie
-            curie_constraints:
-              ontologies:
-                - WBbt
-              allowed:
-                ancestors:
-                  WBbt:
-                    - WBbt:0005766
-        # if organism is none of the above
-        error_message_suffix: >-
-          When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition,
-          'organism_tissue_ontology_term_id' MUST be 'na'.
-        curie_constraints:
-          ontologies:
-            - NA
-          exceptions:
-            - na
       sex_ontology_term_id:
         type: curie
         dependencies:
@@ -364,16 +232,42 @@ components:
                   - tissue
                   - organoid
             error_message_suffix: >-
-              When 'tissue_type' is 'tissue' or 'organoid',
-              'tissue_ontology_term_id' MUST be a descendant term id of 'UBERON:0001062' (anatomical entity).
+              When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' must be a valid UBERON, ZFA, FBbt, or WBbt term.
             type: curie
             curie_constraints:
               ontologies:
                 - UBERON
+                - ZFA
+                - FBbt
+                - WBbt
               allowed:
                 ancestors:
+                  ZFA:
+                    - ZFA:0100000
+                  FBbt:
+                    - FBbt:10000000
+                  WBbt:
+                    - WBbt:0005766
                   UBERON:
                     - UBERON:0001062
+              forbidden:
+                terms:
+                  - ZFA:0009000
+                  - ZFA:0001093
+                  - FBbt:00007002
+                  - WBbt:0007849
+                  - WBbt:0007850
+                  - WBbt:0008595
+                  - WBbt:0004017
+                  - WBbt:0006803
+                ancestors:
+                  ZFA:
+                    - ZFA:0009000
+                  WBbt:
+                    - WBbt:0004017
+                    - WBbt:0006803
+                  FBbt:
+                    - FBbt:00007002
           - # If tissue_type is cell culture
             rule:
               column: tissue_type
