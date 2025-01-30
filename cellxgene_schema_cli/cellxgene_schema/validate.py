@@ -465,93 +465,6 @@ class Validator:
             nonzeros = count_nonzeros(matrix.compute(), is_sparse_matrix)[0]
         return nonzeros
 
-    def _validate_tissue_ontology_term_id(self):
-        """
-        For `tissue_ontology_term_id`, the schema_definition.yaml allows all possible terms regardless of what
-        the organism is. This block of code does further validation to make sure that if zebrafish, fruit fly,
-        or roundworm is specified, only the correct ontologies are used.
-
-        This is quite a bit easier to understand than fully overhauling the schema definition to allow for these
-        very specific cases. Note that we only check for prefixes, since validation that these are proper ontology
-        terms / descendants is done within the curie constraints
-        """
-        organism_column = "organism_ontology_term_id"
-        tissue_column = "tissue_ontology_term_id"
-        tissue_type_column = "tissue_type"
-
-        required_columns = [tissue_column, organism_column, tissue_type_column]
-        for column in required_columns:
-            if column not in self.adata.obs.columns:
-                return
-
-        allowed_prefixes = {
-            "NCBITaxon:6239": ("WBbt", "UBERON"),
-            "NCBITaxon:7955": ("ZFA", "UBERON"),
-            "NCBITaxon:7227": ("FBbt", "UBERON"),
-        }
-
-        def is_valid_row(row):
-            if row[tissue_type_column] == "cell culture":
-                return True
-            allowed = allowed_prefixes.get(row[organism_column], ("UBERON",))
-            return row[tissue_column].startswith(allowed)
-
-        try:
-            invalid_rows = ~self.adata.obs.apply(is_valid_row, axis=1)
-
-            if invalid_rows.any():
-                self.errors.append(
-                    "When tissue_type is tissue or organoid, tissue_ontology_term_id must be a valid UBERON term. "
-                    "If organism is NCBITaxon:6239, it can be a valid UBERON term or a valid WBbt term. "
-                    "If organism is NCBITaxon:7955, it can be a valid UBERON term or a valid ZFA term. "
-                    "If organism is NCBITaxon:7227, it can be a valid UBERON term or a valid FBbt term."
-                )
-        except Exception as e:
-            self.errors.append(f"Unexpected error validating tissue_ontology_term_id: {e}")
-
-    def _validate_cell_type_ontology_term_id(self):
-        """
-        For `cell_type_ontology_term_id`, the schema_definition.yaml allows all possible terms regardless of what
-        the organism is. This block of code does further validation to make sure that if zebrafish, fruit fly,
-        or roundworm is specified, only the correct ontologies are used.
-
-        This is quite a bit easier to understand than fully overhauling the schema definition to allow for these
-        very specific cases. Note that we only check for prefixes, since validation that these are proper ontology
-        terms / descendants is done within the curie constraints
-        """
-        organism_column = "organism_ontology_term_id"
-        cell_type_column = "cell_type_ontology_term_id"
-
-        required_columns = [cell_type_column, organism_column]
-        for column in required_columns:
-            if column not in self.adata.obs.columns:
-                return
-
-        allowed_prefixes = {
-            "NCBITaxon:6239": ("WBbt", "CL"),
-            "NCBITaxon:7955": ("ZFA", "CL"),
-            "NCBITaxon:7227": ("FBbt", "CL"),
-        }
-
-        def is_valid_row(row):
-            if row[cell_type_column] == "unknown":
-                return True
-            allowed = allowed_prefixes.get(row[organism_column], ("CL",))
-            return row[cell_type_column].startswith(allowed)
-
-        try:
-            invalid_rows = ~self.adata.obs.apply(is_valid_row, axis=1)
-
-            if invalid_rows.any():
-                self.errors.append(
-                    "cell_type_ontology_term_id must be a valid CL term. "
-                    "If organism is NCBITaxon:6239, it can be a valid CL term or a valid WBbt term. "
-                    "If organism is NCBITaxon:7955, it can be a valid CL term or a valid ZFA term. "
-                    "If organism is NCBITaxon:7227, it can be a valid CL term or a valid FBbt term."
-                )
-        except Exception as e:
-            self.errors.append(f"Unexpected error validating cell_type_ontology_term_id: {e}")
-
     def _validate_genetic_ancestry(self):
         """
         Performs row-based validation of the genetic_ancestry_X fields. This ensures that a valid row must be:
@@ -2134,10 +2047,6 @@ class Validator:
 
         # Validate genetic ancestry
         self._validate_genetic_ancestry()
-
-        # Organism-specific prefix validation
-        self._validate_tissue_ontology_term_id()
-        self._validate_cell_type_ontology_term_id()
 
         # Checks each component
         for component_name, component_def in self.schema_def["components"].items():

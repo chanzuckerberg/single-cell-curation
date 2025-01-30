@@ -528,8 +528,12 @@ class TestObs:
         validator.adata.obs.drop("organism_ontology_term_id", axis=1, inplace=True)
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Dataframe 'obs' is missing column " "'organism_ontology_term_id'.",
+            "ERROR: Checking values with dependencies failed for adata.obs['cell_type_ontology_term_id'], "
+            "this is likely due to missing dependent column in adata.obs.",
+            "ERROR: Dataframe 'obs' is missing column 'organism_ontology_term_id'.",
             "ERROR: Checking values with dependencies failed for adata.obs['sex_ontology_term_id'], "
+            "this is likely due to missing dependent column in adata.obs.",
+            "ERROR: Checking values with dependencies failed for adata.obs['tissue_ontology_term_id'], "
             "this is likely due to missing dependent column in adata.obs.",
             "ERROR: Checking values with dependencies failed for "
             "adata.obs['self_reported_ethnicity_ontology_term_id'], this is likely due "
@@ -1319,7 +1323,7 @@ class TestObs:
         obs.loc[obs.index[0], "tissue_type"] = "organoid"
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: 'UBERON:0000057 (organoid)' in 'tissue_ontology_term_id' is not a valid ontology term id of 'UBERON, ZFA, FBbt, WBbt'. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' must be a valid UBERON, ZFA, FBbt, or WBbt term."
+            "ERROR: 'UBERON:0000057 (organoid)' in 'tissue_ontology_term_id' is not a valid ontology term id of 'UBERON'."
         ]
 
     def test_tissue_ontology_term_id_descendant_of_anatomical_entity__tissue(self, validator_with_adata):
@@ -1332,9 +1336,7 @@ class TestObs:
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = "UBERON:0001062"
         obs.loc[obs.index[0], "tissue_type"] = "tissue"
         validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not an allowed term id. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' must be a valid UBERON, ZFA, FBbt, or WBbt term."
-        ]
+        assert validator.errors == ["ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not an allowed term id."]
 
     def test_tissue_ontology_term_id_descendant_of_anatomical_entity__organoid(self, validator_with_adata):
         """
@@ -1347,9 +1349,7 @@ class TestObs:
         obs.tissue_type = obs.tissue_type.cat.add_categories(["organoid"])
         obs.loc[obs.index[0], "tissue_type"] = "organoid"
         validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not an allowed term id. When 'tissue_type' is 'tissue' or 'organoid', 'tissue_ontology_term_id' must be a valid UBERON, ZFA, FBbt, or WBbt term."
-        ]
+        assert validator.errors == ["ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not an allowed term id."]
 
     def test_tissue_type(self, validator_with_adata):
         """
