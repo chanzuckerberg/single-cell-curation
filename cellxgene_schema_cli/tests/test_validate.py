@@ -1205,7 +1205,8 @@ class TestCheckSpatial:
         validator._validate_spatial_cell_type_ontology_term_id()
         assert validator.errors
         assert (
-            f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}." in validator.errors[0]
+            f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
+            in validator.errors[0]
         )
 
     def test__validate_embeddings_non_nans(self):
