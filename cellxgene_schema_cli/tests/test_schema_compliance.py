@@ -1301,7 +1301,11 @@ class TestObs:
         not_allowed_error = f"ERROR: '{term}' in 'tissue_ontology_term_id' is not allowed. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be either a CL term (excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), and 'CL:0000548' (animal cell)) or 'unknown'."
         deprecated_error = f"ERROR: '{term}' in 'tissue_ontology_term_id' is a deprecated term id of 'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be either a CL term (excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), and 'CL:0000548' (animal cell)) or 'unknown'."
         invalid_ontology_error = f"ERROR: '{term}' in 'tissue_ontology_term_id' is not a valid ontology term id of 'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be either a CL term (excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), and 'CL:0000548' (animal cell)) or 'unknown'."
-        assert not_allowed_error in validator.errors or deprecated_error in validator.errors or invalid_ontology_error in validator.errors
+        assert (
+            not_allowed_error in validator.errors
+            or deprecated_error in validator.errors
+            or invalid_ontology_error in validator.errors
+        )
 
     def test_tissue_ontology_term_id_organoid(self, validator_with_adata):
         """
