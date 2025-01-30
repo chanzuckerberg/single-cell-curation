@@ -2910,7 +2910,7 @@ class TestZebrafish:
         obs = validator.adata.obs
         obs.loc[obs.index[0], "in_tissue"] = 0
         obs.loc[obs.index[0], "cell_type_ontology_term_id"] = "unknown"
-        validator.reset(None,2)
+        validator.reset(None, 2)
         validator.validate_adata()
         assert not validator.errors
 
@@ -3301,7 +3301,6 @@ class TestRoundworm:
         validator.validate_adata()
         assert len(validator.errors) > 0
 
-    
     def test_organism_cell_type_ontology_term_id__visium_in_tissue_0(self, validator_with_visium_roundworm_adata):
         validator: Validator = validator_with_visium_roundworm_adata
         obs = validator.adata.obs

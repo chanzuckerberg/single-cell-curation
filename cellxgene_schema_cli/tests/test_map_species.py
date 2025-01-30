@@ -1,6 +1,6 @@
+import logging
 from tempfile import TemporaryDirectory
 from unittest import mock
-import logging
 
 import numpy
 import pandas as pd
