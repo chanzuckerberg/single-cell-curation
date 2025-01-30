@@ -56,6 +56,9 @@ def validator_with_adata(zebrafish_adata):
     return validator
 
 
+@pytest.mark.skip(
+    reason="Skipping this test as the schema its based on has changed and this command is being deprecated"
+)
 def test_map_species__valid_output(validator_with_adata):
     with TemporaryDirectory() as tmp:
         input_file = tmp + "input.h5ad"
@@ -104,6 +107,9 @@ def test_map_species_log_output_no_match(zebrafish_adata, caplog):
         assert "ZFA:0000047 has no closest match for UBERON in its ancestry tree." in caplog.text
 
 
+@pytest.mark.skip(
+    reason="Skipping this test as the schema its based on has changed and this command is being deprecated"
+)
 def test_map_species__with_existing_cols(validator_with_adata):
     obs = validator_with_adata.adata.obs
     obs["cell_type_ontology_term_id"] = ""
