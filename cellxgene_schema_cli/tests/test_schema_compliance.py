@@ -20,6 +20,7 @@ from cellxgene_schema.validate import (
     ERROR_SUFFIX_VISIUM,
     ERROR_SUFFIX_VISIUM_11M,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE,
+    ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0,
     SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE,
     SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
     VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE,
@@ -2923,8 +2924,7 @@ class TestZebrafish:
         obs.loc[obs.index[0], "cell_type_ontology_term_id"] = "ZFA:0000003"
         validator.validate_adata()
         assert (
-            "obs['cell_type_ontology_term_id'] must be 'unknown' and obs['cell_type_ontology_term_id'] must "
-            "be 'unknown' or 'na' depending on the value of 'organism_ontology_term_id' (see schema definition)"
+            f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}"
             in validator.errors[0]
         )
 
@@ -3112,8 +3112,7 @@ class TestFruitFly:
         validator.reset(None, 2)
         validator.validate_adata()
         assert (
-            "obs['cell_type_ontology_term_id'] must be 'unknown' and obs['cell_type_ontology_term_id'] must "
-            "be 'unknown' or 'na' depending on the value of 'organism_ontology_term_id' (see schema definition)"
+            f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
             in validator.errors[0]
         )
 
@@ -3305,7 +3304,7 @@ class TestRoundworm:
         validator: Validator = validator_with_visium_roundworm_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "in_tissue"] = 0
-        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "unknown"
+        obs.loc[obs.index[0], "cell_type_ontology_term_id"] = "unknown"
         validator.reset(None, 2)
         validator.validate_adata()
         assert not validator.errors
@@ -3320,8 +3319,7 @@ class TestRoundworm:
         validator.reset(None, 2)
         validator.validate_adata()
         assert (
-            "obs['cell_type_ontology_term_id'] must be 'unknown' and obs['cell_type_ontology_term_id'] must "
-            "be 'unknown' or 'na' depending on the value of 'organism_ontology_term_id' (see schema definition)"
+            f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}"
             in validator.errors[0]
         )
 

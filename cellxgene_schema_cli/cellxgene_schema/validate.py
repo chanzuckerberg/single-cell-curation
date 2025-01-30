@@ -1746,9 +1746,7 @@ class Validator:
         is_not_unknown = self.adata.obs["cell_type_ontology_term_id"] != "unknown"
         if (is_spatial & is_not_tissue & is_not_unknown).any():
             self.errors.append(
-                f"obs['cell_type_ontology_term_id'] must be 'unknown' and obs['organism_cell_type_ontology_term_id'] "
-                f"must be 'unknown' or 'na' depending on the value of 'organism_ontology_term_id' (see schema "
-                f"definition) when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
+                f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
             )
 
     def _validate_spatial_tissue_position(self, tissue_position_name: str, min: int, max: int):
