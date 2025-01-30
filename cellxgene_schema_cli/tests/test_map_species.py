@@ -1,3 +1,4 @@
+import logging
 from tempfile import TemporaryDirectory
 from unittest import mock
 
@@ -70,6 +71,7 @@ def test_map_species__valid_output(validator_with_adata):
 
 
 def test_map_species_log_ouput(validator_with_adata, caplog):
+    caplog.set_level(logging.INFO)
     obs = validator_with_adata.adata.obs
     # test single match, error match, multiple options
     obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "ZFA:0009384"

@@ -16,6 +16,7 @@ from cellxgene_schema.validate import (
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0,
+    ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_NOTNULL,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED,
     SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE,
     SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
@@ -1104,6 +1105,17 @@ class TestCheckSpatial:
         assert validator.errors
         assert f"obs['{tissue_position_name}'] must be of int type" in validator.errors[0]
 
+    @pytest.mark.parametrize("tissue_position_name", ["array_col", "array_row", "in_tissue"])
+    def test__validate_tissue_position_nan_error(self, tissue_position_name):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.obs[tissue_position_name] = np.nan
+
+        # Confirm tissue_position is identified as invalid.
+        validator._check_spatial_obs()
+        assert validator.errors[0] == f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_NOTNULL}."
+
     @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0022857", "EFO:0022860", "EFO:0022859"])
     @pytest.mark.parametrize("tissue_position_name, min", [("array_col", 0), ("array_row", 0), ("in_tissue", 0)])
     def test__validate_tissue_position_int_min_error(self, assay_ontology_term_id, tissue_position_name, min):
@@ -1205,9 +1217,8 @@ class TestCheckSpatial:
         validator._validate_spatial_cell_type_ontology_term_id()
         assert validator.errors
         assert (
-            f"obs['cell_type_ontology_term_id'] must be 'unknown' and obs['organism_cell_type_ontology_term_id'] must "
-            f"be 'unknown' or 'na' depending on the value of 'organism_ontology_term_id' (see schema definition) "
-            f"when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}." in validator.errors[0]
+            f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
+            in validator.errors[0]
         )
 
     def test__validate_embeddings_non_nans(self):
