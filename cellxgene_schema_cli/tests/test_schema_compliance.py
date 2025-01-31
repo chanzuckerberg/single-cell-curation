@@ -2962,6 +2962,7 @@ class TestZebrafish:
     def test_organism_tissue_type_valid(self, validator_with_zebrafish_adata, tissue_type):
         validator = validator_with_zebrafish_adata
         obs = validator.adata.obs
+        obs.tissue_type = obs.tissue_type.cat.add_categories(["organoid"])
         obs.loc[obs.index[0], "tissue_type"] = tissue_type
         assert not validator.errors
 
@@ -3137,6 +3138,7 @@ class TestFruitFly:
     def test_organism_tissue_type_valid(self, validator_with_fruitfly_adata, tissue_type):
         validator = validator_with_fruitfly_adata
         obs = validator.adata.obs
+        obs.tissue_type = obs.tissue_type.cat.add_categories(["organoid"])
         obs.loc[obs.index[0], "tissue_type"] = tissue_type
         assert not validator.errors
 
@@ -3324,6 +3326,7 @@ class TestRoundworm:
     def test_organism_tissue_type_valid(self, validator_with_roundworm_adata, tissue_type):
         validator = validator_with_roundworm_adata
         obs = validator.adata.obs
+        obs.tissue_type = obs.tissue_type.cat.add_categories(["organoid"])
         obs.loc[obs.index[0], "tissue_type"] = tissue_type
         assert not validator.errors
 
