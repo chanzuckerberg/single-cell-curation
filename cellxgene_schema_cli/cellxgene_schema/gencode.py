@@ -14,6 +14,7 @@ class SupportedOrganisms(enum.Enum):
     DROSOPHILA_MELANOGASTER = "NCBITaxon:7227"
     DANIO_RERIO = "NCBITaxon:7955"
     CAENORHABDITIS_ELEGANS = "NCBITaxon:6239"
+    MACACA_FASCICULARIS = "NCBITaxon:9541"
 
 
 def get_organism_from_feature_id(
@@ -59,6 +60,7 @@ class GeneChecker:
         ),
         SupportedOrganisms.DANIO_RERIO: os.path.join(env.GENCODE_DIR, "genes_danio_rerio.csv.gz"),
         SupportedOrganisms.CAENORHABDITIS_ELEGANS: os.path.join(env.GENCODE_DIR, "genes_caenorhabditis_elegans.csv.gz"),
+        SupportedOrganisms.MACACA_FASCICULARIS: os.path.join(env.GENCODE_DIR, "genes_macaca_fascicularis.csv.gz")
     }
 
     def __init__(self, species: SupportedOrganisms):
