@@ -179,6 +179,17 @@ components:
         curie_constraints:
           ontologies:
             - NCBITaxon
+          allowed:
+            terms:
+              NCBITaxon:
+                - NCBITaxon:9606
+                - NCBITaxon:10090
+                - NCBITaxon:2697049
+                - NCBITaxon:32630
+                - NCBITaxon:7227
+                - NCBITaxon:7955
+                - NCBITaxon:6239
+                - NCBITaxon:9541
         add_labels:
           - type: curie
             to_column: organism
