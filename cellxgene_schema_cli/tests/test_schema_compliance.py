@@ -3415,3 +3415,44 @@ class TestRoundworm:
             "'sex_ontology_term_id' MUST be 'PATO:0000384' for male, 'PATO:0001340' for hermaphrodite, or 'unknown'."
         )
         assert error_message in validator.errors
+
+
+class TestMultiSpecies:
+    """
+    Tests to verify our support for human / mouse is not impacted by support for additional species
+    """
+
+    @pytest.mark.parametrize(
+        "cell_type_ontology_term_id",
+        [
+            "UBERON:0000001",  # Wrong ontology
+            "ZFA:0000003",  # Valid for zebrafish, not valid for human or mouse data
+            "FBbt:00049192",  # Valid for fruit fly, not valid for human or mouse data
+            "WBbt:0008611",  # Valid for roundworm, not valid for human or mouse data
+            "na",  # Allowed for other organisms, not allowed if organism is fruit fly
+        ],
+    )
+    def test_cell_type_ontology_term_id__invalid(self, validator_with_adata, cell_type_ontology_term_id):
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "cell_type_ontology_term_id"] = cell_type_ontology_term_id
+        validator.validate_adata()
+        assert len(validator.errors) > 0
+
+    @pytest.mark.parametrize(
+        "tissue_ontology_term_id",
+        [
+            "CL:0000001",  # Wrong ontology
+            "ZFA:0001262",  # Valid for zebrafish, not valid for human or mouse data
+            "FBbt:00007337",  # Valid for fruit fly, not valid for human or mouse data
+            "WBbt:0006749",  # Valid for roundworm, not valid for human or mouse data
+            "na",
+            "unknown",
+        ],
+    )
+    def test_tissue_ontology_term_id__invalid(self, validator_with_adata, tissue_ontology_term_id):
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = tissue_ontology_term_id
+        validator.validate_adata()
+        assert len(validator.errors) > 0
