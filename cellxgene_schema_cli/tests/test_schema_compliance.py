@@ -2955,10 +2955,14 @@ class TestZebrafish:
         validator.validate_adata()
         assert len(validator.errors) > 0
 
-    def test_organism_tissue_type_valid(self, validator_with_zebrafish_adata):
+    @pytest.mark.parametrize(
+        "tissue_type",
+        ["tissue", "cell culture", "organoid"],
+    )
+    def test_organism_tissue_type_valid(self, validator_with_zebrafish_adata, tissue_type):
         validator = validator_with_zebrafish_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "tissue_type"] = "tissue"
+        obs.loc[obs.index[0], "tissue_type"] = tissue_type
         assert not validator.errors
 
 
@@ -3021,7 +3025,9 @@ class TestFruitFly:
             "FBdv:00007012",  # Explicitly forbidden term, life stage
         ],
     )
-    def test_development_stage_ontology_term_id_fruitfly__invalid(self, validator_with_fruitfly_adata, development_stage_ontology_term_id):
+    def test_development_stage_ontology_term_id_fruitfly__invalid(
+        self, validator_with_fruitfly_adata, development_stage_ontology_term_id
+    ):
         validator = validator_with_fruitfly_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "development_stage_ontology_term_id"] = development_stage_ontology_term_id
@@ -3124,10 +3130,14 @@ class TestFruitFly:
         validator.validate_adata()
         assert len(validator.errors) > 0
 
-    def test_organism_tissue_type_valid(self, validator_with_fruitfly_adata):
+    @pytest.mark.parametrize(
+        "tissue_type",
+        ["tissue", "cell culture", "organoid"],
+    )
+    def test_organism_tissue_type_valid(self, validator_with_fruitfly_adata, tissue_type):
         validator = validator_with_fruitfly_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "tissue_type"] = "tissue"
+        obs.loc[obs.index[0], "tissue_type"] = tissue_type
         assert not validator.errors
 
 
@@ -3307,10 +3317,14 @@ class TestRoundworm:
         validator.validate_adata()
         assert len(validator.errors) > 0
 
-    def test_organism_tissue_type_valid(self, validator_with_roundworm_adata):
+    @pytest.mark.parametrize(
+        "tissue_type",
+        ["tissue", "cell culture", "organoid"],
+    )
+    def test_organism_tissue_type_valid(self, validator_with_roundworm_adata, tissue_type):
         validator = validator_with_roundworm_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "tissue_type"] = "tissue"
+        obs.loc[obs.index[0], "tissue_type"] = tissue_type
         assert not validator.errors
 
     @pytest.mark.parametrize(
