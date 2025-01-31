@@ -3353,6 +3353,14 @@ class TestRoundworm:
         )
         assert error_message in validator.errors
 
+    def test_cell_culture_tissue_ontology_term_id(self, validator_with_roundworm_adata):
+        validator = validator_with_roundworm_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CL:0007021"  # valid CL term for cell culture
+        validator.validate_adata()
+        assert not validator.errors
+
 
 class TestMultiSpecies:
     """
@@ -3387,6 +3395,7 @@ class TestMultiSpecies:
             "unknown",
         ],
     )
+
     def test_tissue_ontology_term_id__invalid(self, validator_with_adata, tissue_ontology_term_id):
         validator = validator_with_adata
         obs = validator.adata.obs
