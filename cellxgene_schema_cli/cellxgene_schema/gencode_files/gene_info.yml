@@ -22,3 +22,6 @@ zebrafish:
 roundworm:
   description: caenorhabditis_elegans
   url: https://ftp.ensembl.org/pub/release-113/gtf/caenorhabditis_elegans/Caenorhabditis_elegans.WBcel235.113.gtf.gz
+macaque:
+  description: macaca_fascicularis
+  url: https://ftp.ensembl.org/pub/release-113/gtf/macaca_fascicularis/Macaca_fascicularis.Macaca_fascicularis_6.0.113.gtf.gz
