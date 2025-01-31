@@ -2862,7 +2862,7 @@ class TestZebrafish:
 
     @pytest.mark.parametrize(
         "cell_type_ontology_term_id",
-        ["ZFA:0000003", "unknown"],
+        ["ZFA:0000003", "CL:0007021", "unknown"],
     )
     def test_cell_type_ontology_term_id(self, validator_with_zebrafish_adata, cell_type_ontology_term_id):
         """
@@ -3053,7 +3053,7 @@ class TestFruitFly:
 
     @pytest.mark.parametrize(
         "cell_type_ontology_term_id",
-        ["FBbt:00049192", "unknown"],
+        ["FBbt:00049192", "CL:0007021", "unknown"],
     )
     def test_cell_type_ontology_term_id(self, validator_with_fruitfly_adata, cell_type_ontology_term_id):
         """
@@ -3251,7 +3251,7 @@ class TestRoundworm:
 
     @pytest.mark.parametrize(
         "cell_type_ontology_term_id",
-        ["WBbt:0005762", "unknown"],
+        ["WBbt:0005762", "CL:0007021", "unknown"],
     )
     def test_cell_type_ontology_term_id(self, validator_with_roundworm_adata, cell_type_ontology_term_id):
         """
