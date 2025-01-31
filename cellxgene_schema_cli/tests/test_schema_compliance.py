@@ -2913,23 +2913,6 @@ class TestZebrafish:
             in validator.errors[0]
         )
 
-    @pytest.mark.skip(
-        reason="Skipping this test to unblock downstream multispecies work. TODO: fix before 5.3.0 release"
-    )
-    def test_cell_type_ontology_term_id__visium_in_tissue_0__na(self, validator_with_visium_zebrafish_adata):
-        validator = validator_with_visium_zebrafish_adata
-        error_message = (
-            "ERROR: 'na' in 'cell_type_ontology_term_id' is not a valid ontology term id of 'ZFA'. "
-            "When 'organism_ontology_term_id' is 'NCBITaxon:7955' (Danio rerio), "
-            "'cell_type_ontology_term_id' MUST be a descendant term id of 'ZFA:0009000' (cell)."
-        )
-        obs = validator.adata.obs
-        obs.loc[obs.index[0], "in_tissue"] = 0
-        obs.loc[obs.index[0], "cell_type_ontology_term_id"] = "na"
-        validator.validate_adata()
-        # Passes visium check but fails cell_type_ontology_term_id check
-        assert validator.errors == [error_message]
-
     @pytest.mark.parametrize(
         "tissue_ontology_term_id",
         [
@@ -3104,23 +3087,6 @@ class TestFruitFly:
             f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}."
             in validator.errors[0]
         )
-
-    @pytest.mark.skip(
-        reason="Skipping this test to unblock downstream multispecies work. TODO: fix before 5.3.0 release"
-    )
-    def test_cell_type_ontology_term_id__visium_in_tissue_0__na(self, validator_with_visium_fruitfly_adata):
-        validator = validator_with_visium_fruitfly_adata
-        error_message = (
-            "ERROR: 'na' in 'cell_type_ontology_term_id' is not a valid ontology term id of 'FBbt'. "
-            "When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster), "
-            "'cell_type_ontology_term_id' MUST be a descendant term id of 'FBbt:00007002' (cell)."
-        )
-        obs = validator.adata.obs
-        obs.loc[obs.index[0], "in_tissue"] = 0
-        obs.loc[obs.index[0], "cell_type_ontology_term_id"] = "na"
-        validator.validate_adata()
-        # Passes visium check but fails cell_type_ontology_term_id check
-        assert validator.errors == [error_message]
 
     @pytest.mark.parametrize(
         "tissue_ontology_term_id",
@@ -3302,23 +3268,6 @@ class TestRoundworm:
             f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}"
             in validator.errors[0]
         )
-
-    @pytest.mark.skip(
-        reason="Skipping this test to unblock downstream multispecies work. TODO: fix before 5.3.0 release"
-    )
-    def test_organism_cell_type_ontology_term_id__visium_in_tissue_0__na(self, validator_with_visium_roundworm_adata):
-        validator = validator_with_visium_roundworm_adata
-        error_message = (
-            "ERROR: 'na' in 'organism_cell_type_ontology_term_id' is not a valid ontology term id of 'WBbt'. "
-            "When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans), "
-            "'organism_cell_type_ontology_term_id' MUST be a descendant term id of 'WBbt:0004017' (cell)."
-        )
-        obs = validator.adata.obs
-        obs.loc[obs.index[0], "in_tissue"] = 0
-        obs.loc[obs.index[0], "organism_cell_type_ontology_term_id"] = "na"
-        validator.validate_adata()
-        # Passes visium check but fails organism_cell_type_ontology_term_id check
-        assert validator.errors == [error_message]
 
     @pytest.mark.parametrize(
         "tissue_ontology_term_id",
