@@ -527,11 +527,21 @@ components:
                   - NCBITaxon:7227
             error_message_suffix: >-
              When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster),
-             'development_stage_ontology_term_id' MUST be the most accurate FBdv term.
+             'development_stage_ontology_term_id' MUST be either the most accurate descendant of FBdv:00007014 for
+              adult age in days or the most accurate descendant of FBdv:00005259 for
+              developmental stage excluding FBdv:00007012 for life stage
             type: curie
             curie_constraints:
               ontologies:
                 - FBdv
+              allowed:
+                ancestors:
+                  FBdv: 
+                    - FBdv:00007014
+                    - FBdv:00005259
+              forbidden:
+                terms:
+                  - FBdv:00007012
               exceptions:
                 - unknown
           - # If organism is C. elegans
@@ -542,7 +552,10 @@ components:
                     - NCBITaxon:6239
             error_message_suffix: >-
              When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans),
-             'development_stage_ontology_term_id' MUST be the most accurate descendant of 'WBls:0000075'.
+             'development_stage_ontology_term_id' MUST be WBls:0000669 for unfertilized egg Ce,
+              the most accurate descendant of WBls:0000803 for C. elegans life stage occurring
+              during embryogenesis, or the most accurate descendant of WBls:0000804 for C. elegans
+              life stage occurring post embryogenesis.
             type: curie
             curie_constraints:
               ontologies:
@@ -550,7 +563,11 @@ components:
               allowed:
                 ancestors:
                   WBls:
-                    - WBls:0000075
+                    - WBls:0000803
+                    - WBls:0000804
+                terms:
+                  WBls:
+                    - WBls:0000669
               exceptions:
                 - unknown
         # If organism is none of the above
@@ -664,20 +681,6 @@ components:
           - "cell culture"
           - "organoid"
           - "tissue"
-        dependencies:
-        - # If organism_ontology_term_id is NCBITaxon:7955, NCBITaxon:7227, or NCBITaxon:6239 'tissue_type' MUST be 'tissue'
-            rule:
-              column: organism_ontology_term_id
-              match_exact:
-                terms:
-                  - NCBITaxon:7955
-                  - NCBITaxon:7227
-                  - NCBITaxon:6239
-            type: categorical
-            error_message_suffix: >-
-              when 'organism_ontology_term_id' is NCBITaxon:7955, NCBITaxon:7227, or NCBITaxon:6239
-            enum:
-              - "tissue"
       genetic_ancestry_African:
         type: genetic_ancestry_value
       genetic_ancestry_East_Asian:
