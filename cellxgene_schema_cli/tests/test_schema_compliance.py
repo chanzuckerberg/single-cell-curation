@@ -3106,10 +3106,17 @@ class TestFruitFly:
         # Passes visium check but fails cell_type_ontology_term_id check
         assert validator.errors == [error_message]
 
-    def test_organism_tissue_type_ontology_term_id(self, validator_with_fruitfly_adata):
+    @pytest.mark.parametrize(
+        "tissue_ontology_term_id",
+        [
+            "FBbt:00007337",  # valid descendant of FBbt:10000000
+            "UBERON:0002048",  # valid UBERON term
+        ],
+    )
+    def test_organism_tissue_type_ontology_term_id(self, validator_with_fruitfly_adata, tissue_ontology_term_id):
         validator = validator_with_fruitfly_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "FBbt:00007337"  # valid descendant of FBbt:10000000
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = tissue_ontology_term_id
         validator.validate_adata()
         assert not validator.errors
 
