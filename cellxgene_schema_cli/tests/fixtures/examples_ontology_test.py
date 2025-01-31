@@ -4,7 +4,7 @@ from cellxgene_schema import gencode
 invalid_species = ["Caenorhabditis elegans"]
 
 valid_genes = {
-    gencode.SupportedOrganisms.HOMO_SAPIENS: {"ENSG00000141510": ("TP53", 2404)},
+    gencode.SupportedOrganisms.HOMO_SAPIENS: {"ENSG00000141510": ("TP53_ENSG00000141510", 2404)},
     gencode.SupportedOrganisms.MUS_MUSCULUS: {"ENSMUSG00000059552": ("Trp53", 1797)},
 }
 

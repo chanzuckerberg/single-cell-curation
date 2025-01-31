@@ -795,7 +795,7 @@ class TestObs:
         validator = validator_with_adata
         obs = validator.adata.obs
         # Fail case not an UBERON term
-        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:10114"
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:9541"
         obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "EFO:0000001"
         obs.loc[
             obs.index[0],
@@ -812,7 +812,7 @@ class TestObs:
         # All other it MUST be descendants of UBERON:0000105 and not UBERON:0000071
         # Fail case UBERON:0000071
         validator.errors = []
-        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:10114"
+        obs.loc[obs.index[0], "organism_ontology_term_id"] = "NCBITaxon:9541"
         obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "UBERON:0000071"
         obs.loc[
             obs.index[0],
@@ -1226,7 +1226,7 @@ class TestObs:
 
     def test_organism_ontology_term_id(self, validator_with_adata):
         """
-        organism_ontology_term_id categorical with str categories. This MUST be a descendant of NCBITaxon:33208.
+        organism_ontology_term_id categorical with str categories. This MUST be one of approved enumerated species.
         """
         validator = validator_with_adata
         obs = validator.adata.obs
@@ -1241,8 +1241,7 @@ class TestObs:
         ] = "na"
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: 'EFO:0000001' in 'organism_ontology_term_id' is not a valid "
-            "ontology term id of 'NCBITaxon'. Only descendant term ids of 'NCBITaxon:33208' for metazoan are allowed."
+            "ERROR: 'EFO:0000001' in 'organism_ontology_term_id' is not a valid ontology term id of 'NCBITaxon'. Only explicitly enumerated species are allowed. See Schema"
         ]
 
     def test_tissue_ontology_term_id_base(self, validator_with_adata):
