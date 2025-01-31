@@ -540,9 +540,7 @@ class TestObs:
             "to missing dependent column in adata.obs.",
             "ERROR: Checking values with dependencies failed for "
             "adata.obs['development_stage_ontology_term_id'], this is likely due "
-            "to missing dependent column in adata.obs.",
-            "ERROR: Checking values with dependencies failed for adata.obs['tissue_type'], this is likely due to "
-            "missing dependent column in adata.obs.",
+            "to missing dependent column in adata.obs."
         ]
 
     def test_column_presence_assay(self, validator_with_adata):
@@ -3165,21 +3163,17 @@ class TestFruitFly:
         assert not validator.errors
 
     @pytest.mark.parametrize(
-        "tissue_type",
-        ["cell culture", "organoid"],
+        "tissue_type, tissue_ontology_term_id",
+        [("tissue","FBbt:00007337"),("cell culture","FBbt:00005412"), ("organoid","FBbt:00007337")],
     )
-    def test_organism_tissue_type__invalid(self, validator_with_fruitfly_adata, tissue_type):
+    def test_organism_tissue_type__invalid(self, validator_with_fruitfly_adata, tissue_type, tissue_ontology_term_id):
         validator = validator_with_fruitfly_adata
         obs = validator.adata.obs
         obs.tissue_type = obs.tissue_type.cat.add_categories(["organoid"])
         obs.loc[obs.index[0], "tissue_type"] = tissue_type
+        obs.loc[obs.index[0],"tissue_ontology_term_id"] = tissue_ontology_term_id
         validator.validate_adata()
-        error_message = (
-            f"ERROR: Column 'tissue_type' in dataframe 'obs' contains invalid values '['{tissue_type}']'. "
-            f"Values must be one of ['tissue'] when 'organism_ontology_term_id' is NCBITaxon:7955, NCBITaxon:7227, or "
-            f"NCBITaxon:6239"
-        )
-        assert error_message in validator.errors
+        assert len(validator.errors) ==0
 
 
 class TestRoundworm:
