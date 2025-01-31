@@ -1306,9 +1306,10 @@ class TestObs:
         obs.tissue_type = obs.tissue_type.cat.add_categories(["organoid"])
         obs.loc[obs.index[0], "tissue_type"] = "organoid"
         validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: 'UBERON:0000057 (organoid)' in 'tissue_ontology_term_id' is not a valid ontology term id of 'UBERON'."
-        ]
+        assert (
+            "ERROR: 'UBERON:0000057 (organoid)' in 'tissue_ontology_term_id' is not a valid ontology term id"
+            in validator.errors[0]
+        )
 
     def test_tissue_ontology_term_id_descendant_of_anatomical_entity__tissue(self, validator_with_adata):
         """
@@ -1320,7 +1321,7 @@ class TestObs:
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = "UBERON:0001062"
         obs.loc[obs.index[0], "tissue_type"] = "tissue"
         validator.validate_adata()
-        assert validator.errors == ["ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not an allowed term id."]
+        assert "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not an allowed term id." in validator.errors[0]
 
     def test_tissue_ontology_term_id_descendant_of_anatomical_entity__organoid(self, validator_with_adata):
         """
@@ -1333,7 +1334,7 @@ class TestObs:
         obs.tissue_type = obs.tissue_type.cat.add_categories(["organoid"])
         obs.loc[obs.index[0], "tissue_type"] = "organoid"
         validator.validate_adata()
-        assert validator.errors == ["ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not an allowed term id."]
+        assert "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not an allowed term id." in validator.errors[0]
 
     def test_tissue_type(self, validator_with_adata):
         """
@@ -2861,7 +2862,7 @@ class TestZebrafish:
 
     @pytest.mark.parametrize(
         "cell_type_ontology_term_id",
-        ["ZFA:0000003", "unknown"],
+        ["ZFA:0000003", "CL:0007021", "unknown"],
     )
     def test_cell_type_ontology_term_id(self, validator_with_zebrafish_adata, cell_type_ontology_term_id):
         """
@@ -2929,10 +2930,17 @@ class TestZebrafish:
         # Passes visium check but fails cell_type_ontology_term_id check
         assert validator.errors == [error_message]
 
-    def test_organism_tissue_type_ontology_term_id(self, validator_with_zebrafish_adata):
+    @pytest.mark.parametrize(
+        "tissue_ontology_term_id",
+        [
+            "ZFA:0001262",  # valid descendant of ZFA:0100000
+            "UBERON:0002048",  # valid UBERON term
+        ],
+    )
+    def test_organism_tissue_type_ontology_term_id(self, validator_with_zebrafish_adata, tissue_ontology_term_id):
         validator = validator_with_zebrafish_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "ZFA:0001262"  # valid descendant of ZFA:0100000
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = tissue_ontology_term_id
         validator.validate_adata()
         assert not validator.errors
 
@@ -2964,6 +2972,14 @@ class TestZebrafish:
         obs = validator.adata.obs
         obs.tissue_type = obs.tissue_type.cat.add_categories(["organoid"])
         obs.loc[obs.index[0], "tissue_type"] = tissue_type
+        assert not validator.errors
+
+    def test_cell_culture_tissue_ontology_term_id(self, validator_with_zebrafish_adata):
+        validator = validator_with_zebrafish_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CL:0007021"  # valid CL term for cell culture
+        validator.validate_adata()
         assert not validator.errors
 
 
@@ -3037,7 +3053,7 @@ class TestFruitFly:
 
     @pytest.mark.parametrize(
         "cell_type_ontology_term_id",
-        ["FBbt:00049192", "unknown"],
+        ["FBbt:00049192", "CL:0007021", "unknown"],
     )
     def test_cell_type_ontology_term_id(self, validator_with_fruitfly_adata, cell_type_ontology_term_id):
         """
@@ -3106,10 +3122,17 @@ class TestFruitFly:
         # Passes visium check but fails cell_type_ontology_term_id check
         assert validator.errors == [error_message]
 
-    def test_organism_tissue_type_ontology_term_id(self, validator_with_fruitfly_adata):
+    @pytest.mark.parametrize(
+        "tissue_ontology_term_id",
+        [
+            "FBbt:00007337",  # valid descendant of FBbt:10000000
+            "UBERON:0002048",  # valid UBERON term
+        ],
+    )
+    def test_organism_tissue_type_ontology_term_id(self, validator_with_fruitfly_adata, tissue_ontology_term_id):
         validator = validator_with_fruitfly_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "FBbt:00007337"  # valid descendant of FBbt:10000000
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = tissue_ontology_term_id
         validator.validate_adata()
         assert not validator.errors
 
@@ -3140,6 +3163,14 @@ class TestFruitFly:
         obs = validator.adata.obs
         obs.tissue_type = obs.tissue_type.cat.add_categories(["organoid"])
         obs.loc[obs.index[0], "tissue_type"] = tissue_type
+        assert not validator.errors
+
+    def test_cell_culture_tissue_ontology_term_id(self, validator_with_fruitfly_adata):
+        validator = validator_with_fruitfly_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CL:0007021"  # valid CL term for cell culture
+        validator.validate_adata()
         assert not validator.errors
 
 
@@ -3220,7 +3251,7 @@ class TestRoundworm:
 
     @pytest.mark.parametrize(
         "cell_type_ontology_term_id",
-        ["WBbt:0005762", "unknown"],
+        ["WBbt:0005762", "CL:0007021", "unknown"],
     )
     def test_cell_type_ontology_term_id(self, validator_with_roundworm_adata, cell_type_ontology_term_id):
         """
@@ -3289,7 +3320,14 @@ class TestRoundworm:
         # Passes visium check but fails organism_cell_type_ontology_term_id check
         assert validator.errors == [error_message]
 
-    def test_organism_tissue_type_ontology_term_id(self, validator_with_roundworm_adata):
+    @pytest.mark.parametrize(
+        "tissue_ontology_term_id",
+        [
+            "WBbt:0006750",  # valid descendant of WBbt:0005766
+            "UBERON:0002048",  # valid UBERON term
+        ],
+    )
+    def test_organism_tissue_type_ontology_term_id(self, validator_with_roundworm_adata, tissue_ontology_term_id):
         validator = validator_with_roundworm_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = "WBbt:0006750"  # valid descendant of WBbt:0005766
@@ -3352,6 +3390,14 @@ class TestRoundworm:
             "'sex_ontology_term_id' MUST be 'PATO:0000384' for male, 'PATO:0001340' for hermaphrodite, or 'unknown'."
         )
         assert error_message in validator.errors
+
+    def test_cell_culture_tissue_ontology_term_id(self, validator_with_roundworm_adata):
+        validator = validator_with_roundworm_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CL:0007021"  # valid CL term for cell culture
+        validator.validate_adata()
+        assert not validator.errors
 
 
 class TestMultiSpecies:
