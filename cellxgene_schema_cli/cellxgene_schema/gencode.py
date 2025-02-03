@@ -19,6 +19,7 @@ class SupportedOrganisms(enum.Enum):
     ORYCTOLAGUS_CUNICULUS = "NCBITaxon:9986"
     CALLITHRIX_JACCHUS = "NCBITaxon:9483"
     GORILLA_GORILLA = "NCBITaxon:9595"
+    MACACA_MULATTA = "NCBITaxon:9544"
 
 
 def get_organism_from_feature_id(
@@ -68,6 +69,7 @@ class GeneChecker:
         SupportedOrganisms.ORYCTOLAGUS_CUNICULUS: os.path.join(env.GENCODE_DIR, "genes_oryctolagus_cuniculus.csv.gz"),
         SupportedOrganisms.CALLITHRIX_JACCHUS: os.path.join(env.GENCODE_DIR, "genes_callithrix_jacchus.csv.gz"),
         SupportedOrganisms.GORILLA_GORILLA: os.path.join(env.GENCODE_DIR, "genes_gorilla_gorilla.csv.gz"),
+        SupportedOrganisms.MACACA_MULATTA: os.path.join(env.GENCODE_DIR, "genes_macaca_mulatta.csv.gz")
     }
 
     def __init__(self, species: SupportedOrganisms):

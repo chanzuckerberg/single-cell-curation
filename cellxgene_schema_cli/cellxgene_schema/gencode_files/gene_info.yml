@@ -34,4 +34,7 @@ marmoset:
 gorilla:
   description: gorilla_gorilla
   url: https://ftp.ensembl.org/pub/release-113/gtf/gorilla_gorilla/Gorilla_gorilla.gorGor4.113.gtf.gz
+rhesus_macaque:
+  description: macaca_mulatta
+  url: https://ftp.ensembl.org/pub/release-113/gtf/macaca_mulatta/Macaca_mulatta.Mmul_10.113.gtf.gz
   
