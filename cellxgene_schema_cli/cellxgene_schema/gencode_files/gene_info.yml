@@ -25,3 +25,6 @@ roundworm:
 macaque:
   description: macaca_fascicularis
   url: https://ftp.ensembl.org/pub/release-113/gtf/macaca_fascicularis/Macaca_fascicularis.Macaca_fascicularis_6.0.113.gtf.gz
+rabbit:
+  description: oryctolagus_cuniculus
+  url: https://ftp.ensembl.org/pub/release-113/gtf/oryctolagus_cuniculus/Oryctolagus_cuniculus.OryCun2.0.113.gtf.gz
