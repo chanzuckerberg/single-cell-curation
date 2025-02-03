@@ -31,3 +31,7 @@ rabbit:
 marmoset:
   description: callithrix_jacchus
   url: https://ftp.ensembl.org/pub/release-113/gtf/callithrix_jacchus/Callithrix_jacchus.mCalJac1.pat.X.113.gtf.gz
+gorilla:
+  description: gorilla_gorilla
+  url: https://ftp.ensembl.org/pub/release-113/gtf/gorilla_gorilla/Gorilla_gorilla.gorGor4.113.gtf.gz
+  
