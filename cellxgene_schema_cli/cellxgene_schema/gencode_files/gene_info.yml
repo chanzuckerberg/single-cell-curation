@@ -28,3 +28,6 @@ macaque:
 rabbit:
   description: oryctolagus_cuniculus
   url: https://ftp.ensembl.org/pub/release-113/gtf/oryctolagus_cuniculus/Oryctolagus_cuniculus.OryCun2.0.113.gtf.gz
+marmoset:
+  description: callithrix_jacchus
+  url: https://ftp.ensembl.org/pub/release-113/gtf/callithrix_jacchus/Callithrix_jacchus.mCalJac1.pat.X.113.gtf.gz

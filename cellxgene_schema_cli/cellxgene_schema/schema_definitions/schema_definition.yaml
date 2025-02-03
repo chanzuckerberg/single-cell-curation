@@ -190,7 +190,8 @@ components:
                 - NCBITaxon:7955
                 - NCBITaxon:6239
                 - NCBITaxon:9541
-                - NCBITaxon:998
+                - NCBITaxon:9986
+                - NCBITaxon:9483
         add_labels:
           - type: curie
             to_column: organism
