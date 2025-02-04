@@ -496,7 +496,7 @@ class Validator:
                 "NCBITaxon:7227": ("FBbt", "UBERON"),
             }
             always_allowed_prefix = "UBERON"
-            
+
             if row[tissue_type_column] == "cell culture":
                 if row[tissue_column] == "unknown":
                     return True

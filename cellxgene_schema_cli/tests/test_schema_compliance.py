@@ -2961,12 +2961,14 @@ class TestZebrafish:
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = tissue_ontology_term_id
         validator.validate_adata()
         assert not validator.errors
-    
+
     def test_cell_culture_tissue_ontology_term_id_invalid(self, validator_with_zebrafish_adata):
         validator = validator_with_zebrafish_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "tissue_type"] = "cell culture"
-        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "UBERON:0002048"  # only valid UBERON term if not cell culture
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = (
+            "UBERON:0002048"  # only valid UBERON term if not cell culture
+        )
         validator.validate_adata()
         assert len(validator.errors) > 0
 
@@ -3150,12 +3152,14 @@ class TestFruitFly:
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = tissue_ontology_term_id
         validator.validate_adata()
         assert not validator.errors
-    
+
     def test_cell_culture_tissue_ontology_term_id_invalid(self, validator_with_fruitfly_adata):
         validator = validator_with_fruitfly_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "tissue_type"] = "cell culture"
-        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "UBERON:0002048"  # only valid UBERON term if not cell culture
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = (
+            "UBERON:0002048"  # only valid UBERON term if not cell culture
+        )
         validator.validate_adata()
         assert len(validator.errors) > 0
 
@@ -3374,7 +3378,7 @@ class TestRoundworm:
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = tissue_ontology_term_id
         validator.validate_adata()
         assert not validator.errors
-    
+
     def test_cell_culture_tissue_ontology_term_id_invalid(self, validator_with_roundworm_adata):
         validator = validator_with_roundworm_adata
         obs = validator.adata.obs
