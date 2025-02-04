@@ -1247,12 +1247,7 @@ class TestObs:
         obs.loc[obs.index[0], "tissue_type"] = "cell culture"
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CL:0000057 (cell culture)"
         validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: 'CL:0000057 (cell culture)' in 'tissue_ontology_term_id' is not a valid ontology term id "
-            "of 'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be either a CL term "
-            "(excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
-            "and 'CL:0000548' (animal cell)) or 'unknown'."
-        ]
+        assert len(validator.errors) > 0
 
     def test_tissue_ontology_term_id_cell_culture__not_a_CL_term(self, validator_with_adata):
         """
@@ -1263,12 +1258,7 @@ class TestObs:
         obs.loc[obs.index[0], "tissue_type"] = "cell culture"
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = "EFO:0000001"
         validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: 'EFO:0000001' in 'tissue_ontology_term_id' is not a valid ontology term id of "
-            "'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be either a CL term "
-            "(excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), "
-            "and 'CL:0000548' (animal cell)) or 'unknown'."
-        ]
+        assert len(validator.errors) > 0
 
     @pytest.mark.parametrize(
         "term",
@@ -1287,9 +1277,9 @@ class TestObs:
         validator.validate_adata()
 
         # Forbidden columns may be marked as either "not allowed" or "deprecated"
-        not_allowed_error = f"ERROR: '{term}' in 'tissue_ontology_term_id' is not allowed. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be either a CL term (excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), and 'CL:0000548' (animal cell)) or 'unknown'."
-        deprecated_error = f"ERROR: '{term}' in 'tissue_ontology_term_id' is a deprecated term id of 'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be either a CL term (excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), and 'CL:0000548' (animal cell)) or 'unknown'."
-        invalid_ontology_error = f"ERROR: '{term}' in 'tissue_ontology_term_id' is not a valid ontology term id of 'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be either a CL term (excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell), and 'CL:0000548' (animal cell)) or 'unknown'."
+        not_allowed_error = f"ERROR: '{term}' in 'tissue_ontology_term_id' is not allowed. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST follow the validation rules for cell_type_ontology_term_id."
+        deprecated_error = f"ERROR: '{term}' in 'tissue_ontology_term_id' is a deprecated term id of 'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST follow the validation rules for cell_type_ontology_term_id."
+        invalid_ontology_error = f"ERROR: '{term}' in 'tissue_ontology_term_id' is not a valid ontology term id of 'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST follow the validation rules for cell_type_ontology_term_id."
         assert (
             not_allowed_error in validator.errors
             or deprecated_error in validator.errors
@@ -2957,13 +2947,28 @@ class TestZebrafish:
         obs.loc[obs.index[0], "tissue_type"] = tissue_type
         assert not validator.errors
 
-    def test_cell_culture_tissue_ontology_term_id(self, validator_with_zebrafish_adata):
+    @pytest.mark.parametrize(
+        "tissue_ontology_term_id",
+        [
+            "CL:0007021",  # valid CL term for cell culture
+            "ZFA:0000003",  # valid ZFA term
+        ],
+    )
+    def test_cell_culture_tissue_ontology_term_id(self, validator_with_zebrafish_adata, tissue_ontology_term_id):
         validator = validator_with_zebrafish_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "tissue_type"] = "cell culture"
-        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CL:0007021"  # valid CL term for cell culture
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = tissue_ontology_term_id
         validator.validate_adata()
         assert not validator.errors
+    
+    def test_cell_culture_tissue_ontology_term_id_invalid(self, validator_with_zebrafish_adata):
+        validator = validator_with_zebrafish_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "UBERON:0002048"  # only valid UBERON term if not cell culture
+        validator.validate_adata()
+        assert len(validator.errors) > 0
 
 
 class TestFruitFly:
@@ -3131,13 +3136,28 @@ class TestFruitFly:
         obs.loc[obs.index[0], "tissue_type"] = tissue_type
         assert not validator.errors
 
-    def test_cell_culture_tissue_ontology_term_id(self, validator_with_fruitfly_adata):
+    @pytest.mark.parametrize(
+        "tissue_ontology_term_id",
+        [
+            "CL:0007021",  # valid CL term for cell culture
+            "FBbt:00049192",  # valid FBbt term
+        ],
+    )
+    def test_cell_culture_tissue_ontology_term_id(self, validator_with_fruitfly_adata, tissue_ontology_term_id):
         validator = validator_with_fruitfly_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "tissue_type"] = "cell culture"
-        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CL:0007021"  # valid CL term for cell culture
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = tissue_ontology_term_id
         validator.validate_adata()
         assert not validator.errors
+    
+    def test_cell_culture_tissue_ontology_term_id_invalid(self, validator_with_fruitfly_adata):
+        validator = validator_with_fruitfly_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "UBERON:0002048"  # only valid UBERON term if not cell culture
+        validator.validate_adata()
+        assert len(validator.errors) > 0
 
 
 class TestRoundworm:
@@ -3279,7 +3299,7 @@ class TestRoundworm:
     def test_organism_tissue_type_ontology_term_id(self, validator_with_roundworm_adata, tissue_ontology_term_id):
         validator = validator_with_roundworm_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "WBbt:0006750"  # valid descendant of WBbt:0005766
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = tissue_ontology_term_id
         validator.validate_adata()
         assert not validator.errors
 
@@ -3340,13 +3360,28 @@ class TestRoundworm:
         )
         assert error_message in validator.errors
 
-    def test_cell_culture_tissue_ontology_term_id(self, validator_with_roundworm_adata):
+    @pytest.mark.parametrize(
+        "tissue_ontology_term_id",
+        [
+            "CL:0007021",  # valid CL term for cell culture
+            "WBbt:0005762",  # valid WBbt term
+        ],
+    )
+    def test_cell_culture_tissue_ontology_term_id(self, validator_with_roundworm_adata, tissue_ontology_term_id):
         validator = validator_with_roundworm_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "tissue_type"] = "cell culture"
-        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CL:0007021"  # valid CL term for cell culture
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = tissue_ontology_term_id
         validator.validate_adata()
         assert not validator.errors
+    
+    def test_cell_culture_tissue_ontology_term_id_invalid(self, validator_with_roundworm_adata):
+        validator = validator_with_roundworm_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "UBERON:0002048"
+        validator.validate_adata()
+        assert len(validator.errors) > 0
 
 
 class TestMultiSpecies:

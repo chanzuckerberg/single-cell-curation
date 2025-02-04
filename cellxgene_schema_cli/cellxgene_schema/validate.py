@@ -483,16 +483,28 @@ class Validator:
             if column not in self.adata.obs.columns:
                 return
 
-        allowed_prefixes = {
-            "NCBITaxon:6239": ("WBbt", "UBERON"),
-            "NCBITaxon:7955": ("ZFA", "UBERON"),
-            "NCBITaxon:7227": ("FBbt", "UBERON"),
-        }
-
         def is_valid_row(row):
+            allowed_cell_culture_prefixes = {
+                "NCBITaxon:6239": ("WBbt", "CL"),
+                "NCBITaxon:7955": ("ZFA", "CL"),
+                "NCBITaxon:7227": ("FBbt", "CL"),
+            }
+
+            allowed_prefixes = {
+                "NCBITaxon:6239": ("WBbt", "UBERON"),
+                "NCBITaxon:7955": ("ZFA", "UBERON"),
+                "NCBITaxon:7227": ("FBbt", "UBERON"),
+            }
+            always_allowed_prefix = "UBERON"
+            
             if row[tissue_type_column] == "cell culture":
-                return True
-            allowed = allowed_prefixes.get(row[organism_column], ("UBERON",))
+                if row[tissue_column] == "unknown":
+                    return True
+                else:
+                    allowed_prefixes = allowed_cell_culture_prefixes
+                    always_allowed_prefix = "CL"
+
+            allowed = allowed_prefixes.get(row[organism_column], (always_allowed_prefix,))
             return row[tissue_column].startswith(allowed)
 
         try:
@@ -503,7 +515,9 @@ class Validator:
                     "When tissue_type is tissue or organoid, tissue_ontology_term_id must be a valid UBERON term. "
                     "If organism is NCBITaxon:6239, it can be a valid UBERON term or a valid WBbt term. "
                     "If organism is NCBITaxon:7955, it can be a valid UBERON term or a valid ZFA term. "
-                    "If organism is NCBITaxon:7227, it can be a valid UBERON term or a valid FBbt term."
+                    "If organism is NCBITaxon:7227, it can be a valid UBERON term or a valid FBbt term. "
+                    "When tissue_type is cell culture, tissue_ontology_term_id must follow the validation rules for "
+                    "cell_type_ontology_term_id."
                 )
         except Exception as e:
             self.errors.append(f"Unexpected error validating tissue_ontology_term_id: {e}")
