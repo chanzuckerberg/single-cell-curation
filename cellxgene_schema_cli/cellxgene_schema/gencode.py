@@ -21,6 +21,8 @@ class SupportedOrganisms(enum.Enum):
     GORILLA_GORILLA = "NCBITaxon:9595"
     MACACA_MULATTA = "NCBITaxon:9544"
     PAN_TROGLODYTES = "NCBITaxon:9598"
+    SUS_SCROFA = "NCBITaxon:9823"
+    MICROCEBUS_MURINUS = "NCBITaxon:30608"
 
 
 def get_organism_from_feature_id(
@@ -71,7 +73,9 @@ class GeneChecker:
         SupportedOrganisms.CALLITHRIX_JACCHUS: os.path.join(env.GENCODE_DIR, "genes_callithrix_jacchus.csv.gz"),
         SupportedOrganisms.GORILLA_GORILLA: os.path.join(env.GENCODE_DIR, "genes_gorilla_gorilla.csv.gz"),
         SupportedOrganisms.MACACA_MULATTA: os.path.join(env.GENCODE_DIR, "genes_macaca_mulatta.csv.gz"),
-        SupportedOrganisms.PAN_TROGLODYTES: os.path.join(env.GENCODE_DIR, "genes_pan_troglodytes.csv.gz")
+        SupportedOrganisms.PAN_TROGLODYTES: os.path.join(env.GENCODE_DIR, "genes_pan_troglodytes.csv.gz"),
+        SupportedOrganisms.SUS_SCROFA: os.path.join(env.GENCODE_DIR, "genes_sus_scrofa.csv.gz"),
+        SupportedOrganisms.MICROCEBUS_MURINUS: os.path.join(env.GENCODE_DIR, "genes_microcebus_murinus.csv.gz")
     }
 
     def __init__(self, species: SupportedOrganisms):

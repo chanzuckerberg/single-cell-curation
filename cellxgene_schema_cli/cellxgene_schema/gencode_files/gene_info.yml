@@ -40,3 +40,9 @@ rhesus_macaque:
 troglodyte:
   description: pan_troglodytes
   url: https://ftp.ensembl.org/pub/release-113/gtf/pan_troglodytes/Pan_troglodytes.Pan_tro_3.0.113.gtf.gz
+pig:
+  description: sus_scrofa
+  url: https://ftp.ensembl.org/pub/release-113/gtf/sus_scrofa/Sus_scrofa.Sscrofa11.1.113.gtf.gz
+lemur:
+  description: microcebus_murinus
+  url: https://ftp.ensembl.org/pub/release-113/gtf/microcebus_murinus/Microcebus_murinus.Mmur_3.0.113.gtf.gz
