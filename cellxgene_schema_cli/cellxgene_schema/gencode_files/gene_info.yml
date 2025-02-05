@@ -37,4 +37,6 @@ gorilla:
 rhesus_macaque:
   description: macaca_mulatta
   url: https://ftp.ensembl.org/pub/release-113/gtf/macaca_mulatta/Macaca_mulatta.Mmul_10.113.gtf.gz
-  
+troglodyte:
+  description: pan_troglodytes
+  url: https://ftp.ensembl.org/pub/release-113/gtf/pan_troglodytes/Pan_troglodytes.Pan_tro_3.0.113.gtf.gz
