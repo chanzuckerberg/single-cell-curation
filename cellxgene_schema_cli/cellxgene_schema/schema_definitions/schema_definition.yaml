@@ -192,8 +192,7 @@ components:
                   terms:
                     - NCBITaxon:6239
             error_message_suffix: >-
-              When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans),
-              'sex_ontology_term_id' MUST be 'PATO:0000384' for male, 'PATO:0001340' for hermaphrodite, or 'unknown'.
+              When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans), 'sex_ontology_term_id' MUST be 'PATO:0000384' for male, 'PATO:0001340' for hermaphrodite, or 'unknown'.
             type: curie
             curie_constraints:
               ontologies:
@@ -275,20 +274,35 @@ components:
                 terms:
                   - cell culture
             error_message_suffix: >-
-              When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST be either a CL term
-              (excluding 'CL:0000255' (eukaryotic cell), 'CL:0000257' (Eumycetozoan cell),
-              and 'CL:0000548' (animal cell)) or 'unknown'.
+              When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST follow the validation rules for cell_type_ontology_term_id.
             type: curie
             curie_constraints:
               ontologies:
                 - CL
+                - ZFA
+                - FBbt
+                - WBbt
               exceptions:
                 - unknown
+              allowed:
+                ancestors:
+                  ZFA:
+                  - ZFA:0009000
+                  FBbt:
+                  - FBbt:00007002
+                  WBbt:
+                  - WBbt:0004017
+                  CL:
+                  - CL:0000000
               forbidden:
+                ancestors:
+                  WBbt:
+                  - WBbt:0006803
                 terms:
                   - CL:0000255
                   - CL:0000257
                   - CL:0000548
+                  - WBbt:0006803
         add_labels:
           - type: curie
             to_column: tissue
@@ -302,11 +316,7 @@ components:
                 terms:
                   - NCBITaxon:9606
             error_message_suffix: >-
-              When 'organism_ontology_term_id' is 'NCBITaxon:9606' (Homo sapiens),
-              self_reported_ethnicity_ontology_term_id MUST be formatted as one
-              or more comma-separated (with no leading or trailing spaces) HANCESTRO
-              terms in ascending lexical order, or 'unknown' if unavailable. Cannot
-              match any forbidden HANCESTRO terms listed in schema definition.
+              When 'organism_ontology_term_id' is 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be formatted as one or more comma-separated (with no leading or trailing spaces) HANCESTRO terms in ascending lexical order, or 'unknown' if unavailable. Cannot match any forbidden HANCESTRO terms listed in schema definition.
             type: curie
             curie_constraints:
               ontologies:
@@ -349,8 +359,7 @@ components:
                 sorted: True
         # If organism is not Human
         error_message_suffix: >-
-          When 'organism_ontology_term_id' is NOT 'NCBITaxon:9606' (Homo sapiens),
-          self_reported_ethnicity_ontology_term_id MUST be 'na'.
+          When 'organism_ontology_term_id' is NOT 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be 'na'.
         curie_constraints:
           ontologies:
             - NA
@@ -369,8 +378,7 @@ components:
                 terms:
                   - NCBITaxon:9606
             error_message_suffix: >-
-              When 'organism_ontology_term_id' is 'NCBITaxon:9606' (Homo sapiens),
-              'development_stage_ontology_term_id' MUST be the most accurate descendant of 'HsapDv:0000001' or unknown.
+              When 'organism_ontology_term_id' is 'NCBITaxon:9606' (Homo sapiens), 'development_stage_ontology_term_id' MUST be the most accurate descendant of 'HsapDv:0000001' or unknown.
             type: curie
             curie_constraints:
               ontologies:
@@ -388,8 +396,7 @@ components:
                 terms:
                   - NCBITaxon:10090
             error_message_suffix: >-
-              When 'organism_ontology_term_id' is 'NCBITaxon:10090' (Mus musculus),
-              'development_stage_ontology_term_id' MUST be the most accurate descendant of 'MmusDv:0000001' or unknown.
+              When 'organism_ontology_term_id' is 'NCBITaxon:10090' (Mus musculus), 'development_stage_ontology_term_id' MUST be the most accurate descendant of 'MmusDv:0000001' or unknown.
             type: curie
             curie_constraints:
               ontologies:
@@ -407,9 +414,7 @@ components:
                 terms:
                   - NCBITaxon:7955
             error_message_suffix: >-
-             When 'organism_ontology_term_id' is 'NCBITaxon:7955' (Danio rerio),
-             'development_stage_ontology_term_id' MUST be the most accurate descendant of 'ZFS:0100000' and it
-             MUST NOT be 'ZFS:0000000' for Unknown. The str 'unknown' is acceptable.
+             When 'organism_ontology_term_id' is 'NCBITaxon:7955' (Danio rerio), 'development_stage_ontology_term_id' MUST be the most accurate descendant of 'ZFS:0100000' and it MUST NOT be 'ZFS:0000000' for Unknown. The str 'unknown' is acceptable.
             type: curie
             curie_constraints:
               ontologies:
@@ -430,10 +435,7 @@ components:
                 terms:
                   - NCBITaxon:7227
             error_message_suffix: >-
-             When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster),
-             'development_stage_ontology_term_id' MUST be either the most accurate descendant of FBdv:00007014 for
-              adult age in days or the most accurate descendant of FBdv:00005259 for
-              developmental stage excluding FBdv:00007012 for life stage
+             When 'organism_ontology_term_id' is 'NCBITaxon:7227' (Drosophila melanogaster), 'development_stage_ontology_term_id' MUST be either the most accurate descendant of FBdv:00007014 for adult age in days or the most accurate descendant of FBdv:00005259 for developmental stage excluding FBdv:00007012 for life stage
             type: curie
             curie_constraints:
               ontologies:
@@ -455,11 +457,7 @@ components:
                   terms:
                     - NCBITaxon:6239
             error_message_suffix: >-
-             When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans),
-             'development_stage_ontology_term_id' MUST be WBls:0000669 for unfertilized egg Ce,
-              the most accurate descendant of WBls:0000803 for C. elegans life stage occurring
-              during embryogenesis, or the most accurate descendant of WBls:0000804 for C. elegans
-              life stage occurring post embryogenesis.
+             When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans), 'development_stage_ontology_term_id' MUST be WBls:0000669 for unfertilized egg Ce, the most accurate descendant of WBls:0000803 for C. elegans life stage occurring during embryogenesis, or the most accurate descendant of WBls:0000804 for C. elegans life stage occurring post embryogenesis.
             type: curie
             curie_constraints:
               ontologies:
@@ -476,9 +474,7 @@ components:
                 - unknown
         # If organism is none of the above
         error_message_suffix: >-
-          When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition,
-          'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105'
-          excluding 'UBERON:0000071', or unknown.
+          When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition, 'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105' excluding 'UBERON:0000071', or unknown.
         curie_constraints:
           ontologies:
             - UBERON
