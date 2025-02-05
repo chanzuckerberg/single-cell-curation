@@ -46,3 +46,6 @@ pig:
 lemur:
   description: microcebus_murinus
   url: https://ftp.ensembl.org/pub/release-113/gtf/microcebus_murinus/Microcebus_murinus.Mmur_3.0.113.gtf.gz
+rat: 
+  description: rattus_norvegicus
+  url: https://ftp.ensembl.org/pub/release-113/gtf/rattus_norvegicus/Rattus_norvegicus.mRatBN7.2.113.gtf.gz

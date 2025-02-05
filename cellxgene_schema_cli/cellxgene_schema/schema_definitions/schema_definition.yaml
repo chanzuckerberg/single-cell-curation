@@ -197,6 +197,7 @@ components:
                 - NCBITaxon:9598
                 - NCBITaxon:9823
                 - NCBITaxon:30608
+                - NCBITaxon:10116
             ancestors:
               NCBITaxon:
                 - NCBITaxon:9823
