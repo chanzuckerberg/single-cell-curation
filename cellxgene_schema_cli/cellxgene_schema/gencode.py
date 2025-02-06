@@ -7,7 +7,7 @@ from . import env
 
 
 class SupportedOrganisms(enum.Enum):
-    #NOTE: these could be enumerated from loading the `schema_definition.yaml` and scraping the 'organism_ontology_term_id' constraints
+    # NOTE: these could be enumerated from loading the `schema_definition.yaml` and scraping the 'organism_ontology_term_id' constraints
     HOMO_SAPIENS = "NCBITaxon:9606"
     MUS_MUSCULUS = "NCBITaxon:10090"
     SARS_COV_2 = "NCBITaxon:2697049"
@@ -77,7 +77,7 @@ class GeneChecker:
         SupportedOrganisms.PAN_TROGLODYTES: os.path.join(env.GENCODE_DIR, "genes_pan_troglodytes.csv.gz"),
         SupportedOrganisms.SUS_SCROFA: os.path.join(env.GENCODE_DIR, "genes_sus_scrofa.csv.gz"),
         SupportedOrganisms.MICROCEBUS_MURINUS: os.path.join(env.GENCODE_DIR, "genes_microcebus_murinus.csv.gz"),
-        SupportedOrganisms.RATTUS_NORVEGICUS: os.path.join(env.GENCODE_DIR, "genes_rattus_norvegicus.csv.gz")
+        SupportedOrganisms.RATTUS_NORVEGICUS: os.path.join(env.GENCODE_DIR, "genes_rattus_norvegicus.csv.gz"),
     }
 
     def __init__(self, species: SupportedOrganisms):
