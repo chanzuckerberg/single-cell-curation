@@ -30,7 +30,7 @@ def get_organism_from_feature_id(
     feature_id: str,
 ) -> Union[SupportedOrganisms, None]:
     """
-    Infers the organism of a feature id based on the prefix of a feature id, e.g. ENSG means Homo sapiens
+    Determines organism based on which gene file the feature id was in
 
     :param str feature_id: the feature id
 
@@ -38,40 +38,12 @@ def get_organism_from_feature_id(
     :return: the organism the feature id is from
     """
 
-    if feature_id.startswith("ENSG") or feature_id.startswith("ENST"):
-        return SupportedOrganisms.HOMO_SAPIENS
-    elif feature_id.startswith("ENSMUS"):
-        return SupportedOrganisms.MUS_MUSCULUS
-    elif feature_id.startswith("ENSSAS"):
-        return SupportedOrganisms.SARS_COV_2
-    elif feature_id.startswith("ERCC-"):
-        return SupportedOrganisms.ERCC
-    elif feature_id.startswith("FB") or feature_id.startswith("RR"):
-        return SupportedOrganisms.DROSOPHILA_MELANOGASTER
-    elif feature_id.startswith("ENSDARG"):
-        return SupportedOrganisms.DANIO_RERIO
-    elif feature_id.startswith("WBGene"):
-        return SupportedOrganisms.CAENORHABDITIS_ELEGANS
-    elif feature_id.startswith("ENSCJAG"):
-        return SupportedOrganisms.CALLITHRIX_JACCHUS
-    elif feature_id.startswith("ENSGGOG"):
-        return SupportedOrganisms.GORILLA_GORILLA
-    elif feature_id.startswith("ENSMFAG"):
-        return SupportedOrganisms.MACACA_FASCICULARIS
-    elif feature_id.startswith("ENSMMUG"):
-        return SupportedOrganisms.MACACA_MULATTA
-    elif feature_id.startswith("ENSMICG"):
-        return SupportedOrganisms.MICROCEBUS_MURINUS
-    elif feature_id.startswith("ENSOCUG"):
-        return SupportedOrganisms.ORYCTOLAGUS_CUNICULUS
-    elif feature_id.startswith("ENSPTRG"):
-        return SupportedOrganisms.PAN_TROGLODYTES
-    elif feature_id.startswith("ENSRNOG"):
-        return SupportedOrganisms.RATTUS_NORVEGICUS
-    elif feature_id.startswith("ENSSSCG"):
-        return SupportedOrganisms.SUS_SCROFA
-    else:
-        return None
+    for organism in SupportedOrganisms:
+        gene_checker = get_gene_checker(organism)
+        if gene_checker.is_valid_id(feature_id):
+            return organism
+
+    return None
 
 
 class GeneChecker:
