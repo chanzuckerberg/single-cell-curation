@@ -23,7 +23,7 @@ def test_get_diff_map(tmp_path):  # type: ignore
     assert len(diff_map) == len(SupportedOrganisms)
 
     # each species should have a diff map
-    assert len(set(SupportedOrganisms).difference([k for k in diff_map.keys()])) == 0
+    assert len(set([x.value for x in SupportedOrganisms]).difference([k for k in diff_map.keys()])) == 0
 
 
 @pytest.fixture
