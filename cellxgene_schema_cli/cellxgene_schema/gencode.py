@@ -46,7 +46,7 @@ def get_organism_from_feature_id(
         return SupportedOrganisms.SARS_COV_2
     elif feature_id.startswith("ERCC-"):
         return SupportedOrganisms.ERCC
-    elif feature_id.startswith("FB"):
+    elif feature_id.startswith("FB") or feature_id.startswith("RR"):
         return SupportedOrganisms.DROSOPHILA_MELANOGASTER
     elif feature_id.startswith("ENSDARG"):
         return SupportedOrganisms.DANIO_RERIO
