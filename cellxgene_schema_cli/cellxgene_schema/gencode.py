@@ -52,6 +52,24 @@ def get_organism_from_feature_id(
         return SupportedOrganisms.DANIO_RERIO
     elif feature_id.startswith("WBGene"):
         return SupportedOrganisms.CAENORHABDITIS_ELEGANS
+    elif feature_id.startswith("ENSCJAG"):
+        return SupportedOrganisms.CALLITHRIX_JACCHUS
+    elif feature_id.startswith("ENSGGOG"):
+        return SupportedOrganisms.GORILLA_GORILLA
+    elif feature_id.startswith("ENSMFAG"):
+        return SupportedOrganisms.MACACA_FASCICULARIS
+    elif feature_id.startswith("ENSMMUG"):
+        return SupportedOrganisms.MACACA_MULATTA
+    elif feature_id.startswith("ENSMICG"):
+        return SupportedOrganisms.MICROCEBUS_MURINUS
+    elif feature_id.startswith("ENSOCUG"):
+        return SupportedOrganisms.ORYCTOLAGUS_CUNICULUS
+    elif feature_id.startswith("ENSPTRG"):
+        return SupportedOrganisms.PAN_TROGLODYTES
+    elif feature_id.startswith("ENSRNOG"):
+        return SupportedOrganisms.RATTUS_NORVEGICUS
+    elif feature_id.startswith("ENSSSCG"):
+        return SupportedOrganisms.SUS_SCROFA
     else:
         return None
 
