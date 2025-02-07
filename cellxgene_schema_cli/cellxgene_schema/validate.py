@@ -21,10 +21,10 @@ from .gencode import get_gene_checker
 from .utils import (
     SPARSE_MATRIX_TYPES,
     SUPPORTED_SPARSE_MATRIX_TYPES,
+    get_descendants,
     get_matrix_format,
     getattr_anndata,
     is_ontological_descendant_of,
-    get_descendants,
     read_h5ad,
 )
 

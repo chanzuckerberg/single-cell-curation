@@ -200,5 +200,5 @@ def is_ontological_descendant_of(onto: OntologyParser, term: str, target: str, i
 
 
 @lru_cache()
-def get_descendants(onto: OntologyParser, term: str, include_self:bool = True) -> List[str]:
+def get_descendants(onto: OntologyParser, term: str, include_self: bool = True) -> List[str]:
     return onto.get_term_descendants(term, include_self=True)
