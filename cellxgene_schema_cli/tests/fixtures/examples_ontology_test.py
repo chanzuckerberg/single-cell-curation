@@ -6,6 +6,8 @@ invalid_species = ["Caenorhabditis elegans"]
 valid_genes = {
     gencode.SupportedOrganisms.HOMO_SAPIENS: {"ENSG00000141510": ("TP53_ENSG00000141510", 2404)},
     gencode.SupportedOrganisms.MUS_MUSCULUS: {"ENSMUSG00000059552": ("Trp53", 1797)},
+    gencode.SupportedOrganisms.DROSOPHILA_MELANOGASTER: {"RR45003_transposable_element": ("S{}RR4500", 1234)},
+    gencode.SupportedOrganisms.DROSOPHILA_MELANOGASTER: {"FBgn0037293": ("RabGGTa", 1853)},
     gencode.SupportedOrganisms.CAENORHABDITIS_ELEGANS: {"WBGene00000003": ("aat-2", 1738)},
     gencode.SupportedOrganisms.CALLITHRIX_JACCHUS: {"ENSCJAG00000071296": ("U4_ENSCJAG00000071296", 141)},
     gencode.SupportedOrganisms.DANIO_RERIO: {"ENSDARG00000009657": ("fgfr1op2", 1088)},
