@@ -18,7 +18,7 @@ def test_get_diff_map(tmp_path):  # type: ignore
             fp.write("test")
     with patch("scripts.schema_bump_dry_run_genes.gene_bump_dry_run.GENCODE_DIR", tmp_path):
         diff_map = get_diff_map()
-    
+
     # one diff-map for each of our supported species
     assert len(diff_map) == len(SupportedOrganisms)
 
