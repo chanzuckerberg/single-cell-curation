@@ -31,6 +31,7 @@ class TestGeneChecker:
             assert geneChecker.is_valid_id(gene_id)
             assert geneChecker.get_symbol(gene_id) == gene_label
             assert geneChecker.get_length(gene_id) == gene_length
+            assert gencode.get_organism_from_feature_id(gene_id) == species
 
     @pytest.mark.parametrize("species,invalid_genes", invalid_genes.items())
     def test_invalid_genes(self, species, invalid_genes):
