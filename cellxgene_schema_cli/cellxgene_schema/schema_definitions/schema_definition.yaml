@@ -200,7 +200,14 @@ components:
                 - NCBITaxon:10116
             ancestors:
               NCBITaxon:
+                - NCBITaxon:9541
+                - NCBITaxon:9544
+                - NCBITaxon:10090
+                - NCBITaxon:9986
+                - NCBITaxon:9598
+                - NCBITaxon:10116
                 - NCBITaxon:9823
+
         add_labels:
           - type: curie
             to_column: organism
