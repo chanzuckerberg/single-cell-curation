@@ -697,6 +697,25 @@ class TestObs:
         assert not_allowed_error_message in validator.errors or deprecated_error_message in validator.errors
 
     @pytest.mark.parametrize(
+        "organism_ontology_term_id",
+        [
+            "NCBITaxon:10090",  # Mus musculus (ancestor term, always allowed)
+            "NCBITaxon:947985",  # Mus musculus albula
+            "NCBITaxon:35531",  # Mus musculus bactrianus
+        ],
+    )
+    def test_development_stage_ontology_term_id_mouse_descendant(self, validator_with_adata, organism_ontology_term_id):
+        """
+        If organism_ontolology_term_id is "NCBITaxon:10090" for Mus musculus OR its descendants,
+        this MUST be the most accurate MmusDv:0000001 descendant.
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[1], "organism_ontology_term_id"] = organism_ontology_term_id
+        validator.validate_adata()
+        assert not validator.errors
+
+    @pytest.mark.parametrize(
         "development_stage_ontology_term_id,error",
         [
             (

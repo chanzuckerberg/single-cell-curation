@@ -802,9 +802,16 @@ class Validator:
             terms_to_match = set()
             column_to_match = dependency_def["rule"]["column"]
             if "match_ancestors_inclusive" in dependency_def["rule"]:
+                print("rule", dependency_def["rule"])
                 ancestors = dependency_def["rule"]["match_ancestors_inclusive"]["ancestors"]
                 for ancestor in ancestors:
+                    print("ancestor", ancestor)
+                    term_descendants = ONTOLOGY_PARSER.get_term_descendants(ancestor, include_self=True)
+                    print("term_descendants", term_descendants)
+                    print("len(terms to match) before", len(terms_to_match))
                     terms_to_match.update(ONTOLOGY_PARSER.get_term_descendants(ancestor, include_self=True))
+                    print("len(terms to match) after", len(terms_to_match))
+                print("terms to match", terms_to_match)
             if "match_exact" in dependency_def["rule"]:
                 terms_to_match.update(dependency_def["rule"]["match_exact"]["terms"])
             try:

@@ -392,11 +392,11 @@ components:
           - # If organism is Mouse
             rule:
               column: organism_ontology_term_id
-              match_exact:
-                terms:
+              match_ancestors_inclusive:
+                ancestors:
                   - NCBITaxon:10090
             error_message_suffix: >-
-              When 'organism_ontology_term_id' is 'NCBITaxon:10090' (Mus musculus), 'development_stage_ontology_term_id' MUST be the most accurate descendant of 'MmusDv:0000001' or unknown.
+              When 'organism_ontology_term_id' is 'NCBITaxon:10090' (Mus musculus) or one of its descendants, 'development_stage_ontology_term_id' MUST be the most accurate descendant of 'MmusDv:0000001' or unknown.
             type: curie
             curie_constraints:
               ontologies:
