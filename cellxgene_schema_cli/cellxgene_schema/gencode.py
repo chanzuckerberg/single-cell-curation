@@ -7,6 +7,7 @@ from . import env
 
 
 class SupportedOrganisms(enum.Enum):
+    # NOTE: these could be enumerated from loading the `schema_definition.yaml` and scraping the 'organism_ontology_term_id' constraints
     HOMO_SAPIENS = "NCBITaxon:9606"
     MUS_MUSCULUS = "NCBITaxon:10090"
     SARS_COV_2 = "NCBITaxon:2697049"
@@ -14,6 +15,15 @@ class SupportedOrganisms(enum.Enum):
     DROSOPHILA_MELANOGASTER = "NCBITaxon:7227"
     DANIO_RERIO = "NCBITaxon:7955"
     CAENORHABDITIS_ELEGANS = "NCBITaxon:6239"
+    MACACA_FASCICULARIS = "NCBITaxon:9541"
+    ORYCTOLAGUS_CUNICULUS = "NCBITaxon:9986"
+    CALLITHRIX_JACCHUS = "NCBITaxon:9483"
+    GORILLA_GORILLA = "NCBITaxon:9595"
+    MACACA_MULATTA = "NCBITaxon:9544"
+    PAN_TROGLODYTES = "NCBITaxon:9598"
+    SUS_SCROFA = "NCBITaxon:9823"
+    MICROCEBUS_MURINUS = "NCBITaxon:30608"
+    RATTUS_NORVEGICUS = "NCBITaxon:10116"
 
 
 def get_organism_from_feature_id(
@@ -42,6 +52,24 @@ def get_organism_from_feature_id(
         return SupportedOrganisms.DANIO_RERIO
     elif feature_id.startswith("WBGene"):
         return SupportedOrganisms.CAENORHABDITIS_ELEGANS
+    elif feature_id.startswith("ENSCJAG"):
+        return SupportedOrganisms.CALLITHRIX_JACCHUS
+    elif feature_id.startswith("ENSGGOG"):
+        return SupportedOrganisms.GORILLA_GORILLA
+    elif feature_id.startswith("ENSMFAG"):
+        return SupportedOrganisms.MACACA_FASCICULARIS
+    elif feature_id.startswith("ENSMMUG"):
+        return SupportedOrganisms.MACACA_MULATTA
+    elif feature_id.startswith("ENSMICG"):
+        return SupportedOrganisms.MICROCEBUS_MURINUS
+    elif feature_id.startswith("ENSOCUG"):
+        return SupportedOrganisms.ORYCTOLAGUS_CUNICULUS
+    elif feature_id.startswith("ENSPTRG"):
+        return SupportedOrganisms.PAN_TROGLODYTES
+    elif feature_id.startswith("ENSRNOG"):
+        return SupportedOrganisms.RATTUS_NORVEGICUS
+    elif feature_id.startswith("ENSSSCG"):
+        return SupportedOrganisms.SUS_SCROFA
     else:
         return None
 
@@ -59,6 +87,15 @@ class GeneChecker:
         ),
         SupportedOrganisms.DANIO_RERIO: os.path.join(env.GENCODE_DIR, "genes_danio_rerio.csv.gz"),
         SupportedOrganisms.CAENORHABDITIS_ELEGANS: os.path.join(env.GENCODE_DIR, "genes_caenorhabditis_elegans.csv.gz"),
+        SupportedOrganisms.MACACA_FASCICULARIS: os.path.join(env.GENCODE_DIR, "genes_macaca_fascicularis.csv.gz"),
+        SupportedOrganisms.ORYCTOLAGUS_CUNICULUS: os.path.join(env.GENCODE_DIR, "genes_oryctolagus_cuniculus.csv.gz"),
+        SupportedOrganisms.CALLITHRIX_JACCHUS: os.path.join(env.GENCODE_DIR, "genes_callithrix_jacchus.csv.gz"),
+        SupportedOrganisms.GORILLA_GORILLA: os.path.join(env.GENCODE_DIR, "genes_gorilla_gorilla.csv.gz"),
+        SupportedOrganisms.MACACA_MULATTA: os.path.join(env.GENCODE_DIR, "genes_macaca_mulatta.csv.gz"),
+        SupportedOrganisms.PAN_TROGLODYTES: os.path.join(env.GENCODE_DIR, "genes_pan_troglodytes.csv.gz"),
+        SupportedOrganisms.SUS_SCROFA: os.path.join(env.GENCODE_DIR, "genes_sus_scrofa.csv.gz"),
+        SupportedOrganisms.MICROCEBUS_MURINUS: os.path.join(env.GENCODE_DIR, "genes_microcebus_murinus.csv.gz"),
+        SupportedOrganisms.RATTUS_NORVEGICUS: os.path.join(env.GENCODE_DIR, "genes_rattus_norvegicus.csv.gz"),
     }
 
     def __init__(self, species: SupportedOrganisms):

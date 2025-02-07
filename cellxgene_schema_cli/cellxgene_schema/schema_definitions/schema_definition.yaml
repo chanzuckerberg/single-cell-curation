@@ -175,10 +175,39 @@ components:
             to_column: disease
       organism_ontology_term_id:
         type: curie
-        error_message_suffix: "Only descendant term ids of 'NCBITaxon:33208' for metazoan are allowed."
+        error_message_suffix: "Only explicitly enumerated species are allowed. See Schema"
         curie_constraints:
           ontologies:
             - NCBITaxon
+          allowed:
+            terms:
+              NCBITaxon:
+                - NCBITaxon:9606
+                - NCBITaxon:10090
+                - NCBITaxon:2697049
+                - NCBITaxon:32630
+                - NCBITaxon:7227
+                - NCBITaxon:7955
+                - NCBITaxon:6239
+                - NCBITaxon:9541
+                - NCBITaxon:9986
+                - NCBITaxon:9483
+                - NCBITaxon:9595
+                - NCBITaxon:9544
+                - NCBITaxon:9598
+                - NCBITaxon:9823
+                - NCBITaxon:30608
+                - NCBITaxon:10116
+            ancestors:
+              NCBITaxon:
+                - NCBITaxon:9541
+                - NCBITaxon:9544
+                - NCBITaxon:10090
+                - NCBITaxon:9986
+                - NCBITaxon:9598
+                - NCBITaxon:10116
+                - NCBITaxon:9823
+
         add_labels:
           - type: curie
             to_column: organism

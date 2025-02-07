@@ -402,7 +402,8 @@ good_var_seurat_testing = pd.DataFrame(
 var_expected = pd.DataFrame(
     [
         ["spike-in", False, "ERCC-00002 (spike-in control)", "NCBITaxon:32630", 1061, "synthetic"],
-        ["gene", False, "MACF1", "NCBITaxon:9606", 2821, "protein_coding"],
+        # ["gene", False, "MACF1", "NCBITaxon:9606", 2821, "protein_coding"],
+        ["gene", False, "MACF1_ENSG00000127603", "NCBITaxon:9606", 2821, "protein_coding"],
         ["gene", False, "Trp53", "NCBITaxon:10090", 1797, "protein_coding"],
         ["gene", False, "S_ENSSASG00005000004", "NCBITaxon:2697049", 3822, "protein_coding"],
         ["gene", False, "FBtr0472816_df_nrg", "NCBITaxon:7227", 22, "ncRNA"],
