@@ -622,3 +622,47 @@ components:
         type: genetic_ancestry_value
       genetic_ancestry_South_Asian:
         type: genetic_ancestry_value
+      cell_line_ontology_term_id:
+        type: curie
+        dependencies:
+          - # If cell_type_ontology_term_id is CL:0000010 or CL:0000001
+            rule:
+              column: cell_type_ontology_term_id
+              match_exact:
+                terms:
+                  - CL:0000010
+                  - CL:0000001
+            error_message_suffix: >-
+              When 'CL:0000010”' or 'CL:0000001' for cell_type_ontology_term_id is True, this MUST be a child of term 'CL:0000010' within EFO. Otherwise this key MUST be 'na'.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - EFO
+              allowed:
+                ancestors:
+                  EFO:
+                    - CL:0000010
+        curie_constraints:
+          exceptions:
+            - na
+    perturbation_strategy:
+      type: categorical
+      enum:
+        - "CRISPRi"
+        - "CRISPRa"
+        - "CRISPR-cas9"
+        - "na"
+    pertubation_id:
+      type: categorical
+      subtype: str
+    perturbation_role:
+      type: categorical
+      enum:
+        - "targeting"
+        - "nontargeting"
+        - "empty control"
+        - "untreated control"
+        - "na"
+    pertubation_target_gene_id:
+      type: categorical
+      subtype: str
