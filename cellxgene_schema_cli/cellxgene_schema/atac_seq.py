@@ -190,7 +190,7 @@ def validate_fragment_start_coordinate_greater_than_0(parquet_file: Path) -> Opt
     df = ddf.read_parquet(parquet_file, columns=["start coordinate"])
     series = df["start coordinate"] > 0
     if not series.all().compute():
-        return "Start coordinate is less than 0"
+        return "Start coordinate must be greater than 0."
 
 
 def validate_fragment_barcode_in_adata_index(parquet_file: Path, anndata_file: Path) -> Optional[str]:
@@ -205,7 +205,7 @@ def validate_fragment_stop_greater_than_start_coordinate(parquet_file: Path) -> 
     df = ddf.read_parquet(parquet_file, columns=["start coordinate", "stop coordinate"])
     series = df["stop coordinate"] > df["start coordinate"]
     if not series.all().compute():
-        return "Stop coordinate not greater than Start coordinate or Start coordinate is less than 0"
+        return "Stop coordinate must be greater than start coordinate."
 
 
 def validate_fragment_stop_coordinate_within_chromosome(parquet_file: Path, anndata_file: Path) -> Optional[str]:
@@ -224,14 +224,14 @@ def validate_fragment_stop_coordinate_within_chromosome(parquet_file: Path, annd
         df_ = df[df["organism_ontology_term_id"] == organism_ontology_term_id]
         df_ = df_["stop coordinate"] <= df_[organism_ontology_term_id]
         if not df_.all().compute():
-            return "Stop coordinate is greater than the length of the chromosome"
+            return "Stop coordinate must be less than the chromosome length."
 
 
 def validate_fragment_read_support(parquet_file: Path) -> Optional[str]:
     # check that the read support is greater than 0
-    df = ddf.read_parquet(parquet_file, columns=["read support"], filters=[("read support", "<=", 0)])
+    df = ddf.read_parquet(parquet_file, columns=["read support"], filters=[("read support", "==", 0)])
     if len(df.compute()) != 0:
-        return "Read support is less than 0"
+        return "Read support must be greater than 0."
 
 
 def detect_chromosomes(parquet_file: Path) -> list[str]:
