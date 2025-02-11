@@ -2,12 +2,14 @@ import logging
 import traceback
 from typing import Dict, List, Optional
 
+import anndata
 import pandas as pd
-from cellxgene_schema import gencode
-from cellxgene_schema.env import SCHEMA_REFERENCE_BASE_URL, SCHEMA_REFERENCE_FILE_NAME
-from cellxgene_schema.validate import ONTOLOGY_PARSER, Validator
 
+from . import gencode, schema
+from .env import SCHEMA_REFERENCE_BASE_URL, SCHEMA_REFERENCE_FILE_NAME
+from .gencode import get_gene_checker
 from .utils import get_hash_digest_column, getattr_anndata
+from .validate import ONTOLOGY_PARSER
 
 logger = logging.getLogger(__name__)
 
@@ -18,24 +20,16 @@ class AnnDataLabelAppender:
     to adata.obs and adata.var respectively as indicated in the schema definition
     """
 
-    def __init__(self, validator: Validator):
+    def __init__(self, adata: anndata.AnnData):
         """
         From a list of ids and defined constraints, creates a mapping dictionary {id: label, ...}
 
-        :param Validator validator: a Validator object, it's used to get adata and schema defintion for its validation,
-        it's also used to make sure the validation on this adata was successful.
+        :param str file_name: Path to h5ad file
         """
-
-        if not validator.is_valid:
-            raise ValueError(
-                "AnnData object is not valid or hasn't been run through validation. "
-                "Validate AnnData first before attempting to write labels"
-            )
-        self.adata = validator.adata
-        self.validator = validator
-        self.schema_def = validator.schema_def
+        self.adata = adata
+        self.schema_version = schema.get_current_schema_version()
+        self.schema_def = schema.get_schema_definition()
         self.errors = []
-        self.was_writing_successful = False
 
     def _merge_dicts(self, dict1: dict, dict2: dict) -> dict:
         """
@@ -164,7 +158,7 @@ class AnnDataLabelAppender:
 
         for i in ids:
             organism = gencode.get_organism_from_feature_id(i)
-            mapping_dict[i] = self.validator.gene_checkers[organism].get_symbol(i)
+            mapping_dict[i] = get_gene_checker(organism).get_symbol(i)
 
         return mapping_dict
 
@@ -200,7 +194,7 @@ class AnnDataLabelAppender:
 
         for i in ids:
             organism = gencode.get_organism_from_feature_id(i)
-            mapping_dict[i] = self.validator.gene_checkers[organism].get_type(i)
+            mapping_dict[i] = get_gene_checker(organism).get_type(i)
 
         return mapping_dict
 
@@ -218,10 +212,8 @@ class AnnDataLabelAppender:
         for i in ids:
             if i.startswith("ERCC"):
                 mapping_dict[i] = "spike-in"
-            elif i.startswith("ENS"):
-                mapping_dict[i] = "gene"
             else:
-                raise ValueError(f"{i} is not a recognized `feature_name` and cannot be assigned a `feature_type`")
+                mapping_dict[i] = "gene"
 
         return mapping_dict
 
@@ -239,7 +231,7 @@ class AnnDataLabelAppender:
 
         for i in ids:
             organism = gencode.get_organism_from_feature_id(i)
-            mapping_dict[i] = self.validator.gene_checkers[organism].get_length(i)
+            mapping_dict[i] = get_gene_checker(organism).get_length(i)
 
         return mapping_dict
 
@@ -375,10 +367,10 @@ class AnnDataLabelAppender:
 
         # Annotate Reserved Columns
 
-        self.adata.uns["schema_version"] = self.validator.schema_version
-        self.adata.uns["schema_reference"] = self._build_schema_reference_url(self.validator.schema_version)
+        self.adata.uns["schema_version"] = self.schema_version
+        self.adata.uns["schema_reference"] = self._build_schema_reference_url(self.schema_version)
         self.adata.obs["observation_joinid"] = get_hash_digest_column(self.adata.obs)
-
+        logger.info(f"Labels have been added. Writing to {add_labels_file}")
         # Write file
         try:
             self.adata.write_h5ad(add_labels_file, compression="gzip")
@@ -390,6 +382,6 @@ class AnnDataLabelAppender:
         if self.errors:
             for e, tb in self.errors:
                 logger.error(e, extra={"exec_info": tb})
-            self.was_writing_successful = False
+            return False
         else:
-            self.was_writing_successful = True
+            return True

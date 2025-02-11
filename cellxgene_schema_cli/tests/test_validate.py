@@ -12,9 +12,11 @@ import pytest
 from cellxgene_ontology_guide.entities import Ontology
 from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.validate import (
+    ERROR_SUFFIX_SPARSE_FORMAT,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_FORBIDDEN,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0,
+    ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_NOTNULL,
     ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_REQUIRED,
     SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE,
     SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM,
@@ -57,11 +59,8 @@ def validator_with_minimal_adata():
 
 
 @pytest.fixture
-def label_writer():
-    validator = Validator()
-    validator.adata = adata_valid.copy()
-    validator.validate_adata()
-    return AnnDataLabelAppender(validator)
+def label_writer(valid_adata):
+    return AnnDataLabelAppender(adata_valid)
 
 
 @pytest.fixture
@@ -136,19 +135,17 @@ class TestAddLabelFunctions:
             "ENSG00000127603",
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
+            "FBtr0472816_df_nrg",
+            "ENSDARG00000009657",
+            "WBGene00000003",
         ]
-        labels = [
-            "ERCC-00002 (spike-in control)",
-            "MACF1",
-            "Trp53",
-            "S",
-        ]
+        labels = ["ERCC-00002 (spike-in control)", "MACF1", "Trp53", "S", "FBtr0472816_df_nrg", "fgfr1op2", "aat-2"]
         expected_dict = dict(zip(ids, labels))
         assert label_writer._get_mapping_dict_feature_id(ids), expected_dict
 
         # Bad
         ids = ["NO_GENE"]
-        with pytest.raises(KeyError):
+        with pytest.raises(ValueError):
             label_writer._get_mapping_dict_feature_id(ids)
 
     def test_get_dictionary_mapping_feature_reference(self, label_writer):
@@ -158,19 +155,25 @@ class TestAddLabelFunctions:
             "ENSG00000127603",
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
+            "FBtr0472816_df_nrg",
+            "ENSDARG00000009657",
+            "WBGene00000003",
         ]
         labels = [
             "NCBITaxon:32630",
             "NCBITaxon:9606",
             "NCBITaxon:10090",
             "NCBITaxon:2697049",
+            "NCBITaxon:7227",
+            "NCBITaxon:7955",
+            "NCBITaxon:6239",
         ]
         expected_dict = dict(zip(ids, labels))
         assert label_writer._get_mapping_dict_feature_reference(ids) == expected_dict
 
         # Bad
         ids = ["NO_GENE"]
-        with pytest.raises(KeyError):
+        with pytest.raises(ValueError):
             label_writer._get_mapping_dict_feature_id(ids)
 
     def test_get_dictionary_mapping_feature_length(self, label_writer):
@@ -180,20 +183,18 @@ class TestAddLabelFunctions:
             "ENSG00000127603",
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
+            "FBtr0472816_df_nrg",
+            "ENSDARG00000009657",
+            "WBGene00000003",
         ]
         # values derived from csv
-        gene_lengths = [
-            1061,
-            2821,
-            1797,
-            3822,
-        ]
+        gene_lengths = [1061, 2821, 1797, 3822, 22, 1088, 1738]
         expected_dict = dict(zip(ids, gene_lengths))
         assert label_writer._get_mapping_dict_feature_length(ids) == expected_dict
 
         # Bad
         ids = ["NO_GENE"]
-        with pytest.raises(KeyError):
+        with pytest.raises(ValueError):
             label_writer._get_mapping_dict_feature_id(ids)
 
     def test_get_dictionary_mapping_feature_type(self, label_writer):
@@ -203,6 +204,9 @@ class TestAddLabelFunctions:
             "ENSG00000127603",
             "ENSMUSG00000059552",
             "ENSSASG00005000004",
+            "FBtr0472816_df_nrg",
+            "ENSDARG00000009657",
+            "WBGene00000003",
         ]
         # values derived from csv
         gene_types = [
@@ -210,14 +214,41 @@ class TestAddLabelFunctions:
             "protein_coding",
             "protein_coding",
             "protein_coding",
+            "ncRNA",
+            "protein_coding",
+            "protein_coding",
         ]
         expected_dict = dict(zip(ids, gene_types))
         assert label_writer._get_mapping_dict_feature_type(ids) == expected_dict
 
         # Bad
-        ids = ["NO_GENE"]
-        with pytest.raises(KeyError):
+        ids = ["NO_GENE_BAD"]
+        with pytest.raises(ValueError):
             label_writer._get_mapping_dict_feature_type(ids)
+
+    def test_get_dictionary_mapping_feature_biotype(self, label_writer):
+        # Good
+        ids = [
+            "ERCC-00002",
+            "ENSG00000127603",
+            "ENSMUSG00000059552",
+            "ENSSASG00005000004",
+            "FBtr0472816_df_nrg",
+            "ENSDARG00000009657",
+            "WBGene00000003",
+        ]
+        # Values derived from csv
+        biotypes = [
+            "spike-in",
+            "gene",
+            "gene",
+            "gene",
+            "gene",
+            "gene",
+            "gene",
+        ]
+        expected_dict = dict(zip(ids, biotypes))
+        assert label_writer._get_mapping_dict_feature_biotype(ids) == expected_dict
 
     @pytest.mark.parametrize(
         "ids,labels,curie_constraints",
@@ -255,16 +286,14 @@ class TestAddLabelFunctions:
     def test__write__Success(self, label_writer):
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
-            label_writer.write_labels(labels_path)
-        assert label_writer.was_writing_successful
+            assert label_writer.write_labels(labels_path)
         assert not label_writer.errors
 
     def test__write__Fail(self, label_writer):
         label_writer.adata.write_h5ad = mock.Mock(side_effect=Exception("Test Fail"))
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
-            label_writer.write_labels(labels_path)
-        assert not label_writer.was_writing_successful
+            assert not label_writer.write_labels(labels_path)
         assert label_writer.errors
 
 
@@ -341,7 +370,7 @@ class TestCheckSpatial:
         "assay_ontology_term_id, expected_is_visium",
         [
             # Parent term for Visium Spatial Gene Expression. This term and all its descendants are Visium
-            ("EFO:0010961", True),
+            ("EFO:0022858", True),
             # Visium Spatial Gene Expression V1
             ("EFO:0022857", True),
             # Visium CytAssist Spatial Gene Expression V2
@@ -371,6 +400,21 @@ class TestCheckSpatial:
         validator.validate_adata()
         assert not validator.errors
 
+    def test__forbid_generic_visium(self):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator._visium_and_is_single_true_matrix_size = 2
+
+        # set assay to the generic visium term
+        validator.adata.obs["assay_ontology_term_id"] = "EFO:0010961"
+
+        # Confirm this triggers FORBIDDIN ERROR and downstream errors due to invalid spatial term.
+        validator.validate_adata()
+        EXPECTED_FORBIDDEN_ERROR = "ERROR: Invalid spatial assay. obs['assay_ontology_term_id'] must be a descendant of EFO:0010961 but NOT EFO:0010961 itself. "
+        assert len(validator.errors) == 5
+        assert EXPECTED_FORBIDDEN_ERROR in validator.errors
+
     @mock.patch("cellxgene_schema.validate.VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE", 2)
     def test__validate_from_file(self):
         """Testing compatibility with SparseDataset types in Anndata"""
@@ -385,11 +429,16 @@ class TestCheckSpatial:
         assert not validator.errors
 
     def test__validate_spatial_visium_dense_matrix_ok(self):
+        """
+        Test visium specific requirements on a dense X matrix
+        """
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
         validator._visium_and_is_single_true_matrix_size = 2
-        validator.adata.X = from_array(validator.adata.X.compute().toarray())
+        _Xdense = validator.adata.X.compute()
+        _Xdense[_Xdense == 0] = 1  # ensure the matrix doesn't trigger sparsity error
+        validator.adata.X = from_array(_Xdense.toarray())  # daskify
         validator.adata.raw = validator.adata.copy()
         validator.adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
         # Confirm spatial is valid.
@@ -460,7 +509,7 @@ class TestCheckSpatial:
 
     @pytest.mark.parametrize(
         "assay_ontology_term_id, is_descendant",
-        [("EFO:0010961", True), ("EFO:0022858", True), ("EFO:0030029", False), ("EFO:0002697", False)],
+        [("EFO:0022859", True), ("EFO:0022858", True), ("EFO:0030029", False), ("EFO:0002697", False)],
     )
     def test__validate_spatial_required_if_visium(self, assay_ontology_term_id, is_descendant):
         validator: Validator = Validator()
@@ -518,7 +567,7 @@ class TestCheckSpatial:
 
     @pytest.mark.parametrize(
         "assay_ontology_term_id, is_descendant",
-        [("EFO:0010961", True), ("EFO:0022858", True), ("EFO:0030029", False), ("EFO:0002697", False)],
+        [("EFO:0022859", True), ("EFO:0022858", True), ("EFO:0030029", False), ("EFO:0002697", False)],
     )
     def test__validate_is_single_required_visium_error(self, assay_ontology_term_id, is_descendant):
         validator: Validator = Validator()
@@ -592,7 +641,7 @@ class TestCheckSpatial:
 
     @pytest.mark.parametrize(
         "assay_ontology_term_id, is_descendant",
-        [("EFO:0010961", True), ("EFO:0022858", True), ("EFO:0030029", False), ("EFO:0002697", False)],
+        [("EFO:0022859", True), ("EFO:0022858", True), ("EFO:0030029", False), ("EFO:0002697", False)],
     )
     def test__validate_library_id_required_if_visium(self, assay_ontology_term_id, is_descendant):
         validator: Validator = Validator()
@@ -956,7 +1005,7 @@ class TestCheckSpatial:
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.obs.assay_ontology_term_id = ["EFO:0010961", "EFO:0030062"]
+        validator.adata.obs.assay_ontology_term_id = ["EFO:0022858", "EFO:0030062"]
 
         # Confirm assay ontology term id is identified as invalid.
         validator._validate_spatial_assay_ontology_term_id()
@@ -978,9 +1027,9 @@ class TestCheckSpatial:
     @pytest.mark.parametrize(
         "assay_ontology_term_id, is_single",
         [
-            (["EFO:0010961", "EFO:0030062"], True),
-            (["EFO:0010961", "EFO:0030062"], False),
-            ("EFO:0010961", False),
+            (["EFO:0022858", "EFO:0030062"], True),
+            (["EFO:0022858", "EFO:0030062"], False),
+            ("EFO:0022858", False),
             ("EFO:0030062", True),
             ("EFO:0030062", False),
             ("EFO:0030062", False),
@@ -1016,7 +1065,7 @@ class TestCheckSpatial:
         validator.adata.obs.pop(tissue_position_name)
 
         # check visium
-        validator.adata.obs["assay_ontology_term_id"] = "EFO:0010961"
+        validator.adata.obs["assay_ontology_term_id"] = "EFO:0022858"
         validator._check_spatial_obs()
         assert validator.errors
         assert (
@@ -1033,7 +1082,7 @@ class TestCheckSpatial:
         )
         validator.reset()
 
-    @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0010961", "EFO:0030062", "EFO:0022860"])
+    @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0022858", "EFO:0030062", "EFO:0022860"])
     def test__validate_tissue_position_not_required(self, assay_ontology_term_id):
         validator: Validator = Validator()
         validator._set_schema_def()
@@ -1056,7 +1105,18 @@ class TestCheckSpatial:
         assert validator.errors
         assert f"obs['{tissue_position_name}'] must be of int type" in validator.errors[0]
 
-    @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0010961", "EFO:0022860", "EFO:0022859"])
+    @pytest.mark.parametrize("tissue_position_name", ["array_col", "array_row", "in_tissue"])
+    def test__validate_tissue_position_nan_error(self, tissue_position_name):
+        validator: Validator = Validator()
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        validator.adata.obs[tissue_position_name] = np.nan
+
+        # Confirm tissue_position is identified as invalid.
+        validator._check_spatial_obs()
+        assert validator.errors[0] == f"obs['{tissue_position_name}'] {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_NOTNULL}."
+
+    @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0022857", "EFO:0022860", "EFO:0022859"])
     @pytest.mark.parametrize("tissue_position_name, min", [("array_col", 0), ("array_row", 0), ("in_tissue", 0)])
     def test__validate_tissue_position_int_min_error(self, assay_ontology_term_id, tissue_position_name, min):
         validator: Validator = Validator()
@@ -1075,8 +1135,8 @@ class TestCheckSpatial:
     @pytest.mark.parametrize(
         "assay_ontology_term_id, tissue_position_name, tissue_position_max",
         [
-            ("EFO:0010961", "array_col", 127),
-            ("EFO:0010961", "array_row", 77),
+            ("EFO:0022857", "array_col", 127),
+            ("EFO:0022857", "array_row", 77),
             ("EFO:0022860", "array_col", 223),
             ("EFO:0022860", "array_row", 127),
             ("EFO:0022859", "array_col", 127),
@@ -1106,8 +1166,8 @@ class TestCheckSpatial:
     @pytest.mark.parametrize(
         "cell_type_ontology_term_id, in_tissue, assay_ontology_term_id",
         [
-            # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium Spatial Gene Expression
-            ("unknown", 0, "EFO:0010961"),
+            # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium Spatial Gene Expression v2
+            ("unknown", 0, "EFO:0022858"),
             # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium CytAssist Spatial Gene Expression, 11mm
             ("unknown", 0, "EFO:0022860"),
             # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium Spatial Gene Expression V1
@@ -1135,8 +1195,8 @@ class TestCheckSpatial:
         "cell_type_ontology_term_id, in_tissue, assay_ontology_term_id",
         [
             # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium Spatial Gene Expression
-            ("CL:0000066", 0, "EFO:0010961"),
-            (["CL:0000066", "unknown"], [0, 1], ["EFO:0010961", "EFO:0010961"]),
+            ("CL:0000066", 0, "EFO:0022858"),
+            (["CL:0000066", "unknown"], [0, 1], ["EFO:0022858", "EFO:0022858"]),
             # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium CytAssist Spatial Gene Expression, 11mm
             ("CL:0000066", 0, "EFO:0022860"),
             # MUST be unknown when in_tissue = 0 and assay_ontology_term_id = Visium Spatial Gene Expression V1
@@ -1271,7 +1331,8 @@ class TestIsRaw:
 
     @mock.patch("cellxgene_schema.validate.get_matrix_format", return_value="unknown")
     def test_has_valid_raw_with_unknown_format(self, mock_get_matrix_format):
+        # a matrix with unknown format should be invalid
         data = np.array([[1, 2, 3], [4, 5, 6]], dtype=np.float32)
         validator = self.create_validator(data, "unknown")
-        with pytest.raises(AssertionError):
-            validator._has_valid_raw()
+        assert validator._has_valid_raw() is False
+        assert validator.errors == [f"Unknown encoding for matrix X. {ERROR_SUFFIX_SPARSE_FORMAT}"]

@@ -55,6 +55,29 @@ def schema_validate(h5ad_file, add_labels_file, ignore_labels):
 
 
 @schema_cli.command(
+    name="add-labels",
+    short_help="Create a copy of an h5ad with portal-added labels",
+    help="Create a copy of an h5ad with portal-added labels. The labels are added based on the IDs in the "
+    "provided file.",
+)
+@click.argument("input_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.argument("output_file", nargs=1, type=click.Path(exists=False, dir_okay=False))
+def add_labels(input_file, output_file):
+    from utils import read_h5ad
+
+    from .write_labels import AnnDataLabelAppender
+
+    logger.info(f"Loading h5ad from {input_file}")
+    adata = read_h5ad(input_file)
+    anndata_label_adder = AnnDataLabelAppender(adata)
+    logger.info("Adding labels")
+    if anndata_label_adder.write_labels(output_file):
+        sys.exit(0)
+    else:
+        sys.exit(1)
+
+
+@schema_cli.command(
     name="validate-fragment",
     short_help="Check that an ATAC SEQ fragment follows the cellxgene data integration schema.",
     help="Check that an ATAC SEQ fragment follows the cellxgene data integration schema. If validation fails this "
@@ -121,6 +144,25 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     migrate(input_file, output_file, collection_id, dataset_id)
 
+
+@click.command(
+    name="map-species",
+    short_help="Annotate non-human, non-mouse anndata with CL and UBERON equivalent terms",
+    help="Annotate non-human, non-mouse anndata with CL and UBERON equivalent terms, based on values in"
+    "organism-specific columns (e.g. organism_cell_type_ontology_term_id and organism_tissue_ontology_term_id)",
+)
+@click.argument("input_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.argument("output_file", nargs=1, type=click.Path(exists=False, dir_okay=False))
+def map_species(input_file, output_file):
+    from .map_species import map_species
+
+    map_species(input_file, output_file)
+
+
+schema_cli.add_command(schema_validate)
+schema_cli.add_command(migrate)
+schema_cli.add_command(remove_labels)
+schema_cli.add_command(map_species)
 
 if __name__ == "__main__":
     schema_cli()

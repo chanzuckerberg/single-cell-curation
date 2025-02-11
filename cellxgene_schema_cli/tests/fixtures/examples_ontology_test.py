@@ -4,8 +4,21 @@ from cellxgene_schema import gencode
 invalid_species = ["Caenorhabditis elegans"]
 
 valid_genes = {
-    gencode.SupportedOrganisms.HOMO_SAPIENS: {"ENSG00000141510": ("TP53", 2404)},
+    gencode.SupportedOrganisms.HOMO_SAPIENS: {"ENSG00000141510": ("TP53_ENSG00000141510", 2404)},
     gencode.SupportedOrganisms.MUS_MUSCULUS: {"ENSMUSG00000059552": ("Trp53", 1797)},
+    gencode.SupportedOrganisms.DROSOPHILA_MELANOGASTER: {"RR45003_transposable_element": ("S{}RR4500", 1234)},
+    gencode.SupportedOrganisms.DROSOPHILA_MELANOGASTER: {"FBgn0037293": ("RabGGTa", 1853)},
+    gencode.SupportedOrganisms.CAENORHABDITIS_ELEGANS: {"WBGene00000003": ("aat-2", 1738)},
+    gencode.SupportedOrganisms.CALLITHRIX_JACCHUS: {"ENSCJAG00000071296": ("U4_ENSCJAG00000071296", 141)},
+    gencode.SupportedOrganisms.DANIO_RERIO: {"ENSDARG00000009657": ("fgfr1op2", 1088)},
+    gencode.SupportedOrganisms.GORILLA_GORILLA: {"ENSGGOG00000010861": ("CAMSAP2_ENSGGOG00000010861", 7438)},
+    gencode.SupportedOrganisms.MACACA_FASCICULARIS: {"ENSMFAG00000001539": ("DFFB_ENSMFAG00000001539", 1174)},
+    gencode.SupportedOrganisms.MACACA_MULATTA: {"ENSMMUG00000000634": ("ZNF692_ENSMMUG00000000634", 1944)},
+    gencode.SupportedOrganisms.MICROCEBUS_MURINUS: {"ENSMICG00000026886": ("CIR1_ENSMICG00000026886", 1807)},
+    gencode.SupportedOrganisms.ORYCTOLAGUS_CUNICULUS: {"ENSOCUG00000025472": ("SNORD42_ENSOCUG00000025472", 67)},
+    gencode.SupportedOrganisms.PAN_TROGLODYTES: {"ENSPTRG00000000799": ("HOOK1_ENSPTRG00000000799", 5839)},
+    gencode.SupportedOrganisms.RATTUS_NORVEGICUS: {"ENSRNOG00000070901": ("Irgq_ENSRNOG00000070901", 6116)},
+    gencode.SupportedOrganisms.SUS_SCROFA: {"ENSSSCG00000031382": ("C9orf40_ENSSSCG00000031382", 3815)},
 }
 
 valid_genes_same_name_diff_species = {
@@ -25,6 +38,17 @@ valid_genes_same_name_and_species = {
 invalid_genes = {
     gencode.SupportedOrganisms.HOMO_SAPIENS: ["ENSMUSG00000059552", ("GENE", 1000)],
     gencode.SupportedOrganisms.MUS_MUSCULUS: ["ENSG00000141510", ("GENE", 200)],
+    gencode.SupportedOrganisms.CAENORHABDITIS_ELEGANS: {"WBGene_00000003": ("aat-2", 1738)},
+    gencode.SupportedOrganisms.CALLITHRIX_JACCHUS: {"ENSCJAG_00000071296": ("U4_ENSCJAG00000071296", 141)},
+    gencode.SupportedOrganisms.DANIO_RERIO: {"ENSDARG_00000009657": ("fgfr1op2", 1088)},
+    gencode.SupportedOrganisms.GORILLA_GORILLA: {"ENSGGOG_00000010861": ("CAMSAP2_ENSGGOG00000010861", 7438)},
+    gencode.SupportedOrganisms.MACACA_FASCICULARIS: {"ENSMFAG_00000001539": ("DFFB_ENSMFAG00000001539", 1174)},
+    gencode.SupportedOrganisms.MACACA_MULATTA: {"ENSMMUG_00000000634": ("ZNF692_ENSMMUG00000000634", 1944)},
+    gencode.SupportedOrganisms.MICROCEBUS_MURINUS: {"ENSMICG_00000026886": ("CIR1_ENSMICG00000026886", 1807)},
+    gencode.SupportedOrganisms.ORYCTOLAGUS_CUNICULUS: {"ENSOCUG_00000025472": ("SNORD42_ENSOCUG00000025472", 67)},
+    gencode.SupportedOrganisms.PAN_TROGLODYTES: {"ENSPTRG_00000000799": ("HOOK1_ENSPTRG00000000799", 5839)},
+    gencode.SupportedOrganisms.RATTUS_NORVEGICUS: {"ENSRNOG_00000070901": ("Irgq_ENSRNOG00000070901", 6116)},
+    gencode.SupportedOrganisms.SUS_SCROFA: {"ENSSSCG_00000031382": ("C9orf40_ENSSSCG00000031382", 3815)},
 }
 
 # For ontology checker

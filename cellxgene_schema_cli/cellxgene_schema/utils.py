@@ -16,7 +16,8 @@ from xxhash import xxh3_64_intdigest
 
 logger = logging.getLogger(__name__)
 
-SPARSE_MATRIX_TYPES = {"csc", "csr", "coo"}
+SPARSE_MATRIX_TYPES = {"csr", "csc", "coo"}
+SUPPORTED_SPARSE_MATRIX_TYPES = {"csr"}
 
 
 def replace_ontology_term(dataframe, ontology_name, update_map):
@@ -92,7 +93,7 @@ def get_matrix_format(matrix: DaskArray) -> str:
         matrix_format = matrix_slice.format
     elif isinstance(matrix_slice, np.ndarray):
         matrix_format = "dense"
-    assert matrix_format in ["unknown", "csr", "csc", "coo", "dense"]
+    assert matrix_format in SPARSE_MATRIX_TYPES.union({"unknown", "dense"})
     return matrix_format
 
 
@@ -196,3 +197,8 @@ def is_ontological_descendant_of(onto: OntologyParser, term: str, target: str, i
     #TODO:[EM] needs testing
     """
     return term in set(onto.get_term_descendants(target, include_self))
+
+
+@lru_cache()
+def get_descendants(onto: OntologyParser, term: str, include_self: bool = True) -> List[str]:
+    return onto.get_term_descendants(term, include_self=True)

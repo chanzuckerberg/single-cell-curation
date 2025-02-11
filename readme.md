@@ -43,6 +43,19 @@ cellxgene-schema validate input.h5ad
 
 If the validation succeeds, the command returns a zero exit code; otherwise, it returns a non-zero exit code and prints validation failure messages.
 
+---
+
+This experimental validator also offers the option to annotate required columns `cell_type_ontology_term_id` and `tissue_ontology_term_id` in Zebrafish, Fruit Fly, or C. Elegans anndata BEFORE running validation commands above. 
+
+This relies on your anndata having the appropriate species-specific ontology terms (e.g. ZFA, FbBT, WBbt) labeled in `organism_cell_type_ontology_term_id` and `organism_tissue_ontology_term_id`, respectively. 
+
+```
+cellxgene-schema map-species output.h5ad input.h5ad
+```
+
+The command will find the closest CL (for cell_type) or UBERON (for tissue) mapping for the given term, offering either an exact match for the given term or a match from the closest possible ancestor term. This is based on the CL and UBERON [SSSOM](https://mapping-commons.github.io/sssom/toolkit/) mappings.
+
+If there are multiple closest ancestors of the same distance with a match, the command will NOT annotate those rows and instead log your closest ancestor match options for your manual curation.
 
 ---
 
