@@ -112,7 +112,10 @@ mouse_chromosome_by_length = {
     "JH584303.1": 158099,
     "JH584304.1": 114452,
 }
-
+feature_reference_by_chromosome_length_table = {
+    "NCBITaxon:9606": human_chromosome_by_length,
+    "NCBITaxon:10090": mouse_chromosome_by_length,
+}
 column_ordering = ["chromosome", "start coordinate", "stop coordinate", "barcode", "read support"]
 allowed_chromosomes = list(set(itertools.chain(human_chromosome_by_length.keys(), mouse_chromosome_by_length.keys())))
 allowed_chromosomes.sort()
@@ -213,14 +216,12 @@ def validate_fragment_stop_greater_than_start_coordinate(parquet_file: str) -> O
 
 def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, anndata_file: str) -> Optional[str]:
     # check that the stop coordinate is within the length of the chromosome
-    chromome_length_table = pd.DataFrame(
-        {"NCBITaxon:9606": human_chromosome_by_length, "NCBITaxon:10090": mouse_chromosome_by_length}
-    )
     adata = ad.read_h5ad(anndata_file, backed="r")
     obs = adata.obs[["organism_ontology_term_id"]]  # only the organism_ontology_term_id is needed
     unique_organism_ontology_term_id = obs["organism_ontology_term_id"].unique()
     df: ddf.DataFrame = ddf.read_parquet(parquet_file, columns=["barcode", "chromosome", "stop coordinate"])
     df = df.merge(obs, left_on="barcode", right_index=True)
+    chromome_length_table = pd.DataFrame(feature_reference_by_chromosome_length_table)
     df = df.merge(chromome_length_table, left_on="chromosome", right_index=True)
 
     for organism_ontology_term_id in unique_organism_ontology_term_id:
@@ -263,10 +264,16 @@ def validate_anndata_is_primary_data(anndata_file: str) -> Optional[str]:
 
 
 def validate_anndata_feature_reference(anndata_file: str) -> Optional[str]:
-    var = ad.read_h5ad(anndata_file, backed="r").var
+    adata = ad.read_h5ad(anndata_file, backed="r")
+    feature_reference = adata.var["feature_reference"]
     # check that var["feature_reference"] is equal to "NCBITaxon:9606" xor "NCBITaxon:10090"
-    if not (var["feature_reference"] == "NCBITaxon:9606").all() ^ (var["feature_reference"] == "NCBITaxon:10090").all():
+    if not (feature_reference == "NCBITaxon:9606").all() ^ (feature_reference == "NCBITaxon:10090").all():
         return "Anndata.var.feature_reference must be either NCBITaxon:9606 or NCBITaxon:10090."
+    # check that var["feature_reference"] and obs["organism_ontology_term_id"] have the same unique values
+    unique_organism_ontology_term_ids = adata.obs["organism_ontology_term_id"].unique()
+    unique_feature_reference = feature_reference.unique()
+    if unique_organism_ontology_term_ids != unique_feature_reference:
+        return "Unique Anndata.obs.organism_ontology_term_id must be equal to unqiue Anndata.var.feature_reference."
 
 
 def detect_chromosomes(parquet_file: str) -> list[str]:

@@ -243,7 +243,19 @@ class TestValidateAnndataFeatureReference:
         # Assert
         assert not result
 
-    def test_negative(self, atac_anndata, tmpdir):
+    def test_feature_references_different_from_organism_ontology_term_id(self, atac_anndata, tmpdir):
+        # Arrange
+        atac_anndata.var["feature_reference"] = ["NCBITaxon:10090"]
+        atac_anndata_file = to_anndata_file(atac_anndata, tmpdir)
+        # Act
+        result = atac_seq.validate_anndata_feature_reference(atac_anndata_file)
+        # Assert
+        assert (
+            result
+            == "Unique Anndata.obs.organism_ontology_term_id must be equal to unqiue Anndata.var.feature_reference."
+        )
+
+    def test_feature_references_not_valid(self, atac_anndata, tmpdir):
         # Arrange
         atac_anndata.var["feature_reference"] = ["NCBITaxon:9607"]
         atac_anndata_file = to_anndata_file(atac_anndata, tmpdir)
