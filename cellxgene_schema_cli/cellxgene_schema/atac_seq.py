@@ -12,8 +12,11 @@ import dask.dataframe as ddf
 import dask.distributed as dd  # TODO: see if distributed mode can be avoided.
 import pandas as pd
 import pysam
+from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from dask import delayed
 from dask.delayed import Delayed
+
+from .utils import is_ontological_descendant_of
 
 logger = logging.getLogger(__name__)
 
@@ -179,11 +182,11 @@ def validate(parquet_file: str, anndata_file: str) -> list[Optional[str]]:
         validate_fragment_stop_coordinate_within_chromosome(parquet_file, anndata_file),
         validate_fragment_stop_greater_than_start_coordinate(parquet_file),
         validate_fragment_read_support(parquet_file),
+        validate_anndata_is_atac(anndata_file),
+        validate_anndata_feature_reference(anndata_file),
+        validate_anndata_is_primary_data(anndata_file),
     ]
     return jobs
-
-
-# TODO validate anndata is atac-seq
 
 
 def validate_fragment_start_coordinate_greater_than_0(parquet_file: Path) -> Optional[str]:
@@ -213,8 +216,8 @@ def validate_fragment_stop_coordinate_within_chromosome(parquet_file: Path, annd
     chromome_length_table = pd.DataFrame(
         {"NCBITaxon:9606": human_chromosome_by_length, "NCBITaxon:10090": mouse_chromosome_by_length}
     )
-    obs: pd.DataFrame = ad.read_h5ad(anndata_file, backed="r").obs
-    obs = obs[["organism_ontology_term_id"]]  # only the organism_ontology_term_id is needed
+    adata = ad.read_h5ad(anndata_file, backed="r")
+    obs = adata.obs[["organism_ontology_term_id"]]  # only the organism_ontology_term_id is needed
     unique_organism_ontology_term_id = obs["organism_ontology_term_id"].unique()
     df: ddf.DataFrame = ddf.read_parquet(parquet_file, columns=["barcode", "chromosome", "stop coordinate"])
     df = df.merge(obs, left_on="barcode", right_index=True)
@@ -232,6 +235,38 @@ def validate_fragment_read_support(parquet_file: Path) -> Optional[str]:
     df = ddf.read_parquet(parquet_file, columns=["read support"], filters=[("read support", "==", 0)])
     if len(df.compute()) != 0:
         return "Read support must be greater than 0."
+
+
+def validate_anndata_is_atac(anndata_file: str) -> Optional[str]:
+    def not_atac(x) -> str:
+        if is_ontological_descendant_of(onto_parser, x, "EFO:0010891"):
+            if is_ontological_descendant_of(onto_parser, x, "EFO:0008913"):
+                return "p"  # paired
+            else:
+                return "u"  # unpaired
+        else:
+            return "n"  # not atac seq
+
+    onto_parser = OntologyParser()
+    obs = ad.read_h5ad(anndata_file, backed="r").obs
+    df = obs["assay_ontology_term_id"].map(not_atac)
+    if (df == "n").any():
+        return "Anndata.obs.assay_ontology_term_id are not all descendants of EFO:0010891."
+    elif not ((df == "u").all() or (df == "p").all()):
+        return "Anndata.obs.assay_ontology_term_id has mixed paired and unpaired terms."
+
+
+def validate_anndata_is_primary_data(anndata_file: str) -> Optional[str]:
+    obs = ad.read_h5ad(anndata_file, backed="r").obs
+    if not obs["is_primary_data"].all():
+        return "Anndata.obs.is_primary_data must all be True."
+
+
+def validate_anndata_feature_reference(anndata_file: str) -> Optional[str]:
+    var = ad.read_h5ad(anndata_file, backed="r").var
+    # check that var["feature_reference"] is equal to "NCBITaxon:9606" xor "NCBITaxon:10090"
+    if not (var["feature_reference"] == "NCBITaxon:9606").all() ^ (var["feature_reference"] == "NCBITaxon:10090").all():
+        return "Anndata.var.feature_reference must be either NCBITaxon:9606 or NCBITaxon:10090."
 
 
 def detect_chromosomes(parquet_file: Path) -> list[str]:
