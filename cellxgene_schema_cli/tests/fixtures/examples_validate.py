@@ -33,6 +33,8 @@ h5ad_invalid = os.path.join(h5ad_dir, "example_invalid_CL.h5ad")
 # 6. Putting all the components created in the previous steps into minimal anndata that used for testing in
 #   the unittests
 
+categorical_fields = ["donor_id", "suspension_type", "tissue_type", "perturbation_strategy", "perturbation_id", "perturbation_role", "perturbation_target_gene_id"]
+
 # Valid obs per schema
 good_obs = pd.DataFrame(
     [
@@ -109,15 +111,14 @@ good_obs = pd.DataFrame(
         "genetic_ancestry_South_Asian",
         "cell_line_ontology_term_id",
         "perturbation_strategy",
-        "pertubation_id",
+        "perturbation_id",
         "perturbation_role",
-        "pertubation_target_gene_id",
+        "perturbation_target_gene_id",
     ],
 )
 
-good_obs["donor_id"] = good_obs["donor_id"].astype("category")
-good_obs["suspension_type"] = good_obs["suspension_type"].astype("category")
-good_obs["tissue_type"] = good_obs["tissue_type"].astype("category")
+for field in categorical_fields:
+    good_obs[field] = good_obs[field].astype("category")
 
 # Expected obs, this is what the obs above should look like after adding the necessary columns with the validator,
 # these columns are defined in the schema
@@ -244,15 +245,14 @@ good_obs_visium = pd.DataFrame(
         "genetic_ancestry_South_Asian",
         "cell_line_ontology_term_id",
         "perturbation_strategy",
-        "pertubation_id",
+        "perturbation_id",
         "perturbation_role",
-        "pertubation_target_gene_id",
+        "perturbation_target_gene_id",
     ],
 )
 
-good_obs_visium["donor_id"] = good_obs_visium["donor_id"].astype("category")
-good_obs_visium["suspension_type"] = good_obs_visium["suspension_type"].astype("category")
-good_obs_visium["tissue_type"] = good_obs_visium["tissue_type"].astype("category")
+for field in categorical_fields:
+    good_obs_visium[field] = good_obs_visium[field].astype("category")
 
 # Valid spatial obs per schema
 good_obs_slide_seqv2 = pd.DataFrame(
@@ -330,15 +330,14 @@ good_obs_slide_seqv2 = pd.DataFrame(
         "genetic_ancestry_South_Asian",
         "cell_line_ontology_term_id",
         "perturbation_strategy",
-        "pertubation_id",
+        "perturbation_id",
         "perturbation_role",
-        "pertubation_target_gene_id",
+        "perturbation_target_gene_id",
     ],
 )
 
-good_obs_slide_seqv2["donor_id"] = good_obs_slide_seqv2["donor_id"].astype("category")
-good_obs_slide_seqv2["suspension_type"] = good_obs_slide_seqv2["suspension_type"].astype("category")
-good_obs_slide_seqv2["tissue_type"] = good_obs_slide_seqv2["tissue_type"].astype("category")
+for field in categorical_fields:
+    good_obs_slide_seqv2[field] = good_obs_slide_seqv2[field].astype("category")
 
 good_obs_visium_is_single_false = pd.DataFrame(
     [
@@ -415,17 +414,14 @@ good_obs_visium_is_single_false = pd.DataFrame(
         "genetic_ancestry_South_Asian",
         "cell_line_ontology_term_id",
         "perturbation_strategy",
-        "pertubation_id",
+        "perturbation_id",
         "perturbation_role",
-        "pertubation_target_gene_id",
+        "perturbation_target_gene_id",
     ],
 )
 
-good_obs_visium_is_single_false["donor_id"] = good_obs_visium_is_single_false["donor_id"].astype("category")
-good_obs_visium_is_single_false["suspension_type"] = good_obs_visium_is_single_false["suspension_type"].astype(
-    "category"
-)
-good_obs_visium_is_single_false["tissue_type"] = good_obs_visium_is_single_false["tissue_type"].astype("category")
+for field in categorical_fields:
+    good_obs_visium_is_single_false[field] = good_obs_visium_is_single_false[field].astype("category")
 
 # ---
 # 2. Creating individual var components: valid object and valid object and with labels
@@ -707,9 +703,9 @@ unmigrated_obs = pd.DataFrame(
         "genetic_ancestry_South_Asian",
         "cell_line_ontology_term_id",
         "perturbation_strategy",
-        "pertubation_id",
+        "perturbation_id",
         "perturbation_role",
-        "pertubation_target_gene_id",
+        "perturbation_target_gene_id",
     ],
 )
 

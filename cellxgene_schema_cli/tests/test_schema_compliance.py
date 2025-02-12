@@ -3445,3 +3445,39 @@ class TestMultiSpecies:
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = tissue_ontology_term_id
         validator.validate_adata()
         assert len(validator.errors) > 0
+
+class TestPertubations:
+    @pytest.mark.parametrize(
+        "cell_type_ontology_term_id,cell_line_ontology_term_id",
+        [
+            ("CL:0000010", "EFO:0022666"),
+            ("CL:0000001", "EFO:0022666"),
+            ("CL:0000010", "EFO:0022648"),
+            ("CL:0000001", "EFO:0022648"),
+        ],
+    )
+    def test_cell_line_ontology_term_id(self, validator_with_adata, cell_type_ontology_term_id, cell_line_ontology_term_id):
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "cell_type_ontology_term_id"] = cell_type_ontology_term_id
+        obs.loc[obs.index[0], "cell_line_ontology_term_id"] = cell_line_ontology_term_id
+        validator.validate_adata()
+        assert not validator.errors
+    
+    @pytest.mark.parametrize(
+        "cell_type_ontology_term_id,cell_line_ontology_term_id",
+        [
+            ("CL:0000010", "CLO:0037454"),  # Wrong ontology
+            ("CL:0000001", "CLO:0037454"),
+            ("CL:0000010", "EFO:0000001"),  # Right ontology, not a cell line
+            ("CL:0000001", "EFO:0000001"),
+            ("CL:0000192", "EFO:0022666"),  # Cell type ontology is not a cell line, cell line ontology term id must be na
+        ],
+    )
+    def test_cell_line_ontology_term_id__invalid(self, validator_with_adata, cell_type_ontology_term_id, cell_line_ontology_term_id):
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "cell_type_ontology_term_id"] = cell_type_ontology_term_id
+        obs.loc[obs.index[0], "cell_line_ontology_term_id"] = cell_line_ontology_term_id
+        validator.validate_adata()
+        assert len(validator.errors) > 0

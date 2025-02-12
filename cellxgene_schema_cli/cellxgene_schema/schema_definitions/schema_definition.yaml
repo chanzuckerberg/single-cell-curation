@@ -643,26 +643,28 @@ components:
                   EFO:
                     - CL:0000010
         curie_constraints:
+          ontologies:
+            - NA
           exceptions:
             - na
-    perturbation_strategy:
-      type: categorical
-      enum:
-        - "CRISPRi"
-        - "CRISPRa"
-        - "CRISPR-cas9"
-        - "na"
-    pertubation_id:
-      type: categorical
-      subtype: str
-    perturbation_role:
-      type: categorical
-      enum:
-        - "targeting"
-        - "nontargeting"
-        - "empty control"
-        - "untreated control"
-        - "na"
-    pertubation_target_gene_id:
-      type: categorical
-      subtype: str
+      perturbation_strategy:
+        type: categorical
+        enum:
+          - "CRISPRi"
+          - "CRISPRa"
+          - "CRISPR-cas9"
+          - "na"
+      perturbation_id:
+        type: categorical
+        subtype: str
+      perturbation_role:
+        type: categorical
+        enum:
+          - "targeting"
+          - "nontargeting"
+          - "empty control"
+          - "untreated control"
+          - "na"
+      perturbation_target_gene_id:
+        type: categorical
+        subtype: str
