@@ -152,15 +152,15 @@ def process_fragment(
         with dd.LocalCluster(**_dask_cluster_config) as cluster, dd.Client(cluster):
             # convert the fragment to a parquet file
             logger.info(f"Converting {fragment_file} to parquet")
-            parquet_file = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet")
+            parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet")
             ddf.read_csv(unzipped_file, sep="\t", names=column_ordering, dtype=column_types).to_parquet(
-                parquet_file, partition_on=["chromosome"], compute=True
+                parquet_file_path, partition_on=["chromosome"], compute=True
             )
 
             # remove the unzipped file
             logger.debug(f"Removing {unzipped_file}")
             unzipped_file.unlink()
-
+            parquet_file = str(parquet_file_path)
             errors = validate(parquet_file, anndata_file)
             if any(errors):
                 logger.error("Errors found in Fragment and/or Anndata file")
@@ -189,14 +189,14 @@ def validate(parquet_file: str, anndata_file: str) -> list[Optional[str]]:
     return jobs
 
 
-def validate_fragment_start_coordinate_greater_than_0(parquet_file: Path) -> Optional[str]:
+def validate_fragment_start_coordinate_greater_than_0(parquet_file: str) -> Optional[str]:
     df = ddf.read_parquet(parquet_file, columns=["start coordinate"])
     series = df["start coordinate"] > 0
     if not series.all().compute():
         return "Start coordinate must be greater than 0."
 
 
-def validate_fragment_barcode_in_adata_index(parquet_file: Path, anndata_file: Path) -> Optional[str]:
+def validate_fragment_barcode_in_adata_index(parquet_file: str, anndata_file: str) -> Optional[str]:
     df = ddf.read_parquet(parquet_file, columns=["barcode"])
     obs = ad.read_h5ad(anndata_file, backed="r").obs
     barcode = set(df.groupby(by="barcode").count().compute().index)
@@ -204,14 +204,14 @@ def validate_fragment_barcode_in_adata_index(parquet_file: Path, anndata_file: P
         return "Barcodes don't match anndata.obs.index"
 
 
-def validate_fragment_stop_greater_than_start_coordinate(parquet_file: Path) -> Optional[str]:
+def validate_fragment_stop_greater_than_start_coordinate(parquet_file: str) -> Optional[str]:
     df = ddf.read_parquet(parquet_file, columns=["start coordinate", "stop coordinate"])
     series = df["stop coordinate"] > df["start coordinate"]
     if not series.all().compute():
         return "Stop coordinate must be greater than start coordinate."
 
 
-def validate_fragment_stop_coordinate_within_chromosome(parquet_file: Path, anndata_file: Path) -> Optional[str]:
+def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, anndata_file: str) -> Optional[str]:
     # check that the stop coordinate is within the length of the chromosome
     chromome_length_table = pd.DataFrame(
         {"NCBITaxon:9606": human_chromosome_by_length, "NCBITaxon:10090": mouse_chromosome_by_length}
@@ -230,7 +230,7 @@ def validate_fragment_stop_coordinate_within_chromosome(parquet_file: Path, annd
             return "Stop coordinate must be less than the chromosome length."
 
 
-def validate_fragment_read_support(parquet_file: Path) -> Optional[str]:
+def validate_fragment_read_support(parquet_file: str) -> Optional[str]:
     # check that the read support is greater than 0
     df = ddf.read_parquet(parquet_file, columns=["read support"], filters=[("read support", "==", 0)])
     if len(df.compute()) != 0:
@@ -269,13 +269,13 @@ def validate_anndata_feature_reference(anndata_file: str) -> Optional[str]:
         return "Anndata.var.feature_reference must be either NCBITaxon:9606 or NCBITaxon:10090."
 
 
-def detect_chromosomes(parquet_file: Path) -> list[str]:
+def detect_chromosomes(parquet_file: str) -> list[str]:
     logger.info("detecting chromosomes")
     df = ddf.read_parquet(parquet_file, columns=["chromosome"]).drop_duplicates()
     return df["chromosome"].values.compute()
 
 
-def index_fragment(fragment_file: str, parquet_file: Path, tempdir: tempfile.TemporaryDirectory):
+def index_fragment(fragment_file: str, parquet_file: str, tempdir: str):
     # sort the fragment by chromosome, start coordinate, and stop coordinate, then compress it with bgzip
     bgzip_output_file = fragment_file.replace(".gz", ".bgz")
     bgzip_output_path = Path(bgzip_output_file)
@@ -307,7 +307,7 @@ def index_fragment(fragment_file: str, parquet_file: Path, tempdir: tempfile.Tem
 
 
 @delayed
-def sort_fragment(parquet_file: Path, write_path: str, chromosome: str) -> Path:
+def sort_fragment(parquet_file: str, write_path: str, chromosome: str) -> Path:
     temp_data = Path(write_path) / f"temp_{chromosome}.tsv"
     df = ddf.read_parquet(parquet_file, filters=[("chromosome", "==", chromosome)])
     df = df[column_ordering]
@@ -335,9 +335,9 @@ write_algorithm_by_callable = {"pysam": write_bgzip_pysam, "cli": write_bgzip_cl
 
 def prepare_fragment(
     chromosomes: list[str],
-    parquet_file: Path,
+    parquet_file: str,
     bgzip_output_file: str,
-    tempdir: tempfile.TemporaryDirectory,
+    tempdir: str,
     write_lock: dd.Lock,
     write_algorithm: callable,
 ) -> list[Delayed]:
