@@ -3446,6 +3446,7 @@ class TestMultiSpecies:
         validator.validate_adata()
         assert len(validator.errors) > 0
 
+
 class TestPertubations:
     @pytest.mark.parametrize(
         "cell_type_ontology_term_id,cell_line_ontology_term_id",
@@ -3456,14 +3457,16 @@ class TestPertubations:
             ("CL:0000001", "EFO:0022648"),
         ],
     )
-    def test_cell_line_ontology_term_id(self, validator_with_adata, cell_type_ontology_term_id, cell_line_ontology_term_id):
+    def test_cell_line_ontology_term_id(
+        self, validator_with_adata, cell_type_ontology_term_id, cell_line_ontology_term_id
+    ):
         validator = validator_with_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "cell_type_ontology_term_id"] = cell_type_ontology_term_id
         obs.loc[obs.index[0], "cell_line_ontology_term_id"] = cell_line_ontology_term_id
         validator.validate_adata()
         assert not validator.errors
-    
+
     @pytest.mark.parametrize(
         "cell_type_ontology_term_id,cell_line_ontology_term_id",
         [
@@ -3471,13 +3474,54 @@ class TestPertubations:
             ("CL:0000001", "CLO:0037454"),
             ("CL:0000010", "EFO:0000001"),  # Right ontology, not a cell line
             ("CL:0000001", "EFO:0000001"),
-            ("CL:0000192", "EFO:0022666"),  # Cell type ontology is not a cell line, cell line ontology term id must be na
+            (
+                "CL:0000192",
+                "EFO:0022666",
+            ),  # Cell type ontology is not a cell line, cell line ontology term id must be na
         ],
     )
-    def test_cell_line_ontology_term_id__invalid(self, validator_with_adata, cell_type_ontology_term_id, cell_line_ontology_term_id):
+    def test_cell_line_ontology_term_id__invalid(
+        self, validator_with_adata, cell_type_ontology_term_id, cell_line_ontology_term_id
+    ):
         validator = validator_with_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "cell_type_ontology_term_id"] = cell_type_ontology_term_id
         obs.loc[obs.index[0], "cell_line_ontology_term_id"] = cell_line_ontology_term_id
+        validator.validate_adata()
+        assert len(validator.errors) > 0
+
+    @pytest.mark.parametrize(
+        "perturbation_target_gene_id",
+        [
+            "ENSG00000127603",
+            "ENSMUSG00000059552,ENSSASG00005000004",
+            "FBtr0472816_df_nrg,ENSDARG00000009657,WBGene00000003",
+        ],
+    )
+    def test_perturbation_target_gene_id(self, validator_with_adata, perturbation_target_gene_id):
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        obs.perturbation_target_gene_id = obs.perturbation_target_gene_id.cat.add_categories(
+            [perturbation_target_gene_id]
+        )
+        obs.loc[obs.index[0], "perturbation_target_gene_id"] = perturbation_target_gene_id
+        validator.validate_adata()
+        assert not validator.errors
+
+    @pytest.mark.parametrize(
+        "perturbation_target_gene_id",
+        [
+            "ENSG1234",
+            "ENSMUSG00000059552,FBtr0472816_df",  # first gene valid, second is not
+            "NA",
+        ],
+    )
+    def test_perturbation_target_gene_id__invalid(self, validator_with_adata, perturbation_target_gene_id):
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        obs.perturbation_target_gene_id = obs.perturbation_target_gene_id.cat.add_categories(
+            [perturbation_target_gene_id]
+        )
+        obs.loc[obs.index[0], "perturbation_target_gene_id"] = perturbation_target_gene_id
         validator.validate_adata()
         assert len(validator.errors) > 0

@@ -33,7 +33,15 @@ h5ad_invalid = os.path.join(h5ad_dir, "example_invalid_CL.h5ad")
 # 6. Putting all the components created in the previous steps into minimal anndata that used for testing in
 #   the unittests
 
-categorical_fields = ["donor_id", "suspension_type", "tissue_type", "perturbation_strategy", "perturbation_id", "perturbation_role", "perturbation_target_gene_id"]
+categorical_fields = [
+    "donor_id",
+    "suspension_type",
+    "tissue_type",
+    "perturbation_strategy",
+    "perturbation_id",
+    "perturbation_role",
+    "perturbation_target_gene_id",
+]
 
 # Valid obs per schema
 good_obs = pd.DataFrame(

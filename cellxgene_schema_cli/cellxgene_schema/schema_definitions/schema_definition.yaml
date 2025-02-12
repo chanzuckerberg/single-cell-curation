@@ -647,6 +647,9 @@ components:
             - NA
           exceptions:
             - na
+        # add_labels:
+        # - type: curie
+        #   to_column: cell_line
       perturbation_strategy:
         type: categorical
         enum:
@@ -668,3 +671,6 @@ components:
       perturbation_target_gene_id:
         type: categorical
         subtype: str
+        # add_labels:
+        # - type: curie
+        #   to_column: perturbation_target_gene_name

@@ -694,6 +694,37 @@ class Validator:
                     f"these features must be 0."
                 )
 
+    def _validate_perturbation_target_gene_id(self):
+        """
+        Performs row-based validation of the perturbation_target_gene_id field.
+
+        The value MUST be formatted as one or more comma-separated (with no leading or trailing spaces) Ensembl IDs.
+        Value(s) MUST match index.var.
+        """
+        if "perturbation_target_gene_id" not in self.adata.obs.columns:
+            return
+
+        valid_gene_ids = set(self.adata.var.index)
+
+        def is_valid_entry(entry):
+            if entry == "na":
+                return True
+            ids = entry.split(",")
+            return all(id_str in valid_gene_ids for id_str in ids)
+
+        perturbation_col = self.adata.obs["perturbation_target_gene_id"].astype(str)
+        valid_mask = perturbation_col.apply(is_valid_entry)
+
+        if not valid_mask.all():
+            invalid_rows = perturbation_col[~valid_mask]
+            unique_invalid_rows = list(set(invalid_rows))
+            self.errors.append(
+                f"obs rows with pertubation_target_gene_id {unique_invalid_rows} have invalid values. "
+                f"The value MUST be formatted as one or more comma-separated (with no leading or trailing spaces) "
+                f"Ensembl IDs. Value(s) MUST match index.var. (Ensembl IDs MUST be derived from the species gene "
+                f"annotation specified by the schema). Otherwise the str value MUST be 'na'"
+            )
+
     def _validate_column(
         self, column: pd.Series, column_name: str, df_name: str, column_def: dict, default_error_message_suffix=None
     ):
@@ -2147,6 +2178,9 @@ class Validator:
 
         # Validate genetic ancestry
         self._validate_genetic_ancestry()
+
+        # Validate perturbations
+        self._validate_perturbation_target_gene_id()
 
         # Organism-specific prefix validation
         self._validate_tissue_ontology_term_id()
