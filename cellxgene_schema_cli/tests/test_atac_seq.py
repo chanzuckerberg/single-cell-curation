@@ -69,7 +69,8 @@ def atac_fragment_file(atac_fragment_dataframe, tmpdir):
     return to_parquet_file(atac_fragment_dataframe, tmpdir)
 
 
-def test_process_fragment(atac_fragment_bgzip_file_path, atac_fragment_index_file_path):
+@pytest.mark.parametrize("override_write_algorithm", ["pysam", "cli", None])
+def test_process_fragment(atac_fragment_bgzip_file_path, atac_fragment_index_file_path, override_write_algorithm):
     # Arrange
     anndata_file = FIXTURES_ROOT + "/atac_seq/small_atac_seq.h5ad"
     fragments_file = FIXTURES_ROOT + "/atac_seq/fragments_sorted.tsv.gz"
@@ -79,6 +80,7 @@ def test_process_fragment(atac_fragment_bgzip_file_path, atac_fragment_index_fil
         anndata_file,
         generate_index=True,
         dask_cluster_config=dict(processes=False),
+        override_write_algorithm=override_write_algorithm,
     )
     # Assert
     assert len(result) == 0
@@ -287,14 +289,14 @@ class TestValidateAnndataFeatureReference:
             == "Unique Anndata.obs.organism_ontology_term_id must be equal to unqiue Anndata.var.feature_reference."
         )
 
-    def test_feature_references_not_valid(self, atac_anndata, tmpdir):
+    def test_feature_references_not_allowed(self, atac_anndata, tmpdir):
         # Arrange
         atac_anndata.var["feature_reference"] = ["NCBITaxon:9607"]
         atac_anndata_file = to_anndata_file(atac_anndata, tmpdir)
         # Act
         result = atac_seq.validate_anndata_feature_reference(atac_anndata_file)
         # Assert
-        assert result == "Anndata.var.feature_reference must be either NCBITaxon:9606 or NCBITaxon:10090."
+        assert result == "Anndata.var.feature_reference must be one of ['NCBITaxon:9606', 'NCBITaxon:10090']."
 
 
 class TestValidateFragmentNoDuplicateRows:

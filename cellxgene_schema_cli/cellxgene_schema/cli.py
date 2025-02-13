@@ -78,7 +78,7 @@ def add_labels(input_file, output_file):
 
 
 @schema_cli.command(
-    name="validate-fragment",
+    name="process-fragment",
     short_help="Check that an ATAC SEQ fragment follows the cellxgene data integration schema.",
     help="Check that an ATAC SEQ fragment follows the cellxgene data integration schema. If validation fails this "
     "command will return an exit status of 1 otherwise 0. When the '--generate-index' tag is present, "

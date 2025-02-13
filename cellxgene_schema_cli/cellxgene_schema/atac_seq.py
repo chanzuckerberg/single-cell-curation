@@ -131,7 +131,11 @@ column_types = {
 
 
 def process_fragment(
-    fragment_file: str, anndata_file: str, generate_index: bool = False, dask_cluster_config: Optional[dict] = None
+    fragment_file: str,
+    anndata_file: str,
+    generate_index: bool = False,
+    dask_cluster_config: Optional[dict] = None,
+    override_write_algorithm: Optional[str] = None,
 ) -> list[str]:
     """
     Validate the fragment against the anndata file and generate the index if the fragment is valid.
@@ -140,6 +144,8 @@ def process_fragment(
     :param str anndata_file: The anndata file to validate against
     :param bool generate_index: Whether to generate the index for the fragment
     :param dask_cluster_config: dask cluster configuration parameters passed to dask.distributed.LocalCluster
+    :param override_write_algorithm: Override the write algorithm used to write the bgzip file. Options are "pysam"
+    and "cli"
     """
     with tempfile.TemporaryDirectory() as tempdir:
         # unzip the fragment. Subprocess is used here because gzip on the cli uses less memory with comparable speed to
@@ -175,7 +181,7 @@ def process_fragment(
 
             if generate_index:
                 logger.info(f"Sorting fragment and generating index for {fragment_file}")
-                index_fragment(fragment_file, parquet_file, tempdir)
+                index_fragment(fragment_file, parquet_file, tempdir, override_write_algorithm)
         logger.debug("cleaning up")
     return []
 
@@ -227,19 +233,15 @@ def validate_fragment_stop_greater_than_start_coordinate(parquet_file: str) -> O
 def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, anndata_file: str) -> Optional[str]:
     # check that the stop coordinate is within the length of the chromosome
     with h5py.File(anndata_file) as f:
-        obs = ad.io.read_elem(f["obs"])
-    organism_ontology_term_ids = obs[["organism_ontology_term_id"]]
-    unique_organism_ontology_term_id = obs["organism_ontology_term_id"].unique()
-    df: ddf.DataFrame = ddf.read_parquet(parquet_file, columns=["barcode", "chromosome", "stop coordinate"])
-    df = df.merge(organism_ontology_term_ids, left_on="barcode", right_index=True)
-    chromome_length_table = pd.DataFrame(feature_reference_by_chromosome_length_table)
-    df = df.merge(chromome_length_table, left_on="chromosome", right_index=True)
-
-    for organism_ontology_term_id in unique_organism_ontology_term_id:
-        df_ = df[df["organism_ontology_term_id"] == organism_ontology_term_id]
-        df_ = df_["stop coordinate"] <= df_[organism_ontology_term_id]
-        if not df_.all().compute():
-            return "Stop coordinate must be less than the chromosome length."
+        organism_ontology_term_id = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)
+        if organism_ontology_term_id.size > 1:
+            return "Anndata.obs.organism_ontology_term_id must have a unique value."
+    chromosome_length_table = feature_reference_by_chromosome_length_table[organism_ontology_term_id[0]]
+    df = ddf.read_parquet(parquet_file, columns=["chromosome", "stop coordinate"])
+    df["chromosome_length"] = df["chromosome"].map(chromosome_length_table).astype(int)
+    df = df["stop coordinate"] <= df["chromosome_length"]
+    if not df.all().compute():
+        return "Stop coordinate must be less than the chromosome length."
 
 
 def validate_fragment_read_support(parquet_file: str) -> Optional[str]:
@@ -278,13 +280,11 @@ def validate_anndata_is_primary_data(anndata_file: str) -> Optional[str]:
 
 def validate_anndata_feature_reference(anndata_file: str) -> Optional[str]:
     with h5py.File(anndata_file) as f:
-        feature_reference = ad.io.read_elem(f["var"])["feature_reference"]
+        unique_feature_reference = ad.io.read_elem(f["var"])["feature_reference"].unique()
         unique_organism_ontology_term_ids = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique()
-    # check that var["feature_reference"] is equal to "NCBITaxon:9606" xor "NCBITaxon:10090"
-    if not (feature_reference == "NCBITaxon:9606").all() ^ (feature_reference == "NCBITaxon:10090").all():
-        return "Anndata.var.feature_reference must be either NCBITaxon:9606 or NCBITaxon:10090."
-    # check that var["feature_reference"] and obs["organism_ontology_term_id"] have the same unique values
-    unique_feature_reference = feature_reference.unique()
+    allowed_terms = [*feature_reference_by_chromosome_length_table.keys()]
+    if unique_feature_reference[0] not in allowed_terms:
+        return f"Anndata.var.feature_reference must be one of {allowed_terms}."
     if unique_organism_ontology_term_ids != unique_feature_reference:
         return "Unique Anndata.obs.organism_ontology_term_id must be equal to unqiue Anndata.var.feature_reference."
 
@@ -322,7 +322,7 @@ def index_fragment(fragment_file: str, parquet_file: str, tempdir: str, override
         dask.compute(jobs[i : i + step])
 
     logger.info(f"Fragment sorted and compressed: {bgzip_output_file}")
-
+    #
     pysam.tabix_index(bgzip_output_file, preset="bed", force=True)
     tabix_output_file = bgzip_output_file + ".tbi"
     logger.info(f"Index file generated: {tabix_output_file}")
@@ -335,7 +335,7 @@ def sort_fragment(parquet_file: str, write_path: str, chromosome: str) -> Path:
     df = df[column_ordering]
     df = df.sort_values(["start coordinate", "stop coordinate"], ascending=True)
 
-    df.to_csv(temp_data, sep="\t", index=False, header=False, mode="w")
+    df.to_csv(temp_data, sep="\t", index=False, header=False, mode="w", single_file=True)
     return temp_data
 
 
@@ -348,8 +348,8 @@ def write_bgzip_pysam(input_file: str, bgzip_output_file: str, write_lock: dd.Lo
 
 @delayed
 def write_bgzip_cli(input_file: str, bgzip_output_file: str, write_lock: dd.Lock):
-    with write_lock:
-        subprocess.run([f"cat {input_file} | bgzip --threads=8 -c >> {bgzip_output_file}"], shell=True, check=True)
+    with write_lock, open(input_file, "rb") as fin, open(bgzip_output_file, "ab") as fout:
+        subprocess.run(["bgzip", "--threads=8", "-c"], stdin=fin, stdout=fout, check=True)
 
 
 write_algorithm_by_callable = {"pysam": write_bgzip_pysam, "cli": write_bgzip_cli}
@@ -363,6 +363,20 @@ def prepare_fragment(
     write_lock: dd.Lock,
     write_algorithm: callable,
 ) -> list[Delayed]:
+    """
+    The sorting and writing of the fragment is done in parallel for each chromosome. Because of this the write order of
+    the chromosomes may not be preserved. The chromosomes will all be stored in contiguous blocks in the bgzip file, and
+    and sorted by start and stop coordinate within each chromosome. This slightly different form what pysam.tabix
+    expects which is sorted by chromosome, start coordinate, and stop coordinate, but it is still compatible.
+
+    :param chromosomes:
+    :param parquet_file:
+    :param bgzip_output_file:
+    :param tempdir:
+    :param write_lock:
+    :param write_algorithm:
+    :return:
+    """
     jobs = []
     for chromosome in chromosomes:
         temp_data = sort_fragment(parquet_file, tempdir, chromosome)
