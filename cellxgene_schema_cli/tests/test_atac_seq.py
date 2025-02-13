@@ -1,20 +1,25 @@
 from pathlib import Path
-from typing import Tuple
 
 import anndata as ad
 import dask.dataframe as dd
 import pandas as pd
+import pysam
 import pytest
 from cellxgene_schema import atac_seq
 from fixtures.examples_validate import FIXTURES_ROOT
 
 
 @pytest.fixture
-def expected_artifacts() -> Tuple[Path, Path]:
+def atac_fragment_bgzip_file_path() -> Path:
     bgzip_file = Path(FIXTURES_ROOT + "/atac_seq/fragments_sorted.tsv.bgz")
-    index_file = Path(FIXTURES_ROOT + "/atac_seq/fragments_sorted.tsv.bgz.tbi")
-    yield (bgzip_file, index_file)
+    yield bgzip_file
     bgzip_file.unlink(missing_ok=True)
+
+
+@pytest.fixture
+def atac_fragment_index_file_path() -> Path:
+    index_file = Path(FIXTURES_ROOT + "/atac_seq/fragments_sorted.tsv.bgz.tbi")
+    yield index_file
     index_file.unlink(missing_ok=True)
 
 
@@ -64,20 +69,47 @@ def atac_fragment_file(atac_fragment_dataframe, tmpdir):
     return to_parquet_file(atac_fragment_dataframe, tmpdir)
 
 
-def test_process_fragment(expected_artifacts):
+def test_process_fragment(atac_fragment_bgzip_file_path, atac_fragment_index_file_path):
     # Arrange
     anndata_file = FIXTURES_ROOT + "/atac_seq/small_atac_seq.h5ad"
     fragments_file = FIXTURES_ROOT + "/atac_seq/fragments_sorted.tsv.gz"
     # Act
-    atac_seq.process_fragment(
+    result = atac_seq.process_fragment(
         fragments_file,
         anndata_file,
         generate_index=True,
         dask_cluster_config=dict(processes=False),
     )
     # Assert
-    for artifact in expected_artifacts:
-        assert artifact.exists()
+    assert len(result) == 0
+    assert atac_fragment_bgzip_file_path.exists()
+    # Testing the bgzip file
+    with pysam.libcbgzf.BGZFile(atac_fragment_bgzip_file_path, mode="r") as bgzip:
+        previous_stop, previous_start, previous_chomosome = 0, 0, None
+        for line in bgzip:
+            chromosome, start, stop, _, _ = line.decode("utf-8").split("\t")
+            if previous_chomosome != chromosome:
+                previous_stop, previous_start = 0, 0
+                previous_chomosome = chromosome
+                chromosome_length = atac_seq.human_chromosome_by_length[chromosome]
+            start, stop = int(start), int(stop)
+            assert start <= stop < chromosome_length, (
+                "Stop coordinate must be within the chromosome length and " "greater than start."
+            )
+            assert start >= 0, "Start coordinate must be greater than 0."
+            # Fragment is sorted by start, then stop in ascending order
+            assert start >= previous_start
+            previous_start = start
+            # The bellow check is failing.
+            if start == previous_start:
+                assert stop >= previous_stop
+            previous_stop = stop
+
+    # Testing index access
+    assert atac_fragment_index_file_path.exists()
+    with pysam.TabixFile(str(atac_fragment_bgzip_file_path)) as tabix:
+        for chromosome in tabix.contigs:
+            assert chromosome in atac_seq.human_chromosome_by_length
 
 
 class TestValidateFragmentBarcodeInAdataIndex:
@@ -263,3 +295,18 @@ class TestValidateAnndataFeatureReference:
         result = atac_seq.validate_anndata_feature_reference(atac_anndata_file)
         # Assert
         assert result == "Anndata.var.feature_reference must be either NCBITaxon:9606 or NCBITaxon:10090."
+
+
+class TestValidateFragmentNoDuplicateRows:
+    def test_positive(self, atac_fragment_file):
+        result = atac_seq.validate_fragment_no_duplicate_rows(atac_fragment_file)
+        assert not result
+
+    def test_negative(self, atac_fragment_dataframe, tmpdir):
+        # Arrange
+        atac_fragment_dataframe = pd.concat([atac_fragment_dataframe, atac_fragment_dataframe])
+        fragment_file = to_parquet_file(atac_fragment_dataframe, tmpdir)
+        # Act
+        result = atac_seq.validate_fragment_no_duplicate_rows(fragment_file)
+        # Assert
+        assert result == "Fragment file has duplicate rows."

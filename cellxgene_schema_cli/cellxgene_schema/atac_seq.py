@@ -10,6 +10,7 @@ import anndata as ad
 import dask
 import dask.dataframe as ddf
 import dask.distributed as dd  # TODO: see if distributed mode can be avoided.
+import h5py
 import pandas as pd
 import pysam
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
@@ -119,7 +120,7 @@ feature_reference_by_chromosome_length_table = {
 column_ordering = ["chromosome", "start coordinate", "stop coordinate", "barcode", "read support"]
 allowed_chromosomes = list(set(itertools.chain(human_chromosome_by_length.keys(), mouse_chromosome_by_length.keys())))
 allowed_chromosomes.sort()
-chromosome_categories = pd.CategoricalDtype(categories=allowed_chromosomes, ordered=True)
+chromosome_categories = pd.CategoricalDtype(categories=allowed_chromosomes)
 column_types = {
     "chromosome": chromosome_categories,
     "start coordinate": int,
@@ -131,7 +132,7 @@ column_types = {
 
 def process_fragment(
     fragment_file: str, anndata_file: str, generate_index: bool = False, dask_cluster_config: Optional[dict] = None
-) -> bool:
+) -> list[str]:
     """
     Validate the fragment against the anndata file and generate the index if the fragment is valid.
 
@@ -168,7 +169,7 @@ def process_fragment(
             if any(errors):
                 logger.error("Errors found in Fragment and/or Anndata file")
                 logger.error(errors)
-                return False
+                return errors
             else:
                 logger.info("Fragment and Anndata file are valid")
 
@@ -176,6 +177,7 @@ def process_fragment(
                 logger.info(f"Sorting fragment and generating index for {fragment_file}")
                 index_fragment(fragment_file, parquet_file, tempdir)
         logger.debug("cleaning up")
+    return []
 
 
 def validate(parquet_file: str, anndata_file: str) -> list[Optional[str]]:
@@ -188,8 +190,15 @@ def validate(parquet_file: str, anndata_file: str) -> list[Optional[str]]:
         validate_anndata_is_atac(anndata_file),
         validate_anndata_feature_reference(anndata_file),
         validate_anndata_is_primary_data(anndata_file),
+        validate_fragment_no_duplicate_rows(parquet_file),
     ]
     return jobs
+
+
+def validate_fragment_no_duplicate_rows(parquet_file: str) -> Optional[str]:
+    df = ddf.read_parquet(parquet_file)
+    if len(df.drop_duplicates()) != len(df):
+        return "Fragment file has duplicate rows."
 
 
 def validate_fragment_start_coordinate_greater_than_0(parquet_file: str) -> Optional[str]:
@@ -201,7 +210,8 @@ def validate_fragment_start_coordinate_greater_than_0(parquet_file: str) -> Opti
 
 def validate_fragment_barcode_in_adata_index(parquet_file: str, anndata_file: str) -> Optional[str]:
     df = ddf.read_parquet(parquet_file, columns=["barcode"])
-    obs = ad.read_h5ad(anndata_file, backed="r").obs
+    with h5py.File(anndata_file) as f:
+        obs = ad.io.read_elem(f["obs"])
     barcode = set(df.groupby(by="barcode").count().compute().index)
     if set(obs.index) != barcode:
         return "Barcodes don't match anndata.obs.index"
@@ -216,11 +226,12 @@ def validate_fragment_stop_greater_than_start_coordinate(parquet_file: str) -> O
 
 def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, anndata_file: str) -> Optional[str]:
     # check that the stop coordinate is within the length of the chromosome
-    adata = ad.read_h5ad(anndata_file, backed="r")
-    obs = adata.obs[["organism_ontology_term_id"]]  # only the organism_ontology_term_id is needed
+    with h5py.File(anndata_file) as f:
+        obs = ad.io.read_elem(f["obs"])
+    organism_ontology_term_ids = obs[["organism_ontology_term_id"]]
     unique_organism_ontology_term_id = obs["organism_ontology_term_id"].unique()
     df: ddf.DataFrame = ddf.read_parquet(parquet_file, columns=["barcode", "chromosome", "stop coordinate"])
-    df = df.merge(obs, left_on="barcode", right_index=True)
+    df = df.merge(organism_ontology_term_ids, left_on="barcode", right_index=True)
     chromome_length_table = pd.DataFrame(feature_reference_by_chromosome_length_table)
     df = df.merge(chromome_length_table, left_on="chromosome", right_index=True)
 
@@ -249,8 +260,9 @@ def validate_anndata_is_atac(anndata_file: str) -> Optional[str]:
             return "n"  # not atac seq
 
     onto_parser = OntologyParser()
-    obs = ad.read_h5ad(anndata_file, backed="r").obs
-    df = obs["assay_ontology_term_id"].map(not_atac)
+    with h5py.File(anndata_file) as f:
+        assay_ontology_term_ids = ad.io.read_elem(f["obs"])["assay_ontology_term_id"]
+    df = assay_ontology_term_ids.map(not_atac)
     if (df == "n").any():
         return "Anndata.obs.assay_ontology_term_id are not all descendants of EFO:0010891."
     elif not ((df == "u").all() or (df == "p").all()):
@@ -258,19 +270,20 @@ def validate_anndata_is_atac(anndata_file: str) -> Optional[str]:
 
 
 def validate_anndata_is_primary_data(anndata_file: str) -> Optional[str]:
-    obs = ad.read_h5ad(anndata_file, backed="r").obs
-    if not obs["is_primary_data"].all():
+    with h5py.File(anndata_file) as f:
+        is_primary_data = ad.io.read_elem(f["obs"])["is_primary_data"]
+    if not is_primary_data.all():
         return "Anndata.obs.is_primary_data must all be True."
 
 
 def validate_anndata_feature_reference(anndata_file: str) -> Optional[str]:
-    adata = ad.read_h5ad(anndata_file, backed="r")
-    feature_reference = adata.var["feature_reference"]
+    with h5py.File(anndata_file) as f:
+        feature_reference = ad.io.read_elem(f["var"])["feature_reference"]
+        unique_organism_ontology_term_ids = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique()
     # check that var["feature_reference"] is equal to "NCBITaxon:9606" xor "NCBITaxon:10090"
     if not (feature_reference == "NCBITaxon:9606").all() ^ (feature_reference == "NCBITaxon:10090").all():
         return "Anndata.var.feature_reference must be either NCBITaxon:9606 or NCBITaxon:10090."
     # check that var["feature_reference"] and obs["organism_ontology_term_id"] have the same unique values
-    unique_organism_ontology_term_ids = adata.obs["organism_ontology_term_id"].unique()
     unique_feature_reference = feature_reference.unique()
     if unique_organism_ontology_term_ids != unique_feature_reference:
         return "Unique Anndata.obs.organism_ontology_term_id must be equal to unqiue Anndata.var.feature_reference."
@@ -282,7 +295,7 @@ def detect_chromosomes(parquet_file: str) -> list[str]:
     return df["chromosome"].values.compute()
 
 
-def index_fragment(fragment_file: str, parquet_file: str, tempdir: str):
+def index_fragment(fragment_file: str, parquet_file: str, tempdir: str, override_write_algorithm: Optional[str] = None):
     # sort the fragment by chromosome, start coordinate, and stop coordinate, then compress it with bgzip
     bgzip_output_file = fragment_file.replace(".gz", ".bgz")
     bgzip_output_path = Path(bgzip_output_file)
@@ -290,7 +303,9 @@ def index_fragment(fragment_file: str, parquet_file: str, tempdir: str):
     bgzip_output_path.touch()
     bgzip_write_lock = dd.Lock()  # lock to preserver write order
 
-    if not shutil.which("bgzip"):  # check if bgzip cli is installed
+    if override_write_algorithm:
+        write_algorithm = write_algorithm_by_callable[override_write_algorithm]
+    elif not shutil.which("bgzip"):  # check if bgzip cli is installed
         logger.warning("bgzip is not installed, using slower pysam implementation")
         write_algorithm = write_algorithm_by_callable["pysam"]
     else:
@@ -298,7 +313,7 @@ def index_fragment(fragment_file: str, parquet_file: str, tempdir: str):
 
     chromosomes = detect_chromosomes(parquet_file)
     jobs = prepare_fragment(chromosomes, parquet_file, bgzip_output_file, tempdir, bgzip_write_lock, write_algorithm)
-    # limit calls to dask.compute to improve performace. The number of jobs to run at once is determined by the
+    # limit calls to dask.compute to improve performance. The number of jobs to run at once is determined by the
     # step variable. If we run all the jobs in the same call to dask.compute, the local cluster hangs.
     # TODO: investigate why
     step = 4
@@ -318,9 +333,9 @@ def sort_fragment(parquet_file: str, write_path: str, chromosome: str) -> Path:
     temp_data = Path(write_path) / f"temp_{chromosome}.tsv"
     df = ddf.read_parquet(parquet_file, filters=[("chromosome", "==", chromosome)])
     df = df[column_ordering]
-    df = df.sort_values(["start coordinate", "stop coordinate"])
+    df = df.sort_values(["start coordinate", "stop coordinate"], ascending=True)
 
-    df.to_csv(temp_data, sep="\t", index=False, header=False, mode="w", single_file=True)
+    df.to_csv(temp_data, sep="\t", index=False, header=False, mode="w")
     return temp_data
 
 
