@@ -92,7 +92,6 @@ def test_process_fragment(atac_fragment_bgzip_file_path, atac_fragment_index_fil
             chromosome, start, stop, _, _ = line.decode("utf-8").split("\t")
             if previous_chomosome != chromosome:
                 previous_stop, previous_start = 0, 0
-                previous_chomosome = chromosome
                 chromosome_length = atac_seq.human_chromosome_by_length[chromosome]
             start, stop = int(start), int(stop)
             assert start <= stop < chromosome_length, (
@@ -101,11 +100,12 @@ def test_process_fragment(atac_fragment_bgzip_file_path, atac_fragment_index_fil
             assert start >= 0, "Start coordinate must be greater than 0."
             # Fragment is sorted by start, then stop in ascending order
             assert start >= previous_start
-            previous_start = start
             # The bellow check is failing.
-            if start == previous_start:
+            if (chromosome == previous_chomosome) and (start == previous_start):
                 assert stop >= previous_stop
             previous_stop = stop
+            previous_start = start
+            previous_chomosome = chromosome
 
     # Testing index access
     assert atac_fragment_index_file_path.exists()
