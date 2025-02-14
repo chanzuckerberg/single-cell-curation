@@ -58,6 +58,7 @@ jobs:
           cd samtools-1.21
           ./configure --prefix=/usr/local
           sudo make install
+          which bgzip
       - name: cellxgene_schema_cli Unit tests
         run: make unit-test
       - name: Upload coverage results as an artifact
