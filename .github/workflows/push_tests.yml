@@ -55,9 +55,10 @@ jobs:
           sudo apt-get install libbz2-dev liblzma-dev
           wget https://github.com/samtools/samtools/releases/download/1.21/samtools-1.21.tar.bz2
           tar -xvf samtools-1.21.tar.bz2
-          cd samtools-1.21 && ./configure --prefix=/usr/local
-          cd samtools-1.21 && make
-          cd samtools-1.21 && make install
+          cd samtools-1.21
+          ./configure --prefix=/usr/local
+          make
+          make install
       - name: cellxgene_schema_cli Unit tests
         run: make unit-test
       - name: Upload coverage results as an artifact
