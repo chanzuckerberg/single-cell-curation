@@ -136,6 +136,7 @@ def process_fragment(
     generate_index: bool = False,
     dask_cluster_config: Optional[dict] = None,
     override_write_algorithm: Optional[str] = None,
+    output_file: Optional[str] = None,
 ) -> list[str]:
     """
     Validate the fragment against the anndata file and generate the index if the fragment is valid.
@@ -144,13 +145,14 @@ def process_fragment(
     :param str anndata_file: The anndata file to validate against
     :param bool generate_index: Whether to generate the index for the fragment
     :param dask_cluster_config: dask cluster configuration parameters passed to dask.distributed.LocalCluster
-    :param override_write_algorithm: Override the write algorithm used to write the bgzip file. Options are "pysam"
-    and "cli"
+    :param override_write_algorithm: Override the write algorithm used to write the bgzip file. Options are "pysam" and "cli"
+    :param output_file: The output file to write the bgzip file to. If not provided, the output file will be the same
+
     """
     with tempfile.TemporaryDirectory() as tempdir:
         # unzip the fragment. Subprocess is used here because gzip on the cli uses less memory with comparable speed to
         # the python gzip library.
-        unzipped_file = Path(tempdir) / Path(fragment_file).name.replace(".gz", "")
+        unzipped_file = Path(tempdir) / Path(fragment_file).name.rsplit(".", 1)[0]
         logger.info(f"Unzipping {fragment_file}")
         with open(unzipped_file, "wb") as fp:
             subprocess.run(["gunzip", "-c", fragment_file], stdout=fp, check=True)
@@ -181,7 +183,7 @@ def process_fragment(
 
             if generate_index:
                 logger.info(f"Sorting fragment and generating index for {fragment_file}")
-                index_fragment(fragment_file, parquet_file, tempdir, override_write_algorithm)
+                index_fragment(fragment_file, parquet_file, tempdir, override_write_algorithm, output_file)
         logger.debug("cleaning up")
     return []
 
@@ -295,9 +297,25 @@ def detect_chromosomes(parquet_file: str) -> list[str]:
     return df["chromosome"].values.compute()
 
 
-def index_fragment(fragment_file: str, parquet_file: str, tempdir: str, override_write_algorithm: Optional[str] = None):
+def get_output_file(fragment_file: str, output_file: Optional[str]) -> str:
+    if not output_file:
+        bgzip_output_file = fragment_file.replace(".gz", ".bgz")
+    elif not output_file.endswith(".bgz"):
+        bgzip_output_file = output_file + ".bgz"
+    else:
+        bgzip_output_file = output_file
+    return bgzip_output_file
+
+
+def index_fragment(
+    fragment_file: str,
+    parquet_file: str,
+    tempdir: str,
+    override_write_algorithm: Optional[str] = None,
+    output_file: Optional[str] = None,
+):
     # sort the fragment by chromosome, start coordinate, and stop coordinate, then compress it with bgzip
-    bgzip_output_file = fragment_file.replace(".gz", ".bgz")
+    bgzip_output_file = get_output_file(fragment_file, output_file)
     bgzip_output_path = Path(bgzip_output_file)
     bgzip_output_path.unlink(missing_ok=True)
     bgzip_output_path.touch()

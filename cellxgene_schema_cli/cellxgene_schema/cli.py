@@ -88,6 +88,7 @@ def add_labels(input_file, output_file):
 @click.argument("h5ad_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
 @click.argument("fragment_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
 @click.option("-i", "--generate-index", help="Generate index for fragment", is_flag=True)
+@click.option("-o", "--output-file", help="Output file for the processed fragment.", type=click.Path(exists=False))
 @click.option("-v", "--verbose", help="When present will set logging level to debug", is_flag=True)
 def fragment_validate(h5ad_file, fragment_file, generate_index, verbose):
     from .atac_seq import process_fragment
@@ -98,7 +99,7 @@ def fragment_validate(h5ad_file, fragment_file, generate_index, verbose):
     else:
         logging.getLogger("cellxgene_schema").setLevel(logging.INFO)
 
-    if not process_fragment(fragment_file, h5ad_file, generate_index=generate_index):
+    if not process_fragment(fragment_file, h5ad_file, generate_index=generate_index, output_file=None):
         sys.exit(1)
 
 
@@ -145,7 +146,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     migrate(input_file, output_file, collection_id, dataset_id)
 
 
-@click.command(
+@schema_cli.command(
     name="map-species",
     short_help="Annotate non-human, non-mouse anndata with CL and UBERON equivalent terms",
     help="Annotate non-human, non-mouse anndata with CL and UBERON equivalent terms, based on values in"
@@ -158,11 +159,6 @@ def map_species(input_file, output_file):
 
     map_species(input_file, output_file)
 
-
-schema_cli.add_command(schema_validate)
-schema_cli.add_command(migrate)
-schema_cli.add_command(remove_labels)
-schema_cli.add_command(map_species)
 
 if __name__ == "__main__":
     schema_cli()

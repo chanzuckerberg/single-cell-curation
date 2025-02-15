@@ -11,14 +11,14 @@ from fixtures.examples_validate import FIXTURES_ROOT
 
 @pytest.fixture
 def atac_fragment_bgzip_file_path() -> Path:
-    bgzip_file = Path(FIXTURES_ROOT + "/atac_seq/fragments_sorted.tsv.bgz")
+    bgzip_file = Path(FIXTURES_ROOT + "/atac_seq/new.tsv.bgz")
     yield bgzip_file
     bgzip_file.unlink(missing_ok=True)
 
 
 @pytest.fixture
-def atac_fragment_index_file_path() -> Path:
-    index_file = Path(FIXTURES_ROOT + "/atac_seq/fragments_sorted.tsv.bgz.tbi")
+def atac_fragment_index_file_path(atac_fragment_bgzip_file_path) -> Path:
+    index_file = Path(str(atac_fragment_bgzip_file_path) + ".tbi")
     yield index_file
     index_file.unlink(missing_ok=True)
 
@@ -70,10 +70,13 @@ def atac_fragment_file(atac_fragment_dataframe, tmpdir):
 
 
 @pytest.mark.parametrize("override_write_algorithm", ["pysam", "cli", None])
-def test_process_fragment(atac_fragment_bgzip_file_path, atac_fragment_index_file_path, override_write_algorithm):
+@pytest.mark.parametrize("fragment_file", ["fragments.tsv.bgz", "fragments_sorted.tsv.gz"])
+def test_process_fragment(
+    atac_fragment_bgzip_file_path, atac_fragment_index_file_path, override_write_algorithm, fragment_file
+):
     # Arrange
     anndata_file = FIXTURES_ROOT + "/atac_seq/small_atac_seq.h5ad"
-    fragments_file = FIXTURES_ROOT + "/atac_seq/fragments_sorted.tsv.gz"
+    fragments_file = FIXTURES_ROOT + f"/atac_seq/{fragment_file}"
     # Act
     result = atac_seq.process_fragment(
         fragments_file,
@@ -81,6 +84,7 @@ def test_process_fragment(atac_fragment_bgzip_file_path, atac_fragment_index_fil
         generate_index=True,
         dask_cluster_config=dict(processes=False),
         override_write_algorithm=override_write_algorithm,
+        output_file=str(atac_fragment_bgzip_file_path),
     )
     # Assert
     assert len(result) == 0
@@ -312,3 +316,16 @@ class TestValidateFragmentNoDuplicateRows:
         result = atac_seq.validate_fragment_no_duplicate_rows(fragment_file)
         # Assert
         assert result == "Fragment file has duplicate rows."
+
+
+class TestGetOutputFile:
+    @pytest.mark.parametrize(
+        "fragment_file,output_file,expected",
+        [
+            ("fragment.gz", None, "fragment.bgz"),
+            ("fragment.gz", "output.bgz", "output.bgz"),
+            ("fragment.gz", "output", "output.bgz"),
+        ],
+    )
+    def test_none(self, fragment_file, output_file, expected):
+        assert atac_seq.get_output_file(fragment_file, output_file) == expected
