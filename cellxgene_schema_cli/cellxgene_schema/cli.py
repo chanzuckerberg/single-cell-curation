@@ -78,6 +78,44 @@ def add_labels(input_file, output_file):
 
 
 @schema_cli.command(
+    name="process-fragment",
+    short_help="Check that an ATAC SEQ fragment follows the cellxgene data integration schema.",
+    help="Check that an ATAC SEQ fragment follows the cellxgene data integration schema. If validation fails this "
+    "command will return an exit status of 1 otherwise 0. When the '--generate-index' tag is present, "
+    "the command will generate a tabix compatible version of the fragment and tabix index. The generated "
+    "fragment will have the file suffix .bgz and the index will have the file suffix .bgz.tbi.",
+)
+@click.argument("h5ad_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.argument("fragment_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.option("-i", "--generate-index", help="Generate index for fragment", is_flag=True)
+@click.option("-o", "--output-file", help="Output file for the processed fragment.", type=click.Path(exists=False))
+def fragment_validate(h5ad_file, fragment_file, generate_index, output_file):
+    from .atac_seq import process_fragment
+
+    if not process_fragment(fragment_file, h5ad_file, generate_index=generate_index, output_file=output_file):
+        sys.exit(1)
+
+
+@schema_cli.command(
+    name="check-anndata-requires-fragment",
+    short_help="Check if that the anndata provided supports an Atac seq fragment file.",
+    help="Check that an ATAC SEQ anndata.obs['assay_ontology_term_id'] is all paired or unpaired assays. "
+    "This determines if a fragment file is required, optional, or forbiden. "
+    "If the anndata does not support a fragment, an error message will be printed and exit status will be 1.",
+)
+@click.argument("h5ad_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
+def check_anndata_requires_fragment(h5ad_file):
+    from .atac_seq import check_anndata_requires_fragment
+
+    try:
+        assay_type = check_anndata_requires_fragment(h5ad_file)
+        print(assay_type)
+    except Exception as e:
+        logger.error(f"Andata does not support atac fragment files for the follow reason: {e}")
+        sys.exit(1)
+
+
+@schema_cli.command(
     name="remove-labels",
     short_help="Create a copy of an h5ad without portal-added labels",
     help="Create a copy of an h5ad without portal-added labels.",
@@ -120,7 +158,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     migrate(input_file, output_file, collection_id, dataset_id)
 
 
-@click.command(
+@schema_cli.command(
     name="map-species",
     short_help="Annotate non-human, non-mouse anndata with CL and UBERON equivalent terms",
     help="Annotate non-human, non-mouse anndata with CL and UBERON equivalent terms, based on values in"
@@ -133,11 +171,6 @@ def map_species(input_file, output_file):
 
     map_species(input_file, output_file)
 
-
-schema_cli.add_command(schema_validate)
-schema_cli.add_command(migrate)
-schema_cli.add_command(remove_labels)
-schema_cli.add_command(map_species)
 
 if __name__ == "__main__":
     schema_cli()
