@@ -53,7 +53,8 @@ jobs:
           pip install -e ./cellxgene_schema_cli
           
           sudo apt-get update
-          sudo apt-get install libbz2-dev liblzma-dev samtools
+          sudo apt-get install libbz2-dev liblzma-dev tabix
+          which bgzip
       - name: cellxgene_schema_cli Unit tests
         run: make unit-test
       - name: Upload coverage results as an artifact
