@@ -348,7 +348,7 @@ def index_fragment(
 
 @delayed
 def sort_fragment(parquet_file: str, write_path: str, chromosome: str) -> Path:
-    temp_data = Path(write_path) / f"temp_{chromosome}.tsv"
+    temp_data = Path(write_path) / f"temp_{chromosome}.tsv.gz"
     df = ddf.read_parquet(parquet_file, filters=[("chromosome", "==", chromosome)])
     df = df[column_ordering]
     df = df.sort_values(["start coordinate", "stop coordinate"], ascending=True)
