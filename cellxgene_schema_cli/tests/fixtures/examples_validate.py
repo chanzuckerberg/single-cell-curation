@@ -141,6 +141,8 @@ obs_expected = pd.DataFrame(
             "lung",
             "Yoruban",
             "Carnegie stage 01",
+            "na",
+            "na",
         ],
         [
             "smooth muscle cell",
@@ -151,6 +153,8 @@ obs_expected = pd.DataFrame(
             "smooth muscle cell",
             "na",
             "Theiler stage 01",
+            "na",
+            "na",
         ],
     ],
     index=["X", "Y"],
@@ -163,6 +167,8 @@ obs_expected = pd.DataFrame(
         "tissue",
         "self_reported_ethnicity",
         "development_stage",
+        "cell_line",
+        "perturbation_target_gene_name",
     ],
 )
 
@@ -466,7 +472,6 @@ good_var_seurat_testing = pd.DataFrame(
 var_expected = pd.DataFrame(
     [
         ["spike-in", False, "ERCC-00002 (spike-in control)", "NCBITaxon:32630", 1061, "synthetic"],
-        # ["gene", False, "MACF1", "NCBITaxon:9606", 2821, "protein_coding"],
         ["gene", False, "MACF1_ENSG00000127603", "NCBITaxon:9606", 2821, "protein_coding"],
         ["gene", False, "Trp53", "NCBITaxon:10090", 1797, "protein_coding"],
         ["gene", False, "S_ENSSASG00005000004", "NCBITaxon:2697049", 3822, "protein_coding"],

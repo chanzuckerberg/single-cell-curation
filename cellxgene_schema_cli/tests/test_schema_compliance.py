@@ -3449,22 +3449,27 @@ class TestMultiSpecies:
 
 class TestPertubations:
     @pytest.mark.parametrize(
-        "cell_type_ontology_term_id,cell_line_ontology_term_id",
+        "cell_type_ontology_term_id,cell_line_ontology_term_id,cell_line",
         [
-            ("CL:0000010", "EFO:0022666"),
-            ("CL:0000001", "EFO:0022666"),
-            ("CL:0000010", "EFO:0022648"),
-            ("CL:0000001", "EFO:0022648"),
+            ("CL:0000010", "EFO:0022666", "HeLa M"),
+            ("CL:0000001", "EFO:0022666", "HeLa M"),
+            ("CL:0000010", "EFO:0022648", "253J-BV"),
+            ("CL:0000001", "EFO:0022648", "253J-BV"),
         ],
     )
     def test_cell_line_ontology_term_id(
-        self, validator_with_adata, cell_type_ontology_term_id, cell_line_ontology_term_id
+        self, validator_with_adata, cell_type_ontology_term_id, cell_line_ontology_term_id, cell_line
     ):
         validator = validator_with_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "cell_type_ontology_term_id"] = cell_type_ontology_term_id
         obs.loc[obs.index[0], "cell_line_ontology_term_id"] = cell_line_ontology_term_id
         validator.validate_adata()
+
+        labeler = AnnDataLabelAppender(validator.adata)
+        labeler._add_labels()
+        assert labeler.adata.obs.at[obs.index[0], "cell_line"] == cell_line
+
         assert not validator.errors
 
     @pytest.mark.parametrize(
@@ -3491,14 +3496,14 @@ class TestPertubations:
         assert len(validator.errors) > 0
 
     @pytest.mark.parametrize(
-        "perturbation_target_gene_id",
+        "perturbation_target_gene_id,perturbation_target_gene_name",
         [
-            "ENSG00000127603",
-            "ENSMUSG00000059552,ENSSASG00005000004",
-            "FBtr0472816_df_nrg,ENSDARG00000009657,WBGene00000003",
+            ("ENSG00000127603","MACF1_ENSG00000127603"),
+            ("ENSMUSG00000059552,ENSSASG00005000004","Trp53,S_ENSSASG00005000004"),
+            ("FBtr0472816_df_nrg,ENSDARG00000009657,WBGene00000003","FBtr0472816_df_nrg,fgfr1op2,aat-2"),
         ],
     )
-    def test_perturbation_target_gene_id(self, validator_with_adata, perturbation_target_gene_id):
+    def test_perturbation_target_gene_id(self, validator_with_adata, perturbation_target_gene_id, perturbation_target_gene_name):
         validator = validator_with_adata
         obs = validator.adata.obs
         obs.perturbation_target_gene_id = obs.perturbation_target_gene_id.cat.add_categories(
@@ -3506,6 +3511,11 @@ class TestPertubations:
         )
         obs.loc[obs.index[0], "perturbation_target_gene_id"] = perturbation_target_gene_id
         validator.validate_adata()
+
+        labeler = AnnDataLabelAppender(validator.adata)
+        labeler._add_labels()
+        assert labeler.adata.obs.at[obs.index[0], "perturbation_target_gene_name"] == perturbation_target_gene_name
+
         assert not validator.errors
 
     @pytest.mark.parametrize(

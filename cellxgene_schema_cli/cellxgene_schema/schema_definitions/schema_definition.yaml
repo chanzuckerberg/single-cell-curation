@@ -207,7 +207,6 @@ components:
                 - NCBITaxon:9598
                 - NCBITaxon:10116
                 - NCBITaxon:9823
-
         add_labels:
           - type: curie
             to_column: organism
@@ -647,9 +646,12 @@ components:
             - NA
           exceptions:
             - na
-        # add_labels:
-        # - type: curie
-        #   to_column: cell_line
+        add_labels:
+        - type: curie
+          to_column: cell_line
+          curie_constraints:
+            ontologies:
+              - EFO
       perturbation_strategy:
         type: categorical
         enum:
@@ -671,6 +673,6 @@ components:
       perturbation_target_gene_id:
         type: categorical
         subtype: str
-        # add_labels:
-        # - type: curie
-        #   to_column: perturbation_target_gene_name
+        add_labels:
+        - type: feature_id
+          to_column: perturbation_target_gene_name
