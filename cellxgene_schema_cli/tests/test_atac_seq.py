@@ -69,53 +69,67 @@ def atac_fragment_file(atac_fragment_dataframe, tmpdir):
     return to_parquet_file(atac_fragment_dataframe, tmpdir)
 
 
-@pytest.mark.parametrize("override_write_algorithm", ["pysam", "cli", None])
-@pytest.mark.parametrize("fragment_file", ["fragments.tsv.bgz", "fragments_sorted.tsv.gz"])
-def test_process_fragment(
-    atac_fragment_bgzip_file_path, atac_fragment_index_file_path, override_write_algorithm, fragment_file
-):
-    # Arrange
-    anndata_file = FIXTURES_ROOT + "/atac_seq/small_atac_seq.h5ad"
-    fragments_file = FIXTURES_ROOT + f"/atac_seq/{fragment_file}"
-    # Act
-    result = atac_seq.process_fragment(
-        fragments_file,
-        anndata_file,
-        generate_index=True,
-        dask_cluster_config=dict(processes=False),
-        override_write_algorithm=override_write_algorithm,
-        output_file=str(atac_fragment_bgzip_file_path),
-    )
-    # Assert
-    assert len(result) == 0
-    assert atac_fragment_bgzip_file_path.exists()
-    # Testing the bgzip file
-    with pysam.libcbgzf.BGZFile(atac_fragment_bgzip_file_path, mode="r") as bgzip:
-        previous_stop, previous_start, previous_chomosome = 0, 0, None
-        for line in bgzip:
-            chromosome, start, stop, _, _ = line.decode("utf-8").split("\t")
-            if previous_chomosome != chromosome:
-                previous_stop, previous_start = 0, 0
-                chromosome_length = atac_seq.human_chromosome_by_length[chromosome]
-            start, stop = int(start), int(stop)
-            assert start <= stop < chromosome_length, (
-                "Stop coordinate must be within the chromosome length and " "greater than start."
-            )
-            assert start >= 0, "Start coordinate must be greater than 0."
-            # Fragment is sorted by start, then stop in ascending order
-            assert start >= previous_start
-            # The bellow check is failing.
-            if (chromosome == previous_chomosome) and (start == previous_start):
-                assert stop >= previous_stop
-            previous_stop = stop
-            previous_start = start
-            previous_chomosome = chromosome
+class TestProcessFragment:
+    @pytest.mark.parametrize("override_write_algorithm", ["pysam", "cli", None])
+    def test_write_algorithms(
+        self, atac_fragment_bgzip_file_path, atac_fragment_index_file_path, override_write_algorithm
+    ):
+        self._test_process_fragment(
+            atac_fragment_bgzip_file_path, atac_fragment_index_file_path, override_write_algorithm, "fragments.tsv.bgz"
+        )
 
-    # Testing index access
-    assert atac_fragment_index_file_path.exists()
-    with pysam.TabixFile(str(atac_fragment_bgzip_file_path)) as tabix:
-        for chromosome in tabix.contigs:
-            assert chromosome in atac_seq.human_chromosome_by_length
+    @pytest.mark.parametrize("fragment_file", ["fragments.tsv.bgz", "fragments_sorted.tsv.gz"])
+    def test_source_file_compression(self, atac_fragment_bgzip_file_path, atac_fragment_index_file_path, fragment_file):
+        self._test_process_fragment(
+            atac_fragment_bgzip_file_path, atac_fragment_index_file_path, "pysam", fragment_file
+        )
+
+    @staticmethod
+    def _test_process_fragment(
+        atac_fragment_bgzip_file_path, atac_fragment_index_file_path, override_write_algorithm, fragment_file
+    ):
+        # Arrange
+        anndata_file = FIXTURES_ROOT + "/atac_seq/small_atac_seq.h5ad"
+        fragments_file = FIXTURES_ROOT + f"/atac_seq/{fragment_file}"
+        # Act
+        result = atac_seq.process_fragment(
+            fragments_file,
+            anndata_file,
+            generate_index=True,
+            dask_cluster_config=dict(processes=False),
+            override_write_algorithm=override_write_algorithm,
+            output_file=str(atac_fragment_bgzip_file_path),
+        )
+        # Assert
+        assert len(result) == 0
+        assert atac_fragment_bgzip_file_path.exists()
+        # Testing the bgzip file
+        with pysam.libcbgzf.BGZFile(atac_fragment_bgzip_file_path, mode="r") as bgzip:
+            previous_stop, previous_start, previous_chomosome = 0, 0, None
+            for line in bgzip:
+                chromosome, start, stop, _, _ = line.decode("utf-8").split("\t")
+                if previous_chomosome != chromosome:
+                    previous_stop, previous_start = 0, 0
+                    chromosome_length = atac_seq.human_chromosome_by_length[chromosome]
+                start, stop = int(start), int(stop)
+                assert start <= stop < chromosome_length, (
+                    "Stop coordinate must be within the chromosome length and " "greater than start."
+                )
+                assert start >= 0, "Start coordinate must be greater than 0."
+                # Fragment is sorted by start, then stop in ascending order
+                assert start >= previous_start
+                # The bellow check is failing.
+                if (chromosome == previous_chomosome) and (start == previous_start):
+                    assert stop >= previous_stop
+                previous_stop = stop
+                previous_start = start
+                previous_chomosome = chromosome
+
+        # Testing index access
+        assert atac_fragment_index_file_path.exists()
+        with pysam.TabixFile(str(atac_fragment_bgzip_file_path)) as tabix:
+            for chromosome in tabix.contigs:
+                assert chromosome in atac_seq.human_chromosome_by_length
 
 
 class TestValidateFragmentBarcodeInAdataIndex:
