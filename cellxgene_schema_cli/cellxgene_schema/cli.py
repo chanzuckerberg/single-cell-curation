@@ -98,10 +98,10 @@ def fragment_validate(h5ad_file, fragment_file, generate_index, output_file):
 
 @schema_cli.command(
     name="check-anndata-requires-fragment",
-    short_help="Check that the anndata provided is an ATAC SEQ dataset.",
+    short_help="Check if that the anndata provided supports an Atac seq fragment file.",
     help="Check that an ATAC SEQ anndata.obs['assay_ontology_term_id'] is all paired or unpaired assays. "
-    "This determines if a fragment file is required, optional, or forbiden."
-    "If the anndata is neither, an error message will be printed and exit status will be 1.",
+    "This determines if a fragment file is required, optional, or forbiden. "
+    "If the anndata does not support a fragment, an error message will be printed and exit status will be 1.",
 )
 @click.argument("h5ad_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
 def check_anndata_requires_fragment(h5ad_file):
