@@ -262,21 +262,21 @@ class TestCheckAnndataRequiresFragment:
         # Arrange
         atac_anndata.obs["assay_ontology_term_id"] = "EFO:0030060"
         atac_anndata_file = to_anndata_file(atac_anndata, tmpdir)
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(
+            ValueError, match="Anndata.obs.assay_ontology_term_id are not all descendants of EFO:0010891."  # Assert
+        ):
             # Act
             atac_seq.check_anndata_requires_fragment(atac_anndata_file)
-            # Assert
-            assert e.value == "Anndata.obs.assay_ontology_term_id are not all descendants of EFO:0010891."
 
     def test_mixed_paired_and_unpaired(self, atac_anndata, tmpdir):
         # Arrange
         atac_anndata.obs["assay_ontology_term_id"] = ["EFO:0030059", "EFO:0030007", "EFO:0030007"]
         atac_anndata_file = to_anndata_file(atac_anndata, tmpdir)
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(
+            ValueError, match="Anndata.obs.assay_ontology_term_id has mixed paired and unpaired assay terms."
+        ):  # Assert
             # Act
             atac_seq.check_anndata_requires_fragment(atac_anndata_file)
-            # Assert
-            assert e.value == "Anndata.obs.assay_ontology_term_id has mixed paired and unpaired assay terms."
 
 
 class TestValidateAnndataIsPrimaryData:
