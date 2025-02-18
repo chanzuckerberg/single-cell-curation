@@ -130,6 +130,42 @@ column_types = {
 }
 
 
+def check_anndata_requires_fragment(anndata_file: str) -> bool:
+    """
+    Check if an anndata file requires a fragment file to be valid. The anndata file requires a fragment file if the
+    assay_ontology_term_id are all descendants of EFO:0010891 and EFO:0008913. If the assay_ontology_term_id are all
+    descendants of EFO:0010891 and not EFO:0008913, the anndata file does not require a fragment file. If the
+    assay_ontology_term_id are not all descendants of EFO:0010891, an error is raised and a fragment file is not allowed
+    because the anndata is not a valid ATAC-Seq file.
+
+    :param anndata_file: The anndata file to validate.
+    :return:
+    """
+    onto_parser = OntologyParser()
+
+    def is_atac(x) -> str:
+        if is_ontological_descendant_of(onto_parser, x, "EFO:0010891"):
+            if is_ontological_descendant_of(onto_parser, x, "EFO:0008913"):
+                return "p"  # paired
+            else:
+                return "u"  # unpaired
+        else:
+            return "n"  # not atac seq
+
+    with h5py.File(anndata_file) as f:
+        assay_ontology_term_ids = ad.io.read_elem(f["obs"])["assay_ontology_term_id"]
+    df = assay_ontology_term_ids.map(is_atac)
+
+    if (df == "p").all():
+        return False
+    elif (df == "u").all():
+        return True
+    if (df == "n").any():
+        raise ValueError("Anndata.obs.assay_ontology_term_id are not all descendants of EFO:0010891.")
+    else:
+        raise ValueError("Anndata.obs.assay_ontology_term_id has mixed paired and unpaired assay terms.")
+
+
 def process_fragment(
     fragment_file: str,
     anndata_file: str,
@@ -145,7 +181,8 @@ def process_fragment(
     :param str anndata_file: The anndata file to validate against
     :param bool generate_index: Whether to generate the index for the fragment
     :param dask_cluster_config: dask cluster configuration parameters passed to dask.distributed.LocalCluster
-    :param override_write_algorithm: Override the write algorithm used to write the bgzip file. Options are "pysam" and "cli"
+    :param override_write_algorithm: Override the write algorithm used to write the bgzip file. Options are "pysam"
+    and "cli"
     :param output_file: The output file to write the bgzip file to. If not provided, the output file will be the same
 
     """
@@ -195,7 +232,6 @@ def validate(parquet_file: str, anndata_file: str) -> list[Optional[str]]:
         validate_fragment_stop_coordinate_within_chromosome(parquet_file, anndata_file),
         validate_fragment_stop_greater_than_start_coordinate(parquet_file),
         validate_fragment_read_support(parquet_file),
-        validate_anndata_is_atac(anndata_file),
         validate_anndata_feature_reference(anndata_file),
         validate_anndata_is_primary_data(anndata_file),
         validate_fragment_no_duplicate_rows(parquet_file),
@@ -251,26 +287,6 @@ def validate_fragment_read_support(parquet_file: str) -> Optional[str]:
     df = ddf.read_parquet(parquet_file, columns=["read support"], filters=[("read support", "==", 0)])
     if len(df.compute()) != 0:
         return "Read support must be greater than 0."
-
-
-def validate_anndata_is_atac(anndata_file: str) -> Optional[str]:
-    def not_atac(x) -> str:
-        if is_ontological_descendant_of(onto_parser, x, "EFO:0010891"):
-            if is_ontological_descendant_of(onto_parser, x, "EFO:0008913"):
-                return "p"  # paired
-            else:
-                return "u"  # unpaired
-        else:
-            return "n"  # not atac seq
-
-    onto_parser = OntologyParser()
-    with h5py.File(anndata_file) as f:
-        assay_ontology_term_ids = ad.io.read_elem(f["obs"])["assay_ontology_term_id"]
-    df = assay_ontology_term_ids.map(not_atac)
-    if (df == "n").any():
-        return "Anndata.obs.assay_ontology_term_id are not all descendants of EFO:0010891."
-    elif not ((df == "u").all() or (df == "p").all()):
-        return "Anndata.obs.assay_ontology_term_id has mixed paired and unpaired terms."
 
 
 def validate_anndata_is_primary_data(anndata_file: str) -> Optional[str]:

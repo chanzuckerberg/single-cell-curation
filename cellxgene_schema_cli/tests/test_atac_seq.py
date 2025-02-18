@@ -234,35 +234,37 @@ class TestValidateFragmentReadSupport:
         assert result == "Read support must be greater than 0."
 
 
-class TestValidateAnndataIsAtac:
+class TestCheckAnndataRequiresFragment:
 
-    @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0030059", "EFO:0030007"])
-    def test_positive(self, atac_anndata, assay_ontology_term_id, tmpdir):
+    @pytest.mark.parametrize("assay_ontology_term_id,expected_result", [("EFO:0030059", False), ("EFO:0030007", True)])
+    def test_positive(self, atac_anndata, assay_ontology_term_id, expected_result, tmpdir):
         # Arrange
         atac_anndata.obs["assay_ontology_term_id"] = assay_ontology_term_id
         atac_anndata_file = to_anndata_file(atac_anndata, tmpdir)
         # Act
-        result = atac_seq.validate_anndata_is_atac(atac_anndata_file)
+        result = atac_seq.check_anndata_requires_fragment(atac_anndata_file)
         # Assert
-        assert not result
+        assert result == expected_result
 
     def test_not_atac(self, atac_anndata, tmpdir):
         # Arrange
         atac_anndata.obs["assay_ontology_term_id"] = "EFO:0030060"
         atac_anndata_file = to_anndata_file(atac_anndata, tmpdir)
-        # Act
-        result = atac_seq.validate_anndata_is_atac(atac_anndata_file)
-        # Assert
-        assert result == "Anndata.obs.assay_ontology_term_id are not all descendants of EFO:0010891."
+        with pytest.raises(ValueError) as e:
+            # Act
+            atac_seq.check_anndata_requires_fragment(atac_anndata_file)
+            # Assert
+            assert e.value == "Anndata.obs.assay_ontology_term_id are not all descendants of EFO:0010891."
 
     def test_mixed_paired_and_unpaired(self, atac_anndata, tmpdir):
         # Arrange
         atac_anndata.obs["assay_ontology_term_id"] = ["EFO:0030059", "EFO:0030007", "EFO:0030007"]
         atac_anndata_file = to_anndata_file(atac_anndata, tmpdir)
-        # Act
-        result = atac_seq.validate_anndata_is_atac(atac_anndata_file)
-        # Assert
-        assert result == "Anndata.obs.assay_ontology_term_id has mixed paired and unpaired terms."
+        with pytest.raises(ValueError) as e:
+            # Act
+            atac_seq.check_anndata_requires_fragment(atac_anndata_file)
+            # Assert
+            assert e.value == "Anndata.obs.assay_ontology_term_id has mixed paired and unpaired assay terms."
 
 
 class TestValidateAnndataIsPrimaryData:

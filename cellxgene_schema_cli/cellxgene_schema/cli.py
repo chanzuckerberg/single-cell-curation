@@ -89,17 +89,29 @@ def add_labels(input_file, output_file):
 @click.argument("fragment_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
 @click.option("-i", "--generate-index", help="Generate index for fragment", is_flag=True)
 @click.option("-o", "--output-file", help="Output file for the processed fragment.", type=click.Path(exists=False))
-@click.option("-v", "--verbose", help="When present will set logging level to debug", is_flag=True)
-def fragment_validate(h5ad_file, fragment_file, generate_index, verbose):
+def fragment_validate(h5ad_file, fragment_file, generate_index, output_file):
     from .atac_seq import process_fragment
 
-    logging.basicConfig(level=logging.ERROR)
-    if verbose:
-        logging.getLogger("cellxgene_schema").setLevel(logging.DEBUG)
-    else:
-        logging.getLogger("cellxgene_schema").setLevel(logging.INFO)
+    if not process_fragment(fragment_file, h5ad_file, generate_index=generate_index, output_file=output_file):
+        sys.exit(1)
 
-    if not process_fragment(fragment_file, h5ad_file, generate_index=generate_index, output_file=None):
+
+@schema_cli.command(
+    name="check-anndata-requires-fragment",
+    short_help="Check that the anndata provided is an ATAC SEQ dataset.",
+    help="Check that an ATAC SEQ anndata.obs['assay_ontology_term_id'] is all paired or unpaired assays. "
+    "This determines if a fragment file is required, optional, or forbiden."
+    "If the anndata is neither, an error message will be printed and exit status will be 1.",
+)
+@click.argument("h5ad_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
+def check_anndata_requires_fragment(h5ad_file):
+    from .atac_seq import check_anndata_requires_fragment
+
+    try:
+        assay_type = check_anndata_requires_fragment(h5ad_file)
+        print(assay_type)
+    except Exception as e:
+        logger.error(f"Andata does not support atac fragment files for the follow reason: {e}")
         sys.exit(1)
 
 
