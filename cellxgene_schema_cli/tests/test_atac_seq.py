@@ -209,7 +209,7 @@ class TestValidateFragmentStopCoordinateWithinChromosome:
         result = atac_seq.validate_fragment_stop_coordinate_within_chromosome(atac_fragment_file, atac_anndata_file)
         assert not result
 
-    def test_negative(self, atac_fragment_dataframe, atac_anndata_file, tmpdir):
+    def test_stop_less_than_chromosome_length(self, atac_fragment_dataframe, atac_anndata_file, tmpdir):
         # Arrange
         atac_fragment_dataframe["stop coordinate"] = 10e12
         fragment_file = to_parquet_file(atac_fragment_dataframe, tmpdir)
@@ -217,6 +217,18 @@ class TestValidateFragmentStopCoordinateWithinChromosome:
         result = atac_seq.validate_fragment_stop_coordinate_within_chromosome(fragment_file, atac_anndata_file)
         # Assert
         assert result == "Stop coordinate must be less than the chromosome length."
+
+    def test_organism_ontology_id_not_unique(self, atac_fragment_dataframe, atac_anndata_file, tmpdir):
+        # Arrange
+        atac_anndata = ad.read_h5ad(atac_anndata_file)
+        atac_anndata.obs["organism_ontology_term_id"] = ["NCBITaxon:10090", "NCBITaxon:9606", "NCBITaxon:9606"]
+        atac_anndata.write(tmpdir + "/small_atac_seq.h5ad")
+        # Act
+        result = atac_seq.validate_fragment_stop_coordinate_within_chromosome(
+            to_parquet_file(atac_fragment_dataframe, tmpdir), tmpdir + "/small_atac_seq.h5ad"
+        )
+        # Assert
+        assert result == "Anndata.obs.organism_ontology_term_id must have a unique value."
 
 
 class TestValidateFragmentReadSupport:
