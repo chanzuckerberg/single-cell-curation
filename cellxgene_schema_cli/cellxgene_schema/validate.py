@@ -636,8 +636,8 @@ class Validator:
             self.errors.append(
                 f"obs rows with donor ids {unique_donor_ids} have invalid genetic_ancestry_* values. All "
                 f"observations with the same donor_id must contain the same genetic_ancestry_* values. If "
-                f"organism_ontolology_term_id is NOT 'NCBITaxon:9606' for Homo sapiens, then all genetic"
-                f"ancestry values MUST be float('nan'). If organism_ontolology_term_id is 'NCBITaxon:9606' "
+                f"organism_ontology_term_id is NOT 'NCBITaxon:9606' for Homo sapiens, then all genetic"
+                f"ancestry values MUST be float('nan'). If organism_ontology_term_id is 'NCBITaxon:9606' "
                 f"for Homo sapiens, then the value MUST be a float('nan') if unavailable; otherwise, the "
                 f"sum of all genetic_ancestry_* fields must be equal to 1.0 ± 0.0002"
             )
