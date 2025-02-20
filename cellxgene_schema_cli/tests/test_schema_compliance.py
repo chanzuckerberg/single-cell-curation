@@ -706,7 +706,7 @@ class TestObs:
     )
     def test_development_stage_ontology_term_id_mouse_descendant(self, validator_with_adata, organism_ontology_term_id):
         """
-        If organism_ontolology_term_id is "NCBITaxon:10090" for Mus musculus OR its descendants,
+        If organism_ontology_term_id is "NCBITaxon:10090" for Mus musculus OR its descendants,
         this MUST be the most accurate MmusDv:0000001 descendant.
         """
         validator = validator_with_adata
@@ -737,7 +737,7 @@ class TestObs:
     ):
         """
         development_stage_ontology_term_id categorical with str categories. If unavailable, this MUST be "unknown".
-        If organism_ontolology_term_id is "NCBITaxon:9606" for Homo sapiens,
+        If organism_ontology_term_id is "NCBITaxon:9606" for Homo sapiens,
         this MUST be the most accurate HsapDv:0000001 descendant.
         """
         validator = validator_with_adata
@@ -771,7 +771,7 @@ class TestObs:
         self, validator_with_adata, development_stage_ontology_term_id, error
     ):
         """
-        If organism_ontolology_term_id is "NCBITaxon:10090" for Mus musculus,
+        If organism_ontology_term_id is "NCBITaxon:10090" for Mus musculus,
         this MUST be the most accurate MmusDv:0000001 descendant.
         """
         validator = validator_with_adata
@@ -2819,7 +2819,7 @@ class TestZebrafish:
         self, validator_with_zebrafish_adata, development_stage_ontology_term_id
     ):
         """
-        If organism_ontolology_term_id is "NCBITaxon:7955" for Danio rerio,
+        If organism_ontology_term_id is "NCBITaxon:7955" for Danio rerio,
         this MUST be the most accurate ZFS:0100000 descendant or "unknown" and MUST NOT be ZFS:0000000.
         """
         validator = validator_with_zebrafish_adata
@@ -2854,7 +2854,7 @@ class TestZebrafish:
         self, validator_with_zebrafish_adata, development_stage_ontology_term_id, error
     ):
         """
-        If organism_ontolology_term_id is "NCBITaxon:7955" for Danio rerio,
+        If organism_ontology_term_id is "NCBITaxon:7955" for Danio rerio,
         this MUST be the most accurate ZFS:0100000 descendant or "unknown" and MUST NOT be ZFS:0000000.
         """
         zebrafish_error_message_suffix = (
@@ -2874,7 +2874,7 @@ class TestZebrafish:
     )
     def test_cell_type_ontology_term_id(self, validator_with_zebrafish_adata, cell_type_ontology_term_id):
         """
-        If organism_ontolology_term_id is "NCBITaxon:7955" for Danio rerio,
+        If organism_ontology_term_id is "NCBITaxon:7955" for Danio rerio,
         MUST be a descendant term id of 'ZFA:0009000' (cell) or 'unknown'
         """
         validator = validator_with_zebrafish_adata
@@ -3065,7 +3065,7 @@ class TestFruitFly:
     )
     def test_cell_type_ontology_term_id(self, validator_with_fruitfly_adata, cell_type_ontology_term_id):
         """
-        If organism_ontolology_term_id is "NCBITaxon:7227" for Drosophila melanogaster,
+        If organism_ontology_term_id is "NCBITaxon:7227" for Drosophila melanogaster,
         MUST be a descendant term id of 'FBbt:0007002' (cell) or 'unknown'
         """
         validator = validator_with_fruitfly_adata
@@ -3232,7 +3232,7 @@ class TestRoundworm:
         self, validator_with_roundworm_adata, development_stage_ontology_term_id
     ):
         """
-        If organism_ontolology_term_id is "NCBITaxon:6239" for C. elegans,
+        If organism_ontology_term_id is "NCBITaxon:6239" for C. elegans,
         this MUST be the most accurate WBls term or 'unknown'
         """
         validator = validator_with_roundworm_adata
@@ -3263,7 +3263,7 @@ class TestRoundworm:
     )
     def test_cell_type_ontology_term_id(self, validator_with_roundworm_adata, cell_type_ontology_term_id):
         """
-        If organism_ontolology_term_id is "NCBITaxon:6239" for C. elegans,
+        If organism_ontology_term_id is "NCBITaxon:6239" for C. elegans,
         MUST be a descendant term id of 'WBbt:0004017' (cell) or 'unknown'
         """
         validator = validator_with_roundworm_adata
