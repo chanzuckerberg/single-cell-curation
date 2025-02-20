@@ -165,7 +165,12 @@ class AnnDataLabelAppender:
             else:
                 # Handle comma-delimited gene IDs
                 gene_ids = i.split(",")
-                mapping_dict[i] = ",".join([get_gene_checker(gencode.get_organism_from_feature_id(gene_id)).get_symbol(gene_id) for gene_id in gene_ids])
+                mapping_dict[i] = ",".join(
+                    [
+                        get_gene_checker(gencode.get_organism_from_feature_id(gene_id)).get_symbol(gene_id)
+                        for gene_id in gene_ids
+                    ]
+                )
 
         return mapping_dict
 

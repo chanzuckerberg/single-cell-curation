@@ -3498,12 +3498,14 @@ class TestPertubations:
     @pytest.mark.parametrize(
         "perturbation_target_gene_id,perturbation_target_gene_name",
         [
-            ("ENSG00000127603","MACF1_ENSG00000127603"),
-            ("ENSMUSG00000059552,ENSSASG00005000004","Trp53,S_ENSSASG00005000004"),
-            ("FBtr0472816_df_nrg,ENSDARG00000009657,WBGene00000003","FBtr0472816_df_nrg,fgfr1op2,aat-2"),
+            ("ENSG00000127603", "MACF1_ENSG00000127603"),
+            ("ENSMUSG00000059552,ENSSASG00005000004", "Trp53,S_ENSSASG00005000004"),
+            ("FBtr0472816_df_nrg,ENSDARG00000009657,WBGene00000003", "FBtr0472816_df_nrg,fgfr1op2,aat-2"),
         ],
     )
-    def test_perturbation_target_gene_id(self, validator_with_adata, perturbation_target_gene_id, perturbation_target_gene_name):
+    def test_perturbation_target_gene_id(
+        self, validator_with_adata, perturbation_target_gene_id, perturbation_target_gene_name
+    ):
         validator = validator_with_adata
         obs = validator.adata.obs
         obs.perturbation_target_gene_id = obs.perturbation_target_gene_id.cat.add_categories(
