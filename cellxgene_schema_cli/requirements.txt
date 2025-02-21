@@ -1,8 +1,8 @@
 anndata==0.11.2
-cellxgene-ontology-guide==1.4.2 # update before a schema migration
+cellxgene-ontology-guide==1.5.0a0 # update before a schema migration
 click<9
 Cython<4
-dask[array, distributed, dataframe]==2024.12.0
+dask[array]==2024.12.0
 numpy<3
 pandas>2,<3
 PyYAML<7
@@ -10,4 +10,4 @@ scipy<1.15 # broken in 1.15.0 see https://github.com/chanzuckerberg/single-cell-
 semver<4
 xxhash<4
 matplotlib<4
-pysam>=0.13.0 # for atac-seq fragment files
+psycopg2-binary
