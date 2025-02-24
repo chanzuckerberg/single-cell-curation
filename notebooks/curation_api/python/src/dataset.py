@@ -130,6 +130,7 @@ def get_dataset(collection_id: str, dataset_id: str):
         raise e
     return res.json()
 
+
 def get_dataset_manifest(collection_id: str, dataset_id: str) -> dict[str, str]:
     """
     Get manifest for a Dataset
