@@ -113,7 +113,7 @@ mouse_chromosome_by_length = {
     "JH584303.1": 158099,
     "JH584304.1": 114452,
 }
-feature_reference_by_chromosome_length_table = {
+organism_ontology_term_id_by_chromosome_length_table = {
     "NCBITaxon:9606": human_chromosome_by_length,
     "NCBITaxon:10090": mouse_chromosome_by_length,
 }
@@ -232,7 +232,7 @@ def validate(parquet_file: str, anndata_file: str) -> list[Optional[str]]:
         validate_fragment_stop_coordinate_within_chromosome(parquet_file, anndata_file),
         validate_fragment_stop_greater_than_start_coordinate(parquet_file),
         validate_fragment_read_support(parquet_file),
-        validate_anndata_feature_reference(anndata_file),
+        validate_anndata_organism_ontology_term_id(anndata_file),
         validate_anndata_is_primary_data(anndata_file),
         validate_fragment_no_duplicate_rows(parquet_file),
     ]
@@ -274,7 +274,7 @@ def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, annda
         organism_ontology_term_id = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)
         if organism_ontology_term_id.size > 1:
             return "Anndata.obs.organism_ontology_term_id must have a unique value."
-    chromosome_length_table = feature_reference_by_chromosome_length_table[organism_ontology_term_id[0]]
+    chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table[organism_ontology_term_id[0]]
     df = ddf.read_parquet(parquet_file, columns=["chromosome", "stop coordinate"])
     df["chromosome_length"] = df["chromosome"].map(chromosome_length_table).astype(int)
     df = df["stop coordinate"] <= df["chromosome_length"]
@@ -296,15 +296,12 @@ def validate_anndata_is_primary_data(anndata_file: str) -> Optional[str]:
         return "Anndata.obs.is_primary_data must all be True."
 
 
-def validate_anndata_feature_reference(anndata_file: str) -> Optional[str]:
+def validate_anndata_organism_ontology_term_id(anndata_file: str) -> Optional[str]:
     with h5py.File(anndata_file) as f:
-        unique_feature_reference = ad.io.read_elem(f["var"])["feature_reference"].unique()
         unique_organism_ontology_term_ids = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique()
-    allowed_terms = [*feature_reference_by_chromosome_length_table.keys()]
-    if unique_feature_reference[0] not in allowed_terms:
-        return f"Anndata.var.feature_reference must be one of {allowed_terms}."
-    if unique_organism_ontology_term_ids != unique_feature_reference:
-        return "Unique Anndata.obs.organism_ontology_term_id must be equal to unqiue Anndata.var.feature_reference."
+    allowed_terms = [*organism_ontology_term_id_by_chromosome_length_table.keys()]
+    if unique_organism_ontology_term_ids[0] not in allowed_terms:
+        return f"Anndata.obs.organism_ontology_term_id must be one of {allowed_terms}."
 
 
 def detect_chromosomes(parquet_file: str) -> list[str]:
