@@ -34,8 +34,7 @@ def atac_anndata():
     obs = pd.DataFrame(index=["A", "B", "C"])
     obs["organism_ontology_term_id"] = ["NCBITaxon:9606"] * 3
     obs["assay_ontology_term_id"] = ["EFO:0030059"] * 3
-    var = pd.DataFrame(columns=["feature_reference"], data=[["NCBITaxon:9606"]])
-    return ad.AnnData(obs=obs, var=var)
+    return ad.AnnData(obs=obs, var=pd.DataFrame())
 
 
 @pytest.fixture
@@ -299,36 +298,24 @@ class TestValidateAnndataIsPrimaryData:
         assert result == "Anndata.obs.is_primary_data must all be True."
 
 
-class TestValidateAnndataFeatureReference:
+class TestValidateAnndataOrganismOntologyTermId:
     def test_positive(self, atac_anndata, tmpdir):
         # Arrange
-        atac_anndata.var["feature_reference"] = ["NCBITaxon:9606"]
+        atac_anndata.obs["organism_ontology_term_id"] = ["NCBITaxon:9606"] * 3
         atac_anndata_file = to_anndata_file(atac_anndata, tmpdir)
         # Act
-        result = atac_seq.validate_anndata_feature_reference(atac_anndata_file)
+        result = atac_seq.validate_anndata_organism_ontology_term_id(atac_anndata_file)
         # Assert
         assert not result
 
-    def test_feature_references_different_from_organism_ontology_term_id(self, atac_anndata, tmpdir):
+    def test_organism_ontology_term_id_not_allowed(self, atac_anndata, tmpdir):
         # Arrange
-        atac_anndata.var["feature_reference"] = ["NCBITaxon:10090"]
+        atac_anndata.obs["organism_ontology_term_id"] = ["NCBITaxon:9607"] * 3
         atac_anndata_file = to_anndata_file(atac_anndata, tmpdir)
         # Act
-        result = atac_seq.validate_anndata_feature_reference(atac_anndata_file)
+        result = atac_seq.validate_anndata_organism_ontology_term_id(atac_anndata_file)
         # Assert
-        assert (
-            result
-            == "Unique Anndata.obs.organism_ontology_term_id must be equal to unqiue Anndata.var.feature_reference."
-        )
-
-    def test_feature_references_not_allowed(self, atac_anndata, tmpdir):
-        # Arrange
-        atac_anndata.var["feature_reference"] = ["NCBITaxon:9607"]
-        atac_anndata_file = to_anndata_file(atac_anndata, tmpdir)
-        # Act
-        result = atac_seq.validate_anndata_feature_reference(atac_anndata_file)
-        # Assert
-        assert result == "Anndata.var.feature_reference must be one of ['NCBITaxon:9606', 'NCBITaxon:10090']."
+        assert result == "Anndata.obs.organism_ontology_term_id must be one of ['NCBITaxon:9606', 'NCBITaxon:10090']."
 
 
 class TestValidateFragmentNoDuplicateRows:
