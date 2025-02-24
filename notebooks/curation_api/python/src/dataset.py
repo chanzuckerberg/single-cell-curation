@@ -229,6 +229,31 @@ def upload_datafile_from_link(link: str, collection_id: str, dataset_id: str):
         success(logger, success_message)
 
 
+def upload_datafile_from_manifest(manifest: dict[str, str], collection_id: str, dataset_id: str):
+    """
+    Create/update a Dataset from the passed manifest.
+    :param manifest: the manifest with links to assets to upload to the Data Portal to become a Dataset
+    :param collection_id: the id of the Collection to which the resultant Dataset will belong
+    :param dataset_id: Dataset id.
+    :return: None
+    """
+    url = url_builder(f"/collections/{collection_id}/datasets/{dataset_id}/manifest")
+
+    success_message = (
+        f"Uploading Dataset with id '{dataset_id}' to Collection "
+        f"{os.getenv('SITE_URL')}/collections/{collection_id} sourcing from manifest: {manifest}"
+    )
+
+    try:
+        res = requests.put(url, json=manifest, **get_headers_and_cookies())
+        res.raise_for_status()
+    except requests.HTTPError as e:
+        failure(logger, e)
+        raise e
+    else:
+        success(logger, success_message)
+
+
 def upload_local_datafile(datafile_path: str, collection_id: str, dataset_id: str):
     """
     :param datafile_path: the fully qualified path of the datafile to be uploaded
