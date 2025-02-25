@@ -565,110 +565,6 @@ class Validator:
         except Exception as e:
             self.errors.append(f"Unexpected error validating cell_type_ontology_term_id: {e}")
 
-    def _validate_genetic_ancestry(self):
-        """
-        Performs row-based validation of the genetic_ancestry_X fields. This ensures that a valid row must be:
-        - all float('nan') if organism is not homo sapiens or info is unavailable
-        - sum to 1.0
-
-        Additionally, verifies that all rows with the same donor_id must have the same genetic ancestry values
-        """
-        ancestry_columns = [
-            "genetic_ancestry_African",
-            "genetic_ancestry_East_Asian",
-            "genetic_ancestry_European",
-            "genetic_ancestry_Indigenous_American",
-            "genetic_ancestry_Oceanian",
-            "genetic_ancestry_South_Asian",
-        ]
-
-        organism_column = "organism_ontology_term_id"
-        donor_id_column = "donor_id"
-
-        # Skip any additional validation if the genetic ancestry or organism columns are not present
-        # An error for missing columns will be raised at a different point
-        required_columns = ancestry_columns + [organism_column, donor_id_column]
-        for column in required_columns:
-            if column not in self.adata.obs.columns:
-                return
-
-        donor_id_to_ancestry_values = dict()
-
-        def is_valid_row(row):
-            ancestry_values = row[ancestry_columns]
-
-            # If ancestry values are different for the same donor id, then this row is invalid
-            donor_id = row[donor_id_column]
-            if donor_id in donor_id_to_ancestry_values:
-                if not donor_id_to_ancestry_values[donor_id].equals(ancestry_values):
-                    return False
-            else:
-                donor_id_to_ancestry_values[donor_id] = ancestry_values
-
-            # All values are NaN. This is always valid, regardless of organism
-            if ancestry_values.isna().all():
-                return True
-
-            # If any values are NaN, and we didn't return in the earlier all NaN check, then
-            # this is invalid
-            if ancestry_values.isna().any():
-                return False
-
-            # If organism is not homo sapiens, and we didn't return in the earlier all NaN check,
-            # then this row is invalid
-            if row[organism_column] != "NCBITaxon:9606":
-                return False
-
-            # The sum of genetic ancestry values should be 1.0 ± 0.0002
-            if (
-                ancestry_values.apply(lambda x: isinstance(x, (float, int))).all()
-                and abs(ancestry_values.sum() - 1.0) <= 0.0002
-            ):
-                return True
-
-            return False
-
-        invalid_rows = ~self.adata.obs.apply(is_valid_row, axis=1)
-
-        if invalid_rows.any():
-            invalid_donor_ids = self.adata.obs.loc[invalid_rows, "donor_id"]
-            unique_donor_ids = list(set(invalid_donor_ids))
-            self.errors.append(
-                f"obs rows with donor ids {unique_donor_ids} have invalid genetic_ancestry_* values. All "
-                f"observations with the same donor_id must contain the same genetic_ancestry_* values. If "
-                f"organism_ontology_term_id is NOT 'NCBITaxon:9606' for Homo sapiens, then all genetic"
-                f"ancestry values MUST be float('nan'). If organism_ontology_term_id is 'NCBITaxon:9606' "
-                f"for Homo sapiens, then the value MUST be a float('nan') if unavailable; otherwise, the "
-                f"sum of all genetic_ancestry_* fields must be equal to 1.0 ± 0.0002"
-            )
-
-    def _validate_individual_genetic_ancestry_value(self, column: pd.Series, column_name: str):
-        """
-        The following fields are valid for genetic_ancestry_value columns:
-        - float values between 0 and 1
-        - float('nan')
-        """
-        if column.dtype != float:
-            self.errors.append(f"Column '{column_name}' in obs must be float, not '{column.dtype.name}'.")
-            return
-
-        def is_individual_value_valid(value):
-            if isinstance(value, (float, int)) and 0 <= value <= 1:
-                return True
-            # Ensures only float('nan') or numpy.nan is valid, None is invalid
-            if isinstance(value, float) and pd.isna(value):
-                return True
-            return False
-
-        # Identify invalid values
-        invalid_values = column[~column.map(is_individual_value_valid)]
-
-        if not invalid_values.empty:
-            self.errors.append(
-                f"Column '{column_name}' in obs contains invalid values: {invalid_values.to_list()}. "
-                f"Valid values are floats between 0 and 1 or float('nan')."
-            )
-
     def _validate_column_feature_is_filtered(self, column: pd.Series, column_name: str, df_name: str):
         """
         Validates the "is_feature_filtered" in adata.var. This column must be bool, and for genes that are set to
@@ -747,9 +643,6 @@ class Validator:
 
         if column_def.get("type") == "feature_is_filtered":
             self._validate_column_feature_is_filtered(column, column_name, df_name)
-
-        if column_def.get("type") == "genetic_ancestry_value":
-            self._validate_individual_genetic_ancestry_value(column, column_name)
 
         if "enum" in column_def:
             bad_enums = [v for v in column.drop_duplicates() if v not in column_def["enum"]]
