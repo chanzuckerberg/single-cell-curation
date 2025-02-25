@@ -33,6 +33,16 @@ h5ad_invalid = os.path.join(h5ad_dir, "example_invalid_CL.h5ad")
 # 6. Putting all the components created in the previous steps into minimal anndata that used for testing in
 #   the unittests
 
+categorical_fields = [
+    "donor_id",
+    "suspension_type",
+    "tissue_type",
+    "perturbation_strategy",
+    "perturbation_id",
+    "perturbation_role",
+    "perturbation_target_gene_id",
+]
+
 # Valid obs per schema
 good_obs = pd.DataFrame(
     [
@@ -49,6 +59,11 @@ good_obs = pd.DataFrame(
             "HsapDv:0000003",
             "donor_1",
             "nucleus",
+            "na",
+            "na",
+            "na",
+            "na",
+            "na",
         ],
         [
             "CL:0000192",
@@ -62,6 +77,11 @@ good_obs = pd.DataFrame(
             "na",
             "MmusDv:0000003",
             "donor_2",
+            "na",
+            "na",
+            "na",
+            "na",
+            "na",
             "na",
         ],
     ],
@@ -79,12 +99,16 @@ good_obs = pd.DataFrame(
         "development_stage_ontology_term_id",
         "donor_id",
         "suspension_type",
+        "cell_line_ontology_term_id",
+        "perturbation_strategy",
+        "perturbation_id",
+        "perturbation_role",
+        "perturbation_target_gene_id",
     ],
 )
 
-good_obs["donor_id"] = good_obs["donor_id"].astype("category")
-good_obs["suspension_type"] = good_obs["suspension_type"].astype("category")
-good_obs["tissue_type"] = good_obs["tissue_type"].astype("category")
+for field in categorical_fields:
+    good_obs[field] = good_obs[field].astype("category")
 
 # Expected obs, this is what the obs above should look like after adding the necessary columns with the validator,
 # these columns are defined in the schema
@@ -99,6 +123,8 @@ obs_expected = pd.DataFrame(
             "lung",
             "Yoruban",
             "Carnegie stage 01",
+            "na",
+            "na",
         ],
         [
             "smooth muscle cell",
@@ -109,6 +135,8 @@ obs_expected = pd.DataFrame(
             "smooth muscle cell",
             "na",
             "Theiler stage 01",
+            "na",
+            "na",
         ],
     ],
     index=["X", "Y"],
@@ -121,6 +149,8 @@ obs_expected = pd.DataFrame(
         "tissue",
         "self_reported_ethnicity",
         "development_stage",
+        "cell_line",
+        "perturbation_target_gene_name",
     ],
 )
 
@@ -145,6 +175,11 @@ good_obs_visium = pd.DataFrame(
             "donor_1",
             "na",
             0,
+            "na",
+            "na",
+            "na",
+            "na",
+            "na",
         ],
         [
             2,
@@ -162,6 +197,11 @@ good_obs_visium = pd.DataFrame(
             "donor_2",
             "na",
             1,
+            "na",
+            "na",
+            "na",
+            "na",
+            "na",
         ],
     ],
     index=["X", "Y"],
@@ -181,12 +221,16 @@ good_obs_visium = pd.DataFrame(
         "donor_id",
         "suspension_type",
         "in_tissue",
+        "cell_line_ontology_term_id",
+        "perturbation_strategy",
+        "perturbation_id",
+        "perturbation_role",
+        "perturbation_target_gene_id",
     ],
 )
 
-good_obs_visium["donor_id"] = good_obs_visium["donor_id"].astype("category")
-good_obs_visium["suspension_type"] = good_obs_visium["suspension_type"].astype("category")
-good_obs_visium["tissue_type"] = good_obs_visium["tissue_type"].astype("category")
+for field in categorical_fields:
+    good_obs_visium[field] = good_obs_visium[field].astype("category")
 
 # Valid spatial obs per schema
 good_obs_slide_seqv2 = pd.DataFrame(
@@ -204,6 +248,11 @@ good_obs_slide_seqv2 = pd.DataFrame(
             "HsapDv:0000003",
             "donor_1",
             "na",
+            "na",
+            "na",
+            "na",
+            "na",
+            "na",
         ],
         [
             "CL:0000192",
@@ -217,6 +266,11 @@ good_obs_slide_seqv2 = pd.DataFrame(
             "na",
             "MmusDv:0000003",
             "donor_2",
+            "na",
+            "na",
+            "na",
+            "na",
+            "na",
             "na",
         ],
     ],
@@ -234,12 +288,16 @@ good_obs_slide_seqv2 = pd.DataFrame(
         "development_stage_ontology_term_id",
         "donor_id",
         "suspension_type",
+        "cell_line_ontology_term_id",
+        "perturbation_strategy",
+        "perturbation_id",
+        "perturbation_role",
+        "perturbation_target_gene_id",
     ],
 )
 
-good_obs_slide_seqv2["donor_id"] = good_obs_slide_seqv2["donor_id"].astype("category")
-good_obs_slide_seqv2["suspension_type"] = good_obs_slide_seqv2["suspension_type"].astype("category")
-good_obs_slide_seqv2["tissue_type"] = good_obs_slide_seqv2["tissue_type"].astype("category")
+for field in categorical_fields:
+    good_obs_slide_seqv2[field] = good_obs_slide_seqv2[field].astype("category")
 
 good_obs_visium_is_single_false = pd.DataFrame(
     [
@@ -256,6 +314,11 @@ good_obs_visium_is_single_false = pd.DataFrame(
             "HsapDv:0000003",
             "donor_1",
             "na",
+            "na",
+            "na",
+            "na",
+            "na",
+            "na",
         ],
         [
             "CL:0000192",
@@ -269,6 +332,11 @@ good_obs_visium_is_single_false = pd.DataFrame(
             "na",
             "MmusDv:0000003",
             "donor_2",
+            "na",
+            "na",
+            "na",
+            "na",
+            "na",
             "na",
         ],
     ],
@@ -286,14 +354,16 @@ good_obs_visium_is_single_false = pd.DataFrame(
         "development_stage_ontology_term_id",
         "donor_id",
         "suspension_type",
+        "cell_line_ontology_term_id",
+        "perturbation_strategy",
+        "perturbation_id",
+        "perturbation_role",
+        "perturbation_target_gene_id",
     ],
 )
 
-good_obs_visium_is_single_false["donor_id"] = good_obs_visium_is_single_false["donor_id"].astype("category")
-good_obs_visium_is_single_false["suspension_type"] = good_obs_visium_is_single_false["suspension_type"].astype(
-    "category"
-)
-good_obs_visium_is_single_false["tissue_type"] = good_obs_visium_is_single_false["tissue_type"].astype("category")
+for field in categorical_fields:
+    good_obs_visium_is_single_false[field] = good_obs_visium_is_single_false[field].astype("category")
 
 # ---
 # 2. Creating individual var components: valid object and valid object and with labels
@@ -330,7 +400,6 @@ good_var_seurat_testing = pd.DataFrame(
 var_expected = pd.DataFrame(
     [
         ["spike-in", False, "ERCC-00002 (spike-in control)", "NCBITaxon:32630", 1061, "synthetic"],
-        # ["gene", False, "MACF1", "NCBITaxon:9606", 2821, "protein_coding"],
         ["gene", False, "MACF1_ENSG00000127603", "NCBITaxon:9606", 2821, "protein_coding"],
         ["gene", False, "Trp53", "NCBITaxon:10090", 1797, "protein_coding"],
         ["gene", False, "S_ENSSASG00005000004", "NCBITaxon:2697049", 3822, "protein_coding"],
@@ -523,6 +592,11 @@ unmigrated_obs = pd.DataFrame(
             "tissue:1",
             "sre:1",
             "development_stage:1",
+            "na",
+            "na",
+            "na",
+            "na",
+            "na",
         ],
         [
             "cell_type:1",
@@ -533,6 +607,11 @@ unmigrated_obs = pd.DataFrame(
             "tissue:1",
             "sre:1",
             "development_stage:1",
+            "na",
+            "na",
+            "na",
+            "na",
+            "na",
         ],
     ],
     index=["X", "Y"],
@@ -545,6 +624,11 @@ unmigrated_obs = pd.DataFrame(
         "tissue_ontology_term_id",
         "self_reported_ethnicity_ontology_term_id",
         "development_stage_ontology_term_id",
+        "cell_line_ontology_term_id",
+        "perturbation_strategy",
+        "perturbation_id",
+        "perturbation_role",
+        "perturbation_target_gene_id",
     ],
 )
 

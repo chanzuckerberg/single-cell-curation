@@ -207,7 +207,6 @@ components:
                 - NCBITaxon:9598
                 - NCBITaxon:10116
                 - NCBITaxon:9823
-
         add_labels:
           - type: curie
             to_column: organism
@@ -610,3 +609,59 @@ components:
           - "cell culture"
           - "organoid"
           - "tissue"
+      cell_line_ontology_term_id:
+        type: curie
+        dependencies:
+          - # If cell_type_ontology_term_id is CL:0000010 or CL:0000001
+            rule:
+              column: cell_type_ontology_term_id
+              match_exact:
+                terms:
+                  - CL:0000010
+                  - CL:0000001
+            error_message_suffix: >-
+              When 'CL:0000010”' or 'CL:0000001' for cell_type_ontology_term_id is True, this MUST be a child of term 'CL:0000010' within EFO. Otherwise this key MUST be 'na'.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - EFO
+              allowed:
+                ancestors:
+                  EFO:
+                    - CL:0000010
+        curie_constraints:
+          ontologies:
+            - NA
+          exceptions:
+            - na
+        add_labels:
+        - type: curie
+          to_column: cell_line
+          curie_constraints:
+            ontologies:
+              - EFO
+      perturbation_strategy:
+        type: categorical
+        enum:
+          - "CRISPRi"
+          - "CRISPRa"
+          - "CRISPR-cas9"
+          - "na"
+      perturbation_id:
+        type: categorical
+        subtype: str
+      perturbation_role:
+        type: categorical
+        enum:
+          - "targeting"
+          - "nontargeting"
+          - "empty control"
+          - "untreated control"
+          - "vehicle control"
+          - "na"
+      perturbation_target_gene_id:
+        type: categorical
+        subtype: str
+        add_labels:
+        - type: feature_id
+          to_column: perturbation_target_gene_name

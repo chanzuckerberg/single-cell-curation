@@ -157,8 +157,20 @@ class AnnDataLabelAppender:
         mapping_dict = {}
 
         for i in ids:
-            organism = gencode.get_organism_from_feature_id(i)
-            mapping_dict[i] = get_gene_checker(organism).get_symbol(i)
+            if i == "na":
+                mapping_dict[i] = "na"
+            elif "," not in i:
+                organism = gencode.get_organism_from_feature_id(i)
+                mapping_dict[i] = get_gene_checker(organism).get_symbol(i)
+            else:
+                # Handle comma-delimited gene IDs
+                gene_ids = i.split(",")
+                mapping_dict[i] = ",".join(
+                    [
+                        get_gene_checker(gencode.get_organism_from_feature_id(gene_id)).get_symbol(gene_id)
+                        for gene_id in gene_ids
+                    ]
+                )
 
         return mapping_dict
 
@@ -271,7 +283,15 @@ class AnnDataLabelAppender:
         column_definition = self._flatten_column_def_with_dependencies(column_definition)
 
         if label_type == "curie":
-            if "curie_constraints" not in column_definition:
+            curie_constraints = None
+
+            # Prefer using curie_constraints defined on add_labels, if available
+            if "curie_constraints" in column_definition["add_labels"]:
+                curie_constraints = column_definition["add_labels"]["curie_constraints"]
+            elif "curie_constraints" in column_definition:
+                curie_constraints = column_definition["curie_constraints"]
+
+            if curie_constraints is None:
                 raise ValueError(
                     f"Schema definition error: 'add_labels' with type 'curie' was found for '{column}' "
                     "but no curie constraints were found for the labels"
