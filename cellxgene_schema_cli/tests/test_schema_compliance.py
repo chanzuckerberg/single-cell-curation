@@ -1611,6 +1611,7 @@ class TestObs:
             in validator.errors
         )
 
+
 class TestVar:
     """
     Fail cases in adata.var and adata.raw.var
