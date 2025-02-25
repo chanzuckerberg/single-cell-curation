@@ -1628,6 +1628,7 @@ class TestObs:
             (numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan),
         ],
     )
+    @pytest.mark.skip(reason="Skipping genetic ancestry validation until we are ready for it in the schema")
     def test_genetic_ancestry__OK(
         self,
         validator_with_adata,
@@ -1684,6 +1685,7 @@ class TestObs:
             (numpy.nan, 0.0, 0.0, 0.0, 0.0, 0.0),
         ],
     )
+    @pytest.mark.skip(reason="Skipping genetic ancestry validation until we are ready for it in the schema")
     def test_genetic_ancestry__invalid(
         self,
         validator_with_adata,
@@ -1708,6 +1710,7 @@ class TestObs:
         validator.validate_adata()
         assert len(validator.errors) > 0
 
+    @pytest.mark.skip(reason="Skipping genetic ancestry validation until we are ready for it in the schema")
     def test_genetic_ancestry_same_donor_id(self, validator_with_adata):
         """
         genetic_ancestry_X fields must be the same when the donor id is the same

@@ -2145,9 +2145,6 @@ class Validator:
         # Checks spatial
         self._check_spatial()
 
-        # Validate genetic ancestry
-        self._validate_genetic_ancestry()
-
         # Organism-specific prefix validation
         self._validate_tissue_ontology_term_id()
         self._validate_cell_type_ontology_term_id()
