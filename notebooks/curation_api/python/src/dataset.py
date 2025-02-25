@@ -230,7 +230,7 @@ def upload_datafile_from_link(link: str, collection_id: str, dataset_id: str):
         success(logger, success_message)
 
 
-def upload_datafile_from_manifest(manifest: dict[str, str], collection_id: str, dataset_id: str):
+def upload_datafiles_from_manifest(manifest: dict[str, str], collection_id: str, dataset_id: str):
     """
     Create/update a Dataset from the passed manifest.
     :param manifest: the manifest with links to assets to upload to the Data Portal to become a Dataset
