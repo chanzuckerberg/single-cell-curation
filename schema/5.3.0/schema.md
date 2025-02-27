@@ -1378,7 +1378,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code> if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"na"</code>. This MUST be <code>"unknown"</code> if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"unknown"</code>. Otherwise, this MUST be one or more comma-separated (with no leading or trailing spaces) human-readable names for the terms in <code>self_reported_ethnicity_ontology_term_id</code> in the same order.<br><br> For example, if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"HANCESTRO:0005,HANCESTRO:0014"</code> then the value of <code>self_reported_ethnicity</code> is <code>"European,Hispanic or Latin American"</code>.
+        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code> if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"na"</code>. This MUST be <code>"unknown"</code> if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"unknown"</code>. Otherwise, this MUST be one or more comma-separated (with no leading or trailing spaces) human-readable names for the terms in <code>self_reported_ethnicity_ontology_term_id</code> in the same order.<br><br> For example, if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"HANCESTRO:0005,HANCESTRO:0014"</code> then the value of <code>self_reported_ethnicity</code> MUST be <code>"European,Hispanic or Latin American"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -2202,7 +2202,7 @@ If the <code>obs['assay_ontology_term_id']</code> values are all <i>unpaired ass
 
 This MUST be a gzipped tab-separated values (TSV) file.
 
-The curator MUST annotate the following header-less columns. Additional columns and header lines beginning with `#` MUST NOT be included.
+The curator MUST annotate the following header-less columns. Additional columns and header lines beginning with `#` MUST NOT be included. Each row MUST represent a unique fragment.
 
 ### first column
 
@@ -2284,11 +2284,11 @@ The curator MUST annotate the following header-less columns. Additional columns 
 
 ## scATAC-seq Asset: Processed Fragments File
 
-From every submitted fragments file asset, CELLxGENE Discover MUST generate <code>{dataset_version_id}-fragments.tsv.gz</code>, a tab-separated values (TSV) file position-sorted and compressed by bgzip.
+From every submitted fragments file asset, CELLxGENE Discover MUST generate <code>{artifact_id}-fragments.tsv.gz</code>, a tab-separated values (TSV) file position-sorted and compressed by bgzip.
 
 ## scATAC-seq Asset: Fragments File index
 
-From every processed fragments file asset, CELLxGENE Discover MUST generate <code>{dataset_version_id}-fragments.tsv.gz.tbi</code>, a <a href="https://www.htslib.org/doc/tabix.html">tabix</a> index of the fragment intervals from the fragments file.
+From every processed fragments file asset, CELLxGENE Discover MUST generate <code>{artifact_id}-fragments.tsv.gz.tbi</code>, a <a href="https://www.htslib.org/doc/tabix.html">tabix</a> index of the fragment intervals from the fragments file.
 
 ## Chromosome Tables
 
