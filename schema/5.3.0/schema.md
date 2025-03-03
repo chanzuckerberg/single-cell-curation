@@ -60,8 +60,6 @@ This document is organized by:
 
 **AnnData.** The canonical data format for CELLxGENE Discover is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by AnnData version 0.8.0 or greater. The on-disk format must be [AnnData specification (v0.1.0)](https://anndata.readthedocs.io/en/latest/fileformat-prose.html#anndata-specification-v0-1-0). Part of the rationale for selecting this format is to allow CELLxGENE to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `raw.var`, `obsm`, and `uns` attributes are described below.
 
-~~**Organisms**. Data MUST be from a Metazoan organism or SARS-COV-2 and defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the pinned Human and Mouse gene annotations.~~
-
 **Reserved Names**. The names of metadata fields MUST NOT start with `"__"`. The names of the metadata fields specified by the schema are **reserved** for the purposes and specifications described in the schema.
 
 **Unique Names**. The names of schema and data submitter metadata fields in `obs` and `var` MUST be unique. For example, duplicate `"feature_biotype"` keys in AnnData `var` are not allowed.
@@ -257,7 +255,7 @@ The following ontology dependencies are *pinned* for this version of the schema.
 
 ENSEMBL identifiers are required for genes and [External RNA Controls Consortium (ERCC)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4978944/) identifiers for [RNA Spike-In Control Mixes] to ensure that all datasets measure the same features and can therefore be integrated.
 
-The following gene annotation dependencies are *pinned* for this version of the schema. ~~For multi-organism experiments, cells from any Metazoan organism are allowed as long as orthologs from the following organism annotations are used.~~
+The following gene annotation dependencies are *pinned* for this version of the schema.
 
 | NCBITaxon | Source | Required version | Download |
 |:--|:--|:--|:--|
