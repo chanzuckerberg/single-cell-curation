@@ -143,7 +143,7 @@ def check_anndata_requires_fragment(anndata_file: str) -> bool:
     """
     onto_parser = OntologyParser()
 
-    def is_atac(x) -> str:
+    def is_atac(x: str) -> str:
         if is_ontological_descendant_of(onto_parser, x, "EFO:0010891"):
             if is_ontological_descendant_of(onto_parser, x, "EFO:0008913"):
                 return "p"  # paired
@@ -187,37 +187,36 @@ def process_fragment(
 
     """
     with tempfile.TemporaryDirectory() as tempdir:
-        # unzip the fragment. Subprocess is used here because gzip on the cli uses less memory with comparable speed to
-        # the python gzip library.
-        unzipped_file = Path(tempdir) / Path(fragment_file).name.rsplit(".", 1)[0]
-        logger.info(f"Unzipping {fragment_file}")
-        with open(unzipped_file, "wb") as fp:
-            subprocess.run(["gunzip", "-c", fragment_file], stdout=fp, check=True)
 
-        _dask_cluster_config = dict(silence_logs=logging.ERROR, dashboard_address=None)
+        # configure the dask cluster
+        _dask_cluster_config = dict(dashboard_address=None)
+        logging.getLogger("distributed").setLevel(logging.ERROR)
         if dask_cluster_config:
             _dask_cluster_config.update(dask_cluster_config)
 
+        # start the dask cluster and client
         with dd.LocalCluster(**_dask_cluster_config) as cluster, dd.Client(cluster):
-            # convert the fragment to a parquet file
-            logger.info(f"Converting {fragment_file} to parquet")
-            parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet")
-            ddf.read_csv(unzipped_file, sep="\t", names=column_ordering, dtype=column_types).to_parquet(
-                parquet_file_path, partition_on=["chromosome"], compute=True
-            )
+            # quick checks
+            errors = validate_anndata(anndata_file)
+            if errors:
+                return errors
 
-            # remove the unzipped file
-            logger.debug(f"Removing {unzipped_file}")
-            unzipped_file.unlink()
-            parquet_file = str(parquet_file_path)
-            errors = validate(parquet_file, anndata_file)
-            if any(errors):
-                logger.error("Errors found in Fragment and/or Anndata file")
-                logger.error(errors)
+            # convert the fragment to a parquet file for faster processing
+            try:
+                parquet_file = convert_to_parquet(fragment_file, tempdir)
+            except Exception:
+                msg = "Error converting fragment to parquet."
+                logger.exception(msg)
+                return [msg]
+
+            # slow checks
+            errors = validate_anndata_with_fragment(parquet_file, anndata_file)
+            if errors:
                 return errors
             else:
                 logger.info("Fragment and Anndata file are valid")
 
+            # generate the index
             if generate_index:
                 logger.info(f"Sorting fragment and generating index for {fragment_file}")
                 index_fragment(fragment_file, parquet_file, tempdir, override_write_algorithm, output_file)
@@ -225,18 +224,60 @@ def process_fragment(
     return []
 
 
-def validate(parquet_file: str, anndata_file: str) -> list[Optional[str]]:
-    jobs = [
+def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
+    # unzip the fragment. Subprocess is used here because gzip on the cli uses less memory with comparable
+    # speed to the python gzip library.
+    unzipped_file = Path(tempdir) / Path(fragment_file).name.rsplit(".", 1)[0]
+    logger.info(f"Unzipping {fragment_file}")
+    with open(unzipped_file, "wb") as fp:
+        subprocess.run(["gunzip", "-c", fragment_file], stdout=fp, check=True)
+
+    # convert the fragment to a parquet file
+    logger.info(f"Converting {fragment_file} to parquet")
+    parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet")
+    try:
+        ddf.read_csv(unzipped_file, sep="\t", names=column_ordering, dtype=column_types).to_parquet(
+            parquet_file_path, partition_on=["chromosome"], compute=True
+        )
+    except pd.errors.ParserError as e:
+        return [f"Error parsing fragment file: {e}"]
+
+    # remove the unzipped file
+    logger.debug(f"Removing {unzipped_file}")
+    unzipped_file.unlink()
+    parquet_file = str(parquet_file_path)
+    return parquet_file
+
+
+def _report_errors(header: str, errors: list[str]) -> list[str]:
+    if any(errors):
+        errors = [e for e in errors if e is not None]
+        errors = [header] + errors
+        logger.error("\n\t".join(errors))
+        return errors
+    else:
+        return []
+
+
+def validate_anndata(anndata_file: str) -> list[str]:
+    try:
+        check_anndata_requires_fragment(anndata_file)
+    except ValueError as e:
+        return _report_errors("Errors found in Anndata file", str(e))
+    errors = [validate_anndata_organism_ontology_term_id(anndata_file), validate_anndata_is_primary_data(anndata_file)]
+    return _report_errors("Errors found in Anndata file", errors)
+
+
+def validate_anndata_with_fragment(parquet_file: str, anndata_file: str) -> list[str]:
+    errors = [
         validate_fragment_start_coordinate_greater_than_0(parquet_file),
         validate_fragment_barcode_in_adata_index(parquet_file, anndata_file),
         validate_fragment_stop_coordinate_within_chromosome(parquet_file, anndata_file),
         validate_fragment_stop_greater_than_start_coordinate(parquet_file),
         validate_fragment_read_support(parquet_file),
-        validate_anndata_organism_ontology_term_id(anndata_file),
-        validate_anndata_is_primary_data(anndata_file),
         validate_fragment_no_duplicate_rows(parquet_file),
     ]
-    return jobs
+    return _report_errors("Errors found in Fragment and/or Anndata file", errors)
 
 
 def validate_fragment_no_duplicate_rows(parquet_file: str) -> Optional[str]:
@@ -273,8 +314,18 @@ def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, annda
     with h5py.File(anndata_file) as f:
         organism_ontology_term_id = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)
         if organism_ontology_term_id.size > 1:
-            return "Anndata.obs.organism_ontology_term_id must have a unique value."
-    chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table[organism_ontology_term_id[0]]
+            error_message = (
+                "Anndata.obs.organism_ontology_term_id must have a unique value. Found the following " "values:\n"
+            ) + "\n\t".join(organism_ontology_term_id)
+            return error_message
+        organism_ontology_term_id = organism_ontology_term_id[0]
+    try:
+        chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table[organism_ontology_term_id]
+    except KeyError:
+        return (
+            f"Anndata.obs.organism_ontology_term_id must be one of NCBITaxon:9606 or NCBITaxon"
+            f":10090. Received {organism_ontology_term_id}."
+        )
     df = ddf.read_parquet(parquet_file, columns=["chromosome", "stop coordinate"])
     # the chromosomes in the fragment must match the chromosomes for that organism
     mismatched_chromosomes = set(df["chromosome"].unique().compute()) - chromosome_length_table.keys()
@@ -290,7 +341,7 @@ def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, annda
 
 def validate_fragment_read_support(parquet_file: str) -> Optional[str]:
     # check that the read support is greater than 0
-    df = ddf.read_parquet(parquet_file, columns=["read support"], filters=[("read support", "==", 0)])
+    df = ddf.read_parquet(parquet_file, columns=["read support"], filters=[("read support", "<=", 0)])
     if len(df.compute()) != 0:
         return "Read support must be greater than 0."
 
