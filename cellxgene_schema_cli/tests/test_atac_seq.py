@@ -227,7 +227,16 @@ class TestValidateFragmentStopCoordinateWithinChromosome:
             to_parquet_file(atac_fragment_dataframe, tmpdir), tmpdir + "/small_atac_seq.h5ad"
         )
         # Assert
-        assert result == "Anndata.obs.organism_ontology_term_id must have a unique value."
+        assert result.startswith("Anndata.obs.organism_ontology_term_id must have a unique value.")
+
+    def test_mismatch_chromosome(self, atac_fragment_dataframe, atac_anndata_file, tmpdir):
+        # Arrange
+        atac_fragment_dataframe["chromosome"] = ["foo", "chr2", "chr1"]
+        fragment_file = to_parquet_file(atac_fragment_dataframe, tmpdir)
+        # Act
+        result = atac_seq.validate_fragment_stop_coordinate_within_chromosome(fragment_file, atac_anndata_file)
+        # Assert
+        assert result.startswith("Chromosomes in the fragment do not match the organism")
 
 
 class TestValidateFragmentReadSupport:
@@ -235,9 +244,10 @@ class TestValidateFragmentReadSupport:
         result = atac_seq.validate_fragment_read_support(atac_fragment_file)
         assert not result
 
-    def test_negative(self, atac_fragment_dataframe, tmpdir):
+    @pytest.mark.parametrize("read_support", [0, -1])
+    def test_negative(self, atac_fragment_dataframe, tmpdir, read_support):
         # Arrange
-        atac_fragment_dataframe["read support"] = 0
+        atac_fragment_dataframe["read support"] = read_support
         fragment_file = to_parquet_file(atac_fragment_dataframe, tmpdir)
         # Act
         result = atac_seq.validate_fragment_read_support(fragment_file)

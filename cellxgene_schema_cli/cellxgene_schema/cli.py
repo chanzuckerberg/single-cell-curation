@@ -3,7 +3,7 @@ import sys
 
 import click
 
-logger = logging.getLogger("cellxgene_schema")
+logger = logging.getLogger("cellxgene-schema")
 
 
 @click.group(

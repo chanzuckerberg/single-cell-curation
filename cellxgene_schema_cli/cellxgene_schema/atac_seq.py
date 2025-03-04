@@ -19,7 +19,7 @@ from dask.delayed import Delayed
 
 from .utils import is_ontological_descendant_of
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("cellxgene-schema")
 
 # TODO: these chromosome tables should be calculated from the fasta file?
 # location of fasta https://www.gencodegenes.org/human/release_44.html and file name GRCh38.primary_assembly.genome.fa
@@ -276,7 +276,13 @@ def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, annda
             return "Anndata.obs.organism_ontology_term_id must have a unique value."
     chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table[organism_ontology_term_id[0]]
     df = ddf.read_parquet(parquet_file, columns=["chromosome", "stop coordinate"])
-    df["chromosome_length"] = df["chromosome"].map(chromosome_length_table).astype(int)
+    # the chromosomes in the fragment must match the chromosomes for that organism
+    mismatched_chromosomes = set(df["chromosome"].unique().compute()) - chromosome_length_table.keys()
+    if mismatched_chromosomes:
+        return f"Chromosomes in the fragment do not match the organism({organism_ontology_term_id}).\n" + "\t\n".join(
+            mismatched_chromosomes
+        )
+    df["chromosome_length"] = df["chromosome"].map(chromosome_length_table, meta=int).astype(int)
     df = df["stop coordinate"] <= df["chromosome_length"]
     if not df.all().compute():
         return "Stop coordinate must be less than the chromosome length."
@@ -307,7 +313,8 @@ def validate_anndata_organism_ontology_term_id(anndata_file: str) -> Optional[st
 def detect_chromosomes(parquet_file: str) -> list[str]:
     logger.info("detecting chromosomes")
     df = ddf.read_parquet(parquet_file, columns=["chromosome"]).drop_duplicates()
-    return df["chromosome"].values.compute()
+    df = df["chromosome"].compute()
+    return df.tolist()
 
 
 def get_output_file(fragment_file: str, output_file: Optional[str]) -> str:
