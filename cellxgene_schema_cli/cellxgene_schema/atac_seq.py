@@ -247,9 +247,9 @@ def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
     return parquet_file
 
 
-def _report_errors(header: str, errors: list[str]) -> list[str]:
+def report_errors(header: str, errors: list[str]) -> list[str]:
     if any(errors):
-        errors = [e for e in errors if e is not None]
+        errors = [f"{i}: {e})" for i, e in enumerate(errors) if e is not None]
         errors = [header] + errors
         logger.error("\n\t".join(errors))
         return errors
@@ -258,12 +258,8 @@ def _report_errors(header: str, errors: list[str]) -> list[str]:
 
 
 def validate_anndata(anndata_file: str) -> list[str]:
-    try:
-        check_anndata_requires_fragment(anndata_file)
-    except ValueError as e:
-        return _report_errors("Errors found in Anndata file", str(e))
     errors = [validate_anndata_organism_ontology_term_id(anndata_file), validate_anndata_is_primary_data(anndata_file)]
-    return _report_errors("Errors found in Anndata file", errors)
+    return report_errors("Errors found in Anndata file", errors)
 
 
 def validate_anndata_with_fragment(parquet_file: str, anndata_file: str) -> list[str]:
@@ -275,7 +271,7 @@ def validate_anndata_with_fragment(parquet_file: str, anndata_file: str) -> list
         validate_fragment_read_support(parquet_file),
         validate_fragment_no_duplicate_rows(parquet_file),
     ]
-    return _report_errors("Errors found in Fragment and/or Anndata file", errors)
+    return report_errors("Errors found in Fragment and/or Anndata file", errors)
 
 
 def validate_fragment_no_duplicate_rows(parquet_file: str) -> Optional[str]:
