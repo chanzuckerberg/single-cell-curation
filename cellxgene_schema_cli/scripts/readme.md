@@ -11,7 +11,7 @@ To update ontologies, update the `cellxgene-ontology-guide` version in `cellxgen
 make update-gene-references
 ```
 
-The gene reference files are used internally by the class `cellxgene-schema.ontology.GeneChecker`
+The gene reference files are used internally by the class `cellxgene-schema.gencode:GeneChecker`
 
 ## Updating ontologies
 
@@ -21,31 +21,11 @@ and then generate a new release with the subsequently generated ontology files. 
 `cellxgene_schema_cli/requirements.txt` to this latest release.
 
 ## Updating gene references
+Per-species gene information is managed and stored in the  `cellxgene_schema_cli/cellxgene_schema/gencode_files/` directory. The source of truth for per-species gene versions is in the `gene_info.yml` file, therein. 
 
-Gene references are stored under  `cellxgene_schema_cli/cellxgene_schema/gencode_files/`
-
-The following gene references are currently stored (to see specific versions refer to schema definition):
-
-1. Human `genes_homo_sapines.csv.gz`
-2. Mouse `genes_mus_musculus_sapines.csv.gz`
-3. sars‑CoV‑2 `genes_sars_cov_2.csv.gz`
-4. ERCC Spike-Ins `genes_ercc.csv.gz`
-
-To update these gene references, a developer has to do run the following:
-
+To update these gene references, a developer must update the `gene_info.yml` file and run the following:
 ```bash
 make update-gene-references
 ```
 
-This will:
-
-1. Download the gene reference files.
-2. For 10X data: decompress it, get the GTF files and remove the rest.
-3. At the end the following files will be in the folder:
-
-    - `mus_musculus.gtf.gz`
-    - `homo_sapiens.gtf.gz`
-    - `sars_cov_2.gtf.gz`
-    - `ercc.txt`
-
-The GTF files for mouse and human are obtained from the 10X reference data. The GTF file for sars‑CoV‑2 is obtained from ENSEMBL. The ERCC IDs are obtained from ThermoFisher.
+This will managed the downloading, unpacking, and extraction of per-species gene level information and write the results for each species seperately e.g. `genes_ercc.csv.gz` and `genes_homo_sapiens.csv.gz`.
