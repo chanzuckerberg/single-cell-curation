@@ -131,6 +131,36 @@ class TestProcessFragment:
                 assert chromosome in atac_seq.human_chromosome_by_length
 
 
+class TestConvertToParquet:
+    def test_positive(self, atac_fragment_dataframe, tmpdir):
+        tsv_file = str(
+            tmpdir + "/fragment.tsv.gzip",
+        )
+        atac_fragment_dataframe.to_csv(
+            tsv_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
+        )
+        parquet_file = Path(atac_seq.convert_to_parquet(tsv_file, tmpdir))
+        assert Path(parquet_file).is_dir()
+
+    def test_missing_column(self, tmpdir, atac_fragment_dataframe):
+        atac_fragment_dataframe = atac_fragment_dataframe.drop(columns=["read support"])
+        tsv_file = str(tmpdir + "/fragment.tsv")
+        atac_fragment_dataframe.to_csv(
+            tsv_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering[:-1]
+        )
+        with pytest.raises(ValueError):
+            atac_seq.convert_to_parquet(tsv_file, tmpdir)
+
+    def test_invalid_column_dtype(self, tmpdir, atac_fragment_dataframe):
+        atac_fragment_dataframe["start coordinate"] = "foo"
+        tsv_file = str(tmpdir + "/fragment.tsv")
+        atac_fragment_dataframe.to_csv(
+            tsv_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
+        )
+        with pytest.raises(ValueError):
+            atac_seq.convert_to_parquet(tsv_file, tmpdir)
+
+
 class TestValidateFragmentBarcodeInAdataIndex:
     def test_postive(self, atac_fragment_file, atac_anndata_file):
         result = atac_seq.validate_fragment_barcode_in_adata_index(atac_fragment_file, atac_anndata_file)

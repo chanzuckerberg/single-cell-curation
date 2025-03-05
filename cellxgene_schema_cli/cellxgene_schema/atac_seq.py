@@ -239,12 +239,10 @@ def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
         ddf.read_csv(unzipped_file, sep="\t", names=column_ordering, dtype=column_types).to_parquet(
             parquet_file_path, partition_on=["chromosome"], compute=True
         )
-    except pd.errors.ParserError as e:
-        return [f"Error parsing fragment file: {e}"]
-
-    # remove the unzipped file
-    logger.debug(f"Removing {unzipped_file}")
-    unzipped_file.unlink()
+    finally:
+        # remove the unzipped file
+        logger.debug(f"Removing {unzipped_file}")
+        unzipped_file.unlink()
     parquet_file = str(parquet_file_path)
     return parquet_file
 
