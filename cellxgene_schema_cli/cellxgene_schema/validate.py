@@ -12,12 +12,12 @@ import numpy as np
 import pandas as pd
 import scipy
 from anndata.compat import DaskArray
-from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from dask.array import map_blocks
 from scipy import sparse
 
 from . import gencode, schema
 from .gencode import get_gene_checker
+from .ontology_parser import ONTOLOGY_PARSER
 from .utils import (
     SPARSE_MATRIX_TYPES,
     SUPPORTED_SPARSE_MATRIX_TYPES,
@@ -29,8 +29,6 @@ from .utils import (
 )
 
 logger = logging.getLogger(__name__)
-
-ONTOLOGY_PARSER = OntologyParser(schema_version="v5.3.0")
 
 ASSAY_VISIUM = "EFO:0010961"  # generic term
 ASSAY_VISIUM_11M = "EFO:0022860"  # specific visium assay

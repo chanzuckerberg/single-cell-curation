@@ -354,7 +354,7 @@ class TestValidateAnndataOrganismOntologyTermId:
         # Act
         result = atac_seq.validate_anndata_organism_ontology_term_id(atac_anndata_file)
         # Assert
-        assert result.startswith("Anndata.obs.organism_ontology_term_id must have a unique value.")
+        assert result.startswith("Anndata.obs.organism_ontology_term_id must have exactly 1 unique value.")
 
 
 class TestValidateFragmentNoDuplicateRows:

@@ -13,10 +13,10 @@ import dask.distributed as dd  # TODO: see if distributed mode can be avoided.
 import h5py
 import pandas as pd
 import pysam
-from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from dask import delayed
 from dask.delayed import Delayed
 
+from .ontology_parser import ONTOLOGY_PARSER
 from .utils import is_ontological_descendant_of
 
 logger = logging.getLogger("cellxgene-schema")
@@ -141,11 +141,10 @@ def check_anndata_requires_fragment(anndata_file: str) -> bool:
     :param anndata_file: The anndata file to validate.
     :return:
     """
-    onto_parser = OntologyParser()
 
     def is_atac(x: str) -> str:
-        if is_ontological_descendant_of(onto_parser, x, "EFO:0010891"):
-            if is_ontological_descendant_of(onto_parser, x, "EFO:0008913"):
+        if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0010891"):
+            if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0008913"):
                 return "p"  # paired
             else:
                 return "u"  # unpaired
@@ -249,7 +248,7 @@ def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
 
 def report_errors(header: str, errors: list[str]) -> list[str]:
     if any(errors):
-        errors = [f"{i}: {e})" for i, e in enumerate(errors) if e is not None]
+        errors = [e for e in errors if e is not None]
         errors = [header] + errors
         logger.error("\n\t".join(errors))
         return errors
@@ -259,7 +258,7 @@ def report_errors(header: str, errors: list[str]) -> list[str]:
 
 def validate_anndata(anndata_file: str) -> list[str]:
     errors = [validate_anndata_organism_ontology_term_id(anndata_file), validate_anndata_is_primary_data(anndata_file)]
-    return report_errors("Errors found in Anndata file", errors)
+    return report_errors("Errors found in Anndata file. Skipping fragment validation.", errors)
 
 
 def validate_anndata_with_fragment(parquet_file: str, anndata_file: str) -> list[str]:
@@ -341,7 +340,7 @@ def validate_anndata_organism_ontology_term_id(anndata_file: str) -> Optional[st
         organism_ontology_term_ids = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)
     if organism_ontology_term_ids.size > 1:
         error_message = (
-            "Anndata.obs.organism_ontology_term_id must have a unique value. Found the following values:\n"
+            "Anndata.obs.organism_ontology_term_id must have exactly 1 unique value. Found the following values:\n"
         ) + "\n\t".join(organism_ontology_term_ids)
         return error_message
     organism_ontology_term_id = organism_ontology_term_ids[0]

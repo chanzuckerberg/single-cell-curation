@@ -83,11 +83,11 @@ def _check_anndata_requires_fragment(h5ad_file):
     try:
         fragment_required = check_anndata_requires_fragment(h5ad_file)
         if fragment_required:
-            logger.info("Andata requires an ATAC fragment file.")
+            logger.info("Anndata requires an ATAC fragment file.")
         else:
-            logger.info("Andata does not require an ATAC fragment file.")
+            logger.info("Anndata does not require an ATAC fragment file.")
     except Exception as e:
-        report_errors("Andata does not support ATAC fragment files for the follow reason", [str(e)])
+        report_errors("Anndata does not support ATAC fragment files for the followings reasons:", [str(e)])
         sys.exit(1)
 
 
