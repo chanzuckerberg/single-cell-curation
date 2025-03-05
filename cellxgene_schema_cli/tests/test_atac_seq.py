@@ -247,18 +247,6 @@ class TestValidateFragmentStopCoordinateWithinChromosome:
         # Assert
         assert result == "Stop coordinate must be less than the chromosome length."
 
-    def test_organism_ontology_id_not_unique(self, atac_fragment_dataframe, atac_anndata_file, tmpdir):
-        # Arrange
-        atac_anndata = ad.read_h5ad(atac_anndata_file)
-        atac_anndata.obs["organism_ontology_term_id"] = ["NCBITaxon:10090", "NCBITaxon:9606", "NCBITaxon:9606"]
-        atac_anndata.write(tmpdir + "/small_atac_seq.h5ad")
-        # Act
-        result = atac_seq.validate_fragment_stop_coordinate_within_chromosome(
-            to_parquet_file(atac_fragment_dataframe, tmpdir), tmpdir + "/small_atac_seq.h5ad"
-        )
-        # Assert
-        assert result.startswith("Anndata.obs.organism_ontology_term_id must have a unique value.")
-
     def test_mismatch_chromosome(self, atac_fragment_dataframe, atac_anndata_file, tmpdir):
         # Arrange
         atac_fragment_dataframe["chromosome"] = ["foo", "chr2", "chr1"]
@@ -355,7 +343,18 @@ class TestValidateAnndataOrganismOntologyTermId:
         # Act
         result = atac_seq.validate_anndata_organism_ontology_term_id(atac_anndata_file)
         # Assert
-        assert result == "Anndata.obs.organism_ontology_term_id must be one of ['NCBITaxon:9606', 'NCBITaxon:10090']."
+        assert result.startswith(
+            "Anndata.obs.organism_ontology_term_id must be one of ['NCBITaxon:9606', 'NCBITaxon:10090']."
+        )
+
+    def test_organism_ontology_id_not_unique(self, atac_anndata, tmpdir):
+        # Arrange
+        atac_anndata.obs["organism_ontology_term_id"] = ["NCBITaxon:10090", "NCBITaxon:9606", "NCBITaxon:9606"]
+        atac_anndata_file = to_anndata_file(atac_anndata, tmpdir)
+        # Act
+        result = atac_seq.validate_anndata_organism_ontology_term_id(atac_anndata_file)
+        # Assert
+        assert result.startswith("Anndata.obs.organism_ontology_term_id must have a unique value.")
 
 
 class TestValidateFragmentNoDuplicateRows:

@@ -306,22 +306,11 @@ def validate_fragment_stop_greater_than_start_coordinate(parquet_file: str) -> O
 def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, anndata_file: str) -> Optional[str]:
     # check that the stop coordinate is within the length of the chromosome
     with h5py.File(anndata_file) as f:
-        organism_ontology_term_id = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)
-        if organism_ontology_term_id.size > 1:
-            error_message = (
-                "Anndata.obs.organism_ontology_term_id must have a unique value. Found the following " "values:\n"
-            ) + "\n\t".join(organism_ontology_term_id)
-            return error_message
-        organism_ontology_term_id = organism_ontology_term_id[0]
-    try:
-        chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table[organism_ontology_term_id]
-    except KeyError:
-        return (
-            f"Anndata.obs.organism_ontology_term_id must be one of NCBITaxon:9606 or NCBITaxon"
-            f":10090. Received {organism_ontology_term_id}."
-        )
+        organism_ontology_term_id = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)[0]
     df = ddf.read_parquet(parquet_file, columns=["chromosome", "stop coordinate"])
+
     # the chromosomes in the fragment must match the chromosomes for that organism
+    chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table[organism_ontology_term_id]
     mismatched_chromosomes = set(df["chromosome"].unique().compute()) - chromosome_length_table.keys()
     if mismatched_chromosomes:
         return f"Chromosomes in the fragment do not match the organism({organism_ontology_term_id}).\n" + "\t\n".join(
@@ -349,10 +338,16 @@ def validate_anndata_is_primary_data(anndata_file: str) -> Optional[str]:
 
 def validate_anndata_organism_ontology_term_id(anndata_file: str) -> Optional[str]:
     with h5py.File(anndata_file) as f:
-        unique_organism_ontology_term_ids = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique()
+        organism_ontology_term_ids = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)
+    if organism_ontology_term_ids.size > 1:
+        error_message = (
+            "Anndata.obs.organism_ontology_term_id must have a unique value. Found the following values:\n"
+        ) + "\n\t".join(organism_ontology_term_ids)
+        return error_message
+    organism_ontology_term_id = organism_ontology_term_ids[0]
     allowed_terms = [*organism_ontology_term_id_by_chromosome_length_table.keys()]
-    if unique_organism_ontology_term_ids[0] not in allowed_terms:
-        return f"Anndata.obs.organism_ontology_term_id must be one of {allowed_terms}."
+    if organism_ontology_term_id not in allowed_terms:
+        return f"Anndata.obs.organism_ontology_term_id must be one of {allowed_terms}. Got {organism_ontology_term_id}."
 
 
 def detect_chromosomes(parquet_file: str) -> list[str]:
