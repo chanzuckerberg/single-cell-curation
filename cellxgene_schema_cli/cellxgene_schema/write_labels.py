@@ -8,8 +8,8 @@ import pandas as pd
 from . import gencode, schema
 from .env import SCHEMA_REFERENCE_BASE_URL, SCHEMA_REFERENCE_FILE_NAME
 from .gencode import get_gene_checker
+from .ontology_parser import ONTOLOGY_PARSER
 from .utils import get_hash_digest_column, getattr_anndata
-from .validate import ONTOLOGY_PARSER
 
 logger = logging.getLogger(__name__)
 

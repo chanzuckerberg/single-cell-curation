@@ -13,10 +13,10 @@ import dask.distributed as dd  # TODO: see if distributed mode can be avoided.
 import h5py
 import pandas as pd
 import pysam
-from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from dask import delayed
 from dask.delayed import Delayed
 
+from .ontology_parser import ONTOLOGY_PARSER
 from .utils import is_ontological_descendant_of
 
 logger = logging.getLogger(__name__)
@@ -141,11 +141,10 @@ def check_anndata_requires_fragment(anndata_file: str) -> bool:
     :param anndata_file: The anndata file to validate.
     :return:
     """
-    onto_parser = OntologyParser()
 
-    def is_atac(x) -> str:
-        if is_ontological_descendant_of(onto_parser, x, "EFO:0010891"):
-            if is_ontological_descendant_of(onto_parser, x, "EFO:0008913"):
+    def is_atac(x: str) -> str:
+        if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0010891"):
+            if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0008913"):
                 return "p"  # paired
             else:
                 return "u"  # unpaired
@@ -187,37 +186,36 @@ def process_fragment(
 
     """
     with tempfile.TemporaryDirectory() as tempdir:
-        # unzip the fragment. Subprocess is used here because gzip on the cli uses less memory with comparable speed to
-        # the python gzip library.
-        unzipped_file = Path(tempdir) / Path(fragment_file).name.rsplit(".", 1)[0]
-        logger.info(f"Unzipping {fragment_file}")
-        with open(unzipped_file, "wb") as fp:
-            subprocess.run(["gunzip", "-c", fragment_file], stdout=fp, check=True)
 
-        _dask_cluster_config = dict(silence_logs=logging.ERROR, dashboard_address=None)
+        # configure the dask cluster
+        _dask_cluster_config = dict(dashboard_address=None)
+        logging.getLogger("distributed").setLevel(logging.ERROR)
         if dask_cluster_config:
             _dask_cluster_config.update(dask_cluster_config)
 
+        # start the dask cluster and client
         with dd.LocalCluster(**_dask_cluster_config) as cluster, dd.Client(cluster):
-            # convert the fragment to a parquet file
-            logger.info(f"Converting {fragment_file} to parquet")
-            parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet")
-            ddf.read_csv(unzipped_file, sep="\t", names=column_ordering, dtype=column_types).to_parquet(
-                parquet_file_path, partition_on=["chromosome"], compute=True
-            )
+            # quick checks
+            errors = validate_anndata(anndata_file)
+            if errors:
+                return errors
 
-            # remove the unzipped file
-            logger.debug(f"Removing {unzipped_file}")
-            unzipped_file.unlink()
-            parquet_file = str(parquet_file_path)
-            errors = validate(parquet_file, anndata_file)
-            if any(errors):
-                logger.error("Errors found in Fragment and/or Anndata file")
-                logger.error(errors)
+            # convert the fragment to a parquet file for faster processing
+            try:
+                parquet_file = convert_to_parquet(fragment_file, tempdir)
+            except Exception as e:
+                msg = "Error Parsing the fragment file. Check that columns match schema definition. Error: " + str(e)
+                logger.exception(msg)
+                return [msg]
+
+            # slow checks
+            errors = validate_anndata_with_fragment(parquet_file, anndata_file)
+            if errors:
                 return errors
             else:
                 logger.info("Fragment and Anndata file are valid")
 
+            # generate the index
             if generate_index:
                 logger.info(f"Sorting fragment and generating index for {fragment_file}")
                 index_fragment(fragment_file, parquet_file, tempdir, override_write_algorithm, output_file)
@@ -225,18 +223,54 @@ def process_fragment(
     return []
 
 
-def validate(parquet_file: str, anndata_file: str) -> list[Optional[str]]:
-    jobs = [
+def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
+    # unzip the fragment. Subprocess is used here because gzip on the cli uses less memory with comparable
+    # speed to the python gzip library.
+    unzipped_file = Path(tempdir) / Path(fragment_file).name.rsplit(".", 1)[0]
+    logger.info(f"Unzipping {fragment_file}")
+    with open(unzipped_file, "wb") as fp:
+        subprocess.run(["gunzip", "-c", fragment_file], stdout=fp, check=True)
+
+    # convert the fragment to a parquet file
+    logger.info(f"Converting {fragment_file} to parquet")
+    parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet")
+    try:
+        ddf.read_csv(unzipped_file, sep="\t", names=column_ordering, dtype=column_types).to_parquet(
+            parquet_file_path, partition_on=["chromosome"], compute=True
+        )
+    finally:
+        # remove the unzipped file
+        logger.debug(f"Removing {unzipped_file}")
+        unzipped_file.unlink()
+    parquet_file = str(parquet_file_path)
+    return parquet_file
+
+
+def report_errors(header: str, errors: list[str]) -> list[str]:
+    if any(errors):
+        errors = [e for e in errors if e is not None]
+        errors = [header] + errors
+        logger.error("\n\t".join(errors))
+        return errors
+    else:
+        return []
+
+
+def validate_anndata(anndata_file: str) -> list[str]:
+    errors = [validate_anndata_organism_ontology_term_id(anndata_file), validate_anndata_is_primary_data(anndata_file)]
+    return report_errors("Errors found in Anndata file. Skipping fragment validation.", errors)
+
+
+def validate_anndata_with_fragment(parquet_file: str, anndata_file: str) -> list[str]:
+    errors = [
         validate_fragment_start_coordinate_greater_than_0(parquet_file),
         validate_fragment_barcode_in_adata_index(parquet_file, anndata_file),
         validate_fragment_stop_coordinate_within_chromosome(parquet_file, anndata_file),
         validate_fragment_stop_greater_than_start_coordinate(parquet_file),
         validate_fragment_read_support(parquet_file),
-        validate_anndata_organism_ontology_term_id(anndata_file),
-        validate_anndata_is_primary_data(anndata_file),
         validate_fragment_no_duplicate_rows(parquet_file),
     ]
-    return jobs
+    return report_errors("Errors found in Fragment and/or Anndata file", errors)
 
 
 def validate_fragment_no_duplicate_rows(parquet_file: str) -> Optional[str]:
@@ -271,12 +305,17 @@ def validate_fragment_stop_greater_than_start_coordinate(parquet_file: str) -> O
 def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, anndata_file: str) -> Optional[str]:
     # check that the stop coordinate is within the length of the chromosome
     with h5py.File(anndata_file) as f:
-        organism_ontology_term_id = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)
-        if organism_ontology_term_id.size > 1:
-            return "Anndata.obs.organism_ontology_term_id must have a unique value."
-    chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table[organism_ontology_term_id[0]]
+        organism_ontology_term_id = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)[0]
     df = ddf.read_parquet(parquet_file, columns=["chromosome", "stop coordinate"])
-    df["chromosome_length"] = df["chromosome"].map(chromosome_length_table).astype(int)
+
+    # the chromosomes in the fragment must match the chromosomes for that organism
+    chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table[organism_ontology_term_id]
+    mismatched_chromosomes = set(df["chromosome"].unique().compute()) - chromosome_length_table.keys()
+    if mismatched_chromosomes:
+        return f"Chromosomes in the fragment do not match the organism({organism_ontology_term_id}).\n" + "\t\n".join(
+            mismatched_chromosomes
+        )
+    df["chromosome_length"] = df["chromosome"].map(chromosome_length_table, meta=int).astype(int)
     df = df["stop coordinate"] <= df["chromosome_length"]
     if not df.all().compute():
         return "Stop coordinate must be less than the chromosome length."
@@ -284,7 +323,7 @@ def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, annda
 
 def validate_fragment_read_support(parquet_file: str) -> Optional[str]:
     # check that the read support is greater than 0
-    df = ddf.read_parquet(parquet_file, columns=["read support"], filters=[("read support", "==", 0)])
+    df = ddf.read_parquet(parquet_file, columns=["read support"], filters=[("read support", "<=", 0)])
     if len(df.compute()) != 0:
         return "Read support must be greater than 0."
 
@@ -298,16 +337,23 @@ def validate_anndata_is_primary_data(anndata_file: str) -> Optional[str]:
 
 def validate_anndata_organism_ontology_term_id(anndata_file: str) -> Optional[str]:
     with h5py.File(anndata_file) as f:
-        unique_organism_ontology_term_ids = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique()
+        organism_ontology_term_ids = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)
+    if organism_ontology_term_ids.size > 1:
+        error_message = (
+            "Anndata.obs.organism_ontology_term_id must have exactly 1 unique value. Found the following values:\n"
+        ) + "\n\t".join(organism_ontology_term_ids)
+        return error_message
+    organism_ontology_term_id = organism_ontology_term_ids[0]
     allowed_terms = [*organism_ontology_term_id_by_chromosome_length_table.keys()]
-    if unique_organism_ontology_term_ids[0] not in allowed_terms:
-        return f"Anndata.obs.organism_ontology_term_id must be one of {allowed_terms}."
+    if organism_ontology_term_id not in allowed_terms:
+        return f"Anndata.obs.organism_ontology_term_id must be one of {allowed_terms}. Got {organism_ontology_term_id}."
 
 
 def detect_chromosomes(parquet_file: str) -> list[str]:
     logger.info("detecting chromosomes")
     df = ddf.read_parquet(parquet_file, columns=["chromosome"]).drop_duplicates()
-    return df["chromosome"].values.compute()
+    df = df["chromosome"].compute()
+    return df.tolist()
 
 
 def get_output_file(fragment_file: str, output_file: Optional[str]) -> str:

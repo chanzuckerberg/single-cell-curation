@@ -131,6 +131,36 @@ class TestProcessFragment:
                 assert chromosome in atac_seq.human_chromosome_by_length
 
 
+class TestConvertToParquet:
+    def test_positive(self, atac_fragment_dataframe, tmpdir):
+        tsv_file = str(
+            tmpdir + "/fragment.tsv.gzip",
+        )
+        atac_fragment_dataframe.to_csv(
+            tsv_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
+        )
+        parquet_file = Path(atac_seq.convert_to_parquet(tsv_file, tmpdir))
+        assert Path(parquet_file).is_dir()
+
+    def test_missing_column(self, tmpdir, atac_fragment_dataframe):
+        atac_fragment_dataframe = atac_fragment_dataframe.drop(columns=["read support"])
+        tsv_file = str(tmpdir + "/fragment.tsv")
+        atac_fragment_dataframe.to_csv(
+            tsv_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering[:-1]
+        )
+        with pytest.raises(ValueError):
+            atac_seq.convert_to_parquet(tsv_file, tmpdir)
+
+    def test_invalid_column_dtype(self, tmpdir, atac_fragment_dataframe):
+        atac_fragment_dataframe["start coordinate"] = "foo"
+        tsv_file = str(tmpdir + "/fragment.tsv")
+        atac_fragment_dataframe.to_csv(
+            tsv_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
+        )
+        with pytest.raises(ValueError):
+            atac_seq.convert_to_parquet(tsv_file, tmpdir)
+
+
 class TestValidateFragmentBarcodeInAdataIndex:
     def test_postive(self, atac_fragment_file, atac_anndata_file):
         result = atac_seq.validate_fragment_barcode_in_adata_index(atac_fragment_file, atac_anndata_file)
@@ -217,17 +247,14 @@ class TestValidateFragmentStopCoordinateWithinChromosome:
         # Assert
         assert result == "Stop coordinate must be less than the chromosome length."
 
-    def test_organism_ontology_id_not_unique(self, atac_fragment_dataframe, atac_anndata_file, tmpdir):
+    def test_mismatch_chromosome(self, atac_fragment_dataframe, atac_anndata_file, tmpdir):
         # Arrange
-        atac_anndata = ad.read_h5ad(atac_anndata_file)
-        atac_anndata.obs["organism_ontology_term_id"] = ["NCBITaxon:10090", "NCBITaxon:9606", "NCBITaxon:9606"]
-        atac_anndata.write(tmpdir + "/small_atac_seq.h5ad")
+        atac_fragment_dataframe["chromosome"] = ["foo", "chr2", "chr1"]
+        fragment_file = to_parquet_file(atac_fragment_dataframe, tmpdir)
         # Act
-        result = atac_seq.validate_fragment_stop_coordinate_within_chromosome(
-            to_parquet_file(atac_fragment_dataframe, tmpdir), tmpdir + "/small_atac_seq.h5ad"
-        )
+        result = atac_seq.validate_fragment_stop_coordinate_within_chromosome(fragment_file, atac_anndata_file)
         # Assert
-        assert result == "Anndata.obs.organism_ontology_term_id must have a unique value."
+        assert result.startswith("Chromosomes in the fragment do not match the organism")
 
 
 class TestValidateFragmentReadSupport:
@@ -235,9 +262,10 @@ class TestValidateFragmentReadSupport:
         result = atac_seq.validate_fragment_read_support(atac_fragment_file)
         assert not result
 
-    def test_negative(self, atac_fragment_dataframe, tmpdir):
+    @pytest.mark.parametrize("read_support", [0, -1])
+    def test_negative(self, atac_fragment_dataframe, tmpdir, read_support):
         # Arrange
-        atac_fragment_dataframe["read support"] = 0
+        atac_fragment_dataframe["read support"] = read_support
         fragment_file = to_parquet_file(atac_fragment_dataframe, tmpdir)
         # Act
         result = atac_seq.validate_fragment_read_support(fragment_file)
@@ -315,7 +343,18 @@ class TestValidateAnndataOrganismOntologyTermId:
         # Act
         result = atac_seq.validate_anndata_organism_ontology_term_id(atac_anndata_file)
         # Assert
-        assert result == "Anndata.obs.organism_ontology_term_id must be one of ['NCBITaxon:9606', 'NCBITaxon:10090']."
+        assert result.startswith(
+            "Anndata.obs.organism_ontology_term_id must be one of ['NCBITaxon:9606', 'NCBITaxon:10090']."
+        )
+
+    def test_organism_ontology_id_not_unique(self, atac_anndata, tmpdir):
+        # Arrange
+        atac_anndata.obs["organism_ontology_term_id"] = ["NCBITaxon:10090", "NCBITaxon:9606", "NCBITaxon:9606"]
+        atac_anndata_file = to_anndata_file(atac_anndata, tmpdir)
+        # Act
+        result = atac_seq.validate_anndata_organism_ontology_term_id(atac_anndata_file)
+        # Assert
+        assert result.startswith("Anndata.obs.organism_ontology_term_id must have exactly 1 unique value.")
 
 
 class TestValidateFragmentNoDuplicateRows:

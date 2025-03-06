@@ -77,6 +77,20 @@ def add_labels(input_file, output_file):
         sys.exit(1)
 
 
+def _check_anndata_requires_fragment(h5ad_file):
+    from .atac_seq import check_anndata_requires_fragment, report_errors
+
+    try:
+        fragment_required = check_anndata_requires_fragment(h5ad_file)
+        if fragment_required:
+            logger.info("Anndata requires an ATAC fragment file.")
+        else:
+            logger.info("Anndata does not require an ATAC fragment file.")
+    except Exception as e:
+        report_errors("Anndata does not support ATAC fragment files for the followings reasons:", [str(e)])
+        sys.exit(1)
+
+
 @schema_cli.command(
     name="process-fragment",
     short_help="Check that an ATAC SEQ fragment follows the cellxgene data integration schema.",
@@ -92,6 +106,8 @@ def add_labels(input_file, output_file):
 def fragment_validate(h5ad_file, fragment_file, generate_index, output_file):
     from .atac_seq import process_fragment
 
+    _check_anndata_requires_fragment(h5ad_file)
+
     if not process_fragment(fragment_file, h5ad_file, generate_index=generate_index, output_file=output_file):
         sys.exit(1)
 
@@ -105,14 +121,7 @@ def fragment_validate(h5ad_file, fragment_file, generate_index, output_file):
 )
 @click.argument("h5ad_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
 def check_anndata_requires_fragment(h5ad_file):
-    from .atac_seq import check_anndata_requires_fragment
-
-    try:
-        assay_type = check_anndata_requires_fragment(h5ad_file)
-        print(assay_type)
-    except Exception as e:
-        logger.error(f"Andata does not support atac fragment files for the follow reason: {e}")
-        sys.exit(1)
+    _check_anndata_requires_fragment(h5ad_file)
 
 
 @schema_cli.command(
