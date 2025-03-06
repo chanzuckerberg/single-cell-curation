@@ -203,8 +203,8 @@ def process_fragment(
             # convert the fragment to a parquet file for faster processing
             try:
                 parquet_file = convert_to_parquet(fragment_file, tempdir)
-            except Exception:
-                msg = "Error converting fragment to parquet."
+            except Exception as e:
+                msg = "Error Parsing the fragment file. Check that columns match schema definition. Error: " + str(e)
                 logger.exception(msg)
                 return [msg]
 
