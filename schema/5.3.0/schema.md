@@ -60,8 +60,6 @@ This document is organized by:
 
 **AnnData.** The canonical data format for CELLxGENE Discover is HDF5-backed [AnnData](https://anndata.readthedocs.io/en/latest) as written by AnnData version 0.8.0 or greater. The on-disk format must be [AnnData specification (v0.1.0)](https://anndata.readthedocs.io/en/latest/fileformat-prose.html#anndata-specification-v0-1-0). Part of the rationale for selecting this format is to allow CELLxGENE to access both the data and metadata within a single file. The schema requirements and definitions for the AnnData `X`, `obs`, `var`, `raw.var`, `obsm`, and `uns` attributes are described below.
 
-~~**Organisms**. Data MUST be from a Metazoan organism or SARS-COV-2 and defined in the NCBI organismal classification. For data that is neither Human, Mouse, nor SARS-COV-2, features MUST be translated into orthologous genes from the pinned Human and Mouse gene annotations.~~
-
 **Reserved Names**. The names of metadata fields MUST NOT start with `"__"`. The names of the metadata fields specified by the schema are **reserved** for the purposes and specifications described in the schema.
 
 **Unique Names**. The names of schema and data submitter metadata fields in `obs` and `var` MUST be unique. For example, duplicate `"feature_biotype"` keys in AnnData `var` are not allowed.
@@ -208,20 +206,20 @@ The following ontology dependencies are *pinned* for this version of the schema.
 
 | Ontology | OBO Prefix | Release | Download |
 |:--|:--|:--|:--|
-| [C. elegans Development Ontology] | WBls |  [2024-09-26 Wormbase WS295](https://github.com/obophenotype/c-elegans-development-ontology/releases/tag/vWS295) | [wbls.owl](https://github.com/obophenotype/c-elegans-development-ontology/blob/vWS295/wbls.owl) |
-| [C. elegans Gross Anatomy Ontology] | WBbt | [2024-09-24 Wormbase WS295](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/releases/tag/v2024-09-24) | [wbbt.owl](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/blob/v2024-09-24/wbbt.owl) |
-| [Cell Ontology] | CL |  [2024-08-16](https://github.com/obophenotype/cell-ontology/releases/tag/v2024-08-16) | [cl.owl](https://github.com/obophenotype/cell-ontology/releases/download/v2024-08-16/cl.owl)|
-| [Drosophila Anatomy Ontology] | FBbt | [2024-12-05](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/tag/v2024-12-05)| [fbbt.owl](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/download/v2024-12-05/fbbt.owl) |
-| [Drosophila Development Ontology] | FBdv | [2024-12-04](https://github.com/FlyBase/drosophila-developmental-ontology/releases/tag/v2024-12-04) | [fbdv.owl](https://github.com/FlyBase/drosophila-developmental-ontology/releases/download/v2024-12-04/fbdv.owl) |
-| [Experimental Factor Ontology] | EFO | [2025-01-15 EFO 3.74.0](https://github.com/EBISPOT/efo/releases/tag/v3.74.0) | [efo.owl](https://github.com/EBISPOT/efo/releases/download/v3.74.0/efo.owl) |
+| [C. elegans Development Ontology] | WBls |  [2025-01-04 WS296](https://github.com/obophenotype/c-elegans-development-ontology/releases/tag/v2025-01-04) | [wbls.owl](https://github.com/obophenotype/c-elegans-development-ontology/blob/v2025-01-04/wbls.owl) |
+| [C. elegans Gross Anatomy Ontology] | WBbt | [2025-01-02 WS296](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/releases/tag/v2025-01-02) | [wbbt.owl](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/blob/v2025-01-02/wbbt.owl) |
+| [Cell Ontology] | CL |  [2025-02-13](https://github.com/obophenotype/cell-ontology/releases/tag/v2025-02-13) | [cl.owl](https://github.com/obophenotype/cell-ontology/releases/download/v2025-02-13/cl.owl)|
+| [Drosophila Anatomy Ontology] | FBbt | [2025-02-13](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/tag/v2025-02-13)| [fbbt.owl](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/download/v2025-02-13/fbbt.owl) |
+| [Drosophila Development Ontology] | FBdv | [2025-02-12](https://github.com/FlyBase/drosophila-developmental-ontology/releases/tag/v2025-02-12) | [fbdv.owl](https://github.com/FlyBase/drosophila-developmental-ontology/releases/download/v2025-02-12/fbdv.owl) |
+| [Experimental Factor Ontology] | EFO | [2025-02-17 EFO 3.75.0](https://github.com/EBISPOT/efo/releases/tag/v3.75.0) | [efo.owl](https://github.com/EBISPOT/efo/releases/download/v3.75.0/efo.owl) |
 | [Human Ancestry Ontology] | HANCESTRO | [3.0](https://github.com/EBISPOT/hancestro/releases/tag/3.0) | [hancestro-base.owl](https://github.com/EBISPOT/hancestro/blob/3.0/hancestro-base.owl) |
-| [Human Developmental Stages] |  HsapDv | [2024-05-28](https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/v2024-05-28) | [hsapdv.owl](https://github.com/obophenotype/developmental-stage-ontologies/releases/download/v2024-05-28/hsapdv.owl) |
-| [Mondo Disease Ontology] | MONDO | [2024-08-06](https://github.com/monarch-initiative/mondo/releases/tag/v2024-08-06) | [mondo.owl](https://github.com/monarch-initiative/mondo/releases/download/v2024-08-06/mondo.owl) |
-| [Mouse Developmental Stages]| MmusDv | [2024-05-28](https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/v2024-05-28) | [mmusdv.owl](https://github.com/obophenotype/developmental-stage-ontologies/releases/download/v2024-05-28/mmusdv.owl) |
-| [NCBI organismal classification] |  NCBITaxon | [2023-06-20](https://github.com/obophenotype/ncbitaxon/releases/tag/v2023-06-20) | [ncbitaxon.owl](https://github.com/obophenotype/ncbitaxon/releases/download/v2023-06-20/ncbitaxon.owl.gz) |
-| [Phenotype And Trait Ontology] | PATO | [2023-05-18](https://github.com/pato-ontology/pato/releases/tag/v2023-05-18) | [pato.owl](https://github.com/pato-ontology/pato/blob/v2023-05-18/pato.owl)  |
-| [Uberon multi-species anatomy ontology] |  UBERON | [2024-08-07](https://github.com/obophenotype/uberon/releases/tag/v2024-08-07) | [uberon.owl](https://github.com/obophenotype/uberon/releases/download/v2024-08-07/uberon.owl) |
-| [Zebrafish Anatomy Ontology] | ZFA<br>ZFS | [2022-12-09](https://github.com/ZFIN/zebrafish-anatomical-ontology/releases/tag/v2022-12-09) | [zfa.owl](https://github.com/ZFIN/zebrafish-anatomical-ontology/blob/v2022-12-09/zfa.owl) |
+| [Human Developmental Stages] |  HsapDv | [2025-01-23](https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/v2025-01-23) | [hsapdv.owl](https://github.com/obophenotype/developmental-stage-ontologies/releases/download/v2025-01-23/hsapdv.owl) |
+| [Mondo Disease Ontology] | MONDO | [2025-02-04](https://github.com/monarch-initiative/mondo/releases/tag/v2025-02-04) | [mondo.owl](https://github.com/monarch-initiative/mondo/releases/download/v2025-02-04/mondo.owl) |
+| [Mouse Developmental Stages]| MmusDv | [2025-01-23](https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/v2025-01-23) | [mmusdv.owl](https://github.com/obophenotype/developmental-stage-ontologies/releases/download/v2025-01-23/mmusdv.owl) |
+| [NCBI organismal classification] |  NCBITaxon | [2024-11-25](https://github.com/obophenotype/ncbitaxon/releases/tag/v2024-11-25) | [ncbitaxon.owl](https://github.com/obophenotype/ncbitaxon/releases/download/v2024-11-25/ncbitaxon.owl.gz) |
+| [Phenotype And Trait Ontology] | PATO | [2025-02-01](https://github.com/pato-ontology/pato/releases/tag/v2025-02-01) | [pato.owl](https://github.com/pato-ontology/pato/blob/v2025-02-01/pato.owl)  |
+| [Uberon multi-species anatomy ontology] |  UBERON | [2025-01-15](https://github.com/obophenotype/uberon/releases/tag/v2025-01-15) | [uberon.owl](https://github.com/obophenotype/uberon/releases/download/v2025-01-15/uberon.owl) |
+| [Zebrafish Anatomy Ontology] | ZFA<br>ZFS | [2025-01-28](https://github.com/ZFIN/zebrafish-anatomical-ontology/releases/tag/v2025-01-28) | [zfa.owl](https://github.com/ZFIN/zebrafish-anatomical-ontology/blob/v2025-01-28/zfa.owl) |
 | | | | |
 
 [C. elegans Development Ontology]: https://obofoundry.org/ontology/wbls.html
@@ -257,7 +255,7 @@ The following ontology dependencies are *pinned* for this version of the schema.
 
 ENSEMBL identifiers are required for genes and [External RNA Controls Consortium (ERCC)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4978944/) identifiers for [RNA Spike-In Control Mixes] to ensure that all datasets measure the same features and can therefore be integrated.
 
-The following gene annotation dependencies are *pinned* for this version of the schema. ~~For multi-organism experiments, cells from any Metazoan organism are allowed as long as orthologs from the following organism annotations are used.~~
+The following gene annotation dependencies are *pinned* for this version of the schema.
 
 | NCBITaxon | Source | Required version | Download |
 |:--|:--|:--|:--|
@@ -659,171 +657,6 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
 </tbody></table>
 <br>
-
-If <code>organism_ontology_term_id</code> is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, then for each observation for the following fields, either all their values must be <code>float("nan")</code> or the sum of their values MUST be <code>1.0 ± 0.0002</code>:
-
-* <code>genetic_ancestry_African</code>
-* <code>genetic_ancestry_East_Asian</code>
-* <code>genetic_ancestry_European</code>
-* <code>genetic_ancestry_Indigenous_American</code>
-* <code>genetic_ancestry_Oceanian</code>
-* <code>genetic_ancestry_South_Asian</code>
-
-### genetic_ancestry_African
-
-<table>
-  <tbody>
-    <tr>
-      <th>Key</th>
-      <td>genetic_ancestry_African</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Curator MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-      <td>
-        <code>float</code>. All observations with the same <code>donor_id</code> MUST contain the same value.<br><br>
-        If <code>organism_ontology_term_id</code> is NOT
-        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, then the value MUST be a <code>float("nan")</code>.<br><br>If
-        <code>organism_ontology_term_id</code> is
-        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, then the value MUST be a <code>float("nan")</code> if unavailable; otherwise, the value MUST be the genetic ancestry percentage of <a href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0010"><code>"HANCESTRO:0010"</code></a> for <i>African</i> expressed as a <code>float</code> greater than or equal to <code>0.0</code> and less than or equal to <code>1.0</code>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br />
-
-### genetic_ancestry_East_Asian
-
-<table>
-  <tbody>
-    <tr>
-      <th>Key</th>
-      <td>genetic_ancestry_East_Asian</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Curator MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-      <td>
-        <code>float</code>. All observations with the same <code>donor_id</code> MUST contain the same value.<br><br>
-                If <code>organism_ontology_term_id</code> is NOT
-        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, then the value MUST be a <code>float("nan")</code>.<br><br>If
-        <code>organism_ontology_term_id</code> is
-        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, then the value MUST be a <code>float("nan")</code> if unavailable; otherwise, the value MUST be the genetic ancestry percentage of <a href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0009"><code>"HANCESTRO:0009"</code></a> for <i>East Asian</i> expressed as a <code>float</code> greater than or equal to <code>0.0</code> and less than or equal to <code>1.0</code>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br />
-
-### genetic_ancestry_European
-
-<table>
-  <tbody>
-    <tr>
-      <th>Key</th>
-      <td>genetic_ancestry_European</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Curator MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-      <td>
-        <code>float</code>. All observations with the same <code>donor_id</code> MUST contain the same value.<br><br>
-        If <code>organism_ontology_term_id</code> is NOT
-        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, then the value MUST be a <code>float("nan")</code>.<br><br>If
-        <code>organism_ontology_term_id</code> is
-        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, then the value MUST be a <code>float("nan")</code> if unavailable; otherwise, the value MUST be the genetic ancestry percentage of <a href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0005"><code>"HANCESTRO:0005"</code></a> for <i>European</i> expressed as a <code>float</code> greater than or equal to <code>0.0</code> and less than or equal to <code>1.0</code>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br />
-
-### genetic_ancestry_Indigenous_American
-
-<table>
-  <tbody>
-    <tr>
-      <th>Key</th>
-      <td>genetic_ancestry_Indigenous_American</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Curator MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-      <td>
-        <code>float</code>. All observations with the same <code>donor_id</code> MUST contain the same value.<br><br>
-        If <code>organism_ontology_term_id</code> is NOT
-        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, then the value MUST be a <code>float("nan")</code>.<br><br>If
-        <code>organism_ontology_term_id</code> is
-        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, then the value MUST be a <code>float("nan")</code> if unavailable; otherwise, the value MUST be the genetic ancestry percentage of <a href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0013"><code>"HANCESTRO:0013"</code></a> for <i>Indigenous American</i> expressed as a <code>float</code> greater than or equal to <code>0.0</code> and less than or equal to <code>1.0</code>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br />
-
-### genetic_ancestry_Oceanian
-
-<table>
-  <tbody>
-    <tr>
-      <th>Key</th>
-      <td>genetic_ancestry_Oceanian</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Curator MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-      <td>
-        <code>float</code>. All observations with the same <code>donor_id</code> MUST contain the same value.<br><br>
-        If <code>organism_ontology_term_id</code> is NOT
-        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, then the value MUST be a <code>float("nan")</code>.<br><br>If
-        <code>organism_ontology_term_id</code> is
-        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, then the value MUST be a <code>float("nan")</code> if unavailable; otherwise, the value MUST be the genetic ancestry percentage of <a href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0017"><code>"HANCESTRO:0017"</code></a> for <i>Oceanian</i> expressed as a <code>float</code> greater than or equal to <code>0.0</code> and less than or equal to <code>1.0</code>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br />
-
-### genetic_ancestry_South_Asian
-
-<table>
-  <tbody>
-    <tr>
-      <th>Key</th>
-      <td>genetic_ancestry_South_Asian</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Curator MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-      <td>
-        <code>float</code>. All observations with the same <code>donor_id</code> MUST contain the same value.<br><br>
-        If <code>organism_ontology_term_id</code> is NOT
-        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, then the value MUST be a <code>float("nan")</code>.<br><br>If
-        <code>organism_ontology_term_id</code> is
-        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, then the value MUST be a <code>float("nan")</code> if unavailable; otherwise, the value MUST be the genetic ancestry percentage of <a href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0006"><code>"HANCESTRO:0006"</code></a> for <i>South Asian</i> expressed as a <code>float</code> greater than or equal to <code>0.0</code> and less than or equal to <code>1.0</code>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br />
 
 ### in_tissue
 
@@ -1543,7 +1376,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code> if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"na"</code>. This MUST be <code>"unknown"</code> if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"unknown"</code>. Otherwise, this MUST be one or more comma-separated (with no leading or trailing spaces) human-readable names for the terms in <code>self_reported_ethnicity_ontology_term_id</code> in the same order.<br><br> For example, if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"HANCESTRO:0005,HANCESTRO:0014"</code> then the value of <code>self_reported_ethnicity</code> is <code>"European,Hispanic or Latin American"</code>.
+        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code> if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"na"</code>. This MUST be <code>"unknown"</code> if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"unknown"</code>. Otherwise, this MUST be one or more comma-separated (with no leading or trailing spaces) human-readable names for the terms in <code>self_reported_ethnicity_ontology_term_id</code> in the same order.<br><br> For example, if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"HANCESTRO:0005,HANCESTRO:0014"</code> then the value of <code>self_reported_ethnicity</code> MUST be <code>"European,Hispanic or Latin American"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -2367,7 +2200,7 @@ If the <code>obs['assay_ontology_term_id']</code> values are all <i>unpaired ass
 
 This MUST be a gzipped tab-separated values (TSV) file.
 
-The curator MUST annotate the following header-less columns. Additional columns and header lines beginning with `#` MUST NOT be included.
+The curator MUST annotate the following header-less columns. Additional columns and header lines beginning with `#` MUST NOT be included. Each row MUST represent a unique fragment.
 
 ### first column
 
@@ -2449,11 +2282,11 @@ The curator MUST annotate the following header-less columns. Additional columns 
 
 ## scATAC-seq Asset: Processed Fragments File
 
-From every submitted fragments file asset, CELLxGENE Discover MUST generate <code>{dataset_version_id}-fragments.tsv.gz</code>, a tab-separated values (TSV) file position-sorted and compressed by bgzip.
+From every submitted fragments file asset, CELLxGENE Discover MUST generate <code>{artifact_id}-fragments.tsv.gz</code>, a tab-separated values (TSV) file position-sorted and compressed by bgzip.
 
 ## scATAC-seq Asset: Fragments File index
 
-From every processed fragments file asset, CELLxGENE Discover MUST generate <code>{dataset_version_id}-fragments.tsv.gz.tbi</code>, a <a href="https://www.htslib.org/doc/tabix.html">tabix</a> index of the fragment intervals from the fragments file.
+From every processed fragments file asset, CELLxGENE Discover MUST generate <code>{artifact_id}-fragments.tsv.gz.tbi</code>, a <a href="https://www.htslib.org/doc/tabix.html">tabix</a> index of the fragment intervals from the fragments file.
 
 ## Chromosome Tables
 
@@ -2836,11 +2669,19 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * **Patch versions** may be used to add organisms that do not require new metadata fields. 
 * General Requirements
 * Required Ontologies
-  * Added C. elegans Development Ontology (WBls) release 2024-09-26 Wormbase WS295
-  * Added C. elegans Gross Anatomy Ontology (WBbt) release 2024-09-24 Wormbase WS295
-  * Added Drosophila Anatomy Ontology (FBbt) release 2024-12-05
-  * Added Drosophila Development Ontology (FBdv) release 2024-12-04
-  * Added Zebrafish Anatomy Ontology (ZFA+ZFS) release 2022-12-09
+  * Added C. elegans Development Ontology (WBls) release 2025-01-04 WS296
+  * Added C. elegans Gross Anatomy Ontology (WBbt) release 2025-01-02 WS296
+  * Updated Cell Ontology (CL) to the 2025-02-13 release
+  * Added Drosophila Anatomy Ontology (FBbt) release 2025-02-13
+  * Added Drosophila Development Ontology (FBdv) release 2025-02-12
+  * Updated Expermental Factor Ontology (EFO) to release 2025-02-17 EFO 3.75.0
+  * Updated Human Developmental Stages (HsapDv) to release 2025-01-23
+  * Updated Mondo Disease Ontology (MONDO) to release 2025-02-04
+  * Updated Mouse Developmental Stages (MmusDv) to release 2025-01-2
+  * Updated NCBI organismal classification (NCBITaxon) to release 2024-11-25
+  * Updated Phenotype And Trait Ontology (PATO) to release 2025-02-01
+  * Updated Uberon multi-species anatomy ontology (UBERON) to release 2025-01-15
+  * Added Zebrafish Anatomy Ontology (ZFA+ZFS) release 2025-01-28
 * Required Gene Annotations
   * Refactored table to include NCBI Taxon for supported organisms
   * Added *Caenorhabditis elegans* WBcel235 (GCA_000002985.3) Ensembl 113
@@ -2880,12 +2721,6 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
     * ZFS for *Danio rerio*
     * FBdv for *Drosophila melanogaster*
   * Updated `development_stage_ontology_term_id` to include descendants of <i>Mus musclus</i>
-  * Added <code>genetic_ancestry_African</code>
-  * Added <code>genetic_ancestry_East_Asian</code>
-  * Added <code>genetic_ancestry_European</code>
-  * Added <code>genetic_ancestry_Indigenous_American</code>
-  * Added <code>genetic_ancestry_Oceanian</code>
-  * Added <code>genetic_ancestry_South_Asian</code>
   * Updated the requirements for `in_tissue` to include descendants of  _Visium Spatial Gene Expression_.
   * Updated the requirements for `organism_ontology_term_id` to limit its values to a list of NCBITaxon terms
   * Updated the requirements for `sex_ontology_term_id`:
