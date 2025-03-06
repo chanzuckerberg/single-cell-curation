@@ -19,7 +19,7 @@ from dask.delayed import Delayed
 from .ontology_parser import ONTOLOGY_PARSER
 from .utils import is_ontological_descendant_of
 
-logger = logging.getLogger("cellxgene-schema")
+logger = logging.getLogger(__name__)
 
 # TODO: these chromosome tables should be calculated from the fasta file?
 # location of fasta https://www.gencodegenes.org/human/release_44.html and file name GRCh38.primary_assembly.genome.fa
