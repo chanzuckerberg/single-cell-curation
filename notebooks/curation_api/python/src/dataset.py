@@ -255,13 +255,12 @@ def upload_datafiles_from_manifest(manifest: dict[str, str], collection_id: str,
         success(logger, success_message)
 
 
-def upload_local_datafile(datafile_path: str, collection_id: str, dataset_id: str):
+def upload_local_datafile(datafile_path: str, collection_id: str, dataset_id: str) -> str:
     """
     :param datafile_path: the fully qualified path of the datafile to be uploaded
     :param collection_id: the id of the Collection to which the resultant Dataset will belong
     :param dataset_id: Dataset id.
-    :param log_level: the logging level
-    :return: None
+    :return: the S3 URI of the uploaded datafile
     """
     url = url_builder(f"/collections/{collection_id}/s3-upload-credentials")
 
@@ -321,8 +320,10 @@ def upload_local_datafile(datafile_path: str, collection_id: str, dataset_id: st
 
     credentials_and_path = retrieve_s3_credentials_and_upload_key_prefix()
     bucket, key_prefix = credentials_and_path["Bucket"], credentials_and_path["UploadKeyPrefix"]
-    upload_key = key_prefix + dataset_id
-    logger.debug(f"Full S3 write path is s3://{bucket}/{upload_key}\n")
+    file_base_name = os.path.split(datafile_path)[-1]
+    upload_key = key_prefix + os.path.join(dataset_id, file_base_name)
+    s3_uri = f"s3://{bucket}/{upload_key}"
+    logger.info(f"Full S3 write path is {s3_uri}\n")
 
     session_creds = RefreshableCredentials.create_from_metadata(
         metadata=s3_refreshable_credentials_cb(),
@@ -346,4 +347,5 @@ def upload_local_datafile(datafile_path: str, collection_id: str, dataset_id: st
         failure(logger, e)
         raise e
     else:
-        success(logger, "UPLOAD COMPLETE -- Dataset is queued for processing and will surface in the system shortly.")
+        success(logger, "UPLOAD COMPLETE.")
+        return s3_uri
