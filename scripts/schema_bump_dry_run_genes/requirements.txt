@@ -3,3 +3,4 @@ tiledb==0.30.2 # Should match version pinned in single-cell-data-portal
 pandas==2.2.2
 pyarrow>=1.0.0
 jinja2<4
+packaging==24.2
