@@ -205,7 +205,6 @@ def generate_deprecated_public(base_url: str, diff_map: Dict) -> Dict:  # type: 
             run_reporter.public_errored_datasets += 1
             logger.error(
                 f"Error processing public dataset {dataset['dataset_id']}, in collection {dataset['collection_id']}: "
-                f"{e}"
             )
     for collection in public_deprecated.values():
         # convert dataset_groups from a dictionary to a list of its values.
@@ -239,7 +238,7 @@ def generate_deprecated_private(base_url: str, diff_map: Dict) -> Tuple[Dict, Li
                     private_deprecated[dataset["collection_id"]]["revision_of"] = revision_of
         except Exception as e:
             run_reporter.private_errored_datasets += 1
-            logger.error(f"Error processing private dataset: {e}")
+            logger.error(f"Error processing private dataset")
     for collection in private_deprecated.values():
         collection["dataset_groups"] = list(collection["dataset_groups"].values())
     return private_deprecated, non_auto_migrated  # type: ignore
