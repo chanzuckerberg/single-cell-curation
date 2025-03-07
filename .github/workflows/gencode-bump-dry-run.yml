@@ -32,7 +32,7 @@ jobs:
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
-          role-duration-seconds: 2700
+          role-duration-seconds: 7200
       - name: Pull AWS Secrets
         uses: aws-actions/aws-secretsmanager-get-secrets@v2
         with:
