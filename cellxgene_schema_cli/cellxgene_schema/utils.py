@@ -193,3 +193,36 @@ def is_ontological_descendant_of(onto: OntologyParser, term: str, target: str, i
 @lru_cache()
 def get_descendants(onto: OntologyParser, term: str, include_self: bool = True) -> List[str]:
     return onto.get_term_descendants(term, include_self=True)
+
+def check_non_csr_matrices(adata: ad.AnnData):
+    """
+    Check X, raw.X and layers matrices for having more than 50% zeros and not being csr_matrix
+
+    If found, convert to csr_matrix
+    """
+
+    def get_sparsity(matrix, format):
+        if format in SPARSE_MATRIX_TYPES:
+            nnz = matrix.nnz
+        else:
+            nnz = np.count_nonzero(matrix)
+        sparsity = 1 - nnz / np.prod(matrix.shape)
+        return sparsity
+
+    format = get_matrix_format(adata, adata.X)
+    if format != 'csr' and get_sparsity(adata.X, format) >= .5:
+        adata.X = sparse.csr_matrix(adata.X)
+
+    format = get_matrix_format(adata, adata.raw.X)
+    if format != 'csr' and get_sparsity(adata.raw.X, format) >= .5:
+        raw_adata = ad.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
+        raw_adata.X = sparse.csr_matrix(raw_adata.X)
+        adata.raw = raw_adata
+        del raw_adata
+
+    for layer in adata.layers:
+        format = get_matrix_format(adata, layer)
+        if format != 'csr' and get_sparsity(layer, format) >= .5:
+            adata.layers[layer] = sparse.csr_matrix(adata.layers[layer])
+
+    return adata
