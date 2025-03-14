@@ -252,6 +252,27 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     if collection_id == "1e313b15-4aca-4e5a-94a3-1093c4c42abd":
         utils.replace_ontology_term(dataset.obs, "assay", {"EFO:0008953":"EFO:0022845"})
 
+    if collection_id == "4c6eaf5c-6d57-4c76-b1e9-60df8c655f1e":
+        utils.map_ontology_term(dataset.obs,
+         "development_stage",
+         "donor_id", 
+         {
+            "MMD_22_20137": "HsapDv:0000274",
+            "A23_5566": "HsapDv:0000274",
+            "19-D011": "HsapDv:0000274",
+            "D018-13": "HsapDv:0000274",
+            "19-D006": "HsapDv:0000274"
+         })
+
+    if collection_id == "8f126edf-5405-4731-8374-b5ce11f53e82":
+        utils.map_ontology_term(dataset.obs,
+         "development_stage",
+         "donor_id", 
+         {
+            "S00006": "HsapDv:0000274",
+            "S00063": "HsapDv:0000274"
+         })
+
     # Private dataset changes
 
     # Changes for dataset in private collection "Mouse Post-Flu Time Series"
