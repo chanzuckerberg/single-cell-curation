@@ -273,12 +273,10 @@ def migrate(input_file, output_file, collection_id, dataset_id):
             "S00063": "HsapDv:0000274"
          })
 
-    # Private dataset changes
-
-    # Changes for dataset in private collection "Mouse Post-Flu Time Series"
-    if dataset.uns["title"] == "Mouse Post-Flu Time Series":
+    if collection_id == '606dc65c-ebd8-4f93-ac86-d0789c04863f':
         utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0002503":"CL:4052030"})
 
+    # Private dataset changes
     # Changes for datasets in private collection "HTAN CHOP - A longitudinal single-cell atlas of pediatric high-grade glioma."
 
     if dataset.uns["title"] == "Longitudinal single-nucleus RNA-seq atlas of pediatric high-grade glioma":
