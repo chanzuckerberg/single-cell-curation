@@ -209,19 +209,20 @@ def check_non_csr_matrices(adata: ad.AnnData):
         sparsity = 1 - nnz / np.prod(matrix.shape)
         return sparsity
 
-    format = get_matrix_format(adata, adata.X)
+    format = get_matrix_format(adata.X)
     if format != 'csr' and get_sparsity(adata.X, format) >= .5:
         adata.X = sparse.csr_matrix(adata.X)
 
-    format = get_matrix_format(adata, adata.raw.X)
-    if format != 'csr' and get_sparsity(adata.raw.X, format) >= .5:
-        raw_adata = ad.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
-        raw_adata.X = sparse.csr_matrix(raw_adata.X)
-        adata.raw = raw_adata
-        del raw_adata
+    if adata.raw is not None:
+        format = get_matrix_format(adata.raw.X)
+        if format != 'csr' and get_sparsity(adata.raw.X, format) >= .5:
+            raw_adata = ad.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
+            raw_adata.X = sparse.csr_matrix(raw_adata.X)
+            adata.raw = raw_adata
+            del raw_adata
 
     for layer in adata.layers:
-        format = get_matrix_format(adata, layer)
+        format = get_matrix_format(layer)
         if format != 'csr' and get_sparsity(layer, format) >= .5:
             adata.layers[layer] = sparse.csr_matrix(adata.layers[layer])
 
