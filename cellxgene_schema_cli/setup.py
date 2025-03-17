@@ -27,4 +27,4 @@ setup(
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
     entry_points={"console_scripts": ["cellxgene-schema = cellxgene_schema.cli:schema_cli"]},
-)""
+)
