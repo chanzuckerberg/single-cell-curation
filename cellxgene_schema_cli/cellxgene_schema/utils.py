@@ -49,13 +49,13 @@ def map_ontology_term(dataframe, ontology_name, map_from_column, update_map):
 def remove_deprecated_features(*, adata: ad.AnnData, deprecated: List[str]) -> ad.AnnData:
     # Filter out genes that don't appear in the approved annotation
     var_to_keep = adata.var.index[~adata.var.index.isin(deprecated)].tolist()
-    adata = adata[:, var_to_keep]
+    adata = adata[:, var_to_keep].copy()
 
     # Repeat much of the same steps for the raw.var, if it exists
     if adata.raw:
         raw_adata = ad.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
         var_to_keep = raw_adata.var.index[~raw_adata.var.index.isin(deprecated)].tolist()
-        raw_adata = raw_adata[:, var_to_keep]
+        raw_adata = raw_adata[:, var_to_keep].copy()
         adata.raw = raw_adata
     return adata
 
@@ -194,6 +194,7 @@ def is_ontological_descendant_of(onto: OntologyParser, term: str, target: str, i
 def get_descendants(onto: OntologyParser, term: str, include_self: bool = True) -> List[str]:
     return onto.get_term_descendants(term, include_self=True)
 
+
 def check_non_csr_matrices(adata: ad.AnnData):
     """
     Check X, raw.X and layers matrices for having more than 50% zeros and not being csr_matrix
@@ -202,20 +203,17 @@ def check_non_csr_matrices(adata: ad.AnnData):
     """
 
     def get_sparsity(matrix, format):
-        if format in SPARSE_MATRIX_TYPES:
-            nnz = matrix.nnz
-        else:
-            nnz = np.count_nonzero(matrix)
+        nnz = matrix.nnz if format in SPARSE_MATRIX_TYPES else np.count_nonzero(matrix)
         sparsity = 1 - nnz / np.prod(matrix.shape)
         return sparsity
 
     format = get_matrix_format(adata.X)
-    if format != 'csr' and get_sparsity(adata.X, format) >= .5:
+    if format != "csr" and get_sparsity(adata.X, format) >= 0.5:
         adata.X = sparse.csr_matrix(adata.X)
 
     if adata.raw is not None:
         format = get_matrix_format(adata.raw.X)
-        if format != 'csr' and get_sparsity(adata.raw.X, format) >= .5:
+        if format != "csr" and get_sparsity(adata.raw.X, format) >= 0.5:
             raw_adata = ad.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
             raw_adata.X = sparse.csr_matrix(raw_adata.X)
             adata.raw = raw_adata
@@ -223,7 +221,7 @@ def check_non_csr_matrices(adata: ad.AnnData):
 
     for layer in adata.layers:
         format = get_matrix_format(layer)
-        if format != 'csr' and get_sparsity(layer, format) >= .5:
+        if format != "csr" and get_sparsity(layer, format) >= 0.5:
             adata.layers[layer] = sparse.csr_matrix(adata.layers[layer])
 
     return adata
