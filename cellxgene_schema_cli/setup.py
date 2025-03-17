@@ -16,7 +16,14 @@ setup(
     python_requires=">=3.10",
     packages=["cellxgene_schema"],
     package_dir={"cellxgene_schema": "cellxgene_schema"},
-    package_data={"cellxgene_schema": ["gencode_files/*gz", "migrate_files/*json", "schema_definitions/*yaml", "migrate_files/*.txt" ]},
+    package_data={
+        "cellxgene_schema": [
+            "gencode_files/*gz",
+            "migrate_files/*json",
+            "schema_definitions/*yaml",
+            "migrate_files/*.txt",
+        ]
+    },
     include_package_data=True,
     zip_safe=False,
     classifiers=[

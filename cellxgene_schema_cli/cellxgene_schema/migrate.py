@@ -1,8 +1,9 @@
 import json
 import os
-import anndata as ad
-from . import utils
+
 import dask
+
+from . import utils
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -211,7 +212,6 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     # Checking pre-identified datasets with non-csr matrices for sparsity
     # If sparsity is high enough, converting to sparse_csr
     if dataset_id in non_csr_list:
-        dataset = dataset.to_memory()
         dataset = utils.check_non_csr_matrices(dataset)
 
     # Same check, but for private datasets
@@ -219,7 +219,6 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         dataset_donors = dataset.obs['donor_id'].unique()
         for d in dataset_donors:
             if (dataset.uns["title"],d) in private_non_csr_list:
-                dataset = dataset.to_memory()
                 dataset = utils.check_non_csr_matrices(dataset)
 
     # Public dataset changes

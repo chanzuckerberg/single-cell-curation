@@ -11,6 +11,7 @@ import numpy as np
 from anndata.compat import DaskArray
 from anndata.experimental import read_dispatched, read_elem_as_dask
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
+from dask.array import map_blocks
 from scipy import sparse
 from xxhash import xxh3_64_intdigest
 
@@ -195,6 +196,18 @@ def get_descendants(onto: OntologyParser, term: str, include_self: bool = True) 
     return onto.get_term_descendants(term, include_self=True)
 
 
+def count_matrix_nonzero(matrix: DaskArray, is_sparse_matrix: bool) -> int:
+    def count_nonzeros(matrix_chunk: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool) -> np.array:
+        nnz = matrix_chunk.nnz if is_sparse_matrix else np.count_nonzero(matrix_chunk)
+        return np.array([nnz])
+
+    if len(matrix.chunks[0]) > 1:
+        nonzeros = map_blocks(count_nonzeros, matrix, is_sparse_matrix, drop_axis=1, dtype=int).compute().sum()
+    else:
+        nonzeros = count_nonzeros(matrix.compute(), is_sparse_matrix)[0]
+    return nonzeros
+
+
 def check_non_csr_matrices(adata: ad.AnnData):
     """
     Check X, raw.X and layers matrices for having more than 50% zeros and not being csr_matrix
@@ -202,26 +215,27 @@ def check_non_csr_matrices(adata: ad.AnnData):
     If found, convert to csr_matrix
     """
 
-    def get_sparsity(matrix, format):
-        nnz = matrix.nnz if format in SPARSE_MATRIX_TYPES else np.count_nonzero(matrix)
+    def get_sparsity(matrix: DaskArray, format: str):
+        is_sparse_matrix = format in SPARSE_MATRIX_TYPES
+        nnz = count_matrix_nonzero(matrix, is_sparse_matrix)
         sparsity = 1 - nnz / np.prod(matrix.shape)
         return sparsity
 
     format = get_matrix_format(adata.X)
     if format != "csr" and get_sparsity(adata.X, format) >= 0.5:
-        adata.X = sparse.csr_matrix(adata.X)
+        adata.X = adata.X.map_blocks(sparse.csr_matrix, dtype=adata.X.dtype)
 
     if adata.raw is not None:
         format = get_matrix_format(adata.raw.X)
         if format != "csr" and get_sparsity(adata.raw.X, format) >= 0.5:
             raw_adata = ad.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
-            raw_adata.X = sparse.csr_matrix(raw_adata.X)
+            raw_adata.X = raw_adata.X.map_blocks(sparse.csr_matrix, dtype=raw_adata.X.dtype)
             adata.raw = raw_adata
             del raw_adata
 
     for layer in adata.layers:
         format = get_matrix_format(layer)
         if format != "csr" and get_sparsity(layer, format) >= 0.5:
-            adata.layers[layer] = sparse.csr_matrix(adata.layers[layer])
+            adata.layers[layer] = adata.layers[layer].map_blocks(sparse.csr_matrix, dtype=adata.layers[layer].X.dtype)
 
     return adata
