@@ -130,6 +130,16 @@ column_types = {
 }
 
 
+def is_atac(x: str) -> str:
+    if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0010891"):
+        if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0008913"):
+            return "p"  # paired
+        else:
+            return "u"  # unpaired
+    else:
+        return "n"  # not atac seq
+
+
 def check_anndata_requires_fragment(anndata_file: str) -> bool:
     """
     Check if an anndata file requires a fragment file to be valid. The anndata file requires a fragment file if the
@@ -141,16 +151,6 @@ def check_anndata_requires_fragment(anndata_file: str) -> bool:
     :param anndata_file: The anndata file to validate.
     :return:
     """
-
-    def is_atac(x: str) -> str:
-        if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0010891"):
-            if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0008913"):
-                return "p"  # paired
-            else:
-                return "u"  # unpaired
-        else:
-            return "n"  # not atac seq
-
     with h5py.File(anndata_file) as f:
         assay_ontology_term_ids = ad.io.read_elem(f["obs"])["assay_ontology_term_id"]
     df = assay_ontology_term_ids.map(is_atac)
@@ -257,8 +257,22 @@ def report_errors(header: str, errors: list[str]) -> list[str]:
 
 
 def validate_anndata(anndata_file: str) -> list[str]:
-    errors = [validate_anndata_organism_ontology_term_id(anndata_file), validate_anndata_is_primary_data(anndata_file)]
+    errors = [
+        validate_anndata_organism_ontology_term_id(anndata_file),
+        validate_anndata_is_primary_data(anndata_file),
+        validate_anndata_raw_counts(anndata_file),
+    ]
     return report_errors("Errors found in Anndata file. Skipping fragment validation.", errors)
+
+
+def validate_anndata_raw_counts(anndata_file: str) -> Optional[str]:
+    # check if the raw counts are required and present
+    with h5py.File(anndata_file) as f:
+        assay_ontology_term_ids = ad.io.read_elem(f["obs"])["assay_ontology_term_id"]
+        if is_atac(assay_ontology_term_ids.iloc[0]) != "p":
+            return
+        if "raw/X" not in f:
+            return "Required Anndata.raw.X is missing."
 
 
 def validate_anndata_with_fragment(parquet_file: str, anndata_file: str) -> list[str]:

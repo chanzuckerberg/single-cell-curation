@@ -34,7 +34,10 @@ def atac_anndata():
     obs = pd.DataFrame(index=["A", "B", "C"])
     obs["organism_ontology_term_id"] = ["NCBITaxon:9606"] * 3
     obs["assay_ontology_term_id"] = ["EFO:0030059"] * 3
-    return ad.AnnData(obs=obs, var=pd.DataFrame())
+    var = pd.DataFrame()
+    var["var_names"] = ["gene1", "gene2", "gene3"]
+    X = pd.DataFrame(index=["A", "B", "C"], data=[[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    return ad.AnnData(obs=obs, var=var, X=X)
 
 
 @pytest.fixture
@@ -129,6 +132,20 @@ class TestProcessFragment:
         with pysam.TabixFile(str(atac_fragment_bgzip_file_path)) as tabix:
             for chromosome in tabix.contigs:
                 assert chromosome in atac_seq.human_chromosome_by_length
+
+    def test_fail(self, atac_fragment_bgzip_file_path, atac_fragment_index_file_path):
+        # Arrange
+        anndata_file = FIXTURES_ROOT + "/atac_seq/small_atac_seq.h5ad"
+        fragments_file = FIXTURES_ROOT + "/atac_seq/fragments_bad.tsv.gz"
+        # Act
+        result = atac_seq.process_fragment(
+            fragments_file,
+            anndata_file,
+            generate_index=True,
+            dask_cluster_config=dict(processes=False),
+            output_file=str(atac_fragment_bgzip_file_path),
+        )
+        result = [r for r in result if "Error" in r]
 
 
 class TestConvertToParquet:
@@ -370,6 +387,27 @@ class TestValidateFragmentNoDuplicateRows:
         result = atac_seq.validate_fragment_no_duplicate_rows(fragment_file)
         # Assert
         assert result == "Fragment file has duplicate rows."
+
+
+class TestValidateAnndataRawCounts:
+    def test_positive(self, atac_anndata, tmpdir):
+        # Arrange
+        atac_anndata.obs["assay_ontology_term_id"] = ["EFO:0030059"] * 3
+        atac_anndata.raw = ad.AnnData(X=atac_anndata.X.copy(), var=atac_anndata.var.copy())
+        atac_anndata_file = to_anndata_file(atac_anndata, tmpdir)
+        # Act
+        result = atac_seq.validate_anndata_raw_counts(atac_anndata_file)
+        # Assert
+        assert not result
+
+    def test_negative(self, atac_anndata, tmpdir):
+        # Arrange
+        atac_anndata.obs["assay_ontology_term_id"] = ["EFO:0030007"] * 3
+        atac_anndata_file = to_anndata_file(atac_anndata, tmpdir)
+        # Act
+        result = atac_seq.validate_anndata_raw_counts(atac_anndata_file)
+        # Assert
+        assert not result
 
 
 class TestGetOutputFile:
