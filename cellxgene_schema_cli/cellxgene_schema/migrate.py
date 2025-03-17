@@ -56,12 +56,12 @@ with open(os.path.join(BASE_DIR, "migrate_files/donor_updates.json"), "r") as fi
 with open(os.path.join(BASE_DIR, "migrate_files/title_donor_updates.json"), "r") as file:
     TITLE_DONOR_DEV_STAGE_MAP = json.load(file)
 
-with open('migrate_files/non_csr_list.txt', 'r') as f:
+with open(os.path.join(BASE_DIR,'migrate_files/non_csr_list.txt'), 'r') as f:
     text = f.read()
     non_csr_list = text.split("\n")
     f.close()
 
-with open('migrate_files/private_non_csr.json', 'r') as f:
+with open(os.path.join(BASE_DIR, 'migrate_files/private_non_csr.json'), 'r') as f:
    private_non_csr_list = [tuple(x) for x in json.load(f)]
    f.close()
 
