@@ -234,8 +234,8 @@ def check_non_csr_matrices(adata: ad.AnnData):
             del raw_adata
 
     for layer in adata.layers:
-        format = get_matrix_format(layer)
-        if format != "csr" and get_sparsity(layer, format) >= 0.5:
+        format = get_matrix_format(adata.layers[layer])
+        if format != "csr" and get_sparsity(adata.layers[layer], format) >= 0.5:
             adata.layers[layer] = adata.layers[layer].map_blocks(sparse.csr_matrix, dtype=adata.layers[layer].X.dtype)
 
     return adata
