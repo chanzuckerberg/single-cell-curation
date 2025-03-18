@@ -173,14 +173,22 @@ CELLxGENE's matrix layer requirements are tailored to optimize data reuse. Becau
 *   Any genes that publishers wish to filter from the normalized matrix MAY have their values replaced by zeros and MUST be flagged in the column [`feature_is_filtered`](#feature_is_filtered) of [`var`](#var-and-rawvar-gene-metadata), which will mask them from exploration.
 *   Additional layers provided at author discretion MAY be stored using author-selected keys, but MUST have the same cells and genes as other layers. It is STRONGLY RECOMMENDED that these layers have names that accurately summarize what the numbers in the layer represent (e.g. `"counts_per_million"`, `"SCTransform_normalized"`, or `"RNA_velocity_unspliced"`).
 
+### Definitions for scATAC-seq assays
+
+<b>paired assay</b>. `obs['assay_ontology_term_id']` is a descendant of both <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010891"><code>"EFO:0010891"</code></a> for <i>scATAC-seq</i> and <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008913"><code>"EFO:0008913"</code></a> for <i>single-cell RNA sequencing</i>. A gene expression matrix (RNA data) is required.
+
+<b>unpaired assay</b>. `obs['assay_ontology_term_id']` is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010891"><code>"EFO:0010891"</code></a> for <i>scATAC-seq</i> or a descendant and is not a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008913"><code>"EFO:0008913"</code></a> for <i>single-cell RNA sequencing</i>. A gene activity matrix and not a peak matrix is required.
+
+Also see the requirements for [scATAC-seq assets](#scatac-seq-assets).<br><br>
+
 The following table describes the matrix data and layers requirements that are **assay-specific**. If an entry in the table is empty, the schema does not have any other requirements on data in those layers beyond the ones listed above.
 
 | Assay | "raw" required? | "raw" location | "normalized" required? | "normalized" location |
 |-|-|-|-|-|
-| scRNA-seq (UMI, e.g. 10x v3, Slide-seqV2) | REQUIRED. Values MUST be de-duplicated molecule counts. Each cell MUST contain at least one non-zero value. All non-zero values MUST be positive integers stored as `numpy.float32`.| `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
+| scRNA-seq (UMI, e.g. 10x multiome, 10x v3, Slide-seqV2) | REQUIRED. Values MUST be de-duplicated molecule counts. Each cell MUST contain at least one non-zero value. All non-zero values MUST be positive integers stored as `numpy.float32`.| `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
 | Visium Spatial (e.g. V1, CytAssist) | REQUIRED. Values MUST be de-duplicated molecule counts. All non-zero values MUST be positive integers stored as `numpy.float32`.<br><br>If <code>uns['spatial']['is_single']</code> is <code>False</code> then each cell MUST contain at least one non-zero value.<br><br>If <code>uns['spatial']['is_single']</code> is <code>True</code> then the unfiltered feature-barcode matrix (<code>raw_feature_bc_matrix</code>) MUST be used. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/space-ranger-feature-barcode-matrices">Space Ranger Feature-Barcode Matrices</a>.<br><br>if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0022860"><code>"EFO:0022860"</code></a> for <i>Visium CytAssist Spatial Gene Expression, 11mm</i>, this matrix MUST contain 14336 rows; otherwise, this matrix MUST contain 4992 rows.<br><br>If the <code>obs['in_tissue']</code> value is <code>1</code>, then the cell MUST contain at least one non-zero value. If any <code>obs['in_tissue']</code> values are <code>0</code>, then at least one cell corresponding to a <code>obs['in_tissue']</code> with a value of <code>0</code> MUST contain a non-zero value.| `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
 | scRNA-seq (non-UMI, e.g. SS2) | REQUIRED. Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM). Each cell MUST contain at least one non-zero value. All non-zero values MUST be positive integers stored as `numpy.float32`. | `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
-| Accessibility (e.g. ATAC-seq, mCT-seq) | NOT REQUIRED | | REQUIRED | `AnnData.X` | STRONGLY RECOMMENDED |
+| unpaired Accessibility (e.g. ATAC-seq, mCT-seq) | NOT REQUIRED | | REQUIRED | `AnnData.X` | STRONGLY RECOMMENDED |
 |||||
 
 ## Integration Metadata
@@ -2178,12 +2186,6 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 ---
 
 ## scATAC-seq assets
-
-### Definitions
-
-<b>paired assay</b>. `obs['assay_ontology_term_id']` is a descendant of both <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010891"><code>"EFO:0010891"</code></a> for <i>scATAC-seq</i> and <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008913"><code>"EFO:0008913"</code></a> for <i>single-cell RNA sequencing</i>
-
-<b>unpaired assay</b>. `obs['assay_ontology_term_id']` is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010891"><code>"EFO:0010891"</code></a> for <i>scATAC-seq</i> or a descendant and is not a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008913"><code>"EFO:0008913"</code></a> for <i>single-cell RNA sequencing</i>
 
 ### Requirements
 
