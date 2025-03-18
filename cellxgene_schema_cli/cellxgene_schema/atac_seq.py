@@ -235,9 +235,9 @@ def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
     logger.info(f"Converting {fragment_file} to parquet")
     parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet")
     try:
-        ddf.read_csv(unzipped_file, sep="\t", names=column_ordering, dtype=column_types).to_parquet(
-            parquet_file_path, partition_on=["chromosome"], compute=True
-        )
+        ddf.read_csv(
+            unzipped_file, sep="\t", names=column_ordering, dtype=column_types, keep_default_na=False
+        ).to_parquet(parquet_file_path, partition_on=["chromosome"], compute=True)
     finally:
         # remove the unzipped file
         logger.debug(f"Removing {unzipped_file}")
@@ -337,7 +337,9 @@ def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, annda
 
 def validate_fragment_read_support(parquet_file: str) -> Optional[str]:
     # check that the read support is greater than 0
-    df = ddf.read_parquet(parquet_file, columns=["read support"], filters=[("read support", "<=", 0)])
+    df = ddf.read_parquet(
+        parquet_file, columns=["read support"], filters=[("read support", "<=", 0)], keep_default_na=False
+    )
     if len(df.compute()) != 0:
         return "Read support must be greater than 0."
 
@@ -354,7 +356,7 @@ def validate_anndata_organism_ontology_term_id(anndata_file: str) -> Optional[st
         organism_ontology_term_ids = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)
     if organism_ontology_term_ids.size > 1:
         error_message = (
-            "Anndata.obs.organism_ontology_term_id must have exactly 1 unique value. Found the following values:\n"
+            "Anndata.obs.organism_ontology_term_id must have exactly 1 unique value. Found the " "following values:\n"
         ) + "\n\t".join(organism_ontology_term_ids)
         return error_message
     organism_ontology_term_id = organism_ontology_term_ids[0]

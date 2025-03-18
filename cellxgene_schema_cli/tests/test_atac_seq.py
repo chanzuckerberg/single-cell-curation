@@ -151,7 +151,7 @@ class TestProcessFragment:
 class TestConvertToParquet:
     def test_positive(self, atac_fragment_dataframe, tmpdir):
         tsv_file = str(
-            tmpdir + "/fragment.tsv.gzip",
+            tmpdir + "/fragment.tsv.gz",
         )
         atac_fragment_dataframe.to_csv(
             tsv_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
@@ -176,6 +176,16 @@ class TestConvertToParquet:
         )
         with pytest.raises(ValueError):
             atac_seq.convert_to_parquet(tsv_file, tmpdir)
+
+    def test_with_na_columns(self, atac_fragment_dataframe, tmpdir):
+        atac_fragment_dataframe["barcode"] = pd.NA
+        tsv_file = str(tmpdir + "/fragment.tsv.gz")
+        atac_fragment_dataframe.to_csv(
+            tsv_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
+        )
+        parquet_file = Path(atac_seq.convert_to_parquet(tsv_file, tmpdir))
+        parquet_df = dd.read_parquet(parquet_file, columns=["barcode"])
+        assert len(parquet_df[parquet_df["barcode"] != ""].compute()) == 0
 
 
 class TestValidateFragmentBarcodeInAdataIndex:
