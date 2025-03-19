@@ -6,7 +6,7 @@ sparsity: 0.5
 raw:
   obs:
     assay_ontology_term_id:
-      not_descendants_of_all:
+      descendants_of_all:
         terms:
           - EFO:0010891 # scATAC-seq
           - EFO:0008913 # single-cell-RNA-sequencing

@@ -2,14 +2,15 @@ from pathlib import Path
 
 import anndata as ad
 import dask.dataframe as dd
-from dask.array import from_array
-from numpy import zeros
 import pandas as pd
 import pysam
 import pytest
 from cellxgene_schema import atac_seq
-from fixtures.examples_validate import FIXTURES_ROOT
 from cellxgene_schema.validate import Validator
+from dask.array import from_array
+from fixtures.examples_validate import FIXTURES_ROOT
+from numpy import zeros
+
 
 @pytest.fixture
 def atac_fragment_bgzip_file_path() -> Path:
@@ -408,19 +409,20 @@ class TestValidateAnndataRawCounts:
 
     This is the purview of the AnnData Validator, not the AtacValidator, which is primarily focused on the fragment file.
     """
+
     def test_paired_requires_raw_validation(self, atac_anndata, tmpdir):
         # 10x multiome (EFO:0030059) is paired (both ATAC and RNA single cell sequencing)
         atac_anndata.obs["assay_ontology_term_id"] = ["EFO:0030059"] * 3
-        
+
         # use a valid count matrix (as dask array)
         X = atac_anndata.X
 
         # validate with AnnData Validator
         validator = Validator(ignore_labels=True)
         validator._set_schema_def()
-        
+
         # do validation with a valid count matrix
-        atac_anndata.X = from_array(X.astype('float32'))
+        atac_anndata.X = from_array(X.astype("float32"))
         validator.adata = atac_anndata
         validator.reset()
         validator._validate_raw()
@@ -436,7 +438,7 @@ class TestValidateAnndataRawCounts:
     def test_unpaired_skips_raw_validation(self, atac_anndata, tmpdir):
         # scATAC-seq (EFO:0010891) is unpaired paired
         atac_anndata.obs["assay_ontology_term_id"] = ["EFO:0010891"] * 3
-        
+
         # remove matrix - it shouldn't be required
         del atac_anndata.X
 
@@ -447,6 +449,7 @@ class TestValidateAnndataRawCounts:
         validator.reset()
         validator._validate_raw()
         assert validator.errors == []
+
 
 class TestGetOutputFile:
     @pytest.mark.parametrize(

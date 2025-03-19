@@ -257,11 +257,9 @@ def report_errors(header: str, errors: list[str]) -> list[str]:
 
 
 def validate_anndata(anndata_file: str) -> list[str]:
-    errors = [
-        validate_anndata_organism_ontology_term_id(anndata_file),
-        validate_anndata_is_primary_data(anndata_file)
-    ]
+    errors = [validate_anndata_organism_ontology_term_id(anndata_file), validate_anndata_is_primary_data(anndata_file)]
     return report_errors("Errors found in Anndata file. Skipping fragment validation.", errors)
+
 
 def validate_anndata_with_fragment(parquet_file: str, anndata_file: str) -> list[str]:
     errors = [

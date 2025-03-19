@@ -3,8 +3,8 @@ import numbers
 import os
 import re
 from datetime import datetime
-from typing import Dict, List, Mapping, Optional, Tuple, Union
-from functools import reduce
+from typing import Dict, List, Mapping, Optional, Set, Tuple, Union
+
 import anndata
 import dask
 import matplotlib.colors as mcolors
@@ -1420,18 +1420,24 @@ class Validator:
                     if rule == "not_descendants_of":
                         for ontology_name, ancestors in rule_def.items():
                             checks.append(not self._are_descendants_of(component, column, ontology_name, ancestors))
-                    elif rule == "not_descendants_of_all":
+                    elif rule == "descendants_of_all":
                         # get column values to check
                         values = getattr_anndata(self.adata, component)[column]
 
                         # create a list of descendant sets
-                        term_descendant_sets = [set(get_descendants(ONTOLOGY_PARSER, t, True)) for t in rule_def["terms"]]
+                        term_descendant_sets = [
+                            set(get_descendants(ONTOLOGY_PARSER, t, True)) for t in rule_def["terms"]
+                        ]
 
-                        # check if each value belongs to ALL of the sets in term_descent_sets
-                        check_values = values.apply(lambda x: reduce(lambda a, b: a and x in b,term_descendant_sets))
+                        # check if value belongs to ALL of the sets
+                        def is_in_all(term: str, termsets: List[Set[str]]) -> bool:
+                            return all(term in ds for ds in termsets)
+
+                        # apply check to all values
+                        check_values = [is_in_all(v, term_descendant_sets) for v in values.tolist()]
 
                         # register if any values pass that check
-                        checks.append(any(check_values))                        
+                        checks.append(any(check_values))
                     else:
                         raise ValueError(f"'{rule}' rule in raw definition of the schema is not implemented ")
 
