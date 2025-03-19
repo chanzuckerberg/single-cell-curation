@@ -4,7 +4,7 @@ import os
 import re
 from datetime import datetime
 from typing import Dict, List, Mapping, Optional, Tuple, Union
-
+from functools import reduce
 import anndata
 import dask
 import matplotlib.colors as mcolors
@@ -1420,19 +1420,23 @@ class Validator:
                     if rule == "not_descendants_of":
                         for ontology_name, ancestors in rule_def.items():
                             checks.append(not self._are_descendants_of(component, column, ontology_name, ancestors))
-                    elif rule == "match_ancestors_inclusive":
-                        descendents = []
-                        for ancestor in rule_def["ancestors"]:
-                            descendents.extend(get_descendants(ONTOLOGY_PARSER,ancestor, True))
-                        # check if ANY values in columponent-column are valid descendants
+                    elif rule == "not_descendants_of_all":
+                        # get column values to check
                         values = getattr_anndata(self.adata, component)[column]
-                        checks.append(values.apply(lambda x: x in descendents).any())
 
+                        # create a list of descendant sets
+                        term_descendant_sets = [set(get_descendants(ONTOLOGY_PARSER, t, True)) for t in rule_def["terms"]]
+
+                        # check if each value belongs to ALL of the sets in term_descent_sets
+                        check_values = values.apply(lambda x: reduce(lambda a, b: a and x in b,term_descendant_sets))
+
+                        # register if any values pass that check
+                        checks.append(any(check_values))                        
                     else:
                         raise ValueError(f"'{rule}' rule in raw definition of the schema is not implemented ")
 
-        # If all checks passed then proceed with validation
-        if all(checks):
+        # If any checks passed then proceed with validation
+        if any(checks):
             # If both "raw.X" and "X" exist but neither are raw
             # This is testing for when sometimes data contributors put a normalized matrix in both "X" and "raw.X".
             if not self._has_valid_raw() and self._get_raw_x_loc() == "raw.X":

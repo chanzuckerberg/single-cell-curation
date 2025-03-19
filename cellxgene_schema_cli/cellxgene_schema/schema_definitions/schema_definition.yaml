@@ -6,15 +6,16 @@ sparsity: 0.5
 raw:
   obs:
     assay_ontology_term_id:
-      match_ancestors_inclusive:
-        ancestors:
-          - EFO:0008913
-      # not_descendants_of:
-      #   EFO:
-      #     - EFO:0007045 # ATAC-seq
-      #     - EFO:0008804 # Methyl-seq
-      #     - EFO:0000751 # methylation profiling
-      #     - EFO:0008939 # snmC-seq
+      not_descendants_of_all:
+        terms:
+          - EFO:0010891 # scATAC-seq
+          - EFO:0008913 # single-cell-RNA-sequencing
+      not_descendants_of:
+        EFO:
+          - EFO:0007045 # ATAC-seq
+          - EFO:0008804 # Methyl-seq
+          - EFO:0000751 # methylation profiling
+          - EFO:0008939 # snmC-seq
 components:
   uns:
     type: dict
