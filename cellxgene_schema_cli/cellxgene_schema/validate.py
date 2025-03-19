@@ -1420,6 +1420,14 @@ class Validator:
                     if rule == "not_descendants_of":
                         for ontology_name, ancestors in rule_def.items():
                             checks.append(not self._are_descendants_of(component, column, ontology_name, ancestors))
+                    elif rule == "match_ancestors_inclusive":
+                        descendents = []
+                        for ancestor in rule_def["ancestors"]:
+                            descendents.extend(get_descendants(ONTOLOGY_PARSER,ancestor, True))
+                        # check if ANY values in columponent-column are valid descendants
+                        values = getattr_anndata(self.adata, component)[column]
+                        checks.append(values.apply(lambda x: x in descendents).any())
+
                     else:
                         raise ValueError(f"'{rule}' rule in raw definition of the schema is not implemented ")
 
