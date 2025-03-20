@@ -1,3 +1,4 @@
+import gzip
 import itertools
 import logging
 import shutil
@@ -411,21 +412,21 @@ def sort_fragment(parquet_file: str, write_path: str, chromosome: str) -> Path:
     df = ddf.read_parquet(parquet_file, filters=[("chromosome", "==", chromosome)])
     df = df[column_ordering]
     df = df.sort_values(["start coordinate", "stop coordinate"], ascending=True)
-
-    df.to_csv(temp_data, sep="\t", index=False, header=False, mode="w", single_file=True)
+    # Need to explicitly tell dask to compress, will not infer from file extension
+    df.to_csv(temp_data, sep="\t", index=False, header=False, mode="w", single_file=True, compression="gzip")
     return temp_data
 
 
 @delayed
 def write_bgzip_pysam(input_file: str, bgzip_output_file: str, write_lock: dd.Lock):
-    with write_lock, pysam.libcbgzf.BGZFile(bgzip_output_file, mode="ab") as f_out, open(input_file, "rb") as f_in:
+    with write_lock, pysam.libcbgzf.BGZFile(bgzip_output_file, mode="ab") as f_out, gzip.open(input_file, "rb") as f_in:
         while data := f_in.read(2**20):
             f_out.write(data)
 
 
 @delayed
 def write_bgzip_cli(input_file: str, bgzip_output_file: str, write_lock: dd.Lock):
-    with write_lock, open(input_file, "rb") as fin, open(bgzip_output_file, "ab") as fout:
+    with write_lock, gzip.open(input_file, "rb") as fin, open(bgzip_output_file, "ab") as fout:
         subprocess.run(["bgzip", "--threads=8", "-c"], stdin=fin, stdout=fout, check=True)
 
 
