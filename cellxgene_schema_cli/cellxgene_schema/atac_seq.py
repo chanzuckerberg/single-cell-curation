@@ -324,7 +324,7 @@ def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, annda
 def validate_fragment_read_support(parquet_file: str) -> Optional[str]:
     # check that the read support is greater than 0
     df = ddf.read_parquet(
-        parquet_file, columns=["read support"], filters=[("read support", "<=", 0)], keep_default_na=False
+        parquet_file, columns=["read support"], filters=[("read support", "<=", 0)]
     )
     if len(df.compute()) != 0:
         return "Read support must be greater than 0."
