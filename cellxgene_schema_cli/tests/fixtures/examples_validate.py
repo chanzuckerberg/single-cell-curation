@@ -5,6 +5,7 @@ import anndata
 import os
 from scipy import sparse
 from cellxgene_schema.utils import get_hash_digest_column
+from dask.array import from_array
 
 # -----------------------------------------------------------------#
 # General example information
@@ -51,7 +52,7 @@ good_obs = pd.DataFrame(
         ],
         [
             "CL:0000192",
-            "EFO:0009918",
+            "EFO:0008992",
             "PATO:0000461",
             "NCBITaxon:10090",
             "unknown",
@@ -81,9 +82,9 @@ good_obs = pd.DataFrame(
     ],
 )
 
-good_obs.loc[:, ["donor_id"]] = good_obs.astype("category")
-good_obs.loc[:, ["suspension_type"]] = good_obs.astype("category")
-good_obs.loc[:, ["tissue_type"]] = good_obs.astype("category")
+good_obs["donor_id"] = good_obs["donor_id"].astype("category")
+good_obs["suspension_type"] = good_obs["suspension_type"].astype("category")
+good_obs["tissue_type"] = good_obs["tissue_type"].astype("category")
 
 # Expected obs, this is what the obs above should look like after adding the necessary columns with the validator,
 # these columns are defined in the schema
@@ -101,7 +102,7 @@ obs_expected = pd.DataFrame(
         ],
         [
             "smooth muscle cell",
-            "smFISH",
+            "MERFISH",
             "normal",
             "Mus musculus",
             "unknown",
@@ -132,7 +133,7 @@ good_obs_visium = pd.DataFrame(
             1,
             1,
             "unknown",
-            "EFO:0010961",
+            "EFO:0022859",
             "MONDO:0100096",
             "NCBITaxon:9606",
             "PATO:0000383",
@@ -149,7 +150,7 @@ good_obs_visium = pd.DataFrame(
             2,
             2,
             "CL:0000192",
-            "EFO:0010961",
+            "EFO:0022859",
             "PATO:0000461",
             "NCBITaxon:10090",
             "unknown",
@@ -183,9 +184,9 @@ good_obs_visium = pd.DataFrame(
     ],
 )
 
-good_obs_visium.loc[:, ["donor_id"]] = good_obs_visium.astype("category")
-good_obs_visium.loc[:, ["suspension_type"]] = good_obs_visium.astype("category")
-good_obs_visium.loc[:, ["tissue_type"]] = good_obs_visium.astype("category")
+good_obs_visium["donor_id"] = good_obs_visium["donor_id"].astype("category")
+good_obs_visium["suspension_type"] = good_obs_visium["suspension_type"].astype("category")
+good_obs_visium["tissue_type"] = good_obs_visium["tissue_type"].astype("category")
 
 # Valid spatial obs per schema
 good_obs_slide_seqv2 = pd.DataFrame(
@@ -236,15 +237,15 @@ good_obs_slide_seqv2 = pd.DataFrame(
     ],
 )
 
-good_obs_slide_seqv2.loc[:, ["donor_id"]] = good_obs_slide_seqv2.astype("category")
-good_obs_slide_seqv2.loc[:, ["suspension_type"]] = good_obs_slide_seqv2.astype("category")
-good_obs_slide_seqv2.loc[:, ["tissue_type"]] = good_obs.astype("category")
+good_obs_slide_seqv2["donor_id"] = good_obs_slide_seqv2["donor_id"].astype("category")
+good_obs_slide_seqv2["suspension_type"] = good_obs_slide_seqv2["suspension_type"].astype("category")
+good_obs_slide_seqv2["tissue_type"] = good_obs_slide_seqv2["tissue_type"].astype("category")
 
 good_obs_visium_is_single_false = pd.DataFrame(
     [
         [
             "CL:0000066",
-            "EFO:0010961",
+            "EFO:0022859",
             "MONDO:0100096",
             "NCBITaxon:9606",
             "PATO:0000383",
@@ -258,7 +259,7 @@ good_obs_visium_is_single_false = pd.DataFrame(
         ],
         [
             "CL:0000192",
-            "EFO:0010961",
+            "EFO:0022859",
             "PATO:0000461",
             "NCBITaxon:10090",
             "unknown",
@@ -288,15 +289,32 @@ good_obs_visium_is_single_false = pd.DataFrame(
     ],
 )
 
-good_obs_visium_is_single_false.loc[:, ["donor_id"]] = good_obs_visium_is_single_false.astype("category")
-good_obs_visium_is_single_false.loc[:, ["suspension_type"]] = good_obs_visium_is_single_false.astype("category")
-good_obs_visium_is_single_false.loc[:, ["tissue_type"]] = good_obs_visium_is_single_false.astype("category")
+good_obs_visium_is_single_false["donor_id"] = good_obs_visium_is_single_false["donor_id"].astype("category")
+good_obs_visium_is_single_false["suspension_type"] = good_obs_visium_is_single_false["suspension_type"].astype(
+    "category"
+)
+good_obs_visium_is_single_false["tissue_type"] = good_obs_visium_is_single_false["tissue_type"].astype("category")
 
 # ---
 # 2. Creating individual var components: valid object and valid object and with labels
 
 # Valid var per schema
 good_var = pd.DataFrame(
+    [[False], [False], [False], [False], [False], [False], [False]],
+    index=[
+        "ERCC-00002",
+        "ENSG00000127603",
+        "ENSMUSG00000059552",
+        "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
+    ],
+    columns=["feature_is_filtered"],
+)
+
+# Valid var with four genes in it. This is used to test seurat compatibility which involves doing matrix math
+good_var_seurat_testing = pd.DataFrame(
     [
         [False],
         [False],
@@ -311,20 +329,35 @@ good_var = pd.DataFrame(
 # these columns are defined in the schema
 var_expected = pd.DataFrame(
     [
-        ["spike-in", False, "ERCC-00002 (spike-in control)", "NCBITaxon:32630", 0],
-        ["gene", False, "MACF1", "NCBITaxon:9606", 70573],
-        ["gene", False, "Trp53", "NCBITaxon:10090", 4045],
-        ["gene", False, "S", "NCBITaxon:2697049", 3822],
+        ["spike-in", False, "ERCC-00002 (spike-in control)", "NCBITaxon:32630", 1061, "synthetic"],
+        # ["gene", False, "MACF1", "NCBITaxon:9606", 2821, "protein_coding"],
+        ["gene", False, "MACF1_ENSG00000127603", "NCBITaxon:9606", 2821, "protein_coding"],
+        ["gene", False, "Trp53", "NCBITaxon:10090", 1797, "protein_coding"],
+        ["gene", False, "S_ENSSASG00005000004", "NCBITaxon:2697049", 3822, "protein_coding"],
+        ["gene", False, "FBtr0472816_df_nrg", "NCBITaxon:7227", 22, "ncRNA"],
+        ["gene", False, "fgfr1op2", "NCBITaxon:7955", 1088, "protein_coding"],
+        ["gene", False, "aat-2", "NCBITaxon:6239", 1738, "protein_coding"],
     ],
-    index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"],
+    index=[
+        "ERCC-00002",
+        "ENSG00000127603",
+        "ENSMUSG00000059552",
+        "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
+    ],
     columns=[
         "feature_biotype",
         "feature_is_filtered",
         "feature_name",
         "feature_reference",
         "feature_length",
+        "feature_type",
     ],
 )
+
+NUMBER_OF_GENES = len(var_expected.index)
 
 # ---
 # 3. Creating individual uns component
@@ -398,8 +431,10 @@ good_uns_with_slide_seqV2_spatial = {
 # ---
 # 4. Creating expression matrix,
 # X has integer values and non_raw_X has real values
-X = numpy.ones([good_obs.shape[0], good_var.shape[0]], dtype=numpy.float32)
-non_raw_X = sparse.csr_matrix(X.copy())
+X = from_array(sparse.csr_matrix((good_obs.shape[0], good_var.shape[0]), dtype=numpy.float32))
+X[0, 0] = 1
+X[1, 0] = 1
+non_raw_X = X.copy()
 non_raw_X[0, 0] = 1.5
 
 # ---
@@ -412,14 +447,14 @@ good_obsm_spatial = {"X_umap": numpy.zeros([X.shape[0], 2]), "spatial": numpy.ze
 #   the unittests
 
 # Valid anndata
-adata = anndata.AnnData(X=sparse.csr_matrix(X), obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var)
+adata = anndata.AnnData(X=X.copy(), obs=good_obs, uns=good_uns, obsm=good_obsm, var=good_var)
 adata.raw = adata.copy()
 adata.X = non_raw_X
 adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
 
 # Anndata with "X" and "raw.X" but neither has actual raw values
 adata_no_raw_values = anndata.AnnData(
-    X=sparse.csr_matrix(non_raw_X),
+    X=non_raw_X.copy(),
     obs=good_obs,
     uns=good_uns,
     obsm=good_obsm,
@@ -429,11 +464,11 @@ adata_no_raw_values.raw = adata_no_raw_values.copy()
 adata_no_raw_values.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
 
 # Anndata with no obs nor var
-adata_minimal = anndata.AnnData(X=sparse.csr_matrix(X), uns=good_uns, obsm=good_obsm)
+adata_minimal = anndata.AnnData(X=X.copy(), uns=good_uns, obsm=good_obsm)
 
 # Anndata with a expression matrix that is not raw
 adata_non_raw = anndata.AnnData(
-    X=sparse.csr_matrix(non_raw_X),
+    X=non_raw_X.copy(),
     obs=good_obs,
     uns=good_uns,
     obsm=good_obsm,
@@ -442,7 +477,7 @@ adata_non_raw = anndata.AnnData(
 
 # Expected anndata with labels that the validator must write in obs and var
 adata_with_labels = anndata.AnnData(
-    X=sparse.csr_matrix(X),
+    X=X.copy(),
     obs=pd.concat([good_obs, obs_expected], axis=1),
     var=var_expected,
     uns=good_uns_with_labels,
@@ -450,20 +485,18 @@ adata_with_labels = anndata.AnnData(
 )
 
 # Expected anndata with colors for categorical obs fields
-adata_with_colors = anndata.AnnData(
-    X=sparse.csr_matrix(X), obs=good_obs, uns=good_uns_with_colors, obsm=good_obsm, var=good_var
-)
+adata_with_colors = anndata.AnnData(X=X.copy(), obs=good_obs, uns=good_uns_with_colors, obsm=good_obsm, var=good_var)
 
 # Expected anndata with Visium spatial data
 adata_visium = anndata.AnnData(
-    X=sparse.csr_matrix(X), obs=good_obs_visium, uns=good_uns_with_visium_spatial, obsm=good_obsm_spatial, var=good_var
+    X=X.copy(), obs=good_obs_visium, uns=good_uns_with_visium_spatial, obsm=good_obsm_spatial, var=good_var
 )
 adata_visium.raw = adata_visium.copy()
 adata_visium.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
 
 # Expected anndata with Slide-seqV2 spatial data
 adata_slide_seqv2 = anndata.AnnData(
-    X=sparse.csr_matrix(X),
+    X=X.copy(),
     obs=good_obs_slide_seqv2,
     uns=good_uns_with_slide_seqV2_spatial,
     obsm=good_obsm_spatial,
@@ -471,7 +504,7 @@ adata_slide_seqv2 = anndata.AnnData(
 )
 
 adata_spatial_is_single_false = anndata.AnnData(
-    X=sparse.csr_matrix(X),
+    X=X.copy(),
     obs=good_obs_visium_is_single_false,
     uns=good_uns_with_is_single_false,
     obsm=good_obsm_spatial,
@@ -526,9 +559,10 @@ var_unmigrated = pd.DataFrame(
     ],
 )
 
-unmigrated_X = numpy.zeros([unmigrated_obs.shape[0], var_unmigrated.shape[0]], dtype=numpy.float32)
+unmigrated_X = sparse.csr_matrix(numpy.zeros([unmigrated_obs.shape[0], var_unmigrated.shape[0]], dtype=numpy.float32))
+
 adata_with_labels_unmigrated = anndata.AnnData(
-    X=sparse.csr_matrix(unmigrated_X),
+    X=unmigrated_X.copy(),
     obs=unmigrated_obs,
     uns=good_uns_with_labels,
     var=var_unmigrated,

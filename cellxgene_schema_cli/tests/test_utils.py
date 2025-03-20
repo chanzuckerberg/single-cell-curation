@@ -1,9 +1,7 @@
-import numpy as np
 import pandas as pd
 import pytest
 from anndata import AnnData
 from cellxgene_schema.utils import (
-    enforce_canonical_format,
     get_hash_digest_column,
     map_ontology_term,
     read_h5ad,
@@ -12,7 +10,6 @@ from cellxgene_schema.utils import (
     replace_ontology_term,
 )
 from fixtures.examples_validate import adata, adata_non_raw, h5ad_valid
-from scipy.sparse import coo_matrix
 
 
 @pytest.fixture
@@ -50,8 +47,20 @@ def test_remove_deprecated_features__with_raw(adata_with_raw, deprecated_feature
     result = remove_deprecated_features(adata=adata_with_raw, deprecated=deprecated_features)
 
     # Check if the deprecated features are removed
-    assert result.var_names.tolist() == ["ENSMUSG00000059552", "ENSSASG00005000004"]
-    assert result.raw.var_names.tolist() == ["ENSMUSG00000059552", "ENSSASG00005000004"]
+    assert result.var_names.tolist() == [
+        "ENSMUSG00000059552",
+        "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
+    ]
+    assert result.raw.var_names.tolist() == [
+        "ENSMUSG00000059552",
+        "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
+    ]
 
 
 def test_remove_deprecated_features__without_raw(adata_without_raw, deprecated_features):
@@ -61,13 +70,22 @@ def test_remove_deprecated_features__without_raw(adata_without_raw, deprecated_f
         "ENSG00000127603",
         "ENSMUSG00000059552",
         "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
     ]
 
     # Call the function under test
     result = remove_deprecated_features(adata=adata_without_raw, deprecated=deprecated_features)
 
     # Check if the deprecated features are removed
-    assert result.var_names.tolist() == ["ENSMUSG00000059552", "ENSSASG00005000004"]
+    assert result.var_names.tolist() == [
+        "ENSMUSG00000059552",
+        "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
+    ]
     assert result.raw is None
 
 
@@ -78,12 +96,18 @@ def test_remap_deprecated_features__with_raw(adata_with_raw, remapped_features):
         "ENSG00000127603",
         "ENSMUSG00000059552",
         "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
     ]
     assert adata_with_raw.raw.var_names.tolist() == [
         "ERCC-00002",
         "ENSG00000127603",
         "ENSMUSG00000059552",
         "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
     ]
 
     # Call the function under test
@@ -95,12 +119,18 @@ def test_remap_deprecated_features__with_raw(adata_with_raw, remapped_features):
         "ENSG00000127603",
         "ENSMUSG00000059552_NEW",
         "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
     ]
     assert result.raw.var_names.tolist() == [
         "ERCC-00002",
         "ENSG00000127603",
         "ENSMUSG00000059552_NEW",
         "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
     ]
 
 
@@ -114,6 +144,9 @@ def test_remap_deprecated_features__without_raw(adata_without_raw, remapped_feat
         "ENSG00000127603",
         "ENSMUSG00000059552_NEW",
         "ENSSASG00005000004",
+        "FBtr0472816_df_nrg",
+        "ENSDARG00000009657",
+        "WBGene00000003",
     ]
     assert result.raw is None
 
@@ -121,15 +154,16 @@ def test_remap_deprecated_features__without_raw(adata_without_raw, remapped_feat
 def test_replace_ontology_term__with_replacement(adata_with_raw, deprecated_term_map_with_replacement_match):
     replace_ontology_term(adata_with_raw.obs, "assay", deprecated_term_map_with_replacement_match)
 
-    expected = ["EFO:0009918", "EFO:0000001"]
+    expected = ["EFO:0000001", "EFO:0008992"]
     actual = adata_with_raw.obs["assay_ontology_term_id"].dtype.categories
-    assert all(a == b for a, b in zip(actual, expected))
+    assert sorted(actual) == expected
 
 
 def test_replace_ontology_term__no_replacement(adata_with_raw, deprecated_term_map_no_replacement_match):
     replace_ontology_term(adata_with_raw.obs, "assay", deprecated_term_map_no_replacement_match)
-    expected = ["EFO:0009899", "EFO:0009918"]
+    expected = ["EFO:0008992", "EFO:0009899"]
     actual = adata_with_raw.obs["assay_ontology_term_id"].dtype.categories
+    print(actual)
     assert all(a == b for a, b in zip(actual, expected))
 
 
@@ -145,34 +179,6 @@ def test_map_ontology_term__(adata_without_raw):
     assert all(a == "CL:0000002" for a in donor_2_rows["cell_type_ontology_term_id"])
 
 
-@pytest.fixture
-def noncanonical_matrix():
-    array = np.array([[1, 0, 1], [3, 2, 3], [4, 5, 4]])
-    return coo_matrix((array[0], (array[1], array[2])))
-
-
-class TestEnforceCanonical:
-    def test_adata_with_noncanonical_X_and_raw_X(self, noncanonical_matrix):
-        assert noncanonical_matrix.has_canonical_format is False
-        adata = AnnData(noncanonical_matrix)
-        enforce_canonical_format(adata)
-        assert adata.X.has_canonical_format is True
-
-    def test_adata_with_noncanonical_raw_X(self, noncanonical_matrix):
-        assert noncanonical_matrix.has_canonical_format is False
-        adata = AnnData(raw=AnnData(noncanonical_matrix))
-        enforce_canonical_format(adata)
-        assert adata.raw.X.has_canonical_format is True
-
-    def test_adata_with_canonical_raw_X(self, adata_with_raw):
-        enforce_canonical_format(adata)
-        assert adata_with_raw.raw.X.has_canonical_format is True
-
-    def test_adata_with_canonical_X(self, adata_without_raw):
-        enforce_canonical_format(adata)
-        assert adata_without_raw.X.has_canonical_format is True
-
-
 class TestGetHashDigestColumn:
     def test_get_hash_digest_column(self, adata_with_raw):
         hash_digest_column = get_hash_digest_column(adata_with_raw.obs)
@@ -185,11 +191,3 @@ class TestReadH5AD:
         h5ad_path = h5ad_valid
         adata = read_h5ad(h5ad_path)
         assert isinstance(adata, AnnData)
-        assert adata.isbacked
-
-    def test_read_h5ad_to_memory(self):
-        # Provide a valid h5ad path or a valid object resembling a path
-        h5ad_path = h5ad_valid
-        adata = read_h5ad(h5ad_path, to_memory=True)
-        assert isinstance(adata, AnnData)
-        assert not adata.isbacked

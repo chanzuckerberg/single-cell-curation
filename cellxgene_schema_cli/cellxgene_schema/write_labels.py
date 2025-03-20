@@ -2,12 +2,14 @@ import logging
 import traceback
 from typing import Dict, List, Optional
 
+import anndata
 import pandas as pd
-from cellxgene_schema import gencode
-from cellxgene_schema.env import SCHEMA_REFERENCE_BASE_URL, SCHEMA_REFERENCE_FILE_NAME
-from cellxgene_schema.validate import ONTOLOGY_PARSER, Validator
 
-from .utils import enforce_canonical_format, get_hash_digest_column, getattr_anndata
+from . import gencode, schema
+from .env import SCHEMA_REFERENCE_BASE_URL, SCHEMA_REFERENCE_FILE_NAME
+from .gencode import get_gene_checker
+from .ontology_parser import ONTOLOGY_PARSER
+from .utils import get_hash_digest_column, getattr_anndata
 
 logger = logging.getLogger(__name__)
 
@@ -18,30 +20,16 @@ class AnnDataLabelAppender:
     to adata.obs and adata.var respectively as indicated in the schema definition
     """
 
-    def __init__(self, validator: Validator):
+    def __init__(self, adata: anndata.AnnData):
         """
         From a list of ids and defined constraints, creates a mapping dictionary {id: label, ...}
 
-        :param Validator validator: a Validator object, it's used to get adata and schema defintion for its validation,
-        it's also used to make sure the validation on this adata was successful.
+        :param str file_name: Path to h5ad file
         """
-
-        if not validator.is_valid:
-            raise ValueError(
-                "AnnData object is not valid or hasn't been run through validation. "
-                "Validate AnnData first before attempting to write labels"
-            )
-        try:
-            # Always reading into memory because the canonical enforcement requires the X matrix to be in memory. Do
-            # this early to make other label writing operation faster.
-            self.adata = validator.adata.to_memory()
-        except ValueError:
-            # already in memory
-            self.adata = validator.adata
-        self.validator = validator
-        self.schema_def = validator.schema_def
+        self.adata = adata
+        self.schema_version = schema.get_current_schema_version()
+        self.schema_def = schema.get_schema_definition()
         self.errors = []
-        self.was_writing_successful = False
 
     def _merge_dicts(self, dict1: dict, dict2: dict) -> dict:
         """
@@ -170,7 +158,7 @@ class AnnDataLabelAppender:
 
         for i in ids:
             organism = gencode.get_organism_from_feature_id(i)
-            mapping_dict[i] = self.validator.gene_checkers[organism].get_symbol(i)
+            mapping_dict[i] = get_gene_checker(organism).get_symbol(i)
 
         return mapping_dict
 
@@ -192,6 +180,24 @@ class AnnDataLabelAppender:
 
         return mapping_dict
 
+    def _get_mapping_dict_feature_type(self, ids: List[str]) -> Dict[str, str]:
+        """
+        Creates a mapping dictionary of gene/feature IDs and its feature type.
+
+        :param list[str] ids: Gene/feature IDs use for mapping
+
+        :return a mapping dictionary: {id: feature_type, ...}
+        :rtype dict
+        """
+
+        mapping_dict = {}
+
+        for i in ids:
+            organism = gencode.get_organism_from_feature_id(i)
+            mapping_dict[i] = get_gene_checker(organism).get_type(i)
+
+        return mapping_dict
+
     def _get_mapping_dict_feature_biotype(self, ids: List[str]) -> Dict[str, str]:
         """
         Creates a mapping dictionary of feature IDs and biotype ("gene" or "spike-in")
@@ -206,10 +212,8 @@ class AnnDataLabelAppender:
         for i in ids:
             if i.startswith("ERCC"):
                 mapping_dict[i] = "spike-in"
-            elif i.startswith("ENS"):
-                mapping_dict[i] = "gene"
             else:
-                raise ValueError(f"{i} is not a recognized `feature_name` and cannot be assigned a `feature_type`")
+                mapping_dict[i] = "gene"
 
         return mapping_dict
 
@@ -226,11 +230,8 @@ class AnnDataLabelAppender:
         mapping_dict = {}
 
         for i in ids:
-            if i.startswith("ENS"):
-                organism = gencode.get_organism_from_feature_id(i)
-                mapping_dict[i] = self.validator.gene_checkers[organism].get_length(i)
-            else:
-                mapping_dict[i] = 0
+            organism = gencode.get_organism_from_feature_id(i)
+            mapping_dict[i] = get_gene_checker(organism).get_length(i)
 
         return mapping_dict
 
@@ -240,7 +241,7 @@ class AnnDataLabelAppender:
         column: str,
         column_definition: dict,
         label_type: dict,
-    ) -> pd.Categorical:
+    ) -> pd.Series:
         """
         Retrieves a new column (pandas categorical) with labels based on the IDs in 'column' and the logic in the
         'column_definition'
@@ -290,10 +291,13 @@ class AnnDataLabelAppender:
         elif label_type == "feature_length":
             mapping_dict = self._get_mapping_dict_feature_length(ids=ids)
 
+        elif label_type == "feature_type":
+            mapping_dict = self._get_mapping_dict_feature_type(ids=ids)
+
         else:
             raise TypeError(f"'{label_type}' is not supported in 'add-labels' functionality")
 
-        new_column = original_column.copy().replace(mapping_dict).astype("category")
+        new_column = original_column.copy().map(mapping_dict).astype("category")
 
         return new_column
 
@@ -313,15 +317,7 @@ class AnnDataLabelAppender:
         for label_def in column_definition["add_labels"]:
             new_column = self._get_labels(component, column, column_definition, label_def["type"])
             new_column_name = label_def["to_column"]
-
-            # The syntax below is a programmatic way to access obs and var in adata:
-            # adata.__dict__["_obs"] is adata.obs
-            # "raw.var" requires to levels of programmatic access
-            if "." in component:
-                [first_elem, second_elem] = component.split(".")
-                self.adata.__dict__["_" + first_elem].__dict__["_" + second_elem][new_column_name] = new_column
-            else:
-                self.adata.__dict__["_" + component][new_column_name] = new_column
+            getattr_anndata(self.adata, component)[new_column_name] = new_column
 
     def _add_labels(self):
         """
@@ -371,12 +367,10 @@ class AnnDataLabelAppender:
 
         # Annotate Reserved Columns
 
-        self.adata.uns["schema_version"] = self.validator.schema_version
-        self.adata.uns["schema_reference"] = self._build_schema_reference_url(self.validator.schema_version)
+        self.adata.uns["schema_version"] = self.schema_version
+        self.adata.uns["schema_reference"] = self._build_schema_reference_url(self.schema_version)
         self.adata.obs["observation_joinid"] = get_hash_digest_column(self.adata.obs)
-
-        enforce_canonical_format(self.adata)
-
+        logger.info(f"Labels have been added. Writing to {add_labels_file}")
         # Write file
         try:
             self.adata.write_h5ad(add_labels_file, compression="gzip")
@@ -388,6 +382,6 @@ class AnnDataLabelAppender:
         if self.errors:
             for e, tb in self.errors:
                 logger.error(e, extra={"exec_info": tb})
-            self.was_writing_successful = False
+            return False
         else:
-            self.was_writing_successful = True
+            return True

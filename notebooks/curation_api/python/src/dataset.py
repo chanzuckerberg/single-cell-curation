@@ -86,6 +86,33 @@ def download_assets(datasets: list, log_version_id: bool = False):
     success(logger, "Finished downloading assets")
 
 
+def download_assets_from_manifest(manifest: dict[str, str]):
+    """
+    Download assets locally from a manifest
+    :param manifest: the manifest of the Dataset
+    :return: None
+    """
+    try:
+        for asset_url in manifest.values():
+            download_filename = asset_url.split("/")[-1]
+            print(f"\nDownloading {download_filename}... ")
+            with requests.get(asset_url, stream=True) as res:
+                res.raise_for_status()
+                filesize = int(res.headers["Content-Length"])
+                with open(download_filename, "wb") as df:
+                    total_bytes_received = 0
+                    for chunk in res.iter_content(chunk_size=1024 * 1024):
+                        df.write(chunk)
+                        total_bytes_received += len(chunk)
+                        percent_of_total_upload = float("{:.1f}".format(total_bytes_received / filesize * 100))
+                        color = "\033[38;5;10m" if percent_of_total_upload == 100 else ""
+                        print(f"\033[1m{color}{percent_of_total_upload}% downloaded\033[0m\r", end="")
+    except requests.HTTPError as e:
+        failure(logger, e)
+        raise e
+    success(logger, "Finished downloading assets")
+
+
 def get_dataset(collection_id: str, dataset_id: str):
     """
     Get full metadata for a Dataset
@@ -94,6 +121,24 @@ def get_dataset(collection_id: str, dataset_id: str):
     :return: the full Dataset metadata
     """
     url = url_builder(f"/collections/{collection_id}/datasets/{dataset_id}")
+
+    try:
+        res = requests.get(url, **get_headers_and_cookies())
+        res.raise_for_status()
+    except requests.HTTPError as e:
+        failure(logger, e)
+        raise e
+    return res.json()
+
+
+def get_dataset_manifest(collection_id: str, dataset_id: str) -> dict[str, str]:
+    """
+    Get manifest for a Dataset
+    :param collection_id: the id of the Collection to which the Dataset belongs
+    :param dataset_id: Dataset id
+    :return: the Dataset manifest
+    """
+    url = url_builder(f"/collections/{collection_id}/datasets/{dataset_id}/manifest")
 
     try:
         res = requests.get(url, **get_headers_and_cookies())
@@ -185,13 +230,37 @@ def upload_datafile_from_link(link: str, collection_id: str, dataset_id: str):
         success(logger, success_message)
 
 
-def upload_local_datafile(datafile_path: str, collection_id: str, dataset_id: str):
+def upload_datafiles_from_manifest(manifest: dict[str, str], collection_id: str, dataset_id: str):
+    """
+    Create/update a Dataset from the passed manifest.
+    :param manifest: the manifest with links to assets to upload to the Data Portal to become a Dataset
+    :param collection_id: the id of the Collection to which the resultant Dataset will belong
+    :param dataset_id: Dataset id.
+    :return: None
+    """
+    url = url_builder(f"/collections/{collection_id}/datasets/{dataset_id}/manifest")
+
+    success_message = (
+        f"Uploading Dataset with id '{dataset_id}' to Collection "
+        f"{os.getenv('SITE_URL')}/collections/{collection_id} sourcing from manifest: {manifest}"
+    )
+
+    try:
+        res = requests.put(url, json=manifest, **get_headers_and_cookies())
+        res.raise_for_status()
+    except requests.HTTPError as e:
+        failure(logger, e)
+        raise e
+    else:
+        success(logger, success_message)
+
+
+def upload_local_datafile(datafile_path: str, collection_id: str, dataset_id: str) -> str:
     """
     :param datafile_path: the fully qualified path of the datafile to be uploaded
     :param collection_id: the id of the Collection to which the resultant Dataset will belong
     :param dataset_id: Dataset id.
-    :param log_level: the logging level
-    :return: None
+    :return: the S3 URI of the uploaded datafile
     """
     url = url_builder(f"/collections/{collection_id}/s3-upload-credentials")
 
@@ -251,8 +320,10 @@ def upload_local_datafile(datafile_path: str, collection_id: str, dataset_id: st
 
     credentials_and_path = retrieve_s3_credentials_and_upload_key_prefix()
     bucket, key_prefix = credentials_and_path["Bucket"], credentials_and_path["UploadKeyPrefix"]
-    upload_key = key_prefix + dataset_id
-    logger.debug(f"Full S3 write path is s3://{bucket}/{upload_key}\n")
+    file_base_name = os.path.split(datafile_path)[-1]
+    upload_key = key_prefix + os.path.join(dataset_id, file_base_name)
+    s3_uri = f"s3://{bucket}/{upload_key}"
+    logger.info(f"Full S3 write path is {s3_uri}\n")
 
     session_creds = RefreshableCredentials.create_from_metadata(
         metadata=s3_refreshable_credentials_cb(),
@@ -276,4 +347,5 @@ def upload_local_datafile(datafile_path: str, collection_id: str, dataset_id: st
         failure(logger, e)
         raise e
     else:
-        success(logger, "UPLOAD COMPLETE -- Dataset is queued for processing and will surface in the system shortly.")
+        success(logger, "UPLOAD COMPLETE.")
+        return s3_uri

@@ -29,6 +29,7 @@ venv/
 
 # Include h5ads in tests
 !cellxgene_schema_cli/tests/fixtures/h5ads/*
+!cellxgene_schema_cli/tests/fixtures/atac_seq/*
 
 # Kozareva big files
 cb_annotated_object.RDS

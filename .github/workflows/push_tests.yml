@@ -4,7 +4,7 @@ on:
   push:
     branches: main
   pull_request:
-    branches: "*"
+    branches: "**"
 
 jobs:
 
@@ -12,12 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v5
       - name: Pre-commit checks
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
       - name: Install dependencies
         run: |
           pip install -r ./requirements-dev.txt
@@ -33,15 +33,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
       - name: Python cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
@@ -51,28 +51,33 @@ jobs:
         run: |
           pip install -r ./requirements-dev.txt
           pip install -e ./cellxgene_schema_cli
+          
+          sudo apt-get update
+          sudo apt-get install libbz2-dev liblzma-dev tabix
+          which bgzip
       - name: cellxgene_schema_cli Unit tests
         run: make unit-test
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: coverage
-          path: ./.coverage*
+          name: coverage-cli
+          path: .coverage*
           retention-days: 3
+          include-hidden-files: true
 
   unit-tests-migration-assistant:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
       - name: Python cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
@@ -85,25 +90,26 @@ jobs:
       - name: migration_assistant Unit tests
         run: make migration-assistant-tests
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: coverage
-          path: ./.coverage*
+          name: coverage-migration-assisstant
+          path: .coverage*
           retention-days: 3
+          include-hidden-files: true
 
   unit-test-ontology-dry-run:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
       - name: Python cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
@@ -116,25 +122,26 @@ jobs:
       - name: Ontology Dry Run Unit Tests
         run: make ontology-dry-run-tests
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: coverage
-          path: ./.coverage*
+          name: coverage-ontology-dry-run
+          path: .coverage*
           retention-days: 3
+          include-hidden-files: true
 
   unit-test-genes-dry-run:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
       - name: Python cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
@@ -147,11 +154,12 @@ jobs:
       - name: Gene Dry Run Unit Tests
         run: make gene-dry-run-tests
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: coverage
-          path: ./.coverage*
+          name: coverage-genes-dry-run
+          path: .coverage*
           retention-days: 3
+          include-hidden-files: true
 
   submit-codecoverage:
     needs:
@@ -161,28 +169,30 @@ jobs:
       - unit-tests-cli
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref:
             ${{ github.event.pull_request.head.ref }}
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
       - name: Install dependencies
         run: |
           pip install coverage
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: coverage
+          pattern: coverage-*
+          merge-multiple: true
           path: .
       - name: coverage report
         run: |
           make coverage/report-xml
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           env_vars: OS,PYTHON
           files: ./coverage.xml
           flags: unittests
