@@ -226,7 +226,7 @@ def process_fragment(
 def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
     # convert the fragment to a parquet file
     logger.info(f"Converting {fragment_file} to parquet")
-    parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet")
+    parquet_file_path = Path(tempdir) / Path(fragment_file).with_suffix(".parquet")
     ddf.read_csv(
         fragment_file, sep="\t", names=column_ordering, dtype=column_types, keep_default_na=False, compression="gzip"
     ).to_parquet(parquet_file_path, partition_on=["chromosome"], compute=True)
