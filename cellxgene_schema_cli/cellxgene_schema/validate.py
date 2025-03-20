@@ -1420,11 +1420,25 @@ class Validator:
                     if rule == "not_descendants_of":
                         for ontology_name, ancestors in rule_def.items():
                             checks.append(not self._are_descendants_of(component, column, ontology_name, ancestors))
+                    elif rule == "descendants_of_all":
+                        # get column values to check
+                        values = getattr_anndata(self.adata, component)[column]
+
+                        # create a list of descendant sets
+                        term_descendant_sets = [
+                            set(get_descendants(ONTOLOGY_PARSER, t, True)) for t in rule_def["terms"]
+                        ]
+
+                        # apply check ( i.e. value in ALL sets) to all values
+                        check_values = [all(v in ds for ds in term_descendant_sets) for v in values.tolist()]
+
+                        # register if any values pass that check
+                        checks.append(any(check_values))
                     else:
                         raise ValueError(f"'{rule}' rule in raw definition of the schema is not implemented ")
 
-        # If all checks passed then proceed with validation
-        if all(checks):
+        # If any checks passed then proceed with validation
+        if any(checks):
             # If both "raw.X" and "X" exist but neither are raw
             # This is testing for when sometimes data contributors put a normalized matrix in both "X" and "raw.X".
             if not self._has_valid_raw() and self._get_raw_x_loc() == "raw.X":
