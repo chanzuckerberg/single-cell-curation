@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import anndata as ad
@@ -24,28 +25,20 @@ def atac_fragment_index_file_path(atac_fragment_bgzip_file_path) -> Path:
 
 
 def to_anndata_file(adata: ad.AnnData, path: str) -> str:
-    file_name = path + "/small_atac_seq.h5ad"
+    file_name = os.path.join(path, "small_atac_seq.h5ad")
     adata.write(file_name)
     return file_name
 
 
 @pytest.fixture
-def atac_anndata():
-    obs = pd.DataFrame(index=["A", "B", "C"])
-    obs["organism_ontology_term_id"] = ["NCBITaxon:9606"] * 3
-    obs["assay_ontology_term_id"] = ["EFO:0030059"] * 3
-    return ad.AnnData(obs=obs, var=pd.DataFrame())
-
-
-@pytest.fixture
 def atac_anndata_file(atac_anndata, tmpdir):
-    file_name = tmpdir + "/small_atac_seq.h5ad"
+    file_name = os.path.join(tmpdir, "small_atac_seq.h5ad")
     atac_anndata.write(file_name)
     return file_name
 
 
 def to_parquet_file(df: pd.DataFrame, path: str) -> str:
-    file_name = path + "/fragment"
+    file_name = os.path.join(path, "fragment")
     dd.from_pandas(df).to_parquet(file_name, partition_on=["chromosome"])
     return file_name
 
@@ -88,8 +81,8 @@ class TestProcessFragment:
         atac_fragment_bgzip_file_path, atac_fragment_index_file_path, override_write_algorithm, fragment_file
     ):
         # Arrange
-        anndata_file = FIXTURES_ROOT + "/atac_seq/small_atac_seq.h5ad"
-        fragments_file = FIXTURES_ROOT + f"/atac_seq/{fragment_file}"
+        anndata_file = os.path.join(FIXTURES_ROOT, "atac_seq", "small_atac_seq.h5ad")
+        fragments_file = os.path.join(FIXTURES_ROOT, "atac_seq", fragment_file)
         # Act
         result = atac_seq.process_fragment(
             fragments_file,
@@ -130,11 +123,26 @@ class TestProcessFragment:
             for chromosome in tabix.contigs:
                 assert chromosome in atac_seq.human_chromosome_by_length
 
+    def test_fail(self, atac_fragment_bgzip_file_path, atac_fragment_index_file_path):
+        # Arrange
+        anndata_file = os.path.join(FIXTURES_ROOT, "atac_seq", "small_atac_seq.h5ad")
+        fragments_file = os.path.join(FIXTURES_ROOT, "atac_seq", "fragments_bad.tsv.gz")
+        # Act
+        result = atac_seq.process_fragment(
+            fragments_file,
+            anndata_file,
+            generate_index=True,
+            dask_cluster_config=dict(processes=False),
+            output_file=str(atac_fragment_bgzip_file_path),
+        )
+        result = [r for r in result if "Error" in r]
+
 
 class TestConvertToParquet:
     def test_positive(self, atac_fragment_dataframe, tmpdir):
-        tsv_file = str(
-            tmpdir + "/fragment.tsv.gzip",
+        tsv_file = os.path.join(
+            tmpdir,
+            "fragment.tsv.gz",
         )
         atac_fragment_dataframe.to_csv(
             tsv_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
@@ -144,7 +152,7 @@ class TestConvertToParquet:
 
     def test_missing_column(self, tmpdir, atac_fragment_dataframe):
         atac_fragment_dataframe = atac_fragment_dataframe.drop(columns=["read support"])
-        tsv_file = str(tmpdir + "/fragment.tsv")
+        tsv_file = os.path.join(tmpdir, "fragment.tsv")
         atac_fragment_dataframe.to_csv(
             tsv_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering[:-1]
         )
@@ -153,12 +161,22 @@ class TestConvertToParquet:
 
     def test_invalid_column_dtype(self, tmpdir, atac_fragment_dataframe):
         atac_fragment_dataframe["start coordinate"] = "foo"
-        tsv_file = str(tmpdir + "/fragment.tsv")
+        tsv_file = os.path.join(tmpdir, "fragment.tsv")
         atac_fragment_dataframe.to_csv(
             tsv_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
         )
         with pytest.raises(ValueError):
             atac_seq.convert_to_parquet(tsv_file, tmpdir)
+
+    def test_with_na_columns(self, atac_fragment_dataframe, tmpdir):
+        atac_fragment_dataframe["barcode"] = pd.NA
+        tsv_file = os.path.join(tmpdir, "fragment.tsv.gz")
+        atac_fragment_dataframe.to_csv(
+            tsv_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
+        )
+        parquet_file = Path(atac_seq.convert_to_parquet(tsv_file, tmpdir))
+        parquet_df = dd.read_parquet(parquet_file, columns=["barcode"])
+        assert len(parquet_df[parquet_df["barcode"] != ""].compute()) == 0
 
 
 class TestValidateFragmentBarcodeInAdataIndex:

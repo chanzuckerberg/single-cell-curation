@@ -130,6 +130,16 @@ column_types = {
 }
 
 
+def is_atac(x: str) -> str:
+    if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0010891"):
+        if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0008913"):
+            return "p"  # paired
+        else:
+            return "u"  # unpaired
+    else:
+        return "n"  # not atac seq
+
+
 def check_anndata_requires_fragment(anndata_file: str) -> bool:
     """
     Check if an anndata file requires a fragment file to be valid. The anndata file requires a fragment file if the
@@ -141,16 +151,6 @@ def check_anndata_requires_fragment(anndata_file: str) -> bool:
     :param anndata_file: The anndata file to validate.
     :return:
     """
-
-    def is_atac(x: str) -> str:
-        if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0010891"):
-            if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0008913"):
-                return "p"  # paired
-            else:
-                return "u"  # unpaired
-        else:
-            return "n"  # not atac seq
-
     with h5py.File(anndata_file) as f:
         assay_ontology_term_ids = ad.io.read_elem(f["obs"])["assay_ontology_term_id"]
     df = assay_ontology_term_ids.map(is_atac)
@@ -235,9 +235,9 @@ def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
     logger.info(f"Converting {fragment_file} to parquet")
     parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet")
     try:
-        ddf.read_csv(unzipped_file, sep="\t", names=column_ordering, dtype=column_types).to_parquet(
-            parquet_file_path, partition_on=["chromosome"], compute=True
-        )
+        ddf.read_csv(
+            unzipped_file, sep="\t", names=column_ordering, dtype=column_types, keep_default_na=False
+        ).to_parquet(parquet_file_path, partition_on=["chromosome"], compute=True)
     finally:
         # remove the unzipped file
         logger.debug(f"Removing {unzipped_file}")
