@@ -6,7 +6,10 @@ import pandas as pd
 import pysam
 import pytest
 from cellxgene_schema import atac_seq
+from cellxgene_schema.validate import Validator
+from dask.array import from_array
 from fixtures.examples_validate import FIXTURES_ROOT
+from numpy import zeros
 
 
 @pytest.fixture
@@ -34,7 +37,10 @@ def atac_anndata():
     obs = pd.DataFrame(index=["A", "B", "C"])
     obs["organism_ontology_term_id"] = ["NCBITaxon:9606"] * 3
     obs["assay_ontology_term_id"] = ["EFO:0030059"] * 3
-    return ad.AnnData(obs=obs, var=pd.DataFrame())
+    var = pd.DataFrame()
+    var["var_names"] = ["gene1", "gene2", "gene3"]
+    X = pd.DataFrame(index=["A", "B", "C"], data=[[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    return ad.AnnData(obs=obs, var=var, X=X)
 
 
 @pytest.fixture
@@ -130,11 +136,25 @@ class TestProcessFragment:
             for chromosome in tabix.contigs:
                 assert chromosome in atac_seq.human_chromosome_by_length
 
+    def test_fail(self, atac_fragment_bgzip_file_path, atac_fragment_index_file_path):
+        # Arrange
+        anndata_file = FIXTURES_ROOT + "/atac_seq/small_atac_seq.h5ad"
+        fragments_file = FIXTURES_ROOT + "/atac_seq/fragments_bad.tsv.gz"
+        # Act
+        result = atac_seq.process_fragment(
+            fragments_file,
+            anndata_file,
+            generate_index=True,
+            dask_cluster_config=dict(processes=False),
+            output_file=str(atac_fragment_bgzip_file_path),
+        )
+        result = [r for r in result if "Error" in r]
+
 
 class TestConvertToParquet:
     def test_positive(self, atac_fragment_dataframe, tmpdir):
         tsv_file = str(
-            tmpdir + "/fragment.tsv.gzip",
+            tmpdir + "/fragment.tsv.gz",
         )
         atac_fragment_dataframe.to_csv(
             tsv_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
@@ -159,6 +179,16 @@ class TestConvertToParquet:
         )
         with pytest.raises(ValueError):
             atac_seq.convert_to_parquet(tsv_file, tmpdir)
+
+    def test_with_na_columns(self, atac_fragment_dataframe, tmpdir):
+        atac_fragment_dataframe["barcode"] = pd.NA
+        tsv_file = str(tmpdir + "/fragment.tsv.gz")
+        atac_fragment_dataframe.to_csv(
+            tsv_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
+        )
+        parquet_file = Path(atac_seq.convert_to_parquet(tsv_file, tmpdir))
+        parquet_df = dd.read_parquet(parquet_file, columns=["barcode"])
+        assert len(parquet_df[parquet_df["barcode"] != ""].compute()) == 0
 
 
 class TestValidateFragmentBarcodeInAdataIndex:
@@ -370,6 +400,55 @@ class TestValidateFragmentNoDuplicateRows:
         result = atac_seq.validate_fragment_no_duplicate_rows(fragment_file)
         # Assert
         assert result == "Fragment file has duplicate rows."
+
+
+class TestValidateAnndataRawCounts:
+    """
+    Paired Assays (measures both accessibility and gene expression) require raw counts to be present and validated.
+    Unpaired Assays (measures only accessibility) do not require raw counts to be present.
+
+    This is the purview of the AnnData Validator, not the AtacValidator, which is primarily focused on the fragment file.
+    """
+
+    def test_paired_requires_raw_validation(self, atac_anndata, tmpdir):
+        # 10x multiome (EFO:0030059) is paired (both ATAC and RNA single cell sequencing)
+        atac_anndata.obs["assay_ontology_term_id"] = ["EFO:0030059"] * 3
+
+        # use a valid count matrix (as dask array)
+        X = atac_anndata.X
+
+        # validate with AnnData Validator
+        validator = Validator(ignore_labels=True)
+        validator._set_schema_def()
+
+        # do validation with a valid count matrix
+        atac_anndata.X = from_array(X.astype("float32"))
+        validator.adata = atac_anndata
+        validator.reset()
+        validator._validate_raw()
+        assert validator.errors == []
+
+        # do validation with an invalid count matrix
+        atac_anndata.X = from_array(zeros(X.shape).astype("float32"))
+        validator.adata = atac_anndata
+        validator.reset()
+        validator._validate_raw()
+        assert len(validator.errors) > 0
+
+    def test_unpaired_skips_raw_validation(self, atac_anndata, tmpdir):
+        # scATAC-seq (EFO:0010891) is unpaired paired
+        atac_anndata.obs["assay_ontology_term_id"] = ["EFO:0010891"] * 3
+
+        # remove matrix - it shouldn't be required
+        del atac_anndata.X
+
+        # check that validation passes even without matrix
+        validator = Validator(ignore_labels=True)
+        validator._set_schema_def()
+        validator.adata = atac_anndata
+        validator.reset()
+        validator._validate_raw()
+        assert validator.errors == []
 
 
 class TestGetOutputFile:
