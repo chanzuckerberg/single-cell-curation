@@ -3,7 +3,7 @@ import numbers
 import os
 import re
 from datetime import datetime
-from typing import Dict, List, Mapping, Optional, Set, Tuple, Union
+from typing import Dict, List, Mapping, Optional, Tuple, Union
 
 import anndata
 import dask
@@ -1429,12 +1429,8 @@ class Validator:
                             set(get_descendants(ONTOLOGY_PARSER, t, True)) for t in rule_def["terms"]
                         ]
 
-                        # check if value belongs to ALL of the sets
-                        def is_in_all(term: str, termsets: List[Set[str]]) -> bool:
-                            return all(term in ds for ds in termsets)
-
-                        # apply check to all values
-                        check_values = [is_in_all(v, term_descendant_sets) for v in values.tolist()]
+                        # apply check ( i.e. value in ALL sets) to all values
+                        check_values = [all(v in ds for ds in term_descendant_sets) for v in values.tolist()]
 
                         # register if any values pass that check
                         checks.append(any(check_values))
