@@ -24,7 +24,7 @@ from cellxgene_schema.validate import (
     validate,
 )
 from cellxgene_schema.write_labels import AnnDataLabelAppender
-from dask_expr.array import from_array
+from dask.array import from_array
 from fixtures.examples_validate import adata as adata_valid
 from fixtures.examples_validate import (
     adata_minimal,
