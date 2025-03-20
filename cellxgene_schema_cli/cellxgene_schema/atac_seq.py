@@ -226,6 +226,7 @@ def process_fragment(
 def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
     # unzip the fragment. Subprocess is used here because gzip on the cli uses less memory with comparable
     # speed to the python gzip library.
+    # We need to unzip for dask to be able to read in chunks
     unzipped_file = Path(tempdir) / Path(fragment_file).name.rsplit(".", 1)[0]
     logger.info(f"Unzipping {fragment_file}")
     with open(unzipped_file, "wb") as fp:
