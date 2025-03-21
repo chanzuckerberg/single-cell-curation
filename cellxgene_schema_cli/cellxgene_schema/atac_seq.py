@@ -224,6 +224,8 @@ def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
     # unzip the fragment. Subprocess is used here because gzip on the cli uses less memory with comparable
     # speed to the python gzip library.
     # Dask is unable to read a gzip compressed csv in chunks, so we need to decompress first
+
+    #### UNZIPPING uses too mush disk
     unzipped_file = Path(tempdir) / Path(fragment_file).name.rsplit(".", 1)[0]
     logger.info(f"Unzipping {fragment_file}")
     with open(unzipped_file, "wb") as fp:
@@ -240,6 +242,46 @@ def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
         # remove the unzipped file
         logger.debug(f"Removing {unzipped_file}")
         unzipped_file.unlink()
+
+    # ### TRYING WITH PIPING, this also explodes memory usage
+    # logger.info(f"Converting {fragment_file} to parquet")
+    # parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet")
+    # with subprocess.run(["gunzip", "-dc", fragment_file], stdout=subprocess.PIPE, check=True) as proc:
+    #     buffered_reader = io.BufferedReader(proc.stdout, 64*1024*1024)
+    #     ddf.read_csv(
+    #         buffered_reader, sep="\t", names=column_ordering, dtype=column_types, keep_default_na=False
+    #     ).to_parquet(parquet_file_path, partition_on=["chromosome"], compute=True)
+
+    # ### Try using vaex to stream
+    # """
+    # This required downgrading the numpy version. There is an issues out to support 2 but it's not merged yet.
+    # https://github.com/vaexio/vaex/pull/2449
+    # Had to convert to h5ad then parquet and that consume all the disk space.
+    # """
+    # import vaex
+    # logger.info(f"Converting {fragment_file} to parquet")
+    # parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet")
+    # df = vaex.from_csv(
+    #     fragment_file,
+    #     sep="\t",
+    #     names=column_ordering,
+    #     dtype=column_types,
+    #     compression="gzip", convert=True, progress=True)
+    # df.export_parquet(parquet_file_path, parallel=True, progress=True)
+
+    # ### USING PANDAS. Slow and killed on mac
+    # # convert the fragment to a parquet file
+    # logger.info(f"Converting {fragment_file} to parquet")
+    # parquet_file_path = Path(tempdir) / Path(fragment_file).with_suffix(".parquet").name
+    # pd.read_csv(
+    #     fragment_file,
+    #     sep="\t",
+    #     names=column_ordering,
+    #     dtype=column_types,
+    #     keep_default_na=False,
+    #     compression="gzip"
+    # ).to_parquet(parquet_file_path, partition_on=["chromosome"])
+
     parquet_file = str(parquet_file_path)
     return parquet_file
 
@@ -273,7 +315,9 @@ def validate_anndata_with_fragment(parquet_file: str, anndata_file: str) -> list
 
 def validate_fragment_no_duplicate_rows(parquet_file: str) -> Optional[str]:
     df = ddf.read_parquet(parquet_file)
-    if len(df.drop_duplicates()) != len(df):
+    duplicate_rows = df.groupby(df.columns.tolist()).size()
+    duplicates = duplicate_rows[duplicate_rows > 1].compute()
+    if len(duplicates) > 0:
         return "Fragment file has duplicate rows."
 
 
