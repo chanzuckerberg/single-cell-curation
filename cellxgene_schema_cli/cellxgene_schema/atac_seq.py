@@ -237,12 +237,13 @@ def process_fragment(
 
 def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
     logger.info(f"Unzipping {fragment_file}")
-    parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet")
+    parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet").replace(".bgz", ".parquet")
     pa.dataset.write_dataset(
         data=pa.csv.open_csv(
             pa.input_stream(fragment_file, compression="gzip"),
             read_options=pa.csv.ReadOptions(column_names=schema.names),
             parse_options=pa.csv.ParseOptions(delimiter="\t"),
+            convert_options=pa.csv.ConvertOptions(column_types=schema),
         ),
         base_dir=parquet_file_path,
         format="parquet",
