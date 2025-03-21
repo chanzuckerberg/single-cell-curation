@@ -1,4 +1,3 @@
-import itertools
 import logging
 import shutil
 import subprocess
@@ -11,7 +10,6 @@ import dask
 import dask.dataframe as ddf
 import filelock
 import h5py
-import pandas as pd
 import pyarrow as pa
 import pyarrow.csv
 import pyarrow.dataset
@@ -121,9 +119,6 @@ organism_ontology_term_id_by_chromosome_length_table = {
     "NCBITaxon:10090": mouse_chromosome_by_length,
 }
 column_ordering = ["chromosome", "start coordinate", "stop coordinate", "barcode", "read support"]
-allowed_chromosomes = list(set(itertools.chain(human_chromosome_by_length.keys(), mouse_chromosome_by_length.keys())))
-allowed_chromosomes.sort()
-chromosome_categories = pd.CategoricalDtype(categories=allowed_chromosomes)
 schema = pa.schema(
     [
         pa.field("chromosome", pa.string()),
