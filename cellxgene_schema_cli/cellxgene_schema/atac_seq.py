@@ -12,6 +12,9 @@ import dask.dataframe as ddf
 import dask.distributed as dd  # TODO: see if distributed mode can be avoided.
 import h5py
 import pandas as pd
+import pyarrow as pa
+import pyarrow.csv
+import pyarrow.dataset
 import pysam
 from dask import delayed
 from dask.delayed import Delayed
@@ -128,6 +131,15 @@ column_types = {
     "barcode": str,
     "read support": int,
 }
+schema = pa.schema(
+    [
+        pa.field("chromosome", pa.string()),
+        pa.field("start coordinate", pa.int64()),
+        pa.field("stop coordinate", pa.int64()),
+        pa.field("barcode", pa.string()),
+        pa.field("read support", pa.int64()),
+    ]
+)
 
 
 def is_atac(x: str) -> str:
@@ -201,12 +213,12 @@ def process_fragment(
                 return errors
 
             # convert the fragment to a parquet file for faster processing
-            try:
-                parquet_file = convert_to_parquet(fragment_file, tempdir)
-            except Exception as e:
-                msg = "Error Parsing the fragment file. Check that columns match schema definition. Error: " + str(e)
-                logger.exception(msg)
-                return [msg]
+            # try:
+            parquet_file = convert_to_parquet(fragment_file, tempdir)
+            # except Exception as e:
+            #     msg = "Error Parsing the fragment file. Check that columns match schema definition. Error: " + str(e)
+            #     logger.exception(msg)
+            #     return [msg]
 
             # slow checks
             errors = validate_anndata_with_fragment(parquet_file, anndata_file)
@@ -224,27 +236,20 @@ def process_fragment(
 
 
 def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
-    # unzip the fragment. Subprocess is used here because gzip on the cli uses less memory with comparable
-    # speed to the python gzip library.
-    # Dask is unable to read a gzip compressed csv in chunks, so we need to decompress first
-    unzipped_file = Path(tempdir) / Path(fragment_file).name.rsplit(".", 1)[0]
     logger.info(f"Unzipping {fragment_file}")
-    with open(unzipped_file, "wb") as fp:
-        subprocess.run(["gunzip", "-c", fragment_file], stdout=fp, check=True)
-
-    # convert the fragment to a parquet file
-    logger.info(f"Converting {fragment_file} to parquet")
     parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet")
-    try:
-        ddf.read_csv(
-            unzipped_file, sep="\t", names=column_ordering, dtype=column_types, keep_default_na=False
-        ).to_parquet(parquet_file_path, partition_on=["chromosome"], compute=True)
-    finally:
-        # remove the unzipped file
-        logger.debug(f"Removing {unzipped_file}")
-        unzipped_file.unlink()
-    parquet_file = str(parquet_file_path)
-    return parquet_file
+    pa.dataset.write_dataset(
+        data=pa.csv.open_csv(
+            pa.input_stream(fragment_file, compression="gzip"),
+            read_options=pa.csv.ReadOptions(column_names=schema.names),
+            parse_options=pa.csv.ParseOptions(delimiter="\t"),
+        ),
+        base_dir=parquet_file_path,
+        format="parquet",
+        partitioning=pa.dataset.partitioning(pa.schema([pa.field("chromosome", pa.string())]), flavor="hive"),
+    )
+
+    return str(parquet_file_path)
 
 
 def report_errors(header: str, errors: list[str]) -> list[str]:
