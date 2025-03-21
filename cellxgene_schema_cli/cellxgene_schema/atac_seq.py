@@ -9,7 +9,7 @@ from typing import Optional
 import anndata as ad
 import dask
 import dask.dataframe as ddf
-import dask.distributed as dd  # TODO: see if distributed mode can be avoided.
+import filelock
 import h5py
 import pandas as pd
 import pysam
@@ -169,7 +169,7 @@ def process_fragment(
     fragment_file: str,
     anndata_file: str,
     generate_index: bool = False,
-    dask_cluster_config: Optional[dict] = None,
+    dask_config: Optional[dict] = None,
     override_write_algorithm: Optional[str] = None,
     output_file: Optional[str] = None,
 ) -> list[str]:
@@ -179,7 +179,7 @@ def process_fragment(
     :param str fragment_file: The fragment file to process
     :param str anndata_file: The anndata file to validate against
     :param bool generate_index: Whether to generate the index for the fragment
-    :param dask_cluster_config: dask cluster configuration parameters passed to dask.distributed.LocalCluster
+    :param dask_config: dask cluster configuration parameters passed to dask.config
     :param override_write_algorithm: Override the write algorithm used to write the bgzip file. Options are "pysam"
     and "cli"
     :param output_file: The output file to write the bgzip file to. If not provided, the output file will be the same
@@ -187,14 +187,11 @@ def process_fragment(
     """
     with tempfile.TemporaryDirectory() as tempdir:
 
-        # configure the dask cluster
-        _dask_cluster_config = dict(dashboard_address=None)
-        logging.getLogger("distributed").setLevel(logging.ERROR)
-        if dask_cluster_config:
-            _dask_cluster_config.update(dask_cluster_config)
+        # configure the dask
+        dask_config = dask_config or {"scheduler": "threads"}
 
         # start the dask cluster and client
-        with dd.LocalCluster(**_dask_cluster_config) as cluster, dd.Client(cluster):
+        with dask.config.set(dask_config):
             # quick checks
             errors = validate_anndata(anndata_file)
             if errors:
@@ -379,7 +376,8 @@ def index_fragment(
     bgzip_output_path = Path(bgzip_output_file)
     bgzip_output_path.unlink(missing_ok=True)
     bgzip_output_path.touch()
-    bgzip_write_lock = dd.Lock()  # lock to preserver write order
+    # lock to preserver write order
+    bgzip_write_lock = filelock.FileLock(bgzip_output_path.with_suffix(".lock").name, thread_local=False)
 
     if override_write_algorithm:
         write_algorithm = write_algorithm_by_callable[override_write_algorithm]
@@ -418,14 +416,14 @@ def sort_fragment(parquet_file: str, write_path: str, chromosome: str) -> Path:
 
 
 @delayed
-def write_bgzip_pysam(input_file: str, bgzip_output_file: str, write_lock: dd.Lock):
+def write_bgzip_pysam(input_file: str, bgzip_output_file: str, write_lock: filelock.FileLock):
     with write_lock, pysam.libcbgzf.BGZFile(bgzip_output_file, mode="ab") as f_out, open(input_file, "rb") as f_in:
         while data := f_in.read(2**20):
             f_out.write(data)
 
 
 @delayed
-def write_bgzip_cli(input_file: str, bgzip_output_file: str, write_lock: dd.Lock):
+def write_bgzip_cli(input_file: str, bgzip_output_file: str, write_lock: filelock.FileLock):
     with write_lock, open(input_file, "rb") as fin, open(bgzip_output_file, "ab") as fout:
         subprocess.run(["bgzip", "--threads=8", "-c"], stdin=fin, stdout=fout, check=True)
 
@@ -438,7 +436,7 @@ def prepare_fragment(
     parquet_file: str,
     bgzip_output_file: str,
     tempdir: str,
-    write_lock: dd.Lock,
+    write_lock: filelock.FileLock,
     write_algorithm: callable,
 ) -> list[Delayed]:
     """

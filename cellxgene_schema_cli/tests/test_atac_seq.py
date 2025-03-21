@@ -88,7 +88,7 @@ class TestProcessFragment:
             fragments_file,
             anndata_file,
             generate_index=True,
-            dask_cluster_config=dict(processes=False),
+            dask_config={"scheduler": "threads"},
             override_write_algorithm=override_write_algorithm,
             output_file=str(atac_fragment_bgzip_file_path),
         )
@@ -132,7 +132,7 @@ class TestProcessFragment:
             fragments_file,
             anndata_file,
             generate_index=True,
-            dask_cluster_config=dict(processes=False),
+            dask_config={"scheduler": "threads"},
             output_file=str(atac_fragment_bgzip_file_path),
         )
         result = [r for r in result if "Error" in r]
