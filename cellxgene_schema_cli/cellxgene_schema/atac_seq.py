@@ -226,7 +226,7 @@ def process_fragment(
 
 
 def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
-    logger.info(f"Unzipping {fragment_file}")
+    logger.info(f"Converting {fragment_file} to parquet")
     parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet").replace(".bgz", ".parquet")
     pa.dataset.write_dataset(
         data=pa.csv.open_csv(
