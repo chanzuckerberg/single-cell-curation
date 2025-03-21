@@ -213,12 +213,12 @@ def process_fragment(
                 return errors
 
             # convert the fragment to a parquet file for faster processing
-            # try:
-            parquet_file = convert_to_parquet(fragment_file, tempdir)
-            # except Exception as e:
-            #     msg = "Error Parsing the fragment file. Check that columns match schema definition. Error: " + str(e)
-            #     logger.exception(msg)
-            #     return [msg]
+            try:
+                parquet_file = convert_to_parquet(fragment_file, tempdir)
+            except Exception as e:
+                msg = "Error Parsing the fragment file. Check that columns match schema definition. Error: " + str(e)
+                logger.exception(msg)
+                return [msg]
 
             # slow checks
             errors = validate_anndata_with_fragment(parquet_file, anndata_file)
