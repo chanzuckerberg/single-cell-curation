@@ -124,13 +124,6 @@ column_ordering = ["chromosome", "start coordinate", "stop coordinate", "barcode
 allowed_chromosomes = list(set(itertools.chain(human_chromosome_by_length.keys(), mouse_chromosome_by_length.keys())))
 allowed_chromosomes.sort()
 chromosome_categories = pd.CategoricalDtype(categories=allowed_chromosomes)
-column_types = {
-    "chromosome": chromosome_categories,
-    "start coordinate": int,
-    "stop coordinate": int,
-    "barcode": str,
-    "read support": int,
-}
 schema = pa.schema(
     [
         pa.field("chromosome", pa.string()),
