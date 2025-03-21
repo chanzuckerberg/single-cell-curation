@@ -226,6 +226,12 @@ def process_fragment(
 
 
 def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
+    """
+    Convert the fragment file to a parquet dataset for faster processing.
+
+    :param fragment_file: A gzipped compressed fragment file
+    :param tempdir: The temporary directory to write the parquet file to. Name of the written file is derived from the input.
+    """
     logger.info(f"Converting {fragment_file} to parquet")
     parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet").replace(".bgz", ".parquet")
     pa.dataset.write_dataset(
@@ -237,6 +243,7 @@ def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
         ),
         base_dir=parquet_file_path,
         format="parquet",
+        # Using hive partitioning for best compatibility with dask to_parquet and read_parquet functions
         partitioning=pa.dataset.partitioning(pa.schema([pa.field("chromosome", pa.string())]), flavor="hive"),
     )
 
