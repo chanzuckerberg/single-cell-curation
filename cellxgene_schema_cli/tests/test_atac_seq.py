@@ -161,7 +161,7 @@ class TestConvertToParquet:
 
     def test_invalid_column_dtype(self, tmpdir, atac_fragment_dataframe):
         atac_fragment_dataframe["start coordinate"] = "foo"
-        tsv_file = os.path.join(tmpdir, "fragment.tsv")
+        tsv_file = os.path.join(tmpdir, "fragment.tsv.gz")
         atac_fragment_dataframe.to_csv(
             tsv_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
         )
