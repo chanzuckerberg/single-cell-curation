@@ -273,7 +273,7 @@ def validate_anndata_with_fragment(parquet_file: str, anndata_file: str) -> list
 
 
 def validate_fragment_no_duplicate_rows(parquet_file: str) -> Optional[str]:
-    print("starting validate_fragment_no_duplicate_rows")
+    logger.info("starting validate_fragment_no_duplicate_rows")
     t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
     rows_per_chromosome = t["chromosome"].value_counts().execute()
     msg = ""
