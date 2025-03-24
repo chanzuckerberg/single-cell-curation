@@ -7,14 +7,14 @@ from typing import Optional
 
 import anndata as ad
 import dask
-import dask.dataframe as ddf
 import filelock
 import h5py
+import ibis
 import pyarrow as pa
 import pyarrow.csv
 import pyarrow.dataset
+import pyarrow.parquet
 import pysam
-from dask import delayed
 from dask.delayed import Delayed
 
 from .ontology_parser import ONTOLOGY_PARSER
@@ -186,7 +186,6 @@ def process_fragment(
 
     """
     with tempfile.TemporaryDirectory() as tempdir:
-
         # configure the dask
         dask_config = dask_config or {"scheduler": "threads"}
 
@@ -273,57 +272,67 @@ def validate_anndata_with_fragment(parquet_file: str, anndata_file: str) -> list
 
 
 def validate_fragment_no_duplicate_rows(parquet_file: str) -> Optional[str]:
-    df = ddf.read_parquet(parquet_file)
-    if len(df.drop_duplicates()) != len(df):
-        return "Fragment file has duplicate rows."
+    logger.info("starting validate_fragment_no_duplicate_rows")
+    t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    rows_per_chromosome = t["chromosome"].value_counts().execute()
+    msg = ""
+    for chromosome, count in rows_per_chromosome.itertuples(index=False):
+        n_unique = t.filter(t["chromosome"] == chromosome).distinct().count().execute()
+        if n_unique != count:
+            # TODO: See if we can improve error message
+            msg = "Fragment file has duplicate rows."
+            # msg += f"Chromosome {chromosome} has {count} rows but only {n_unique} are unique\n"
+    if msg:
+        return msg.strip()  # remove trailing newline
 
 
 def validate_fragment_start_coordinate_greater_than_0(parquet_file: str) -> Optional[str]:
-    df = ddf.read_parquet(parquet_file, columns=["start coordinate"])
-    series = df["start coordinate"] > 0
-    if not series.all().compute():
+    logger.info("starting validate_fragment_start_coordinate_greater_than_0")
+    df = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    if not (df["start coordinate"] > 0).all().execute():
         return "Start coordinate must be greater than 0."
 
 
 def validate_fragment_barcode_in_adata_index(parquet_file: str, anndata_file: str) -> Optional[str]:
-    df = ddf.read_parquet(parquet_file, columns=["barcode"])
+    logger.info("starting validate_fragment_barcode_in_adata_index")
+    df = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    barcode = set(df.select("barcode").distinct().execute()["barcode"])
     with h5py.File(anndata_file) as f:
         obs = ad.io.read_elem(f["obs"])
-    barcode = set(df.groupby(by="barcode").count().compute().index)
     if set(obs.index) != barcode:
         return "Barcodes don't match anndata.obs.index"
 
 
 def validate_fragment_stop_greater_than_start_coordinate(parquet_file: str) -> Optional[str]:
-    df = ddf.read_parquet(parquet_file, columns=["start coordinate", "stop coordinate"])
-    series = df["stop coordinate"] > df["start coordinate"]
-    if not series.all().compute():
+    logger.info("starting validate_fragment_stop_greater_than_start_coordinate")
+    df = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    if not (df["stop coordinate"] > df["start coordinate"]).all().execute():
         return "Stop coordinate must be greater than start coordinate."
 
 
 def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, anndata_file: str) -> Optional[str]:
-    # check that the stop coordinate is within the length of the chromosome
+    logger.info("starting validate_fragment_stop_coordinate_within_chromosome")
     with h5py.File(anndata_file) as f:
         organism_ontology_term_id = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)[0]
-    df = ddf.read_parquet(parquet_file, columns=["chromosome", "stop coordinate"])
-
-    # the chromosomes in the fragment must match the chromosomes for that organism
     chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table[organism_ontology_term_id]
-    mismatched_chromosomes = set(df["chromosome"].unique().compute()) - chromosome_length_table.keys()
+    t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    df = t.group_by("chromosome").aggregate(max_stop_coordinate=t["stop coordinate"].max()).execute()
+
+    mismatched_chromosomes = set(df["chromosome"].unique()) - chromosome_length_table.keys()
     if mismatched_chromosomes:
         return f"Chromosomes in the fragment do not match the organism({organism_ontology_term_id}).\n" + "\t\n".join(
             mismatched_chromosomes
         )
-    df["chromosome_length"] = df["chromosome"].map(chromosome_length_table, meta=int).astype(int)
-    df = df["stop coordinate"] <= df["chromosome_length"]
-    if not df.all().compute():
+
+    df["chromosome_length"] = df["chromosome"].map(chromosome_length_table)
+    if not (df["max_stop_coordinate"] <= df["chromosome_length"]).all():
         return "Stop coordinate must be less than the chromosome length."
 
 
 def validate_fragment_read_support(parquet_file: str) -> Optional[str]:
-    # check that the read support is greater than 0
-    df = ddf.read_parquet(parquet_file, columns=["read support"], filters=[("read support", "<=", 0)])
-    if len(df.compute()) != 0:
+    logger.info("starting validate_fragment_read_support")
+    t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    if (t["read support"] <= 0).any().execute():
         return "Read support must be greater than 0."
 
 
@@ -350,9 +359,9 @@ def validate_anndata_organism_ontology_term_id(anndata_file: str) -> Optional[st
 
 def detect_chromosomes(parquet_file: str) -> list[str]:
     logger.info("detecting chromosomes")
-    df = ddf.read_parquet(parquet_file, columns=["chromosome"]).drop_duplicates()
-    df = df["chromosome"].compute()
-    return df.tolist()
+    t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    chromosomes = list(t.select(["chromosome"]).distinct().execute()["chromosome"])
+    return chromosomes
 
 
 def get_output_file(fragment_file: str, output_file: Optional[str]) -> str:
@@ -393,10 +402,10 @@ def index_fragment(
     # limit calls to dask.compute to improve performance. The number of jobs to run at once is determined by the
     # step variable. If we run all the jobs in the same call to dask.compute, the local cluster hangs.
     # TODO: investigate why
-    step = 4
+    # step = 4
     # print the progress of the jobs
-    for i in range(0, len(jobs), step):
-        dask.compute(jobs[i : i + step])
+    # for i in range(0, len(jobs), step):
+    #     dask.compute(jobs[i : i + step])
 
     logger.info(f"Fragment sorted and compressed: {bgzip_output_file}")
     #
@@ -405,28 +414,64 @@ def index_fragment(
     logger.info(f"Index file generated: {tabix_output_file}")
 
 
-@delayed
 def sort_fragment(parquet_file: str, write_path: str, chromosome: str) -> Path:
-    temp_data = Path(write_path) / f"temp_{chromosome}.tsv.gz"
-    df = ddf.read_parquet(parquet_file, filters=[("chromosome", "==", chromosome)])
-    df = df[column_ordering]
-    df = df.sort_values(["start coordinate", "stop coordinate"], ascending=True)
-
-    df.to_csv(temp_data, sep="\t", index=False, header=False, mode="w", single_file=True)
+    temp_data = Path(write_path) / f"temp_{chromosome}.parquet"
+    t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    (t.filter(t["chromosome"] == chromosome).order_by(["start coordinate", "stop coordinate"]).to_parquet(temp_data))
     return temp_data
 
 
-@delayed
 def write_bgzip_pysam(input_file: str, bgzip_output_file: str, write_lock: filelock.FileLock):
-    with write_lock, pysam.libcbgzf.BGZFile(bgzip_output_file, mode="ab") as f_out, open(input_file, "rb") as f_in:
-        while data := f_in.read(2**20):
-            f_out.write(data)
+    with write_lock, pa.csv.CSVWriter(
+        pysam.libcbgzf.BGZFile(bgzip_output_file, mode="ab"),
+        schema=schema,
+        write_options=pa.csv.WriteOptions(include_header=False, delimiter="\t", batch_size=2**20),
+    ) as f_out:
+        for batch in pa.parquet.ParquetFile(input_file).iter_batches():
+            print(batch)
+            f_out.write_batch(batch)
 
 
-@delayed
+# @delayed
 def write_bgzip_cli(input_file: str, bgzip_output_file: str, write_lock: filelock.FileLock):
-    with write_lock, open(input_file, "rb") as fin, open(bgzip_output_file, "ab") as fout:
-        subprocess.run(["bgzip", "--threads=8", "-c"], stdin=fin, stdout=fout, check=True)
+    with (
+        write_lock,
+        subprocess.Popen(
+            ["bgzip", "--threads=8", "-c"], stdin=subprocess.PIPE, stdout=open(bgzip_output_file, "ab")
+        ) as proc,
+    ):
+        # Open the Parquet file and iterate through record batches
+        pfile = pa.parquet.ParquetFile(input_file)
+        for record_batch in pfile.iter_batches():
+            table = (
+                pa.Table.from_batches([record_batch])
+                # Make sure columns are in right order
+                .select([f.name for f in schema])
+            )
+            # Write the batch to an in-memory buffer
+            csv_buffer = pa.BufferOutputStream()
+            pa.csv.write_csv(
+                table,
+                csv_buffer,
+                write_options=pa.csv.WriteOptions(
+                    include_header=False,
+                    delimiter="\t",
+                    batch_size=2**20,
+                    quoting_style="none",
+                ),
+            )
+            val = csv_buffer.getvalue().to_pybytes()
+
+            # Write the CSV string to the process's stdin
+            proc.stdin.write(val)
+
+        # Close the process's stdin so it knows we're done sending data
+        proc.stdin.close()
+
+        # Wait for the subprocess to complete and get its exit code
+        return_code = proc.wait()
+        if return_code != 0:
+            print(f"Subprocess exited with error code {return_code}")
 
 
 write_algorithm_by_callable = {"pysam": write_bgzip_pysam, "cli": write_bgzip_cli}
@@ -457,5 +502,5 @@ def prepare_fragment(
     jobs = []
     for chromosome in chromosomes:
         temp_data = sort_fragment(parquet_file, tempdir, chromosome)
-        jobs.append(write_algorithm(temp_data, bgzip_output_file, write_lock))
+        jobs.append(write_bgzip_cli(temp_data, bgzip_output_file, write_lock))
     return jobs
