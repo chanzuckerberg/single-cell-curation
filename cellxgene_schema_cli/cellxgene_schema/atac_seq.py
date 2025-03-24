@@ -288,14 +288,14 @@ def validate_fragment_no_duplicate_rows(parquet_file: str) -> Optional[str]:
 
 
 def validate_fragment_start_coordinate_greater_than_0(parquet_file: str) -> Optional[str]:
-    print("starting validate_fragment_start_coordinate_greater_than_0")
+    logger.info("starting validate_fragment_start_coordinate_greater_than_0")
     df = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
     if not (df["start coordinate"] > 0).all().execute():
         return "Start coordinate must be greater than 0."
 
 
 def validate_fragment_barcode_in_adata_index(parquet_file: str, anndata_file: str) -> Optional[str]:
-    print("starting validate_fragment_barcode_in_adata_index")
+    logger.info("starting validate_fragment_barcode_in_adata_index")
     df = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
     barcode = set(df.select("barcode").distinct().execute()["barcode"])
     with h5py.File(anndata_file) as f:
@@ -305,14 +305,14 @@ def validate_fragment_barcode_in_adata_index(parquet_file: str, anndata_file: st
 
 
 def validate_fragment_stop_greater_than_start_coordinate(parquet_file: str) -> Optional[str]:
-    print("starting validate_fragment_stop_greater_than_start_coordinate")
+    logger.info("starting validate_fragment_stop_greater_than_start_coordinate")
     df = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
     if not (df["stop coordinate"] > df["start coordinate"]).all().execute():
         return "Stop coordinate must be greater than start coordinate."
 
 
 def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, anndata_file: str) -> Optional[str]:
-    print("starting validate_fragment_stop_coordinate_within_chromosome")
+    logger.info("starting validate_fragment_stop_coordinate_within_chromosome")
     with h5py.File(anndata_file) as f:
         organism_ontology_term_id = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)[0]
     chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table[organism_ontology_term_id]
@@ -331,7 +331,7 @@ def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, annda
 
 
 def validate_fragment_read_support(parquet_file: str) -> Optional[str]:
-    print("starting validate_fragment_read_support")
+    logger.info("starting validate_fragment_read_support")
     t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
     if (t["read support"] <= 0).any().execute():
         return "Read support must be greater than 0."
