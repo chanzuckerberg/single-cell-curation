@@ -290,8 +290,6 @@ def validate_fragment_no_duplicate_rows(parquet_file: str) -> Optional[str]:
 def validate_fragment_start_coordinate_greater_than_0(parquet_file: str) -> Optional[str]:
     print("starting validate_fragment_start_coordinate_greater_than_0")
     df = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
-    # df = ddf.read_parquet(parquet_file, columns=["start coordinate"])
-    # series = (df["start coordinate"] > 0).all().execute()
     if not (df["start coordinate"] > 0).all().execute():
         return "Start coordinate must be greater than 0."
 
@@ -309,7 +307,6 @@ def validate_fragment_barcode_in_adata_index(parquet_file: str, anndata_file: st
 def validate_fragment_stop_greater_than_start_coordinate(parquet_file: str) -> Optional[str]:
     print("starting validate_fragment_stop_greater_than_start_coordinate")
     df = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
-    # df = ddf.read_parquet(parquet_file, columns=["start coordinate", "stop coordinate"])
     if not (df["stop coordinate"] > df["start coordinate"]).all().execute():
         return "Stop coordinate must be greater than start coordinate."
 
@@ -331,23 +328,6 @@ def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, annda
     df["chromosome_length"] = df["chromosome"].map(chromosome_length_table)
     if not (df["max_stop_coordinate"] <= df["chromosome_length"]).all():
         return "Stop coordinate must be less than the chromosome length."
-
-    # check that the stop coordinate is within the length of the chromosome
-    # with h5py.File(anndata_file) as f:
-    #     organism_ontology_term_id = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)[0]
-    # df = ddf.read_parquet(parquet_file, columns=["chromosome", "stop coordinate"])
-
-    # # the chromosomes in the fragment must match the chromosomes for that organism
-    # chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table[organism_ontology_term_id]
-    # mismatched_chromosomes = set(df["chromosome"].unique().compute()) - chromosome_length_table.keys()
-    # if mismatched_chromosomes:
-    #     return f"Chromosomes in the fragment do not match the organism({organism_ontology_term_id}).\n" + "\t\n".join(
-    #         mismatched_chromosomes
-    #     )
-    # df["chromosome_length"] = df["chromosome"].map(chromosome_length_table, meta=int).astype(int)
-    # df = df["stop coordinate"] <= df["chromosome_length"]
-    # if not df.all().compute():
-    #     return "Stop coordinate must be less than the chromosome length."
 
 
 def validate_fragment_read_support(parquet_file: str) -> Optional[str]:
