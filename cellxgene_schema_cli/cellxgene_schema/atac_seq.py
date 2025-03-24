@@ -10,6 +10,7 @@ import dask
 import dask.dataframe as ddf
 import filelock
 import h5py
+import ibis
 import pyarrow as pa
 import pyarrow.csv
 import pyarrow.dataset
@@ -186,7 +187,6 @@ def process_fragment(
 
     """
     with tempfile.TemporaryDirectory() as tempdir:
-
         # configure the dask
         dask_config = dask_config or {"scheduler": "threads"}
 
@@ -273,57 +273,87 @@ def validate_anndata_with_fragment(parquet_file: str, anndata_file: str) -> list
 
 
 def validate_fragment_no_duplicate_rows(parquet_file: str) -> Optional[str]:
-    df = ddf.read_parquet(parquet_file)
-    if len(df.drop_duplicates()) != len(df):
-        return "Fragment file has duplicate rows."
+    print("starting validate_fragment_no_duplicate_rows")
+    t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    rows_per_chromosome = t["chromosome"].value_counts().execute()
+    msg = ""
+    for chromosome, count in rows_per_chromosome.itertuples(index=False):
+        n_unique = t.filter(t["chromosome"] == chromosome).distinct().count().execute()
+        if n_unique != count:
+            # TODO: See if we can improve error message
+            msg = "Fragment file has duplicate rows."
+            # msg += f"Chromosome {chromosome} has {count} rows but only {n_unique} are unique\n"
+    if msg:
+        return msg.strip()  # remove trailing newline
 
 
 def validate_fragment_start_coordinate_greater_than_0(parquet_file: str) -> Optional[str]:
-    df = ddf.read_parquet(parquet_file, columns=["start coordinate"])
-    series = df["start coordinate"] > 0
-    if not series.all().compute():
+    print("starting validate_fragment_start_coordinate_greater_than_0")
+    df = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    # df = ddf.read_parquet(parquet_file, columns=["start coordinate"])
+    # series = (df["start coordinate"] > 0).all().execute()
+    if not (df["start coordinate"] > 0).all().execute():
         return "Start coordinate must be greater than 0."
 
 
 def validate_fragment_barcode_in_adata_index(parquet_file: str, anndata_file: str) -> Optional[str]:
-    df = ddf.read_parquet(parquet_file, columns=["barcode"])
+    print("starting validate_fragment_barcode_in_adata_index")
+    df = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    barcode = set(df.select("barcode").distinct().execute()["barcode"])
     with h5py.File(anndata_file) as f:
         obs = ad.io.read_elem(f["obs"])
-    barcode = set(df.groupby(by="barcode").count().compute().index)
     if set(obs.index) != barcode:
         return "Barcodes don't match anndata.obs.index"
 
 
 def validate_fragment_stop_greater_than_start_coordinate(parquet_file: str) -> Optional[str]:
-    df = ddf.read_parquet(parquet_file, columns=["start coordinate", "stop coordinate"])
-    series = df["stop coordinate"] > df["start coordinate"]
-    if not series.all().compute():
+    print("starting validate_fragment_stop_greater_than_start_coordinate")
+    df = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    # df = ddf.read_parquet(parquet_file, columns=["start coordinate", "stop coordinate"])
+    if not (df["stop coordinate"] > df["start coordinate"]).all().execute():
         return "Stop coordinate must be greater than start coordinate."
 
 
 def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, anndata_file: str) -> Optional[str]:
-    # check that the stop coordinate is within the length of the chromosome
+    print("starting validate_fragment_stop_coordinate_within_chromosome")
     with h5py.File(anndata_file) as f:
         organism_ontology_term_id = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)[0]
-    df = ddf.read_parquet(parquet_file, columns=["chromosome", "stop coordinate"])
-
-    # the chromosomes in the fragment must match the chromosomes for that organism
     chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table[organism_ontology_term_id]
-    mismatched_chromosomes = set(df["chromosome"].unique().compute()) - chromosome_length_table.keys()
+    t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    df = t.group_by("chromosome").aggregate(max_stop_coordinate=t["stop coordinate"].max()).execute()
+
+    mismatched_chromosomes = set(df["chromosome"].unique()) - chromosome_length_table.keys()
     if mismatched_chromosomes:
         return f"Chromosomes in the fragment do not match the organism({organism_ontology_term_id}).\n" + "\t\n".join(
             mismatched_chromosomes
         )
-    df["chromosome_length"] = df["chromosome"].map(chromosome_length_table, meta=int).astype(int)
-    df = df["stop coordinate"] <= df["chromosome_length"]
-    if not df.all().compute():
+
+    df["chromosome_length"] = df["chromosome"].map(chromosome_length_table)
+    if not (df["max_stop_coordinate"] <= df["chromosome_length"]).all():
         return "Stop coordinate must be less than the chromosome length."
+
+    # check that the stop coordinate is within the length of the chromosome
+    # with h5py.File(anndata_file) as f:
+    #     organism_ontology_term_id = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)[0]
+    # df = ddf.read_parquet(parquet_file, columns=["chromosome", "stop coordinate"])
+
+    # # the chromosomes in the fragment must match the chromosomes for that organism
+    # chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table[organism_ontology_term_id]
+    # mismatched_chromosomes = set(df["chromosome"].unique().compute()) - chromosome_length_table.keys()
+    # if mismatched_chromosomes:
+    #     return f"Chromosomes in the fragment do not match the organism({organism_ontology_term_id}).\n" + "\t\n".join(
+    #         mismatched_chromosomes
+    #     )
+    # df["chromosome_length"] = df["chromosome"].map(chromosome_length_table, meta=int).astype(int)
+    # df = df["stop coordinate"] <= df["chromosome_length"]
+    # if not df.all().compute():
+    #     return "Stop coordinate must be less than the chromosome length."
 
 
 def validate_fragment_read_support(parquet_file: str) -> Optional[str]:
-    # check that the read support is greater than 0
-    df = ddf.read_parquet(parquet_file, columns=["read support"], filters=[("read support", "<=", 0)])
-    if len(df.compute()) != 0:
+    print("starting validate_fragment_read_support")
+    t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    if (t["read support"] <= 0).any().execute():
         return "Read support must be greater than 0."
 
 
@@ -350,9 +380,9 @@ def validate_anndata_organism_ontology_term_id(anndata_file: str) -> Optional[st
 
 def detect_chromosomes(parquet_file: str) -> list[str]:
     logger.info("detecting chromosomes")
-    df = ddf.read_parquet(parquet_file, columns=["chromosome"]).drop_duplicates()
-    df = df["chromosome"].compute()
-    return df.tolist()
+    t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    chromosomes = list(t.select(["chromosome"]).distinct().execute()["chromosome"])
+    return chromosomes
 
 
 def get_output_file(fragment_file: str, output_file: Optional[str]) -> str:
