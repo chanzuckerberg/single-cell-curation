@@ -288,9 +288,9 @@ def validate_fragment_no_duplicate_rows(parquet_file: str) -> Optional[str]:
     for chromosome, count in rows_per_chromosome.itertuples(index=False):
         n_unique = t.filter(t["chromosome"] == chromosome).distinct().count().execute()
         if n_unique != count:
-            # TODO: See if we can improve error message
-            msg = "Fragment file has duplicate rows."
-            # msg += f"Chromosome {chromosome} has {count} rows but only {n_unique} are unique\n"
+            if not msg:
+                msg = "Fragment file has duplicate rows.\n"
+            msg += f"Chromosome {chromosome} has {count} rows but only {n_unique} are unique\n"
     if msg:
         return msg.strip()  # remove trailing newline
 
