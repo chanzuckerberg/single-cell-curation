@@ -415,7 +415,7 @@ class Validator:
                         allow_list == ["all"] or term_id in set(allow_list)
                     ):
                         is_allowed = True
-                        break
+                        #break
             if (
                 not is_allowed
                 and "ancestors" in curie_constraints["allowed"]

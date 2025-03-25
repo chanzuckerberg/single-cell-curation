@@ -677,13 +677,21 @@ class TestObs:
         validator.validate_adata()
         assert len(validator.errors) > 0
 
+    @pytest.mark.parametrize("term",["CL:0000000"])
+    def test_cell_type_ontology_term_id(self, validator_with_adata, term):
+        validator = validator_with_adata
+        validator.adata.obs["cell_type_ontology_term_id"] = term
+        validator.validate_adata()
+        assert len(validator.errors)==0
+
+    
     @pytest.mark.parametrize(
         "term",
         schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"]["curie_constraints"]["forbidden"][
             "terms"
         ],
     )
-    def test_cell_type_ontology_term_id(self, validator_with_adata, term):
+    def test_cell_type_ontology_term_id__forbidden(self, validator_with_adata, term):
         """
         cell_type_ontology_term_id categorical with str categories. This MUST be a CL term, and must NOT match forbidden
         columns defined in schema
