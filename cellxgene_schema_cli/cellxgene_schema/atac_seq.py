@@ -131,6 +131,14 @@ schema = pa.schema(
 )
 
 
+def log_calls(func):
+    def wrapper(*args, **kwargs):
+        logging.info("starting: %s", func.__name__)
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
 def is_atac(x: str) -> str:
     if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0010891"):
         if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0008913"):
@@ -272,8 +280,8 @@ def validate_anndata_with_fragment(parquet_file: str, anndata_file: str) -> list
     return report_errors("Errors found in Fragment and/or Anndata file", errors)
 
 
+@log_calls
 def validate_fragment_no_duplicate_rows(parquet_file: str) -> Optional[str]:
-    logger.info("starting validate_fragment_no_duplicate_rows")
     t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
     rows_per_chromosome = t["chromosome"].value_counts().execute()
     msg = ""
@@ -287,15 +295,15 @@ def validate_fragment_no_duplicate_rows(parquet_file: str) -> Optional[str]:
         return msg.strip()  # remove trailing newline
 
 
+@log_calls
 def validate_fragment_start_coordinate_greater_than_0(parquet_file: str) -> Optional[str]:
-    logger.info("starting validate_fragment_start_coordinate_greater_than_0")
     df = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
     if not (df["start coordinate"] > 0).all().execute():
         return "Start coordinate must be greater than 0."
 
 
+@log_calls
 def validate_fragment_barcode_in_adata_index(parquet_file: str, anndata_file: str) -> Optional[str]:
-    logger.info("starting validate_fragment_barcode_in_adata_index")
     df = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
     barcode = set(df.select("barcode").distinct().execute()["barcode"])
     with h5py.File(anndata_file) as f:
@@ -304,15 +312,15 @@ def validate_fragment_barcode_in_adata_index(parquet_file: str, anndata_file: st
         return "Barcodes don't match anndata.obs.index"
 
 
+@log_calls
 def validate_fragment_stop_greater_than_start_coordinate(parquet_file: str) -> Optional[str]:
-    logger.info("starting validate_fragment_stop_greater_than_start_coordinate")
     df = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
     if not (df["stop coordinate"] > df["start coordinate"]).all().execute():
         return "Stop coordinate must be greater than start coordinate."
 
 
+@log_calls
 def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, anndata_file: str) -> Optional[str]:
-    logger.info("starting validate_fragment_stop_coordinate_within_chromosome")
     with h5py.File(anndata_file) as f:
         organism_ontology_term_id = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)[0]
     chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table[organism_ontology_term_id]
@@ -330,13 +338,14 @@ def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, annda
         return "Stop coordinate must be less than the chromosome length."
 
 
+@log_calls
 def validate_fragment_read_support(parquet_file: str) -> Optional[str]:
-    logger.info("starting validate_fragment_read_support")
     t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
     if (t["read support"] <= 0).any().execute():
         return "Read support must be greater than 0."
 
 
+@log_calls
 def validate_anndata_is_primary_data(anndata_file: str) -> Optional[str]:
     with h5py.File(anndata_file) as f:
         is_primary_data = ad.io.read_elem(f["obs"])["is_primary_data"]
@@ -344,6 +353,10 @@ def validate_anndata_is_primary_data(anndata_file: str) -> Optional[str]:
         return "Anndata.obs.is_primary_data must all be True."
 
 
+""
+
+
+@log_calls
 def validate_anndata_organism_ontology_term_id(anndata_file: str) -> Optional[str]:
     with h5py.File(anndata_file) as f:
         organism_ontology_term_ids = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)
@@ -358,8 +371,8 @@ def validate_anndata_organism_ontology_term_id(anndata_file: str) -> Optional[st
         return f"Anndata.obs.organism_ontology_term_id must be one of {allowed_terms}. Got {organism_ontology_term_id}."
 
 
+@log_calls
 def detect_chromosomes(parquet_file: str) -> list[str]:
-    logger.info("detecting chromosomes")
     t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
     chromosomes = list(t.select(["chromosome"]).distinct().execute()["chromosome"])
     return chromosomes
