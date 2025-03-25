@@ -354,9 +354,6 @@ def validate_anndata_is_primary_data(anndata_file: str) -> Optional[str]:
         return "Anndata.obs.is_primary_data must all be True."
 
 
-""
-
-
 @log_calls
 def validate_anndata_organism_ontology_term_id(anndata_file: str) -> Optional[str]:
     with h5py.File(anndata_file) as f:
