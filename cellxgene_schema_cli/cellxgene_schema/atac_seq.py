@@ -285,6 +285,7 @@ def validate_fragment_no_duplicate_rows(parquet_file: str) -> Optional[str]:
     t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
     rows_per_chromosome = t["chromosome"].value_counts().execute()
     msg = ""
+    # Checking number of unique rows per chromosome is more memory efficient than checking all rows at once
     for chromosome, count in rows_per_chromosome.itertuples(index=False):
         n_unique = t.filter(t["chromosome"] == chromosome).distinct().count().execute()
         if n_unique != count:
