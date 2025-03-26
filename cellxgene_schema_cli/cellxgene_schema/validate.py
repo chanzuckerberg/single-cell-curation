@@ -10,7 +10,6 @@ import dask
 import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
-import scipy
 from anndata.compat import DaskArray
 from dask.array import map_blocks
 from scipy import sparse
@@ -415,7 +414,7 @@ class Validator:
                         allow_list == ["all"] or term_id in set(allow_list)
                     ):
                         is_allowed = True
-                        break
+                        # break
             if (
                 not is_allowed
                 and "ancestors" in curie_constraints["allowed"]
@@ -933,11 +932,12 @@ class Validator:
                 category_mapping[column_name] = column.nunique()
 
         for key, value in uns_dict.items():
-            if isinstance(value, scipy.sparse.csr_matrix):
-                if value.nnz == 0:
+            if isinstance(value, DaskArray):
+                if value.size == 0 or value.shape[0] == 0 or value.shape[1] == 0:
                     self.errors.append(f"uns['{key}'] cannot be an empty value.")
             elif value is not None and not isinstance(value, (np.bool_, bool, numbers.Number)) and len(value) == 0:
                 self.errors.append(f"uns['{key}'] cannot be an empty value.")
+
             if key.endswith("_colors"):
                 # 1. Verify that the corresponding categorical field exists in obs
                 column_name = key.replace("_colors", "")
@@ -1166,7 +1166,7 @@ class Validator:
 
         return False
 
-    def _get_raw_x(self) -> Union[np.ndarray, sparse.csr_matrix]:
+    def _get_raw_x(self) -> DaskArray:
         """
         gets raw x (best guess, i.e. not guarantee it's actually raw)
         """
