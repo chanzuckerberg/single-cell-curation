@@ -387,7 +387,9 @@ class TestValidateFragmentNoDuplicateRows:
         # Act
         result = atac_seq.validate_fragment_no_duplicate_rows(fragment_file)
         # Assert
-        assert result == "Fragment file has duplicate rows."
+        assert result.startswith("Fragment file has duplicate rows.")
+        for chrom in atac_fragment_dataframe["chromosome"].unique():
+            assert f"Chromosome {chrom} has 2 rows but only 1 are unique" in result
 
 
 class TestGetOutputFile:
