@@ -127,13 +127,15 @@ def read_backed(f: h5py.File, chunk_size: int) -> ad.AnnData:
     """
 
     def callback(func, elem_name: str, elem, iospec):
-        if "/layers" in elem_name or elem_name == "/X" or elem_name == "/raw/X":
-            if iospec.encoding_type in (
-                "csr_matrix",
-                "csc_matrix",
-            ):
-                n_vars = elem.attrs.get("shape")[1]
+        if "/layers" in elem_name or elem_name == "/X" or elem_name == "/raw/X" or elem_name.startswith("/uns"):
+            if iospec.encoding_type == "csr_matrix":
+                # configure for row-major chunking
+                n_vars = elem.attrs.get("shape")[1] # minor-axis
                 return read_elem_as_dask(elem, chunks=(chunk_size, n_vars))
+            elif iospec.encoding_type == "csc_matrix":
+                # configure for column-major chunking
+                n_vars = elem.attrs.get("shape")[0] #minor-axis
+                return read_elem_as_dask(elem, chunks=(n_vars, chunk_size))
             elif iospec.encoding_type == "array" and len(elem.shape) == 2:
                 n_vars = elem.shape[1]
                 return read_elem_as_dask(elem, chunks=(chunk_size, n_vars))
