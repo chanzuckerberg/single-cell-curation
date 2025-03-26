@@ -11,8 +11,8 @@ from fixtures.examples_validate import FIXTURES_ROOT
 
 
 @pytest.fixture
-def atac_fragment_bgzip_file_path() -> Path:
-    bgzip_file = Path(FIXTURES_ROOT + "/atac_seq/new.tsv.bgz")
+def atac_fragment_bgzip_file_path(tmpdir) -> Path:
+    bgzip_file = Path(tmpdir + "new.tsv.bgz")
     yield bgzip_file
     bgzip_file.unlink(missing_ok=True)
 
@@ -70,7 +70,7 @@ class TestProcessFragment:
             atac_fragment_bgzip_file_path, atac_fragment_index_file_path, override_write_algorithm, "fragments.tsv.bgz"
         )
 
-    @pytest.mark.parametrize("fragment_file", ["fragments.tsv.bgz", "fragments_sorted.tsv.gz"])
+    @pytest.mark.parametrize("fragment_file", ["fragments.tsv.bgz", "fragments.tsv.gz"])
     def test_source_file_compression(self, atac_fragment_bgzip_file_path, atac_fragment_index_file_path, fragment_file):
         self._test_process_fragment(
             atac_fragment_bgzip_file_path, atac_fragment_index_file_path, "pysam", fragment_file
@@ -142,18 +142,18 @@ class TestProcessFragment:
             "chr22": 1002,
             "chrX": 1002,
             "chrY": 1002,
-            "chrM": 16569,
+            "chrM": 1002,
             "GL000009.2": 1002,
             "GL000194.1": 1002,
             "GL000195.1": 1002,
             "GL000205.2": 1002,
             "GL000213.1": 336,
-            "GL000216.2": 176608,
+            "GL000216.2": 1002,
             "GL000218.1": 1002,
             "GL000219.1": 1002,
-            "GL000220.1": 161802,
-            "GL000225.1": 211173,
-            "KI270442.1": 392061,
+            "GL000220.1": 1002,
+            "GL000225.1": 1002,
+            "KI270442.1": 1002,
             "KI270711.1": 1002,
             "KI270713.1": 1002,
             "KI270721.1": 748,
@@ -161,10 +161,10 @@ class TestProcessFragment:
             "KI270727.1": 1002,
             "KI270728.1": 1002,
             "KI270731.1": 561,
-            "KI270733.1": 179772,
+            "KI270733.1": 1002,
             "KI270734.1": 1002,
-            "KI270744.1": 168472,
-            "KI270750.1": 148850,
+            "KI270744.1": 1002,
+            "KI270750.1": 1002,
         }
         # Testing index access
         assert atac_fragment_index_file_path.exists()
