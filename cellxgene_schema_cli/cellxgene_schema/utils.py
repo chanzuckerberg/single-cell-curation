@@ -127,15 +127,13 @@ def read_backed(f: h5py.File, chunk_size: int) -> ad.AnnData:
     """
 
     def callback(func, elem_name: str, elem, iospec):
-        if "/layers" in elem_name or elem_name == "/X" or elem_name == "/raw/X" or elem_name.startswith("/uns"):
+        if "/layers" in elem_name or "/uns" in elem_name or elem_name == "/X" or elem_name == "/raw/X":
             if iospec.encoding_type == "csr_matrix":
-                # configure for row-major chunking
-                n_vars = elem.attrs.get("shape")[1] # minor-axis
+                n_vars = elem.attrs.get("shape")[1]
                 return read_elem_as_dask(elem, chunks=(chunk_size, n_vars))
             elif iospec.encoding_type == "csc_matrix":
-                # configure for column-major chunking
-                n_vars = elem.attrs.get("shape")[0] #minor-axis
-                return read_elem_as_dask(elem, chunks=(n_vars, chunk_size))
+                n_obs = elem.attrs.get("shape")[0]
+                return read_elem_as_dask(elem, chunks=(n_obs, chunk_size))
             elif iospec.encoding_type == "array" and len(elem.shape) == 2:
                 n_vars = elem.shape[1]
                 return read_elem_as_dask(elem, chunks=(chunk_size, n_vars))
@@ -159,15 +157,6 @@ def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike], chunk_size: int = 5000)
     try:
         f = h5py.File(h5ad_path)
         adata = read_backed(f, chunk_size)
-
-        # This code, and AnnData in general, is optimized for row access.
-        # Running backed, with CSC, is prohibitively slow. Read the entire
-        # AnnData into memory if it is CSC.
-        if (get_matrix_format(adata.X) == "csc") or (
-            (adata.raw is not None) and (get_matrix_format(adata.raw.X) == "csc")
-        ):
-            logger.warning("Matrices are in CSC format; loading entire dataset into memory.")
-            adata = adata.to_memory()
 
     except (OSError, TypeError):
         logger.info(f"Unable to open '{h5ad_path}' with AnnData")
