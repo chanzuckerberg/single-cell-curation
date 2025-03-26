@@ -2095,14 +2095,17 @@ class TestUns:
         validator.validate_adata()
         assert validator.errors == []
 
-    def test_uns_scipy_matrices_cannot_be_empty(self, validator_with_adata):
+    @pytest.mark.parametrize("matrix_factory",[scipy.sparse.csr_matrix, scipy.sparse.csc_matrix])
+    def test_uns_scipy_matrices_cannot_be_empty(self, validator_with_adata, matrix_factory):
         validator: Validator = validator_with_adata
 
-        validator.adata.uns["test"] = scipy.sparse.csr_matrix([[1]], dtype=int)
+        validator.adata.uns["test"] = matrix_factory([[1]], dtype=int)
+        
         validator.validate_adata()
         assert validator.errors == []
+        validator.reset()
 
-        validator.adata.uns["test"] = scipy.sparse.csr_matrix([[]], dtype=int)
+        validator.adata.uns["test"] = matrix_factory([[]], dtype=int)
         validator.validate_adata()
         assert validator.errors == ["ERROR: uns['test'] cannot be an empty value."]
 

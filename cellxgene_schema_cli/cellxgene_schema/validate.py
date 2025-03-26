@@ -14,6 +14,7 @@ import scipy
 from anndata.compat import DaskArray
 from dask.array import map_blocks
 from scipy import sparse
+import scipy.sparse
 
 from . import gencode, schema
 from .gencode import get_gene_checker
@@ -933,7 +934,7 @@ class Validator:
                 category_mapping[column_name] = column.nunique()
 
         for key, value in uns_dict.items():
-            if isinstance(value, scipy.sparse.csr_matrix):
+            if isinstance(value, scipy.sparse.spmatrix):
                 if value.nnz == 0:
                     self.errors.append(f"uns['{key}'] cannot be an empty value.")
             elif value is not None and not isinstance(value, (np.bool_, bool, numbers.Number)) and len(value) == 0:
