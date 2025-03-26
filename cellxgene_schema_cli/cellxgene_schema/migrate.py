@@ -233,7 +233,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
          {
             "Type IIX": "CL:4052026",
             "NMJ":"CL:4052025",
-            "MRJ":"CL:4052024"
+            "MTJ":"CL:4052024"
          })
 
     if collection_id == "964581c3-b5ac-494d-9bd4-0dcb6fb058da":
