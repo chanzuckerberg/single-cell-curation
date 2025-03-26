@@ -117,11 +117,61 @@ class TestProcessFragment:
                 previous_start = start
                 previous_chomosome = chromosome
 
+        expected_chromosome_row_count = {
+            "chr1": 1002,
+            "chr2": 1002,
+            "chr3": 1002,
+            "chr4": 1002,
+            "chr5": 1002,
+            "chr6": 1002,
+            "chr7": 1002,
+            "chr8": 1002,
+            "chr9": 1002,
+            "chr10": 1002,
+            "chr11": 1002,
+            "chr12": 1002,
+            "chr13": 1002,
+            "chr14": 1002,
+            "chr15": 1002,
+            "chr16": 1002,
+            "chr17": 1002,
+            "chr18": 1002,
+            "chr19": 1002,
+            "chr20": 1002,
+            "chr21": 1002,
+            "chr22": 1002,
+            "chrX": 1002,
+            "chrY": 1002,
+            "chrM": 16569,
+            "GL000009.2": 1002,
+            "GL000194.1": 1002,
+            "GL000195.1": 1002,
+            "GL000205.2": 1002,
+            "GL000213.1": 336,
+            "GL000216.2": 176608,
+            "GL000218.1": 1002,
+            "GL000219.1": 1002,
+            "GL000220.1": 161802,
+            "GL000225.1": 211173,
+            "KI270442.1": 392061,
+            "KI270711.1": 1002,
+            "KI270713.1": 1002,
+            "KI270721.1": 748,
+            "KI270726.1": 534,
+            "KI270727.1": 1002,
+            "KI270728.1": 1002,
+            "KI270731.1": 561,
+            "KI270733.1": 179772,
+            "KI270734.1": 1002,
+            "KI270744.1": 168472,
+            "KI270750.1": 148850,
+        }
         # Testing index access
         assert atac_fragment_index_file_path.exists()
         with pysam.TabixFile(str(atac_fragment_bgzip_file_path)) as tabix:
             for chromosome in tabix.contigs:
                 assert chromosome in atac_seq.human_chromosome_by_length
+                assert expected_chromosome_row_count[chromosome] == len(list(tabix.fetch(chromosome)))
 
     def test_fail(self, atac_fragment_bgzip_file_path, atac_fragment_index_file_path):
         # Arrange
