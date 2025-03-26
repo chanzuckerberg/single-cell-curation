@@ -13,7 +13,6 @@ import pandas as pd
 from anndata.compat import DaskArray
 from dask.array import map_blocks
 from scipy import sparse
-import scipy.sparse
 
 from . import gencode, schema
 from .gencode import get_gene_checker
@@ -415,7 +414,7 @@ class Validator:
                         allow_list == ["all"] or term_id in set(allow_list)
                     ):
                         is_allowed = True
-                        #break
+                        # break
             if (
                 not is_allowed
                 and "ancestors" in curie_constraints["allowed"]

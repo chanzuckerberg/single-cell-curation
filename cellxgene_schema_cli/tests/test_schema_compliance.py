@@ -677,14 +677,13 @@ class TestObs:
         validator.validate_adata()
         assert len(validator.errors) > 0
 
-    @pytest.mark.parametrize("term",["CL:0000000"])
+    @pytest.mark.parametrize("term", ["CL:0000000"])
     def test_cell_type_ontology_term_id(self, validator_with_adata, term):
         validator = validator_with_adata
         validator.adata.obs["cell_type_ontology_term_id"] = term
         validator.validate_adata()
-        assert len(validator.errors)==0
+        assert len(validator.errors) == 0
 
-    
     @pytest.mark.parametrize(
         "term",
         schema_def["components"]["obs"]["columns"]["cell_type_ontology_term_id"]["curie_constraints"]["forbidden"][
@@ -2095,7 +2094,7 @@ class TestUns:
         validator.validate_adata()
         assert validator.errors == []
 
-    @pytest.mark.parametrize("matrix_factory",[scipy.sparse.csr_matrix, scipy.sparse.csc_matrix])
+    @pytest.mark.parametrize("matrix_factory", [scipy.sparse.csr_matrix, scipy.sparse.csc_matrix])
     def test_uns_scipy_matrices_cannot_be_empty(self, validator_with_adata, matrix_factory):
         validator: Validator = validator_with_adata
 
