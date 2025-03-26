@@ -121,6 +121,9 @@ components:
           exceptions:
             - unknown
           allowed:
+            terms:
+              CL:
+                - CL:0000000
             ancestors:
               ZFA:
               - ZFA:0009000
