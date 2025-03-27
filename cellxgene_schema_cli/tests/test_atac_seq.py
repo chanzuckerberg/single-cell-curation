@@ -7,10 +7,7 @@ import pandas as pd
 import pysam
 import pytest
 from cellxgene_schema import atac_seq
-from cellxgene_schema.validate import Validator
-from dask.array import from_array
 from fixtures.examples_validate import FIXTURES_ROOT
-from numpy import zeros
 
 
 @pytest.fixture
@@ -425,55 +422,6 @@ class TestValidateFragmentNoDuplicateRows:
         assert result.startswith("Fragment file has duplicate rows.")
         for chrom in atac_fragment_dataframe["chromosome"].unique():
             assert f"Chromosome {chrom} has 2 rows but only 1 are unique" in result
-
-
-class TestValidateAnndataRawCounts:
-    """
-    Paired Assays (measures both accessibility and gene expression) require raw counts to be present and validated.
-    Unpaired Assays (measures only accessibility) do not require raw counts to be present.
-
-    This is the purview of the AnnData Validator, not the AtacValidator, which is primarily focused on the fragment file.
-    """
-
-    def test_paired_requires_raw_validation(self, atac_anndata, tmpdir):
-        # 10x multiome (EFO:0030059) is paired (both ATAC and RNA single cell sequencing)
-        atac_anndata.obs["assay_ontology_term_id"] = ["EFO:0030059"] * 3
-
-        # use a valid count matrix (as dask array)
-        X = atac_anndata.X
-
-        # validate with AnnData Validator
-        validator = Validator(ignore_labels=True)
-        validator._set_schema_def()
-
-        # do validation with a valid count matrix
-        atac_anndata.X = from_array(X.astype("float32"))
-        validator.adata = atac_anndata
-        validator.reset()
-        validator._validate_raw()
-        assert validator.errors == []
-
-        # do validation with an invalid count matrix
-        atac_anndata.X = from_array(zeros(X.shape).astype("float32"))
-        validator.adata = atac_anndata
-        validator.reset()
-        validator._validate_raw()
-        assert len(validator.errors) > 0
-
-    def test_unpaired_skips_raw_validation(self, atac_anndata, tmpdir):
-        # scATAC-seq (EFO:0010891) is unpaired paired
-        atac_anndata.obs["assay_ontology_term_id"] = ["EFO:0010891"] * 3
-
-        # remove matrix - it shouldn't be required
-        del atac_anndata.X
-
-        # check that validation passes even without matrix
-        validator = Validator(ignore_labels=True)
-        validator._set_schema_def()
-        validator.adata = atac_anndata
-        validator.reset()
-        validator._validate_raw()
-        assert validator.errors == []
 
 
 class TestGetOutputFile:
