@@ -559,9 +559,8 @@ var_unmigrated = pd.DataFrame(
     ],
 )
 
-unmigrated_X = from_array(
-    sparse.csr_matrix(numpy.zeros([unmigrated_obs.shape[0], var_unmigrated.shape[0]], dtype=numpy.float32))
-)
+unmigrated_X = sparse.csr_matrix(numpy.zeros([unmigrated_obs.shape[0], var_unmigrated.shape[0]], dtype=numpy.float32))
+
 adata_with_labels_unmigrated = anndata.AnnData(
     X=unmigrated_X.copy(),
     obs=unmigrated_obs,
