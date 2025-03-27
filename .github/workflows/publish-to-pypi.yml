@@ -19,6 +19,7 @@ jobs:
         id: build
         run: |
           pip install wheel
+          pip install -U setuptools
           make pydist
           cd cellxgene_schema_cli
           echo "version=`python setup.py --version`" >> $GITHUB_OUTPUT
