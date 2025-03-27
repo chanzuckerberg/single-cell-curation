@@ -27,6 +27,8 @@ ONTOLOGY_TERM_MAPS = {
     "cell_type": {
         "CL:4023070": "CL:4023064", # AUTOMATED
     },
+    "development_stage": {
+    },
     "development_stage": DEV_STAGE_AUTO_MIGRATE_MAP,
     "disease": {
     },
@@ -186,6 +188,6 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     # AUTOMATED, DO NOT CHANGE -- IF GENCODE UPDATED, DEPRECATED FEATURE FILTERING ALGORITHM WILL GO HERE.
     if DEPRECATED_FEATURE_IDS:
-        dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
+        dataset = utils.remove_deprecated_features(dataset, DEPRECATED_FEATURE_IDS)
 
     dataset.write(output_file, compression="gzip")
