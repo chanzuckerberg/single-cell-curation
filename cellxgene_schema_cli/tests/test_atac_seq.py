@@ -155,20 +155,6 @@ class TestProcessFragment:
         )
         result = [r for r in result if "Error" in r]
 
-    def test_fail(self, atac_fragment_bgzip_file_path, atac_fragment_index_file_path):
-        # Arrange
-        anndata_file = FIXTURES_ROOT + "/atac_seq/small_atac_seq.h5ad"
-        fragments_file = FIXTURES_ROOT + "/atac_seq/fragments_bad.tsv.gz"
-        # Act
-        result = atac_seq.process_fragment(
-            fragments_file,
-            anndata_file,
-            generate_index=True,
-            dask_cluster_config=dict(processes=False),
-            output_file=str(atac_fragment_bgzip_file_path),
-        )
-        result = [r for r in result if "Error" in r]
-
 
 class TestConvertToParquet:
     def test_positive(self, atac_fragment_dataframe, tmpdir):

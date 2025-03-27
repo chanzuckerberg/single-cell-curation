@@ -149,16 +149,6 @@ def is_atac(x: str) -> str:
         return "n"  # not atac seq
 
 
-def is_atac(x: str) -> str:
-    if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0010891"):
-        if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0008913"):
-            return "p"  # paired
-        else:
-            return "u"  # unpaired
-    else:
-        return "n"  # not atac seq
-
-
 def check_anndata_requires_fragment(anndata_file: str) -> bool:
     """
     Check if an anndata file requires a fragment file to be valid. The anndata file requires a fragment file if the
