@@ -2,6 +2,7 @@ import json
 import os
 
 import anndata as ad
+import numpy as np
 
 from . import utils
 
@@ -87,123 +88,26 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     #   <custom transformation logic beyond scope of replace_ontology_term>
     # ...
 
-    # logic for mapping donor updates
-    if collection_id in DONOR_DEV_STAGE_MAP:
-        collection_donor_dev_map = DONOR_DEV_STAGE_MAP[collection_id]
-        utils.map_ontology_term(dataset.obs, "development_stage", "donor_id", collection_donor_dev_map)
-
-    # private dataset titles in title_donor_updates.json should be unique in corpus
-    if dataset.uns["title"] in TITLE_DONOR_DEV_STAGE_MAP:
-        dataset_donor_dev_map = TITLE_DONOR_DEV_STAGE_MAP[dataset.uns["title"]]
-        utils.map_ontology_term(dataset.obs, "development_stage", "donor_id", dataset_donor_dev_map)
-
-    # https://github.com/chanzuckerberg/single-cell-curation/issues/958
-
-    if collection_id == "c114c20f-1ef4-49a5-9c2e-d965787fb90c":
-        utils.replace_ontology_term(dataset.obs, "assay", {"EFO:0010550": "EFO:0030028"})
-
-    if collection_id == "45d5d2c3-bc28-4814-aed6-0bb6f0e11c82":
-        utils.replace_ontology_term(dataset.obs, "assay", {"EFO:0010550": "EFO:0030028"})
-
-    if collection_id == "962df42d-9675-4d05-bc75-597ec7bf4afb":
-        utils.replace_ontology_term(dataset.obs, "development_stage", {"unknown": "HsapDv:0000264"})
-
-    if collection_id == "48d354f5-a5ca-4f35-a3bb-fa3687502252":
-        utils.map_ontology_term(dataset.obs, "development_stage", "var_time", {"P7": "MmusDv:0000117"})
-
-    if collection_id == "613f5480-4957-4f80-b804-0e2b85ac454c":
-        utils.map_ontology_term(
-            dataset.obs,
-            "development_stage",
-            "age",
-            {
-                "P4": "MmusDv:0000114",
-                "P7": "MmusDv:0000117",
-            },
-        )
-
-    if collection_id == "d86517f0-fa7e-4266-b82e-a521350d6d36":
-        utils.map_ontology_term(
-            dataset.obs,
-            "development_stage",
-            "Dataset",
-            {
-                "RomanovDev10x": "MmusDv:0000144",
-                "Mickelsen10x": "MmusDv:0000149",
-                "Flynn10x": "MmusDv:0000149",
-            },
-        )
-        utils.map_ontology_term(
-            dataset.obs,
-            "development_stage",
-            "SRA_ID",
-            {
-                "SRR5164436": "MmusDv:0000178",
-                "SRR5164437": "MmusDv:0000178",
-                "SRR5164438": "MmusDv:0000149",
-            },
-        )
-
-    # dev migration revealed column 'feature_type' in var and raw.var, titles should be unique in corpus
-    titles_with_feature_type = [
-        "Healthy reference",
-        "Extended - Neural cells",
-        "Extended - Endothelial cells",
-        "Extended+ - 18485 genes",
-        "Healthy - Small intestine (adult/pediatric)",
-        "Healthy - Mesenchymal (adult/pediatric)",
-        "Healthy - Stomach",
-        "Healthy - Large Intestine (adult/pediatric)",
-        "Healthy - Mesenchymal (first trimester)",
-        "Extended - All genes",
-        "Healthy - Small Intestine (first trimester)",
-        "Healthy - Neural cells",
-        "Healthy - T and NK cells",
-        "Healthy - Myeloid cells",
-        "Extended - Small intestine (adult/pediatric)",
-        "Extended - T and NK cells",
-        "Healthy - Salivary gland",
-        "Extended - Large Intestine (adult/pediatric)",
-        "Healthy - Large Intestine (first trimester)",
-        "Healthy - Oesophagus",
-        "Extended - Stomach",
-        "Healthy - Mesenchymal (second trimester)",
-        "Extended - Small intestine (adult/pediatric)- 18485genes",
-        "Healthy - Oral mucosa",
-        "Extended - B and B plasma cells",
-        "Extended - Myeloid_with_neutrophils",
-        "Healthy - B and B plasma cells",
-        "Healthy - Small Intestine (second trimester)",
-        "Healthy - Endothelial cells",
-        "Extended - Myeloid cells",
-        "Extended - Mesenchymal (adult/pediatric)",
-        "Healthy - Large Intestine (second trimester)",
-    ]
-
-    if dataset.uns["title"] in titles_with_feature_type or collection_id == "e5f58829-1a66-40b5-a624-9046778e74f5":
-        if dataset.raw:
-            dataset.raw.var.drop(columns="feature_type", inplace=True)
-
-        dataset.var.drop(columns="feature_type", inplace=True)
-    #https://github.com/chanzuckerberg/single-cell-curation/issues/825
+    # https://github.com/chanzuckerberg/single-cell-curation/issues/825
     if collection_id == "0aab20b3-c30c-4606-bd2e-d20dae739c45":
         utils.replace_ontology_term(dataset.obs, "disease", {"MONDO:0060782": "MONDO:0100542"})
 
-    if 'X_spatial' in dataset.obsm_keys():
-        del dataset.obsm['X_spatial']
+    if "X_spatial" in dataset.obsm_keys():
+        del dataset.obsm["X_spatial"]
 
-    if dataset.uns.get('default_embedding') == 'X_spatial':
-        dataset.uns['default_embedding'] = 'spatial'
+    if dataset.uns.get("default_embedding") == "X_spatial":
+        dataset.uns["default_embedding"] = "spatial"
 
-    if dataset.obs['assay_ontology_term_id'].iloc[0] == 'EFO:0010961' \
-    and dataset.uns['spatial']['is_single']:
-        library_id = [k for k in dataset.uns['spatial'].keys() if k != 'is_single'][0]
-        for r in ['hires','fullres']:
-            if r in dataset.uns['spatial'][library_id]['images']:
-                if dataset.uns['spatial'][library_id]['images'][r].dtype == 'float32':
-                    float_array = dataset.uns['spatial'][library_id]['images'][r]
-                    int_array = (float_array * 255).astype(np.uint8)
-                    dataset.uns['spatial'][library_id]['images'][r] = int_array
+    if dataset.obs["assay_ontology_term_id"].iloc[0] == "EFO:0010961" and dataset.uns["spatial"]["is_single"]:
+        library_id = [k for k in dataset.uns["spatial"] if k != "is_single"][0]
+        for r in ["hires", "fullres"]:
+            if (
+                r in dataset.uns["spatial"][library_id]["images"]
+                and dataset.uns["spatial"][library_id]["images"][r].dtype == "float32"
+            ):
+                float_array = dataset.uns["spatial"][library_id]["images"][r]
+                int_array = (float_array * 255).astype(np.uint8)
+                dataset.uns["spatial"][library_id]["images"][r] = int_array
 
     if GENCODE_MAPPER:
         dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
