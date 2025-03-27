@@ -1,12 +1,7 @@
-import json
-import os
-
 import anndata as ad
-import numpy as np
+import dask
 
 from . import utils
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # fmt: off
 # ONTOLOGY TERMS TO UPDATE ACROSS ALL DATASETS IN CORPUS
@@ -17,20 +12,16 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
 # add them here.
-
-# We have used this mapping for automigrating terms, not sure if this is accounted for in other migration logic
-with open(os.path.join(BASE_DIR, "migrate_files/automigrate_terms.json"), "r") as file:
-    DEV_STAGE_AUTO_MIGRATE_MAP = json.load(file)
-
 ONTOLOGY_TERM_MAPS = {
     "assay": {
     },
     "cell_type": {
-        "CL:4023070": "CL:4023064", # AUTOMATED
+        "CL:0000402": "CL:0000099", # AUTOMATED
+        "CL:0010003": "CL:0000322", # AUTOMATED
+        "CL:0000555": "CL:4023161", # AUTOMATED
     },
     "development_stage": {
     },
-    "development_stage": DEV_STAGE_AUTO_MIGRATE_MAP,
     "disease": {
     },
     "organism": {
@@ -40,6 +31,7 @@ ONTOLOGY_TERM_MAPS = {
     "sex": {
     },
     "tissue": {
+        "CL:0010003": "CL:0000322", # AUTOMATED
     },
 }
 
@@ -48,12 +40,6 @@ DEPRECATED_FEATURE_IDS = [
 
 # Dictionary for CURATOR-DEFINED remapping of deprecated feature IDs, if any, to new feature IDs.
 GENCODE_MAPPER = {}
-
-with open(os.path.join(BASE_DIR, "migrate_files/donor_updates.json"), "r") as file:
-    DONOR_DEV_STAGE_MAP = json.load(file)
-
-with open(os.path.join(BASE_DIR, "migrate_files/title_donor_updates.json"), "r") as file:
-    TITLE_DONOR_DEV_STAGE_MAP = json.load(file)
 # fmt: on
 
 # Dictionary for CURATOR-DEFINED remapping of deprecated feature IDs, if any, to new feature IDs.
@@ -63,9 +49,7 @@ GENCODE_MAPPER = {}
 def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
 
-    dataset = ad.read_h5ad(input_file, backed="r")
-    if dataset.raw is not None and DEPRECATED_FEATURE_IDS:
-        dataset = dataset.to_memory()
+    dataset = utils.read_h5ad(input_file)
 
     # AUTOMATED, DO NOT CHANGE
     for ontology_name, deprecated_term_map in ONTOLOGY_TERM_MAPS.items():
@@ -88,27 +72,6 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     #   <custom transformation logic beyond scope of replace_ontology_term>
     # ...
 
-    # https://github.com/chanzuckerberg/single-cell-curation/issues/825
-    if collection_id == "0aab20b3-c30c-4606-bd2e-d20dae739c45":
-        utils.replace_ontology_term(dataset.obs, "disease", {"MONDO:0060782": "MONDO:0100542"})
-
-    if "X_spatial" in dataset.obsm_keys():
-        del dataset.obsm["X_spatial"]
-
-    if dataset.uns.get("default_embedding") == "X_spatial":
-        dataset.uns["default_embedding"] = "spatial"
-
-    if dataset.obs["assay_ontology_term_id"].iloc[0] == "EFO:0010961" and dataset.uns["spatial"]["is_single"]:
-        library_id = [k for k in dataset.uns["spatial"] if k != "is_single"][0]
-        for r in ["hires", "fullres"]:
-            if (
-                r in dataset.uns["spatial"][library_id]["images"]
-                and dataset.uns["spatial"][library_id]["images"][r].dtype == "float32"
-            ):
-                float_array = dataset.uns["spatial"][library_id]["images"][r]
-                int_array = (float_array * 255).astype(np.uint8)
-                dataset.uns["spatial"][library_id]["images"][r] = int_array
-
     if GENCODE_MAPPER:
         dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
 
@@ -116,4 +79,5 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     if DEPRECATED_FEATURE_IDS:
         dataset = utils.remove_deprecated_features(adata=dataset, deprecated=DEPRECATED_FEATURE_IDS)
 
-    dataset.write(output_file, compression="gzip")
+    with dask.config.set(scheduler="single-threaded"):
+        dataset.write_h5ad(output_file, compression="gzip")
