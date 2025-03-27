@@ -55,6 +55,9 @@ with open(os.path.join(BASE_DIR, "migrate_files/title_donor_updates.json"), "r")
     TITLE_DONOR_DEV_STAGE_MAP = json.load(file)
 # fmt: on
 
+# Dictionary for CURATOR-DEFINED remapping of deprecated feature IDs, if any, to new feature IDs.
+GENCODE_MAPPER = {}
+
 
 def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
