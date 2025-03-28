@@ -1,3 +1,4 @@
+import gzip
 import logging
 import shutil
 import subprocess
@@ -6,7 +7,6 @@ from pathlib import Path
 from typing import Optional
 
 import anndata as ad
-import dask
 import dask.dataframe as ddf
 import dask.distributed as dd  # TODO: see if distributed mode can be avoided.
 import h5py
@@ -19,7 +19,7 @@ from dask import delayed
 from dask.delayed import Delayed
 
 from .ontology_parser import ONTOLOGY_PARSER
-from .utils import is_ontological_descendant_of
+from .utils import GB, MB, is_ontological_descendant_of
 
 logger = logging.getLogger(__name__)
 
@@ -242,7 +242,7 @@ def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
     parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet").replace(".bgz", ".parquet")
     pa.dataset.write_dataset(
         data=pa.csv.open_csv(
-            pa.input_stream(fragment_file, compression="gzip"),
+            pa.input_stream(fragment_file, compression="gzip", buffer_size=GB),
             read_options=pa.csv.ReadOptions(column_names=schema.names),
             parse_options=pa.csv.ParseOptions(delimiter="\t"),
             convert_options=pa.csv.ConvertOptions(column_types=schema),
@@ -415,11 +415,8 @@ def index_fragment(
     jobs = prepare_fragment(chromosomes, parquet_file, bgzip_output_file, tempdir, bgzip_write_lock, write_algorithm)
     # limit calls to dask.compute to improve performance. The number of jobs to run at once is determined by the
     # step variable. If we run all the jobs in the same call to dask.compute, the local cluster hangs.
-    # TODO: investigate why
-    step = 4
-    # print the progress of the jobs
-    for i in range(0, len(jobs), step):
-        dask.compute(jobs[i : i + step])
+    for job in jobs:
+        job.compute()
 
     logger.info(f"Fragment sorted and compressed: {bgzip_output_file}")
     #
@@ -435,21 +432,28 @@ def sort_fragment(parquet_file: str, write_path: str, chromosome: str) -> Path:
     df = df[column_ordering]
     df = df.sort_values(["start coordinate", "stop coordinate"], ascending=True)
 
-    df.to_csv(temp_data, sep="\t", index=False, header=False, mode="w", single_file=True)
+    df.to_csv(temp_data, sep="\t", index=False, header=False, mode="w", single_file=True, compression="gzip")
     return temp_data
 
 
 @delayed
 def write_bgzip_pysam(input_file: str, bgzip_output_file: str, write_lock: dd.Lock):
-    with write_lock, pysam.libcbgzf.BGZFile(bgzip_output_file, mode="ab") as f_out, open(input_file, "rb") as f_in:
+    with write_lock, pysam.libcbgzf.BGZFile(bgzip_output_file, mode="ab") as f_out, gzip.open(input_file) as f_in:
         while data := f_in.read(2**20):
             f_out.write(data)
 
 
 @delayed
 def write_bgzip_cli(input_file: str, bgzip_output_file: str, write_lock: dd.Lock):
-    with write_lock, open(input_file, "rb") as fin, open(bgzip_output_file, "ab") as fout:
-        subprocess.run(["bgzip", "--threads=8", "-c"], stdin=fin, stdout=fout, check=True)
+    with write_lock, gzip.open(input_file, "rb") as fin, open(bgzip_output_file, "ab") as fout:
+        proc = subprocess.Popen(["bgzip", "--threads=8", "-c"], stdin=subprocess.PIPE, stdout=fout)
+        while True:
+            data = fin.read(MB)
+            if not data:
+                break
+            proc.stdin.write(data)
+        proc.stdin.close()
+        proc.wait()
 
 
 write_algorithm_by_callable = {"pysam": write_bgzip_pysam, "cli": write_bgzip_cli}
