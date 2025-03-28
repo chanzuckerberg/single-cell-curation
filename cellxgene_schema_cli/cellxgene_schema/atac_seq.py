@@ -6,20 +6,17 @@ from pathlib import Path
 from typing import Optional
 
 import anndata as ad
-import dask
-import dask.dataframe as ddf
 import dask.distributed as dd  # TODO: see if distributed mode can be avoided.
 import h5py
 import ibis
 import pyarrow as pa
 import pyarrow.csv
 import pyarrow.dataset
+import pyarrow.parquet
 import pysam
-from dask import delayed
-from dask.delayed import Delayed
 
 from .ontology_parser import ONTOLOGY_PARSER
-from .utils import is_ontological_descendant_of
+from .utils import GB, MB, is_ontological_descendant_of
 
 logger = logging.getLogger(__name__)
 
@@ -242,7 +239,7 @@ def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
     parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet").replace(".bgz", ".parquet")
     pa.dataset.write_dataset(
         data=pa.csv.open_csv(
-            pa.input_stream(fragment_file, compression="gzip"),
+            pa.input_stream(fragment_file, compression="gzip", buffer_size=GB),
             read_options=pa.csv.ReadOptions(column_names=schema.names),
             parse_options=pa.csv.ParseOptions(delimiter="\t"),
             convert_options=pa.csv.ConvertOptions(column_types=schema),
@@ -401,7 +398,6 @@ def index_fragment(
     bgzip_output_path = Path(bgzip_output_file)
     bgzip_output_path.unlink(missing_ok=True)
     bgzip_output_path.touch()
-    bgzip_write_lock = dd.Lock()  # lock to preserver write order
 
     if override_write_algorithm:
         write_algorithm = write_algorithm_by_callable[override_write_algorithm]
@@ -412,15 +408,7 @@ def index_fragment(
         write_algorithm = write_algorithm_by_callable["cli"]
 
     chromosomes = detect_chromosomes(parquet_file)
-    jobs = prepare_fragment(chromosomes, parquet_file, bgzip_output_file, tempdir, bgzip_write_lock, write_algorithm)
-    # limit calls to dask.compute to improve performance. The number of jobs to run at once is determined by the
-    # step variable. If we run all the jobs in the same call to dask.compute, the local cluster hangs.
-    # TODO: investigate why
-    step = 4
-    # print the progress of the jobs
-    for i in range(0, len(jobs), step):
-        dask.compute(jobs[i : i + step])
-
+    prepare_fragment(chromosomes, parquet_file, bgzip_output_file, tempdir, write_algorithm)
     logger.info(f"Fragment sorted and compressed: {bgzip_output_file}")
     #
     pysam.tabix_index(bgzip_output_file, preset="bed", force=True)
@@ -428,28 +416,55 @@ def index_fragment(
     logger.info(f"Index file generated: {tabix_output_file}")
 
 
-@delayed
 def sort_fragment(parquet_file: str, write_path: str, chromosome: str) -> Path:
-    temp_data = Path(write_path) / f"temp_{chromosome}.tsv.gz"
-    df = ddf.read_parquet(parquet_file, filters=[("chromosome", "==", chromosome)])
-    df = df[column_ordering]
-    df = df.sort_values(["start coordinate", "stop coordinate"], ascending=True)
-
-    df.to_csv(temp_data, sep="\t", index=False, header=False, mode="w", single_file=True)
+    temp_data = Path(write_path) / f"temp_{chromosome}.parquet"
+    t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    (t.filter(t["chromosome"] == chromosome).order_by(["start coordinate", "stop coordinate"]).to_parquet(temp_data))
     return temp_data
 
 
-@delayed
-def write_bgzip_pysam(input_file: str, bgzip_output_file: str, write_lock: dd.Lock):
-    with write_lock, pysam.libcbgzf.BGZFile(bgzip_output_file, mode="ab") as f_out, open(input_file, "rb") as f_in:
-        while data := f_in.read(2**20):
+def buffered_write(input_file: str) -> iter:
+    # Open the Parquet file and iterate through record batches
+    pfile = pa.parquet.ParquetFile(input_file)
+    for record_batch in pfile.iter_batches():
+        table = (
+            pa.Table.from_batches([record_batch])
+            # Make sure columns are in right order
+            .select([f.name for f in schema])
+        )
+        # Write the batch to an in-memory buffer
+        csv_buffer = pa.BufferOutputStream()
+        pa.csv.write_csv(
+            table,
+            csv_buffer,
+            write_options=pa.csv.WriteOptions(
+                include_header=False,
+                delimiter="\t",
+                batch_size=MB,
+                quoting_style="none",
+            ),
+        )
+        yield csv_buffer.getvalue().to_pybytes()
+
+
+def write_bgzip_pysam(input_file: str, bgzip_output_file: str):
+    with pysam.libcbgzf.BGZFile(bgzip_output_file, mode="ab") as f_out:
+        for data in buffered_write(input_file):
             f_out.write(data)
 
 
-@delayed
-def write_bgzip_cli(input_file: str, bgzip_output_file: str, write_lock: dd.Lock):
-    with write_lock, open(input_file, "rb") as fin, open(bgzip_output_file, "ab") as fout:
-        subprocess.run(["bgzip", "--threads=8", "-c"], stdin=fin, stdout=fout, check=True)
+# @delayed
+def write_bgzip_cli(input_file: str, bgzip_output_file: str):
+    with (
+        subprocess.Popen(
+            ["bgzip", "--threads=8", "-c"], stdin=subprocess.PIPE, stdout=open(bgzip_output_file, "ab")
+        ) as proc,
+    ):
+        for data in buffered_write(input_file):
+            proc.stdin.write(data)
+    return_code = proc.wait()
+    if return_code != 0:
+        print(f"Subprocess exited with error code {return_code}")
 
 
 write_algorithm_by_callable = {"pysam": write_bgzip_pysam, "cli": write_bgzip_cli}
@@ -460,9 +475,8 @@ def prepare_fragment(
     parquet_file: str,
     bgzip_output_file: str,
     tempdir: str,
-    write_lock: dd.Lock,
     write_algorithm: callable,
-) -> list[Delayed]:
+) -> None:
     """
     The sorting and writing of the fragment is done in parallel for each chromosome. Because of this the write order of
     the chromosomes may not be preserved. The chromosomes will all be stored in contiguous blocks in the bgzip file, and
@@ -473,12 +487,9 @@ def prepare_fragment(
     :param parquet_file:
     :param bgzip_output_file:
     :param tempdir:
-    :param write_lock:
     :param write_algorithm:
     :return:
     """
-    jobs = []
     for chromosome in chromosomes:
         temp_data = sort_fragment(parquet_file, tempdir, chromosome)
-        jobs.append(write_algorithm(temp_data, bgzip_output_file, write_lock))
-    return jobs
+        write_algorithm(temp_data, bgzip_output_file)

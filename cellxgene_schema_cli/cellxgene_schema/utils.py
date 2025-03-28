@@ -20,6 +20,10 @@ logger = logging.getLogger(__name__)
 SPARSE_MATRIX_TYPES = {"csr", "csc", "coo"}
 SUPPORTED_SPARSE_MATRIX_TYPES = {"csr"}
 
+KB = 1024
+MB = 1024 * KB
+GB = 1024 * MB
+
 
 def replace_ontology_term(dataframe, ontology_name, update_map):
     column_name = f"{ontology_name}_ontology_term_id"
