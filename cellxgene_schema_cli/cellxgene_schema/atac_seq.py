@@ -440,7 +440,6 @@ def write_bgzip_pysam(input_file: str, bgzip_output_file: str):
             f_out.write(data)
 
 
-# @delayed
 def write_bgzip_cli(input_file: str, bgzip_output_file: str):
     with (
         subprocess.Popen(
