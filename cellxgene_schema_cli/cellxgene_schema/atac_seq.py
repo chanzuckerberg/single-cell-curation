@@ -350,7 +350,7 @@ def validate_anndata_organism_ontology_term_id(anndata_file: str) -> Optional[st
         organism_ontology_term_ids = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)
     if organism_ontology_term_ids.size > 1:
         error_message = (
-            "Anndata.obs.organism_ontology_term_id must have exactly 1 unique value. Found the " "following values:\n"
+            "Anndata.obs.organism_ontology_term_id must have exactly 1 unique value. Found the following values:\n"
         ) + "\n\t".join(organism_ontology_term_ids)
         return error_message
     organism_ontology_term_id = organism_ontology_term_ids[0]
