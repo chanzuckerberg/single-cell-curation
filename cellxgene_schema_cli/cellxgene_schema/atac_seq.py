@@ -418,15 +418,11 @@ def buffered_write(input_file: str) -> iter:
     # Open the Parquet file and iterate through record batches
     pfile = pa.parquet.ParquetFile(input_file)
     for record_batch in pfile.iter_batches():
-        table = (
-            pa.Table.from_batches([record_batch])
-            # Make sure columns are in right order
-            .select([f.name for f in schema])
-        )
         # Write the batch to an in-memory buffer
         csv_buffer = pa.BufferOutputStream()
         pa.csv.write_csv(
-            table,
+            # Make sure columns are in right order
+            record_batch.select([f.name for f in schema]),
             csv_buffer,
             write_options=pa.csv.WriteOptions(
                 include_header=False,
