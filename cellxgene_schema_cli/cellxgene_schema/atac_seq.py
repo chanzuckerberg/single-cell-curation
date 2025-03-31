@@ -363,6 +363,7 @@ def validate_anndata_organism_ontology_term_id(anndata_file: str) -> Optional[st
 def detect_chromosomes(parquet_file: str) -> list[str]:
     t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
     chromosomes = list(t.select(["chromosome"]).distinct().execute()["chromosome"])
+    chromosomes.sort()  # sort chromosomes to ensure consistent order
     return chromosomes
 
 
@@ -470,7 +471,7 @@ def prepare_fragment(
     write_algorithm: callable,
 ) -> None:
     """
-    The sorting and writing of the fragment is done in parallel for each chromosome. Because of this the write order of
+    The sorting and writing of the fragment is done for each chromosome. Because of this the write order of
     the chromosomes may not be preserved. The chromosomes will all be stored in contiguous blocks in the bgzip file, and
     and sorted by start and stop coordinate within each chromosome. This slightly different form what pysam.tabix
     expects which is sorted by chromosome, start coordinate, and stop coordinate, but it is still compatible.
