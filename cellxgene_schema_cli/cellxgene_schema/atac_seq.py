@@ -483,5 +483,6 @@ def prepare_fragment(
     :return:
     """
     for chromosome in chromosomes:
+        logger.info(f"Processing chromosome: {chromosome}")
         temp_data = sort_fragment(parquet_file, tempdir, chromosome)
         write_algorithm(temp_data, bgzip_output_file)
