@@ -464,7 +464,9 @@ def write_bgzip_cli(input_file: str, bgzip_output_file: str):
             proc.stdin.write(data)
     return_code = proc.wait()
     if return_code != 0:
-        print(f"Subprocess exited with error code {return_code}")
+        logger.error(f"Subprocess exited with error code {return_code}")
+    else:
+        logger.info(f"bgzip compression completed successfully for {bgzip_output_file}")
 
 
 write_algorithm_by_callable = {"pysam": write_bgzip_pysam, "cli": write_bgzip_cli}
