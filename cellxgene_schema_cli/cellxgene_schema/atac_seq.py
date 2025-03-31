@@ -15,7 +15,7 @@ import pyarrow.parquet
 import pysam
 
 from .ontology_parser import ONTOLOGY_PARSER
-from .utils import GB, MB, is_ontological_descendant_of
+from .utils import GB, is_ontological_descendant_of
 
 logger = logging.getLogger(__name__)
 
@@ -350,7 +350,7 @@ def validate_anndata_organism_ontology_term_id(anndata_file: str) -> Optional[st
         organism_ontology_term_ids = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)
     if organism_ontology_term_ids.size > 1:
         error_message = (
-            "Anndata.obs.organism_ontology_term_id must have exactly 1 unique value. Found the following values:\n"
+            "Anndata.obs.organism_ontology_term_id must have exactly 1 unique value. Found the " "following values:\n"
         ) + "\n\t".join(organism_ontology_term_ids)
         return error_message
     organism_ontology_term_id = organism_ontology_term_ids[0]
@@ -427,7 +427,7 @@ def buffered_write(input_file: str) -> iter:
             write_options=pa.csv.WriteOptions(
                 include_header=False,
                 delimiter="\t",
-                batch_size=MB,
+                batch_size=1_000_000_000,  # this value could be further optimized
                 quoting_style="none",
             ),
         )
@@ -443,7 +443,7 @@ def write_bgzip_pysam(input_file: str, bgzip_output_file: str):
 def write_bgzip_cli(input_file: str, bgzip_output_file: str):
     with (
         subprocess.Popen(
-            ["bgzip", "--threads=8", "-c"], stdin=subprocess.PIPE, stdout=open(bgzip_output_file, "ab")
+            ["bgzip", "--threads", "-c"], stdin=subprocess.PIPE, stdout=open(bgzip_output_file, "ab")
         ) as proc,
     ):
         for data in buffered_write(input_file):
@@ -468,8 +468,7 @@ def prepare_fragment(
     """
     The sorting and writing of the fragment is done for each chromosome. Because of this the write order of
     the chromosomes may not be preserved. The chromosomes will all be stored in contiguous blocks in the bgzip file, and
-    and sorted by start and stop coordinate within each chromosome. This slightly different form what pysam.tabix
-    expects which is sorted by chromosome, start coordinate, and stop coordinate, but it is still compatible.
+    and sorted by start and stop coordinate within each chromosome.
 
     :param chromosomes:
     :param parquet_file:
