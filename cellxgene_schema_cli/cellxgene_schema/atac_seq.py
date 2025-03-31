@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Optional
 
 import anndata as ad
-import dask.distributed as dd  # TODO: see if distributed mode can be avoided.
 import h5py
 import ibis
 import pyarrow as pa
@@ -175,7 +174,6 @@ def process_fragment(
     fragment_file: str,
     anndata_file: str,
     generate_index: bool = False,
-    dask_cluster_config: Optional[dict] = None,
     override_write_algorithm: Optional[str] = None,
     output_file: Optional[str] = None,
 ) -> list[str]:
@@ -185,46 +183,37 @@ def process_fragment(
     :param str fragment_file: The fragment file to process
     :param str anndata_file: The anndata file to validate against
     :param bool generate_index: Whether to generate the index for the fragment
-    :param dask_cluster_config: dask cluster configuration parameters passed to dask.distributed.LocalCluster
     :param override_write_algorithm: Override the write algorithm used to write the bgzip file. Options are "pysam"
     and "cli"
     :param output_file: The output file to write the bgzip file to. If not provided, the output file will be the same
 
     """
     with tempfile.TemporaryDirectory() as tempdir:
-        # configure the dask cluster
-        _dask_cluster_config = dict(dashboard_address=None)
-        logging.getLogger("distributed").setLevel(logging.ERROR)
-        if dask_cluster_config:
-            _dask_cluster_config.update(dask_cluster_config)
+        # quick checks
+        errors = validate_anndata(anndata_file)
+        if errors:
+            return errors
 
-        # start the dask cluster and client
-        with dd.LocalCluster(**_dask_cluster_config) as cluster, dd.Client(cluster):
-            # quick checks
-            errors = validate_anndata(anndata_file)
-            if errors:
-                return errors
+        # convert the fragment to a parquet file for faster processing
+        try:
+            parquet_file = convert_to_parquet(fragment_file, tempdir)
+        except Exception as e:
+            msg = "Error Parsing the fragment file. Check that columns match schema definition. Error: " + str(e)
+            logger.exception(msg)
+            return [msg]
 
-            # convert the fragment to a parquet file for faster processing
-            try:
-                parquet_file = convert_to_parquet(fragment_file, tempdir)
-            except Exception as e:
-                msg = "Error Parsing the fragment file. Check that columns match schema definition. Error: " + str(e)
-                logger.exception(msg)
-                return [msg]
+        # slow checks
+        errors = validate_anndata_with_fragment(parquet_file, anndata_file)
+        if errors:
+            return errors
+        else:
+            logger.info("Fragment and Anndata file are valid")
 
-            # slow checks
-            errors = validate_anndata_with_fragment(parquet_file, anndata_file)
-            if errors:
-                return errors
-            else:
-                logger.info("Fragment and Anndata file are valid")
-
-            # generate the index
-            if generate_index:
-                logger.info(f"Sorting fragment and generating index for {fragment_file}")
-                index_fragment(fragment_file, parquet_file, tempdir, override_write_algorithm, output_file)
-        logger.debug("cleaning up")
+        # generate the index
+        if generate_index:
+            logger.info(f"Sorting fragment and generating index for {fragment_file}")
+            index_fragment(fragment_file, parquet_file, tempdir, override_write_algorithm, output_file)
+    logger.debug("cleaning up")
     return []
 
 
@@ -233,7 +222,8 @@ def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
     Convert the fragment file to a parquet dataset for faster processing.
 
     :param fragment_file: A gzipped compressed fragment file
-    :param tempdir: The temporary directory to write the parquet file to. Name of the written file is derived from the input.
+    :param tempdir: The temporary directory to write the parquet file to. Name of the written file is derived from
+    the input.
     """
     logger.info(f"Converting {fragment_file} to parquet")
     parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet").replace(".bgz", ".parquet")
@@ -360,7 +350,7 @@ def validate_anndata_organism_ontology_term_id(anndata_file: str) -> Optional[st
         organism_ontology_term_ids = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)
     if organism_ontology_term_ids.size > 1:
         error_message = (
-            "Anndata.obs.organism_ontology_term_id must have exactly 1 unique value. Found the following values:\n"
+            "Anndata.obs.organism_ontology_term_id must have exactly 1 unique value. Found the " "following values:\n"
         ) + "\n\t".join(organism_ontology_term_ids)
         return error_message
     organism_ontology_term_id = organism_ontology_term_ids[0]
