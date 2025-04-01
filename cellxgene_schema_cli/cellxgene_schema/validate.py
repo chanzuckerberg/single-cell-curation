@@ -10,7 +10,6 @@ import dask
 import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
-import scipy
 from anndata.compat import DaskArray
 from dask.array import map_blocks
 from scipy import sparse
@@ -415,7 +414,7 @@ class Validator:
                         allow_list == ["all"] or term_id in set(allow_list)
                     ):
                         is_allowed = True
-                        break
+                        # break
             if (
                 not is_allowed
                 and "ancestors" in curie_constraints["allowed"]
@@ -933,11 +932,12 @@ class Validator:
                 category_mapping[column_name] = column.nunique()
 
         for key, value in uns_dict.items():
-            if isinstance(value, scipy.sparse.csr_matrix):
-                if value.nnz == 0:
+            if isinstance(value, DaskArray):
+                if value.size == 0 or value.shape[0] == 0 or value.shape[1] == 0:
                     self.errors.append(f"uns['{key}'] cannot be an empty value.")
             elif value is not None and not isinstance(value, (np.bool_, bool, numbers.Number)) and len(value) == 0:
                 self.errors.append(f"uns['{key}'] cannot be an empty value.")
+
             if key.endswith("_colors"):
                 # 1. Verify that the corresponding categorical field exists in obs
                 column_name = key.replace("_colors", "")
@@ -1166,7 +1166,7 @@ class Validator:
 
         return False
 
-    def _get_raw_x(self) -> Union[np.ndarray, sparse.csr_matrix]:
+    def _get_raw_x(self) -> DaskArray:
         """
         gets raw x (best guess, i.e. not guarantee it's actually raw)
         """
@@ -1420,11 +1420,25 @@ class Validator:
                     if rule == "not_descendants_of":
                         for ontology_name, ancestors in rule_def.items():
                             checks.append(not self._are_descendants_of(component, column, ontology_name, ancestors))
+                    elif rule == "descendants_of_all":
+                        # get column values to check
+                        values = getattr_anndata(self.adata, component)[column]
+
+                        # create a list of descendant sets
+                        term_descendant_sets = [
+                            set(get_descendants(ONTOLOGY_PARSER, t, True)) for t in rule_def["terms"]
+                        ]
+
+                        # apply check ( i.e. value in ALL sets) to all values
+                        check_values = [all(v in ds for ds in term_descendant_sets) for v in values.tolist()]
+
+                        # register if any values pass that check
+                        checks.append(any(check_values))
                     else:
                         raise ValueError(f"'{rule}' rule in raw definition of the schema is not implemented ")
 
-        # If all checks passed then proceed with validation
-        if all(checks):
+        # If any checks passed then proceed with validation
+        if any(checks):
             # If both "raw.X" and "X" exist but neither are raw
             # This is testing for when sometimes data contributors put a normalized matrix in both "X" and "raw.X".
             if not self._has_valid_raw() and self._get_raw_x_loc() == "raw.X":

@@ -1,4 +1,3 @@
-import itertools
 import logging
 import shutil
 import subprocess
@@ -7,17 +6,16 @@ from pathlib import Path
 from typing import Optional
 
 import anndata as ad
-import dask
-import dask.dataframe as ddf
-import dask.distributed as dd  # TODO: see if distributed mode can be avoided.
 import h5py
-import pandas as pd
+import ibis
+import pyarrow as pa
+import pyarrow.csv
+import pyarrow.dataset
+import pyarrow.parquet
 import pysam
-from dask import delayed
-from dask.delayed import Delayed
 
 from .ontology_parser import ONTOLOGY_PARSER
-from .utils import is_ontological_descendant_of
+from .utils import GB, is_ontological_descendant_of
 
 logger = logging.getLogger(__name__)
 
@@ -118,16 +116,33 @@ organism_ontology_term_id_by_chromosome_length_table = {
     "NCBITaxon:10090": mouse_chromosome_by_length,
 }
 column_ordering = ["chromosome", "start coordinate", "stop coordinate", "barcode", "read support"]
-allowed_chromosomes = list(set(itertools.chain(human_chromosome_by_length.keys(), mouse_chromosome_by_length.keys())))
-allowed_chromosomes.sort()
-chromosome_categories = pd.CategoricalDtype(categories=allowed_chromosomes)
-column_types = {
-    "chromosome": chromosome_categories,
-    "start coordinate": int,
-    "stop coordinate": int,
-    "barcode": str,
-    "read support": int,
-}
+schema = pa.schema(
+    [
+        pa.field("chromosome", pa.string()),
+        pa.field("start coordinate", pa.int64()),
+        pa.field("stop coordinate", pa.int64()),
+        pa.field("barcode", pa.string()),
+        pa.field("read support", pa.int64()),
+    ]
+)
+
+
+def log_calls(func):
+    def wrapper(*args, **kwargs):
+        logging.info("starting: %s", func.__name__)
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def is_atac(x: str) -> str:
+    if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0010891"):
+        if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0008913"):
+            return "p"  # paired
+        else:
+            return "u"  # unpaired
+    else:
+        return "n"  # not atac seq
 
 
 def check_anndata_requires_fragment(anndata_file: str) -> bool:
@@ -141,16 +156,6 @@ def check_anndata_requires_fragment(anndata_file: str) -> bool:
     :param anndata_file: The anndata file to validate.
     :return:
     """
-
-    def is_atac(x: str) -> str:
-        if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0010891"):
-            if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0008913"):
-                return "p"  # paired
-            else:
-                return "u"  # unpaired
-        else:
-            return "n"  # not atac seq
-
     with h5py.File(anndata_file) as f:
         assay_ontology_term_ids = ad.io.read_elem(f["obs"])["assay_ontology_term_id"]
     df = assay_ontology_term_ids.map(is_atac)
@@ -169,7 +174,6 @@ def process_fragment(
     fragment_file: str,
     anndata_file: str,
     generate_index: bool = False,
-    dask_cluster_config: Optional[dict] = None,
     override_write_algorithm: Optional[str] = None,
     output_file: Optional[str] = None,
 ) -> list[str]:
@@ -179,71 +183,64 @@ def process_fragment(
     :param str fragment_file: The fragment file to process
     :param str anndata_file: The anndata file to validate against
     :param bool generate_index: Whether to generate the index for the fragment
-    :param dask_cluster_config: dask cluster configuration parameters passed to dask.distributed.LocalCluster
     :param override_write_algorithm: Override the write algorithm used to write the bgzip file. Options are "pysam"
     and "cli"
     :param output_file: The output file to write the bgzip file to. If not provided, the output file will be the same
 
     """
     with tempfile.TemporaryDirectory() as tempdir:
+        # quick checks
+        errors = validate_anndata(anndata_file)
+        if errors:
+            return errors
 
-        # configure the dask cluster
-        _dask_cluster_config = dict(dashboard_address=None)
-        logging.getLogger("distributed").setLevel(logging.ERROR)
-        if dask_cluster_config:
-            _dask_cluster_config.update(dask_cluster_config)
+        # convert the fragment to a parquet file for faster processing
+        try:
+            parquet_file = convert_to_parquet(fragment_file, tempdir)
+        except Exception as e:
+            msg = "Error Parsing the fragment file. Check that columns match schema definition. Error: " + str(e)
+            logger.exception(msg)
+            return [msg]
 
-        # start the dask cluster and client
-        with dd.LocalCluster(**_dask_cluster_config) as cluster, dd.Client(cluster):
-            # quick checks
-            errors = validate_anndata(anndata_file)
-            if errors:
-                return errors
+        # slow checks
+        errors = validate_anndata_with_fragment(parquet_file, anndata_file)
+        if errors:
+            return errors
+        else:
+            logger.info("Fragment and Anndata file are valid")
 
-            # convert the fragment to a parquet file for faster processing
-            try:
-                parquet_file = convert_to_parquet(fragment_file, tempdir)
-            except Exception as e:
-                msg = "Error Parsing the fragment file. Check that columns match schema definition. Error: " + str(e)
-                logger.exception(msg)
-                return [msg]
-
-            # slow checks
-            errors = validate_anndata_with_fragment(parquet_file, anndata_file)
-            if errors:
-                return errors
-            else:
-                logger.info("Fragment and Anndata file are valid")
-
-            # generate the index
-            if generate_index:
-                logger.info(f"Sorting fragment and generating index for {fragment_file}")
-                index_fragment(fragment_file, parquet_file, tempdir, override_write_algorithm, output_file)
-        logger.debug("cleaning up")
+        # generate the index
+        if generate_index:
+            logger.info(f"Sorting fragment and generating index for {fragment_file}")
+            index_fragment(fragment_file, parquet_file, tempdir, override_write_algorithm, output_file)
+    logger.debug("cleaning up")
     return []
 
 
 def convert_to_parquet(fragment_file: str, tempdir: str) -> str:
-    # unzip the fragment. Subprocess is used here because gzip on the cli uses less memory with comparable
-    # speed to the python gzip library.
-    unzipped_file = Path(tempdir) / Path(fragment_file).name.rsplit(".", 1)[0]
-    logger.info(f"Unzipping {fragment_file}")
-    with open(unzipped_file, "wb") as fp:
-        subprocess.run(["gunzip", "-c", fragment_file], stdout=fp, check=True)
+    """
+    Convert the fragment file to a parquet dataset for faster processing.
 
-    # convert the fragment to a parquet file
+    :param fragment_file: A gzipped compressed fragment file
+    :param tempdir: The temporary directory to write the parquet file to. Name of the written file is derived from
+    the input.
+    """
     logger.info(f"Converting {fragment_file} to parquet")
-    parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet")
-    try:
-        ddf.read_csv(unzipped_file, sep="\t", names=column_ordering, dtype=column_types).to_parquet(
-            parquet_file_path, partition_on=["chromosome"], compute=True
-        )
-    finally:
-        # remove the unzipped file
-        logger.debug(f"Removing {unzipped_file}")
-        unzipped_file.unlink()
-    parquet_file = str(parquet_file_path)
-    return parquet_file
+    parquet_file_path = Path(tempdir) / Path(fragment_file).name.replace(".gz", ".parquet").replace(".bgz", ".parquet")
+    pa.dataset.write_dataset(
+        data=pa.csv.open_csv(
+            pa.input_stream(fragment_file, compression="gzip", buffer_size=GB),
+            read_options=pa.csv.ReadOptions(column_names=schema.names),
+            parse_options=pa.csv.ParseOptions(delimiter="\t"),
+            convert_options=pa.csv.ConvertOptions(column_types=schema),
+        ),
+        base_dir=parquet_file_path,
+        format="parquet",
+        # Using hive partitioning for best compatibility with dask to_parquet and read_parquet functions
+        partitioning=pa.dataset.partitioning(pa.schema([pa.field("chromosome", pa.string())]), flavor="hive"),
+    )
+
+    return str(parquet_file_path)
 
 
 def report_errors(header: str, errors: list[str]) -> list[str]:
@@ -273,61 +270,73 @@ def validate_anndata_with_fragment(parquet_file: str, anndata_file: str) -> list
     return report_errors("Errors found in Fragment and/or Anndata file", errors)
 
 
+@log_calls
 def validate_fragment_no_duplicate_rows(parquet_file: str) -> Optional[str]:
-    df = ddf.read_parquet(parquet_file)
-    if len(df.drop_duplicates()) != len(df):
-        return "Fragment file has duplicate rows."
+    t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    rows_per_chromosome = t["chromosome"].value_counts().execute()
+    msg = ""
+    # Checking number of unique rows per chromosome is more memory efficient than checking all rows at once
+    for chromosome, count in rows_per_chromosome.itertuples(index=False):
+        n_unique = t.filter(t["chromosome"] == chromosome).distinct().count().execute()
+        if n_unique != count:
+            if not msg:
+                msg = "Fragment file has duplicate rows.\n"
+            msg += f"Chromosome {chromosome} has {count} rows but only {n_unique} are unique\n"
+    if msg:
+        return msg.strip()  # remove trailing newline
 
 
+@log_calls
 def validate_fragment_start_coordinate_greater_than_0(parquet_file: str) -> Optional[str]:
-    df = ddf.read_parquet(parquet_file, columns=["start coordinate"])
-    series = df["start coordinate"] > 0
-    if not series.all().compute():
+    df = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    if not (df["start coordinate"] > 0).all().execute():
         return "Start coordinate must be greater than 0."
 
 
+@log_calls
 def validate_fragment_barcode_in_adata_index(parquet_file: str, anndata_file: str) -> Optional[str]:
-    df = ddf.read_parquet(parquet_file, columns=["barcode"])
+    df = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    barcode = set(df.select("barcode").distinct().execute()["barcode"])
     with h5py.File(anndata_file) as f:
         obs = ad.io.read_elem(f["obs"])
-    barcode = set(df.groupby(by="barcode").count().compute().index)
     if set(obs.index) != barcode:
         return "Barcodes don't match anndata.obs.index"
 
 
+@log_calls
 def validate_fragment_stop_greater_than_start_coordinate(parquet_file: str) -> Optional[str]:
-    df = ddf.read_parquet(parquet_file, columns=["start coordinate", "stop coordinate"])
-    series = df["stop coordinate"] > df["start coordinate"]
-    if not series.all().compute():
+    df = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    if not (df["stop coordinate"] > df["start coordinate"]).all().execute():
         return "Stop coordinate must be greater than start coordinate."
 
 
+@log_calls
 def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, anndata_file: str) -> Optional[str]:
-    # check that the stop coordinate is within the length of the chromosome
     with h5py.File(anndata_file) as f:
         organism_ontology_term_id = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)[0]
-    df = ddf.read_parquet(parquet_file, columns=["chromosome", "stop coordinate"])
-
-    # the chromosomes in the fragment must match the chromosomes for that organism
     chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table[organism_ontology_term_id]
-    mismatched_chromosomes = set(df["chromosome"].unique().compute()) - chromosome_length_table.keys()
+    t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    df = t.group_by("chromosome").aggregate(max_stop_coordinate=t["stop coordinate"].max()).execute()
+
+    mismatched_chromosomes = set(df["chromosome"].unique()) - chromosome_length_table.keys()
     if mismatched_chromosomes:
         return f"Chromosomes in the fragment do not match the organism({organism_ontology_term_id}).\n" + "\t\n".join(
             mismatched_chromosomes
         )
-    df["chromosome_length"] = df["chromosome"].map(chromosome_length_table, meta=int).astype(int)
-    df = df["stop coordinate"] <= df["chromosome_length"]
-    if not df.all().compute():
+
+    df["chromosome_length"] = df["chromosome"].map(chromosome_length_table)
+    if not (df["max_stop_coordinate"] <= df["chromosome_length"]).all():
         return "Stop coordinate must be less than the chromosome length."
 
 
+@log_calls
 def validate_fragment_read_support(parquet_file: str) -> Optional[str]:
-    # check that the read support is greater than 0
-    df = ddf.read_parquet(parquet_file, columns=["read support"], filters=[("read support", "<=", 0)])
-    if len(df.compute()) != 0:
+    t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    if (t["read support"] <= 0).any().execute():
         return "Read support must be greater than 0."
 
 
+@log_calls
 def validate_anndata_is_primary_data(anndata_file: str) -> Optional[str]:
     with h5py.File(anndata_file) as f:
         is_primary_data = ad.io.read_elem(f["obs"])["is_primary_data"]
@@ -335,12 +344,13 @@ def validate_anndata_is_primary_data(anndata_file: str) -> Optional[str]:
         return "Anndata.obs.is_primary_data must all be True."
 
 
+@log_calls
 def validate_anndata_organism_ontology_term_id(anndata_file: str) -> Optional[str]:
     with h5py.File(anndata_file) as f:
         organism_ontology_term_ids = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)
     if organism_ontology_term_ids.size > 1:
         error_message = (
-            "Anndata.obs.organism_ontology_term_id must have exactly 1 unique value. Found the following values:\n"
+            "Anndata.obs.organism_ontology_term_id must have exactly 1 unique value. Found the " "following values:\n"
         ) + "\n\t".join(organism_ontology_term_ids)
         return error_message
     organism_ontology_term_id = organism_ontology_term_ids[0]
@@ -349,11 +359,12 @@ def validate_anndata_organism_ontology_term_id(anndata_file: str) -> Optional[st
         return f"Anndata.obs.organism_ontology_term_id must be one of {allowed_terms}. Got {organism_ontology_term_id}."
 
 
+@log_calls
 def detect_chromosomes(parquet_file: str) -> list[str]:
-    logger.info("detecting chromosomes")
-    df = ddf.read_parquet(parquet_file, columns=["chromosome"]).drop_duplicates()
-    df = df["chromosome"].compute()
-    return df.tolist()
+    t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    chromosomes = list(t.select(["chromosome"]).distinct().execute()["chromosome"])
+    chromosomes.sort()  # sort chromosomes to ensure consistent order
+    return chromosomes
 
 
 def get_output_file(fragment_file: str, output_file: Optional[str]) -> str:
@@ -378,7 +389,6 @@ def index_fragment(
     bgzip_output_path = Path(bgzip_output_file)
     bgzip_output_path.unlink(missing_ok=True)
     bgzip_output_path.touch()
-    bgzip_write_lock = dd.Lock()  # lock to preserver write order
 
     if override_write_algorithm:
         write_algorithm = write_algorithm_by_callable[override_write_algorithm]
@@ -389,15 +399,7 @@ def index_fragment(
         write_algorithm = write_algorithm_by_callable["cli"]
 
     chromosomes = detect_chromosomes(parquet_file)
-    jobs = prepare_fragment(chromosomes, parquet_file, bgzip_output_file, tempdir, bgzip_write_lock, write_algorithm)
-    # limit calls to dask.compute to improve performance. The number of jobs to run at once is determined by the
-    # step variable. If we run all the jobs in the same call to dask.compute, the local cluster hangs.
-    # TODO: investigate why
-    step = 4
-    # print the progress of the jobs
-    for i in range(0, len(jobs), step):
-        dask.compute(jobs[i : i + step])
-
+    prepare_fragment(chromosomes, parquet_file, bgzip_output_file, tempdir, write_algorithm)
     logger.info(f"Fragment sorted and compressed: {bgzip_output_file}")
     #
     pysam.tabix_index(bgzip_output_file, preset="bed", force=True)
@@ -405,28 +407,52 @@ def index_fragment(
     logger.info(f"Index file generated: {tabix_output_file}")
 
 
-@delayed
 def sort_fragment(parquet_file: str, write_path: str, chromosome: str) -> Path:
-    temp_data = Path(write_path) / f"temp_{chromosome}.tsv.gz"
-    df = ddf.read_parquet(parquet_file, filters=[("chromosome", "==", chromosome)])
-    df = df[column_ordering]
-    df = df.sort_values(["start coordinate", "stop coordinate"], ascending=True)
-
-    df.to_csv(temp_data, sep="\t", index=False, header=False, mode="w", single_file=True)
+    temp_data = Path(write_path) / f"temp_{chromosome}.parquet"
+    t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    (t.filter(t["chromosome"] == chromosome).order_by(["start coordinate", "stop coordinate"]).to_parquet(temp_data))
     return temp_data
 
 
-@delayed
-def write_bgzip_pysam(input_file: str, bgzip_output_file: str, write_lock: dd.Lock):
-    with write_lock, pysam.libcbgzf.BGZFile(bgzip_output_file, mode="ab") as f_out, open(input_file, "rb") as f_in:
-        while data := f_in.read(2**20):
+def buffered_write(input_file: str) -> iter:
+    # Open the Parquet file and iterate through record batches
+    pfile = pa.parquet.ParquetFile(input_file)
+    for record_batch in pfile.iter_batches():
+        # Write the batch to an in-memory buffer
+        csv_buffer = pa.BufferOutputStream()
+        pa.csv.write_csv(
+            # Make sure columns are in right order
+            record_batch.select([f.name for f in schema]),
+            csv_buffer,
+            write_options=pa.csv.WriteOptions(
+                include_header=False,
+                delimiter="\t",
+                batch_size=1_000_000_000,  # this value could be further optimized
+                quoting_style="none",
+            ),
+        )
+        yield csv_buffer.getvalue().to_pybytes()
+
+
+def write_bgzip_pysam(input_file: str, bgzip_output_file: str):
+    with pysam.libcbgzf.BGZFile(bgzip_output_file, mode="ab") as f_out:
+        for data in buffered_write(input_file):
             f_out.write(data)
 
 
-@delayed
-def write_bgzip_cli(input_file: str, bgzip_output_file: str, write_lock: dd.Lock):
-    with write_lock, open(input_file, "rb") as fin, open(bgzip_output_file, "ab") as fout:
-        subprocess.run(["bgzip", "--threads=8", "-c"], stdin=fin, stdout=fout, check=True)
+def write_bgzip_cli(input_file: str, bgzip_output_file: str):
+    with (
+        subprocess.Popen(
+            ["bgzip", "--threads", "-c"], stdin=subprocess.PIPE, stdout=open(bgzip_output_file, "ab")
+        ) as proc,
+    ):
+        for data in buffered_write(input_file):
+            proc.stdin.write(data)
+    return_code = proc.wait()
+    if return_code != 0:
+        logger.error(f"Subprocess exited with error code {return_code}")
+    else:
+        logger.info(f"bgzip compression completed successfully for {bgzip_output_file}")
 
 
 write_algorithm_by_callable = {"pysam": write_bgzip_pysam, "cli": write_bgzip_cli}
@@ -437,25 +463,21 @@ def prepare_fragment(
     parquet_file: str,
     bgzip_output_file: str,
     tempdir: str,
-    write_lock: dd.Lock,
     write_algorithm: callable,
-) -> list[Delayed]:
+) -> None:
     """
-    The sorting and writing of the fragment is done in parallel for each chromosome. Because of this the write order of
+    The sorting and writing of the fragment is done for each chromosome. Because of this the write order of
     the chromosomes may not be preserved. The chromosomes will all be stored in contiguous blocks in the bgzip file, and
-    and sorted by start and stop coordinate within each chromosome. This slightly different form what pysam.tabix
-    expects which is sorted by chromosome, start coordinate, and stop coordinate, but it is still compatible.
+    and sorted by start and stop coordinate within each chromosome.
 
     :param chromosomes:
     :param parquet_file:
     :param bgzip_output_file:
     :param tempdir:
-    :param write_lock:
     :param write_algorithm:
     :return:
     """
-    jobs = []
     for chromosome in chromosomes:
+        logger.info(f"Processing chromosome: {chromosome}")
         temp_data = sort_fragment(parquet_file, tempdir, chromosome)
-        jobs.append(write_algorithm(temp_data, bgzip_output_file, write_lock))
-    return jobs
+        write_algorithm(temp_data, bgzip_output_file)

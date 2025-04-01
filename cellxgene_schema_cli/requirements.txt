@@ -2,9 +2,11 @@ anndata==0.11.2
 cellxgene-ontology-guide==1.6.0 # update before a schema migration
 click<9
 Cython<4
-dask[array, distributed, dataframe]==2025.2.0
+dask[array, dataframe]==2025.2.0
+ibis-framework[duckdb]>=10.3
 numpy<3
 pandas>2,<3
+pyarrow>=19
 PyYAML<7
 scipy<1.15 # broken in 1.15.0 see https://github.com/chanzuckerberg/single-cell-curation/issues/1165
 semver<4

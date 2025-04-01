@@ -11,6 +11,7 @@ import numpy as np
 from anndata.compat import DaskArray
 from anndata.experimental import read_dispatched, read_elem_as_dask
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
+from dask.array import map_blocks
 from scipy import sparse
 from xxhash import xxh3_64_intdigest
 
@@ -18,6 +19,10 @@ logger = logging.getLogger(__name__)
 
 SPARSE_MATRIX_TYPES = {"csr", "csc", "coo"}
 SUPPORTED_SPARSE_MATRIX_TYPES = {"csr"}
+
+KB = 1024
+MB = 1024 * KB
+GB = 1024 * MB
 
 
 def replace_ontology_term(dataframe, ontology_name, update_map):
@@ -49,13 +54,13 @@ def map_ontology_term(dataframe, ontology_name, map_from_column, update_map):
 def remove_deprecated_features(*, adata: ad.AnnData, deprecated: List[str]) -> ad.AnnData:
     # Filter out genes that don't appear in the approved annotation
     var_to_keep = adata.var.index[~adata.var.index.isin(deprecated)].tolist()
-    adata = adata[:, var_to_keep]
+    adata = adata[:, var_to_keep].copy()
 
     # Repeat much of the same steps for the raw.var, if it exists
     if adata.raw:
         raw_adata = ad.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
         var_to_keep = raw_adata.var.index[~raw_adata.var.index.isin(deprecated)].tolist()
-        raw_adata = raw_adata[:, var_to_keep]
+        raw_adata = raw_adata[:, var_to_keep].copy()
         adata.raw = raw_adata
     return adata
 
@@ -127,13 +132,13 @@ def read_backed(f: h5py.File, chunk_size: int) -> ad.AnnData:
     """
 
     def callback(func, elem_name: str, elem, iospec):
-        if "/layers" in elem_name or elem_name == "/X" or elem_name == "/raw/X":
-            if iospec.encoding_type in (
-                "csr_matrix",
-                "csc_matrix",
-            ):
+        if "/layers" in elem_name or "/uns" in elem_name or elem_name == "/X" or elem_name == "/raw/X":
+            if iospec.encoding_type == "csr_matrix":
                 n_vars = elem.attrs.get("shape")[1]
                 return read_elem_as_dask(elem, chunks=(chunk_size, n_vars))
+            elif iospec.encoding_type == "csc_matrix":
+                n_obs = elem.attrs.get("shape")[0]
+                return read_elem_as_dask(elem, chunks=(n_obs, chunk_size))
             elif iospec.encoding_type == "array" and len(elem.shape) == 2:
                 n_vars = elem.shape[1]
                 return read_elem_as_dask(elem, chunks=(chunk_size, n_vars))
@@ -157,15 +162,6 @@ def read_h5ad(h5ad_path: Union[str, bytes, os.PathLike], chunk_size: int = 5000)
     try:
         f = h5py.File(h5ad_path)
         adata = read_backed(f, chunk_size)
-
-        # This code, and AnnData in general, is optimized for row access.
-        # Running backed, with CSC, is prohibitively slow. Read the entire
-        # AnnData into memory if it is CSC.
-        if (get_matrix_format(adata.X) == "csc") or (
-            (adata.raw is not None) and (get_matrix_format(adata.raw.X) == "csc")
-        ):
-            logger.warning("Matrices are in CSC format; loading entire dataset into memory.")
-            adata = adata.to_memory()
 
     except (OSError, TypeError):
         logger.info(f"Unable to open '{h5ad_path}' with AnnData")
@@ -202,3 +198,48 @@ def is_ontological_descendant_of(onto: OntologyParser, term: str, target: str, i
 @lru_cache()
 def get_descendants(onto: OntologyParser, term: str, include_self: bool = True) -> List[str]:
     return onto.get_term_descendants(term, include_self=True)
+
+
+def count_matrix_nonzero(matrix: DaskArray, is_sparse_matrix: bool) -> int:
+    def count_nonzeros(matrix_chunk: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool) -> np.array:
+        nnz = matrix_chunk.nnz if is_sparse_matrix else np.count_nonzero(matrix_chunk)
+        return np.array([nnz])
+
+    if len(matrix.chunks[0]) > 1:
+        nonzeros = map_blocks(count_nonzeros, matrix, is_sparse_matrix, drop_axis=1, dtype=int).compute().sum()
+    else:
+        nonzeros = count_nonzeros(matrix.compute(), is_sparse_matrix)[0]
+    return nonzeros
+
+
+def check_non_csr_matrices(adata: ad.AnnData):
+    """
+    Check X, raw.X and layers matrices for having more than 50% zeros and not being csr_matrix
+
+    If found, convert to csr_matrix
+    """
+
+    def get_sparsity(matrix: DaskArray, format: str):
+        is_sparse_matrix = format in SPARSE_MATRIX_TYPES
+        nnz = count_matrix_nonzero(matrix, is_sparse_matrix)
+        sparsity = 1 - nnz / np.prod(matrix.shape)
+        return sparsity
+
+    format = get_matrix_format(adata.X)
+    if format != "csr" and get_sparsity(adata.X, format) >= 0.5:
+        adata.X = adata.X.map_blocks(sparse.csr_matrix, dtype=adata.X.dtype)
+
+    if adata.raw is not None:
+        format = get_matrix_format(adata.raw.X)
+        if format != "csr" and get_sparsity(adata.raw.X, format) >= 0.5:
+            raw_adata = ad.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
+            raw_adata.X = raw_adata.X.map_blocks(sparse.csr_matrix, dtype=raw_adata.X.dtype)
+            adata.raw = raw_adata
+            del raw_adata
+
+    for layer in adata.layers:
+        format = get_matrix_format(adata.layers[layer])
+        if format != "csr" and get_sparsity(adata.layers[layer], format) >= 0.5:
+            adata.layers[layer] = adata.layers[layer].map_blocks(sparse.csr_matrix, dtype=adata.layers[layer].X.dtype)
+
+    return adata
