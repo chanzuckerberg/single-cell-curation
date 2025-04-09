@@ -75,6 +75,17 @@ Reserved Names from previous schema versions that have since been deprecated MUS
   </tr>
 </thead>
 <tbody>
+ <tr>
+    <td>organism</td>
+    <td>obs</td>
+    <td>6.0.0</td>
+  </tr>
+  <tr>
+    <td>organism_ontology_term_id</td>
+    <td>obs</td>
+    <td>6.0.0</td>
+  </tr>
+  <tr>
   <tr>
     <td>ethnicity</td>
     <td>obs</td>
@@ -175,9 +186,9 @@ CELLxGENE's matrix layer requirements are tailored to optimize data reuse. Becau
 
 ### Definitions for scATAC-seq assays
 
-<b>paired assay</b>. `obs['assay_ontology_term_id']` is a descendant of both <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010891"><code>"EFO:0010891"</code></a> for <i>scATAC-seq</i> and <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008913"><code>"EFO:0008913"</code></a> for <i>single-cell RNA sequencing</i>. A gene expression matrix (RNA data) is required.
+<b>paired assay</b>. `assay_ontology_term_id` is a descendant of both <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010891"><code>"EFO:0010891"</code></a> for <i>scATAC-seq</i> and <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008913"><code>"EFO:0008913"</code></a> for <i>single-cell RNA sequencing</i>. A gene expression matrix (RNA data) is required.
 
-<b>unpaired assay</b>. `obs['assay_ontology_term_id']` is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010891"><code>"EFO:0010891"</code></a> for <i>scATAC-seq</i> or a descendant and is not a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008913"><code>"EFO:0008913"</code></a> for <i>single-cell RNA sequencing</i>. A gene activity matrix and not a peak matrix is required.
+<b>unpaired assay</b>. `assay_ontology_term_id` is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010891"><code>"EFO:0010891"</code></a> for <i>scATAC-seq</i> or a descendant and is not a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008913"><code>"EFO:0008913"</code></a> for <i>single-cell RNA sequencing</i>. A gene activity matrix and not a peak matrix is required.
 
 Also see the requirements for [scATAC-seq assets](#scatac-seq-assets).<br><br>
 
@@ -700,110 +711,6 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     <tr>
       <th>Value</th>
         <td><code>bool</code>. This MUST be <code>False</code> if <code>uns['spatial']['is_single']</code> is <code>False</code>. This MUST be <code>True</code> if this is the canonical instance of this cellular observation and <code>False</code> if not. This is commonly <code>False</code> for meta-analyses reusing data or for secondary views of data.
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
-### organism_ontology_term_id
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>organism_ontology_term_id</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Curator MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td><code>str</code>. One of the following terms MUST be used:
-          <br><br>
-          <table>
-          <thead>
-          <tr>
-          <th>For Organism</th>
-          <th>MUST Use</th>
-          </tr>
-          </thead>
-          <tbody>
-         <tr>
-            <td><i>Caenorhabditis elegans</i></td>
-            <td>
-              <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A6239"><code>"NCBITaxon:6293"</code></a>
-            </td>
-          </tr>
-         <tr>
-            <td><i>Callithrix jacchus</i></td>
-            <td>
-              <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9483"><code>"NCBITaxon:9483"</code></a>
-            </td>
-          </tr>
-          <tr>
-            <td><i>Danio rerio</i></td>
-            <td>
-              <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A7955"><code>"NCBITaxon:7955"</code></a></td>
-          </tr>
-          <tr>
-            <td><i>Drosophila melanogaster</i></td>
-            <td>
-              <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A7227"><code>"NCBITaxon:7227"</code></a>
-            </td>
-          </tr>
-          <tr>
-            <td><i>Gorilla gorilla gorilla</i></td>
-            <td>
-              <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9595"><code>"NCBITaxon:9595"</code></a>
-            </td>
-           </tr>
-            <tr>
-              <td><i>Homo sapiens</i></td>
-              <td>
-                <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9606"><code>"NCBITaxon:9606"</code></a>
-              </td>
-            </tr>
-            <tr>
-              <td><i>Macaca fascicularis<br>and its descendants</i></td>
-              <td>
-                <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9541"><code>"NCBITaxon:9541"</code></a>or one of its descendants
-              </td>
-            </tr>
-          <tr>
-              <td><i>Macaca mulatta<br>and its descendants</i></td>
-              <td>
-                <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9544"><code>"NCBITaxon:9544"</code></a>or one of its descendants
-              </td>
-            </tr>
-            <tr>
-              <td><i>Microcebus murinus</i></td>
-              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A30608"><code>"NCBITaxon:30608"</code></a></td>
-            </tr>
-            <tr>
-              <td><i>Mus musculus<br>and its descendants</i></td>
-              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A10090"><code>"NCBITaxon:10090"</code></a>or one of its descendants</td>
-            </tr>
-            <tr>
-              <td><i>Oryctolagus cuniculus<br>and its descendants</i></td>
-              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9986"><code>"NCBITaxon:9986"</code></a>or one of its descendants</td>
-            </tr>
-            <tr>
-              <td><i>Pan troglodytes<br>and its descendants</i></td>
-              <td>
-                <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9598"><code>"NCBITaxon:9598"</code></a>or one of its descendants
-             </td>
-            </tr>
-            <tr>
-              <td><i>Rattus norvegicus<br>and its descendants</i></td>
-              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A10116"><code>"NCBITaxon:10116"</code></a>or one of its descendants</td>
-            </tr>
-            <tr>
-              <td><i>Sus scrofa<br>and its descendants</i></td>
-              <td>
-               <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9823"><code>"NCBITaxon:9823"</code></a>or one of its descendants
-            </td>
-          </tr>
-          </tbody></table>
         </td>
     </tr>
 </tbody></table>
@@ -1352,25 +1259,6 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
 </tbody></table>
 <br>
 
-### organism
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>organism</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>CELLxGENE Discover MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>organism_ontology_term_id</code>.
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
 ### self_reported_ethnicity
 
 <table><tbody>
@@ -1496,18 +1384,18 @@ values</li></ul>
 The size of the ndarray stored for a key in `obsp` MUST NOT be zero.
 <br>
 
-## `var` and `raw.var` (Gene Metadata)
+## `uns` (Dataset Metadata)
 
-`var` and `raw.var` are both of type [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html).
+`uns` is a ordered dictionary with a `str` key. The data stored as a value for a key in `uns` MUST be `True`, `False`, `None`, or its size MUST NOT be zero.
 
-Curators MUST annotate the following columns in the `var` dataframe and if present, the `raw.var` dataframe.
+Curators MUST annotate the following keys and values in `uns`:
 
-### index of pandas.DataFrame
+### organism_ontology_term_id
 
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>index of <code>pandas.DataFrame</code></td>
+      <td>organism_ontology_term_id</td>
     </tr>
     <tr>
       <th>Annotator</th>
@@ -1515,113 +1403,12 @@ Curators MUST annotate the following columns in the `var` dataframe and if prese
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>str</code>. If the feature is a gene then this MUST be an ENSEMBL term. If the feature is a RNA Spike-In Control Mix then this MUST be an ERCC Spike-In identifier (e.g. <code>"ERCC-0003"</code>).<br><br> The index of the <code>pandas.DataFrame</code> MUST contain unique identifiers for features. If present, the index of <code>raw.var</code> MUST be identical to the index of <code>var</code>.<br><br></td>
-    </tr>
-</tbody></table>
-<br>
-
-Curators MUST annotate the following column only in the `var` dataframe. This column MUST NOT be present in `raw.var`:
-
-### feature_is_filtered
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>feature_is_filtered</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>Curator MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td><code>bool</code>. This MUST be <code>True</code> if the feature was filtered out in the normalized matrix (<code>X</code>) but is present in the raw matrix (<code>raw.X</code>). The value for all cells of the given feature in the normalized matrix MUST be <code>0</code>.  <br><br>Otherwise, this MUST be <code>False</code>. </td>
-    </tr>
-</tbody></table>
-<br>
-
-Curators MUST NOT annotate the following columns in the `var` dataframe and if present, the `raw.var` dataframe.
-
-When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matching human-readable name for the corresponding feature biotype, identifier, and the NCBITaxon term for the reference organism to the `var` and `raw.var` dataframes. In addition, it MUST
-add the feature length and type.
-
-### feature_biotype
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>feature_biotype</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>CELLxGENE Discover MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>This MUST be <code>"gene"</code> or <code>"spike-in"</code>.  
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
-### feature_length
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>feature_length</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>CELLxGENE Discover MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>
-        <code>uint</code> number of base-pairs (bps). The value is the median of the lengths of isoforms, reusing the median calculation from <a href="https://doi.org/10.1093/bioinformatics/btac561">GTFtools: a software package for analyzing various features of gene models.</a>
-      </td>
-    </tr>
-</tbody></table>
-<br>
-
-### feature_name
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>feature_name</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>CELLxGENE Discover MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be the human-readable ENSEMBL gene name assigned to the feature identifier in <code>var.index</code>. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be the ERCC Spike-In identifier appended with <code>" (spike-in control)"</code>.
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
-### feature_reference
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>feature_reference</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>CELLxGENE Discover MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td><code>str</code>. This MUST be the reference organism for a feature:
+        <td><code>str</code>. One of the following terms MUST be used:
           <br><br>
           <table>
           <thead>
           <tr>
-          <th>Reference Organism</th>
+          <th>For Organism</th>
           <th>MUST Use</th>
           </tr>
           </thead>
@@ -1657,96 +1444,56 @@ add the feature length and type.
            </tr>
             <tr>
               <td><i>Homo sapiens</i></td>
-              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9606"><code>"NCBITaxon:9606"</code></a></td>
-            </tr>
-            <tr>
-              <td><i>Macaca fascicularis</i></td>
               <td>
-                <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9541"><code>"NCBITaxon:9541"</code></a>
+                <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9606"><code>"NCBITaxon:9606"</code></a>
               </td>
             </tr>
-           <tr>
-            <td><i>Macaca mulatta</i></td>
-            <td>
-              <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9544"><code>"NCBITaxon:9544"</code></a>
-            </td>
+            <tr>
+              <td><i>Macaca fascicularis<br>and its descendants</i></td>
+              <td>
+                <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9541"><code>"NCBITaxon:9541"</code></a>or one of its descendants
+              </td>
+            </tr>
+          <tr>
+              <td><i>Macaca mulatta<br>and its descendants</i></td>
+              <td>
+                <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9544"><code>"NCBITaxon:9544"</code></a>or one of its descendants
+              </td>
             </tr>
             <tr>
               <td><i>Microcebus murinus</i></td>
               <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A30608"><code>"NCBITaxon:30608"</code></a></td>
             </tr>
             <tr>
-              <td><i>Mus musculus</i></td>
-              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A10090"><code>"NCBITaxon:10090"</code></a></td>
+              <td><i>Mus musculus<br>and its descendants</i></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A10090"><code>"NCBITaxon:10090"</code></a>or one of its descendants</td>
             </tr>
             <tr>
-              <td><i>Oryctolagus cuniculus</i></td>
-              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9986"><code>"NCBITaxon:9986"</code></a></td>
+              <td><i>Oryctolagus cuniculus<br>and its descendants</i></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9986"><code>"NCBITaxon:9986"</code></a>or one of its descendants</td>
             </tr>
             <tr>
-              <td><i>Pan troglodytes</i></td>
+              <td><i>Pan troglodytes<br>and its descendants</i></td>
               <td>
-                <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9598"><code>"NCBITaxon:9598"</code></a>
+                <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9598"><code>"NCBITaxon:9598"</code></a>or one of its descendants
              </td>
             </tr>
             <tr>
-              <td><i>Rattus norvegicus</i></td>
-              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A10116"><code>"NCBITaxon:10116"</code></a></td>
+              <td><i>Rattus norvegicus<br>and its descendants</i></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A10116"><code>"NCBITaxon:10116"</code></a>or one of its descendants</td>
             </tr>
             <tr>
-              <td><i>SARS-CoV-2</i></td>
-              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A2697049"><code>"NCBITaxon:2697049"</code></a></td>
-            </tr>
-            <tr>
-              <td><i>Sus scrofa</i></td>
+              <td><i>Sus scrofa<br>and its descendants</i></td>
               <td>
-               <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9823"><code>"NCBITaxon:9823"</code></a>
+               <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9823"><code>"NCBITaxon:9823"</code></a>or one of its descendants
             </td>
           </tr>
-            <tr>
-              <td><i>ERCC Spike-Ins</i></td>
-              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A32630"><code>"NCBITaxon:32630"</code></a></td>
-            </tr>
           </tbody></table>
         </td>
     </tr>
 </tbody></table>
 <br>
 
-### feature_type
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>feature_type</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>CELLxGENE Discover MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be the gene type assigned to the feature identifier in <code>var.index</code>. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be <code>"synthetic"</code>.<br><br>See  <a href="https://www.gencodegenes.org/pages/biotypes.html ">GENCODE</a> and <a href="https://useast.ensembl.org/info/genome/genebuild/biotypes.html ">Ensembl</a> references.
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
-
-## `varm`
-
-The size of the ndarray stored for a key in `varm` MUST NOT be zero.
-<br>
-
-## `varp`
-The size of the ndarray stored for a key in `varp` MUST NOT be zero.
-<br>
-
-## `uns` (Dataset Metadata)
-
-`uns` is a ordered dictionary with a `str` key. The data stored as a value for a key in `uns` MUST be `True`, `False`, `None`, or its size MUST NOT be zero.
-
-Curators MUST annotate the following keys and values in `uns`:
 
 ### spatial
 
@@ -1997,7 +1744,6 @@ Curators MUST annotate the following keys and values in `uns`:
         <li>cell_type</li>
         <li>development_stage</li>
         <li>disease</li>
-        <li>organism</li>
         <li>self_reported_ethnicity</li>
         <li>sex</li>
         <li>tissue</li>       
@@ -2135,7 +1881,28 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `citat
         </td>
     </tr>
 </tbody></table>
+<br>
 
+When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `organism` key and set its value to the matching human-readable name for the corresponding ontology term.
+
+### organism
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>organism</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>CELLxGENE Discover MUST annotate.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>organism_ontology_term_id</code>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
 
 When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schema_reference` key and set its value to the permanent URL of this document. 
 
@@ -2183,6 +1950,254 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 </tbody></table>
 <br>
 
+## `var` and `raw.var` (Gene Metadata)
+
+`var` and `raw.var` are both of type [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html).
+
+Curators MUST annotate the following columns in the `var` dataframe and if present, the `raw.var` dataframe.
+
+### index of pandas.DataFrame
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>index of <code>pandas.DataFrame</code></td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator MUST annotate.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>str</code>. The index of the <code>pandas.DataFrame</code> MUST contain unique identifiers for features. If present, the index of <code>raw.var</code> MUST be identical to the index of <code>var</code>.<br><br>If the feature is a RNA Spike-In Control Mix then the value MUST be an ERCC Spike-In identifier (e.g. <code>"ERCC-0003"</code>).<br><br>If the feature is a gene then the value MUST be the <code>gene_id</code> attribute from the corresponding gene reference documented in <a href="#required-gene-annotations">Required Gene Annotations</a> for either the <code>organism_ontology_term_id</code> or <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A2697049"><code>NCBITaxon:2697049</code></a> for <i>SARS-CoV-2</i>.<br><br>Version numbers MUST be removed from the <code>gene_id</code> if it is prefixed with <code>"ENS"</code> for <i>Ensembl stable identifier</i>. See <a href="https://ensembl.org/Help/Faq?id=488">I have an Ensembl ID, what can I tell about it from the ID?</a> For example, if the <code>gene_id</code> is <code>“ENSG00000186092.7”</code>, then the value MUST be <code>“ENSG00000186092”</code>.
+        <br><br>
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+Curators MUST annotate the following column only in the `var` dataframe. This column MUST NOT be present in `raw.var`:
+
+### feature_is_filtered
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>feature_is_filtered</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator MUST annotate.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>bool</code>. This MUST be <code>True</code> if the feature was filtered out in the normalized matrix (<code>X</code>) but is present in the raw matrix (<code>raw.X</code>). The value for all cells of the given feature in the normalized matrix MUST be <code>0</code>.  <br><br>Otherwise, this MUST be <code>False</code>. </td>
+    </tr>
+</tbody></table>
+<br>
+
+Curators MUST NOT annotate the following columns in the `var` dataframe and if present, the `raw.var` dataframe.
+
+When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matching human-readable name for the corresponding feature biotype, identifier, and the NCBITaxon term for the reference organism to the `var` and `raw.var` dataframes. In addition, it MUST
+add the feature length and type.
+
+### feature_biotype
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>feature_biotype</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>CELLxGENE Discover MUST annotate.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>This MUST be <code>"gene"</code> or <code>"spike-in"</code>.  
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### feature_length
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>feature_length</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>CELLxGENE Discover MUST annotate.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+        <code>uint</code> number of base-pairs (bps). The value is the median of the lengths of isoforms, reusing the median calculation from <a href="https://doi.org/10.1093/bioinformatics/btac561">GTFtools: a software package for analyzing various features of gene models.</a>
+      </td>
+    </tr>
+</tbody></table>
+<br>
+
+### feature_name
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>feature_name</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>CELLxGENE Discover MUST annotate.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be the human-readable ENSEMBL gene name assigned to the feature identifier in <code>var.index</code>. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be the ERCC Spike-In identifier appended with <code>" (spike-in control)"</code>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### feature_reference
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>feature_reference</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>CELLxGENE Discover MUST annotate.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>str</code>. This MUST be the reference organism for a feature:
+          <br><br>
+          <table>
+          <thead>
+          <tr>
+          <th>Reference Organism</th>
+          <th>MUST Use</th>
+          </tr>
+          </thead>
+          <tbody>
+         <tr>
+            <td><i>Caenorhabditis elegans</i></td>
+            <td>
+              <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A6239"><code>"NCBITaxon:6293"</code></a>
+            </td>
+          </tr>
+         <tr>
+            <td><i>Callithrix jacchus</i></td>
+            <td>
+              <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9483"><code>"NCBITaxon:9483"</code></a>
+            </td>
+          </tr>
+          <tr>
+            <td><i>Danio rerio</i></td>
+            <td>
+              <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A7955"><code>"NCBITaxon:7955"</code></a></td>
+          </tr>
+          <tr>
+            <td><i>Drosophila melanogaster</i></td>
+            <td>
+              <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A7227"><code>"NCBITaxon:7227"</code></a>
+            </td>
+          </tr>
+          <tr>
+            <td><i>Gorilla gorilla gorilla</i></td>
+            <td>
+              <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9595"><code>"NCBITaxon:9595"</code></a>
+            </td>
+           </tr>
+            <tr>
+              <td><i>Homo sapiens</i></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9606"><code>"NCBITaxon:9606"</code></a></td>
+            </tr>
+            <tr>
+              <td><i>Macaca fascicularis</i></td>
+              <td>
+                <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9541"><code>"NCBITaxon:9541"</code></a>
+              </td>
+            </tr>
+           <tr>
+            <td><i>Macaca mulatta</i></td>
+            <td>
+              <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9544"><code>"NCBITaxon:9544"</code></a>
+            </td>
+            </tr>
+            <tr>
+              <td><i>Microcebus murinus</i></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A30608"><code>"NCBITaxon:30608"</code></a></td>
+            </tr>
+            <tr>
+              <td><i>Mus musculus</i></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A10090"><code>"NCBITaxon:10090"</code></a></td>
+            </tr>
+            <tr>
+              <td><i>Oryctolagus cuniculus</i></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9986"><code>"NCBITaxon:9986"</code></a></td>
+            </tr>
+            <tr>
+              <td><i>Pan troglodytes</i></td>
+              <td>
+                <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9598"><code>"NCBITaxon:9598"</code></a>
+             </td>
+            </tr>
+            <tr>
+              <td><i>Rattus norvegicus</i></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A10116"><code>"NCBITaxon:10116"</code></a></td>
+            </tr>
+            <tr>
+              <td><i>SARS-CoV-2</i></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A2697049"><code>"NCBITaxon:2697049"</code></a></td>
+            </tr>
+            <tr>
+              <td><i>Sus scrofa</i></td>
+              <td>
+               <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9823"><code>"NCBITaxon:9823"</code></a>
+            </td>
+          </tr>
+            <tr>
+              <td><i>ERCC Spike-Ins</i></td>
+              <td><a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A32630"><code>"NCBITaxon:32630"</code></a></td>
+            </tr>
+          </tbody></table>
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### feature_type
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>feature_type</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>CELLxGENE Discover MUST annotate.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be the gene type assigned to the feature identifier in <code>var.index</code>. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be <code>"synthetic"</code>.<br><br>See  <a href="https://www.gencodegenes.org/pages/biotypes.html ">GENCODE</a> and <a href="https://useast.ensembl.org/info/genome/genebuild/biotypes.html ">Ensembl</a> references.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+
+## `varm`
+
+The size of the ndarray stored for a key in `varm` MUST NOT be zero.
+<br>
+
+## `varp`
+The size of the ndarray stored for a key in `varp` MUST NOT be zero.
+<br>
+
 ---
 
 ## scATAC-seq assets
@@ -2190,13 +2205,13 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
 ### Requirements
 
 A Dataset MUST meet all of the following requirements to be eligible for scATAC-seq assets:
-* <code>obs['assay_ontology_term_id']</code> values MUST be either all <i>paired assays</i> or <i>unpaired assays</i>
-* <code>obs['is_primary_data']</code> values MUST be all <code>True</code>
-* <code>obs['organism_ontology_term_id']</code> values MUST be either all <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i> or <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i> or one of its descendants. The value determines the required Chromosome Table.
+* <code>assay_ontology_term_id</code> values MUST be either all <i>paired assays</i> or <i>unpaired assays</i>
+* <code>is_primary_data</code> values MUST be all <code>True</code>
+* <code>organism_ontology_term_id</code> value MUST be either <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i> or <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i> or one of its descendants. The value determines the required Chromosome Table.
 
-If the <code>obs['assay_ontology_term_id']</code> values are all <i>paired assays</i> then the Dataset MAY have a fragments file asset.
+If the <code>assay_ontology_term_id</code> values are all <i>paired assays</i> then the Dataset MAY have a fragments file asset.
 
-If the <code>obs['assay_ontology_term_id']</code> values are all <i>unpaired assays</i> then the Dataset MUST have a fragments file asset.
+If the <code>assay_ontology_term_id</code> values are all <i>unpaired assays</i> then the Dataset MUST have a fragments file asset.
 
 ## scATAC-seq Asset: Submitted Fragment File
 
@@ -2214,8 +2229,8 @@ The curator MUST annotate the following header-less columns. Additional columns 
     <tr>
       <th>Value</th>
         <td>
-          <code>str</code>. This MUST be the reference genome chromosome the fragment is located on.<br><br>If the values of <code>obs['organism_ontology_term_id']</code> in the associated Dataset are <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i> then the first column value MUST be a value from the <code>Chromosome</code> column in the <a href="#human-grch38p14">Human Chromosome Table</a>.<br><br>
-          If the values of <code>obs['organism_ontology_term_id']</code> in the associated Dataset are <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i> then the first column value MUST be a value from the <code>Chromosome</code> column in the <a href="#mouse-grcm39">Mouse Chromosome Table</a>.
+          <code>str</code>. This MUST be the reference genome chromosome the fragment is located on.<br><br>If the value of organism_ontology_term_id</code> in the associated Dataset is <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i> then the first column value MUST be a value from the <code>Chromosome</code> column in the <a href="#human-grch38p14">Human Chromosome Table</a>.<br><br>
+          If the value of <code>organism_ontology_term_id</code> in the associated Dataset is <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i> then the first column value MUST be a value from the <code>Chromosome</code> column in the <a href="#mouse-grcm39">Mouse Chromosome Table</a>.
         </td>
     </tr>
 </tbody></table>
@@ -2668,6 +2683,9 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
 
 ### schema v6.0.0
 
+* General Requirements
+  * Added <code>organism</code> in <code>obs</code> to Reserved Names
+  * Added <code>organism_ontology_term_id</code> in <code>obs</code> to Reserved Names
 * Required Ontologies
   * _Pending_
 * Required Gene Annotations
@@ -2675,15 +2693,22 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
 * X (Matrix Layers)
   * _Pending_
 * obs (Cell metadata)
-  * _Pending_
+  * Deprecated <code>organism</code>
+  * Deprecated <code>organism_ontology_term_id</code>
 * obsm (Embeddings)
   * _Pending_
 * uns (Dataset Metadata)
+  * Updated `{column}_colors` requirements to not reference <code>organism</code> 
+  * Added <code>organism</code>
+  * Added <code>organism_ontology_term_id</code>
   * Updated `schema_reference` to <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/6.0.0/schema.md"</code>
   * Updated `schema_version` to <code>"6.0.0"</code>
   * _Pending_
 * var and raw.var (Gene Metadata)
+  * Updated <code>index of pandas.DataFrame</code> requirements to remove version suffixes from Ensembl stable identifiers
   * _Pending_
+* scATAC-seq assets
+  * Updated requirements for *one organism per dataset*
 
 ### schema v5.3.0
 * Schema Versioning
