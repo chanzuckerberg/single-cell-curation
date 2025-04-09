@@ -2042,9 +2042,6 @@ add the feature length and type.
 
 ### feature_name
 
-
-### feature_name
-
 <table><tbody>
     <tr>
       <th>Key</th>
