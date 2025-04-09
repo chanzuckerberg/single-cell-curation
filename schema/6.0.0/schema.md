@@ -2207,7 +2207,7 @@ The size of the ndarray stored for a key in `varp` MUST NOT be zero.
 A Dataset MUST meet all of the following requirements to be eligible for scATAC-seq assets:
 * <code>assay_ontology_term_id</code> values MUST be either all <i>paired assays</i> or <i>unpaired assays</i>
 * <code>is_primary_data</code> values MUST be all <code>True</code>
-* <code>organism_ontology_term_id</code> values MUST be either all <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i> or <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i> or one of its descendants. The value determines the required Chromosome Table.
+* <code>organism_ontology_term_id</code> value MUST be either <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i> or <code>"NCBITaxon:10090"</code> for <i>Mus musculus</i> or one of its descendants. The value determines the required Chromosome Table.
 
 If the <code>assay_ontology_term_id</code> values are all <i>paired assays</i> then the Dataset MAY have a fragments file asset.
 
