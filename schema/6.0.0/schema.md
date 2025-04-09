@@ -2042,6 +2042,9 @@ add the feature length and type.
 
 ### feature_name
 
+
+### feature_name
+
 <table><tbody>
     <tr>
       <th>Key</th>
@@ -2053,7 +2056,7 @@ add the feature length and type.
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"gene"</code> then this MUST be the human-readable ENSEMBL gene name assigned to the feature identifier in <code>var.index</code>. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be the ERCC Spike-In identifier appended with <code>" (spike-in control)"</code>.
+        <td><code>str</code>. If the <code>feature_biotype</code> is <code>"spike-in"</code> then this MUST be the ERCC Spike-In identifier appended with <code>" (spike-in control)"</code>.<br><br>If the <code>feature_biotype</code> is <code>"gene"</code> and a <code>gene_name</code> attribute is assigned to the <code>var.index</code> feature identifier in its corresponding gene reference, this MUST be the value of the <code>gene_name</code>. If a <code>gene_name</code> attribute is not assigned, then this MUST default to the <code>var.index</code> feature identifier. 
         </td>
     </tr>
 </tbody></table>
@@ -2706,6 +2709,7 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * _Pending_
 * var and raw.var (Gene Metadata)
   * Updated <code>index of pandas.DataFrame</code> requirements to remove version suffixes from Ensembl stable identifiers
+  * Updated <code>feature_name</code> requirements to use feature identifier if a <code>gene_name</code> is unavailable
   * _Pending_
 * scATAC-seq assets
   * Updated requirements for *one organism per dataset*
