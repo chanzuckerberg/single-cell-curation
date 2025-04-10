@@ -1994,7 +1994,7 @@ Curators MUST annotate the following column only in the `var` dataframe. This co
         <td>
           <code>bool</code>. When a raw matrix is not present, the value for all features MUST be <code>False</code>.<br><br>
           When both a raw and normalized matrix are present, this MUST be <code>True</code> if the feature was filtered out in the normalized matrix (<code>X</code>) but is present in the raw matrix (<code>raw.X</code>). If a feature contains all zeroes in the normalized matrix, then either the corresponding feature in the raw matrix MUST be all zeroes or the value MUST be <code>True</code>.
-        <td>
+        </td>
     </tr>
 </tbody></table>
 <br>
