@@ -737,9 +737,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
       <td>
         categorical with <code>str</code> categories. If
         <code>organism_ontology_term_id</code> is
-        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>,
-        the value MUST be formatted as one or more comma-separated (with no leading or trailing spaces) HANCESTRO
-        terms in ascending lexical order with no duplication of terms or <code>"unknown"</code> if unavailable.<br><br>For example, if the terms are <code>"HANCESTRO:0014</code> and <code>HANCESTRO:0005"</code> then the value of <code>self_reported_ethnicity_ontology_term_id</code> MUST be <code>"HANCESTRO:0005,HANCESTRO:0014"</code>.<br><br>The following terms MUST NOT be used:<br /><br />
+        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, then the value MUST be one or more HANCESTRO terms in ascending lexical order separated by the delimiter <code>" || "</code> with no duplication of terms or <code>"unknown"</code> if unavailable.<br><br>For example, if the terms are <code>"HANCESTRO:0014</code> and <code>HANCESTRO:0005"</code> then the value of <code>self_reported_ethnicity_ontology_term_id</code> MUST be <code>"HANCESTRO:0005 || HANCESTRO:0014"</code>.<br><br>The following terms MUST NOT be used:<br /><br />
         <ul>
           <li>
             <a
@@ -1277,7 +1275,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code> if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"na"</code>. This MUST be <code>"unknown"</code> if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"unknown"</code>. Otherwise, this MUST be one or more comma-separated (with no leading or trailing spaces) human-readable names for the terms in <code>self_reported_ethnicity_ontology_term_id</code> in the same order.<br><br> For example, if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"HANCESTRO:0005,HANCESTRO:0014"</code> then the value of <code>self_reported_ethnicity</code> MUST be <code>"European,Hispanic or Latin American"</code>.
+        <td>categorical with <code>str</code> categories. This MUST be <code>"na"</code> if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"na"</code>. This MUST be <code>"unknown"</code> if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"unknown"</code>. Otherwise, this MUST be one or more human-readable names for the terms in <code>self_reported_ethnicity_ontology_term_id</code> in the same order separated by the delimiter <code>" || "</code>.<br><br> For example, if the value of <code>self_reported_ethnicity_ontology_term_id</code> is <code>"HANCESTRO:0005 || HANCESTRO:0014"</code> then the value of <code>self_reported_ethnicity</code> MUST be <code>"European || Hispanic or Latin American"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -2703,6 +2701,8 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
 * obs (Cell metadata)
   * Updated <code>disease</code> to address multiple labels
   * Updated <code>disease_ontology_term_id</code> to allow multiple terms
+  * Updated <code>self_reported_ethnicity</code> delimiter requirements
+  * Updated <code>self_reported_ethnicity_ontology_term_id</code> delimiter requirements
   * Deprecated <code>organism</code>
   * Deprecated <code>organism_ontology_term_id</code>
 * obsm (Embeddings)
