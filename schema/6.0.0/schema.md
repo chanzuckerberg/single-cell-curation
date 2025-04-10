@@ -1991,7 +1991,10 @@ Curators MUST annotate the following column only in the `var` dataframe. This co
     </tr>
     <tr>
       <th>Value</th>
-        <td><code>bool</code>. This MUST be <code>True</code> if the feature was filtered out in the normalized matrix (<code>X</code>) but is present in the raw matrix (<code>raw.X</code>). The value for all cells of the given feature in the normalized matrix MUST be <code>0</code>.  <br><br>Otherwise, this MUST be <code>False</code>. </td>
+        <td>
+          <code>bool</code>. When a raw matrix is not present, the value for all features MUST be <code>False</code>.<br><br>
+          When both a raw and normalized matrix are present, this MUST be <code>True</code> if the feature was filtered out in the normalized matrix (<code>X</code>) but is present in the raw matrix (<code>raw.X</code>). If a feature contains all zeroes in the normalized matrix, then either the corresponding feature in the raw matrix MUST be all zeroes or the value MUST be <code>True</code>.
+        <td>
     </tr>
 </tbody></table>
 <br>
@@ -2706,6 +2709,7 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * _Pending_
 * var and raw.var (Gene Metadata)
   * Updated <code>index of pandas.DataFrame</code> requirements to remove version suffixes from Ensembl stable identifiers
+  * Clarified <code>feature_is_filtered</code> requirements
   * Updated <code>feature_name</code> requirements to use feature identifier if a <code>gene_name</code> is unavailable
   * _Pending_
 * scATAC-seq assets
