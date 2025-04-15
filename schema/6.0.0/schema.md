@@ -2697,7 +2697,7 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
 * Required Gene Annotations
   * _Pending_
 * X (Matrix Layers)
-  * _Pending_
+  * Updated requirements in table to not allow duplicate `obs`by raw counts
 * obs (Cell metadata)
   * Updated <code>disease</code> to address multiple labels
   * Updated <code>disease_ontology_term_id</code> to allow multiple terms
@@ -2705,20 +2705,16 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Updated <code>self_reported_ethnicity_ontology_term_id</code> delimiter requirements
   * Deprecated <code>organism</code>
   * Deprecated <code>organism_ontology_term_id</code>
-* obsm (Embeddings)
-  * _Pending_
 * uns (Dataset Metadata)
   * Updated `{column}_colors` requirements to not reference <code>organism</code> 
   * Added <code>organism</code>
   * Added <code>organism_ontology_term_id</code>
   * Updated `schema_reference` to <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/6.0.0/schema.md"</code>
   * Updated `schema_version` to <code>"6.0.0"</code>
-  * _Pending_
 * var and raw.var (Gene Metadata)
   * Updated <code>index of pandas.DataFrame</code> requirements to remove version suffixes from Ensembl stable identifiers
   * Clarified <code>feature_is_filtered</code> requirements
   * Updated <code>feature_name</code> requirements to use feature identifier if a <code>gene_name</code> is unavailable
-  * _Pending_
 * scATAC-seq assets
   * Updated requirements for *one organism per dataset*
 
