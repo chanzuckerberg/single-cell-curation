@@ -196,9 +196,9 @@ The following table describes the matrix data and layers requirements that are *
 
 | Assay | "raw" required? | "raw" location | "normalized" required? | "normalized" location |
 |-|-|-|-|-|
-| scRNA-seq (UMI, e.g. 10x multiome, 10x v3, Slide-seqV2) | REQUIRED. Values MUST be de-duplicated molecule counts. Each cell MUST contain at least one non-zero value. All non-zero values MUST be positive integers stored as `numpy.float32`.| `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
-| Visium Spatial (e.g. V1, CytAssist) | REQUIRED. Values MUST be de-duplicated molecule counts. All non-zero values MUST be positive integers stored as `numpy.float32`.<br><br>If <code>uns['spatial']['is_single']</code> is <code>False</code> then each cell MUST contain at least one non-zero value.<br><br>If <code>uns['spatial']['is_single']</code> is <code>True</code> then the unfiltered feature-barcode matrix (<code>raw_feature_bc_matrix</code>) MUST be used. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/space-ranger-feature-barcode-matrices">Space Ranger Feature-Barcode Matrices</a>.<br><br>if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0022860"><code>"EFO:0022860"</code></a> for <i>Visium CytAssist Spatial Gene Expression, 11mm</i>, this matrix MUST contain 14336 rows; otherwise, this matrix MUST contain 4992 rows.<br><br>If the <code>obs['in_tissue']</code> value is <code>1</code>, then the cell MUST contain at least one non-zero value. If any <code>obs['in_tissue']</code> values are <code>0</code>, then at least one cell corresponding to a <code>obs['in_tissue']</code> with a value of <code>0</code> MUST contain a non-zero value.| `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
-| scRNA-seq (non-UMI, e.g. SS2) | REQUIRED. Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM). Each cell MUST contain at least one non-zero value. All non-zero values MUST be positive integers stored as `numpy.float32`. | `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
+| scRNA-seq (UMI, e.g. 10x multiome, 10x v3, Slide-seqV2) | REQUIRED. Values MUST be de-duplicated molecule counts. Each cell MUST contain at least one non-zero value. All non-zero values MUST be positive integers stored as `numpy.float32`. Any two cells MUST NOT contain identical values for all their features. | `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
+| Visium Spatial (e.g. V1, CytAssist) | REQUIRED. Values MUST be de-duplicated molecule counts. All non-zero values MUST be positive integers stored as `numpy.float32`.<br><br>If <code>uns['spatial']['is_single']</code> is <code>False</code> then each cell MUST contain at least one non-zero value.<br><br>If <code>uns['spatial']['is_single']</code> is <code>True</code> then the unfiltered feature-barcode matrix (<code>raw_feature_bc_matrix</code>) MUST be used. See <a href="https://www.10xgenomics.com/support/software/space-ranger/analysis/outputs/space-ranger-feature-barcode-matrices">Space Ranger Feature-Barcode Matrices</a>.<br><br>if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0022860"><code>"EFO:0022860"</code></a> for <i>Visium CytAssist Spatial Gene Expression, 11mm</i>, this matrix MUST contain 14336 rows; otherwise, this matrix MUST contain 4992 rows.<br><br>If the <code>obs['in_tissue']</code> value is <code>1</code>, then the cell MUST contain at least one non-zero value and any two cells MUST NOT contain identical values for all their features.<br><br>If any <code>obs['in_tissue']</code> values are <code>0</code>, then at least one cell corresponding to a <code>obs['in_tissue']</code> with a value of <code>0</code> MUST contain a non-zero value.| `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
+| scRNA-seq (non-UMI, e.g. SS2) | REQUIRED. Values MUST be one of read counts (e.g. FeatureCounts) or  estimated fragments (e.g. output of RSEM). Each cell MUST contain at least one non-zero value. All non-zero values MUST be positive integers stored as `numpy.float32`. Any two cells MUST NOT contain identical values for all their features. | `AnnData.raw.X` unless no "normalized" is provided, then `AnnData.X` | STRONGLY RECOMMENDED | `AnnData.X` |
 | unpaired Accessibility (e.g. ATAC-seq, mCT-seq) | NOT REQUIRED | | REQUIRED | `AnnData.X` | STRONGLY RECOMMENDED |
 |||||
 
@@ -2697,7 +2697,7 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
 * Required Gene Annotations
   * _Pending_
 * X (Matrix Layers)
-  * _Pending_
+  * Updated requirements in table to not allow duplicate `obs`by raw counts
 * obs (Cell metadata)
   * Updated <code>disease</code> to address multiple labels
   * Updated <code>disease_ontology_term_id</code> to allow multiple terms
@@ -2705,20 +2705,16 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Updated <code>self_reported_ethnicity_ontology_term_id</code> delimiter requirements
   * Deprecated <code>organism</code>
   * Deprecated <code>organism_ontology_term_id</code>
-* obsm (Embeddings)
-  * _Pending_
 * uns (Dataset Metadata)
   * Updated `{column}_colors` requirements to not reference <code>organism</code> 
   * Added <code>organism</code>
   * Added <code>organism_ontology_term_id</code>
   * Updated `schema_reference` to <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/6.0.0/schema.md"</code>
   * Updated `schema_version` to <code>"6.0.0"</code>
-  * _Pending_
 * var and raw.var (Gene Metadata)
   * Updated <code>index of pandas.DataFrame</code> requirements to remove version suffixes from Ensembl stable identifiers
   * Clarified <code>feature_is_filtered</code> requirements
   * Updated <code>feature_name</code> requirements to use feature identifier if a <code>gene_name</code> is unavailable
-  * _Pending_
 * scATAC-seq assets
   * Updated requirements for *one organism per dataset*
 
