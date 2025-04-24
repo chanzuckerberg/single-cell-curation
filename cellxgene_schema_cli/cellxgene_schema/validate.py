@@ -27,6 +27,8 @@ from .utils import (
     read_h5ad,
 )
 
+from validation_internals.check_duplicates import check_duplicate_obs
+
 logger = logging.getLogger(__name__)
 
 ASSAY_VISIUM = "EFO:0010961"  # generic term
@@ -2053,6 +2055,9 @@ class Validator:
         # Organism-specific prefix validation
         self._validate_tissue_ontology_term_id()
         self._validate_cell_type_ontology_term_id()
+
+        # Verifies there are no duplicate obs rows, by raw counts
+        self.errors.extend(check_duplicate_obs())
 
         # Checks each component
         for component_name, component_def in self.schema_def["components"].items():
