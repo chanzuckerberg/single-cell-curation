@@ -1,6 +1,6 @@
 import pytest
 from cellxgene_schema.validation_internals.check_duplicates import check_duplicate_obs
-from fixtures.examples_validate import adata_minimal, adata
+from fixtures.examples_validate import adata
 
 
 @pytest.fixture

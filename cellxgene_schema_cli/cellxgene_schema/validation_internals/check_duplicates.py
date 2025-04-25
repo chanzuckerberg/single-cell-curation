@@ -23,7 +23,7 @@ def check_duplicate_obs(adata) -> list[str]:
 
     if adata.raw:
         to_validate.append(adata.raw.X)
-    
+
     for matrix in to_validate:
         matrix_format = get_matrix_format(matrix)
         if matrix_format == "csr" or matrix_format == "dense":
@@ -32,6 +32,7 @@ def check_duplicate_obs(adata) -> list[str]:
             return [
                 f"Unsupported matrix format: {matrix_format} Sparse matrices must be encoded as scipy.sparse.csr_matrix. Dense matrices can be np.ndarray"
             ]
+
 
 def _check_duplicate_obs_dask(adata, matrix: da.Array) -> list[str]:
     errors = []
@@ -44,16 +45,19 @@ def _check_duplicate_obs_dask(adata, matrix: da.Array) -> list[str]:
         if sparse.issparse(block):
             block = block.toarray()
 
-        return np.array([
-            hashlib.sha224(row.tobytes()).hexdigest()
-            for row in block
-        ], dtype=object).reshape(-1, 1)  # shape (rows, 1) for map_blocks
+        return np.array([hashlib.sha224(row.tobytes()).hexdigest() for row in block], dtype=object).reshape(
+            -1, 1
+        )  # shape (rows, 1) for map_blocks
 
-    row_hashes = matrix.map_blocks(
-        rowwise_hash_block,
-        dtype=object,
-        chunks=(matrix.chunks[0], (1,)),  # one hash per row
-    ).compute().ravel()
+    row_hashes = (
+        matrix.map_blocks(
+            rowwise_hash_block,
+            dtype=object,
+            chunks=(matrix.chunks[0], (1,)),  # one hash per row
+        )
+        .compute()
+        .ravel()
+    )
 
     hash_df = adata.obs.copy()
     hash_df["row_hash"] = row_hashes
