@@ -2056,7 +2056,7 @@ class Validator:
         self._validate_cell_type_ontology_term_id()
 
         # Verifies there are no duplicate obs rows, by raw counts
-        self.errors.extend(check_duplicate_obs())
+        self.errors.extend(check_duplicate_obs(self.adata))
 
         # Checks each component
         for component_name, component_def in self.schema_def["components"].items():

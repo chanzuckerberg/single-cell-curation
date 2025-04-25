@@ -39,7 +39,7 @@ def _check_duplicate_obs_dense(adata) -> list[str]:
         matrix = np.array(matrix)
 
     def row_hash(row):
-        return hashlib.blake2b(row.tobytes()).hexdigest()
+        return hashlib.sha224(row.tobytes()).hexdigest()
 
     row_hashes = [row_hash(row) for row in matrix]
 
@@ -49,7 +49,7 @@ def _check_duplicate_obs_dense(adata) -> list[str]:
     dup_df = hash_df[hash_df.duplicated(subset="row_hash", keep=False)].copy()
 
     if not dup_df.empty:
-        errors.append("duplicated raw counts", "ERROR")
+        errors.append(f"Found {len(dup_df)} duplicated raw counts in obs")
 
     return errors
 
@@ -72,20 +72,20 @@ def _check_duplicate_obs_sparse(adata) -> list[str]:
 
     if not isinstance(matrix, sparse.csr_matrix):
         errors.append("Matrix not in sparse csr format, please convert before hashing")
-        return
+        return errors
 
     if not matrix.has_canonical_format:
         matrix.sort_indices()
         matrix.sum_duplicates()
 
-    assert matrix.has_canonical_format
+    assert matrix.has_canonical_format, "Matrix still in non-canonical format"
 
     indptr = matrix.indptr
     data = matrix.data
     indices = matrix.indices
 
     def row_hash(data_slice):
-        return hashlib.sha1(data_slice.tobytes()).hexdigest()
+        return hashlib.sha224(data_slice.tobytes()).hexdigest()
 
     data_hashes = [row_hash(data[indptr[i] : indptr[i + 1]]) for i in range(matrix.shape[0])]
     index_hashes = [row_hash(indices[indptr[i] : indptr[i + 1]]) for i in range(matrix.shape[0])]
@@ -98,6 +98,6 @@ def _check_duplicate_obs_sparse(adata) -> list[str]:
     dup_df = hash_df[dup_mask].copy()
 
     if not dup_df.empty:
-        errors.append("duplicated raw counts")
+        errors.append(f"Found {len(dup_df)} duplicated raw counts in obs")
 
     return errors
