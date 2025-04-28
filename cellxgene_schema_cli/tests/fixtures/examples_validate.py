@@ -433,7 +433,9 @@ good_uns_with_slide_seqV2_spatial = {
 # X has integer values and non_raw_X has real values
 X = from_array(sparse.csr_matrix((good_obs.shape[0], good_var.shape[0]), dtype=numpy.float32))
 X[0, 0] = 1
-X[1, 0] = 1
+X[1, 0] = 2
+X[0, 1] = 3
+X[1, 1] = 4
 non_raw_X = X.copy()
 non_raw_X[0, 0] = 1.5
 
