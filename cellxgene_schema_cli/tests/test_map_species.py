@@ -44,7 +44,11 @@ def zebrafish_adata():
         ],
         columns=["feature_is_filtered"],
     )
-    zebrafish_adata.X = numpy.ones([zebrafish_adata.obs.shape[0], zebrafish_adata.var.shape[0]], dtype=numpy.float32)
+    X = numpy.ones([zebrafish_adata.obs.shape[0], zebrafish_adata.var.shape[0]], dtype=numpy.float32)
+    for i in range(zebrafish_adata.obs.shape[0]):
+        for j in range(zebrafish_adata.var.shape[0]):
+            X[i, j] = i + j
+    zebrafish_adata.X = X
     zebrafish_adata.raw = zebrafish_adata.copy()
     zebrafish_adata.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
     return zebrafish_adata

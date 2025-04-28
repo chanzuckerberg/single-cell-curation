@@ -30,9 +30,9 @@ def check_duplicate_obs(adata: anndata.AnnData) -> list[str]:
         if matrix_format == "csr" or matrix_format == "dense":
             errors.extend(_check_duplicate_obs_dask(adata, matrix, matrix_name))
         else:
-            errors.append(
-                f"Unsupported matrix format: {matrix_format} Sparse matrices must be encoded as scipy.sparse.csr_matrix. Dense matrices can be np.ndarray"
-            )
+            # We already raise an error for unsupported formats in _validate_sparsity, so no need to
+            # check again here.
+            continue
 
     return errors
 
@@ -75,7 +75,7 @@ def _check_duplicate_obs_dask(adata: anndata.AnnData, matrix: da.Array, matrix_n
         for i, idx in enumerate(hash_df.index[:10]):
             duplicate_rows_to_print.append(f"row {i}: index = {idx}")
         errors.append(
-            f"Found {len(dup_df)} duplicated raw counts in obs {matrix_name}. First {len(duplicate_rows_to_print)} duplicate rows found at: {duplicate_rows_to_print}. {hash_df}"
+            f"Found {len(dup_df)} duplicated raw counts in obs {matrix_name}. First {len(duplicate_rows_to_print)} duplicate rows found at: {duplicate_rows_to_print}."
         )
 
     return errors

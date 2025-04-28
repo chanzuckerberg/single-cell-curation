@@ -161,6 +161,20 @@ class TestExpressionMatrix:
             f"ERROR: Number of genes in X ({NUMBER_OF_GENES - 1}) is different than raw.X ({NUMBER_OF_GENES})."
             in validator.errors
         )
+    
+    def test_csc_matrix_invalid(self, validator_with_adata):
+        is_valid_before = validator_with_adata.validate_adata()
+        assert is_valid_before
+
+        # Update X to be a CSC matrix
+        X = from_array(scipy.sparse.csc_matrix([[1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6]], dtype=numpy.float32))
+        validator_with_adata.adata.X = X
+        is_valid_after = validator_with_adata.validate_adata()
+        assert not is_valid_after
+
+        assert validator_with_adata.errors == [
+            "ERROR: Invalid sparse encoding for X with encoding csc. Only csr sparse encodings are supported.",
+        ]
 
     def test_sparsity(self, validator_with_adata):
         """
