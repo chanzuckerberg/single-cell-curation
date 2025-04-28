@@ -161,7 +161,7 @@ class TestExpressionMatrix:
             f"ERROR: Number of genes in X ({NUMBER_OF_GENES - 1}) is different than raw.X ({NUMBER_OF_GENES})."
             in validator.errors
         )
-    
+
     def test_csc_matrix_invalid(self, validator_with_adata):
         is_valid_before = validator_with_adata.validate_adata()
         assert is_valid_before
