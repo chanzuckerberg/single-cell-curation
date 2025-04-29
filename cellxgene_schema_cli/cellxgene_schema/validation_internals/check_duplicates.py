@@ -72,7 +72,8 @@ def _check_duplicate_obs_dask(adata: anndata.AnnData, matrix: da.Array, matrix_n
 
     if not dup_df.empty:
         duplicate_rows_to_print = []
-        for i, idx in enumerate(hash_df.index[:10]):
+        max_rows_to_print = 10
+        for i, idx in enumerate(dup_df.index[:max_rows_to_print]):
             duplicate_rows_to_print.append(f"row {i}: index = {idx}")
         errors.append(
             f"Found {len(dup_df)} duplicated raw counts in obs {matrix_name}. First {len(duplicate_rows_to_print)} duplicate rows found at: {duplicate_rows_to_print}."
