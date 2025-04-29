@@ -577,6 +577,25 @@ class Validator:
                 f"Column '{column_name}' in dataframe '{df_name}' must be boolean, not '{column.dtype.name}'."
             )
             return
+        
+        if self.adata.raw is None:
+            if column.any():
+                self.errors.append(
+                    f"'feature_is_filtered' must be False for all features if 'adata.raw' is not present."
+                )
+            return
+        else:
+            sum_X = self.adata.X.sum(axis=0).compute().ravel()
+            sum_raw_X = self.adata.raw.X.sum(axis=0).compute().ravel()
+            for i, _ in enumerate(sum_X):
+                is_filtered = column[i]
+                raw_column_sum = sum_raw_X[i]
+                if not is_filtered and raw_column_sum > 0:
+                    gene_name = self.adata.var_names[i]
+                    self.errors.append(
+                        f"Gene '{gene_name}' has all-zero values in adata.X. Either feature_is_filtered should"
+                        f"be set to True or adata.raw.X should be set to all-zero values."
+                    )
 
         if sum(column) > 0:
             n_nonzero = self.count_matrix_nonzero(self.adata.X[:, column])
