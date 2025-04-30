@@ -16,12 +16,16 @@ from scipy import sparse
 
 from . import gencode, schema
 from .gencode import get_gene_checker
-from .ontology_parser import ONTOLOGY_PARSER
-from .utils import (
+from .matrix_utils import (
     SPARSE_MATRIX_TYPES,
     SUPPORTED_SPARSE_MATRIX_TYPES,
-    get_descendants,
+    compute_column_sums,
+    count_matrix_nonzero,
     get_matrix_format,
+)
+from .ontology_parser import ONTOLOGY_PARSER
+from .utils import (
+    get_descendants,
     getattr_anndata,
     is_ontological_descendant_of,
     read_h5ad,
@@ -451,19 +455,6 @@ class Validator:
 
         return
 
-    @staticmethod
-    def count_matrix_nonzero(matrix: DaskArray) -> int:
-        def count_nonzeros(matrix_chunk: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool) -> np.array:
-            nnz = matrix_chunk.nnz if is_sparse_matrix else np.count_nonzero(matrix_chunk)
-            return np.array([nnz])
-
-        is_sparse_matrix = get_matrix_format(matrix) in SPARSE_MATRIX_TYPES
-        if len(matrix.chunks[0]) > 1:
-            nonzeros = map_blocks(count_nonzeros, matrix, is_sparse_matrix, drop_axis=1, dtype=int).compute().sum()
-        else:
-            nonzeros = count_nonzeros(matrix.compute(), is_sparse_matrix)[0]
-        return nonzeros
-
     def _validate_tissue_ontology_term_id(self):
         """
         For `tissue_ontology_term_id`, the schema_definition.yaml allows all possible terms regardless of what
@@ -565,8 +556,16 @@ class Validator:
 
     def _validate_column_feature_is_filtered(self, column: pd.Series, column_name: str, df_name: str):
         """
-        Validates the "is_feature_filtered" in adata.var. This column must be bool, and for genes that are set to
-        True, their expression values in X must be 0.
+        Validates the "is_feature_filtered" in adata.var. Values must be bool.
+
+        When a raw matrix is not present, the value for all features MUST be False.
+
+        When both a raw and normalized matrix are present, this MUST be True if the feature was filtered
+        out in the normalized matrix (X) but is present in the raw matrix (raw.X). The value for all cells
+        of the given feature in the normalized matrix MUST be 0. If a feature contains all zeroes in the
+        normalized matrix, then either the corresponding feature in the raw matrix MUST be all zeroes or
+        the value MUST be True.
+
         If there are any errors, it adds them to self.errors.
 
         :rtype none
@@ -577,28 +576,28 @@ class Validator:
                 f"Column '{column_name}' in dataframe '{df_name}' must be boolean, not '{column.dtype.name}'."
             )
             return
-        
+
         if self.adata.raw is None:
             if column.any():
                 self.errors.append(
-                    f"'feature_is_filtered' must be False for all features if 'adata.raw' is not present."
+                    "'feature_is_filtered' must be False for all features if 'adata.raw' is not present."
                 )
             return
         else:
-            sum_X = self.adata.X.sum(axis=0).compute().ravel()
-            sum_raw_X = self.adata.raw.X.sum(axis=0).compute().ravel()
+            sum_X = compute_column_sums(self.adata.X)
+            sum_raw_X = compute_column_sums(self.adata.raw.X)
             for i, _ in enumerate(sum_X):
                 is_filtered = column[i]
                 raw_column_sum = sum_raw_X[i]
                 if not is_filtered and raw_column_sum > 0:
                     gene_name = self.adata.var_names[i]
                     self.errors.append(
-                        f"Gene '{gene_name}' has all-zero values in adata.X. Either feature_is_filtered should"
+                        f"Gene '{gene_name}' has all-zero values in adata.X. Either feature_is_filtered should "
                         f"be set to True or adata.raw.X should be set to all-zero values."
                     )
 
         if sum(column) > 0:
-            n_nonzero = self.count_matrix_nonzero(self.adata.X[:, column])
+            n_nonzero = count_matrix_nonzero(self.adata.X[:, column])
 
             if n_nonzero > 0:
                 self.errors.append(
@@ -1043,7 +1042,7 @@ class Validator:
                 continue
 
             # check if it should be sparse encoded
-            nnz = self.count_matrix_nonzero(x)
+            nnz = count_matrix_nonzero(x)
             sparsity = 1 - nnz / np.prod(x.shape)
             if sparsity > max_sparsity:
                 self.errors.append(

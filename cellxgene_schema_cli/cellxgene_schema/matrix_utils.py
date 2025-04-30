@@ -1,0 +1,87 @@
+import anndata as ad
+from anndata.compat import DaskArray
+import numpy as np
+from dask.array import map_blocks
+from typing import Union
+from scipy import sparse
+
+SPARSE_MATRIX_TYPES = {"csr", "csc", "coo"}
+SUPPORTED_SPARSE_MATRIX_TYPES = {"csr"}
+
+def get_matrix_format(matrix: DaskArray) -> str:
+    """
+    Given a matrix, returns the format as one of: csc, csr, coo, dense
+    or unknown.
+
+    This mimics the scipy.sparse `format` property, but extends it to
+    support ndarray and other classes AnnData may proxy the matrix with.
+    """
+
+    # Note: the AnnData proxy classes DO support the `format_str` property, but
+    # doing a slice seemed safer, if less performant.  Using `format_str`, which
+    # currently works, uses private API:
+    #
+    # >>> return getattr(matrix, "format_str", "dense)
+    #
+    matrix_format = "unknown"
+    matrix_slice = matrix[0:1, 0:1].compute()
+    if isinstance(matrix_slice, sparse.spmatrix):
+        matrix_format = matrix_slice.format
+    elif isinstance(matrix_slice, np.ndarray):
+        matrix_format = "dense"
+    assert matrix_format in SPARSE_MATRIX_TYPES.union({"unknown", "dense"})
+    return matrix_format
+
+def compute_column_sums(matrix: DaskArray) -> np.ndarray:
+    def sum_columns(chunk, is_sparse):
+        return np.array(chunk.sum(axis=0)).ravel() if is_sparse else chunk.sum(axis=0)
+    
+    is_sparse = get_matrix_format(matrix) in SPARSE_MATRIX_TYPES
+    if len(matrix.chunks[0]) > 1:
+        return map_blocks(sum_columns, matrix, is_sparse, drop_axis=0, dtype=float).compute()
+    else:
+        return np.array(matrix.compute().sum(axis=0)).ravel()
+
+def count_matrix_nonzero(matrix: DaskArray) -> int:
+    def count_nonzeros(matrix_chunk: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool) -> np.array:
+        nnz = matrix_chunk.nnz if is_sparse_matrix else np.count_nonzero(matrix_chunk)
+        return np.array([nnz])
+
+    is_sparse_matrix = get_matrix_format(matrix) in SPARSE_MATRIX_TYPES
+    if len(matrix.chunks[0]) > 1:
+        nonzeros = map_blocks(count_nonzeros, matrix, is_sparse_matrix, drop_axis=1, dtype=int).compute().sum()
+    else:
+        nonzeros = count_nonzeros(matrix.compute(), is_sparse_matrix)[0]
+    return nonzeros
+
+def check_non_csr_matrices(adata: ad.AnnData):
+    """
+    Check X, raw.X and layers matrices for having more than 50% zeros and not being csr_matrix
+
+    If found, convert to csr_matrix
+    """
+
+    def get_sparsity(matrix: DaskArray, format: str):
+        is_sparse_matrix = format in SPARSE_MATRIX_TYPES
+        nnz = count_matrix_nonzero(matrix, is_sparse_matrix)
+        sparsity = 1 - nnz / np.prod(matrix.shape)
+        return sparsity
+
+    format = get_matrix_format(adata.X)
+    if format != "csr" and get_sparsity(adata.X, format) >= 0.5:
+        adata.X = adata.X.map_blocks(sparse.csr_matrix, dtype=adata.X.dtype)
+
+    if adata.raw is not None:
+        format = get_matrix_format(adata.raw.X)
+        if format != "csr" and get_sparsity(adata.raw.X, format) >= 0.5:
+            raw_adata = ad.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
+            raw_adata.X = raw_adata.X.map_blocks(sparse.csr_matrix, dtype=raw_adata.X.dtype)
+            adata.raw = raw_adata
+            del raw_adata
+
+    for layer in adata.layers:
+        format = get_matrix_format(adata.layers[layer])
+        if format != "csr" and get_sparsity(adata.layers[layer], format) >= 0.5:
+            adata.layers[layer] = adata.layers[layer].map_blocks(sparse.csr_matrix, dtype=adata.layers[layer].X.dtype)
+
+    return adata
