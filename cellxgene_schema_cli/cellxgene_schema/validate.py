@@ -589,12 +589,16 @@ class Validator:
             for i, _ in enumerate(sum_X):
                 is_filtered = column[i]
                 raw_column_sum = sum_raw_X[i]
-                if not is_filtered and raw_column_sum > 0:
-                    gene_name = self.adata.var_names[i]
-                    self.errors.append(
-                        f"Gene '{gene_name}' has all-zero values in adata.X. Either feature_is_filtered should "
-                        f"be set to True or adata.raw.X should be set to all-zero values."
-                    )
+                # If adata.X has all 0s for the column, then is_filtered must be True or adata.raw.X should also be all 0s
+                if sum_X[i] == 0:
+                    if is_filtered or raw_column_sum == 0:
+                        continue
+                    else:
+                        gene_name = self.adata.var_names[i]
+                        self.errors.append(
+                            f"Gene '{gene_name}' has all-zero values in adata.X. Either feature_is_filtered should "
+                            f"be set to True or adata.raw.X should be set to all-zero values."
+                        )
 
         if sum(column) > 0:
             n_nonzero = count_matrix_nonzero(self.adata.X[:, column])

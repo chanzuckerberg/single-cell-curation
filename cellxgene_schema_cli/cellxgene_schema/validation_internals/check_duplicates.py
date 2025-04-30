@@ -3,7 +3,7 @@ import hashlib
 import anndata
 import dask.array as da
 import numpy as np
-from cellxgene_schema.utils import get_matrix_format
+from cellxgene_schema.matrix_utils import get_matrix_format
 from scipy import sparse
 
 

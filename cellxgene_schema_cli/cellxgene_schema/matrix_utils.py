@@ -1,12 +1,14 @@
-import anndata as ad
-from anndata.compat import DaskArray
-import numpy as np
-from dask.array import map_blocks
 from typing import Union
+
+import anndata as ad
+import numpy as np
+from anndata.compat import DaskArray
+from dask.array import map_blocks
 from scipy import sparse
 
 SPARSE_MATRIX_TYPES = {"csr", "csc", "coo"}
 SUPPORTED_SPARSE_MATRIX_TYPES = {"csr"}
+
 
 def get_matrix_format(matrix: DaskArray) -> str:
     """
@@ -24,7 +26,11 @@ def get_matrix_format(matrix: DaskArray) -> str:
     # >>> return getattr(matrix, "format_str", "dense)
     #
     matrix_format = "unknown"
-    matrix_slice = matrix[0:1, 0:1].compute()
+    try:
+        matrix_slice = matrix[0:1, 0:1].compute()
+    except AttributeError:
+        # compute() may fail on an unknown matrix value. if so, return "unknown"
+        return matrix_format
     if isinstance(matrix_slice, sparse.spmatrix):
         matrix_format = matrix_slice.format
     elif isinstance(matrix_slice, np.ndarray):
@@ -32,15 +38,45 @@ def get_matrix_format(matrix: DaskArray) -> str:
     assert matrix_format in SPARSE_MATRIX_TYPES.union({"unknown", "dense"})
     return matrix_format
 
-def compute_column_sums(matrix: DaskArray) -> np.ndarray:
-    def sum_columns(chunk, is_sparse):
-        return np.array(chunk.sum(axis=0)).ravel() if is_sparse else chunk.sum(axis=0)
-    
-    is_sparse = get_matrix_format(matrix) in SPARSE_MATRIX_TYPES
-    if len(matrix.chunks[0]) > 1:
-        return map_blocks(sum_columns, matrix, is_sparse, drop_axis=0, dtype=float).compute()
-    else:
-        return np.array(matrix.compute().sum(axis=0)).ravel()
+
+def compute_column_sums(matrix: Union[DaskArray, np.ndarray, sparse.spmatrix]) -> np.ndarray:
+    """
+    Compute column-wise sums for a Dask array (dense or sparse), NumPy ndarray, or SciPy sparse matrix.
+    Returns a NumPy array of sums.
+
+    For example, this matrix:
+    [
+        [1, 0, 0],
+        [1, 2, 0],
+        [1, 0, 1],
+    ]
+
+    would return a NumPy array of [3, 12, 1]
+    """
+    if isinstance(matrix, np.ndarray):
+        return matrix.sum(axis=0).ravel()
+
+    if sparse.issparse(matrix):
+        return np.array(matrix.sum(axis=0)).ravel()
+
+    # Handle Dask array (could be sparse or dense)
+    if isinstance(matrix, DaskArray):
+
+        def sum_columns(chunk):
+            if sparse.issparse(chunk):
+                return np.array(chunk.sum(axis=0)).ravel()
+            else:
+                return chunk.sum(axis=0)
+
+        # If chunks along axis=0 > 1, we need to sum per block then aggregate
+        if len(matrix.chunks[0]) > 1:
+            partial_sums = map_blocks(sum_columns, matrix, drop_axis=0, dtype=float)
+            return partial_sums.sum(axis=0).compute().ravel()
+        else:
+            return sum_columns(matrix.compute())
+
+    raise TypeError(f"Unsupported matrix type: {type(matrix)}")
+
 
 def count_matrix_nonzero(matrix: DaskArray) -> int:
     def count_nonzeros(matrix_chunk: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool) -> np.array:
@@ -53,6 +89,7 @@ def count_matrix_nonzero(matrix: DaskArray) -> int:
     else:
         nonzeros = count_nonzeros(matrix.compute(), is_sparse_matrix)[0]
     return nonzeros
+
 
 def check_non_csr_matrices(adata: ad.AnnData):
     """
@@ -85,3 +122,14 @@ def check_non_csr_matrices(adata: ad.AnnData):
             adata.layers[layer] = adata.layers[layer].map_blocks(sparse.csr_matrix, dtype=adata.layers[layer].X.dtype)
 
     return adata
+
+
+def debug_print_matrix(matrix: ad.AnnData, matrix_name: str, max_rows=20, max_cols=20):
+    computed = matrix[:max_rows, :max_cols].compute()
+
+    # If sparse, convert to dense for display
+    if hasattr(computed, "toarray"):
+        computed = computed.toarray()
+
+    print(f"{matrix_name} (first {max_rows} rows, {max_cols} cols):")
+    print(np.round(computed, 2))  # round for readability
