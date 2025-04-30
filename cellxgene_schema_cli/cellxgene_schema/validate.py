@@ -13,7 +13,6 @@ import pandas as pd
 from anndata.compat import DaskArray
 from dask.array import map_blocks
 from scipy import sparse
-from validation_internals.check_duplicates import check_duplicate_obs
 
 from . import gencode, schema
 from .gencode import get_gene_checker
@@ -27,6 +26,7 @@ from .utils import (
     is_ontological_descendant_of,
     read_h5ad,
 )
+from .validation_internals.check_duplicates import check_duplicate_obs
 
 logger = logging.getLogger(__name__)
 
