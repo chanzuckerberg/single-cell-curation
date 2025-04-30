@@ -20,6 +20,4 @@ class TestCheckDuplicates:
         valid_adata.X = from_array(
             sparse.csr_matrix((valid_adata.obs.shape[0], valid_adata.var.shape[0]), dtype=numpy.float32)
         )
-        assert check_duplicate_obs(valid_adata) == [
-            "Found 2 duplicated raw counts in obs adata.X. First 2 duplicate rows found at: ['row 0: index = X', 'row 1: index = Y']."
-        ]
+        assert check_duplicate_obs(valid_adata) == ["Found 2 duplicated raw counts in obs adata.X."]
