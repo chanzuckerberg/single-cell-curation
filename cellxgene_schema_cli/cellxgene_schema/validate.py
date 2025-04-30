@@ -13,6 +13,7 @@ import pandas as pd
 from anndata.compat import DaskArray
 from dask.array import map_blocks
 from scipy import sparse
+from validation_internals.check_duplicates import check_duplicate_obs
 
 from . import gencode, schema
 from .gencode import get_gene_checker
@@ -2053,6 +2054,9 @@ class Validator:
         # Organism-specific prefix validation
         self._validate_tissue_ontology_term_id()
         self._validate_cell_type_ontology_term_id()
+
+        # Verifies there are no duplicate obs rows, by raw counts
+        self.errors.extend(check_duplicate_obs(self.adata))
 
         # Checks each component
         for component_name, component_def in self.schema_def["components"].items():

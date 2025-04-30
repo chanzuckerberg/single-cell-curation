@@ -432,8 +432,9 @@ good_uns_with_slide_seqV2_spatial = {
 # 4. Creating expression matrix,
 # X has integer values and non_raw_X has real values
 X = from_array(sparse.csr_matrix((good_obs.shape[0], good_var.shape[0]), dtype=numpy.float32))
-X[0, 0] = 1
-X[1, 0] = 1
+for i in range(good_obs.shape[0]):
+    for j in range(good_var.shape[0]):
+        X[i, j] = i + j
 non_raw_X = X.copy()
 non_raw_X[0, 0] = 1.5
 
