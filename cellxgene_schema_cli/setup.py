@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 
 with open("requirements.txt") as fh:
     requirements = fh.read().splitlines()
@@ -14,7 +14,7 @@ setup(
     long_description="Tool for applying and validating cellxgene integration schema to single cell datasets",
     install_requires=requirements,
     python_requires=">=3.10",
-    packages=["cellxgene_schema"],
+    packages=find_packages(exclude=["tests", "scripts"]),
     include_package_data=True,
     zip_safe=False,
     classifiers=[
