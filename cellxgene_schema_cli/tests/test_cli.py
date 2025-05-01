@@ -1,8 +1,8 @@
 import subprocess
 import sys
 import tempfile
-import os
 from pathlib import Path
+
 
 def test_package_install_and_import():
     repo_root = Path(__file__).resolve().parent.parent  # One level up from tests/

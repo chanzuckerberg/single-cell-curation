@@ -4,17 +4,15 @@ import sys
 from base64 import b85encode
 from functools import lru_cache
 from typing import Dict, List, Union
-from anndata.compat import DaskArray
-from dask.array import map_blocks
-from scipy import sparse
 
 import anndata as ad
 import h5py
 import numpy as np
+from anndata.compat import DaskArray
 from anndata.experimental import read_dispatched, read_elem_as_dask
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
+from cellxgene_schema.matrix_utils import check_non_csr_matrices, count_matrix_nonzero, get_matrix_format
 from xxhash import xxh3_64_intdigest
-from cellxgene_schema.matrix_utils import get_matrix_format, count_matrix_nonzero, check_non_csr_matrices
 
 logger = logging.getLogger(__name__)
 
@@ -30,14 +28,18 @@ in here for backwards compatibility until we can refactor that.
 SPARSE_MATRIX_TYPES = {"csr", "csc", "coo"}
 SUPPORTED_SPARSE_MATRIX_TYPES = {"csr"}
 
+
 def get_matrix_format(matrix: DaskArray) -> str:
     return get_matrix_format(matrix)
+
 
 def count_matrix_nonzero(matrix: DaskArray, is_sparse_matrix: bool) -> int:
     return count_matrix_nonzero(matrix, is_sparse_matrix)
 
+
 def check_non_csr_matrices(adata: ad.AnnData):
     return check_non_csr_matrices(adata)
+
 
 def replace_ontology_term(dataframe, ontology_name, update_map):
     column_name = f"{ontology_name}_ontology_term_id"
