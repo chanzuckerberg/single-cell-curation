@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 
 with open("requirements.txt") as fh:
     requirements = fh.read().splitlines()
@@ -14,16 +14,7 @@ setup(
     long_description="Tool for applying and validating cellxgene integration schema to single cell datasets",
     install_requires=requirements,
     python_requires=">=3.10",
-    packages=["cellxgene_schema"],
-    package_dir={"cellxgene_schema": "cellxgene_schema"},
-    package_data={
-        "cellxgene_schema": [
-            "gencode_files/*gz",
-            "migrate_files/*json",
-            "schema_definitions/*yaml",
-            "migrate_files/*.txt",
-        ]
-    },
+    packages=find_packages(exclude=["tests", "scripts"]),
     include_package_data=True,
     zip_safe=False,
     classifiers=[

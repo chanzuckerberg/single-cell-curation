@@ -3,8 +3,8 @@ import hashlib
 import anndata
 import dask.array as da
 import numpy as np
+from cellxgene_schema.utils import get_matrix_format
 from scipy import sparse
-from utils import get_matrix_format
 
 
 def check_duplicate_obs(adata: anndata.AnnData) -> list[str]:
