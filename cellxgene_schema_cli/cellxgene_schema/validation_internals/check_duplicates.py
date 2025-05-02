@@ -3,7 +3,7 @@ import hashlib
 import anndata
 import dask.array as da
 import numpy as np
-from cellxgene_schema.utils import get_matrix_format
+from cellxgene_schema.matrix_utils import determine_matrix_format
 from scipy import sparse
 
 
@@ -26,7 +26,7 @@ def check_duplicate_obs(adata: anndata.AnnData) -> list[str]:
         to_validate.append((adata.raw.X, "adata.raw.X"))
 
     for matrix, matrix_name in to_validate:
-        matrix_format = get_matrix_format(matrix)
+        matrix_format = determine_matrix_format(matrix)
         if matrix_format == "csr" or matrix_format == "dense":
             errors.extend(_check_duplicate_obs_dask(adata, matrix, matrix_name))
         else:
