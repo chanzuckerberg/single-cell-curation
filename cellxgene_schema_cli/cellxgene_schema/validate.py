@@ -21,7 +21,6 @@ from .matrix_utils import (
     SUPPORTED_SPARSE_MATRIX_TYPES,
     compute_column_sums,
     count_matrix_nonzero,
-    enforce_canonical_format,
     get_matrix_format,
 )
 from .ontology_parser import ONTOLOGY_PARSER

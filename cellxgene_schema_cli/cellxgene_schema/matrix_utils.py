@@ -123,6 +123,7 @@ def check_non_csr_matrices(adata: ad.AnnData):
 
     return adata
 
+
 def debug_print_matrix(matrix: ad.AnnData, matrix_name: str, max_rows=20, max_cols=20):
     computed = matrix[:max_rows, :max_cols].compute()
 
