@@ -21,6 +21,7 @@ from .matrix_utils import (
     SUPPORTED_SPARSE_MATRIX_TYPES,
     compute_column_sums,
     count_matrix_nonzero,
+    enforce_canonical_format,
     get_matrix_format,
 )
 from .ontology_parser import ONTOLOGY_PARSER
@@ -2054,13 +2055,6 @@ class Validator:
 
         :rtype None
         """
-        # Enforce canonical format for easier matrix checks later on
-        if not self.adata.X.has_canonical_format:
-            self.adata.X.sort_indices()
-            self.adata.X.sum_duplicates()
-        if self.adata.raw is not None and not self.adata.raw.X.has_canonical_format:
-            self.adata.raw.X.sort_indices()
-            self.adata.raw.X.sum_duplicates()
 
         # Checks DataFrame column name uniqueness
         self._check_var_and_obs_column_name_uniqueness()
