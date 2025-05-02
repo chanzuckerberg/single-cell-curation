@@ -11,7 +11,7 @@ import numpy as np
 from anndata.compat import DaskArray
 from anndata.experimental import read_dispatched, read_elem_as_dask
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
-from cellxgene_schema.matrix_utils import check_non_csr_matrices, count_matrix_nonzero, get_matrix_format
+from cellxgene_schema.matrix_utils import calculate_matrix_nonzero, check_non_csr_matrixes, determine_matrix_format
 from xxhash import xxh3_64_intdigest
 
 logger = logging.getLogger(__name__)
@@ -30,15 +30,15 @@ SUPPORTED_SPARSE_MATRIX_TYPES = {"csr"}
 
 
 def get_matrix_format(matrix: DaskArray) -> str:
-    return get_matrix_format(matrix)
+    return determine_matrix_format(matrix)
 
 
 def count_matrix_nonzero(matrix: DaskArray, is_sparse_matrix: bool) -> int:
-    return count_matrix_nonzero(matrix, is_sparse_matrix)
+    return calculate_matrix_nonzero(matrix, is_sparse_matrix)
 
 
 def check_non_csr_matrices(adata: ad.AnnData):
-    return check_non_csr_matrices(adata)
+    return check_non_csr_matrixes(adata)
 
 
 def replace_ontology_term(dataframe, ontology_name, update_map):

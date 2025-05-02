@@ -10,7 +10,7 @@ SPARSE_MATRIX_TYPES = {"csr", "csc", "coo"}
 SUPPORTED_SPARSE_MATRIX_TYPES = {"csr"}
 
 
-def get_matrix_format(matrix: DaskArray) -> str:
+def determine_matrix_format(matrix: DaskArray) -> str:
     """
     Given a matrix, returns the format as one of: csc, csr, coo, dense
     or unknown.
@@ -78,12 +78,12 @@ def compute_column_sums(matrix: Union[DaskArray, np.ndarray, sparse.spmatrix]) -
     raise TypeError(f"Unsupported matrix type: {type(matrix)}")
 
 
-def count_matrix_nonzero(matrix: DaskArray) -> int:
+def calculate_matrix_nonzero(matrix: DaskArray) -> int:
     def count_nonzeros(matrix_chunk: Union[np.ndarray, sparse.spmatrix], is_sparse_matrix: bool) -> np.array:
         nnz = matrix_chunk.nnz if is_sparse_matrix else np.count_nonzero(matrix_chunk)
         return np.array([nnz])
 
-    is_sparse_matrix = get_matrix_format(matrix) in SPARSE_MATRIX_TYPES
+    is_sparse_matrix = determine_matrix_format(matrix) in SPARSE_MATRIX_TYPES
     if len(matrix.chunks[0]) > 1:
         nonzeros = map_blocks(count_nonzeros, matrix, is_sparse_matrix, drop_axis=1, dtype=int).compute().sum()
     else:
@@ -91,7 +91,7 @@ def count_matrix_nonzero(matrix: DaskArray) -> int:
     return nonzeros
 
 
-def check_non_csr_matrices(adata: ad.AnnData):
+def check_non_csr_matrixes(adata: ad.AnnData):
     """
     Check X, raw.X and layers matrices for having more than 50% zeros and not being csr_matrix
 
@@ -100,16 +100,16 @@ def check_non_csr_matrices(adata: ad.AnnData):
 
     def get_sparsity(matrix: DaskArray, format: str):
         is_sparse_matrix = format in SPARSE_MATRIX_TYPES
-        nnz = count_matrix_nonzero(matrix, is_sparse_matrix)
+        nnz = calculate_matrix_nonzero(matrix, is_sparse_matrix)
         sparsity = 1 - nnz / np.prod(matrix.shape)
         return sparsity
 
-    format = get_matrix_format(adata.X)
+    format = determine_matrix_format(adata.X)
     if format != "csr" and get_sparsity(adata.X, format) >= 0.5:
         adata.X = adata.X.map_blocks(sparse.csr_matrix, dtype=adata.X.dtype)
 
     if adata.raw is not None:
-        format = get_matrix_format(adata.raw.X)
+        format = determine_matrix_format(adata.raw.X)
         if format != "csr" and get_sparsity(adata.raw.X, format) >= 0.5:
             raw_adata = ad.AnnData(adata.raw.X, var=adata.raw.var, obs=adata.obs)
             raw_adata.X = raw_adata.X.map_blocks(sparse.csr_matrix, dtype=raw_adata.X.dtype)
@@ -117,7 +117,7 @@ def check_non_csr_matrices(adata: ad.AnnData):
             del raw_adata
 
     for layer in adata.layers:
-        format = get_matrix_format(adata.layers[layer])
+        format = determine_matrix_format(adata.layers[layer])
         if format != "csr" and get_sparsity(adata.layers[layer], format) >= 0.5:
             adata.layers[layer] = adata.layers[layer].map_blocks(sparse.csr_matrix, dtype=adata.layers[layer].X.dtype)
 

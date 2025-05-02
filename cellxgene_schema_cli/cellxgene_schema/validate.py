@@ -19,9 +19,9 @@ from .gencode import get_gene_checker
 from .matrix_utils import (
     SPARSE_MATRIX_TYPES,
     SUPPORTED_SPARSE_MATRIX_TYPES,
+    calculate_matrix_nonzero,
     compute_column_sums,
-    count_matrix_nonzero,
-    get_matrix_format,
+    determine_matrix_format,
 )
 from .ontology_parser import ONTOLOGY_PARSER
 from .utils import (
@@ -601,7 +601,7 @@ class Validator:
                         )
 
         if sum(column) > 0:
-            n_nonzero = count_matrix_nonzero(self.adata.X[:, column])
+            n_nonzero = calculate_matrix_nonzero(self.adata.X[:, column])
 
             if n_nonzero > 0:
                 self.errors.append(
@@ -1033,7 +1033,7 @@ class Validator:
 
         # Check sparsity
         for x, x_name in to_validate:
-            matrix_format = get_matrix_format(x)
+            matrix_format = determine_matrix_format(x)
             if matrix_format in SUPPORTED_SPARSE_MATRIX_TYPES:
                 continue
             elif matrix_format in SPARSE_MATRIX_TYPES and matrix_format not in SUPPORTED_SPARSE_MATRIX_TYPES:
@@ -1046,7 +1046,7 @@ class Validator:
                 continue
 
             # check if it should be sparse encoded
-            nnz = count_matrix_nonzero(x)
+            nnz = calculate_matrix_nonzero(x)
             sparsity = 1 - nnz / np.prod(x.shape)
             if sparsity > max_sparsity:
                 self.errors.append(
@@ -1234,7 +1234,7 @@ class Validator:
                 self.errors.append("Raw matrix values must have type numpy.float32.")
                 return self._raw_layer_exists
 
-            matrix_format = get_matrix_format(x)
+            matrix_format = determine_matrix_format(x)
             if matrix_format == "unknown":
                 self.errors.append(f"Unknown encoding for matrix {xloc}. {ERROR_SUFFIX_SPARSE_FORMAT}")
                 self._raw_layer_exists = False
