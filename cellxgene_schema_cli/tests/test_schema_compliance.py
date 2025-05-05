@@ -851,6 +851,9 @@ class TestObs:
         """
         disease_ontology_term_id categorical with str categories. This MUST be one of:
         - PATO:0000461 for normal or healthy
+        - one or more valid MONDO terms
+
+        MONDO terms must be one of:
         - descendant of MONDO:0000001 for disease
         - self or descendant of MONDO:0021178 for injury
         """
@@ -912,6 +915,15 @@ class TestObs:
         obs.loc[obs.index[0], "disease_ontology_term_id"] = "MONDO:0005491 || MONDO:0015796"
         validator.validate_adata()
         assert validator.errors == []
+
+        # Valid PATO term id and valid MONDO term id. However, multiple terms are only allowed for MONDO terms
+        validator.errors = []
+        obs.loc[obs.index[0], "disease_ontology_term_id"] = "MONDO:0005491 || PATO:0000461"
+        validator.validate_adata()
+        assert (
+            "ERROR: 'PATO:0000461' in 'disease_ontology_term_id' is not a valid ontology term id of 'MONDO'."
+            in validator.errors[0]
+        )
 
     def test_self_reported_ethnicity_ontology_term_id__unknown(self, validator_with_adata):
         """

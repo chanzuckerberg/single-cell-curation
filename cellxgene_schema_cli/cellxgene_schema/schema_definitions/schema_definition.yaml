@@ -180,6 +180,10 @@ components:
           multi_term:
             delimiter: " || "
             sorted: True
+            # Multiple terms only allowed for MONDO
+            multi_term_constraints:
+              ontologies:
+                - MONDO
         add_labels:
           - type: curie
             to_column: disease
