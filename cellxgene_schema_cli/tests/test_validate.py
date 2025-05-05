@@ -1329,8 +1329,7 @@ class TestIsRaw:
         validator = self.create_validator(data, matrix_format)
         assert validator._has_valid_raw() == expected_result
 
-    @mock.patch("cellxgene_schema.validate.get_matrix_format", return_value="unknown")
-    def test_has_valid_raw_with_unknown_format(self, mock_get_matrix_format):
+    def test_has_valid_raw_with_unknown_format(self):
         # a matrix with unknown format should be invalid
         data = np.array([[1, 2, 3], [4, 5, 6]], dtype=np.float32)
         validator = self.create_validator(data, "unknown")

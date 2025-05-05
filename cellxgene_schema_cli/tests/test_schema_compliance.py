@@ -1727,6 +1727,23 @@ class TestVar:
             "ERROR: Column 'feature_is_filtered' in dataframe 'var' must be boolean, not 'object'."
         ]
 
+    def test_feature_is_filtered_should_be_true(self, validator_with_adata):
+        validator = validator_with_adata
+        var = validator.adata.var
+        X = validator.adata.X
+
+        # zero out first column of X, but set feature_is_filtered to False
+        var["feature_is_filtered"][0] = False
+        for i in range(X.shape[0]):
+            X[i, 0] = 0
+        validator.adata.X = X.map_blocks(lambda x: (x.eliminate_zeros() or x), dtype=X.dtype, meta=X._meta)
+
+        validator.reset(None, 2)
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Gene 'ERCC-00002' at index 0 has all-zero values in adata.X. Either feature_is_filtered should be set to True or adata.raw.X should be set to all-zero values."
+        ]
+
     def test_columns_not_in_raw_var(self, validator_with_adata):
         """
         Curators MUST annotate the following column only in the var dataframe.
