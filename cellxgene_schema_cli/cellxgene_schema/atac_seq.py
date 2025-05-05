@@ -485,5 +485,4 @@ def prepare_fragment(
             logger.info(f"Processing chromosome: {chromosome}, chunk: {i}, range: {chunk_start}-{chunk_end}")
             temp_data = sort_fragment(parquet_file, tempdir, chromosome, chunk_start, chunk_end)
             write_algorithm(temp_data, bgzip_output_file)
-            Path(temp_data).unlink(missing_ok=True)  # clean up temporary file
     logger.info(f"bgzip compression completed successfully for {bgzip_output_file}")
