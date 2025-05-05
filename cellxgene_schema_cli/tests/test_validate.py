@@ -456,20 +456,27 @@ class TestCheckSpatial:
         validator.validate_adata()
         assert not validator.errors
 
-    def test__validate_spatial_visium_and_is_single_false_ok(self):
+    @pytest.mark.parametrize(
+        "is_single, is_primary_data, validation_result",
+        [
+            (False, False, True),
+            (False, True, False),
+            # Same as above cases but with numpy bools
+            (np.bool_(False), np.bool_(False), True),
+            (np.bool_(False), np.bool_(True), False),
+        ],
+    )
+    def test__validate_spatial_is_primary_data(self, is_single, is_primary_data, validation_result):
         validator: Validator = Validator()
         validator._set_schema_def()
         validator.adata = adata_visium.copy()
-        validator.adata.uns["spatial"] = {"is_single": False}
+        validator.adata.uns["spatial"] = {"is_single": is_single}
         del validator.adata.obsm["spatial"]
-        # Format adata.obs into valid shape for Visium and is_single False.
         validator.adata.obs.pop("array_col")
         validator.adata.obs.pop("array_row")
         validator.adata.obs.pop("in_tissue")
-        validator.adata.obs["is_primary_data"] = False
-        # Confirm spatial is valid.
-        validator.validate_adata()
-        assert not validator.errors
+        validator.adata.obs["is_primary_data"] = is_primary_data
+        assert validator.validate_adata() == validation_result
 
     def test__validate_spatial_slide_seqV2_ok(self):
         validator: Validator = Validator()
