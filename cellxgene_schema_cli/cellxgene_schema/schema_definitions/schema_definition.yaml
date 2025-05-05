@@ -161,7 +161,7 @@ components:
           - type: curie
             to_column: assay
       disease_ontology_term_id:
-        error_message_suffix: "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms of 'MONDO:0000001' (disease) are allowed"
+        error_message_suffix: "Only 'PATO:0000461' (normal), one or more MONDO terms in ascending lexical order with the delimiter ` || `. MONDO terms can be 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms of 'MONDO:0000001' (disease)."
         type: curie
         curie_constraints:
           ontologies:
@@ -177,6 +177,9 @@ components:
               MONDO:
                 - MONDO:0000001
                 - MONDO:0021178
+          multi_term:
+            delimiter: " || "
+            sorted: True
         add_labels:
           - type: curie
             to_column: disease
@@ -352,7 +355,7 @@ components:
                 terms:
                   - NCBITaxon:9606
             error_message_suffix: >-
-              When 'organism_ontology_term_id' is 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be formatted as one or more comma-separated (with no leading or trailing spaces) HANCESTRO terms in ascending lexical order, or 'unknown' if unavailable. Cannot match any forbidden HANCESTRO terms listed in schema definition.
+              When 'organism_ontology_term_id' is 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be formatted as one or more HANCESTRO terms in ascending lexical order with the delimiter ` || `, or 'unknown' if unavailable. Cannot match any forbidden HANCESTRO terms listed in schema definition.
             type: curie
             curie_constraints:
               ontologies:
@@ -391,7 +394,7 @@ components:
                     - HANCESTRO:0002
                     - HANCESTRO:0304
               multi_term:
-                delimiter: ","
+                delimiter: " || "
                 sorted: True
         # If organism is not Human
         error_message_suffix: >-
