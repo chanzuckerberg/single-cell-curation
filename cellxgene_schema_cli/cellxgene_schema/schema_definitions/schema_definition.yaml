@@ -161,7 +161,7 @@ components:
           - type: curie
             to_column: assay
       disease_ontology_term_id:
-        error_message_suffix: "Only 'PATO:0000461' (normal), one or more MONDO terms in ascending lexical order with the delimiter ` || `. MONDO terms can be 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms of 'MONDO:0000001' (disease)."
+        error_message_suffix: "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms of 'MONDO:0000001' (disease) are allowed. Multiple MONDO terms are supported if in ascending lexical order with the delimiter ` || `."
         type: curie
         curie_constraints:
           ontologies:
