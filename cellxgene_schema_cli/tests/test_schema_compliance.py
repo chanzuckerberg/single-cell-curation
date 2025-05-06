@@ -851,6 +851,9 @@ class TestObs:
         """
         disease_ontology_term_id categorical with str categories. This MUST be one of:
         - PATO:0000461 for normal or healthy
+        - one or more valid MONDO terms
+
+        MONDO terms must be one of:
         - descendant of MONDO:0000001 for disease
         - self or descendant of MONDO:0021178 for injury
         """
@@ -860,37 +863,28 @@ class TestObs:
         # Invalid ontology
         obs.loc[obs.index[0], "disease_ontology_term_id"] = "EFO:0000001"
         validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: 'EFO:0000001' in 'disease_ontology_term_id' is not a valid ontology term id of 'MONDO, PATO'. "
-            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms of 'MONDO:0000001' (disease) are allowed"
-        ]
+        assert (
+            "ERROR: 'EFO:0000001' in 'disease_ontology_term_id' is not a valid ontology term id of 'MONDO, PATO'."
+            in validator.errors[0]
+        )
 
         # Invalid PATO term id
         validator.errors = []
         obs.loc[obs.index[0], "disease_ontology_term_id"] = "PATO:0001894"
         validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: 'PATO:0001894' in 'disease_ontology_term_id' is not an allowed term id. "
-            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms of 'MONDO:0000001' (disease) are allowed"
-        ]
+        assert "ERROR: 'PATO:0001894' in 'disease_ontology_term_id' is not an allowed term id." in validator.errors[0]
 
         # Invalid MONDO term id - disease characteristic
         validator.errors = []
         obs.loc[obs.index[0], "disease_ontology_term_id"] = "MONDO:0021125"
         validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: 'MONDO:0021125' in 'disease_ontology_term_id' is not an allowed term id. "
-            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms of 'MONDO:0000001' (disease) are allowed"
-        ]
+        assert "ERROR: 'MONDO:0021125' in 'disease_ontology_term_id' is not an allowed term id." in validator.errors[0]
 
         # Invalid MONDO term id - disease parent term
         validator.errors = []
         obs.loc[obs.index[0], "disease_ontology_term_id"] = "MONDO:0000001"
         validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: 'MONDO:0000001' in 'disease_ontology_term_id' is not an allowed term id. "
-            "Only 'PATO:0000461' (normal), 'MONDO:0021178' (injury) or descendant terms thereof, or descendant terms of 'MONDO:0000001' (disease) are allowed"
-        ]
+        assert "ERROR: 'MONDO:0000001' in 'disease_ontology_term_id' is not an allowed term id." in validator.errors[0]
 
         # Valid PATO term id - healthy
         validator.errors = []
@@ -915,6 +909,21 @@ class TestObs:
         obs.loc[obs.index[0], "disease_ontology_term_id"] = "MONDO:0015796"
         validator.validate_adata()
         assert validator.errors == []
+
+        # Valid MONDO term ids - disease descendant term, injury descendant term
+        validator.errors = []
+        obs.loc[obs.index[0], "disease_ontology_term_id"] = "MONDO:0005491 || MONDO:0015796"
+        validator.validate_adata()
+        assert validator.errors == []
+
+        # Valid PATO term id and valid MONDO term id. However, multiple terms are only allowed for MONDO terms
+        validator.errors = []
+        obs.loc[obs.index[0], "disease_ontology_term_id"] = "MONDO:0005491 || PATO:0000461"
+        validator.validate_adata()
+        assert (
+            "ERROR: 'PATO:0000461' in 'disease_ontology_term_id' is not a valid ontology term id of 'MONDO'."
+            in validator.errors[0]
+        )
 
     def test_self_reported_ethnicity_ontology_term_id__unknown(self, validator_with_adata):
         """
@@ -979,7 +988,7 @@ class TestObs:
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
-        ] = "HANCESTRO:0005,HANCESTRO:0014,unknown"
+        ] = "HANCESTRO:0005 || HANCESTRO:0014 || unknown"
         validator.validate_adata()
         assert validator.errors == [
             self.get_format_error_message(
@@ -1090,7 +1099,7 @@ class TestObs:
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
-        ] = "HANCESTRO:0005,HANCESTRO:0014,HANCESTRO:0018"
+        ] = "HANCESTRO:0005 || HANCESTRO:0014 || HANCESTRO:0018"
         validator.validate_adata()
         assert validator.errors == [
             self.get_format_error_message(
@@ -1137,12 +1146,12 @@ class TestObs:
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
-        ] = "HANCESTRO:0014,HANCESTRO:0005"
+        ] = "HANCESTRO:0014 || HANCESTRO:0005"
         validator.validate_adata()
         assert validator.errors == [
             self.get_format_error_message(
                 error_message_suffix,
-                "ERROR: 'HANCESTRO:0014,HANCESTRO:0005' in 'self_reported_ethnicity_ontology_term_id' is not in "
+                "ERROR: 'HANCESTRO:0014 || HANCESTRO:0005' in 'self_reported_ethnicity_ontology_term_id' is not in "
                 "ascending lexical order.",
             )
         ]
@@ -1153,22 +1162,16 @@ class TestObs:
         delimiters that are not specified in the schema definition yaml, such as whitespace
         """
         validator = validator_with_adata
-        error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
-            "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][0]["error_message_suffix"]
 
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
-        ] = "HANCESTRO:0005, HANCESTRO:0014"
+        ] = "HANCESTRO:0005,HANCESTRO:0014"
         validator.validate_adata()
-        assert validator.errors == [
-            self.get_format_error_message(
-                error_message_suffix,
-                "ERROR: ' HANCESTRO:0014' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology "
-                "term id of 'HANCESTRO'.",
-            )
-        ]
+        assert (
+            "'HANCESTRO:0005,HANCESTRO:0014' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id of 'HANCESTRO'"
+            in validator.errors[0]
+        )
 
     def test_self_reported_ethnicity_ontology_term_id__multiple_errors_in_multi_term(self, validator_with_adata):
         """
@@ -1183,7 +1186,7 @@ class TestObs:
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
-        ] = "EFO:0000001,HANCESTRO:0004,HANCESTRO:0014,HANCESTRO:1"
+        ] = "EFO:0000001 || HANCESTRO:0004 || HANCESTRO:0014 || HANCESTRO:1"
         validator.validate_adata()
         assert validator.errors == [
             self.get_format_error_message(
@@ -1215,12 +1218,12 @@ class TestObs:
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
-        ] = "HANCESTRO:0014,HANCESTRO:0014"
+        ] = "HANCESTRO:0014 || HANCESTRO:0014"
         validator.validate_adata()
         assert validator.errors == [
             self.get_format_error_message(
                 error_message_suffix,
-                "ERROR: 'HANCESTRO:0014,HANCESTRO:0014' in 'self_reported_ethnicity_ontology_term_id' contains "
+                "ERROR: 'HANCESTRO:0014 || HANCESTRO:0014' in 'self_reported_ethnicity_ontology_term_id' contains "
                 "duplicates.",
             )
         ]
@@ -1237,11 +1240,11 @@ class TestObs:
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
-        ] = ["HANCESTRO:0005,HANCESTRO:0014"]
+        ] = ["HANCESTRO:0005 || HANCESTRO:0014"]
         validator.validate_adata()
         assert validator.errors[1] == self.get_format_error_message(
             error_message_suffix,
-            "ERROR: '['HANCESTRO:0005,HANCESTRO:0014']' in 'self_reported_ethnicity_ontology_term_id' is not "
+            "ERROR: '['HANCESTRO:0005 || HANCESTRO:0014']' in 'self_reported_ethnicity_ontology_term_id' is not "
             "a valid ontology term value, it must be a string.",
         )
 

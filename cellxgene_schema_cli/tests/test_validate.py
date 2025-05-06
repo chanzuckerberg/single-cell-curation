@@ -265,11 +265,22 @@ class TestAddLabelFunctions:
         assert label_writer._get_mapping_dict_curie(ids, curie_constraints) == expected_dict
 
     def test_get_dictionary_mapping_curie__self_reported_ethnicity_ontology_term_id(self, schema_def, label_writer):
-        ids = ["HANCESTRO:0005", "HANCESTRO:0014", "HANCESTRO:0005,HANCESTRO:0014", "unknown"]
-        labels = ["European", "Hispanic or Latin American", "European,Hispanic or Latin American", "unknown"]
+        ids = ["HANCESTRO:0005", "HANCESTRO:0014", "HANCESTRO:0005 || HANCESTRO:0014", "unknown"]
+        labels = ["European", "Hispanic or Latin American", "European || Hispanic or Latin American", "unknown"]
         curie_constraints = schema_def["components"]["obs"]["columns"]["self_reported_ethnicity_ontology_term_id"][
             "dependencies"
         ][0]["curie_constraints"]
+        expected_dict = dict(zip(ids, labels))
+        assert label_writer._get_mapping_dict_curie(ids, curie_constraints) == expected_dict
+
+    def test_get_dictionary_mapping_curie__disease_ontology_term_id(self, schema_def, label_writer):
+        ids = ["PATO:0000461", "MONDO:1030008", "MONDO:0004604 || MONDO:0043004 || MONDO:0800349 || MONDO:1030008"]
+        labels = [
+            "normal",
+            "mitral valve insufficiency",
+            "Hodgkin's lymphoma, lymphocytic-histiocytic predominance || Weil's disease || atrial fibrillation, familial, 16 || mitral valve insufficiency",
+        ]
+        curie_constraints = schema_def["components"]["obs"]["columns"]["disease_ontology_term_id"]["curie_constraints"]
         expected_dict = dict(zip(ids, labels))
         assert label_writer._get_mapping_dict_curie(ids, curie_constraints) == expected_dict
 

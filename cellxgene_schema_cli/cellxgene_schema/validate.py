@@ -371,8 +371,13 @@ class Validator:
         if "multi_term" in curie_constraints:
             delimiter = curie_constraints["multi_term"]["delimiter"]
             term_ids = term_str.split(delimiter)
+            multi_term_constraints = None
+            if len(term_ids) > 1 and "multi_term_constraints" in curie_constraints["multi_term"]:
+                multi_term_constraints = curie_constraints["multi_term"]["multi_term_constraints"]
             for term_id in term_ids:
                 self._validate_curie(term_id, column_name, curie_constraints)
+                if multi_term_constraints:
+                    self._validate_curie(term_id, column_name, multi_term_constraints)
             if (
                 curie_constraints["multi_term"].get("sorted", False)
                 and len(term_ids) > 1
