@@ -165,14 +165,12 @@ class Validator:
         :return Value of uns.spatial.is_single if specified, None otherwise.
         :rtype bool | None
         """
-        return (
-            self.adata.uns["spatial"]["is_single"]
-            if hasattr(self.adata, "uns")
-            and "spatial" in self.adata.uns
-            and isinstance(self.adata.uns["spatial"], dict)
-            and "is_single" in self.adata.uns["spatial"]
-            else None
-        )
+        spatial = self.adata.uns.get("spatial", None)
+        if isinstance(spatial, dict) and "is_single" in spatial:
+            value = spatial["is_single"]
+            if isinstance(value, (bool, np.bool_)):
+                return bool(value)
+        return None
 
     def _is_supported_spatial_assay(self) -> bool:
         """
