@@ -11,6 +11,10 @@ def check_duplicate_obs(adata: anndata.AnnData) -> list[str]:
     """
     Checks for duplicate rows in obs by raw count.
 
+    We only want to check duplicate rows for the 'raw' matrix. If adata.raw is
+    not provided, then we assume adata.X is the raw data. If both are provided,
+    then we only want to validate against adata.raw.X
+
     :rtype List of errors that were seen. If no errors, validation is good.
     """
 
@@ -22,8 +26,8 @@ def check_duplicate_obs(adata: anndata.AnnData) -> list[str]:
 
     to_validate = [(adata.X, "adata.X")]
 
-    if adata.raw:
-        to_validate.append((adata.raw.X, "adata.raw.X"))
+    if adata.raw is not None:
+        to_validate = [(adata.raw.X, "adata.raw.X")]
 
     for matrix, matrix_name in to_validate:
         matrix_format = determine_matrix_format(matrix)
