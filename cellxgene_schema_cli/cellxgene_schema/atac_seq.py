@@ -407,10 +407,14 @@ def index_fragment(
     logger.info(f"Index file generated: {tabix_output_file}")
 
 
-def sort_fragment(parquet_file: str, write_path: str, chromosome: str) -> Path:
+def sort_fragment(parquet_file: str, write_path: str, chromosome: str, start: int, stop: int) -> Path:
     temp_data = Path(write_path) / f"temp_{chromosome}.parquet"
     t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
-    (t.filter(t["chromosome"] == chromosome).order_by(["start coordinate", "stop coordinate"]).to_parquet(temp_data))
+    (
+        t.filter(t["chromosome"] == chromosome, t["start coordinate"] >= start, t["start coordinate"] <= stop)
+        .order_by(["start coordinate", "stop coordinate"])
+        .to_parquet(temp_data)
+    )
     return temp_data
 
 
@@ -475,9 +479,13 @@ def prepare_fragment(
     :param write_algorithm:
     :return:
     """
+    step_size = 10_000_000  # 10 million
     for chromosome in chromosomes:
-        logger.info(f"Processing chromosome: {chromosome}")
-        temp_data = sort_fragment(parquet_file, tempdir, chromosome)
-        write_algorithm(temp_data, bgzip_output_file)
-        Path(temp_data).unlink(missing_ok=True)  # clean up temporary file
+        chromosome_length = human_chromosome_by_length[chromosome]
+        for chunk_start in range(0, chromosome_length, step_size):
+            chunk_end = min(chunk_start + step_size, chromosome_length)
+            logger.info(f"Processing chromosome: {chromosome}, range: {chunk_start}-{chunk_end}")
+            temp_data = sort_fragment(parquet_file, tempdir, chromosome, chunk_start, chunk_end)
+            write_algorithm(temp_data, bgzip_output_file)
+            Path(temp_data).unlink(missing_ok=True)  # clean up temporary file
     logger.info(f"bgzip compression completed successfully for {bgzip_output_file}")
