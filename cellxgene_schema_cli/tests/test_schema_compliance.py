@@ -114,6 +114,13 @@ def label_writer() -> AnnDataLabelAppender:
     """
     label_writer = AnnDataLabelAppender(examples.adata.copy())
     label_writer._add_labels()
+    label_writer.adata.uns["schema_version"] = "4.0.0"
+    label_writer.adata.uns["schema_reference"] = (
+        "https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.0.0/schema.md"
+    )
+    label_writer.adata.uns["citation"] = (
+        "Publication: <doi> Dataset Version: https://datasets.cellxgene.cziscience.com/<dataset_version_id>.h5ad curated and distributed by CZ CELLxGENE Discover in Collection: https://cellxgene.cziscience.com/collections/<collection_id>"
+    )
     return label_writer
 
 
@@ -2628,6 +2635,12 @@ class TestAddingLabels:
         for i, j in zip(expected_column.tolist(), obtained_column.tolist()):
             assert i == j
 
+    def test_uns_added_labels(self, label_writer, adata_with_labels):
+        expected_uns = adata_with_labels.uns
+        obtained_uns = label_writer.adata.uns
+
+        assert expected_uns == obtained_uns
+
     def test_obs_added_tissue_type_label__unknown(self):
         adata = examples.adata.copy()
         obs = adata.obs
@@ -2694,6 +2707,7 @@ class TestZebrafish:
     @pytest.fixture
     def validator_with_visium_zebrafish_adata(self, validator_with_visium_assay, zebrafish_visium_obs):
         validator_with_visium_assay.adata.obs = zebrafish_visium_obs
+        validator_with_visium_assay.adata.uns["organism_ontology_term_id"] = "NCBITaxon:7955"
         return validator_with_visium_assay
 
     @pytest.mark.parametrize(
@@ -2787,8 +2801,9 @@ class TestZebrafish:
     def test_organism_cell_type_ontology_term_id__visium_in_tissue_0(self, validator_with_visium_zebrafish_adata):
         validator: Validator = validator_with_visium_zebrafish_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "in_tissue"] = 0
-        obs.loc[obs.index[0], "cell_type_ontology_term_id"] = "unknown"
+        for i in range(2):
+            obs.loc[obs.index[i], "in_tissue"] = i
+            obs.loc[obs.index[i], "cell_type_ontology_term_id"] = "unknown"
         validator.reset(None, 2)
         validator.validate_adata()
         assert not validator.errors
@@ -2798,8 +2813,9 @@ class TestZebrafish:
     ):
         validator = validator_with_visium_zebrafish_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "in_tissue"] = 0
-        obs.loc[obs.index[0], "cell_type_ontology_term_id"] = "ZFA:0000003"
+        for i in range(2):
+            obs.loc[obs.index[i], "in_tissue"] = 0
+            obs.loc[obs.index[i], "cell_type_ontology_term_id"] = "ZFA:0000003"
         validator.validate_adata()
         assert (
             f"obs['cell_type_ontology_term_id'] must be 'unknown' when {ERROR_SUFFIX_VISIUM_AND_IS_SINGLE_TRUE_IN_TISSUE_0}"
@@ -2909,6 +2925,7 @@ class TestFruitFly:
     @pytest.fixture
     def validator_with_visium_fruitfly_adata(self, validator_with_visium_assay, fruitfly_visium_obs):
         validator_with_visium_assay.adata.obs = fruitfly_visium_obs
+        validator_with_visium_assay.adata.uns["organism_ontology_term_id"] = "NCBITaxon:7227"
         return validator_with_visium_assay
 
     @pytest.mark.parametrize(
@@ -2978,8 +2995,9 @@ class TestFruitFly:
     def test_organism_cell_type_ontology_term_id__visium_in_tissue_0(self, validator_with_visium_fruitfly_adata):
         validator = validator_with_visium_fruitfly_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "in_tissue"] = 0
-        obs.loc[obs.index[0], "cell_type_ontology_term_id"] = "unknown"
+        for i in range(2):
+            obs.loc[obs.index[i], "in_tissue"] = i
+            obs.loc[obs.index[i], "cell_type_ontology_term_id"] = "unknown"
         validator.reset(None, 2)
         validator.validate_adata()
         assert not validator.errors
@@ -2989,8 +3007,9 @@ class TestFruitFly:
     ):
         validator: Validator = validator_with_visium_fruitfly_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "in_tissue"] = 0
-        obs.loc[obs.index[0], "cell_type_ontology_term_id"] = "FBbt:00049192"
+        for i in range(2):
+            obs.loc[obs.index[i], "in_tissue"] = i
+            obs.loc[obs.index[i], "cell_type_ontology_term_id"] = "FBbt:00049192"
         validator.reset(None, 2)
         validator.validate_adata()
         assert (
@@ -3102,6 +3121,7 @@ class TestRoundworm:
     @pytest.fixture
     def validator_with_visium_roundworm_adata(self, validator_with_visium_assay, roundworm_visium_obs):
         validator_with_visium_assay.adata.obs = roundworm_visium_obs
+        validator_with_visium_assay.adata.uns["organism_ontology_term_id"] = "NCBITaxon:6239"
         return validator_with_visium_assay
 
     @pytest.mark.parametrize(
@@ -3176,8 +3196,9 @@ class TestRoundworm:
     def test_organism_cell_type_ontology_term_id__visium_in_tissue_0(self, validator_with_visium_roundworm_adata):
         validator: Validator = validator_with_visium_roundworm_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "in_tissue"] = 0
-        obs.loc[obs.index[0], "cell_type_ontology_term_id"] = "unknown"
+        for i in range(2):
+            obs.loc[obs.index[i], "in_tissue"] = i
+            obs.loc[obs.index[i], "cell_type_ontology_term_id"] = "unknown"
         validator.reset(None, 2)
         validator.validate_adata()
         assert not validator.errors
@@ -3187,8 +3208,9 @@ class TestRoundworm:
     ):
         validator: Validator = validator_with_visium_roundworm_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "in_tissue"] = 0
-        obs.loc[obs.index[0], "cell_type_ontology_term_id"] = "WBbt:0005739"
+        for i in range(2):
+            obs.loc[obs.index[i], "in_tissue"] = i
+            obs.loc[obs.index[i], "cell_type_ontology_term_id"] = "WBbt:0005739"
         validator.reset(None, 2)
         validator.validate_adata()
         assert (

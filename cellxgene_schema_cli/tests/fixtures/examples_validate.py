@@ -154,7 +154,7 @@ good_obs_visium = pd.DataFrame(
             "HsapDv:0000003",
             "donor_1",
             "na",
-            0,
+            1,
         ],
     ],
     index=["X", "Y"],
@@ -421,6 +421,7 @@ good_uns_mouse = {
 }
 
 good_uns_with_labels = {
+    "organism_ontology_term_id": "NCBITaxon:9606",
     "organism": "Homo sapiens",
     "schema_version": "4.0.0",
     "schema_reference": "https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.0.0/schema.md",
