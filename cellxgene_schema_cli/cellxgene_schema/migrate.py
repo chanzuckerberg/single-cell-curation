@@ -34,8 +34,6 @@ ONTOLOGY_TERM_MAPS = {
     "development_stage": DEV_STAGE_AUTO_MIGRATE_MAP,
     "disease": {
     },
-    "organism": {
-    },
     "self_reported_ethnicity": {
     },
     "sex": {

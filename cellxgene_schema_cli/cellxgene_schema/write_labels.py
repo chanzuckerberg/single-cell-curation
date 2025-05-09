@@ -339,6 +339,21 @@ class AnnDataLabelAppender:
             if "add_labels" in index_def:
                 self._add_column(component, "index", index_def)
 
+        uns_def = self.schema_def["components"]["uns"]
+        for key in uns_def["keys"]:
+            key_def = uns_def["keys"][key]
+            if "add_labels" in key_def:
+                label_type = key_def["add_labels"][0]["type"]
+                if label_type == "curie":
+                    label_to_write = key_def["add_labels"][0]["to_column"]
+                    term_id = self.adata.uns[key]
+                    allowed_ontologies = key_def["curie_constraints"]["ontologies"]
+                    self.adata.uns[label_to_write] = self._get_ontology_term_label(
+                        term_id=term_id, allowed_ontologies=allowed_ontologies
+                    )
+                else:
+                    raise TypeError(f"'{label_type}' is not supported with uns 'add-labels'")
+
     def _remove_categories_with_zero_values(self):
         df = self.adata.obs
         for column in df.columns:
@@ -359,6 +374,7 @@ class AnnDataLabelAppender:
         :rtype None
         """
         logger.info("Writing labels")
+
         # Add columns to dataset dataframes based on values in other columns, as defined in schema definition yaml
         self._add_labels()
 

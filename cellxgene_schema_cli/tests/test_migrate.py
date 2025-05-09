@@ -21,9 +21,6 @@ class TestMigrate:
             "disease": {
                 "disease:1": "disease:2",
             },
-            "organism": {
-                "organism:1": "organism:2",
-            },
             "self_reported_ethnicity": {
                 "sre:1": "sre:2",
             },

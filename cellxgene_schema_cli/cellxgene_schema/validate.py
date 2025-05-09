@@ -467,14 +467,18 @@ class Validator:
         very specific cases. Note that we only check for prefixes, since validation that these are proper ontology
         terms / descendants is done within the curie constraints
         """
-        organism_column = "organism_ontology_term_id"
         tissue_column = "tissue_ontology_term_id"
         tissue_type_column = "tissue_type"
+        organism_key = "organism_ontology_term_id"
 
-        required_columns = [tissue_column, organism_column, tissue_type_column]
-        for column in required_columns:
+        required_obs_columns = [tissue_column, tissue_type_column]
+        for column in required_obs_columns:
             if column not in self.adata.obs.columns:
                 return
+        if organism_key not in self.adata.uns:
+            return
+
+        organism_term = self.adata.uns[organism_key]
 
         def is_valid_row(row):
             allowed_cell_culture_prefixes = {
@@ -497,7 +501,7 @@ class Validator:
                     allowed_prefixes = allowed_cell_culture_prefixes
                     always_allowed_prefix = "CL"
 
-            allowed = allowed_prefixes.get(row[organism_column], (always_allowed_prefix,))
+            allowed = allowed_prefixes.get(organism_term, (always_allowed_prefix,))
             return row[tissue_column].startswith(allowed)
 
         try:
@@ -524,13 +528,14 @@ class Validator:
         very specific cases. Note that we only check for prefixes, since validation that these are proper ontology
         terms / descendants is done within the curie constraints
         """
-        organism_column = "organism_ontology_term_id"
+        organism_key = "organism_ontology_term_id"
         cell_type_column = "cell_type_ontology_term_id"
+        if cell_type_column not in self.adata.obs.columns:
+            return
+        if organism_key not in self.adata.uns:
+            return
 
-        required_columns = [cell_type_column, organism_column]
-        for column in required_columns:
-            if column not in self.adata.obs.columns:
-                return
+        organism_term = self.adata.uns[organism_key]
 
         allowed_prefixes = {
             "NCBITaxon:6239": ("WBbt", "CL"),
@@ -541,7 +546,7 @@ class Validator:
         def is_valid_row(row):
             if row[cell_type_column] == "unknown":
                 return True
-            allowed = allowed_prefixes.get(row[organism_column], ("CL",))
+            allowed = allowed_prefixes.get(organism_term, ("CL",))
             return row[cell_type_column].startswith(allowed)
 
         try:
@@ -701,51 +706,62 @@ class Validator:
         self, df: pd.DataFrame, df_name: str, column_name: str, dependencies: List[dict]
     ) -> pd.Series:
         """
-        Validates subset of columns based on dependencies, for instance development_stage_ontology_term_id has
-        dependencies with organism_ontology_term_id -- the allowed values depend on whether organism is human, mouse
-        or something else.
+        Validates subset of columns based on dependencies, e.g., if a column like 'development_stage_ontology_term_id'
+        has allowed values that depend on other column values, either in the same dataframe (as specified by the
+        keyword "column") or in the uns dictionary (as specified by the keyword "uns_key").
 
-        After performing all validations, it will return the column that has been stripped of the already validated
-        fields -- this has to still be validated.
-
-        :param pd.DataFrame df: pandas dataframe containing the column to be validated
-        :param str df_name: the name of dataframe in the adata object, e.g. "obs"
-        :param str column_name: the name of the column to be validated
-        :param list dependencies: a list of dependency definitions, which is a list of column definitions with a "rule"
+        Returns a Series containing values from the column that were not matched by any rule.
         """
-
         all_rules = []
+
         for dependency_def in dependencies:
             terms_to_match = set()
-            column_to_match = dependency_def["rule"]["column"]
-            if "match_ancestors_inclusive" in dependency_def["rule"]:
-                ancestors = dependency_def["rule"]["match_ancestors_inclusive"]["ancestors"]
+            rule = dependency_def["rule"]
+            column_to_match = rule.get("column")
+            uns_key_to_match = rule.get("uns_key")
+
+            # Build the set of terms to match
+            if "match_ancestors_inclusive" in rule:
+                ancestors = rule["match_ancestors_inclusive"]["ancestors"]
                 for ancestor in ancestors:
-                    terms_to_match.update(get_descendants(ONTOLOGY_PARSER, ancestor, True))
-            if "match_exact" in dependency_def["rule"]:
-                terms_to_match.update(dependency_def["rule"]["match_exact"]["terms"])
+                    terms_to_match.update(get_descendants(ONTOLOGY_PARSER, ancestor, include_self=True))
+            if "match_exact" in rule:
+                terms_to_match.update(rule["match_exact"]["terms"])
+
             try:
-                match_query = df[column_to_match].isin(terms_to_match)
+                if column_to_match:
+                    match_query = df[column_to_match].isin(terms_to_match)
+                elif uns_key_to_match:
+                    uns_value = self.adata.uns[uns_key_to_match]
+                    match = uns_value in terms_to_match
+                    match_query = pd.Series([match] * len(df), index=df.index)
+                else:
+                    self.errors.append(f"Validation rule for '{column_name}' must define either 'column' or 'uns_key'.")
+                    continue
+
                 match_df = df[match_query]
-                column = getattr(match_df, column_name)
-                error_message_suffix = dependency_def.get("error_message_suffix", None)
+                column = match_df[column_name]
+                error_message_suffix = dependency_def.get("error_message_suffix")
                 if not error_message_suffix:
-                    matched_values = list(getattr(match_df, column_to_match).unique())
-                    error_message_suffix = f"when '{column_to_match}' is in {matched_values}"
+                    if column_to_match:
+                        matched_values = list(match_df[column_to_match].unique())
+                        error_message_suffix = f"when '{column_to_match}' is in {matched_values}"
+                    elif uns_key_to_match:
+                        error_message_suffix = f"when '{uns_key_to_match}' is '{uns_value}'"
             except KeyError:
                 self.errors.append(
                     f"Checking values with dependencies failed for adata.{df_name}['{column_name}'], "
-                    f"this is likely due to missing dependent column in adata.{df_name}."
+                    f"likely due to missing column or uns key."
                 )
-                return pd.Series(dtype=np.float64)
+                continue
 
             all_rules.append(match_query)
             self._validate_column(column, column_name, df_name, dependency_def, error_message_suffix)
 
-        # Return column of data that was not matched by any of the rules
-        column = getattr(df[~np.logical_or.reduce(all_rules)], column_name)
+        # Combine all match queries to exclude validated entries
+        unmatched_mask = ~np.logical_or.reduce(all_rules) if all_rules else pd.Series([True] * len(df), index=df.index)
 
-        return column
+        return df.loc[unmatched_mask, column_name]
 
     def _validate_list(self, list_name: str, current_list: List[str], element_type: str):
         """
@@ -945,7 +961,7 @@ class Validator:
                         self.warnings.append(column_def["warning_message"])
                     self._validate_column(column, column_name, df_name, column_def)
 
-    def _validate_uns_dict(self, uns_dict: dict) -> None:
+    def _validate_uns_dict(self, uns_dict: dict, dict_def: dict) -> None:
         df = getattr_anndata(self.adata, "obs")
 
         # Mapping from obs column name to number of unique categorical values
@@ -963,6 +979,10 @@ class Validator:
                     self.errors.append(f"uns['{key}'] cannot be an empty value.")
             elif value is not None and not isinstance(value, (np.bool_, bool, numbers.Number)) and len(value) == 0:
                 self.errors.append(f"uns['{key}'] cannot be an empty value.")
+
+            value_def = dict_def["keys"].get(key, None)
+            if value_def is not None and value_def.get("type") == "curie":
+                self._validate_curie_str(value, key, value_def["curie_constraints"])
 
             if key.endswith("_colors"):
                 # 1. Verify that the corresponding categorical field exists in obs
@@ -2100,7 +2120,7 @@ class Validator:
             elif component_def["type"] == "dict":
                 self._validate_dict(component, component_name, component_def)
                 if component_name == "uns":
-                    self._validate_uns_dict(component)
+                    self._validate_uns_dict(component, component_def)
             elif component_def["type"] == "annotation_mapping":
                 self._validate_annotation_mapping(component_name, component)
                 if component_name == "obsm":
@@ -2154,6 +2174,10 @@ class Validator:
 
         # Print errors if any
         if self.errors:
+            # Some of the required column checks are done multiple times. Ensure there are no duplicates when
+            # reporting the errors, but preserve the original ordering of the errors
+            seen = set()
+            self.errors = [e for e in self.errors if not (e in seen or seen.add(e))]
             self.errors = ["ERROR: " + i for i in self.errors]
             for e in self.errors:
                 logger.error(e)

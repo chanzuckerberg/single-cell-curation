@@ -30,22 +30,32 @@ class AnnDataLabelRemover:
             if component is None:
                 continue
 
+            component_def = self.schema_def["components"][component_name]
+
             # Doing it for columns
-            if "columns" in self.schema_def["components"][component_name]:
-                for column_def in self.schema_def["components"][component_name]["columns"].values():
+            if "columns" in component_def:
+                for column_def in component_def["columns"].values():
                     if "add_labels" in column_def:
                         self._remove_columns(component, column_def)
 
             # Remove automatically annotated columns
-            if "reserved_columns" in self.schema_def["components"][component_name]:
-                for field in self.schema_def["components"][component_name]["reserved_columns"]:
+            if "reserved_columns" in component_def:
+                for field in component_def["reserved_columns"]:
                     del component[field]
 
             # Doing it for index
-            if "index" in self.schema_def["components"][component_name]:
-                index_def = self.schema_def["components"][component_name]["index"]
+            if "index" in component_def:
+                index_def = component_def["index"]
                 if "add_labels" in index_def:
                     self._remove_columns(component, index_def)
+
+            # Remove any labels added as dict keys
+            if "keys" in component_def:
+                for key in component_def["keys"]:
+                    key_def = component_def["keys"][key]
+                    if "add_labels" in key_def:
+                        key_to_remove = key_def["add_labels"][0]["to_column"]
+                        del component[key_to_remove]
 
     def _remove_columns(self, component: DataFrame, subcomponent_definition: dict):
         """

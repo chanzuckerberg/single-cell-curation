@@ -497,8 +497,8 @@ class TestCheckSpatial:
         # Confirm key type dict is required.
         validator.validate_adata()
         assert (
-            validator.errors[0]
-            == "ERROR: A dict in uns['spatial'] is required when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)."
+            "ERROR: A dict in uns['spatial'] is required when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)."
+            in validator.errors
         )
 
     def test__validate_spatial_is_single_false_ok(self):

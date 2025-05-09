@@ -40,7 +40,6 @@ good_obs = pd.DataFrame(
             "CL:0000066",
             "EFO:0009899",
             "MONDO:0100096",
-            "NCBITaxon:9606",
             "PATO:0000383",
             "UBERON:0002048",
             "tissue",
@@ -51,18 +50,17 @@ good_obs = pd.DataFrame(
             "nucleus",
         ],
         [
-            "CL:0000192",
-            "EFO:0008992",
-            "PATO:0000461",
-            "NCBITaxon:10090",
-            "unknown",
-            "CL:0000192",
-            "cell culture",
-            False,
-            "na",
-            "MmusDv:0000003",
-            "donor_2",
-            "na",
+            "CL:0000066",
+            "EFO:0009899",
+            "MONDO:0100096",
+            "PATO:0000383",
+            "UBERON:0002048",
+            "tissue",
+            True,
+            "HANCESTRO:0575",
+            "HsapDv:0000003",
+            "donor_1",
+            "nucleus",
         ],
     ],
     index=["X", "Y"],
@@ -70,7 +68,6 @@ good_obs = pd.DataFrame(
         "cell_type_ontology_term_id",
         "assay_ontology_term_id",
         "disease_ontology_term_id",
-        "organism_ontology_term_id",
         "sex_ontology_term_id",
         "tissue_ontology_term_id",
         "tissue_type",
@@ -85,6 +82,7 @@ good_obs = pd.DataFrame(
 good_obs["donor_id"] = good_obs["donor_id"].astype("category")
 good_obs["suspension_type"] = good_obs["suspension_type"].astype("category")
 good_obs["tissue_type"] = good_obs["tissue_type"].astype("category")
+good_obs["tissue_type"] = good_obs["tissue_type"].cat.add_categories(["cell culture", "organoid"])
 
 # Expected obs, this is what the obs above should look like after adding the necessary columns with the validator,
 # these columns are defined in the schema
@@ -94,21 +92,19 @@ obs_expected = pd.DataFrame(
             "epithelial cell",
             "10x 3' v2",
             "COVID-19",
-            "Homo sapiens",
             "female",
             "lung",
             "Yoruban",
             "Carnegie stage 01",
         ],
         [
-            "smooth muscle cell",
-            "MERFISH",
-            "normal",
-            "Mus musculus",
-            "unknown",
-            "smooth muscle cell",
-            "na",
-            "Theiler stage 01",
+            "epithelial cell",
+            "10x 3' v2",
+            "COVID-19",
+            "female",
+            "lung",
+            "Yoruban",
+            "Carnegie stage 01",
         ],
     ],
     index=["X", "Y"],
@@ -116,7 +112,6 @@ obs_expected = pd.DataFrame(
         "cell_type",
         "assay",
         "disease",
-        "organism",
         "sex",
         "tissue",
         "self_reported_ethnicity",
@@ -135,7 +130,6 @@ good_obs_visium = pd.DataFrame(
             "unknown",
             "EFO:0022859",
             "MONDO:0100096",
-            "NCBITaxon:9606",
             "PATO:0000383",
             "UBERON:0002048",
             "tissue",
@@ -147,19 +141,18 @@ good_obs_visium = pd.DataFrame(
             0,
         ],
         [
-            2,
-            2,
-            "CL:0000192",
-            "EFO:0022859",
-            "PATO:0000461",
-            "NCBITaxon:10090",
+            1,
+            1,
             "unknown",
-            "CL:0000192",
-            "cell culture",
-            False,
-            "na",
-            "MmusDv:0000003",
-            "donor_2",
+            "EFO:0022859",
+            "MONDO:0100096",
+            "PATO:0000383",
+            "UBERON:0002048",
+            "tissue",
+            True,
+            "HANCESTRO:0575",
+            "HsapDv:0000003",
+            "donor_1",
             "na",
             1,
         ],
@@ -171,7 +164,6 @@ good_obs_visium = pd.DataFrame(
         "cell_type_ontology_term_id",
         "assay_ontology_term_id",
         "disease_ontology_term_id",
-        "organism_ontology_term_id",
         "sex_ontology_term_id",
         "tissue_ontology_term_id",
         "tissue_type",
@@ -187,6 +179,7 @@ good_obs_visium = pd.DataFrame(
 good_obs_visium["donor_id"] = good_obs_visium["donor_id"].astype("category")
 good_obs_visium["suspension_type"] = good_obs_visium["suspension_type"].astype("category")
 good_obs_visium["tissue_type"] = good_obs_visium["tissue_type"].astype("category")
+good_obs_visium["tissue_type"] = good_obs_visium["tissue_type"].cat.add_categories(["cell culture", "organoid"])
 
 # Valid spatial obs per schema
 good_obs_slide_seqv2 = pd.DataFrame(
@@ -195,7 +188,6 @@ good_obs_slide_seqv2 = pd.DataFrame(
             "CL:0000066",
             "EFO:0030062",
             "MONDO:0100096",
-            "NCBITaxon:9606",
             "PATO:0000383",
             "UBERON:0002048",
             "tissue",
@@ -206,17 +198,16 @@ good_obs_slide_seqv2 = pd.DataFrame(
             "na",
         ],
         [
-            "CL:0000192",
+            "CL:0000066",
             "EFO:0030062",
-            "PATO:0000461",
-            "NCBITaxon:10090",
-            "unknown",
-            "CL:0000192",
-            "cell culture",
-            False,
-            "na",
-            "MmusDv:0000003",
-            "donor_2",
+            "MONDO:0100096",
+            "PATO:0000383",
+            "UBERON:0002048",
+            "tissue",
+            True,
+            "HANCESTRO:0575",
+            "HsapDv:0000003",
+            "donor_1",
             "na",
         ],
     ],
@@ -225,7 +216,6 @@ good_obs_slide_seqv2 = pd.DataFrame(
         "cell_type_ontology_term_id",
         "assay_ontology_term_id",
         "disease_ontology_term_id",
-        "organism_ontology_term_id",
         "sex_ontology_term_id",
         "tissue_ontology_term_id",
         "tissue_type",
@@ -240,6 +230,9 @@ good_obs_slide_seqv2 = pd.DataFrame(
 good_obs_slide_seqv2["donor_id"] = good_obs_slide_seqv2["donor_id"].astype("category")
 good_obs_slide_seqv2["suspension_type"] = good_obs_slide_seqv2["suspension_type"].astype("category")
 good_obs_slide_seqv2["tissue_type"] = good_obs_slide_seqv2["tissue_type"].astype("category")
+good_obs_slide_seqv2["tissue_type"] = good_obs_slide_seqv2["tissue_type"].cat.add_categories(
+    ["cell culture", "organoid"]
+)
 
 good_obs_visium_is_single_false = pd.DataFrame(
     [
@@ -247,7 +240,6 @@ good_obs_visium_is_single_false = pd.DataFrame(
             "CL:0000066",
             "EFO:0022859",
             "MONDO:0100096",
-            "NCBITaxon:9606",
             "PATO:0000383",
             "UBERON:0002048",
             "tissue",
@@ -258,17 +250,16 @@ good_obs_visium_is_single_false = pd.DataFrame(
             "na",
         ],
         [
-            "CL:0000192",
+            "CL:0000066",
             "EFO:0022859",
-            "PATO:0000461",
-            "NCBITaxon:10090",
-            "unknown",
-            "CL:0000192",
-            "cell culture",
+            "MONDO:0100096",
+            "PATO:0000383",
+            "UBERON:0002048",
+            "tissue",
             False,
-            "na",
-            "MmusDv:0000003",
-            "donor_2",
+            "HANCESTRO:0575",
+            "HsapDv:0000003",
+            "donor_1",
             "na",
         ],
     ],
@@ -277,7 +268,6 @@ good_obs_visium_is_single_false = pd.DataFrame(
         "cell_type_ontology_term_id",
         "assay_ontology_term_id",
         "disease_ontology_term_id",
-        "organism_ontology_term_id",
         "sex_ontology_term_id",
         "tissue_ontology_term_id",
         "tissue_type",
@@ -294,6 +284,59 @@ good_obs_visium_is_single_false["suspension_type"] = good_obs_visium_is_single_f
     "category"
 )
 good_obs_visium_is_single_false["tissue_type"] = good_obs_visium_is_single_false["tissue_type"].astype("category")
+good_obs_visium_is_single_false["tissue_type"] = good_obs_visium_is_single_false["tissue_type"].cat.add_categories(
+    ["cell culture", "organoid"]
+)
+
+good_obs_mouse = pd.DataFrame(
+    [
+        [
+            "CL:0000192",
+            "EFO:0008992",
+            "PATO:0000461",
+            "unknown",
+            "CL:0000192",
+            "cell culture",
+            False,
+            "na",
+            "MmusDv:0000003",
+            "donor_2",
+            "na",
+        ],
+        [
+            "CL:0000192",
+            "EFO:0008992",
+            "PATO:0000461",
+            "unknown",
+            "CL:0000192",
+            "cell culture",
+            False,
+            "na",
+            "MmusDv:0000003",
+            "donor_2",
+            "na",
+        ],
+    ],
+    index=["X", "Y"],
+    columns=[
+        "cell_type_ontology_term_id",
+        "assay_ontology_term_id",
+        "disease_ontology_term_id",
+        "sex_ontology_term_id",
+        "tissue_ontology_term_id",
+        "tissue_type",
+        "is_primary_data",
+        "self_reported_ethnicity_ontology_term_id",
+        "development_stage_ontology_term_id",
+        "donor_id",
+        "suspension_type",
+    ],
+)
+
+good_obs_mouse["donor_id"] = good_obs_mouse["donor_id"].astype("category")
+good_obs_mouse["suspension_type"] = good_obs_mouse["suspension_type"].astype("category")
+good_obs_mouse["tissue_type"] = good_obs_mouse["tissue_type"].astype("category")
+good_obs_mouse["tissue_type"] = good_obs_mouse["tissue_type"].cat.add_categories(["tissue", "organoid"])
 
 # ---
 # 2. Creating individual var components: valid object and valid object and with labels
@@ -362,6 +405,15 @@ NUMBER_OF_GENES = len(var_expected.index)
 # ---
 # 3. Creating individual uns component
 good_uns = {
+    "organism_ontology_term_id": "NCBITaxon:9606",
+    "title": "A title",
+    "default_embedding": "X_umap",
+    "X_approximate_distribution": "normal",
+    "batch_condition": ["is_primary_data"],
+}
+
+good_uns_mouse = {
+    "organism_ontology_term_id": "NCBITaxon:10090",
     "title": "A title",
     "default_embedding": "X_umap",
     "X_approximate_distribution": "normal",
@@ -369,6 +421,8 @@ good_uns = {
 }
 
 good_uns_with_labels = {
+    "organism_ontology_term_id": "NCBITaxon:9606",
+    "organism": "Homo sapiens",
     "schema_version": "4.0.0",
     "schema_reference": "https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.0.0/schema.md",
     "citation": "Publication: <doi> Dataset Version: "
@@ -381,6 +435,7 @@ good_uns_with_labels = {
 }
 
 good_uns_with_colors = {
+    "organism_ontology_term_id": "NCBITaxon:9606",
     "title": "A title",
     "default_embedding": "X_umap",
     "X_approximate_distribution": "normal",
@@ -393,6 +448,7 @@ good_uns_with_colors = {
 visium_library_id = "Proj2023_Lung_C001"
 
 good_uns_with_visium_spatial = {
+    "organism_ontology_term_id": "NCBITaxon:9606",
     "title": "A title",
     "default_embedding": "X_umap",
     "X_approximate_distribution": "normal",
@@ -413,6 +469,7 @@ good_uns_with_visium_spatial = {
 }
 
 good_uns_with_is_single_false = {
+    "organism_ontology_term_id": "NCBITaxon:9606",
     "title": "A title",
     "default_embedding": "X_umap",
     "X_approximate_distribution": "normal",
@@ -421,6 +478,7 @@ good_uns_with_is_single_false = {
 }
 
 good_uns_with_slide_seqV2_spatial = {
+    "organism_ontology_term_id": "NCBITaxon:9606",
     "title": "A title",
     "default_embedding": "X_umap",
     "X_approximate_distribution": "normal",
@@ -512,6 +570,14 @@ adata_spatial_is_single_false = anndata.AnnData(
     var=good_var,
 )
 
+adata_mouse = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_mouse,
+    uns=good_uns_mouse,
+    obsm=good_obsm,
+    var=good_var,
+)
+
 # anndata for testing migration
 unmigrated_obs = pd.DataFrame(
     [
@@ -519,7 +585,6 @@ unmigrated_obs = pd.DataFrame(
             "cell_type:1",
             "assay:1",
             "disease:1",
-            "organism:1",
             "sex:1",
             "tissue:1",
             "sre:1",
@@ -529,7 +594,6 @@ unmigrated_obs = pd.DataFrame(
             "cell_type:1",
             "assay:1",
             "disease:1",
-            "organism:1",
             "sex:1",
             "tissue:1",
             "sre:1",
@@ -541,7 +605,6 @@ unmigrated_obs = pd.DataFrame(
         "cell_type_ontology_term_id",
         "assay_ontology_term_id",
         "disease_ontology_term_id",
-        "organism_ontology_term_id",
         "sex_ontology_term_id",
         "tissue_ontology_term_id",
         "self_reported_ethnicity_ontology_term_id",
