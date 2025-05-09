@@ -469,16 +469,16 @@ class Validator:
         """
         tissue_column = "tissue_ontology_term_id"
         tissue_type_column = "tissue_type"
-        organism_column = "organism_ontology_term_id"
+        organism_key = "organism_ontology_term_id"
 
         required_obs_columns = [tissue_column, tissue_type_column]
         for column in required_obs_columns:
             if column not in self.adata.obs.columns:
                 return
-        if organism_column not in self.adata.uns:
+        if organism_key not in self.adata.uns:
             return
 
-        organism_term = self.adata.uns[organism_column][0]
+        organism_term = self.adata.uns[organism_key]
 
         def is_valid_row(row):
             allowed_cell_culture_prefixes = {
@@ -528,14 +528,14 @@ class Validator:
         very specific cases. Note that we only check for prefixes, since validation that these are proper ontology
         terms / descendants is done within the curie constraints
         """
-        organism_column = "organism_ontology_term_id"
+        organism_key = "organism_ontology_term_id"
         cell_type_column = "cell_type_ontology_term_id"
         if cell_type_column not in self.adata.obs.columns:
             return
-        if organism_column not in self.adata.uns:
+        if organism_key not in self.adata.uns:
             return
 
-        organism_term = self.adata.uns[organism_column][0]
+        organism_term = self.adata.uns[organism_key]
 
         allowed_prefixes = {
             "NCBITaxon:6239": ("WBbt", "CL"),
@@ -964,7 +964,7 @@ class Validator:
                         self.warnings.append(column_def["warning_message"])
                     self._validate_column(column, column_name, df_name, column_def)
 
-    def _validate_uns_dict(self, uns_dict: dict) -> None:
+    def _validate_uns_dict(self, uns_dict: dict, dict_def: dict) -> None:
         df = getattr_anndata(self.adata, "obs")
 
         # Mapping from obs column name to number of unique categorical values
@@ -982,6 +982,10 @@ class Validator:
                     self.errors.append(f"uns['{key}'] cannot be an empty value.")
             elif value is not None and not isinstance(value, (np.bool_, bool, numbers.Number)) and len(value) == 0:
                 self.errors.append(f"uns['{key}'] cannot be an empty value.")
+
+            value_def = dict_def["keys"].get(key, None)
+            if value_def is not None and value_def.get("type") == "curie":
+                self._validate_curie_str(value, key, value_def["curie_constraints"])
 
             if key.endswith("_colors"):
                 # 1. Verify that the corresponding categorical field exists in obs
@@ -2119,7 +2123,7 @@ class Validator:
             elif component_def["type"] == "dict":
                 self._validate_dict(component, component_name, component_def)
                 if component_name == "uns":
-                    self._validate_uns_dict(component)
+                    self._validate_uns_dict(component, component_def)
             elif component_def["type"] == "annotation_mapping":
                 self._validate_annotation_mapping(component_name, component)
                 if component_name == "obsm":
@@ -2173,6 +2177,10 @@ class Validator:
 
         # Print errors if any
         if self.errors:
+            # Some of the required column checks are done multiple times. Ensure there are no duplicates when
+            # reporting the errors, but preserve the original ordering of the errors
+            seen = set()
+            self.errors = [e for e in self.errors if not (e in seen or seen.add(e))]
             self.errors = ["ERROR: " + i for i in self.errors]
             for e in self.errors:
                 logger.error(e)

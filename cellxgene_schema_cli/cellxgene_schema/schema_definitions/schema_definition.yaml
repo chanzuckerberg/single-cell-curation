@@ -39,7 +39,6 @@ components:
     keys:
       organism_ontology_term_id:
         type: curie
-        error_message_suffix: "Only explicitly enumerated species are allowed. See Schema"
         curie_constraints:
           ontologies:
             - NCBITaxon

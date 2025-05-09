@@ -288,6 +288,56 @@ good_obs_visium_is_single_false["tissue_type"] = good_obs_visium_is_single_false
     ["cell culture", "organoid"]
 )
 
+good_obs_mouse = pd.DataFrame(
+    [
+        [
+            "CL:0000192",
+            "EFO:0008992",
+            "PATO:0000461",
+            "unknown",
+            "CL:0000192",
+            "cell culture",
+            False,
+            "na",
+            "MmusDv:0000003",
+            "donor_2",
+            "na",
+        ],
+        [
+            "CL:0000192",
+            "EFO:0008992",
+            "PATO:0000461",
+            "unknown",
+            "CL:0000192",
+            "cell culture",
+            False,
+            "na",
+            "MmusDv:0000003",
+            "donor_2",
+            "na",
+        ],
+    ],
+    index=["X", "Y"],
+    columns=[
+        "cell_type_ontology_term_id",
+        "assay_ontology_term_id",
+        "disease_ontology_term_id",
+        "sex_ontology_term_id",
+        "tissue_ontology_term_id",
+        "tissue_type",
+        "is_primary_data",
+        "self_reported_ethnicity_ontology_term_id",
+        "development_stage_ontology_term_id",
+        "donor_id",
+        "suspension_type",
+    ],
+)
+
+good_obs_mouse["donor_id"] = good_obs_mouse["donor_id"].astype("category")
+good_obs_mouse["suspension_type"] = good_obs_mouse["suspension_type"].astype("category")
+good_obs_mouse["tissue_type"] = good_obs_mouse["tissue_type"].astype("category")
+good_obs_mouse["tissue_type"] = good_obs_mouse["tissue_type"].cat.add_categories(["tissue", "organoid"])
+
 # ---
 # 2. Creating individual var components: valid object and valid object and with labels
 
@@ -356,6 +406,14 @@ NUMBER_OF_GENES = len(var_expected.index)
 # 3. Creating individual uns component
 good_uns = {
     "organism_ontology_term_id": "NCBITaxon:9606",
+    "title": "A title",
+    "default_embedding": "X_umap",
+    "X_approximate_distribution": "normal",
+    "batch_condition": ["is_primary_data"],
+}
+
+good_uns_mouse = {
+    "organism_ontology_term_id": "NCBITaxon:10090",
     "title": "A title",
     "default_embedding": "X_umap",
     "X_approximate_distribution": "normal",
@@ -508,6 +566,14 @@ adata_spatial_is_single_false = anndata.AnnData(
     obs=good_obs_visium_is_single_false,
     uns=good_uns_with_is_single_false,
     obsm=good_obsm_spatial,
+    var=good_var,
+)
+
+adata_mouse = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_mouse,
+    uns=good_uns_mouse,
+    obsm=good_obsm,
     var=good_var,
 )
 
