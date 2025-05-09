@@ -1254,7 +1254,6 @@ class TestObs:
         organism_ontology_term_id categorical with str categories. This MUST be one of approved enumerated species.
         """
         validator = validator_with_adata
-        obs = validator.adata.obs
         validator.adata.uns["organism_ontology_term_id"] = organism_ontology_term_id
         validator.validate_adata()
         assert len(validator.errors) > 0

@@ -759,10 +759,7 @@ class Validator:
             self._validate_column(column, column_name, df_name, dependency_def, error_message_suffix)
 
         # Combine all match queries to exclude validated entries
-        if all_rules:
-            unmatched_mask = ~np.logical_or.reduce(all_rules)
-        else:
-            unmatched_mask = pd.Series([True] * len(df), index=df.index)
+        unmatched_mask = ~np.logical_or.reduce(all_rules) if all_rules else pd.Series([True] * len(df), index=df.index)
 
         return df.loc[unmatched_mask, column_name]
 
