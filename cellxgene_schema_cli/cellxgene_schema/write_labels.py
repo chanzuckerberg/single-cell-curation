@@ -345,7 +345,7 @@ class AnnDataLabelAppender:
             if "add_labels" in key_def:
                 label_type = key_def["add_labels"][0]["type"]
                 if label_type == "curie":
-                    label_to_write = key_def["add_labels"][0]["to_column"]
+                    label_to_write = key_def["add_labels"][0]["to_key"]
                     term_id = self.adata.uns[key]
                     allowed_ontologies = key_def["curie_constraints"]["ontologies"]
                     self.adata.uns[label_to_write] = self._get_ontology_term_label(

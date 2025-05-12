@@ -72,7 +72,7 @@ components:
                 - NCBITaxon:9823
         add_labels:
           - type: curie
-            to_column: organism
+            to_key: organism
       title:
         type: string
         required: True

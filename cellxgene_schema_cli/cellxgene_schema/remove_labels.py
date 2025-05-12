@@ -54,7 +54,7 @@ class AnnDataLabelRemover:
                 for key in component_def["keys"]:
                     key_def = component_def["keys"][key]
                     if "add_labels" in key_def:
-                        key_to_remove = key_def["add_labels"][0]["to_column"]
+                        key_to_remove = key_def["add_labels"][0]["to_key"]
                         del component[key_to_remove]
 
     def _remove_columns(self, component: DataFrame, subcomponent_definition: dict):
