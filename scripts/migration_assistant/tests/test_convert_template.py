@@ -21,7 +21,6 @@ def test_generate_script__without_gencode_changes(template, tmpdir):  # type: ig
         "cell_type": {},
         "development_stage": {},
         "disease": {},
-        "organism": {},
         "self_reported_ethnicity": {},
         "sex": {},
         "tissue": {},
@@ -56,8 +55,6 @@ ONTOLOGY_TERM_MAPS = {
     "development_stage": {
     },
     "disease": {
-    },
-    "organism": {
     },
     "self_reported_ethnicity": {
     },
@@ -123,7 +120,6 @@ def test_generate_script__with_automated_replaced_by_map(template, tmpdir):  # t
         "cell_type": {"CL:0000002": "CL:0000001", "CL:0000004": "unknown"},
         "development_stage": {},
         "disease": {},
-        "organism": {},
         "self_reported_ethnicity": {},
         "sex": {},
         "tissue": {},
@@ -161,8 +157,6 @@ ONTOLOGY_TERM_MAPS = {
     "development_stage": {
     },
     "disease": {
-    },
-    "organism": {
     },
     "self_reported_ethnicity": {
     },
@@ -229,7 +223,6 @@ def test_generate_script__with_gencode_changes(template, tmpdir):  # type: ignor
         "cell_type": {},
         "development_stage": {},
         "disease": {},
-        "organism": {},
         "self_reported_ethnicity": {},
         "sex": {},
         "tissue": {},
@@ -270,8 +263,6 @@ ONTOLOGY_TERM_MAPS = {
     "development_stage": {
     },
     "disease": {
-    },
-    "organism": {
     },
     "self_reported_ethnicity": {
     },
