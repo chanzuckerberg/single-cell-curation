@@ -15,12 +15,11 @@ def zebrafish_adata():
     zebrafish_adata = adata.copy()
     obs = zebrafish_adata.obs
     obs.drop(columns=["cell_type_ontology_term_id", "tissue_ontology_term_id"], inplace=True)
-    obs["organism_ontology_term_id"] = "NCBITaxon:7955"
+    zebrafish_adata.uns["organism_ontology_term_id"] = "NCBITaxon:7955"
     obs["development_stage_ontology_term_id"] = "ZFS:0000016"
     obs["self_reported_ethnicity_ontology_term_id"] = "na"
     obs["tissue_type"] = "tissue"
 
-    obs["organism_ontology_term_id"] = obs["organism_ontology_term_id"].astype("category")
     obs["development_stage_ontology_term_id"] = obs["development_stage_ontology_term_id"].astype("category")
     obs["self_reported_ethnicity_ontology_term_id"] = obs["self_reported_ethnicity_ontology_term_id"].astype("category")
     obs["tissue_type"] = obs["tissue_type"].astype("category")

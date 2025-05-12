@@ -37,6 +37,42 @@ components:
       - project_name
       - publication_doi
     keys:
+      organism_ontology_term_id:
+        type: curie
+        curie_constraints:
+          ontologies:
+            - NCBITaxon
+          allowed:
+            terms:
+              NCBITaxon:
+                - NCBITaxon:9606
+                - NCBITaxon:10090
+                - NCBITaxon:2697049
+                - NCBITaxon:32630
+                - NCBITaxon:7227
+                - NCBITaxon:7955
+                - NCBITaxon:6239
+                - NCBITaxon:9541
+                - NCBITaxon:9986
+                - NCBITaxon:9483
+                - NCBITaxon:9595
+                - NCBITaxon:9544
+                - NCBITaxon:9598
+                - NCBITaxon:9823
+                - NCBITaxon:30608
+                - NCBITaxon:10116
+            ancestors:
+              NCBITaxon:
+                - NCBITaxon:9541
+                - NCBITaxon:9544
+                - NCBITaxon:10090
+                - NCBITaxon:9986
+                - NCBITaxon:9598
+                - NCBITaxon:10116
+                - NCBITaxon:9823
+        add_labels:
+          - type: curie
+            to_key: organism
       title:
         type: string
         required: True
@@ -187,50 +223,12 @@ components:
         add_labels:
           - type: curie
             to_column: disease
-      organism_ontology_term_id:
-        type: curie
-        error_message_suffix: "Only explicitly enumerated species are allowed. See Schema"
-        curie_constraints:
-          ontologies:
-            - NCBITaxon
-          allowed:
-            terms:
-              NCBITaxon:
-                - NCBITaxon:9606
-                - NCBITaxon:10090
-                - NCBITaxon:2697049
-                - NCBITaxon:32630
-                - NCBITaxon:7227
-                - NCBITaxon:7955
-                - NCBITaxon:6239
-                - NCBITaxon:9541
-                - NCBITaxon:9986
-                - NCBITaxon:9483
-                - NCBITaxon:9595
-                - NCBITaxon:9544
-                - NCBITaxon:9598
-                - NCBITaxon:9823
-                - NCBITaxon:30608
-                - NCBITaxon:10116
-            ancestors:
-              NCBITaxon:
-                - NCBITaxon:9541
-                - NCBITaxon:9544
-                - NCBITaxon:10090
-                - NCBITaxon:9986
-                - NCBITaxon:9598
-                - NCBITaxon:10116
-                - NCBITaxon:9823
-
-        add_labels:
-          - type: curie
-            to_column: organism
       sex_ontology_term_id:
         type: curie
         dependencies:
           - # If organism is c. elegans
             rule:
-                column: organism_ontology_term_id
+                uns_key: organism_ontology_term_id
                 match_exact:
                   terms:
                     - NCBITaxon:6239
@@ -354,7 +352,7 @@ components:
         dependencies:
           - # If organism is Human
             rule:
-              column: organism_ontology_term_id
+              uns_key: organism_ontology_term_id
               match_exact:
                 terms:
                   - NCBITaxon:9606
@@ -416,7 +414,7 @@ components:
         dependencies:
           - # If organism is Human
             rule:
-              column: organism_ontology_term_id
+              uns_key: organism_ontology_term_id
               match_exact:
                 terms:
                   - NCBITaxon:9606
@@ -434,7 +432,7 @@ components:
                 - unknown
           - # If organism is Mouse
             rule:
-              column: organism_ontology_term_id
+              uns_key: organism_ontology_term_id
               match_ancestors_inclusive:
                 ancestors:
                   - NCBITaxon:10090
@@ -452,7 +450,7 @@ components:
                 - unknown
           - # If organism is Zebrafish
             rule:
-              column: organism_ontology_term_id
+              uns_key: organism_ontology_term_id
               match_exact:
                 terms:
                   - NCBITaxon:7955
@@ -473,7 +471,7 @@ components:
                 - unknown
           - # If organism is Fruit fly
             rule:
-              column: organism_ontology_term_id
+              uns_key: organism_ontology_term_id
               match_exact:
                 terms:
                   - NCBITaxon:7227
@@ -495,7 +493,7 @@ components:
                 - unknown
           - # If organism is C. elegans
             rule:
-                column: organism_ontology_term_id
+                uns_key: organism_ontology_term_id
                 match_exact:
                   terms:
                     - NCBITaxon:6239
