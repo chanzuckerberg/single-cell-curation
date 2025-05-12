@@ -214,21 +214,6 @@ class GeneProcessor:
             # Add to self.gene_labels and self.gene_ids_by_description
             self.process_individual_gene_info(gene_infos[gene_info_key])
 
-        # Deduplicate gene names across all gene_metadata
-        print("Deduplicating gene names...")
-        gene_names = set()
-        duplicated_gene_names = set()
-        for gene_metadata in self.gene_metadata.values():
-            gene_name = gene_metadata.gene_name
-            if gene_name in gene_names:
-                duplicated_gene_names.add(gene_name)
-            else:
-                gene_names.add(gene_name)
-        for gene_id, gene_metadata in self.gene_metadata.items():
-            gene_name = gene_metadata.gene_name
-            if gene_name in duplicated_gene_names:
-                self.gene_metadata[gene_id].gene_name = gene_name + "_" + gene_id
-
         # Write output for each file, and process file diffs
         for gene_info_key in gene_infos:
             gene_info_description = gene_infos[gene_info_key]["description"]
