@@ -33,11 +33,6 @@ ONTOLOGY_TERM_MAPS = {
         "{{ old }}": "{{ new }}", # AUTOMATED
         {% endfor %}
     },
-    "organism": {
-        {% for old, new in ontology_term_map.organism.items() %}
-        "{{ old }}": "{{ new }}", # AUTOMATED
-        {% endfor %}
-    },
     "self_reported_ethnicity": {
         {% for old, new in ontology_term_map.self_reported_ethnicity.items() %}
         "{{ old }}": "{{ new }}", # AUTOMATED
