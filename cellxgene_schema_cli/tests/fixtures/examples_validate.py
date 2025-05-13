@@ -374,9 +374,9 @@ var_expected = pd.DataFrame(
     [
         ["spike-in", False, "ERCC-00002 (spike-in control)", "NCBITaxon:32630", 1061, "synthetic"],
         # ["gene", False, "MACF1", "NCBITaxon:9606", 2821, "protein_coding"],
-        ["gene", False, "MACF1_ENSG00000127603", "NCBITaxon:9606", 2821, "protein_coding"],
+        ["gene", False, "MACF1", "NCBITaxon:9606", 2821, "protein_coding"],
         ["gene", False, "Trp53", "NCBITaxon:10090", 1797, "protein_coding"],
-        ["gene", False, "S_ENSSASG00005000004", "NCBITaxon:2697049", 3822, "protein_coding"],
+        ["gene", False, "S", "NCBITaxon:2697049", 3822, "protein_coding"],
         ["gene", False, "FBtr0472816_df_nrg", "NCBITaxon:7227", 22, "ncRNA"],
         ["gene", False, "fgfr1op2", "NCBITaxon:7955", 1088, "protein_coding"],
         ["gene", False, "aat-2", "NCBITaxon:6239", 1738, "protein_coding"],
