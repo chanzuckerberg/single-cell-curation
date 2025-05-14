@@ -1603,8 +1603,8 @@ class TestObs:
         validator = validator_with_adata
         validator.adata.obs = pd.concat([validator.adata.obs, validator.adata.obs["suspension_type"]], axis=1)
 
-        with pytest.raises(ValueError):
-            validator.validate_adata()
+        validator.validate_adata()
+        assert len(validator.errors) > 0
 
     def test_nan_values_must_be_rejected(self, validator_with_adata):
         """
@@ -1859,8 +1859,8 @@ class TestVar:
         validator = validator_with_adata
         validator.adata.var = pd.concat([validator.adata.var, validator.adata.var["feature_is_filtered"]], axis=1)
 
-        with pytest.raises(ValueError):
-            validator.validate_adata()
+        validator.validate_adata()
+        assert len(validator.errors) > 0
 
     def test_raw_var_column_name_uniqueness(self, validator_with_adata):
         validator = validator_with_adata
@@ -1869,8 +1869,8 @@ class TestVar:
         validator.adata.raw = validator.adata
         validator.adata.var = original_var  # Ensure only the raw.var has duplicate columns
 
-        with pytest.raises(ValueError):
-            validator.validate_adata()
+        validator.validate_adata()
+        assert len(validator.errors) > 0
 
 
 class TestUns:
