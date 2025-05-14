@@ -1731,6 +1731,25 @@ class TestVar:
             "ERROR: Gene 'ERCC-00002' at index 0 has all-zero values in adata.X. Either feature_is_filtered should be set to True or adata.raw.X should be set to all-zero values."
         ]
 
+    def test_feature_is_filtered_var_mishapen(self, validator_with_adata):
+        validator = validator_with_adata
+        gene_index = 0
+        gene_name = validator_with_adata.adata.raw.var_names[gene_index]
+        var_to_keep = [v for v in validator_with_adata.adata.raw.var_names if v != gene_name]
+        raw_adata = anndata.AnnData(
+            X=validator_with_adata.adata.raw.X,
+            obs=validator_with_adata.adata.obs,
+            var=validator_with_adata.adata.raw.var,
+        )
+        new_raw_adata = raw_adata[:, var_to_keep]
+        validator_with_adata.adata.raw = new_raw_adata
+        validator.validate_adata()
+        assert not validator.is_valid
+        assert (
+            "ERROR: Could not complete full validation of feature_is_filtered because of size differences between var and raw.var."
+            in validator.errors
+        )
+
     def test_columns_not_in_raw_var(self, validator_with_adata):
         """
         Curators MUST annotate the following column only in the var dataframe.
