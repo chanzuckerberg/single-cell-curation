@@ -72,12 +72,12 @@ def replace_ontology_term_uns(adata: ad.AnnData, ontology_name, update_map) -> a
 def move_ontology_term_from_obs_to_uns(adata: ad.AnnData, key_name, update_map) -> ad.AnnData:
     if key_name not in adata.obs:
         raise KeyError(f"Column '{key_name}' not found in adata.obs, cannot migrate from obs to uns")
-    
+
     values = adata.obs[key_name].unique()
-    
+
     if len(values) != 1:
         raise ValueError(f"Cannot migrate from obs to uns because '{key_name}' has multiple values: {values}")
-    
+
     adata.uns[key_name] = values[0]
 
     # Map old terms to new terms, if needed
