@@ -594,19 +594,25 @@ class Validator:
         else:
             sum_X = compute_column_sums(self.adata.X)
             sum_raw_X = compute_column_sums(self.adata.raw.X)
-            for i, _ in enumerate(sum_X):
-                is_filtered = column[i]
-                raw_column_sum = sum_raw_X[i]
-                # If adata.X has all 0s for the column, then is_filtered must be True or adata.raw.X should also be all 0s
-                if sum_X[i] == 0:
-                    if is_filtered or raw_column_sum == 0:
-                        continue
-                    else:
-                        gene_name = self.adata.var_names[i]
-                        self.errors.append(
-                            f"Gene '{gene_name}' at index {i} has all-zero values in adata.X. Either feature_is_filtered should "
-                            f"be set to True or adata.raw.X should be set to all-zero values."
-                        )
+            try:
+                for i, _ in enumerate(sum_X):
+                    is_filtered = column[i]
+                    raw_column_sum = sum_raw_X[i]
+                    # If adata.X has all 0s for the column, then is_filtered must be True or adata.raw.X should also be all 0s
+                    if sum_X[i] == 0:
+                        if is_filtered or raw_column_sum == 0:
+                            continue
+                        else:
+                            gene_name = self.adata.var_names[i]
+                            self.errors.append(
+                                f"Gene '{gene_name}' at index {i} has all-zero values in adata.X. Either feature_is_filtered should "
+                                f"be set to True or adata.raw.X should be set to all-zero values."
+                            )
+            except IndexError:
+                self.errors.append(
+                    "Could not complete full validation of feature_is_filtered because of size differences between var and raw.var."
+                )
+                return
 
         if sum(column) > 0:
             n_nonzero = calculate_matrix_nonzero(self.adata.X[:, column])
@@ -2151,20 +2157,23 @@ class Validator:
         """
         logger.info("Starting validation...")
 
-        if h5ad_path:
-            logger.debug("Reading the h5ad file...")
-            self.adata = read_h5ad(h5ad_path)
-            self.h5ad_path = h5ad_path
-            self._validate_encoding_version()
-            logger.debug("Successfully read the h5ad file")
-            # Re-start errors in case a new h5ad is being validated
-            self.reset()
+        try:
+            if h5ad_path:
+                logger.debug("Reading the h5ad file...")
+                self.adata = read_h5ad(h5ad_path)
+                self.h5ad_path = h5ad_path
+                self._validate_encoding_version()
+                logger.debug("Successfully read the h5ad file")
+                # Re-start errors in case a new h5ad is being validated
+                self.reset()
 
-        # Fetches schema def for latest major schema version
-        self._set_schema_def()
+            # Fetches schema def for latest major schema version
+            self._set_schema_def()
 
-        if not self.errors:
-            self._deep_check()
+            if not self.errors:
+                self._deep_check()
+        except Exception as e:
+            self.errors.append(f"Unexpected validation error: {e}")
 
         # Print warnings if any
         if self.warnings:
