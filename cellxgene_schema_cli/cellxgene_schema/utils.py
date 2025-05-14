@@ -58,9 +58,33 @@ def replace_ontology_term(dataframe, ontology_name, update_map):
 
 def replace_ontology_term_uns(adata: ad.AnnData, ontology_name, update_map) -> ad.AnnData:
     key_name = f"{ontology_name}_ontology_term_id"
+
+    # TODO: We should remove this after the schema 6.0 migration
+    if ontology_name == "organism" and key_name not in adata.uns:
+        return move_ontology_term_from_obs_to_uns(adata, key_name, update_map)
+    else:
+        for old_term, new_term in update_map.items():
+            if adata.uns[key_name] == old_term:
+                adata.uns[key_name] = new_term
+    return adata
+
+
+def move_ontology_term_from_obs_to_uns(adata: ad.AnnData, key_name, update_map) -> ad.AnnData:
+    if key_name not in adata.obs:
+        raise KeyError(f"Column '{key_name}' not found in adata.obs, cannot migrate from obs to uns")
+    
+    values = adata.obs[key_name].unique()
+    
+    if len(values) != 1:
+        raise ValueError(f"Cannot migrate from obs to uns because '{key_name}' has multiple values: {values}")
+    
+    adata.uns[key_name] = values[0]
+
+    # Map old terms to new terms, if needed
     for old_term, new_term in update_map.items():
         if adata.uns[key_name] == old_term:
             adata.uns[key_name] = new_term
+
     return adata
 
 

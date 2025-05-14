@@ -29,7 +29,7 @@ class TestMigrate:
         }
         test_ONTOLOGY_UNS_TERM_MAPS = {
             "organism": {
-                "Homo sapiens": "Homo sapiens migrated",
+                "NCBITaxon:9606": "NCBITaxon:9606 migrated",
             }
         }
         with TemporaryDirectory() as tmp, patch("cellxgene_schema.migrate.DEPRECATED_FEATURE_IDS", ["DUMMY"]), patch(
@@ -57,6 +57,7 @@ class TestMigrate:
             assert any(adata_raw_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004"]))
             assert not any(adata_raw_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004_NEW"]))
             assert adata_raw_with_labels_unmigrated.X.shape == (2, 2)
+            assert "organism_ontology_term_id" not in adata_raw_with_labels_unmigrated.uns
 
             migrate(
                 input_file=test_h5ad,
@@ -80,4 +81,4 @@ class TestMigrate:
             assert raw_adata.X.shape == (2, 1)
 
             # Verify organism ontology term was mapped
-            assert adata.uns["organism_ontology_term_id"] == "Homo sapiens migrated"
+            assert adata.uns["organism_ontology_term_id"] == "NCBITaxon:9606 migrated"
