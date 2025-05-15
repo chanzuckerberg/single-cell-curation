@@ -8,7 +8,7 @@ from fixtures.examples_validate import adata_with_labels_unmigrated
 
 class TestMigrate:
     def test_migrate(self):
-        test_ONTOLOGY_TERM_MAPS = {
+        test_ONTOLOGY_OBS_TERM_MAPS = {
             "assay": {
                 "assay:1": "assay:2",
             },
@@ -27,9 +27,16 @@ class TestMigrate:
             "sex": {"sex:1": "sex:2"},
             "tissue": {"tissue:1": "tissue:2"},
         }
+        test_ONTOLOGY_UNS_TERM_MAPS = {
+            "organism": {
+                "NCBITaxon:9606": "NCBITaxon:9606 migrated",
+            }
+        }
         with TemporaryDirectory() as tmp, patch("cellxgene_schema.migrate.DEPRECATED_FEATURE_IDS", ["DUMMY"]), patch(
-            "cellxgene_schema.migrate.ONTOLOGY_TERM_MAPS", test_ONTOLOGY_TERM_MAPS
-        ), patch("cellxgene_schema.migrate.GENCODE_MAPPER", {"ENSSASG00005000004": "ENSSASG00005000004_NEW"}):
+            "cellxgene_schema.migrate.ONTOLOGY_OBS_TERM_MAPS", test_ONTOLOGY_OBS_TERM_MAPS
+        ), patch("cellxgene_schema.migrate.GENCODE_MAPPER", {"ENSSASG00005000004": "ENSSASG00005000004_NEW"}), patch(
+            "cellxgene_schema.migrate.ONTOLOGY_TERM_UNS_MAPS", test_ONTOLOGY_UNS_TERM_MAPS
+        ):
             result_h5ad = tmp + "result.h5ad"
             test_h5ad = tmp + "test.h5ad"
             adata_with_labels_unmigrated.copy().write_h5ad(test_h5ad, compression="gzip")
@@ -50,6 +57,7 @@ class TestMigrate:
             assert any(adata_raw_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004"]))
             assert not any(adata_raw_with_labels_unmigrated.var.index.isin(["ENSSASG00005000004_NEW"]))
             assert adata_raw_with_labels_unmigrated.X.shape == (2, 2)
+            assert "organism_ontology_term_id" not in adata_raw_with_labels_unmigrated.uns
 
             migrate(
                 input_file=test_h5ad,
@@ -71,3 +79,6 @@ class TestMigrate:
             assert not any(raw_adata.var.index.isin(["ENSSASG00005000004"]))
             assert any(raw_adata.var.index.isin(["ENSSASG00005000004_NEW"]))
             assert raw_adata.X.shape == (2, 1)
+
+            # Verify organism ontology term was mapped
+            assert adata.uns["organism_ontology_term_id"] == "NCBITaxon:9606 migrated"

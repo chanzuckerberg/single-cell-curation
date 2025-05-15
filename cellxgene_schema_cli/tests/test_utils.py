@@ -4,6 +4,7 @@ from anndata import AnnData
 from cellxgene_schema.utils import (
     get_hash_digest_column,
     map_ontology_term,
+    move_column_from_obs_to_uns,
     read_h5ad,
     remap_deprecated_features,
     remove_deprecated_features,
@@ -167,7 +168,7 @@ def test_replace_ontology_term__no_replacement(adata_with_raw, deprecated_term_m
     assert all(a == b for a, b in zip(actual, expected))
 
 
-def test_map_ontology_term__(adata_without_raw):
+def test_map_ontology_term(adata_without_raw):
     update_map = {"donor_1": "CL:0000001", "donor_2": "CL:0000002"}
     map_ontology_term(adata_without_raw.obs, "cell_type", "donor_id", update_map)
     expected = ["CL:0000001", "CL:0000002"]
@@ -177,6 +178,16 @@ def test_map_ontology_term__(adata_without_raw):
     assert all(a == "CL:0000001" for a in donor_1_rows["cell_type_ontology_term_id"])
     donor_2_rows = adata_without_raw.obs.loc[adata_without_raw.obs["donor_id"] == "donor_2"]
     assert all(a == "CL:0000002" for a in donor_2_rows["cell_type_ontology_term_id"])
+
+
+def test_move_column_from_obs_to_uns(adata_with_raw):
+    assert "assay_ontology_term_id" in adata_with_raw.obs.columns
+    assert "assay_ontology_term_id" not in adata_with_raw.uns
+
+    move_column_from_obs_to_uns(adata_with_raw, "assay_ontology_term_id")
+
+    assert "assay_ontology_term_id" not in adata_with_raw.obs.columns
+    assert adata_with_raw.uns["assay_ontology_term_id"] == "EFO:0009899"
 
 
 class TestGetHashDigestColumn:

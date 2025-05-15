@@ -56,6 +56,30 @@ def replace_ontology_term(dataframe, ontology_name, update_map):
             dataframe[column_name] = dataframe[column_name].cat.remove_categories(old_term)
 
 
+def replace_ontology_term_uns(adata: ad.AnnData, ontology_name, update_map) -> ad.AnnData:
+    key_name = f"{ontology_name}_ontology_term_id"
+
+    for old_term, new_term in update_map.items():
+        if adata.uns[key_name] == old_term:
+            adata.uns[key_name] = new_term
+    return adata
+
+
+def move_column_from_obs_to_uns(adata: ad.AnnData, column_name: str) -> ad.AnnData:
+    if column_name not in adata.obs:
+        raise KeyError(f"Column '{column_name}' not found in adata.obs, cannot migrate from obs to uns")
+
+    values = adata.obs[column_name].unique()
+
+    if len(values) != 1:
+        raise ValueError(f"Cannot migrate from obs to uns because '{column_name}' has multiple values: {values}")
+
+    adata.uns[column_name] = values[0]
+    del adata.obs[column_name]
+
+    return adata
+
+
 def map_ontology_term(dataframe, ontology_name, map_from_column, update_map):
     column_name = f"{ontology_name}_ontology_term_id"
     if dataframe[column_name].dtype != "category":

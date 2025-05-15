@@ -22,7 +22,7 @@ with open(os.path.join(BASE_DIR, "migrate_files/automigrate_terms.json"), "r") a
     DEV_STAGE_AUTO_MIGRATE_MAP = json.load(file)
 
 
-ONTOLOGY_TERM_MAPS = {
+ONTOLOGY_OBS_TERM_MAPS = {
     "assay": {
         "EFO:0010961" : "EFO:0022857", # AUTOMATED VISIUM TERM UPDATE
     },
@@ -40,6 +40,11 @@ ONTOLOGY_TERM_MAPS = {
     },
     "tissue": {
         "CL:0010003": "CL:0000322", # AUTOMATED
+    },
+}
+
+ONTOLOGY_TERM_UNS_MAPS = {
+    "organism": {
     },
 }
 
@@ -74,8 +79,10 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     dataset = utils.read_h5ad(input_file)
 
     # AUTOMATED, DO NOT CHANGE
-    for ontology_name, deprecated_term_map in ONTOLOGY_TERM_MAPS.items():
+    for ontology_name, deprecated_term_map in ONTOLOGY_OBS_TERM_MAPS.items():
         utils.replace_ontology_term(dataset.obs, ontology_name, deprecated_term_map)
+    for ontology_name, deprecated_term_map in ONTOLOGY_TERM_UNS_MAPS.items():
+        dataset = utils.replace_ontology_term_uns(dataset, ontology_name, deprecated_term_map)
 
     # CURATOR-DEFINED, DATASET-SPECIFIC UPDATES
     # Use the template below to define dataset and collection specific ontology changes. Will only apply to dataset

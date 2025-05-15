@@ -24,6 +24,7 @@ def test_generate_script__without_gencode_changes(template, tmpdir):  # type: ig
         "self_reported_ethnicity": {},
         "sex": {},
         "tissue": {},
+        "organism": {},
     }
     gencode_term_map = []  # type: ignore
     mock_target_file = tmpdir + "/migrate.py"
@@ -47,7 +48,7 @@ from . import utils
 
 # If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
 # add them here.
-ONTOLOGY_TERM_MAPS = {
+ONTOLOGY_TERM_OBS_MAPS = {
     "assay": {
     },
     "cell_type": {
@@ -61,6 +62,11 @@ ONTOLOGY_TERM_MAPS = {
     "sex": {
     },
     "tissue": {
+    },
+}
+
+ONTOLOGY_TERM_UNS_MAPS = {
+    "organism": {
     },
 }
 
@@ -78,8 +84,10 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     dataset = utils.read_h5ad(input_file)
 
     # AUTOMATED, DO NOT CHANGE
-    for ontology_name, deprecated_term_map in ONTOLOGY_TERM_MAPS.items():
+    for ontology_name, deprecated_term_map in ONTOLOGY_TERM_OBS_MAPS.items():
         utils.replace_ontology_term(dataset.obs, ontology_name, deprecated_term_map)
+    for ontology_name, deprecated_term_map in ONTOLOGY_TERM_UNS_MAPS.items():
+        dataset = utils.replace_ontology_term_uns(dataset, ontology_name, deprecated_term_map)
 
     # CURATOR-DEFINED, DATASET-SPECIFIC UPDATES
     # Use the template below to define dataset and collection specific ontology changes. Will only apply to dataset
@@ -123,6 +131,7 @@ def test_generate_script__with_automated_replaced_by_map(template, tmpdir):  # t
         "self_reported_ethnicity": {},
         "sex": {},
         "tissue": {},
+        "organism": {"organism:1": "organism:2"},
     }
     gencode_term_map = []  # type: ignore
     mock_target_file = tmpdir + "/migrate.py"
@@ -146,7 +155,7 @@ from . import utils
 
 # If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
 # add them here.
-ONTOLOGY_TERM_MAPS = {
+ONTOLOGY_TERM_OBS_MAPS = {
     "assay": {
         "EFO:0000002": "EFO:0000001", # AUTOMATED
     },
@@ -166,6 +175,12 @@ ONTOLOGY_TERM_MAPS = {
     },
 }
 
+ONTOLOGY_TERM_UNS_MAPS = {
+    "organism": {
+        "organism:1": "organism:2", # AUTOMATED
+    },
+}
+
 DEPRECATED_FEATURE_IDS = [
 ]
 
@@ -180,8 +195,10 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     dataset = utils.read_h5ad(input_file)
 
     # AUTOMATED, DO NOT CHANGE
-    for ontology_name, deprecated_term_map in ONTOLOGY_TERM_MAPS.items():
+    for ontology_name, deprecated_term_map in ONTOLOGY_TERM_OBS_MAPS.items():
         utils.replace_ontology_term(dataset.obs, ontology_name, deprecated_term_map)
+    for ontology_name, deprecated_term_map in ONTOLOGY_TERM_UNS_MAPS.items():
+        dataset = utils.replace_ontology_term_uns(dataset, ontology_name, deprecated_term_map)
 
     # CURATOR-DEFINED, DATASET-SPECIFIC UPDATES
     # Use the template below to define dataset and collection specific ontology changes. Will only apply to dataset
@@ -226,6 +243,7 @@ def test_generate_script__with_gencode_changes(template, tmpdir):  # type: ignor
         "self_reported_ethnicity": {},
         "sex": {},
         "tissue": {},
+        "organism": {},
     }
     mock_target_file = tmpdir + "/migrate.py"
     with mock.patch("scripts.migration_assistant.generate_script.target_file", mock_target_file):
@@ -255,7 +273,7 @@ from . import utils
 
 # If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
 # add them here.
-ONTOLOGY_TERM_MAPS = {
+ONTOLOGY_TERM_OBS_MAPS = {
     "assay": {
     },
     "cell_type": {
@@ -269,6 +287,11 @@ ONTOLOGY_TERM_MAPS = {
     "sex": {
     },
     "tissue": {
+    },
+}
+
+ONTOLOGY_TERM_UNS_MAPS = {
+    "organism": {
     },
 }
 
@@ -288,8 +311,10 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     dataset = utils.read_h5ad(input_file)
 
     # AUTOMATED, DO NOT CHANGE
-    for ontology_name, deprecated_term_map in ONTOLOGY_TERM_MAPS.items():
+    for ontology_name, deprecated_term_map in ONTOLOGY_TERM_OBS_MAPS.items():
         utils.replace_ontology_term(dataset.obs, ontology_name, deprecated_term_map)
+    for ontology_name, deprecated_term_map in ONTOLOGY_TERM_UNS_MAPS.items():
+        dataset = utils.replace_ontology_term_uns(dataset, ontology_name, deprecated_term_map)
 
     # CURATOR-DEFINED, DATASET-SPECIFIC UPDATES
     # Use the template below to define dataset and collection specific ontology changes. Will only apply to dataset
