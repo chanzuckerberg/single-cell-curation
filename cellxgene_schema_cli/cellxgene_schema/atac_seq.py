@@ -15,7 +15,7 @@ import pyarrow.parquet
 import pysam
 
 from .ontology_parser import ONTOLOGY_PARSER
-from .utils import GB, is_ontological_descendant_of
+from .utils import GB, get_chunks, is_ontological_descendant_of
 
 logger = logging.getLogger(__name__)
 
@@ -478,8 +478,8 @@ def prepare_fragment(
     step_size = 10_000_000  # 10 million
     for chromosome in chromosomes:
         chromosome_length = human_chromosome_by_length[chromosome]
-        for chunk_start in range(0, chromosome_length, step_size):
-            chunk_end = min(chunk_start + step_size, chromosome_length)
+        chunks = get_chunks(step_size=step_size, total_size=chromosome_length)
+        for chunk_start, chunk_end in chunks:
             logger.info(f"Processing chromosome: {chromosome}, range: {chunk_start}-{chunk_end}")
             temp_data = sort_fragment(parquet_file, tempdir, chromosome, chunk_start, chunk_end)
             write_algorithm(temp_data, bgzip_output_file)
