@@ -213,3 +213,14 @@ def is_ontological_descendant_of(onto: OntologyParser, term: str, target: str, i
 @lru_cache()
 def get_descendants(onto: OntologyParser, term: str, include_self: bool = True) -> List[str]:
     return onto.get_term_descendants(term, include_self=True)
+
+
+def get_chunks(*, step_size: int, total_size: int) -> List[tuple]:
+    """
+    Get chunks of size step_size from 0 to total_size
+
+    :param step_size: size of each chunk
+    :param total_size: total size of the object we're reading
+    :return: list of tuples with start and end indices for each chunk
+    """
+    return [(i, min(i + step_size, total_size)) for i in range(0, total_size, step_size)]

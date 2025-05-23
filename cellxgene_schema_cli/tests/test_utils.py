@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 from anndata import AnnData
 from cellxgene_schema.utils import (
+    get_chunks,
     get_hash_digest_column,
     map_ontology_term,
     move_column_from_obs_to_uns,
@@ -202,3 +203,31 @@ class TestReadH5AD:
         h5ad_path = h5ad_valid
         adata = read_h5ad(h5ad_path)
         assert isinstance(adata, AnnData)
+
+
+class TestChunks:
+    def test_get_chunks__even(self):
+        chunks = get_chunks(step_size=100, total_size=2000)
+        assert len(chunks) == 20
+        assert chunks[0] == (0, 100)
+        assert chunks[-1] == (1900, 2000)
+        for chunk_start, chunk_end in chunks:
+            assert chunk_start < chunk_end
+            assert chunk_end - chunk_start == 100
+
+    def test_get_chunks__uneven(self):
+        chunks = get_chunks(step_size=100, total_size=1850)
+        assert len(chunks) == 19
+        assert chunks[0] == (0, 100)
+        assert chunks[-1] == (1800, 1850)
+
+    def test_get_chunks__slightly_higher(self):
+        chunks = get_chunks(step_size=100, total_size=2001)
+        assert len(chunks) == 21
+        assert chunks[0] == (0, 100)
+        assert chunks[-1] == (2000, 2001)
+
+    def test_get_chunks__total_less_than_step(self):
+        chunks = get_chunks(step_size=100, total_size=20)
+        assert len(chunks) == 1
+        assert chunks[0] == (0, 20)
