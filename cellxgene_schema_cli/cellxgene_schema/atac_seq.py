@@ -209,10 +209,16 @@ def process_fragment(
         else:
             logger.info("Fragment and Anndata file are valid")
 
+        organism_ontology_term_id = None
+        with h5py.File(anndata_file) as f:
+            organism_ontology_term_id = ad.io.read_elem(f["uns"]).get("organism_ontology_term_id")
+
         # generate the index
         if generate_index:
             logger.info(f"Sorting fragment and generating index for {fragment_file}")
-            index_fragment(fragment_file, parquet_file, tempdir, override_write_algorithm, output_file)
+            index_fragment(
+                organism_ontology_term_id, fragment_file, parquet_file, tempdir, override_write_algorithm, output_file
+            )
     logger.debug("cleaning up")
     return []
 
@@ -374,6 +380,7 @@ def get_output_file(fragment_file: str, output_file: Optional[str]) -> str:
 
 
 def index_fragment(
+    organism_ontology_term_id: str,
     fragment_file: str,
     parquet_file: str,
     tempdir: str,
@@ -395,7 +402,7 @@ def index_fragment(
         write_algorithm = write_algorithm_by_callable["cli"]
 
     chromosomes = detect_chromosomes(parquet_file)
-    prepare_fragment(chromosomes, parquet_file, bgzip_output_file, tempdir, write_algorithm)
+    prepare_fragment(chromosomes, organism_ontology_term_id, parquet_file, bgzip_output_file, tempdir, write_algorithm)
     logger.info(f"Fragment sorted and compressed: {bgzip_output_file}")
     #
     pysam.tabix_index(bgzip_output_file, preset="bed", force=True)
@@ -458,6 +465,7 @@ write_algorithm_by_callable = {"pysam": write_bgzip_pysam, "cli": write_bgzip_cl
 
 def prepare_fragment(
     chromosomes: list[str],
+    organism_ontology_term_id: str,
     parquet_file: str,
     bgzip_output_file: str,
     tempdir: str,
@@ -477,10 +485,12 @@ def prepare_fragment(
     """
     step_size = 10_000_000  # 10 million
     for chromosome in chromosomes:
-        chromosome_length = human_chromosome_by_length[chromosome]
+        chromosome_table = organism_ontology_term_id_by_chromosome_length_table.get(organism_ontology_term_id)
+        chromosome_length = chromosome_table[chromosome]
         chunks = get_chunks(step_size=step_size, total_size=chromosome_length)
         for chunk_start, chunk_end in chunks:
             logger.info(f"Processing chromosome: {chromosome}, range: {chunk_start}-{chunk_end}")
             temp_data = sort_fragment(parquet_file, tempdir, chromosome, chunk_start, chunk_end)
             write_algorithm(temp_data, bgzip_output_file)
+            Path(temp_data).unlink(missing_ok=True)  # clean up temporary file
     logger.info(f"bgzip compression completed successfully for {bgzip_output_file}")
