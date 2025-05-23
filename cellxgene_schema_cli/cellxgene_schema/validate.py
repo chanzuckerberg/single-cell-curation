@@ -2119,7 +2119,7 @@ class Validator:
             if component is None:
                 # Check for required components
                 if component_def.get("required", False):
-                    self.errors.append(f"'{component}' is missing from adata and it's required.")
+                    self.errors.append(f"'{component}' is missing from adata.{component_name} and it's required.")
                 continue
             elif component_def["type"] == "dataframe":
                 self._validate_dataframe(component_name)
