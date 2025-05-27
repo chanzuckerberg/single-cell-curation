@@ -202,16 +202,16 @@ def process_fragment(
             logger.exception(msg)
             return [msg]
 
+        organism_ontology_term_id = None
+        with h5py.File(anndata_file) as f:
+            organism_ontology_term_id = ad.io.read_elem(f["uns"]).get("organism_ontology_term_id")
+
         # slow checks
-        errors = validate_anndata_with_fragment(parquet_file, anndata_file)
+        errors = validate_anndata_with_fragment(parquet_file, anndata_file, organism_ontology_term_id)
         if errors:
             return errors
         else:
             logger.info("Fragment and Anndata file are valid")
-
-        organism_ontology_term_id = None
-        with h5py.File(anndata_file) as f:
-            organism_ontology_term_id = ad.io.read_elem(f["uns"]).get("organism_ontology_term_id")
 
         # generate the index
         if generate_index:
@@ -264,11 +264,11 @@ def validate_anndata(anndata_file: str) -> list[str]:
     return report_errors("Errors found in Anndata file. Skipping fragment validation.", errors)
 
 
-def validate_anndata_with_fragment(parquet_file: str, anndata_file: str) -> list[str]:
+def validate_anndata_with_fragment(parquet_file: str, anndata_file: str, organism_ontology_term_id: str) -> list[str]:
     errors = [
         validate_fragment_start_coordinate_greater_than_0(parquet_file),
         validate_fragment_barcode_in_adata_index(parquet_file, anndata_file),
-        validate_fragment_stop_coordinate_within_chromosome(parquet_file, anndata_file),
+        validate_fragment_stop_coordinate_within_chromosome(parquet_file, organism_ontology_term_id),
         validate_fragment_stop_greater_than_start_coordinate(parquet_file),
         validate_fragment_read_support(parquet_file),
         validate_fragment_no_duplicate_rows(parquet_file),
@@ -317,10 +317,9 @@ def validate_fragment_stop_greater_than_start_coordinate(parquet_file: str) -> O
 
 
 @log_calls
-def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, anndata_file: str) -> Optional[str]:
-    organism_ontology_term_id = None
-    with h5py.File(anndata_file) as f:
-        organism_ontology_term_id = ad.io.read_elem(f["uns"]).get("organism_ontology_term_id")
+def validate_fragment_stop_coordinate_within_chromosome(
+    parquet_file: str, organism_ontology_term_id: str
+) -> Optional[str]:
     chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table.get(organism_ontology_term_id)
     t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
     df = t.group_by("chromosome").aggregate(max_stop_coordinate=t["stop coordinate"].max()).execute()
