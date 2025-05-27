@@ -312,9 +312,10 @@ def validate_fragment_stop_greater_than_start_coordinate(parquet_file: str) -> O
 
 @log_calls
 def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, anndata_file: str) -> Optional[str]:
+    organism_ontology_term_id = None
     with h5py.File(anndata_file) as f:
-        organism_ontology_term_id = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)[0]
-    chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table[organism_ontology_term_id]
+        organism_ontology_term_id = ad.io.read_elem(f["uns"]).get("organism_ontology_term_id")
+    chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table.get(organism_ontology_term_id)
     t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
     df = t.group_by("chromosome").aggregate(max_stop_coordinate=t["stop coordinate"].max()).execute()
 
@@ -346,14 +347,9 @@ def validate_anndata_is_primary_data(anndata_file: str) -> Optional[str]:
 
 @log_calls
 def validate_anndata_organism_ontology_term_id(anndata_file: str) -> Optional[str]:
+    organism_ontology_term_id = None
     with h5py.File(anndata_file) as f:
-        organism_ontology_term_ids = ad.io.read_elem(f["obs"])["organism_ontology_term_id"].unique().astype(str)
-    if organism_ontology_term_ids.size > 1:
-        error_message = (
-            "Anndata.obs.organism_ontology_term_id must have exactly 1 unique value. Found the " "following values:\n"
-        ) + "\n\t".join(organism_ontology_term_ids)
-        return error_message
-    organism_ontology_term_id = organism_ontology_term_ids[0]
+        organism_ontology_term_id = ad.io.read_elem(f["uns"]).get("organism_ontology_term_id")
     allowed_terms = [*organism_ontology_term_id_by_chromosome_length_table.keys()]
     if organism_ontology_term_id not in allowed_terms:
         return f"Anndata.obs.organism_ontology_term_id must be one of {allowed_terms}. Got {organism_ontology_term_id}."

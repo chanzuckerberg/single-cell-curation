@@ -363,7 +363,7 @@ class TestValidateAnndataIsPrimaryData:
 class TestValidateAnndataOrganismOntologyTermId:
     def test_positive(self, atac_anndata, tmpdir):
         # Arrange
-        atac_anndata.obs["organism_ontology_term_id"] = ["NCBITaxon:9606"] * 3
+        atac_anndata.uns["organism_ontology_term_id"] = "NCBITaxon:9606"
         atac_anndata_file = to_anndata_file(atac_anndata, tmpdir)
         # Act
         result = atac_seq.validate_anndata_organism_ontology_term_id(atac_anndata_file)
@@ -372,7 +372,7 @@ class TestValidateAnndataOrganismOntologyTermId:
 
     def test_organism_ontology_term_id_not_allowed(self, atac_anndata, tmpdir):
         # Arrange
-        atac_anndata.obs["organism_ontology_term_id"] = ["NCBITaxon:9607"] * 3
+        atac_anndata.uns["organism_ontology_term_id"] = "NCBITaxon:9607"
         atac_anndata_file = to_anndata_file(atac_anndata, tmpdir)
         # Act
         result = atac_seq.validate_anndata_organism_ontology_term_id(atac_anndata_file)
@@ -380,15 +380,6 @@ class TestValidateAnndataOrganismOntologyTermId:
         assert result.startswith(
             "Anndata.obs.organism_ontology_term_id must be one of ['NCBITaxon:9606', 'NCBITaxon:10090']."
         )
-
-    def test_organism_ontology_id_not_unique(self, atac_anndata, tmpdir):
-        # Arrange
-        atac_anndata.obs["organism_ontology_term_id"] = ["NCBITaxon:10090", "NCBITaxon:9606", "NCBITaxon:9606"]
-        atac_anndata_file = to_anndata_file(atac_anndata, tmpdir)
-        # Act
-        result = atac_seq.validate_anndata_organism_ontology_term_id(atac_anndata_file)
-        # Assert
-        assert result.startswith("Anndata.obs.organism_ontology_term_id must have exactly 1 unique value.")
 
 
 class TestValidateFragmentNoDuplicateRows:
