@@ -268,25 +268,25 @@ class TestValidateFragmentStopCoordinateGreaterThanStartCoordinate:
 
 
 class TestValidateFragmentStopCoordinateWithinChromosome:
-    def test_positive(self, atac_fragment_file, atac_anndata_file):
-        result = atac_seq.validate_fragment_stop_coordinate_within_chromosome(atac_fragment_file, atac_anndata_file)
+    def test_positive(self, atac_fragment_file):
+        result = atac_seq.validate_fragment_stop_coordinate_within_chromosome(atac_fragment_file, "NCBITaxon:9606")
         assert not result
 
-    def test_stop_less_than_chromosome_length(self, atac_fragment_dataframe, atac_anndata_file, tmpdir):
+    def test_stop_less_than_chromosome_length(self, atac_fragment_dataframe, tmpdir):
         # Arrange
         atac_fragment_dataframe["stop coordinate"] = 10e12
         fragment_file = to_parquet_file(atac_fragment_dataframe, tmpdir)
         # Act
-        result = atac_seq.validate_fragment_stop_coordinate_within_chromosome(fragment_file, atac_anndata_file)
+        result = atac_seq.validate_fragment_stop_coordinate_within_chromosome(fragment_file, "NCBITaxon:9606")
         # Assert
         assert result == "Stop coordinate must be less than the chromosome length."
 
-    def test_mismatch_chromosome(self, atac_fragment_dataframe, atac_anndata_file, tmpdir):
+    def test_mismatch_chromosome(self, atac_fragment_dataframe, tmpdir):
         # Arrange
         atac_fragment_dataframe["chromosome"] = ["foo", "chr2", "chr1"]
         fragment_file = to_parquet_file(atac_fragment_dataframe, tmpdir)
         # Act
-        result = atac_seq.validate_fragment_stop_coordinate_within_chromosome(fragment_file, atac_anndata_file)
+        result = atac_seq.validate_fragment_stop_coordinate_within_chromosome(fragment_file, "NCBITaxon:9606")
         # Assert
         assert result.startswith("Chromosomes in the fragment do not match the organism")
 

@@ -15,7 +15,7 @@ import pyarrow.parquet
 import pysam
 
 from .ontology_parser import ONTOLOGY_PARSER
-from .utils import GB, is_ontological_descendant_of
+from .utils import GB, get_chunks, is_ontological_descendant_of
 
 logger = logging.getLogger(__name__)
 
@@ -202,8 +202,12 @@ def process_fragment(
             logger.exception(msg)
             return [msg]
 
+        organism_ontology_term_id = None
+        with h5py.File(anndata_file) as f:
+            organism_ontology_term_id = ad.io.read_elem(f["uns"]).get("organism_ontology_term_id")
+
         # slow checks
-        errors = validate_anndata_with_fragment(parquet_file, anndata_file)
+        errors = validate_anndata_with_fragment(parquet_file, anndata_file, organism_ontology_term_id)
         if errors:
             return errors
         else:
@@ -212,7 +216,9 @@ def process_fragment(
         # generate the index
         if generate_index:
             logger.info(f"Sorting fragment and generating index for {fragment_file}")
-            index_fragment(fragment_file, parquet_file, tempdir, override_write_algorithm, output_file)
+            index_fragment(
+                organism_ontology_term_id, fragment_file, parquet_file, tempdir, override_write_algorithm, output_file
+            )
     logger.debug("cleaning up")
     return []
 
@@ -258,11 +264,11 @@ def validate_anndata(anndata_file: str) -> list[str]:
     return report_errors("Errors found in Anndata file. Skipping fragment validation.", errors)
 
 
-def validate_anndata_with_fragment(parquet_file: str, anndata_file: str) -> list[str]:
+def validate_anndata_with_fragment(parquet_file: str, anndata_file: str, organism_ontology_term_id: str) -> list[str]:
     errors = [
         validate_fragment_start_coordinate_greater_than_0(parquet_file),
         validate_fragment_barcode_in_adata_index(parquet_file, anndata_file),
-        validate_fragment_stop_coordinate_within_chromosome(parquet_file, anndata_file),
+        validate_fragment_stop_coordinate_within_chromosome(parquet_file, organism_ontology_term_id),
         validate_fragment_stop_greater_than_start_coordinate(parquet_file),
         validate_fragment_read_support(parquet_file),
         validate_fragment_no_duplicate_rows(parquet_file),
@@ -311,10 +317,9 @@ def validate_fragment_stop_greater_than_start_coordinate(parquet_file: str) -> O
 
 
 @log_calls
-def validate_fragment_stop_coordinate_within_chromosome(parquet_file: str, anndata_file: str) -> Optional[str]:
-    organism_ontology_term_id = None
-    with h5py.File(anndata_file) as f:
-        organism_ontology_term_id = ad.io.read_elem(f["uns"]).get("organism_ontology_term_id")
+def validate_fragment_stop_coordinate_within_chromosome(
+    parquet_file: str, organism_ontology_term_id: str
+) -> Optional[str]:
     chromosome_length_table = organism_ontology_term_id_by_chromosome_length_table.get(organism_ontology_term_id)
     t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
     df = t.group_by("chromosome").aggregate(max_stop_coordinate=t["stop coordinate"].max()).execute()
@@ -374,6 +379,7 @@ def get_output_file(fragment_file: str, output_file: Optional[str]) -> str:
 
 
 def index_fragment(
+    organism_ontology_term_id: str,
     fragment_file: str,
     parquet_file: str,
     tempdir: str,
@@ -395,7 +401,7 @@ def index_fragment(
         write_algorithm = write_algorithm_by_callable["cli"]
 
     chromosomes = detect_chromosomes(parquet_file)
-    prepare_fragment(chromosomes, parquet_file, bgzip_output_file, tempdir, write_algorithm)
+    prepare_fragment(chromosomes, organism_ontology_term_id, parquet_file, bgzip_output_file, tempdir, write_algorithm)
     logger.info(f"Fragment sorted and compressed: {bgzip_output_file}")
     #
     pysam.tabix_index(bgzip_output_file, preset="bed", force=True)
@@ -403,10 +409,14 @@ def index_fragment(
     logger.info(f"Index file generated: {tabix_output_file}")
 
 
-def sort_fragment(parquet_file: str, write_path: str, chromosome: str) -> Path:
+def sort_fragment(parquet_file: str, write_path: str, chromosome: str, start: int, stop: int) -> Path:
     temp_data = Path(write_path) / f"temp_{chromosome}.parquet"
     t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
-    (t.filter(t["chromosome"] == chromosome).order_by(["start coordinate", "stop coordinate"]).to_parquet(temp_data))
+    (
+        t.filter(t["chromosome"] == chromosome, t["start coordinate"] >= start, t["start coordinate"] <= stop)
+        .order_by(["start coordinate", "stop coordinate"])
+        .to_parquet(temp_data)
+    )
     return temp_data
 
 
@@ -454,6 +464,7 @@ write_algorithm_by_callable = {"pysam": write_bgzip_pysam, "cli": write_bgzip_cl
 
 def prepare_fragment(
     chromosomes: list[str],
+    organism_ontology_term_id: str,
     parquet_file: str,
     bgzip_output_file: str,
     tempdir: str,
@@ -471,9 +482,15 @@ def prepare_fragment(
     :param write_algorithm:
     :return:
     """
+    step_size = 10_000_000  # 10 million
     for chromosome in chromosomes:
-        logger.info(f"Processing chromosome: {chromosome}")
-        temp_data = sort_fragment(parquet_file, tempdir, chromosome)
-        write_algorithm(temp_data, bgzip_output_file)
+        chromosome_table = organism_ontology_term_id_by_chromosome_length_table.get(organism_ontology_term_id)
+        chromosome_length = chromosome_table[chromosome]
+        chunks = get_chunks(step_size=step_size, total_size=chromosome_length)
+        temp_data = None
+        for chunk_start, chunk_end in chunks:
+            logger.info(f"Processing chromosome: {chromosome}, range: {chunk_start}-{chunk_end}")
+            temp_data = sort_fragment(parquet_file, tempdir, chromosome, chunk_start, chunk_end)
+            write_algorithm(temp_data, bgzip_output_file)
         Path(temp_data).unlink(missing_ok=True)  # clean up temporary file
     logger.info(f"bgzip compression completed successfully for {bgzip_output_file}")
