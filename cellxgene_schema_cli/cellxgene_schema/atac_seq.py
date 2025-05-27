@@ -488,9 +488,10 @@ def prepare_fragment(
         chromosome_table = organism_ontology_term_id_by_chromosome_length_table.get(organism_ontology_term_id)
         chromosome_length = chromosome_table[chromosome]
         chunks = get_chunks(step_size=step_size, total_size=chromosome_length)
+        temp_data = None
         for chunk_start, chunk_end in chunks:
             logger.info(f"Processing chromosome: {chromosome}, range: {chunk_start}-{chunk_end}")
             temp_data = sort_fragment(parquet_file, tempdir, chromosome, chunk_start, chunk_end)
             write_algorithm(temp_data, bgzip_output_file)
-            Path(temp_data).unlink(missing_ok=True)  # clean up temporary file
+        Path(temp_data).unlink(missing_ok=True)  # clean up temporary file
     logger.info(f"bgzip compression completed successfully for {bgzip_output_file}")
