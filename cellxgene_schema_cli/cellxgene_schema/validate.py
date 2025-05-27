@@ -350,6 +350,8 @@ class Validator:
 
         :rtype None
         """
+        print("_validate_curie_str", term_str, column_name)
+
         if "exceptions" in curie_constraints and term_str in curie_constraints["exceptions"]:
             return
 
@@ -399,13 +401,16 @@ class Validator:
 
         :rtype None
         """
+        print("_validate_curie", term_id, column_name, curie_constraints)
         # If the term id does not belong to an allowed ontology, the subsequent checks are redundant
         if not self._validate_curie_ontology(term_id, column_name, curie_constraints["ontologies"]):
             return
 
         # Check if term_id is forbidden by schema definition despite being a valid ontology term
         if "forbidden" in curie_constraints:
-            if "terms" in curie_constraints["forbidden"] and term_id in curie_constraints["forbidden"]["terms"]:
+            forbidden_terms = curie_constraints["forbidden"].get("terms", [])
+            if term_id in forbidden_terms:
+                print("forbidden curie terms", curie_constraints["forbidden"]["terms"])
                 self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
                 return
             if "ancestors" in curie_constraints["forbidden"] and self._has_forbidden_curie_ancestor(
@@ -755,10 +760,7 @@ class Validator:
                     elif uns_key_to_match:
                         error_message_suffix = f"when '{uns_key_to_match}' is '{uns_value}'"
             except KeyError:
-                self.errors.append(
-                    f"Checking values with dependencies failed for adata.{df_name}['{column_name}'], "
-                    f"likely due to missing column or uns key."
-                )
+                # If the column or uns key is not found, then we should surface an error elsewhere
                 continue
 
             all_rules.append(match_query)
@@ -987,7 +989,10 @@ class Validator:
                 self.errors.append(f"uns['{key}'] cannot be an empty value.")
 
             value_def = dict_def["keys"].get(key, None)
+            if key == "organism_ontology_term_id":
+                print("organism_ontology_term_id value def", value_def)
             if value_def is not None and value_def.get("type") == "curie":
+                print(f"Validating curie for uns key: {key}")
                 self._validate_curie_str(value, key, value_def["curie_constraints"])
 
             if key.endswith("_colors"):

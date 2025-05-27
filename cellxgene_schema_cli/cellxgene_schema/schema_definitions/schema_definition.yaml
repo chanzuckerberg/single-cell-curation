@@ -48,8 +48,6 @@ components:
               NCBITaxon:
                 - NCBITaxon:9606
                 - NCBITaxon:10090
-                - NCBITaxon:2697049
-                - NCBITaxon:32630
                 - NCBITaxon:7227
                 - NCBITaxon:7955
                 - NCBITaxon:6239
@@ -71,6 +69,10 @@ components:
                 - NCBITaxon:9598
                 - NCBITaxon:10116
                 - NCBITaxon:9823
+          forbidden:
+            terms:
+              - NCBITaxon:2697049
+              - NCBITaxon:32630
         add_labels:
           - type: curie
             to_key: organism

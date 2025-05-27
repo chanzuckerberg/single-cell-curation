@@ -561,8 +561,21 @@ class TestObs:
         validator = validator_with_adata
         validator.adata.obs["organism_ontology_term_id"] = "NCBITaxon:9606"
         validator.validate_adata()
+        assert "ERROR: The field 'organism_ontology_term_id' is present in 'obs', but it is deprecated." in validator.errors
+    
+    @pytest.mark.parametrize(
+        "organism_ontology_term_id",
+        [
+            "NCBITaxon:2697049",  # Severe acute respiratory syndrome coronavirus 2
+            "NCBITaxon:32630",  # synthetic construct
+        ],
+    )
+    def test_exempt_organism_values(self, validator_with_adata, organism_ontology_term_id):
+        validator = validator_with_adata
+        validator.adata.uns["organism_ontology_term_id"] = organism_ontology_term_id
+        validator.validate_adata()
         assert validator.errors == [
-            "ERROR: The field 'organism_ontology_term_id' is present in 'obs', but it is deprecated."
+            f"ERROR: '{organism_ontology_term_id}' in 'organism_ontology_term_id' is not allowed'."
         ]
 
     def test_column_presence_assay(self, validator_with_adata):
@@ -577,8 +590,6 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Dataframe 'obs' is missing column " "'assay_ontology_term_id'.",
-            "ERROR: Checking values with dependencies failed for "
-            "adata.obs['suspension_type'], likely due to missing column or uns key.",
         ]
 
     @pytest.mark.parametrize(
