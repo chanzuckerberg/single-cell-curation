@@ -350,7 +350,6 @@ class Validator:
 
         :rtype None
         """
-        print("_validate_curie_str", term_str, column_name)
 
         if "exceptions" in curie_constraints and term_str in curie_constraints["exceptions"]:
             return
@@ -401,22 +400,26 @@ class Validator:
 
         :rtype None
         """
-        print("_validate_curie", term_id, column_name, curie_constraints)
+        # Check if term_id is forbidden by schema definition. Sometimes, these are also invalid ontology
+        # terms, but it's preferred to report these as "not allowed" terms rather than "invalid ontology terms"
+        if "forbidden" in curie_constraints:
+            forbidden_terms = curie_constraints["forbidden"].get("terms", [])
+            if term_id in forbidden_terms:
+                self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
+                return
+
         # If the term id does not belong to an allowed ontology, the subsequent checks are redundant
         if not self._validate_curie_ontology(term_id, column_name, curie_constraints["ontologies"]):
             return
 
-        # Check if term_id is forbidden by schema definition despite being a valid ontology term
-        if "forbidden" in curie_constraints:
-            forbidden_terms = curie_constraints["forbidden"].get("terms", [])
-            if term_id in forbidden_terms:
-                print("forbidden curie terms", curie_constraints["forbidden"]["terms"])
-                self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
-                return
-            if "ancestors" in curie_constraints["forbidden"] and self._has_forbidden_curie_ancestor(
-                term_id, column_name, curie_constraints["forbidden"]["ancestors"]
-            ):
-                return
+        # Must be valid ontology term to validate against forbidden curie ancestors
+        if (
+            "forbidden" in curie_constraints
+            and "ancestors" in curie_constraints["forbidden"]
+            and self._has_forbidden_curie_ancestor(term_id, column_name, curie_constraints["forbidden"]["ancestors"])
+        ):
+            self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
+            return
 
         # If there are allow-lists, validate against them
         if "allowed" in curie_constraints:
@@ -450,6 +453,8 @@ class Validator:
         """
 
         organism = gencode.get_organism_from_feature_id(feature_id)
+        organism_ontology_id = None
+        dataset_organism = self.adata.uns.get("organism_ontology_term_id", None)
 
         if not organism:
             self.errors.append(
@@ -457,9 +462,22 @@ class Validator:
                 f"make sure it is a valid ID."
             )
             return
+        else:
+            organism_ontology_id = organism.value
 
-        if not get_gene_checker(organism).is_valid_id(feature_id):
+        valid_gene_id = get_gene_checker(organism).is_valid_id(feature_id)
+
+        if not valid_gene_id:
             self.errors.append(f"'{feature_id}' is not a valid feature ID in '{df_name}'.")
+
+        if dataset_organism is not None and organism_ontology_id is not None and valid_gene_id:
+            # If the gene id is valid, check if that organism matches the dataset's organism
+            is_descendant = organism_ontology_id in ONTOLOGY_PARSER.get_term_ancestors(dataset_organism, True)
+            if not is_descendant and organism_ontology_id not in gencode.EXEMPT_ORGANISMS:
+                self.errors.append(
+                    f"'{feature_id}' in '{df_name}' is from organism '{organism}', "
+                    f"but the uns['organism_ontology_term_id'] is '{dataset_organism}'."
+                )
 
         return
 
@@ -989,10 +1007,7 @@ class Validator:
                 self.errors.append(f"uns['{key}'] cannot be an empty value.")
 
             value_def = dict_def["keys"].get(key, None)
-            if key == "organism_ontology_term_id":
-                print("organism_ontology_term_id value def", value_def)
             if value_def is not None and value_def.get("type") == "curie":
-                print(f"Validating curie for uns key: {key}")
                 self._validate_curie_str(value, key, value_def["curie_constraints"])
 
             if key.endswith("_colors"):

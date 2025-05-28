@@ -574,9 +574,9 @@ class TestObs:
         validator = validator_with_adata
         validator.adata.uns["organism_ontology_term_id"] = organism_ontology_term_id
         validator.validate_adata()
-        assert validator.errors == [
-            f"ERROR: '{organism_ontology_term_id}' in 'organism_ontology_term_id' is not allowed'."
-        ]
+        assert (
+            f"ERROR: '{organism_ontology_term_id}' in 'organism_ontology_term_id' is not allowed." in validator.errors
+        )
 
     def test_column_presence_assay(self, validator_with_adata):
         """
@@ -1101,13 +1101,14 @@ class TestObs:
             "self_reported_ethnicity_ontology_term_id",
         ] = "HANCESTRO:0306"
         validator.validate_adata()
-        assert validator.errors == [
+        assert (
             self.get_format_error_message(
                 error_message_suffix,
                 "ERROR: 'HANCESTRO:0306' in 'self_reported_ethnicity_ontology_term_id' is not allowed. Descendant terms "
                 "of 'HANCESTRO:0304' are not allowed.",
             )
-        ]
+            in validator.errors
+        )
 
     def test_self_reported_ethnicity_ontology_term_id__forbidden_term_in_multi_term(self, validator_with_adata):
         """
@@ -1146,8 +1147,8 @@ class TestObs:
         ] = "HANCESTRO:0005"
         validator.validate_adata()
         assert (
-            "ERROR: 'HANCESTRO:0005' in 'self_reported_ethnicity_ontology_term_id' is not a valid value of 'self_reported_ethnicity_ontology_term_id'."
-            in validator.errors[0]
+            "ERROR: 'HANCESTRO:0005' in 'self_reported_ethnicity_ontology_term_id' is not a valid value of 'self_reported_ethnicity_ontology_term_id'. When 'organism_ontology_term_id' is NOT 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be 'na'."
+            in validator.errors
         )
 
     def test_self_reported_ethnicity_ontology_term_id__unsorted(self, validator_with_adata):
@@ -1748,7 +1749,7 @@ class TestVar:
         validator.reset(None, 2)
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Gene 'ERCC-00002' at index 0 has all-zero values in adata.X. Either feature_is_filtered should be set to True or adata.raw.X should be set to all-zero values."
+            "ERROR: Gene 'ENSG00000127603' at index 0 has all-zero values in adata.X. Either feature_is_filtered should be set to True or adata.raw.X should be set to all-zero values."
         ]
 
     def test_feature_is_filtered_var_mishapen(self, validator_with_adata):
@@ -2735,15 +2736,43 @@ class TestZebrafish:
         return obs
 
     @pytest.fixture
-    def validator_with_zebrafish_adata(self, validator_with_adata, zebrafish_obs):
+    def zebrafish_var(self):
+        return pd.DataFrame(
+            [[False]],
+            index=[
+                "ENSDARG00000103202",
+                "ENSDARG00000009657",
+                "ENSDARG00000096472",
+                "ENSDARG00000096156",
+                "ENSDARG00000076160",
+                "ENSDARG00000117163",
+                "ENSDARG00000096187",
+            ],
+            columns=["feature_is_filtered"],
+        )
+
+    @pytest.fixture
+    def validator_with_zebrafish_adata(self, validator_with_adata, zebrafish_obs, zebrafish_var):
         validator_with_adata.adata.obs = zebrafish_obs
         validator_with_adata.adata.uns["organism_ontology_term_id"] = "NCBITaxon:7955"
+        validator_with_adata.adata.var = zebrafish_var.copy()
+        new_raw = anndata.AnnData(
+            X=validator_with_adata.adata.raw.X.copy(), var=zebrafish_var.copy(), obs=zebrafish_obs.copy()
+        )
+        new_raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+        validator_with_adata.adata.raw = new_raw
         return validator_with_adata
 
     @pytest.fixture
-    def validator_with_visium_zebrafish_adata(self, validator_with_visium_assay, zebrafish_visium_obs):
+    def validator_with_visium_zebrafish_adata(self, validator_with_visium_assay, zebrafish_visium_obs, zebrafish_var):
         validator_with_visium_assay.adata.obs = zebrafish_visium_obs
         validator_with_visium_assay.adata.uns["organism_ontology_term_id"] = "NCBITaxon:7955"
+        validator_with_visium_assay.adata.var = zebrafish_var.copy()
+        new_raw = anndata.AnnData(
+            X=validator_with_visium_assay.adata.raw.X.copy(), var=zebrafish_var.copy(), obs=zebrafish_visium_obs.copy()
+        )
+        new_raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+        validator_with_visium_assay.adata.raw = new_raw
         return validator_with_visium_assay
 
     @pytest.mark.parametrize(
@@ -2953,15 +2982,43 @@ class TestFruitFly:
         return obs
 
     @pytest.fixture
-    def validator_with_fruitfly_adata(self, validator_with_adata, fruitfly_obs):
+    def fruitfly_var(self):
+        return pd.DataFrame(
+            [[False]],
+            index=[
+                "FBgn0038542",
+                "RR42085_transposable_element",
+                "FBgn0039592",
+                "FBgn0038067",
+                "FBgn0053534",
+                "FBgn0039602",
+                "FBgn0264897",
+            ],
+            columns=["feature_is_filtered"],
+        )
+
+    @pytest.fixture
+    def validator_with_fruitfly_adata(self, validator_with_adata, fruitfly_obs, fruitfly_var):
         validator_with_adata.adata.obs = fruitfly_obs
         validator_with_adata.adata.uns["organism_ontology_term_id"] = "NCBITaxon:7227"
+        validator_with_adata.adata.var = fruitfly_var.copy()
+        new_raw = anndata.AnnData(
+            X=validator_with_adata.adata.raw.X.copy(), var=fruitfly_var.copy(), obs=fruitfly_obs.copy()
+        )
+        new_raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+        validator_with_adata.adata.raw = new_raw
         return validator_with_adata
 
     @pytest.fixture
-    def validator_with_visium_fruitfly_adata(self, validator_with_visium_assay, fruitfly_visium_obs):
+    def validator_with_visium_fruitfly_adata(self, validator_with_visium_assay, fruitfly_visium_obs, fruitfly_var):
         validator_with_visium_assay.adata.obs = fruitfly_visium_obs
         validator_with_visium_assay.adata.uns["organism_ontology_term_id"] = "NCBITaxon:7227"
+        validator_with_visium_assay.adata.var = fruitfly_var.copy()
+        new_raw = anndata.AnnData(
+            X=validator_with_visium_assay.adata.raw.X.copy(), var=fruitfly_var.copy(), obs=fruitfly_visium_obs.copy()
+        )
+        new_raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+        validator_with_visium_assay.adata.raw = new_raw
         return validator_with_visium_assay
 
     @pytest.mark.parametrize(
@@ -3149,15 +3206,43 @@ class TestRoundworm:
         return obs
 
     @pytest.fixture
-    def validator_with_roundworm_adata(self, validator_with_adata, roundworm_obs):
+    def roundworm_var(self):
+        return pd.DataFrame(
+            [[False]],
+            index=[
+                "WBGene00000003",
+                "WBGene00000007",
+                "WBGene00000014",
+                "WBGene00000015",
+                "WBGene00000022",
+                "WBGene00000024",
+                "WBGene00000027",
+            ],
+            columns=["feature_is_filtered"],
+        )
+
+    @pytest.fixture
+    def validator_with_roundworm_adata(self, validator_with_adata, roundworm_obs, roundworm_var):
         validator_with_adata.adata.obs = roundworm_obs
         validator_with_adata.adata.uns["organism_ontology_term_id"] = "NCBITaxon:6239"
+        validator_with_adata.adata.var = roundworm_var.copy()
+        new_raw = anndata.AnnData(
+            X=validator_with_adata.adata.raw.X.copy(), var=roundworm_var.copy(), obs=roundworm_obs.copy()
+        )
+        new_raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+        validator_with_adata.adata.raw = new_raw
         return validator_with_adata
 
     @pytest.fixture
-    def validator_with_visium_roundworm_adata(self, validator_with_visium_assay, roundworm_visium_obs):
+    def validator_with_visium_roundworm_adata(self, validator_with_visium_assay, roundworm_visium_obs, roundworm_var):
         validator_with_visium_assay.adata.obs = roundworm_visium_obs
         validator_with_visium_assay.adata.uns["organism_ontology_term_id"] = "NCBITaxon:6239"
+        validator_with_visium_assay.adata.var = roundworm_var.copy()
+        new_raw = anndata.AnnData(
+            X=validator_with_visium_assay.adata.raw.X.copy(), var=roundworm_var.copy(), obs=roundworm_visium_obs.copy()
+        )
+        new_raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+        validator_with_visium_assay.adata.raw = new_raw
         return validator_with_visium_assay
 
     @pytest.mark.parametrize(

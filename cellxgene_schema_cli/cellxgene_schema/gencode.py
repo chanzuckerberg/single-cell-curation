@@ -26,6 +26,9 @@ class SupportedOrganisms(enum.Enum):
     RATTUS_NORVEGICUS = "NCBITaxon:10116"
 
 
+EXEMPT_ORGANISMS = ["NCBITaxon:2697049", "NCBITaxon:32630"]
+
+
 def get_organism_from_feature_id(
     feature_id: str,
 ) -> Union[SupportedOrganisms, None]:
