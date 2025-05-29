@@ -350,6 +350,7 @@ class Validator:
 
         :rtype None
         """
+
         if "exceptions" in curie_constraints and term_str in curie_constraints["exceptions"]:
             return
 
@@ -399,19 +400,26 @@ class Validator:
 
         :rtype None
         """
+        # Check if term_id is forbidden by schema definition. Sometimes, these are also invalid ontology
+        # terms, but it's preferred to report these as "not allowed" terms rather than "invalid ontology terms"
+        if "forbidden" in curie_constraints:
+            forbidden_terms = curie_constraints["forbidden"].get("terms", [])
+            if term_id in forbidden_terms:
+                self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
+                return
+
         # If the term id does not belong to an allowed ontology, the subsequent checks are redundant
         if not self._validate_curie_ontology(term_id, column_name, curie_constraints["ontologies"]):
             return
 
-        # Check if term_id is forbidden by schema definition despite being a valid ontology term
-        if "forbidden" in curie_constraints:
-            if "terms" in curie_constraints["forbidden"] and term_id in curie_constraints["forbidden"]["terms"]:
-                self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
-                return
-            if "ancestors" in curie_constraints["forbidden"] and self._has_forbidden_curie_ancestor(
-                term_id, column_name, curie_constraints["forbidden"]["ancestors"]
-            ):
-                return
+        # Must be valid ontology term to validate against forbidden curie ancestors
+        if (
+            "forbidden" in curie_constraints
+            and "ancestors" in curie_constraints["forbidden"]
+            and self._has_forbidden_curie_ancestor(term_id, column_name, curie_constraints["forbidden"]["ancestors"])
+        ):
+            self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
+            return
 
         # If there are allow-lists, validate against them
         if "allowed" in curie_constraints:
@@ -433,30 +441,49 @@ class Validator:
             if not is_allowed:
                 self.errors.append(f"'{term_id}' in '{column_name}' is not an allowed term id.")
 
-    def _validate_feature_id(self, feature_id: str, df_name: str):
+    def _validate_feature_ids(self, column: pd.Series, df_name: str):
         """
-        Validates a feature id, i.e. checks that it's present in the reference
-        If there are any errors, it adds them to self.errors and adds it to the list of invalid features
+        Validates all feature ids, i.e. checks that it's present in the reference
+        If there are any errors, it adds them to self.errors
 
-        :param str feature_id: the feature id to be validated
+        :param str column: feature_id column
         :param str df_name: name of dataframe the feauter id comes from (var or raw.var)
 
         :rtype none
         """
 
-        organism = gencode.get_organism_from_feature_id(feature_id)
+        # Keep track of all of the gene ids that come from different organisms
+        invalid_gene_organisms = []
 
-        if not organism:
+        for feature_id in column:
+            organism = gencode.get_organism_from_feature_id(feature_id)
+            organism_ontology_id = None
+            dataset_organism = self.adata.uns.get("organism_ontology_term_id", None)
+
+            if not organism:
+                self.errors.append(
+                    f"Could not infer organism from feature ID '{feature_id}' in '{df_name}', "
+                    f"make sure it is a valid ID."
+                )
+                return
+            else:
+                organism_ontology_id = organism.value
+
+            valid_gene_id = get_gene_checker(organism).is_valid_id(feature_id)
+
+            if not valid_gene_id:
+                self.errors.append(f"'{feature_id}' is not a valid feature ID in '{df_name}'.")
+
+            if dataset_organism is not None and organism_ontology_id is not None and valid_gene_id:
+                # If the gene id is valid, check if that organism matches the dataset's organism
+                is_descendant = organism_ontology_id in ONTOLOGY_PARSER.get_term_ancestors(dataset_organism, True)
+                if not is_descendant and organism_ontology_id not in gencode.EXEMPT_ORGANISMS:
+                    invalid_gene_organisms.append(organism)
+
+        if len(invalid_gene_organisms) > 0:
             self.errors.append(
-                f"Could not infer organism from feature ID '{feature_id}' in '{df_name}', "
-                f"make sure it is a valid ID."
+                f"uns['organism_ontology_term_id'] is '{dataset_organism}' but feature_ids are from {invalid_gene_organisms}."
             )
-            return
-
-        if not get_gene_checker(organism).is_valid_id(feature_id):
-            self.errors.append(f"'{feature_id}' is not a valid feature ID in '{df_name}'.")
-
-        return
 
     def _validate_tissue_ontology_term_id(self):
         """
@@ -688,8 +715,7 @@ class Validator:
 
         if column_def.get("type") == "feature_id":
             # Validates each id
-            for feature_id in column:
-                self._validate_feature_id(feature_id, df_name)
+            self._validate_feature_ids(column, df_name)
 
         if column_def.get("type") == "curie":
             # Check for NaN values
@@ -755,10 +781,7 @@ class Validator:
                     elif uns_key_to_match:
                         error_message_suffix = f"when '{uns_key_to_match}' is '{uns_value}'"
             except KeyError:
-                self.errors.append(
-                    f"Checking values with dependencies failed for adata.{df_name}['{column_name}'], "
-                    f"likely due to missing column or uns key."
-                )
+                # If the column or uns key is not found, then we should surface an error elsewhere
                 continue
 
             all_rules.append(match_query)

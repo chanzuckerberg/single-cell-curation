@@ -343,28 +343,29 @@ good_obs_mouse["tissue_type"] = good_obs_mouse["tissue_type"].cat.add_categories
 
 # Valid var per schema
 good_var = pd.DataFrame(
-    [[False], [False], [False], [False], [False], [False], [False]],
+    [[False]],
     index=[
-        "ERCC-00002",
         "ENSG00000127603",
-        "ENSMUSG00000059552",
-        "ENSSASG00005000004",
-        "FBtr0472816_df_nrg",
-        "ENSDARG00000009657",
-        "WBGene00000003",
+        "ENSG00000141510",
+        "ENSG00000012048",
+        "ENSG00000139618",
+        "ENSG00000002330",
+        "ENSG00000000005",
+        "ENSG00000000419",
     ],
     columns=["feature_is_filtered"],
 )
-
-# Valid var with four genes in it. This is used to test seurat compatibility which involves doing matrix math
-good_var_seurat_testing = pd.DataFrame(
-    [
-        [False],
-        [False],
-        [False],
-        [False],
+good_var_mouse = pd.DataFrame(
+    [[False]],
+    index=[
+        "ENSMUSG00000102693",
+        "ENSMUSG00000064842",
+        "ENSMUSG00000051951",
+        "ENSMUSG00000102851",
+        "ENSMUSG00000103377",
+        "ENSMUSG00000104017",
+        "ENSMUSG00000103025",
     ],
-    index=["ERCC-00002", "ENSG00000127603", "ENSMUSG00000059552", "ENSSASG00005000004"],
     columns=["feature_is_filtered"],
 )
 
@@ -372,23 +373,22 @@ good_var_seurat_testing = pd.DataFrame(
 # these columns are defined in the schema
 var_expected = pd.DataFrame(
     [
-        ["spike-in", False, "ERCC-00002 (spike-in control)", "NCBITaxon:32630", 1061, "synthetic"],
-        # ["gene", False, "MACF1", "NCBITaxon:9606", 2821, "protein_coding"],
         ["gene", False, "MACF1", "NCBITaxon:9606", 2821, "protein_coding"],
-        ["gene", False, "Trp53", "NCBITaxon:10090", 1797, "protein_coding"],
-        ["gene", False, "S", "NCBITaxon:2697049", 3822, "protein_coding"],
-        ["gene", False, "FBtr0472816_df_nrg", "NCBITaxon:7227", 22, "ncRNA"],
-        ["gene", False, "fgfr1op2", "NCBITaxon:7955", 1088, "protein_coding"],
-        ["gene", False, "aat-2", "NCBITaxon:6239", 1738, "protein_coding"],
+        ["gene", False, "TP53", "NCBITaxon:9606", 2404, "protein_coding"],
+        ["gene", False, "BRCA1", "NCBITaxon:9606", 3712, "protein_coding"],
+        ["gene", False, "BRCA2", "NCBITaxon:9606", 10668, "protein_coding"],
+        ["gene", False, "BAD", "NCBITaxon:9606", 552, "protein_coding"],
+        ["gene", False, "TNMD", "NCBITaxon:9606", 873, "protein_coding"],
+        ["gene", False, "DPM1", "NCBITaxon:9606", 1262, "protein_coding"],
     ],
     index=[
-        "ERCC-00002",
         "ENSG00000127603",
-        "ENSMUSG00000059552",
-        "ENSSASG00005000004",
-        "FBtr0472816_df_nrg",
-        "ENSDARG00000009657",
-        "WBGene00000003",
+        "ENSG00000141510",
+        "ENSG00000012048",
+        "ENSG00000139618",
+        "ENSG00000002330",
+        "ENSG00000000005",
+        "ENSG00000000419",
     ],
     columns=[
         "feature_biotype",
@@ -525,7 +525,7 @@ adata_no_raw_values.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
 # Anndata with no obs nor var
 adata_minimal = anndata.AnnData(X=X.copy(), uns=good_uns, obsm=good_obsm)
 
-# Anndata with a expression matrix that is not raw
+# Anndata with a expression matrix that is not raw g
 adata_non_raw = anndata.AnnData(
     X=non_raw_X.copy(),
     obs=good_obs,
@@ -575,8 +575,9 @@ adata_mouse = anndata.AnnData(
     obs=good_obs_mouse,
     uns=good_uns_mouse,
     obsm=good_obsm,
-    var=good_var,
+    var=good_var_mouse,
 )
+adata_mouse.uns["organism_ontology_term_id"] = "NCBITaxon:10090"
 
 # anndata for testing migration
 unmigrated_obs = pd.DataFrame(

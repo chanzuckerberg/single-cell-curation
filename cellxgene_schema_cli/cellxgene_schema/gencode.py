@@ -7,7 +7,7 @@ from . import env
 
 
 class SupportedOrganisms(enum.Enum):
-    # NOTE: these could be enumerated from loading the `schema_definition.yaml` and scraping the 'organism_ontology_term_id' constraints
+    # Note that this is different from the valid organisms in `organism_ontology_term_id`
     HOMO_SAPIENS = "NCBITaxon:9606"
     MUS_MUSCULUS = "NCBITaxon:10090"
     SARS_COV_2 = "NCBITaxon:2697049"
@@ -24,6 +24,9 @@ class SupportedOrganisms(enum.Enum):
     SUS_SCROFA = "NCBITaxon:9823"
     MICROCEBUS_MURINUS = "NCBITaxon:30608"
     RATTUS_NORVEGICUS = "NCBITaxon:10116"
+
+
+EXEMPT_ORGANISMS = ["NCBITaxon:2697049", "NCBITaxon:32630"]
 
 
 def get_organism_from_feature_id(
