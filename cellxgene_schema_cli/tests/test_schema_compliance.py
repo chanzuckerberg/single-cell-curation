@@ -580,6 +580,12 @@ class TestObs:
         assert (
             f"ERROR: '{organism_ontology_term_id}' in 'organism_ontology_term_id' is not allowed." in validator.errors
         )
+    
+    def test_invalid_organism_genes(self, validator_with_adata):
+        validator = validator_with_adata
+        validator.adata.uns["organism_ontology_term_id"] = "NCBITaxon:10090"
+        validator.validate_adata()
+        assert "ERROR: uns['organism_ontology_term_id'] is 'NCBITaxon:10090' but feature_ids are from ['NCBITaxon:9606']."
 
     def test_column_presence_assay(self, validator_with_adata):
         """

@@ -441,45 +441,49 @@ class Validator:
             if not is_allowed:
                 self.errors.append(f"'{term_id}' in '{column_name}' is not an allowed term id.")
 
-    def _validate_feature_id(self, feature_id: str, df_name: str):
+    def _validate_feature_ids(self, column: pd.Series, df_name: str):
         """
-        Validates a feature id, i.e. checks that it's present in the reference
-        If there are any errors, it adds them to self.errors and adds it to the list of invalid features
+        Validates all feature ids, i.e. checks that it's present in the reference
+        If there are any errors, it adds them to self.errors
 
-        :param str feature_id: the feature id to be validated
+        :param str column: feature_id column
         :param str df_name: name of dataframe the feauter id comes from (var or raw.var)
 
         :rtype none
         """
 
-        organism = gencode.get_organism_from_feature_id(feature_id)
-        organism_ontology_id = None
-        dataset_organism = self.adata.uns.get("organism_ontology_term_id", None)
+        # Keep track of all of the gene ids that come from different organisms
+        invalid_gene_organisms = []
 
-        if not organism:
-            self.errors.append(
-                f"Could not infer organism from feature ID '{feature_id}' in '{df_name}', "
-                f"make sure it is a valid ID."
-            )
-            return
-        else:
-            organism_ontology_id = organism.value
+        for feature_id in column:
+            organism = gencode.get_organism_from_feature_id(feature_id)
+            organism_ontology_id = None
+            dataset_organism = self.adata.uns.get("organism_ontology_term_id", None)
 
-        valid_gene_id = get_gene_checker(organism).is_valid_id(feature_id)
-
-        if not valid_gene_id:
-            self.errors.append(f"'{feature_id}' is not a valid feature ID in '{df_name}'.")
-
-        if dataset_organism is not None and organism_ontology_id is not None and valid_gene_id:
-            # If the gene id is valid, check if that organism matches the dataset's organism
-            is_descendant = organism_ontology_id in ONTOLOGY_PARSER.get_term_ancestors(dataset_organism, True)
-            if not is_descendant and organism_ontology_id not in gencode.EXEMPT_ORGANISMS:
+            if not organism:
                 self.errors.append(
-                    f"'{feature_id}' in '{df_name}' is from organism '{organism}', "
-                    f"but the uns['organism_ontology_term_id'] is '{dataset_organism}'."
+                    f"Could not infer organism from feature ID '{feature_id}' in '{df_name}', "
+                    f"make sure it is a valid ID."
                 )
+                return
+            else:
+                organism_ontology_id = organism.value
 
-        return
+            valid_gene_id = get_gene_checker(organism).is_valid_id(feature_id)
+
+            if not valid_gene_id:
+                self.errors.append(f"'{feature_id}' is not a valid feature ID in '{df_name}'.")
+
+            if dataset_organism is not None and organism_ontology_id is not None and valid_gene_id:
+                # If the gene id is valid, check if that organism matches the dataset's organism
+                is_descendant = organism_ontology_id in ONTOLOGY_PARSER.get_term_ancestors(dataset_organism, True)
+                if not is_descendant and organism_ontology_id not in gencode.EXEMPT_ORGANISMS:
+                    invalid_gene_organisms.append(organism)
+        
+        if len(invalid_gene_organisms) > 0:
+            self.errors.append(
+                f"uns['organism_ontology_term_id'] is '{dataset_organism}' but feature_ids are from {invalid_gene_organisms}."
+            )
 
     def _validate_tissue_ontology_term_id(self):
         """
@@ -711,8 +715,7 @@ class Validator:
 
         if column_def.get("type") == "feature_id":
             # Validates each id
-            for feature_id in column:
-                self._validate_feature_id(feature_id, df_name)
+            self._validate_feature_ids(column, df_name)
 
         if column_def.get("type") == "curie":
             # Check for NaN values
