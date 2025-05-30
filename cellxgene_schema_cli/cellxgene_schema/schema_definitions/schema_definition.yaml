@@ -24,7 +24,6 @@ components:
       - schema_version
       - schema_reference
       - citation
-      - organism
     deprecated_columns:
       - X_normalization
       - default_field
