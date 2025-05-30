@@ -568,10 +568,7 @@ class TestObs:
         validator = validator_with_adata
         validator.adata.obs[deprecated_column] = "NCBITaxon:9606"
         validator.validate_adata()
-        assert (
-            f"ERROR: The field '{deprecated_column}' is present in 'obs', but it is deprecated."
-            in validator.errors
-        )
+        assert f"ERROR: The field '{deprecated_column}' is present in 'obs', but it is deprecated." in validator.errors
 
     @pytest.mark.parametrize(
         "organism_ontology_term_id",
