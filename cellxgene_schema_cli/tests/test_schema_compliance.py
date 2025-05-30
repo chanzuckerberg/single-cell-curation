@@ -554,15 +554,22 @@ class TestObs:
         assert len(validator.errors) > 0
         assert validator.errors[0] == "ERROR: 'organism_ontology_term_id' in 'uns' is not present."
 
-    def test_obs_presence_organism(self, validator_with_adata):
+    @pytest.mark.parametrize(
+        "deprecated_column",
+        [
+            "organism_ontology_term_id",
+            "organism",
+        ],
+    )
+    def test_obs_presence_organism(self, validator_with_adata, deprecated_column):
         """
         organism_ontology_term_id cannot be in obs since it's a deprecated column
         """
         validator = validator_with_adata
-        validator.adata.obs["organism_ontology_term_id"] = "NCBITaxon:9606"
+        validator.adata.obs[deprecated_column] = "NCBITaxon:9606"
         validator.validate_adata()
         assert (
-            "ERROR: The field 'organism_ontology_term_id' is present in 'obs', but it is deprecated."
+            f"ERROR: The field '{deprecated_column}' is present in 'obs', but it is deprecated."
             in validator.errors
         )
 
