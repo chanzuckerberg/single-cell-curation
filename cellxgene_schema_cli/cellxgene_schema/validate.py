@@ -480,6 +480,7 @@ class Validator:
                 if not is_descendant and organism_ontology_id not in gencode.EXEMPT_ORGANISMS:
                     invalid_gene_organisms.append(organism)
 
+        invalid_gene_organisms = list(set(invalid_gene_organisms))
         if len(invalid_gene_organisms) > 0:
             self.errors.append(
                 f"uns['organism_ontology_term_id'] is '{dataset_organism}' but feature_ids are from {invalid_gene_organisms}."
