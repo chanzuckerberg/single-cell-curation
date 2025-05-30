@@ -146,6 +146,7 @@ components:
     deprecated_columns:
       - ethnicity
       - ethnicity_ontology_term_id
+      - organism
       - organism_ontology_term_id
     reserved_columns:
       - observation_joinid
