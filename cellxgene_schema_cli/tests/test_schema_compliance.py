@@ -544,7 +544,7 @@ class TestObs:
         validator.validate_adata()
         assert f"ERROR: Dataframe 'obs' is missing " f"column '{column}'." in validator.errors
 
-    def test_key_presence_organism(self, validator_with_adata):
+    def test_key_presence_organism_ontology_term_id(self, validator_with_adata):
         """
         organism_ontology_term_id must be defined in uns
         """
@@ -553,6 +553,19 @@ class TestObs:
         validator.validate_adata()
         assert len(validator.errors) > 0
         assert validator.errors[0] == "ERROR: 'organism_ontology_term_id' in 'uns' is not present."
+
+    def test_key_presence_organism(self, validator_with_adata):
+        """
+        organism_ontology_term_id must be defined in uns
+        """
+        validator = validator_with_adata
+        validator.adata.uns["organism"] = "Homo sapiens"
+        validator.validate_adata()
+        assert len(validator.errors) > 0
+        assert (
+            validator.errors[0]
+            == "ERROR: Add labels error: Column 'organism' is a reserved column name of 'uns'. Remove it from h5ad and try again."
+        )
 
     @pytest.mark.parametrize(
         "deprecated_column",
