@@ -1546,7 +1546,9 @@ class Validator:
         """
 
         for label_def in add_labels_def:
-            reserved_name = label_def["to_column"]
+            reserved_name = label_def.get("to_column")
+            if reserved_name is None:
+                reserved_name = label_def.get("to_key")
 
             if reserved_name in getattr_anndata(self.adata, component):
                 self.errors.append(
@@ -1645,6 +1647,12 @@ class Validator:
                 index_def = component_def["index"]
                 if "add_labels" in index_def:
                     self._check_single_column_availability(component, index_def["add_labels"])
+
+            # Do it for key that map to columns
+            if "keys" in component_def:
+                for key_def in component_def["keys"].values():
+                    if "add_labels" in key_def:
+                        self._check_single_column_availability(component, key_def["add_labels"])
 
     def _check_spatial(self):
         """
