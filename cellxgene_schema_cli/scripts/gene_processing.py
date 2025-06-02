@@ -110,7 +110,7 @@ class GeneProcessor:
                         and current_features[feature].startswith("ENSG")
                         and current_features[feature] != current_features["gene_id"]
                     ):
-                        target_features[i] = current_features["gene_id"]
+                        target_features[i] = target_features[0]
 
                     # Add gene version if available from gene id
                     if feature in ["gene_id"]:
