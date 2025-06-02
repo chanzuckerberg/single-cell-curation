@@ -102,7 +102,7 @@ class GeneProcessor:
                     feature = features[i]
                     if feature in current_features:
                         target_features[i] = current_features[feature]
-                    
+
                     # if the symbol starts with ENSG and it does not match the Ensembl ID, then the symbol used should be
                     # the Ensembl ID
                     if (
@@ -122,7 +122,7 @@ class GeneProcessor:
 
                         target_features[i] = feature_id
                         current_features[feature.replace("id", "version")] = feature_version
-                    
+
                 gene_id = target_features[0]
                 self.gene_metadata[gene_id] = GeneProcessingResult(
                     gene_id=target_features[0],
