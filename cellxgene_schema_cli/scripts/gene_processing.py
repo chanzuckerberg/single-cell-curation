@@ -84,9 +84,11 @@ class GeneProcessor:
 
                 # Extract features (column 9 of GTF)
                 current_features = gtf_tools._get_features(line)  # type: ignore
+                gene_name_missing = False
 
                 # Set gene_name to gene_id if not present in GTF line
                 if "gene_name" not in current_features:
+                    gene_name_missing = True
                     current_features["gene_name"] = current_features["gene_id"]
 
                 # Filter genes suffixed with "PAR_Y"
@@ -123,8 +125,8 @@ class GeneProcessor:
                         target_features[i] = feature_id
                         current_features[feature.replace("id", "version")] = feature_version
 
-                    # Strip gene version from gene name, if it exists
-                    if feature in ["gene_name"] and "." in target_features[i]:
+                    # Strip gene version from gene name, if it exists, but only if gene_name is not in the GTF line
+                    if feature in ["gene_name"] and "." in target_features[i] and gene_name_missing:
                         target_features[i] = target_features[i].split(".")[0]
 
                 gene_id = target_features[0]
