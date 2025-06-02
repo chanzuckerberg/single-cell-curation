@@ -123,6 +123,10 @@ class GeneProcessor:
                         target_features[i] = feature_id
                         current_features[feature.replace("id", "version")] = feature_version
 
+                    # Strip gene version from gene name, if it exists
+                    if feature in ["gene_name"] and "." in target_features[i]:
+                        target_features[i] = target_features[i].split(".")[0]
+
                 gene_id = target_features[0]
                 self.gene_metadata[gene_id] = GeneProcessingResult(
                     gene_id=target_features[0],
