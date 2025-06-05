@@ -91,10 +91,10 @@ def migrate(input_file, output_file, collection_id, dataset_id):
             {
                 "Healthy": "PATO:0000461",
                 "HIV": "MONDO:0005109",
-                "VL_HIV": "MONDO:0005109 || MONDO:0011989",
+                "VL_HIV": "MONDO:0005109 || MONDO:0005445",
                 "aL_HIV": "MONDO:0005109 || MONDO:0011989",
-                "cVL_HIV": "MONDO:0005109 || MONDO:0011989",
-                "pVL_HIV": "MONDO:0005109 || MONDO:0011989",
+                "cVL_HIV": "MONDO:0005109 || MONDO:0005445",
+                "pVL_HIV": "MONDO:0005109 || MONDO:0005445",
             }
         )
 
