@@ -9,6 +9,7 @@ from cellxgene_schema.utils import (
     read_h5ad,
     remap_deprecated_features,
     remove_deprecated_features,
+    replace_delimiter,
     replace_ontology_term,
 )
 from fixtures.examples_validate import adata, adata_non_raw, h5ad_valid
@@ -200,6 +201,14 @@ def test_move_column_from_obs_to_uns(adata_with_raw):
 
     assert "assay_ontology_term_id" not in adata_with_raw.obs.columns
     assert adata_with_raw.uns["assay_ontology_term_id"] == "EFO:0009899"
+
+
+def test_replace_delimiter(adata_with_raw):
+    adata_with_raw.obs["self_reported_ethnicity_ontology_term_id"] = "HsapDv:0000003,HsapDv:0000004"
+
+    replace_delimiter(adata_with_raw.obs, ",", " || ", "self_reported_ethnicity_ontology_term_id")
+
+    assert adata_with_raw.obs["self_reported_ethnicity_ontology_term_id"].eq("HsapDv:0000003 || HsapDv:0000004").all()
 
 
 class TestGetHashDigestColumn:

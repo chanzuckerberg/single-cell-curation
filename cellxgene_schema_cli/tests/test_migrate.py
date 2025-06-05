@@ -33,7 +33,7 @@ class TestMigrate:
             }
         }
         with TemporaryDirectory() as tmp, patch("cellxgene_schema.migrate.DEPRECATED_FEATURE_IDS", ["DUMMY"]), patch(
-            "cellxgene_schema.migrate.ONTOLOGY_OBS_TERM_MAPS", test_ONTOLOGY_OBS_TERM_MAPS
+            "cellxgene_schema.migrate.ONTOLOGY_TERM_OBS_MAPS", test_ONTOLOGY_OBS_TERM_MAPS
         ), patch("cellxgene_schema.migrate.GENCODE_MAPPER", {"ENSSASG00005000004": "ENSSASG00005000004_NEW"}), patch(
             "cellxgene_schema.migrate.ONTOLOGY_TERM_UNS_MAPS", test_ONTOLOGY_UNS_TERM_MAPS
         ):
