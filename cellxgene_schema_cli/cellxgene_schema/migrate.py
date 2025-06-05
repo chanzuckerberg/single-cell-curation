@@ -46,7 +46,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     dataset = utils.read_h5ad(input_file)
 
-    # Migrate organism_ontology_term_id for 6.0.0 release
+    # Migrate organism_ontology_term_id for 6.0.0
     dataset = utils.move_column_from_obs_to_uns(adata=dataset, column_name="organism_ontology_term_id")
 
     # AUTOMATED, DO NOT CHANGE
