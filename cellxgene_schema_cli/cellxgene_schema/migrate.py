@@ -47,6 +47,9 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     dataset = utils.read_h5ad(input_file)
 
+    # Migrate organism_ontology_term_id for 6.0.0 release
+    dataset = utils.move_column_from_obs_to_uns(adata=dataset, column_name="organism_ontology_term_id")
+
     # AUTOMATED, DO NOT CHANGE
     for ontology_name, deprecated_term_map in ONTOLOGY_TERM_OBS_MAPS.items():
         utils.replace_ontology_term(dataset.obs, ontology_name, deprecated_term_map)
