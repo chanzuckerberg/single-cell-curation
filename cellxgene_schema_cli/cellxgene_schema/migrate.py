@@ -80,17 +80,6 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     #   <custom transformation logic beyond scope of replace_ontology_term>
     # ...
 
-    if collection_id == "398e34a9-8736-4b27-a9a7-31a47a67f446":
-        utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000451": "CL:4047054"})
-    
-    if collection_id == "126afc71-47fb-4e9d-8aaf-9d9f61e0ac77":
-        if dataset.obs["disease_group"] != "Healthy" and dataset.obs["disease_group"] != "HIV":
-            dataset.obs["disease_ontology_term_id"] = "MONDO:0005109 || MONDO:0011989"
-    
-    if collection_id == "eeba7193-4d32-46bd-a21b-089936d60601":
-        if dataset.obs["sample_id"].str.startswith("mraf"):
-            dataset.obs["disease_ontology_term_id"] = "MONDO:0004981 || MONDO:1030008"
-
     if GENCODE_MAPPER:
         dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
 
