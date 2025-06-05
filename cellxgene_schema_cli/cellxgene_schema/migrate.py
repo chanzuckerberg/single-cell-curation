@@ -1,4 +1,3 @@
-import anndata as ad
 import dask
 
 from . import utils
