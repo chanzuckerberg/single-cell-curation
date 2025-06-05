@@ -80,6 +80,40 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     #   <custom transformation logic beyond scope of replace_ontology_term>
     # ...
 
+    if dataset.uns["title"] == "Time-resolved single-cell analysis of Brca1 associated mammary tumourigenesis reveals aberrant differentiation of luminal progenitors":
+        utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000451": "CL:4047054"})
+
+    if collection_id == "126afc71-47fb-4e9d-8aaf-9d9f61e0ac77":
+        utils.map_ontology_term(
+            dataset.obs,
+            "disease",
+            "disease_group",
+            {
+                "Healthy": "PATO:0000461",
+                "HIV": "MONDO:0005109",
+                "VL_HIV": "MONDO:0005109 || MONDO:0011989",
+                "aL_HIV": "MONDO:0005109 || MONDO:0011989",
+                "cVL_HIV": "MONDO:0005109 || MONDO:0011989",
+                "pVL_HIV": "MONDO:0005109 || MONDO:0011989",
+            }
+        )
+
+    if collection_id == "eeba7193-4d32-46bd-a21b-089936d60601":
+        utils.map_ontology_term(
+            dataset.obs,
+            "disease",
+            "sample_id",
+            {
+                "mraf1": "MONDO:0004981 || MONDO:1030008",
+                "mraf2": "MONDO:0004981 || MONDO:1030008",
+                "mraf3": "MONDO:0004981 || MONDO:1030008",
+                "mraf4": "MONDO:0004981 || MONDO:1030008",
+                "mraf7": "MONDO:0004981 || MONDO:1030008",
+                "mraf13": "MONDO:0004981 || MONDO:1030008",
+                "mraf14": "MONDO:0004981 || MONDO:1030008",
+            }
+        )
+
     if GENCODE_MAPPER:
         dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
 
