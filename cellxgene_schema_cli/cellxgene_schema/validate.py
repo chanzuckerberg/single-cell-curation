@@ -632,7 +632,7 @@ class Validator:
                             continue
                         else:
                             gene_name = self.adata.var_names[i]
-                            self.errors.append(
+                            self.warnings.append(
                                 f"Gene '{gene_name}' at index {i} has all-zero values in adata.X. Either feature_is_filtered should "
                                 f"be set to True or adata.raw.X should be set to all-zero values."
                             )
