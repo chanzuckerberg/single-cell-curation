@@ -646,7 +646,7 @@ class Validator:
             n_nonzero = calculate_matrix_nonzero(self.adata.X[:, column])
 
             if n_nonzero > 0:
-                self.warnings.append(
+                self.errors.append(
                     f"Some features are 'True' in '{column_name}' of dataframe '{df_name}', but there are "
                     f"{n_nonzero} non-zero values in the corresponding columns of the matrix 'X'. All values for "
                     f"these features must be 0."
