@@ -1749,11 +1749,11 @@ class TestVar:
         validator.adata.X = X.map_blocks(lambda x: (x.eliminate_zeros() or x), dtype=X.dtype, meta=X._meta)
         validator.reset(None, 2)
         validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: Some features are 'True' in 'feature_is_filtered' of dataframe 'var', "
+        assert validator.warnings[0] == (
+            "WARNING: Some features are 'True' in 'feature_is_filtered' of dataframe 'var', "
             "but there are 1 non-zero values in the corresponding columns of the matrix 'X'. "
             "All values for these features must be 0."
-        ]
+        )
 
         # Test that feature_is_filtered is a bool and not a string
         var["feature_is_filtered"] = "string"
@@ -1776,9 +1776,10 @@ class TestVar:
 
         validator.reset(None, 2)
         validator.validate_adata()
-        assert validator.errors == [
-            "ERROR: Gene 'ENSG00000127603' at index 0 has all-zero values in adata.X. Either feature_is_filtered should be set to True or adata.raw.X should be set to all-zero values."
-        ]
+        assert (
+            validator.warnings[0]
+            == "WARNING: Gene 'ENSG00000127603' at index 0 has all-zero values in adata.X. Either feature_is_filtered should be set to True or adata.raw.X should be set to all-zero values."
+        )
 
     def test_feature_is_filtered_var_mishapen(self, validator_with_adata):
         validator = validator_with_adata

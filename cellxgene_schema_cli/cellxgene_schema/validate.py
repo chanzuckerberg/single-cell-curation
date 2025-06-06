@@ -632,7 +632,7 @@ class Validator:
                             continue
                         else:
                             gene_name = self.adata.var_names[i]
-                            self.errors.append(
+                            self.warnings.append(
                                 f"Gene '{gene_name}' at index {i} has all-zero values in adata.X. Either feature_is_filtered should "
                                 f"be set to True or adata.raw.X should be set to all-zero values."
                             )
@@ -646,7 +646,7 @@ class Validator:
             n_nonzero = calculate_matrix_nonzero(self.adata.X[:, column])
 
             if n_nonzero > 0:
-                self.errors.append(
+                self.warnings.append(
                     f"Some features are 'True' in '{column_name}' of dataframe '{df_name}', but there are "
                     f"{n_nonzero} non-zero values in the corresponding columns of the matrix 'X'. All values for "
                     f"these features must be 0."
