@@ -65,9 +65,25 @@ def replace_ontology_term_uns(adata: ad.AnnData, ontology_name, update_map) -> a
     return adata
 
 
+def replace_delimiter(dataframe, old_delimiter: str, new_delimiter: str, column_name: str):
+    """
+    Replace the delimiter in a column of a dataframe.
+
+    :param dataframe: The dataframe containing the column to modify.
+    :param old_delimiter: The delimiter to replace.
+    :param new_delimiter: The new delimiter to use.
+    :param column_name: The name of the column to modify.
+    """
+    if column_name not in dataframe.columns:
+        raise KeyError(f"Column '{column_name}' not found")
+
+    dataframe[column_name] = dataframe[column_name].str.replace(old_delimiter, new_delimiter, regex=False)
+
+
 def move_column_from_obs_to_uns(adata: ad.AnnData, column_name: str) -> ad.AnnData:
     if column_name not in adata.obs:
-        raise KeyError(f"Column '{column_name}' not found in adata.obs, cannot migrate from obs to uns")
+        logger.warning(f"Column '{column_name}' not found in adata.obs, cannot migrate from obs to uns")
+        return adata
 
     values = adata.obs[column_name].unique()
 
