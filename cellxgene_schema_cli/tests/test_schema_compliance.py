@@ -1749,7 +1749,7 @@ class TestVar:
         validator.adata.X = X.map_blocks(lambda x: (x.eliminate_zeros() or x), dtype=X.dtype, meta=X._meta)
         validator.reset(None, 2)
         validator.validate_adata()
-        assert validator.errors[0] == (
+        assert validator.warnings[0] == (
             "WARNING: Some features are 'True' in 'feature_is_filtered' of dataframe 'var', "
             "but there are 1 non-zero values in the corresponding columns of the matrix 'X'. "
             "All values for these features must be 0."
