@@ -33,8 +33,8 @@ def get_matrix_format(matrix: DaskArray) -> str:
     return determine_matrix_format(matrix)
 
 
-def count_matrix_nonzero(matrix: DaskArray, is_sparse_matrix: bool) -> int:
-    return calculate_matrix_nonzero(matrix, is_sparse_matrix)
+def count_matrix_nonzero(matrix: DaskArray) -> int:
+    return calculate_matrix_nonzero(matrix)
 
 
 def check_non_csr_matrices(adata: ad.AnnData):
