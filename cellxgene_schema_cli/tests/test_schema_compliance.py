@@ -1296,7 +1296,7 @@ class TestObs:
 
     @pytest.mark.parametrize(
         "organism_ontology_term_id",
-        ["EFO:0000001", "CL:0007021", "NCBITaxon:1234", "NCBITaxon:9615"],
+        ["EFO:0000001", "CL:4023077", "NCBITaxon:1234", "NCBITaxon:9615"],
     )
     def test_organism_ontology_term_id__invalid(self, validator_with_adata, organism_ontology_term_id):
         """
@@ -2863,7 +2863,7 @@ class TestZebrafish:
 
     @pytest.mark.parametrize(
         "cell_type_ontology_term_id",
-        ["ZFA:0000003", "CL:0007021", "unknown"],
+        ["ZFA:0000003", "CL:4023077", "unknown"],
     )
     def test_cell_type_ontology_term_id(self, validator_with_zebrafish_adata, cell_type_ontology_term_id):
         """
@@ -2962,7 +2962,7 @@ class TestZebrafish:
     @pytest.mark.parametrize(
         "tissue_ontology_term_id",
         [
-            "CL:0007021",  # valid CL term for cell culture
+            "CL:4023077",  # valid CL term for cell culture
             "ZFA:0000003",  # valid ZFA term
         ],
     )
@@ -3085,7 +3085,7 @@ class TestFruitFly:
 
     @pytest.mark.parametrize(
         "cell_type_ontology_term_id",
-        ["FBbt:00049192", "CL:0007021", "unknown"],
+        ["FBbt:00049192", "CL:4023077", "unknown"],
     )
     def test_cell_type_ontology_term_id(self, validator_with_fruitfly_adata, cell_type_ontology_term_id):
         """
@@ -3184,7 +3184,7 @@ class TestFruitFly:
     @pytest.mark.parametrize(
         "tissue_ontology_term_id",
         [
-            "CL:0007021",  # valid CL term for cell culture
+            "CL:4023077",  # valid CL term for cell culture
             "FBbt:00049192",  # valid FBbt term
         ],
     )
@@ -3314,7 +3314,7 @@ class TestRoundworm:
 
     @pytest.mark.parametrize(
         "cell_type_ontology_term_id",
-        ["WBbt:0005762", "CL:0007021", "unknown"],
+        ["WBbt:0005762", "CL:4023077", "unknown"],
     )
     def test_cell_type_ontology_term_id(self, validator_with_roundworm_adata, cell_type_ontology_term_id):
         """
@@ -3441,7 +3441,7 @@ class TestRoundworm:
     @pytest.mark.parametrize(
         "tissue_ontology_term_id",
         [
-            "CL:0007021",  # valid CL term for cell culture
+            "CL:4023077",  # valid CL term for cell culture
             "WBbt:0005762",  # valid WBbt term
         ],
     )
