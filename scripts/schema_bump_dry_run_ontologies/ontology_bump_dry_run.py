@@ -172,12 +172,6 @@ def dry_run(curator_report_filepath: str, replaced_by_filepath: str) -> None:
             )
     write_to_curator_report(curator_report_filepath, private_curator_report_entry_map, revision_map)
 
-    if revision_map:
-        with open(curator_report_filepath, "a") as f:
-            f.write("\nThe Following Public Collections Will Not Be Auto-Migrated Due To Having an Open Revision:\n")
-            for revision in revision_map.values():
-                f.write(f"{revision}\n")
-
     with open(replaced_by_filepath, "w") as j:
         json.dump(replaced_by_map, j)
 

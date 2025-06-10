@@ -23,6 +23,3 @@ Deprecated Term: EFO:0000005
 Consider: ['EFO:0000001', 'EFO:0000010']
 Comments: ['Consider removing this term entirely', 'Or using one from a different ontology']
 
-
-The Following Public Collections Will Not Be Auto-Migrated Due To Having an Open Revision:
-public_coll_0

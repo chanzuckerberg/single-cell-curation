@@ -23,6 +23,3 @@ Deprecated Term: EFO:0000006
 Replaced By: CL:0000006
 Comments: ['Comment adding context to replacement']
 
-
-The Following Public Collections Will Not Be Auto-Migrated Due To Having an Open Revision:
-public_coll_0
