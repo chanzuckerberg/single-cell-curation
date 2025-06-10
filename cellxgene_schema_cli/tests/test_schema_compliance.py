@@ -1778,7 +1778,7 @@ class TestVar:
         validator.validate_adata()
         assert (
             validator.warnings[0]
-            == "WARNING: Gene 'ENSG00000127603' at index 0 has all-zero values in adata.X. Either feature_is_filtered should be set to True or adata.raw.X should be set to all-zero values."
+            == "WARNING: Genes 'ENSG00000127603' have all-zero values in adata.X. Either feature_is_filtered should be set to True or adata.raw.X should be set to all-zero values."
         )
 
     def test_feature_is_filtered_var_mishapen(self, validator_with_adata):

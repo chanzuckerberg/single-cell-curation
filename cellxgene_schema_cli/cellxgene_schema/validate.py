@@ -623,6 +623,7 @@ class Validator:
             sum_X = compute_column_sums(self.adata.X)
             sum_raw_X = compute_column_sums(self.adata.raw.X)
             try:
+                ensembl_ids_all_zeros = []
                 for i, _ in enumerate(sum_X):
                     is_filtered = column[i]
                     raw_column_sum = sum_raw_X[i]
@@ -631,11 +632,13 @@ class Validator:
                         if is_filtered or raw_column_sum == 0:
                             continue
                         else:
-                            gene_name = self.adata.var_names[i]
-                            self.warnings.append(
-                                f"Gene '{gene_name}' at index {i} has all-zero values in adata.X. Either feature_is_filtered should "
-                                f"be set to True or adata.raw.X should be set to all-zero values."
-                            )
+                            ensembl_ids_all_zeros.append(self.adata.var_names[i])
+                if len(ensembl_ids_all_zeros) > 0:
+                    ensembl_ids = ", ".join(ensembl_ids_all_zeros)
+                    self.warnings.append(
+                        f"Genes '{ensembl_ids}' have all-zero values in adata.X. Either feature_is_filtered should "
+                        f"be set to True or adata.raw.X should be set to all-zero values."
+                    )
             except IndexError:
                 self.errors.append(
                     "Could not complete full validation of feature_is_filtered because of size differences between var and raw.var."
