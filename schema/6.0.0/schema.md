@@ -2693,9 +2693,16 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Added <code>organism</code> in <code>obs</code> to Reserved Names
   * Added <code>organism_ontology_term_id</code> in <code>obs</code> to Reserved Names
 * Required Ontologies
-  * _Pending_
-* Required Gene Annotations
-  * _Pending_
+  * Updated C. elegans Development Ontology (WBls) to release 2025-04-01 WS297
+  * Updated C. elegans Gross Anatomy Ontology (WBbt) to release 2025-03-26 WS297
+  * Updated Cell Ontology (CL) to release 2025-04-10
+  * Updated Drosophila Anatomy Ontology (FBbt) to release 2025-03-27
+  * Updated Drosophila Development Ontology (FBdv) to release 2025-03-26
+  * Updated Expermental Factor Ontology (EFO) to release 2025-05-15 EFO 3.78.0
+  * Updated Mondo Disease Ontology (MONDO) to release 2025-05-06
+  * Updated NCBI organismal classification (NCBITaxon) to release 2025-03-13
+  * Updated Phenotype And Trait Ontology (PATO) to release 2025-05-14
+  * Updated  Uberon multi-species anatomy ontology (UBERON) to release 2025-05-28
 * X (Matrix Layers)
   * Updated requirements in table to not allow duplicate `obs`by raw counts
 * obs (Cell metadata)
