@@ -11,10 +11,13 @@ from . import utils
 
 # If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
 # add them here.
+# added two CL terms here instead of as applicable to individual datasets
 ONTOLOGY_TERM_OBS_MAPS = {
     "assay": {
     },
     "cell_type": {
+        "CL:0000651": "CL:0002181",
+        "CL:0000212": "CL:0000677"
     },
     "development_stage": {
     },
@@ -121,18 +124,6 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     # 'organism' already in uns
     if dataset_id == "de2c780c-1747-40bd-9ccf-9588ec186cee":
         del dataset.uns["organism"]
-
-    # deprecated CL term found in 3 datasets in one collection
-    if dataset_id in [
-        "773b9b2e-70c8-40be-8cbb-e7b5abab360d",
-        "e5233a94-9e43-418c-8209-6f1400c31530",
-        "7bb64315-9e5a-41b9-9235-59acf9642a3e",
-    ]:
-        utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000651": "CL:0002181"})
-
-    # 2 other datasets with deprecated CL term
-    if dataset_id in ["e40c6272-af77-4a10-9385-62a398884f27", "d6dfdef1-406d-4efb-808c-3c5eddbfe0cb"]:
-        utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000212": "CL:0000677"})
 
     # feature_is_filtered set incorrectly for dataset with no raw.X matrix, should be all False
     if dataset_id == "ee195b7d-184d-4dfa-9b1c-51a7e601ac11":
