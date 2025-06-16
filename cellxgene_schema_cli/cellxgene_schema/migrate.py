@@ -11,10 +11,13 @@ from . import utils
 
 # If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
 # add them here.
+# added two CL terms here instead of as applicable to individual datasets
 ONTOLOGY_TERM_OBS_MAPS = {
     "assay": {
     },
     "cell_type": {
+        "CL:0000651": "CL:0002181",
+        "CL:0000212": "CL:0000677"
     },
     "development_stage": {
     },
@@ -116,6 +119,20 @@ def migrate(input_file, output_file, collection_id, dataset_id):
                 "mraf14": "MONDO:0004981 || MONDO:1030008",
             },
         )
+
+    # errors found in first dev migration run
+    # 'organism' already in uns
+    if dataset_id == "de2c780c-1747-40bd-9ccf-9588ec186cee":
+        del dataset.uns["organism"]
+
+    # feature_is_filtered set incorrectly for dataset with no raw.X matrix, should be all False
+    if dataset_id == "ee195b7d-184d-4dfa-9b1c-51a7e601ac11":
+        dataset.var["feature_is_filtered"] = False
+
+    # 11 datasets with "organism_ontology_term_id_colors" in uns, all can be removed
+    # seems easy enough to quickly check for key, can also list out the 11 dataset_ids
+    if "organism_ontology_term_id_colors" in dataset.uns:
+        del dataset.uns["organism_ontology_term_id_colors"]
 
     if GENCODE_MAPPER:
         dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
