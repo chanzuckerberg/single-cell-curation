@@ -120,9 +120,9 @@ def migrate(input_file, output_file, collection_id, dataset_id):
             },
         )
 
-    # errors found in first dev migration run
-    # 'organism' already in uns
-    if dataset_id == "de2c780c-1747-40bd-9ccf-9588ec186cee":
+    # errors found in 3 dev migration runs
+    # will just check for key and delete instead of list of dataset_ids
+    if "organism" in dataset.uns:
         del dataset.uns["organism"]
 
     # feature_is_filtered set incorrectly for dataset with no raw.X matrix, should be all False
