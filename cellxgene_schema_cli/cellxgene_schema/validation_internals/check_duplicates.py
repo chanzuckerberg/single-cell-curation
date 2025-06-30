@@ -60,15 +60,14 @@ def _check_duplicate_obs_dask(adata: anndata.AnnData, matrix: da.Array, matrix_n
             -1, 1
         )  # shape (rows, 1) for map_blocks
 
-    row_hashes = (
-        matrix.map_blocks(
-            rowwise_hash_block,
-            dtype=object,
-            chunks=(matrix.chunks[0], (1,)),  # one hash per row
-        )
-        .compute()
-        .ravel()
-    )
+    # Keep as a delayed result (no compute call) for memory efficiency
+    row_hashes_da = matrix.map_blocks(rowwise_hash_block, dtype=object, chunks=(matrix.chunks[0], (1,)))
+
+    # Process row hashes in chunks
+    row_hashes = []
+    for chunk in row_hashes_da.to_delayed().flatten():
+        chunk_hashes = chunk.compute()
+        row_hashes.extend(chunk_hashes.ravel())
 
     hash_df = adata.obs.copy()
     hash_df["row_hash"] = row_hashes
