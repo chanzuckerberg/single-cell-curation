@@ -41,29 +41,30 @@ def check_duplicate_obs(adata: anndata.AnnData) -> list[str]:
     return errors
 
 
+def rowwise_hash_block(block):
+    hashes = []
+    if sparse.issparse(block):
+        block_csr = block.tocsr()
+        for i in range(block_csr.shape[0]):
+            row = block_csr.getrow(i)
+            combined_bytes = row.indices.tobytes() + row.data.tobytes()
+            hashes.append(hashlib.sha224(combined_bytes).hexdigest())
+    else:
+        # Dense hashing
+        for row in block:
+            row_bytes = row.tobytes()
+            hashes.append(hashlib.sha224(row_bytes).hexdigest())
+    return np.array(hashes, dtype=object).reshape(-1, 1)
+
+
 def _check_duplicate_obs_dask(adata: anndata.AnnData, matrix: da.Array, matrix_name: str) -> list[str]:
-    """
-    For each row in the matrix, we compute a hash of the row and store it in row_hashes.
-    We then check for duplicates in the row_hashes.
-    """
     errors = []
 
     if matrix.ndim != 2:
         return [f"Dask matrix {matrix_name} must be 2D, but got shape {matrix.shape}"]
 
-    def rowwise_hash_block(block):
-        # If it's sparse, convert each block to dense array so that we can run tobytes()
-        if sparse.issparse(block):
-            block = block.toarray()
-
-        return np.array([hashlib.sha224(row.tobytes()).hexdigest() for row in block], dtype=object).reshape(
-            -1, 1
-        )  # shape (rows, 1) for map_blocks
-
-    # Keep as a delayed result (no compute call) for memory efficiency
     row_hashes_da = matrix.map_blocks(rowwise_hash_block, dtype=object, chunks=(matrix.chunks[0], (1,)))
 
-    # Process row hashes in chunks
     row_hashes = []
     for chunk in row_hashes_da.to_delayed().flatten():
         chunk_hashes = chunk.compute()
