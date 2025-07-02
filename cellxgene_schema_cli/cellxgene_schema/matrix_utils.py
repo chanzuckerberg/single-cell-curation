@@ -2,6 +2,7 @@ from typing import Union
 
 import anndata as ad
 import numpy as np
+import sparse as sp
 from anndata.compat import DaskArray
 from dask.array import map_blocks
 from scipy import sparse
@@ -62,20 +63,18 @@ def compute_column_sums(matrix: Union[DaskArray, np.ndarray, sparse.spmatrix]) -
     # Handle Dask array (could be sparse or dense)
     if isinstance(matrix, DaskArray):
 
-        def sum_columns(chunk):
-            return chunk.sum(axis=0)
+        def to_coo(chunk):
+            # convert to sparse.COO, so we can use dask's internal chunked sum
+            if sparse.issparse(chunk):
+                return sp.COO.from_scipy_sparse(chunk)
+            else:
+                return sp.COO(chunk)
 
-        partial_sums = map_blocks(
-            sum_columns,
-            matrix,
-            drop_axis=0,
-            new_axis=0,
-            dtype=matrix.dtype,
-        )
-        column_sum = partial_sums.sum(axis=0)
-        return np.asarray(column_sum.compute()).ravel()
+        x_coo = matrix.map_blocks(to_coo, dtype=matrix.dtype)
 
-    raise TypeError(f"Unsupported matrix type: {type(matrix)}")
+        # 'split_every' is used to ensure that the computation is split into memory manageable chunks
+        col_sums = x_coo.sum(axis=0, split_every=8).compute()
+        return col_sums
 
 
 def calculate_matrix_nonzero(matrix: DaskArray) -> int:
