@@ -45,46 +45,44 @@ def check_duplicate_obs(adata: anndata.AnnData) -> list[str]:
     return errors
 
 
-def rowwise_hash_block(block):
-    logger.debug("Hashing block of shape %s", block.shape)
-    hashes = []
-    if sparse.issparse(block):
-        block_csr = block.tocsr()
-        for i in range(block_csr.shape[0]):
-            row = block_csr.getrow(i)
-            combined_bytes = row.indices.tobytes() + row.data.tobytes()
-            hashes.append(hashlib.sha224(combined_bytes).hexdigest())
-    else:
-        # Dense hashing
-        for row in block:
-            row_bytes = row.tobytes()
-            hashes.append(hashlib.sha224(row_bytes).hexdigest())
-    return np.array(hashes, dtype=object).reshape(-1, 1)
-
-
 def _check_duplicate_obs_dask(adata: anndata.AnnData, matrix: da.Array, matrix_name: str) -> list[str]:
+    """
+    For each row in the matrix, we compute a hash of the row and store it in row_hashes.
+    We then check for duplicates in the row_hashes.
+    """
     errors = []
 
     if matrix.ndim != 2:
         return [f"Dask matrix {matrix_name} must be 2D, but got shape {matrix.shape}"]
 
-    row_hashes_da = matrix.map_blocks(rowwise_hash_block, dtype=object, chunks=(matrix.chunks[0], (1,)))
+    def rowwise_hash_block(block):
+        # If it's sparse, convert each block to dense array so that we can run tobytes()
+        if sparse.issparse(block):
+            block = block.toarray()
 
-    row_hashes = []
-    for chunk in row_hashes_da.to_delayed().flatten():
-        logger.debug("Computing chunk of shape %s", chunk.shape)
-        chunk_hashes = chunk.compute()
-        row_hashes.extend(chunk_hashes.ravel())
+        return np.array([hashlib.sha224(row.tobytes()).hexdigest() for row in block], dtype=object).reshape(
+            -1, 1
+        )  # shape (rows, 1) for map_blocks
 
-    logger.debug("Total number of row hashes computed: %d", len(row_hashes))
+    logger.debug("Computing row hashes for matrix %s", matrix_name)
+    row_hashes = (
+        matrix.map_blocks(
+            rowwise_hash_block,
+            dtype=object,
+            chunks=(matrix.chunks[0], (1,)),  # one hash per row
+        )
+        .compute()
+        .ravel()
+    )
+
+    logger.debug("Copying hash_df for matrix %s", matrix_name)
     hash_df = adata.obs.copy()
-    logger.debug("Made copy of obs with shape %s", hash_df.shape)
     hash_df["row_hash"] = row_hashes
-    logger.debug("Added row_hash column to obs")
+    logger.debug("Checking for duplicates in row_hashes for matrix %s", matrix_name)
     dup_df = hash_df[hash_df.duplicated(subset="row_hash", keep=False)].copy()
-    logger.debug("Found %d duplicated rows in obs", len(dup_df))
 
     if not dup_df.empty:
         errors.append(f"Found {len(dup_df)} duplicated raw counts in obs {matrix_name}.")
 
+    logger.debug("Done checking for duplicates in row_hashes for matrix %s", matrix_name)
     return errors
