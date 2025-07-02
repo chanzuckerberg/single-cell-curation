@@ -1,10 +1,14 @@
 import hashlib
+import logging
 
 import anndata
 import dask.array as da
 import numpy as np
 from cellxgene_schema.matrix_utils import determine_matrix_format
 from scipy import sparse
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 def check_duplicate_obs(adata: anndata.AnnData) -> list[str]:
@@ -42,6 +46,7 @@ def check_duplicate_obs(adata: anndata.AnnData) -> list[str]:
 
 
 def rowwise_hash_block(block):
+    logger.debug("Hashing block of shape %s", block.shape)
     hashes = []
     if sparse.issparse(block):
         block_csr = block.tocsr()
@@ -67,12 +72,17 @@ def _check_duplicate_obs_dask(adata: anndata.AnnData, matrix: da.Array, matrix_n
 
     row_hashes = []
     for chunk in row_hashes_da.to_delayed().flatten():
+        logger.debug("Computing chunk of shape %s", chunk.shape)
         chunk_hashes = chunk.compute()
         row_hashes.extend(chunk_hashes.ravel())
 
+    logger.debug("Total number of row hashes computed: %d", len(row_hashes))
     hash_df = adata.obs.copy()
+    logger.debug("Made copy of obs with shape %s", hash_df.shape)
     hash_df["row_hash"] = row_hashes
+    logger.debug("Added row_hash column to obs")
     dup_df = hash_df[hash_df.duplicated(subset="row_hash", keep=False)].copy()
+    logger.debug("Found %d duplicated rows in obs", len(dup_df))
 
     if not dup_df.empty:
         errors.append(f"Found {len(dup_df)} duplicated raw counts in obs {matrix_name}.")

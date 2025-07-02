@@ -32,6 +32,7 @@ from .utils import (
 )
 from .validation_internals.check_duplicates import check_duplicate_obs
 
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 ASSAY_VISIUM = "EFO:0010961"  # generic term
@@ -2143,6 +2144,7 @@ class Validator:
         self._validate_cell_type_ontology_term_id()
 
         # Verifies there are no duplicate obs rows, by raw counts
+        logger.debug("Checking for duplicate observations by raw counts...")
         self.errors.extend(check_duplicate_obs(self.adata))
 
         # Checks each component
