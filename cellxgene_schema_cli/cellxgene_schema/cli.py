@@ -14,8 +14,8 @@ logger = logging.getLogger("cellxgene_schema")
 )
 @click.option("-v", "--verbose", help="When present will set logging level to debug", is_flag=True)
 def schema_cli(verbose):
-    logging.basicConfig(level=logging.ERROR)
-    logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+    # logging.basicConfig(level=logging.ERROR)
+    logger.setLevel(logging.DEBUG)
 
 
 @schema_cli.command(
