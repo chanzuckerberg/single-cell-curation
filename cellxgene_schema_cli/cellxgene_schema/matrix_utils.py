@@ -65,19 +65,15 @@ def compute_column_sums(matrix: Union[DaskArray, np.ndarray, sparse.spmatrix]) -
         def sum_columns(chunk):
             return chunk.sum(axis=0)
 
-        # If chunks along axis=0 > 1, we need to sum per block then aggregate
-        if len(matrix.chunks[0]) > 1:
-            partial_sums = map_blocks(
-                sum_columns,
-                matrix,
-                drop_axis=0,
-                new_axis=0,
-                dtype=matrix.dtype,
-            )
-            column_sum = partial_sums.sum(axis=0)
-            return np.asarray(column_sum.compute()).ravel()
-        else:
-            return sum_columns(matrix.compute())
+        partial_sums = map_blocks(
+            sum_columns,
+            matrix,
+            drop_axis=0,
+            new_axis=0,
+            dtype=matrix.dtype,
+        )
+        column_sum = partial_sums.sum(axis=0)
+        return np.asarray(column_sum.compute()).ravel()
 
     raise TypeError(f"Unsupported matrix type: {type(matrix)}")
 
