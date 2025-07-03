@@ -7,7 +7,6 @@ import numpy as np
 from cellxgene_schema.matrix_utils import determine_matrix_format
 from scipy import sparse
 
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 

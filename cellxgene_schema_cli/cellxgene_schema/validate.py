@@ -32,7 +32,6 @@ from .utils import (
 )
 from .validation_internals.check_duplicates import check_duplicate_obs
 
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 ASSAY_VISIUM = "EFO:0010961"  # generic term
