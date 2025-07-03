@@ -1,10 +1,13 @@
 import hashlib
+import logging
 
 import anndata
 import dask.array as da
 import numpy as np
 from cellxgene_schema.matrix_utils import determine_matrix_format
 from scipy import sparse
+
+logger = logging.getLogger(__name__)
 
 
 def check_duplicate_obs(adata: anndata.AnnData) -> list[str]:
@@ -60,6 +63,7 @@ def _check_duplicate_obs_dask(adata: anndata.AnnData, matrix: da.Array, matrix_n
             -1, 1
         )  # shape (rows, 1) for map_blocks
 
+    logger.debug("Computing row hashes for matrix %s", matrix_name)
     row_hashes = (
         matrix.map_blocks(
             rowwise_hash_block,
@@ -70,11 +74,14 @@ def _check_duplicate_obs_dask(adata: anndata.AnnData, matrix: da.Array, matrix_n
         .ravel()
     )
 
+    logger.debug("Copying hash_df for matrix %s", matrix_name)
     hash_df = adata.obs.copy()
     hash_df["row_hash"] = row_hashes
+    logger.debug("Checking for duplicates in row_hashes for matrix %s", matrix_name)
     dup_df = hash_df[hash_df.duplicated(subset="row_hash", keep=False)].copy()
 
     if not dup_df.empty:
         errors.append(f"Found {len(dup_df)} duplicated raw counts in obs {matrix_name}.")
 
+    logger.debug("Done checking for duplicates in row_hashes for matrix %s", matrix_name)
     return errors

@@ -9,6 +9,7 @@ pandas>2,<3
 pyarrow>=19
 PyYAML<7
 scipy<1.16 # broken in 1.15.0 see https://github.com/chanzuckerberg/single-cell-curation/issues/1165
+sparse==0.15.1
 semver<4
 xxhash<4
 matplotlib<4

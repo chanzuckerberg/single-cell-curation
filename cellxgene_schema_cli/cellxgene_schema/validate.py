@@ -620,8 +620,11 @@ class Validator:
                 )
             return
         else:
+            logger.debug("Getting matrix sums for feature_is_filtered validation.")
             sum_X = compute_column_sums(self.adata.X)
+            logger.debug("Finished getting X matrix sums for feature_is_filtered validation.")
             sum_raw_X = compute_column_sums(self.adata.raw.X)
+            logger.debug("Finished getting raw matrix sums for feature_is_filtered validation.")
             try:
                 ensembl_ids_all_zeros = []
                 for i, _ in enumerate(sum_X):
@@ -646,6 +649,7 @@ class Validator:
                 return
 
         if sum(column) > 0:
+            logger.debug("Calculating non-zero values for feature_is_filtered validation.")
             n_nonzero = calculate_matrix_nonzero(self.adata.X[:, column])
 
             if n_nonzero > 0:
@@ -654,6 +658,7 @@ class Validator:
                     f"{n_nonzero} non-zero values in the corresponding columns of the matrix 'X'. All values for "
                     f"these features must be 0."
                 )
+        logger.debug("Finished validating feature_is_filtered.")
 
     def _validate_column(
         self, column: pd.Series, column_name: str, df_name: str, column_def: dict, default_error_message_suffix=None
@@ -2143,6 +2148,7 @@ class Validator:
         self._validate_cell_type_ontology_term_id()
 
         # Verifies there are no duplicate obs rows, by raw counts
+        logger.debug("Checking for duplicate observations by raw counts...")
         self.errors.extend(check_duplicate_obs(self.adata))
 
         # Checks each component
