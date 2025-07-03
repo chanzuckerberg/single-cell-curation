@@ -13,7 +13,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 The CELLxGENE schema version is based on [Semantic Versioning](https://semver.org/).
 
-**Major version** is incremented when schema updates are incompatible with the AnnData and Seurat data encodings or CELLxGENE API(s). Examples include:
+**Major version** is incremented when schema updates are incompatible with the AnnData data encoding or CELLxGENE API(s). Examples include:
   * Renaming metadata fields
   * Deprecating metadata fields
   * Changing the type or format of a metadata field
