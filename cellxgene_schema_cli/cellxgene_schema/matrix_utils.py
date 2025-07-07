@@ -63,12 +63,12 @@ def compute_column_sums(matrix: Union[DaskArray, np.ndarray, sparse.spmatrix]) -
     # Handle Dask array (could be sparse or dense)
     if isinstance(matrix, DaskArray):
 
-        def to_coo(chunk: Union[np.ndarray, sparse.spmatrix]) -> sp.COO:
+        def to_coo(chunk: Union[np.ndarray, sparse.spmatrix]) -> Union[sp.COO, np.ndarray]:
             # convert to sparse.COO, so we can use dask's internal chunked sum
             if sparse.issparse(chunk):
                 return sp.COO.from_scipy_sparse(chunk)
             else:
-                return sp.COO(chunk)
+                return chunk
 
         x_coo = matrix.map_blocks(to_coo, dtype=matrix.dtype)
 
