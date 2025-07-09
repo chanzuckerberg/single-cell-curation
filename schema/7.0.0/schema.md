@@ -2688,7 +2688,6 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
 ## Appendix A. Changelog
 
 ### schema v7.0.0
-
 * Required Gene Annotations
   * Updated *Caenorhabditis elegans* to WBcel235 (GCA_000002985.3) Ensembl 114
   * Updated *Callithrix jacchus* to mCalJac1.pat.X (GCA_011100555.1) Ensembl 114
@@ -2704,7 +2703,6 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Updated *Pan troglodytes* to Pan_tro_3.0 (GCA_000001515.5) Ensembl 114
   * Updated *Rattus norvegicus* to GRCr8 (GCA_036323735.1) Ensembl 114
   * Updated *Sus scrofa* to Sscrofa11.1 (GCA_000003025.6) Ensembl 114
-
 * uns (Dataset Metadata)
   * Updated `schema_reference` to <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/7.0.0/schema.md"</code>
   * Updated `schema_version` to <code>"7.0.0"</code>
