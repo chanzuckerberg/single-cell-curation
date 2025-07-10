@@ -2330,7 +2330,7 @@ From every processed fragments file asset, CELLxGENE Discover MUST generate <cod
 
 Chromosome Tables are determined by the reference assembly for the gene annotation versions pinned in this version of the schema. Only chromosomes or scaffolds that have at least one gene feature present are included.
 
-### <a href="https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_44/GRCh38.primary_assembly.genome.fa.gz">Human (GRCh38.p14)</a>
+### <a href="https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_48/GRCh38.primary_assembly.genome.fa.gz">Human (GRCh38.p14)</a>
 
 <table>
   <thead>
@@ -2530,7 +2530,7 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
     </tr>
 </tbody></table>
 
-### <a href="https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M33/GRCm39.primary_assembly.genome.fa.gz">Mouse (GRCm39)</a>
+### <a href="https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M37/GRCm39.primary_assembly.genome.fa.gz">Mouse (GRCm39)</a>
 
 <table>
   <thead>
