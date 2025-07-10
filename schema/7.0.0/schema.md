@@ -1106,7 +1106,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     <tr>
       <th>Value</th>
       <td>
-        categorical with <code>str</code> categories. If <code>tissue_type</code> is <code>"cell culture"</code> this MUST follow the requirements for <code>cell_type_ontology_term_id</code>.<br><br>If <code>tissue_type</code> is <code>"tissue"</code> or <code>"organoid"</code> then:<br><br>
+        categorical with <code>str</code> categories.<br><br>If <code>tissue_type</code> is <code>"cell line"</code> this MUST be a Cellosaurus term.<br><br>If <code>tissue_type</code> is <code>"primary cell culture"</code>, this MUST follow the requirements for <code>cell_type_ontology_term_id</code>.<br><br>If <code>tissue_type</code> is <code>"organoid"</code>, this MUST NOT be <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000922"><code>UBERON:0000922</code></a> for <i>embryo</i>. If the organoid is an embryoid, it is STRONGLY RECOMMENDED that the value is <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0014374"><code>UBERON:0014374</code></a> for <i>embryoid body</i>. If the organoid is a gastruloid, it is STRONGLY RECOMMENDED that the value is <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0004734"><code>UBERON:0004734</code></a> for <i>gastrula</i>.<br><br>Otherwise, if <code>tissue_type</code> is <code>"organoid"</code> or <code>"tissue"</code> then:<br><br>
         <table>
           <thead>
             <tr>
@@ -1120,7 +1120,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
                 <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A6239"><code>"NCBITaxon:6239"</code></a><br>for <i>Caenorhabditis elegans</i>
               </td>
               <td>
-                MUST be either an UBERON term or the most accurate descendant<br>of <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0005766"><code>WBbt:0005766</code></a> for <i>Anatomy</i> excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0007849"><code>WBbt:0007849</code></a> for <i>hermaphrodite</i>,<br><a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0007850"><code>WBbt:0007850</code></a> for <i>male</i>, <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0008595"><code>WBbt:0008595</code></a> for <i>female</i>, <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0004017"><code>WBbt:0004017</code></a> for <i>Cell</i><br>and its descendants, and <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0006803"><code>WBbt:00006803</code></a> for <i>Nucleus</i> and its descendants
+                MUST be either the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0001062"><code>UBERON:0001062</code></a> for <i>anatomical entity</i> or the most accurate descendant<br>of <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0005766"><code>WBbt:0005766</code></a> for <i>Anatomy</i> excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0007849"><code>WBbt:0007849</code></a> for <i>hermaphrodite</i>,<br><a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0007850"><code>WBbt:0007850</code></a> for <i>male</i>, <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0008595"><code>WBbt:0008595</code></a> for <i>female</i>, <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0004017"><code>WBbt:0004017</code></a> for <i>Cell</i><br>and its descendants, and <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0006803"><code>WBbt:00006803</code></a> for <i>Nucleus</i> and its descendants
               </td>
             </tr>
             <tr>
@@ -1128,7 +1128,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
                 <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A7955"><code>"NCBITaxon:7955"</code></a><br>for <i>Danio rerio</i>
               </td>
               <td>
-                MUST be either an UBERON term or the most accurate descendant of<br><a href="https://www.ebi.ac.uk/ols4/ontologies/zfa/classes?obo_id=ZFA%3A0100000"><code>ZFA:0100000</code></a> for <i>zebrafish anatomical entity</i> excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/zfa/classes?obo_id=ZFA%3A0001093"><code>ZFA:0001093</code></a> for<br><i>unspecified</i> and <a href="https://www.ebi.ac.uk/ols4/ontologies/zfa/classes?obo_id=ZFA%3A0009000"><code>ZFA:0009000</code></a> for <i>cell</i> and its descendants
+                MUST be either the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0001062"><code>UBERON:0001062</code></a> for <i>anatomical entity</i> or the most accurate descendant of<br><a href="https://www.ebi.ac.uk/ols4/ontologies/zfa/classes?obo_id=ZFA%3A0100000"><code>ZFA:0100000</code></a> for <i>zebrafish anatomical entity</i> excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/zfa/classes?obo_id=ZFA%3A0001093"><code>ZFA:0001093</code></a> for<br><i>unspecified</i> and <a href="https://www.ebi.ac.uk/ols4/ontologies/zfa/classes?obo_id=ZFA%3A0009000"><code>ZFA:0009000</code></a> for <i>cell</i> and its descendants
               </td>
             </tr>
             <tr>
@@ -1136,12 +1136,19 @@ Curators MUST annotate the following columns in the `obs` dataframe:
                 <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A7227"><code>"NCBITaxon:7227"</code></a><br>for <i>Drosophila melanogaster</i>
               </td>
               <td>
-                MUST be either an UBERON term or the most accurate descendant of<br><a href="https://www.ebi.ac.uk/ols4/ontologies/fbbt/classes?obo_id=FBBT%3A10000000"><code>FBbt:10000000</code></a> for <i>anatomical entity</i> excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/fbbt/classes?obo_id=FBbt%3A00007002"><code>FBbt:00007002</code></a> for <i>cell</i><br>and its descendants
+                MUST be either the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0001062"><code>UBERON:0001062</code></a> for <i>anatomical entity</i> or the most accurate descendant of<br><a href="https://www.ebi.ac.uk/ols4/ontologies/fbbt/classes?obo_id=FBBT%3A10000000"><code>FBbt:10000000</code></a> for <i>anatomical entity</i> excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/fbbt/classes?obo_id=FBbt%3A00007002"><code>FBbt:00007002</code></a> for <i>cell</i><br>and its descendants
               </td>
-            </tr>    
+              </tr>    
+              <tr>
+              <td>
+                For all other organisms
+              </td>
+              <td>
+              MUST be the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0001062"><code>UBERON:0001062</code></a> for <i>anatomical entity</i>
+              </td>
+              </tr>
           </tbody>
         </table>
-        <br>For all other organisms, this MUST be the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0001062"><code>UBERON:0001062</code></a> for <i>anatomical entity</i>.
       </td>
   </tr>
 </tbody></table>
@@ -1160,7 +1167,13 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"tissue"</code>, <code>"organoid"</code>, or <code>"cell culture"</code>.
+        <td>categorical with <code>str</code> categories. This MUST be one of:
+          <ul>
+            <li><code>"cell line"</code></li>
+            <li><code>"organoid"</code></li>
+            <li><code>"primary cell culture"</code></li>
+            <li><code>"tissue"</code></li>
+         </ul>
     </tr>
 </tbody></table>
 <br>
@@ -2692,7 +2705,7 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
 ### schema v7.0.0
 * General Requirements
   * Integration Metadata
-    * Updated the requirements for prefixed ontology identifers to address the Cellosaurus exception
+    * Updated the requirements for prefixed ontology identifiers to address the Cellosaurus exception
 * Required Ontologies
   * Added Cellosaurus release 52.0
 * Required Gene Annotations
@@ -2710,6 +2723,13 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Updated *Pan troglodytes* to Pan_tro_3.0 (GCA_000001515.5) Ensembl 114
   * Updated *Rattus norvegicus* to GRCr8 (GCA_036323735.1) Ensembl 114
   * Updated *Sus scrofa* to Sscrofa11.1 (GCA_000003025.6) Ensembl 114
+* obs (Cell metadata)
+  * **Breaking change**. Updated the requirements for <code>tissue_ontology_term_id</code> to rename <code>"cell culture"</code> to <code>"primary cell culture"</code>
+  * Updated the requirements for <code>tissue_ontology_term_id</code> for species with taxon specific ontologies to require the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0001062"><code>UBERON:0001062</code></a> for <i>anatomical entity</i> when the <code>tissue_type</code> is <code>"tissue"</code> or <code>"organoid"</code>
+  * Updated the requirements for <code>tissue_ontology_term_id</code> to add the <code>tissue_type</code> of <code>"cell line"</code> 
+  * Updated the requirements for <code>tissue_ontology_term_id</code> when the <code>tissue_type</code> is <code>"organoid"</code> 
+  * **Breaking change**. Updated the requirements for <code>tissue_type</code> to rename <code>"cell culture"</code> to <code>"primary cell culture"</code>
+  * Added <code>"cell line"</code> to <code>tissue_type</code>
 * uns (Dataset Metadata)
   * Updated `schema_reference` to <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/7.0.0/schema.md"</code>
   * Updated `schema_version` to <code>"7.0.0"</code>
