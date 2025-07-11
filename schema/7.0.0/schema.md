@@ -2724,10 +2724,10 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Updated *Rattus norvegicus* to GRCr8 (GCA_036323735.1) Ensembl 114
   * Updated *Sus scrofa* to Sscrofa11.1 (GCA_000003025.6) Ensembl 114
 * obs (Cell metadata)
-  * **Breaking change**. Updated the requirements for <code>tissue_ontology_term_id</code> to rename <code>"cell culture"</code> to <code>"primary cell culture"</code>
-  * Updated the requirements for <code>tissue_ontology_term_id</code> for species with taxon specific ontologies to require the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0001062"><code>UBERON:0001062</code></a> for <i>anatomical entity</i> when the <code>tissue_type</code> is <code>"tissue"</code> or <code>"organoid"</code>
-  * Updated the requirements for <code>tissue_ontology_term_id</code> to add the <code>tissue_type</code> of <code>"cell line"</code> 
+  * **Breaking change**. Updated the requirements for <code>tissue_ontology_term_id</code> to rename the <code>tissue_type</code> of <code>"cell culture"</code> to <code>"primary cell culture"</code>
+  * Updated the requirements for <code>tissue_ontology_term_id</code> to add the <code>tissue_type</code> of <code>"cell line"</code>
   * Updated the requirements for <code>tissue_ontology_term_id</code> when the <code>tissue_type</code> is <code>"organoid"</code> 
+  * Updated the requirements for <code>tissue_ontology_term_id</code> for species with taxon specific ontologies to require the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0001062"><code>UBERON:0001062</code></a> for <i>anatomical entity</i> when the <code>tissue_type</code> is <code>"tissue"</code> or <code>"organoid"</code>
   * **Breaking change**. Updated the requirements for <code>tissue_type</code> to rename <code>"cell culture"</code> to <code>"primary cell culture"</code>
   * Added <code>"cell line"</code> to <code>tissue_type</code>
 * uns (Dataset Metadata)
