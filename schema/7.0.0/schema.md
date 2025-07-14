@@ -231,7 +231,7 @@ The following ontology dependencies are *pinned* for this version of the schema.
 | [Drosophila Anatomy Ontology] | FBbt: | [2025-03-27](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/tag/v2025-03-27)| [fbbt.owl](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/download/v2025-03-27/fbbt.owl) |
 | [Drosophila Development Ontology] | FBdv: | [2025-03-26](https://github.com/FlyBase/drosophila-developmental-ontology/releases/tag/v2025-03-26) | [fbdv.owl](https://github.com/FlyBase/drosophila-developmental-ontology/releases/download/v2025-03-26/fbdv.owl) |
 | [Experimental Factor Ontology] | EFO: | [2025-05-15 EFO 3.78.0](https://github.com/EBISPOT/efo/releases/tag/v3.78.0) | [efo.owl](https://github.com/EBISPOT/efo/releases/download/v3.78.0/efo.owl) |
-| [Human Ancestry Ontology] | HANCESTRO: | [3.0](https://github.com/EBISPOT/hancestro/releases/tag/3.0) | [hancestro-base.owl](https://github.com/EBISPOT/hancestro/blob/3.0/hancestro-base.owl) |
+| [Human Ancestry Ontology] | AfPO:<br>HANCESTRO: | [2025-04-01](https://github.com/EBISPOT/hancestro/releases/tag/v2025-04-01) | [hancestro-base.owl](https://github.com/EBISPOT/hancestro/blob/v2025-04-01/hancestro-base.owl) |
 | [Human Developmental Stages] |  HsapDv: | [2025-01-23](https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/v2025-01-23) | [hsapdv.owl](https://github.com/obophenotype/developmental-stage-ontologies/releases/download/v2025-01-23/hsapdv.owl) |
 | [Mondo Disease Ontology] | MONDO: | [2025-05-06](https://github.com/monarch-initiative/mondo/releases/tag/v2025-05-06) | [mondo.owl](https://github.com/monarch-initiative/mondo/releases/download/v2025-05-06/mondo.owl) |
 | [Mouse Developmental Stages]| MmusDv: | [2025-01-23](https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/v2025-01-23) | [mmusdv.owl](https://github.com/obophenotype/developmental-stage-ontologies/releases/download/v2025-01-23/mmusdv.owl) |
@@ -2523,6 +2523,7 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
     * Updated the requirements for prefixed ontology identifiers to address the Cellosaurus exception
 * Required Ontologies
   * Added Cellosaurus release 52.0
+  * Updated HANCESTRO to release 2025-04-01
 * Required Gene Annotations
   * Updated *Caenorhabditis elegans* to WBcel235 (GCA_000002985.3) Ensembl 114
   * Updated *Callithrix jacchus* to mCalJac1.pat.X (GCA_011100555.1) Ensembl 114
