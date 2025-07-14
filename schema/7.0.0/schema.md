@@ -675,7 +675,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
 <br>
 
 
-### donor_id
+### ### donor_id
 
 <table><tbody>
     <tr>
@@ -688,7 +688,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be free-text that identifies a unique individual that data were derived from. It is STRONGLY RECOMMENDED that this identifier be designed so that it is unique to:<br><br>
+        <td>categorical with <code>str</code> categories.<br><br>If <code>tissue_type</code> is <code>"cell line"</code>, this MUST be <code>"na"</code>; otherwise, this MUST NOT be <code>"na"</code>, but MUST be free-text that identifies a unique individual that data were derived from. It is STRONGLY RECOMMENDED that this identifier be designed so that it is unique to:<br><br>
           <ul><li>a given individual within the collection of datasets that includes this dataset</li>
           <li>a given individual across all collections in CELLxGENE Discover</li></ul><br>
           It is STRONGLY RECOMMENDED that <code>"pooled"</code> be used  for observations from a sample of multiple individuals that were not confidently assigned to a single individual through demultiplexing.<br><br>It is STRONGLY RECOMMENDED that <code>"unknown"</code> ONLY be used for observations in a dataset when it is not known which observations are from the same individual.<br><br>
@@ -696,6 +696,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
 </tbody></table>
 <br>
+
 
 ### in_tissue
 
@@ -2723,6 +2724,7 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Updated the requirements for <code>cell_type_ontology_term_id</code> to allow <code>"na"</code> when the <code>tissue_type</code> is <code>"cell line"</code>
   * Updated the requirements for <code>development_stage</code> to require <code>"na"</code> when the <code>development_stage__ontology_term_id</code> is <code>"na"</code>
   * Updated the requirements for <code>development_stage_ontology_term_id</code> to require <code>"na"</code> when the <code>tissue_type</code> is <code>"cell line"</code>
+  * Updated the requirements for <code>donor_id</code> to require <code>"na"</code> when the <code>tissue_type</code> is <code>"cell line"</code>
   * **Breaking change**. Updated the requirements for <code>tissue_ontology_term_id</code> to rename the <code>tissue_type</code> of <code>"cell culture"</code> to <code>"primary cell culture"</code>
   * Updated the requirements for <code>tissue_ontology_term_id</code> to add the <code>tissue_type</code> of <code>"cell line"</code>
   * Updated the requirements for <code>tissue_ontology_term_id</code> when the <code>tissue_type</code> is <code>"organoid"</code> 
