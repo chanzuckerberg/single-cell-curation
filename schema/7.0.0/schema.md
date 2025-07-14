@@ -505,7 +505,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
   <tr>
     <th>Value</th>
     <td>
-      categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> when:
+      categorical with <code>str</code> categories.<br><br>This MUST be <code>"unknown"</code> when:
       <ul>
         <li>
           no appropriate term can be found (e.g. the cell type is unknown)
@@ -514,7 +514,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <code>assay_ontology_term_id</code> is a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i>,<br><code>uns['spatial']['is_single']</code> is <code>True</code>,<br>and the corresponding value of <code>in_tissue</code> is <code>0</code>
         </li>
       </ul>
-        <br>The following CL terms MUST NOT be used:
+        <br>If <code>tissue_type</code> is <code>"cell line"</code>, this MAY be <code>"na"</code>, but then all observations where <code>tissue_type</code> is <code>"cell line"</code> MUST be <code>"na"</code>.<br><br>The following CL terms MUST NOT be used:
         <ul><li>
           <a href="https://www.ebi.ac.uk/ols4/ontologies/cl/terms?obo_id=CL:0000255"><code>"CL:0000255"</code></a> for <i>eukaryotic cell</i>
         </li>
@@ -523,7 +523,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
         </li>
         <li>
             <a href="https://www.ebi.ac.uk/ols4/ontologies/cl/terms?obo_id=CL:0000548"><code>"CL:0000548"</code></a> for <i>animal cell</i>
-         </li></ul><br> 
+         </li></ul><br>
       <table>
         <thead><tr>
           <th>For <code>organism_ontology_term_id</code></th>
@@ -554,9 +554,16 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               MUST be either a CL term or the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/fbbt/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFBbt_00007002?lang=en"><code>FBbt:00007002</code></a><br>for <i>cell</i>
             </td>
           </tr>
+          <tr>
+            <td>
+              For all other organisms
+            </td>
+            <td>
+              MUST be a CL term
+            </td>
+          </tr>
         </tbody>
       </table>
-        <br> Otherwise, for all other organisms this MUST be a CL term.<br><br>
     </td>
   </tr>
 </tbody></table>
@@ -1212,7 +1219,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if the value of <code>cell_type_ontology_term_id</code> is <code>"unknown"</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>cell_type_ontology_term_id</code>.
+        <td>categorical with <code>str</code> categories.<br><br>This MUST be <code>"na"</code> if the value of  <code>cell_type_ontology_term_id</code> is <code>"na"</code>.<br><br>This MUST be <code>"unknown"</code> if the value of  <code>cell_type_ontology_term_id</code> is <code>"unknown"</code>.<br><br>Otherwise, this MUST be the human-readable name assigned to the value of <code>cell_type_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -2724,6 +2731,8 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Updated *Rattus norvegicus* to GRCr8 (GCA_036323735.1) Ensembl 114
   * Updated *Sus scrofa* to Sscrofa11.1 (GCA_000003025.6) Ensembl 114
 * obs (Cell metadata)
+  * Updated the requirements for <code>cell_type</code> to require <code>"na"</code> when the <code>cell_type_ontology_term_id</code> is <code>"na"</code>
+  * Updated the requirements for <code>cell_type_ontology_term_id</code> to allow <code>"na"</code> when the <code>tissue_type</code> is "cell line"
   * **Breaking change**. Updated the requirements for <code>tissue_ontology_term_id</code> to rename the <code>tissue_type</code> of <code>"cell culture"</code> to <code>"primary cell culture"</code>
   * Updated the requirements for <code>tissue_ontology_term_id</code> to add the <code>tissue_type</code> of <code>"cell line"</code>
   * Updated the requirements for <code>tissue_ontology_term_id</code> when the <code>tissue_type</code> is <code>"organoid"</code> 
