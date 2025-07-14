@@ -583,7 +583,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     <tr>
       <th>Value</th>
       <td>
-        categorical with <code>str</code> categories. If unavailable, this MUST be <code>"unknown"</code>.<br><br>
+        categorical with <code>str</code> categories.<br><br>If <code>tissue_type</code> is <code>"cell line"</code>, this MUST be <code>"na"</code>.<br><br>If unavailable, this MUST be <code>"unknown"</code>.<br><br>
         <table>
           <thead>
             <tr>
@@ -632,9 +632,16 @@ Curators MUST annotate the following columns in the `obs` dataframe:
                 MUST be the accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/mmusdv/classes?obo_id=MmusDv%3A0000001"><code>MmusDv:0000001</code></a> for <i>life cycle</i>
               </td>
             </tr>
+            <tr>
+              <td>
+                For all other organisms
+              </td>
+              <td>
+                MUST be the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000105"><code>UBERON:0000105</code></a> for <i>life cycle stage</i>, excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000071"><code>UBERON:0000071</code></a> for <i>death stage</i>.
+              </td>
+            </tr>
           </tbody>
         </table>
-                <br>Otherwise, for all other organisms this MUST be the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000105"><code>UBERON:0000105</code></a> for <i>life cycle stage</i>, excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000071"><code>UBERON:0000071</code></a> for <i>death stage</i>.
       </td>
   </tr>
 </tbody></table>
@@ -1225,6 +1232,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
 </tbody></table>
 <br>
 
+
 ### development_stage
 
 <table><tbody>
@@ -1238,27 +1246,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if the value of <code>development_stage_ontology_term_id</code> is <code>"unknown"</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>development_stage_ontology_term_id</code>.
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
-### disease
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>disease</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>CELLxGENE Discover MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be one or more human-readable names for the terms in <code>disease_ontology_term_id</code> in the same order separated by the delimiter <code>" || "</code>.<br><br>
-        For example, if the value of <code>disease_ontology_term_id</code> is <code>"MONDO:0004604 || MONDO:0043004 || MONDO:0800349 || MONDO:1030008"</code> then the value MUST be <code>"Hodgkin's lymphoma, lymphocytic-histiocytic predominance || Weil's disease || atrial fibrillation, familial, 16 || mitral valve insufficiency"</code>.<br><br>
+        <td>categorical with <code>str</code> categories.<br><br>This MUST be <code>"na"</code> if the value of <code>development_stage_ontology_term_id</code> is <code>"na"</code>.<br><br>This MUST be <code>"unknown"</code> if the value of <code>development_stage_ontology_term_id</code> is <code>"unknown"</code>.<br><br>Otherwise, this MUST be the human-readable name assigned to the value of <code>development_stage_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -2732,7 +2720,9 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Updated *Sus scrofa* to Sscrofa11.1 (GCA_000003025.6) Ensembl 114
 * obs (Cell metadata)
   * Updated the requirements for <code>cell_type</code> to require <code>"na"</code> when the <code>cell_type_ontology_term_id</code> is <code>"na"</code>
-  * Updated the requirements for <code>cell_type_ontology_term_id</code> to allow <code>"na"</code> when the <code>tissue_type</code> is "cell line"
+  * Updated the requirements for <code>cell_type_ontology_term_id</code> to allow <code>"na"</code> when the <code>tissue_type</code> is <code>"cell line"</code>
+  * Updated the requirements for <code>development_stage</code> to require <code>"na"</code> when the <code>development_stage__ontology_term_id</code> is <code>"na"</code>
+  * Updated the requirements for <code>development_stage_ontology_term_id</code> to require <code>"na"</code> when the <code>tissue_type</code> is <code>"cell line"</code>
   * **Breaking change**. Updated the requirements for <code>tissue_ontology_term_id</code> to rename the <code>tissue_type</code> of <code>"cell culture"</code> to <code>"primary cell culture"</code>
   * Updated the requirements for <code>tissue_ontology_term_id</code> to add the <code>tissue_type</code> of <code>"cell line"</code>
   * Updated the requirements for <code>tissue_ontology_term_id</code> when the <code>tissue_type</code> is <code>"organoid"</code> 
