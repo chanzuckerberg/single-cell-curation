@@ -674,8 +674,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
 </tbody></table>
 <br>
 
-
-### ### donor_id
+### donor_id
 
 <table><tbody>
     <tr>
