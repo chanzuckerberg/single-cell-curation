@@ -231,7 +231,7 @@ The following ontology dependencies are *pinned* for this version of the schema.
 | [Drosophila Anatomy Ontology] | FBbt: | [2025-03-27](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/tag/v2025-03-27)| [fbbt.owl](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/download/v2025-03-27/fbbt.owl) |
 | [Drosophila Development Ontology] | FBdv: | [2025-03-26](https://github.com/FlyBase/drosophila-developmental-ontology/releases/tag/v2025-03-26) | [fbdv.owl](https://github.com/FlyBase/drosophila-developmental-ontology/releases/download/v2025-03-26/fbdv.owl) |
 | [Experimental Factor Ontology] | EFO: | [2025-05-15 EFO 3.78.0](https://github.com/EBISPOT/efo/releases/tag/v3.78.0) | [efo.owl](https://github.com/EBISPOT/efo/releases/download/v3.78.0/efo.owl) |
-| [Human Ancestry Ontology] | HANCESTRO: | [3.0](https://github.com/EBISPOT/hancestro/releases/tag/3.0) | [hancestro-base.owl](https://github.com/EBISPOT/hancestro/blob/3.0/hancestro-base.owl) |
+| [Human Ancestry Ontology] | AfPO:<br>HANCESTRO: | [2025-04-01](https://github.com/EBISPOT/hancestro/releases/tag/v2025-04-01) | [hancestro-base.owl](https://github.com/EBISPOT/hancestro/blob/v2025-04-01/hancestro-base.owl) |
 | [Human Developmental Stages] |  HsapDv: | [2025-01-23](https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/v2025-01-23) | [hsapdv.owl](https://github.com/obophenotype/developmental-stage-ontologies/releases/download/v2025-01-23/hsapdv.owl) |
 | [Mondo Disease Ontology] | MONDO: | [2025-05-06](https://github.com/monarch-initiative/mondo/releases/tag/v2025-05-06) | [mondo.owl](https://github.com/monarch-initiative/mondo/releases/download/v2025-05-06/mondo.owl) |
 | [Mouse Developmental Stages]| MmusDv: | [2025-01-23](https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/v2025-01-23) | [mmusdv.owl](https://github.com/obophenotype/developmental-stage-ontologies/releases/download/v2025-01-23/mmusdv.owl) |
@@ -751,204 +751,24 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     <tr>
       <th>Value</th>
       <td>
-        categorical with <code>str</code> categories. If
-        <code>organism_ontology_term_id</code> is
-        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, then the value MUST be one or more HANCESTRO terms in ascending lexical order separated by the delimiter <code>" || "</code> with no duplication of terms or <code>"unknown"</code> if unavailable.<br><br>For example, if the terms are <code>"HANCESTRO:0014</code> and <code>HANCESTRO:0005"</code> then the value of <code>self_reported_ethnicity_ontology_term_id</code> MUST be <code>"HANCESTRO:0005 || HANCESTRO:0014"</code>.<br><br>The following terms MUST NOT be used:<br /><br />
+        categorical with <code>str</code> categories.<br><br>If <code>tissue_type</code> is <code>"cell line"</code>, this MUST be <code>"na"</code><br><br>If <code>organism_ontolology_term_id</code> is NOT
+        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be <code>"na"</code>.<br><br>Otherwise, if
+        <code>organism_ontolology_term_id</code> is
+        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be <code>"unknown"</code> if unavailable; otherwise, this MUST meet the following requirements:<br /><br />
         <ul>
           <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0002?lang=en"
-              ><code>"HANCESTRO:0002"</code></a
-            >
-            for <i>regions</i> and its descendants
+            The value MUST be formatted as one or more AfPO or HANCESTRO terms in ascending lexical order separated by the delimiter <code>" || "</code> with no duplication of terms.
           </li>
           <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0003?lang=en"
-              ><code>"HANCESTRO:0003"</code></a
-            >
-            for <i>country</i>
+            Each AfPO or HANCESTRO term MUST be a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0601"><code>"HANCESTRO:0601"</code></a> for <i>ethnicity category</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0602"><code>"HANCESTRO:0602"</code></a> for <i>geography-based population category</i>.<br><br>
           </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0004?lang=en"
-              ><code>"HANCESTRO:0004"</code></a
-            >
-            for <i>ancestry category</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0018?lang=en"
-              ><code>"HANCESTRO:0018"</code></a
-            >
-            for <i>uncategorised population</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0290?lang=en"
-              ><code>"HANCESTRO:0290"</code></a
-            >
-            for <i>genetically isolated population</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0304?lang=en"
-              ><code>"HANCESTRO:0304"</code></a
-            >
-            for <i>ancestry status</i> and its descendants
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0323?lang=en"
-              ><code>"HANCESTRO:0323"</code></a
-            >
-            for <i>Finnish founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0324?lang=en"
-              ><code>"HANCESTRO:0324"</code></a
-            >
-            for <i>Dutch founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0551?lang=en"
-              ><code>"HANCESTRO:0551"</code></a
-            >
-            for <i>genetically homogenous Irish</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0554?lang=en"
-              ><code>"HANCESTRO:0554"</code></a
-            >
-            for <i>Silk Road founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0555?lang=en"
-              ><code>"HANCESTRO:0555"</code></a
-            >
-            for <i>Arab Israeli founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0557?lang=en"
-              ><code>"HANCESTRO:0557"</code></a
-            >
-            for <i>Costa Rican founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0558?lang=en"
-              ><code>"HANCESTRO:0558"</code></a
-            >
-            for <i>French Canadian founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0559?lang=en"
-              ><code>"HANCESTRO:0559"</code></a
-            >
-            for <i>Italian founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0560?lang=en"
-              ><code>"HANCESTRO:0560"</code></a
-            >
-            for <i>Northern Finnish founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0561?lang=en"
-              ><code>"HANCESTRO:0561"</code></a
-            >
-            for <i>Romanian founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0564?lang=en"
-              ><code>"HANCESTRO:0564"</code></a
-            >
-            for <i>Vis founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0565?lang=en"
-              ><code>"HANCESTRO:0565"</code></a
-            >
-            for <i>Split founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0566?lang=en"
-              ><code>"HANCESTRO:0566"</code></a
-            >
-            for <i>undefined ancestry population</i>
-          </li>
-          <li>
-            The imported GEO term
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FGEO_000000374?lang=en"
-              ><code>"GEO:000000374"</code></a
-            >
-            for <i>continent</i> and its descendants:
-            <ul>
-              <li>
-                <a
-                  href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0029?lang=en"
-                  ><code>"HANCESTRO:0029"</code></a
-                >
-                for <i>Africa</i>
-              </li>
-              <li>
-                <a
-                  href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0030?lang=en"
-                  ><code>"HANCESTRO:0030"</code></a
-                >
-                for <i>Asia</i>
-              </li>
-              <li>
-                <a
-                  href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0031?lang=en"
-                  ><code>"HANCESTRO:0031"</code></a
-                >
-                for <i>Europe</i>
-              </li>
-              <li>
-                <a
-                  href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0032?lang=en"
-                  ><code>"HANCESTRO:0032"</code></a
-                >
-                for <i>Oceania</i>
-              </li>
-              <li>
-                <a
-                  href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0033?lang=en"
-                  ><code>"HANCESTRO:0033"</code></a
-                >
-                for <i>Latin America and the Caribbean</i>
-              </li>
-              <li>
-                <a
-                  href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0034?lang=en"
-                  ><code>"HANCESTRO:0034"</code></a
-                >
-                for <i>Northern America</i>
-              </li>
-            </ul>
-          </li>
+            For example, if the terms are <code>"HANCESTRO:0590</code> and <code>HANCESTRO:0580"</code> then the value of <code>self_reported_ethnicity_ontology_term_id</code> MUST be <code>"HANCESTRO:0580 || HANCESTRO:0590"</code>.<br><br>
         </ul>
-        <br />Otherwise, for all other organisms the
-        <code>str</code> value MUST be <code>"na"</code>.
       </td>
     </tr>
   </tbody>
 </table>
-<br />
-
+<br />   
 
 ### sex_ontology_term_id
 
@@ -2703,6 +2523,7 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
     * Updated the requirements for prefixed ontology identifiers to address the Cellosaurus exception
 * Required Ontologies
   * Added Cellosaurus release 52.0
+  * Updated HANCESTRO to release 2025-04-01
 * Required Gene Annotations
   * Updated *Caenorhabditis elegans* to WBcel235 (GCA_000002985.3) Ensembl 114
   * Updated *Callithrix jacchus* to mCalJac1.pat.X (GCA_011100555.1) Ensembl 114
@@ -2724,6 +2545,8 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Updated the requirements for <code>development_stage</code> to require <code>"na"</code> when the <code>development_stage__ontology_term_id</code> is <code>"na"</code>
   * Updated the requirements for <code>development_stage_ontology_term_id</code> to require <code>"na"</code> when the <code>tissue_type</code> is <code>"cell line"</code>
   * Updated the requirements for <code>donor_id</code> to require <code>"na"</code> when the <code>tissue_type</code> is <code>"cell line"</code>
+  * Updated the requirements for <code>self_reported_ethnicity_ontology_term_id</code> to require <code>"na"</code> when the <code>tissue_type</code> is <code>"cell line"</code>
+  * Updated the requirements for <code>self_reported_ethnicity_ontology_term_id</code> to require HANCESTRO or AfPO terms that are descendants of <code>"HANCESTRO:0601"</code> for <i>ethnicity category</i> or <code>"HANCESTRO:0602"</code> for <i>geography-based population category</i>
   * **Breaking change**. Updated the requirements for <code>tissue_ontology_term_id</code> to rename the <code>tissue_type</code> of <code>"cell culture"</code> to <code>"primary cell culture"</code>
   * Updated the requirements for <code>tissue_ontology_term_id</code> to add the <code>tissue_type</code> of <code>"cell line"</code>
   * Updated the requirements for <code>tissue_ontology_term_id</code> when the <code>tissue_type</code> is <code>"organoid"</code> 
