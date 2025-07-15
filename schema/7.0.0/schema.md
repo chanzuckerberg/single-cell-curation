@@ -783,7 +783,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if unavailable. If <code>organism_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A6239"><code>"NCBITaxon:6239"</code></a> for <i>Caenorhabditis elegans</i>, this MUST be <a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0000384"><code>"PATO:0000384"</code></a> for <i>male</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0001340"><code>"PATO:0001340"</code></a> for <i>hermaphrodite</i>; otherwise, this MUST be one of:<br><br>
+        <td>categorical with <code>str</code> categories.<br><br>If <code>tissue_type</code> is <code>"cell line"</code>, this MUST be <code>"na"</code>.<br><br>If unavailable, this MUST be <code>"unknown"</code>.<br><br>If <code>organism_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A6239"><code>"NCBITaxon:6239"</code></a> for <i>Caenorhabditis elegans</i>, this MUST be <a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0000384"><code>"PATO:0000384"</code></a> for <i>male</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0001340"><code>"PATO:0001340"</code></a> for <i>hermaphrodite</i>; otherwise, this MUST be one of:<br><br>
         <ul>
         <li><a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0000383"><code>"PATO:0000383"</code></a> for  <i>female</i></li>
         <li><a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0000384"><code>"PATO:0000384"</code></a> for  <i>male</i></li>
@@ -1124,26 +1124,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if the value of  <code>sex_ontology_term_id</code> is <code>"unknown"</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>sex_ontology_term_id</code>.
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
-### tissue
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>tissue</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>CELLxGENE Discover MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>tissue_ontology_term_id</code>.
+        <td>categorical with <code>str</code> categories.<br><br>This MUST be <code>"na"</code> if the value of  <code>sex_ontology_term_id</code> is <code>"na"</code>.<br><br>This MUST be <code>"unknown"</code> if the value of  <code>sex_ontology_term_id</code> is <code>"unknown"</code>.<br><br>Otherwise, this MUST be the human-readable name assigned to the value of <code>sex_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -2547,6 +2528,8 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Updated the requirements for <code>donor_id</code> to require <code>"na"</code> when the <code>tissue_type</code> is <code>"cell line"</code>
   * Updated the requirements for <code>self_reported_ethnicity_ontology_term_id</code> to require <code>"na"</code> when the <code>tissue_type</code> is <code>"cell line"</code>
   * Updated the requirements for <code>self_reported_ethnicity_ontology_term_id</code> to require HANCESTRO or AfPO terms that are descendants of <code>"HANCESTRO:0601"</code> for <i>ethnicity category</i> or <code>"HANCESTRO:0602"</code> for <i>geography-based population category</i>
+  * Updated the requirements for <code>sex</code> to require <code>"na"</code> when the <code>sex_ontology_term_id</code> is <code>"na"</code>
+  * Updated the requirements for <code>sex_ontology_term_id</code> to require <code>"na"</code> when the <code>tissue_type</code> is <code>"cell line"</code>
   * **Breaking change**. Updated the requirements for <code>tissue_ontology_term_id</code> to rename the <code>tissue_type</code> of <code>"cell culture"</code> to <code>"primary cell culture"</code>
   * Updated the requirements for <code>tissue_ontology_term_id</code> to add the <code>tissue_type</code> of <code>"cell line"</code>
   * Updated the requirements for <code>tissue_ontology_term_id</code> when the <code>tissue_type</code> is <code>"organoid"</code> 
