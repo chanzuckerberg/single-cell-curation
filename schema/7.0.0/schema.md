@@ -836,7 +836,11 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>CEL-seq2</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010010"><code>EFO:0010010</code></a>]</td>
+              <td><i>CEL-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008679"><code>EFO:0008679</code></a>]</td>
+              <td><code>"cell"</code></td>
+           </tr>
+            <tr>
+              <td><i>CEL-seq2</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010010"><code>EFO:0010010</code></a>] and its descendants</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
@@ -879,6 +883,10 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td><i>Patch-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008853"><code>EFO:0008853</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>
+            <tr>
+              <td><i>Quartz-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008877"><code>EFO:0008877</code></a>]</td>
+              <td><code>"cell"</code></td>
+           </tr>
           <tr>
             <td><i>ScaleBio single cell RNA sequencing</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0022490"><code>EFO:0022490</code></a>]</td>
            <td><code>"cell"</code> or <code>"nucleus"</code></td>
@@ -886,10 +894,6 @@ Curators MUST annotate the following columns in the `obs` dataframe:
             <tr>
               <td><i>sci-Plex</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030026"><code>EFO:0030026</code></a>]</td>
               <td><code>"nucleus"</code></td>
-           </tr>
-            <tr>
-              <td><i>sci-RNA-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010550"><code>EFO:0010550</code></a>]</td>
-              <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
               <td><i>sci-RNA-seq3</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030028"><code>EFO:0030028</code></a>]</td>
@@ -908,11 +912,11 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td><code>"na"</code></td>
            </tr> 
             <tr>
-              <td><i>SPLiT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0009919"><code>EFO:0009919</code></a>]</td>
+              <td><i>SPLiT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0009919"><code>EFO:0009919</code></a>] and its descendants</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr> 
             <tr>
-              <td><i>STRT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008953"><code>EFO:0008953</code></a>]</td>
+              <td><i>STRT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008953"><code>EFO:0008953</code></a>] and its descendants</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
@@ -2530,6 +2534,13 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Updated the requirements for <code>self_reported_ethnicity_ontology_term_id</code> to require HANCESTRO or AfPO terms that are descendants of <code>"HANCESTRO:0601"</code> for <i>ethnicity category</i> or <code>"HANCESTRO:0602"</code> for <i>geography-based population category</i>
   * Updated the requirements for <code>sex</code> to require <code>"na"</code> when the <code>sex_ontology_term_id</code> is <code>"na"</code>
   * Updated the requirements for <code>sex_ontology_term_id</code> to require <code>"na"</code> when the <code>tissue_type</code> is <code>"cell line"</code>
+  * Updated requirements for <code>suspension_type</code>:
+    * Added Cel-seq
+    * Added Quartz-seq
+    * Deleted sci-RNA-seq
+    * Updated CEL-seq2 to CEL-seq2 and its descendants
+    * Updated SPLiT-seq to SPLiT-seq and its descendants
+    * Updated STRT-seq to STRT-seq and its descendants
   * **Breaking change**. Updated the requirements for <code>tissue_ontology_term_id</code> to rename the <code>tissue_type</code> of <code>"cell culture"</code> to <code>"primary cell culture"</code>
   * Updated the requirements for <code>tissue_ontology_term_id</code> to add the <code>tissue_type</code> of <code>"cell line"</code>
   * Updated the requirements for <code>tissue_ontology_term_id</code> when the <code>tissue_type</code> is <code>"organoid"</code> 
