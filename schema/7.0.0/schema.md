@@ -2534,7 +2534,7 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Updated the requirements for <code>self_reported_ethnicity_ontology_term_id</code> to require HANCESTRO or AfPO terms that are descendants of <code>"HANCESTRO:0601"</code> for <i>ethnicity category</i> or <code>"HANCESTRO:0602"</code> for <i>geography-based population category</i>
   * Updated the requirements for <code>sex</code> to require <code>"na"</code> when the <code>sex_ontology_term_id</code> is <code>"na"</code>
   * Updated the requirements for <code>sex_ontology_term_id</code> to require <code>"na"</code> when the <code>tissue_type</code> is <code>"cell line"</code>
-  * Updated requirements for <code>suspension_type</code>:
+  * Updated the requirements for <code>suspension_type</code>:
     * Added Cel-seq
     * Added Quartz-seq
     * Deleted sci-RNA-seq
