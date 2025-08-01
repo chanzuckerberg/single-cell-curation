@@ -15,7 +15,7 @@ sars_cov_2:
   url: ftp://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz
 fruit_fly:
   description: drosophila_melanogaster
-  url: https://ftp.ensembl.org/pub/release-114/gtf/drosophila_melanogaster/Drosophila_melanogaster.BDGP6.46.114.gtf.gz
+  url: https://ftp.ensembl.org/pub/release-114/gtf/drosophila_melanogaster/Drosophila_melanogaster.BDGP6.54.114.gtf.gz
 zebrafish:
   description: danio_rerio
   url: https://ftp.ensembl.org/pub/release-114/gtf/danio_rerio/Danio_rerio.GRCz11.114.gtf.gz
@@ -48,4 +48,4 @@ lemur:
   url: https://ftp.ensembl.org/pub/release-114/gtf/microcebus_murinus/Microcebus_murinus.Mmur_3.0.114.gtf.gz
 rat: 
   description: rattus_norvegicus
-  url: https://ftp.ensembl.org/pub/release-114/gtf/rattus_norvegicus/Rattus_norvegicus.mRatBN7.2.114.gtf.gz
+  url: https://ftp.ensembl.org/pub/release-114/gtf/rattus_norvegicus/Rattus_norvegicus.GRCr8.114.gtf.gz
