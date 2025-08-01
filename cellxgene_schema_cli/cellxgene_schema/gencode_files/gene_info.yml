@@ -5,47 +5,47 @@ ercc:
 human:
   description: homo_sapiens
   url: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_{version}/gencode.v{version}.primary_assembly.annotation.gtf.gz
-  version: 44
+  version: 48
 mouse:
   description: mus_musculus
   url: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_{version}/gencode.v{version}.primary_assembly.annotation.gtf.gz
-  version: M33
+  version: M37
 sars_cov_2:
   description: sars_cov_2
   url: ftp://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz
 fruit_fly:
   description: drosophila_melanogaster
-  url: https://ftp.ensembl.org/pub/release-113/gtf/drosophila_melanogaster/Drosophila_melanogaster.BDGP6.46.113.gtf.gz
+  url: https://ftp.ensembl.org/pub/release-114/gtf/drosophila_melanogaster/Drosophila_melanogaster.BDGP6.46.114.gtf.gz
 zebrafish:
   description: danio_rerio
-  url: https://ftp.ensembl.org/pub/release-113/gtf/danio_rerio/Danio_rerio.GRCz11.113.gtf.gz
+  url: https://ftp.ensembl.org/pub/release-114/gtf/danio_rerio/Danio_rerio.GRCz11.114.gtf.gz
 roundworm:
   description: caenorhabditis_elegans
-  url: https://ftp.ensembl.org/pub/release-113/gtf/caenorhabditis_elegans/Caenorhabditis_elegans.WBcel235.113.gtf.gz
+  url: https://ftp.ensembl.org/pub/release-114/gtf/caenorhabditis_elegans/Caenorhabditis_elegans.WBcel235.114.gtf.gz
 macaque:
   description: macaca_fascicularis
-  url: https://ftp.ensembl.org/pub/release-113/gtf/macaca_fascicularis/Macaca_fascicularis.Macaca_fascicularis_6.0.113.gtf.gz
+  url: https://ftp.ensembl.org/pub/release-114/gtf/macaca_fascicularis/Macaca_fascicularis.Macaca_fascicularis_6.0.114.gtf.gz
 rabbit:
   description: oryctolagus_cuniculus
-  url: https://ftp.ensembl.org/pub/release-113/gtf/oryctolagus_cuniculus/Oryctolagus_cuniculus.OryCun2.0.113.gtf.gz
+  url: https://ftp.ensembl.org/pub/release-114/gtf/oryctolagus_cuniculus/Oryctolagus_cuniculus.OryCun2.0.114.gtf.gz
 marmoset:
   description: callithrix_jacchus
-  url: https://ftp.ensembl.org/pub/release-113/gtf/callithrix_jacchus/Callithrix_jacchus.mCalJac1.pat.X.113.gtf.gz
+  url: https://ftp.ensembl.org/pub/release-114/gtf/callithrix_jacchus/Callithrix_jacchus.mCalJac1.pat.X.114.gtf.gz
 gorilla:
   description: gorilla_gorilla
-  url: https://ftp.ensembl.org/pub/release-113/gtf/gorilla_gorilla/Gorilla_gorilla.gorGor4.113.gtf.gz
+  url: https://ftp.ensembl.org/pub/release-114/gtf/gorilla_gorilla/Gorilla_gorilla.gorGor4.114.gtf.gz
 rhesus_macaque:
   description: macaca_mulatta
-  url: https://ftp.ensembl.org/pub/release-113/gtf/macaca_mulatta/Macaca_mulatta.Mmul_10.113.gtf.gz
+  url: https://ftp.ensembl.org/pub/release-114/gtf/macaca_mulatta/Macaca_mulatta.Mmul_10.114.gtf.gz
 troglodyte:
   description: pan_troglodytes
-  url: https://ftp.ensembl.org/pub/release-113/gtf/pan_troglodytes/Pan_troglodytes.Pan_tro_3.0.113.gtf.gz
+  url: https://ftp.ensembl.org/pub/release-114/gtf/pan_troglodytes/Pan_troglodytes.Pan_tro_3.0.114.gtf.gz
 pig:
   description: sus_scrofa
-  url: https://ftp.ensembl.org/pub/release-113/gtf/sus_scrofa/Sus_scrofa.Sscrofa11.1.113.gtf.gz
+  url: https://ftp.ensembl.org/pub/release-114/gtf/sus_scrofa/Sus_scrofa.Sscrofa11.1.114.gtf.gz
 lemur:
   description: microcebus_murinus
-  url: https://ftp.ensembl.org/pub/release-113/gtf/microcebus_murinus/Microcebus_murinus.Mmur_3.0.113.gtf.gz
+  url: https://ftp.ensembl.org/pub/release-114/gtf/microcebus_murinus/Microcebus_murinus.Mmur_3.0.114.gtf.gz
 rat: 
   description: rattus_norvegicus
-  url: https://ftp.ensembl.org/pub/release-113/gtf/rattus_norvegicus/Rattus_norvegicus.mRatBN7.2.113.gtf.gz
+  url: https://ftp.ensembl.org/pub/release-114/gtf/rattus_norvegicus/Rattus_norvegicus.mRatBN7.2.114.gtf.gz
