@@ -374,9 +374,9 @@ good_var_mouse = pd.DataFrame(
 var_expected = pd.DataFrame(
     [
         ["gene", False, "MACF1", "NCBITaxon:9606", 2821, "protein_coding"],
-        ["gene", False, "TP53", "NCBITaxon:9606", 2404, "protein_coding"],
-        ["gene", False, "BRCA1", "NCBITaxon:9606", 3712, "protein_coding"],
-        ["gene", False, "BRCA2", "NCBITaxon:9606", 10668, "protein_coding"],
+        ["gene", False, "TP53", "NCBITaxon:9606", 2426, "protein_coding"],
+        ["gene", False, "BRCA1", "NCBITaxon:9606", 3757, "protein_coding"],
+        ["gene", False, "BRCA2", "NCBITaxon:9606", 11428, "protein_coding"],
         ["gene", False, "BAD", "NCBITaxon:9606", 552, "protein_coding"],
         ["gene", False, "TNMD", "NCBITaxon:9606", 873, "protein_coding"],
         ["gene", False, "DPM1", "NCBITaxon:9606", 1262, "protein_coding"],
