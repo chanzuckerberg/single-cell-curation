@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from unittest import mock
 
 import anndata as ad
 import dask.dataframe as dd
@@ -74,24 +75,12 @@ def count_fragments_per_chromosome(fragment_file):
 
 
 class TestProcessFragment:
-    @pytest.mark.parametrize("override_write_algorithm", ["pysam", "cli", None])
-    def test_write_algorithms(
-        self, atac_fragment_bgzip_file_path, atac_fragment_index_file_path, override_write_algorithm
-    ):
-        self._test_process_fragment(
-            atac_fragment_bgzip_file_path, atac_fragment_index_file_path, override_write_algorithm, "fragments.tsv.bgz"
-        )
-
     @pytest.mark.parametrize("fragment_file", ["fragments.tsv.bgz", "fragments.tsv.gz"])
     def test_source_file_compression(self, atac_fragment_bgzip_file_path, atac_fragment_index_file_path, fragment_file):
-        self._test_process_fragment(
-            atac_fragment_bgzip_file_path, atac_fragment_index_file_path, "pysam", fragment_file
-        )
+        self._test_process_fragment(atac_fragment_bgzip_file_path, atac_fragment_index_file_path, fragment_file)
 
     @staticmethod
-    def _test_process_fragment(
-        atac_fragment_bgzip_file_path, atac_fragment_index_file_path, override_write_algorithm, fragment_file
-    ):
+    def _test_process_fragment(atac_fragment_bgzip_file_path, atac_fragment_index_file_path, fragment_file):
         # Arrange
         anndata_file = os.path.join(FIXTURES_ROOT, "atac_seq", "small_atac_seq.h5ad")
         fragments_file = os.path.join(FIXTURES_ROOT, "atac_seq", fragment_file)
@@ -100,7 +89,6 @@ class TestProcessFragment:
             fragments_file,
             anndata_file,
             generate_index=True,
-            override_write_algorithm=override_write_algorithm,
             output_file=str(atac_fragment_bgzip_file_path),
         )
         # Assert
@@ -152,6 +140,32 @@ class TestProcessFragment:
             output_file=str(atac_fragment_bgzip_file_path),
         )
         result = [r for r in result if "Error" in r]
+
+
+class TestPrepareFragment:
+    def test_positive(self, atac_fragment_dataframe, tmpdir):
+        # Arrange
+        input_file = os.path.join(
+            tmpdir,
+            "fragment.tsv.gz",
+        )
+        atac_fragment_dataframe.to_csv(
+            input_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
+        )
+        output_file = os.path.join(tmpdir, "fragment.bgz")
+        # Act
+        atac_seq.prepare_fragment(input_file, output_file)
+        # Assert
+        assert Path(output_file).exists()
+
+    @pytest.mark.parametrize("tool", ["bgzip", "pigz", "sort"])
+    @mock.patch("shutil.which")
+    def test_missing_requirements(self, mock, tool, atac_fragment_file, tmpdir):
+        # Arrange
+        mock.return_value = None  # patch shutil to return None for the tool
+        # Act
+        with pytest.raises(RuntimeError):
+            atac_seq.prepare_fragment(atac_fragment_file, "fragment.bgz")
 
 
 class TestConvertToParquet:
