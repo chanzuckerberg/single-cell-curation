@@ -188,11 +188,6 @@ def process_fragment(
 
     """
 
-    # generate the index
-    if generate_index:
-        logger.info(f"Sorting fragment and generating index for {fragment_file}")
-        index_fragment(fragment_file, output_file)
-
     with tempfile.TemporaryDirectory() as tempdir:
         # quick checks
         errors = validate_anndata(anndata_file)
@@ -217,6 +212,11 @@ def process_fragment(
             return errors
         else:
             logger.info("Fragment and Anndata file are valid")
+
+    # generate the index
+    if generate_index:
+        logger.info(f"Sorting fragment and generating index for {fragment_file}")
+        index_fragment(fragment_file, output_file)
 
     logger.debug("cleaning up")
     return []
