@@ -3,9 +3,9 @@
 
 Contact: brianraymor@chanzuckerberg.com
 
-Document Status: _Approved_
+Document Status: _Drafting_
 
-Version: 6.0.0
+Version: 7.0.0
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED" "MAY", and "OPTIONAL" in this document are to be interpreted as described in [BCP 14](https://tools.ietf.org/html/bcp14), [RFC2119](https://www.rfc-editor.org/rfc/rfc2119.txt), and [RFC8174](https://www.rfc-editor.org/rfc/rfc8174.txt) when, and only when, they appear in all capitals, as shown here.
 
@@ -204,9 +204,8 @@ The following table describes the matrix data and layers requirements that are *
 
 ## Integration Metadata
 
-CELLxGENE requires ontology terms to enable search, comparison, and integration of data.
-Ontology terms for cell metadata MUST use [OBO-format identifiers](http://www.obofoundry.org/id-policy.html), meaning a CURIE (prefixed identifier) of the form **Ontology:Identifier**.
-For example, [EFO:0000001](https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0000001) is a term in the Experimental Factor Ontology (EFO).
+CELLxGENE requires ontology terms to enable search, comparison, and integration of data. With the exception of Cellosaurus, ontology terms for cell metadata MUST use [OBO-format identifiers](http://www.obofoundry.org/id-policy.html), meaning a CURIE (prefixed identifier) of the form **Ontology:Identifier**. For example, [EFO:0000001](https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0000001) is a term in the Experimental Factor Ontology (EFO). Cellosaurus requires a prefixed identifier of the form **Ontology_Identifier** such as [CVCL_1P02](https://www.cellosaurus.org/CVCL_1P02).
+
 
 The most accurate ontology term MUST always be used. If an exact or approximate ontology term is not available, a new term may be requested:
 
@@ -223,49 +222,52 @@ Terms documented as obsolete in an ontology MUST NOT be used. For example, [EFO:
 
 The following ontology dependencies are *pinned* for this version of the schema.
 
-| Ontology | OBO Prefix | Release | Download |
+| Ontology | Prefix | Release | Download |
 |:--|:--|:--|:--|
-| [C. elegans Development Ontology] | WBls |  [2025-04-01 WS297](https://github.com/obophenotype/c-elegans-development-ontology/releases/tag/v2025-04-01) | [wbls.owl](https://github.com/obophenotype/c-elegans-development-ontology/blob/v2025-04-01/wbls.owl) |
-| [C. elegans Gross Anatomy Ontology] | WBbt | [2025-03-26 WS297](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/releases/tag/v2025-03-26) | [wbbt.owl](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/blob/v2025-03-26/wbbt.owl) |
-| [Cell Ontology] | CL |  [2025-04-10](https://github.com/obophenotype/cell-ontology/releases/tag/v2025-04-10) | [cl.owl](https://github.com/obophenotype/cell-ontology/releases/download/v2025-04-10/cl.owl)|
-| [Drosophila Anatomy Ontology] | FBbt | [2025-03-27](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/tag/v2025-03-27)| [fbbt.owl](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/download/v2025-03-27/fbbt.owl) |
-| [Drosophila Development Ontology] | FBdv | [2025-03-26](https://github.com/FlyBase/drosophila-developmental-ontology/releases/tag/v2025-03-26) | [fbdv.owl](https://github.com/FlyBase/drosophila-developmental-ontology/releases/download/v2025-03-26/fbdv.owl) |
-| [Experimental Factor Ontology] | EFO | [2025-05-15 EFO 3.78.0](https://github.com/EBISPOT/efo/releases/tag/v3.78.0) | [efo.owl](https://github.com/EBISPOT/efo/releases/download/v3.78.0/efo.owl) |
-| [Human Ancestry Ontology] | HANCESTRO | [3.0](https://github.com/EBISPOT/hancestro/releases/tag/3.0) | [hancestro-base.owl](https://github.com/EBISPOT/hancestro/blob/3.0/hancestro-base.owl) |
-| [Human Developmental Stages] |  HsapDv | [2025-01-23](https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/v2025-01-23) | [hsapdv.owl](https://github.com/obophenotype/developmental-stage-ontologies/releases/download/v2025-01-23/hsapdv.owl) |
-| [Mondo Disease Ontology] | MONDO | [2025-05-06](https://github.com/monarch-initiative/mondo/releases/tag/v2025-05-06) | [mondo.owl](https://github.com/monarch-initiative/mondo/releases/download/v2025-05-06/mondo.owl) |
-| [Mouse Developmental Stages]| MmusDv | [2025-01-23](https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/v2025-01-23) | [mmusdv.owl](https://github.com/obophenotype/developmental-stage-ontologies/releases/download/v2025-01-23/mmusdv.owl) |
-| [NCBI organismal classification] |  NCBITaxon | [2025-03-13](https://github.com/obophenotype/ncbitaxon/releases/tag/v2025-03-13) | [ncbitaxon.owl](https://github.com/obophenotype/ncbitaxon/releases/download/v2025-03-13/ncbitaxon.owl.gz) |
-| [Phenotype And Trait Ontology] | PATO | [2025-05-14](https://github.com/pato-ontology/pato/releases/tag/v2025-05-14) | [pato.owl](https://github.com/pato-ontology/pato/blob/v2025-05-14/pato.owl)  |
-| [Uberon multi-species anatomy ontology] |  UBERON | [2025-05-28](https://github.com/obophenotype/uberon/releases/tag/v2025-05-28) | [uberon.owl](https://github.com/obophenotype/uberon/releases/download/v2025-05-28/uberon.owl) |
-| [Zebrafish Anatomy Ontology] | ZFA<br>ZFS | [2025-01-28](https://github.com/ZFIN/zebrafish-anatomical-ontology/releases/tag/v2025-01-28) | [zfa.owl](https://github.com/ZFIN/zebrafish-anatomical-ontology/blob/v2025-01-28/zfa.owl) |
+| [C. elegans Development Ontology] | WBls: |  [2025-04-01 WS297](https://github.com/obophenotype/c-elegans-development-ontology/releases/tag/v2025-04-01) | [wbls.owl](https://github.com/obophenotype/c-elegans-development-ontology/blob/v2025-04-01/wbls.owl) |
+| [C. elegans Gross Anatomy Ontology] | WBbt: | [2025-03-26 WS297](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/releases/tag/v2025-03-26) | [wbbt.owl](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/blob/v2025-03-26/wbbt.owl) |
+| [Cell Ontology] | CL: |  [2025-04-10](https://github.com/obophenotype/cell-ontology/releases/tag/v2025-04-10) | [cl.owl](https://github.com/obophenotype/cell-ontology/releases/download/v2025-04-10/cl.owl)|
+| [Cellosaurus] | CVCL_ | 52.0 | [cellosaurus.obo ](https://ftp.expasy.org/databases/cellosaurus/cellosaurus.obo)_(Versioned releases are unavailable. Cellosaurus may replace this download with a newer release.)_ |
+| [Drosophila Anatomy Ontology] | FBbt: | [2025-03-27](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/tag/v2025-03-27)| [fbbt.owl](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/download/v2025-03-27/fbbt.owl) |
+| [Drosophila Development Ontology] | FBdv: | [2025-03-26](https://github.com/FlyBase/drosophila-developmental-ontology/releases/tag/v2025-03-26) | [fbdv.owl](https://github.com/FlyBase/drosophila-developmental-ontology/releases/download/v2025-03-26/fbdv.owl) |
+| [Experimental Factor Ontology] | EFO: | [2025-05-15 EFO 3.78.0](https://github.com/EBISPOT/efo/releases/tag/v3.78.0) | [efo.owl](https://github.com/EBISPOT/efo/releases/download/v3.78.0/efo.owl) |
+| [Human Ancestry Ontology] | AfPO:<br>HANCESTRO: | [2025-04-01](https://github.com/EBISPOT/hancestro/releases/tag/v2025-04-01) | [hancestro-base.owl](https://github.com/EBISPOT/hancestro/blob/v2025-04-01/hancestro-base.owl) |
+| [Human Developmental Stages] |  HsapDv: | [2025-01-23](https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/v2025-01-23) | [hsapdv.owl](https://github.com/obophenotype/developmental-stage-ontologies/releases/download/v2025-01-23/hsapdv.owl) |
+| [Mondo Disease Ontology] | MONDO: | [2025-05-06](https://github.com/monarch-initiative/mondo/releases/tag/v2025-05-06) | [mondo.owl](https://github.com/monarch-initiative/mondo/releases/download/v2025-05-06/mondo.owl) |
+| [Mouse Developmental Stages]| MmusDv: | [2025-01-23](https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/v2025-01-23) | [mmusdv.owl](https://github.com/obophenotype/developmental-stage-ontologies/releases/download/v2025-01-23/mmusdv.owl) |
+| [NCBI organismal classification] |  NCBITaxon: | [2025-03-13](https://github.com/obophenotype/ncbitaxon/releases/tag/v2025-03-13) | [ncbitaxon.owl](https://github.com/obophenotype/ncbitaxon/releases/download/v2025-03-13/ncbitaxon.owl.gz) |
+| [Phenotype And Trait Ontology] | PATO: | [2025-05-14](https://github.com/pato-ontology/pato/releases/tag/v2025-05-14) | [pato.owl](https://github.com/pato-ontology/pato/blob/v2025-05-14/pato.owl)  |
+| [Uberon multi-species anatomy ontology] |  UBERON: | [2025-05-28](https://github.com/obophenotype/uberon/releases/tag/v2025-05-28) | [uberon.owl](https://github.com/obophenotype/uberon/releases/download/v2025-05-28/uberon.owl) |
+| [Zebrafish Anatomy Ontology] | ZFA:<br>ZFS: | [2025-01-28](https://github.com/ZFIN/zebrafish-anatomical-ontology/releases/tag/v2025-01-28) | [zfa.owl](https://github.com/ZFIN/zebrafish-anatomical-ontology/blob/v2025-01-28/zfa.owl) |
 | | | | |
 
 [C. elegans Development Ontology]: https://obofoundry.org/ontology/wbls.html
 
 [C. elegans Gross Anatomy Ontology]: https://obofoundry.org/ontology/wbbt.html
 
-[Cell Ontology]: http://obofoundry.org/ontology/cl.html
+[Cell Ontology]: https://obofoundry.org/ontology/cl.html
+
+[Cellosaurus]: https://www.cellosaurus.org/description.html
 
 [Drosophila Anatomy Ontology]: https://obofoundry.org/ontology/fbbt.html
 
 [Drosophila Development Ontology]: https://obofoundry.org/ontology/fbdv.html
 
-[Experimental Factor Ontology]: http://www.ebi.ac.uk/efo
+[Experimental Factor Ontology]: https://www.ebi.ac.uk/efo
 
-[Human Ancestry Ontology]: http://www.obofoundry.org/ontology/hancestro.html
+[Human Ancestry Ontology]: https://www.obofoundry.org/ontology/hancestro.html
 
-[Human Developmental Stages]: http://obofoundry.org/ontology/hsapdv.html
+[Human Developmental Stages]: https://obofoundry.org/ontology/hsapdv.html
 
-[Mondo Disease Ontology]: http://obofoundry.org/ontology/mondo.html
+[Mondo Disease Ontology]: https://obofoundry.org/ontology/mondo.html
 
-[Mouse Developmental Stages]: http://obofoundry.org/ontology/mmusdv.html
+[Mouse Developmental Stages]: https://obofoundry.org/ontology/mmusdv.html
 
-[NCBI organismal classification]: http://obofoundry.org/ontology/ncbitaxon.html
+[NCBI organismal classification]: https://obofoundry.org/ontology/ncbitaxon.html
 
-[Phenotype And Trait Ontology]: http://www.obofoundry.org/ontology/pato.html
+[Phenotype And Trait Ontology]: https://www.obofoundry.org/ontology/pato.html
 
-[Uberon multi-species anatomy ontology]: http://www.obofoundry.org/ontology/uberon.html
+[Uberon multi-species anatomy ontology]: https://www.obofoundry.org/ontology/uberon.html
 
 [Zebrafish Anatomy Ontology]: https://obofoundry.org/ontology/zfa.html
 
@@ -278,21 +280,21 @@ The following gene annotation dependencies are *pinned* for this version of the 
 
 | NCBITaxon | Source | Required version | Download |
 |:--|:--|:--|:--|
-| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A6239"><code>NCBITaxon:6239</code></a><br>for <i>Caenorhabditis elegans</i> | [ENSEMBL](https://www.ensembl.org/Caenorhabditis_elegans/Info/Index) | WBcel235 (GCA_000002985.3)<br>Ensembl 113 | [Caenorhabditis_elegans.WBcel235.113.gtf](https://ftp.ensembl.org/pub/release-113/gtf/caenorhabditis_elegans/Caenorhabditis_elegans.WBcel235.113.gtf.gz) |
-| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9483"><code>NCBITaxon:9483</code></a><br>for <i>Callithrix jacchus</i>  | [ENSEMBL](https://www.ensembl.org/Callithrix_jacchus/Info/Index) | mCalJac1.pat.X<br>(GCA_011100555.1)<br>Ensembl 113 | [Callithrix_jacchus.mCalJac1.pat.X.113.gtf](https://ftp.ensembl.org/pub/release-113/gtf/callithrix_jacchus/Callithrix_jacchus.mCalJac1.pat.X.113.gtf.gz) |
-| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A7955"><code>NCBITaxon:7955</code></a><br>for <i>Danio rerio</i> |  [ENSEMBL](https://www.ensembl.org/Danio_rerio/Info/Index) | GRCz11 (GCA_000002035.4)<br>Ensembl 113 | [Danio_rerio.GRCz11.113.gtf](https://ftp.ensembl.org/pub/release-113/gtf/danio_rerio/Danio_rerio.GRCz11.113.gtf.gz) |
-| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A7227"><code>NCBITaxon:7227</code></a><br>for <i>Drosophila melanogaster</i>| [ENSEMBL](https://www.ensembl.org/Drosophila_melanogaster/Info/Index) | BDGP6.46 (GCA_000001215.4)<br>Ensembl 113 | [Drosophila_melanogaster.BDGP6.46.113.gtf](https://ftp.ensembl.org/pub/release-113/gtf/drosophila_melanogaster/Drosophila_melanogaster.BDGP6.46.113.gtf.gz) |
-| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9595"><code>NCBITaxon:9595</code></a><br>for <i>Gorilla gorilla gorilla</i>  | [ENSEMBL](https://www.ensembl.org/Gorilla_gorilla/Info/Index) | gorGor4<br>(GCA_000151905.3)<br>Ensembl 113 | [Gorilla_gorilla.gorGor4.113.gtf](https://ftp.ensembl.org/pub/release-113/gtf/gorilla_gorilla/Gorilla_gorilla.gorGor4.113.gtf.gz) |
-| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9606"><code>NCBITaxon:9606</code></a><br>for <i>Homo sapiens</i> | [GENCODE](https://www.gencodegenes.org/human/) | Human reference GRCh38.p14<br>(GENCODE v44/Ensembl 110) | [gencode.v44.primary_assembly.annotation.gtf](https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_44/gencode.v44.primary_assembly.annotation.gtf.gz) |
-| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9541"><code>NCBITaxon:9541</code></a><br>for <i>Macaca fascicularis</i>  | [ENSEMBL](https://www.ensembl.org/Macaca_fascicularis/Info/Index) | Macaca_fascicularis_6.0<br> (GCA_011100615.1)<br>Ensembl 113 | [Macaca_fascicularis.Macaca_fascicularis_6.0.113.gtf](https://ftp.ensembl.org/pub/release-113/gtf/macaca_fascicularis/Macaca_fascicularis.Macaca_fascicularis_6.0.113.gtf.gz) |
-| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9544"><code>NCBITaxon:9544</code></a><br>for <i>Macaca mulatta</i>  | [ENSEMBL](https://www.ensembl.org/Macaca_mulatta/Info/Index) | Mmul_10<br>(GCA_003339765.3)<br>Ensembl 113 | [Macaca_mulatta.Mmul_10.113.gtf](https://ftp.ensembl.org/pub/release-113/gtf/macaca_mulatta/Macaca_mulatta.Mmul_10.113.gtf.gz) |
-| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A30608"><code>NCBITaxon:30608</code></a><br>for <i>Microcebus murinus</i>  | [ENSEMBL](https://www.ensembl.org/Microcebus_murinus/Info/Index) | Mmur_3.0<br>(GCA_000165445.3)<br>Ensembl 113| [Microcebus_murinus.Mmur_3.0.113.gtf](https://ftp.ensembl.org/pub/release-113/gtf/microcebus_murinus/Microcebus_murinus.Mmur_3.0.113.gtf.gz) |
-| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A10090"><code>NCBITaxon:10090</code></a><br>for <i>Mus musculus</i> | [GENCODE](https://www.gencodegenes.org/mouse/) | Mouse reference GRCm39<br>(GENCODE vM33/Ensembl 110) | [gencode.vM33.primary_assembly.annotation.gtf](https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M33/gencode.vM33.primary_assembly.annotation.gtf.gz) |
-| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9986"><code>NCBITaxon:9986</code></a><br>for <i>Oryctolagus cuniculus</i>  | [ENSEMBL](https://www.ensembl.org/Oryctolagus_cuniculus/Info/Index) | OryCun2.0<br>(GCA_000003625.1)<br>Ensembl 113 | [Oryctolagus_cuniculus.OryCun2.0.113.gtf](https://ftp.ensembl.org/pub/release-113/gtf/oryctolagus_cuniculus/Oryctolagus_cuniculus.OryCun2.0.113.gtf.gz) |
-| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9598"><code>NCBITaxon:9598</code></a><br>for <i>Pan troglodytes</i>  | [ENSEMBL](https://www.ensembl.org/Pan_troglodytes/Info/Index) | Pan_tro_3.0<br>(GCA_000001515.5)<br>Ensembl 113 | [Pan_troglodytes.Pan_tro_3.0.113.gtf](https://ftp.ensembl.org/pub/release-113/gtf/pan_troglodytes/Pan_troglodytes.Pan_tro_3.0.113.gtf.gz) |
-| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A10116"><code>NCBITaxon:10116</code></a><br>for <i>Rattus norvegicus</i>  | [ENSEMBL](https://www.ensembl.org/Rattus_norvegicus/Info/Index) | mRatBN7.2<br>(GCA_015227675.2)<br>Ensembl 113| [Rattus_norvegicus.mRatBN7.2.113.gtf](https://ftp.ensembl.org/pub/release-113/gtf/rattus_norvegicus/Rattus_norvegicus.mRatBN7.2.113.gtf.gz)  |
+| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A6239"><code>NCBITaxon:6239</code></a><br>for <i>Caenorhabditis elegans</i> | [ENSEMBL](https://www.ensembl.org/Caenorhabditis_elegans/Info/Index) | WBcel235<br>(GCA_000002985.3)<br>Ensembl 114 | [Caenorhabditis_elegans.WBcel235.114.gtf.gz](https://ftp.ensembl.org/pub/release-114/gtf/caenorhabditis_elegans/Caenorhabditis_elegans.WBcel235.114.gtf.gz) |
+| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9483"><code>NCBITaxon:9483</code></a><br>for <i>Callithrix jacchus</i>  | [ENSEMBL](https://www.ensembl.org/Callithrix_jacchus/Info/Index) | mCalJac1.pat.X<br>(GCA_011100555.1)<br>Ensembl 114 | [Callithrix_jacchus.mCalJac1.pat.X.114.gtf.gz](https://ftp.ensembl.org/pub/release-114/gtf/callithrix_jacchus/Callithrix_jacchus.mCalJac1.pat.X.114.gtf.gz) |
+| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A7955"><code>NCBITaxon:7955</code></a><br>for <i>Danio rerio</i> |  [ENSEMBL](https://www.ensembl.org/Danio_rerio/Info/Index) | GRCz11<br>(GCA_000002035.4)<br>Ensembl 114 | [Danio_rerio.GRCz11.114.gtf.gz](https://ftp.ensembl.org/pub/release-114/gtf/danio_rerio/Danio_rerio.GRCz11.114.gtf.gz) |
+| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A7227"><code>NCBITaxon:7227</code></a><br>for <i>Drosophila melanogaster</i>| [ENSEMBL](https://www.ensembl.org/Drosophila_melanogaster/Info/Index) | BDGP6.54<br>(GCA_000001215.4)<br>Ensembl 114 | [Drosophila_melanogaster.BDGP6.54.114.gtf.gz](https://ftp.ensembl.org/pub/release-114/gtf/drosophila_melanogaster/Drosophila_melanogaster.BDGP6.54.114.gtf.gz) |
+| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9595"><code>NCBITaxon:9595</code></a><br>for <i>Gorilla gorilla gorilla</i>  | [ENSEMBL](https://www.ensembl.org/Gorilla_gorilla/Info/Index) | gorGor4<br>(GCA_000151905.3)<br>Ensembl 114 | [Gorilla_gorilla.gorGor4.114.gtf.gz](https://ftp.ensembl.org/pub/release-114/gtf/gorilla_gorilla/Gorilla_gorilla.gorGor4.114.gtf.gz) |
+| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9606"><code>NCBITaxon:9606</code></a><br>for <i>Homo sapiens</i> | [GENCODE](https://www.gencodegenes.org/human/) | GENCODE v48<br>(GRCh38.p14)<br>Ensembl 114 | [gencode.v48.primary_assembly.annotation.gtf](https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_48/gencode.v48.primary_assembly.annotation.gtf.gz) |
+| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9541"><code>NCBITaxon:9541</code></a><br>for <i>Macaca fascicularis</i>  | [ENSEMBL](https://www.ensembl.org/Macaca_fascicularis/Info/Index) | Macaca_fascicularis_6.0<br>(GCA_011100615.1)<br>Ensembl 114 | [Macaca_fascicularis.Macaca_fascicularis_6.0.114.gtf.gz](https://ftp.ensembl.org/pub/release-114/gtf/macaca_fascicularis/Macaca_fascicularis.Macaca_fascicularis_6.0.114.gtf.gz) |
+| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9544"><code>NCBITaxon:9544</code></a><br>for <i>Macaca mulatta</i>  | [ENSEMBL](https://www.ensembl.org/Macaca_mulatta/Info/Index) | Mmul_10<br>(GCA_003339765.3)<br>Ensembl 114 | [Macaca_mulatta.Mmul_10.114.gtf.gz](https://ftp.ensembl.org/pub/release-114/gtf/macaca_mulatta/Macaca_mulatta.Mmul_10.114.gtf.gz) |
+| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A30608"><code>NCBITaxon:30608</code></a><br>for <i>Microcebus murinus</i>  | [ENSEMBL](https://www.ensembl.org/Microcebus_murinus/Info/Index) | Mmur_3.0<br>(GCA_000165445.3)<br>Ensembl 114| [Microcebus_murinus.Mmur_3.0.114.gtf.gz](https://ftp.ensembl.org/pub/release-114/gtf/microcebus_murinus/Microcebus_murinus.Mmur_3.0.114.gtf.gz) |
+| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A10090"><code>NCBITaxon:10090</code></a><br>for <i>Mus musculus</i> | [GENCODE](https://www.gencodegenes.org/mouse/) |  GENCODE vM37<br>(GRCm39)<br>Ensembl 114 | [gencode.vM37.primary_assembly.annotation.gtf](https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M37/gencode.vM37.primary_assembly.annotation.gtf.gz) |
+| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9986"><code>NCBITaxon:9986</code></a><br>for <i>Oryctolagus cuniculus</i>  | [ENSEMBL](https://www.ensembl.org/Oryctolagus_cuniculus/Info/Index) | OryCun2.0<br>(GCA_000003625.1)<br>Ensembl 114 | [Oryctolagus_cuniculus.OryCun2.0.114.gtf.gz](https://ftp.ensembl.org/pub/release-114/gtf/oryctolagus_cuniculus/Oryctolagus_cuniculus.OryCun2.0.114.gtf.gz) |
+| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9598"><code>NCBITaxon:9598</code></a><br>for <i>Pan troglodytes</i>  | [ENSEMBL](https://www.ensembl.org/Pan_troglodytes/Info/Index) | Pan_tro_3.0<br>(GCA_000001515.5)<br>Ensembl 114 | [Pan_troglodytes.Pan_tro_3.0.114.gtf.gz](https://ftp.ensembl.org/pub/release-114/gtf/pan_troglodytes/Pan_troglodytes.Pan_tro_3.0.114.gtf.gz) |
+| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A10116"><code>NCBITaxon:10116</code></a><br>for <i>Rattus norvegicus</i>  | [ENSEMBL](https://www.ensembl.org/Rattus_norvegicus/Info/Index) | GRCr8<br>(GCA_036323735.1)<br>Ensembl 114| [Rattus_norvegicus.GRCr8.114.gtf.gz](https://ftp.ensembl.org/pub/release-114/gtf/rattus_norvegicus/Rattus_norvegicus.GRCr8.114.gtf.gz)  |
 | <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A2697049"><code>NCBITaxon:2697049</code></a><br>for <i>SARS-CoV-2</i>  | [ENSEMBL](https://covid-19.ensembl.org/index.html) | SARS-CoV-2 reference (ASM985889v3) | [Sars\_cov\_2.ASM985889v3.101.gtf](https://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz) |
-| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9823"><code>NCBITaxon:9823</code></a><br>for <i>Sus scrofa</i> | [ENSEMBL](https://www.ensembl.org/Sus_scrofa/Info/Index) | Sscrofa11.1<br>(GCA_000003025.6)<br>Ensembl 113 | [Sus_scrofa.Sscrofa11.1.113.gtf](https://ftp.ensembl.org/pub/release-113/gtf/sus_scrofa/Sus_scrofa.Sscrofa11.1.113.gtf.gz) |
+| <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A9823"><code>NCBITaxon:9823</code></a><br>for <i>Sus scrofa</i> | [ENSEMBL](https://www.ensembl.org/Sus_scrofa/Info/Index) |  Sscrofa11.1<br>(GCA_000003025.6)<br>Ensembl 114 | [Sus_scrofa.Sscrofa11.1.114.gtf.gz](https://ftp.ensembl.org/pub/release-114/gtf/sus_scrofa/Sus_scrofa.Sscrofa11.1.114.gtf.gz) |
 | <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A32630"><code>NCBITaxon:32630</code></a><br>for <i>synthetic construct</i> | [ThermoFisher ERCC<br>Spike-Ins] | ThermoFisher ERCC RNA Spike-In Control Mixes (Cat # 4456740, 4456739) | [cms_095047.txt] |
 |||||
 
@@ -503,7 +505,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
   <tr>
     <th>Value</th>
     <td>
-      categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> when:
+      categorical with <code>str</code> categories.<br><br>This MUST be <code>"unknown"</code> when:
       <ul>
         <li>
           no appropriate term can be found (e.g. the cell type is unknown)
@@ -512,7 +514,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <code>assay_ontology_term_id</code> is a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i>,<br><code>uns['spatial']['is_single']</code> is <code>True</code>,<br>and the corresponding value of <code>in_tissue</code> is <code>0</code>
         </li>
       </ul>
-        <br>The following CL terms MUST NOT be used:
+        <br>If <code>tissue_type</code> is <code>"cell line"</code>, this MAY be <code>"na"</code>, but then all observations where <code>tissue_type</code> is <code>"cell line"</code> MUST be <code>"na"</code>.<br><br>The following CL terms MUST NOT be used:
         <ul><li>
           <a href="https://www.ebi.ac.uk/ols4/ontologies/cl/terms?obo_id=CL:0000255"><code>"CL:0000255"</code></a> for <i>eukaryotic cell</i>
         </li>
@@ -521,7 +523,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
         </li>
         <li>
             <a href="https://www.ebi.ac.uk/ols4/ontologies/cl/terms?obo_id=CL:0000548"><code>"CL:0000548"</code></a> for <i>animal cell</i>
-         </li></ul><br> 
+         </li></ul><br>
       <table>
         <thead><tr>
           <th>For <code>organism_ontology_term_id</code></th>
@@ -552,9 +554,16 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               MUST be either a CL term or the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/fbbt/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFBbt_00007002?lang=en"><code>FBbt:00007002</code></a><br>for <i>cell</i>
             </td>
           </tr>
+          <tr>
+            <td>
+              For all other organisms
+            </td>
+            <td>
+              MUST be a CL term
+            </td>
+          </tr>
         </tbody>
       </table>
-        <br> Otherwise, for all other organisms this MUST be a CL term.<br><br>
     </td>
   </tr>
 </tbody></table>
@@ -574,7 +583,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     <tr>
       <th>Value</th>
       <td>
-        categorical with <code>str</code> categories. If unavailable, this MUST be <code>"unknown"</code>.<br><br>
+        categorical with <code>str</code> categories.<br><br>If <code>tissue_type</code> is <code>"cell line"</code>, this MUST be <code>"na"</code>.<br><br>If unavailable, this MUST be <code>"unknown"</code>.<br><br>
         <table>
           <thead>
             <tr>
@@ -623,9 +632,16 @@ Curators MUST annotate the following columns in the `obs` dataframe:
                 MUST be the accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/mmusdv/classes?obo_id=MmusDv%3A0000001"><code>MmusDv:0000001</code></a> for <i>life cycle</i>
               </td>
             </tr>
+            <tr>
+              <td>
+                For all other organisms
+              </td>
+              <td>
+                MUST be the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000105"><code>UBERON:0000105</code></a> for <i>life cycle stage</i>, excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000071"><code>UBERON:0000071</code></a> for <i>death stage</i>.
+              </td>
+            </tr>
           </tbody>
         </table>
-                <br>Otherwise, for all other organisms this MUST be the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000105"><code>UBERON:0000105</code></a> for <i>life cycle stage</i>, excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000071"><code>UBERON:0000071</code></a> for <i>death stage</i>.
       </td>
   </tr>
 </tbody></table>
@@ -658,7 +674,6 @@ Curators MUST annotate the following columns in the `obs` dataframe:
 </tbody></table>
 <br>
 
-
 ### donor_id
 
 <table><tbody>
@@ -672,7 +687,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be free-text that identifies a unique individual that data were derived from. It is STRONGLY RECOMMENDED that this identifier be designed so that it is unique to:<br><br>
+        <td>categorical with <code>str</code> categories.<br><br>If <code>tissue_type</code> is <code>"cell line"</code>, this MUST be <code>"na"</code>; otherwise, this MUST NOT be <code>"na"</code>, but MUST be free-text that identifies a unique individual that data were derived from. It is STRONGLY RECOMMENDED that this identifier be designed so that it is unique to:<br><br>
           <ul><li>a given individual within the collection of datasets that includes this dataset</li>
           <li>a given individual across all collections in CELLxGENE Discover</li></ul><br>
           It is STRONGLY RECOMMENDED that <code>"pooled"</code> be used  for observations from a sample of multiple individuals that were not confidently assigned to a single individual through demultiplexing.<br><br>It is STRONGLY RECOMMENDED that <code>"unknown"</code> ONLY be used for observations in a dataset when it is not known which observations are from the same individual.<br><br>
@@ -680,6 +695,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
 </tbody></table>
 <br>
+
 
 ### in_tissue
 
@@ -735,204 +751,24 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     <tr>
       <th>Value</th>
       <td>
-        categorical with <code>str</code> categories. If
-        <code>organism_ontology_term_id</code> is
-        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, then the value MUST be one or more HANCESTRO terms in ascending lexical order separated by the delimiter <code>" || "</code> with no duplication of terms or <code>"unknown"</code> if unavailable.<br><br>For example, if the terms are <code>"HANCESTRO:0014</code> and <code>HANCESTRO:0005"</code> then the value of <code>self_reported_ethnicity_ontology_term_id</code> MUST be <code>"HANCESTRO:0005 || HANCESTRO:0014"</code>.<br><br>The following terms MUST NOT be used:<br /><br />
+        categorical with <code>str</code> categories.<br><br>If <code>tissue_type</code> is <code>"cell line"</code>, this MUST be <code>"na"</code><br><br>If <code>organism_ontolology_term_id</code> is NOT
+        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be <code>"na"</code>.<br><br>Otherwise, if
+        <code>organism_ontolology_term_id</code> is
+        <code>"NCBITaxon:9606"</code> for <i>Homo sapiens</i>, this MUST be <code>"unknown"</code> if unavailable; otherwise, this MUST meet the following requirements:<br /><br />
         <ul>
           <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0002?lang=en"
-              ><code>"HANCESTRO:0002"</code></a
-            >
-            for <i>regions</i> and its descendants
+            The value MUST be formatted as one or more AfPO or HANCESTRO terms in ascending lexical order separated by the delimiter <code>" || "</code> with no duplication of terms.
           </li>
           <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0003?lang=en"
-              ><code>"HANCESTRO:0003"</code></a
-            >
-            for <i>country</i>
+            Each AfPO or HANCESTRO term MUST be a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0601"><code>"HANCESTRO:0601"</code></a> for <i>ethnicity category</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0602"><code>"HANCESTRO:0602"</code></a> for <i>geography-based population category</i>.<br><br>
           </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0004?lang=en"
-              ><code>"HANCESTRO:0004"</code></a
-            >
-            for <i>ancestry category</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0018?lang=en"
-              ><code>"HANCESTRO:0018"</code></a
-            >
-            for <i>uncategorised population</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0290?lang=en"
-              ><code>"HANCESTRO:0290"</code></a
-            >
-            for <i>genetically isolated population</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0304?lang=en"
-              ><code>"HANCESTRO:0304"</code></a
-            >
-            for <i>ancestry status</i> and its descendants
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0323?lang=en"
-              ><code>"HANCESTRO:0323"</code></a
-            >
-            for <i>Finnish founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0324?lang=en"
-              ><code>"HANCESTRO:0324"</code></a
-            >
-            for <i>Dutch founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0551?lang=en"
-              ><code>"HANCESTRO:0551"</code></a
-            >
-            for <i>genetically homogenous Irish</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0554?lang=en"
-              ><code>"HANCESTRO:0554"</code></a
-            >
-            for <i>Silk Road founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0555?lang=en"
-              ><code>"HANCESTRO:0555"</code></a
-            >
-            for <i>Arab Israeli founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0557?lang=en"
-              ><code>"HANCESTRO:0557"</code></a
-            >
-            for <i>Costa Rican founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0558?lang=en"
-              ><code>"HANCESTRO:0558"</code></a
-            >
-            for <i>French Canadian founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0559?lang=en"
-              ><code>"HANCESTRO:0559"</code></a
-            >
-            for <i>Italian founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0560?lang=en"
-              ><code>"HANCESTRO:0560"</code></a
-            >
-            for <i>Northern Finnish founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0561?lang=en"
-              ><code>"HANCESTRO:0561"</code></a
-            >
-            for <i>Romanian founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0564?lang=en"
-              ><code>"HANCESTRO:0564"</code></a
-            >
-            for <i>Vis founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0565?lang=en"
-              ><code>"HANCESTRO:0565"</code></a
-            >
-            for <i>Split founder</i>
-          </li>
-          <li>
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0566?lang=en"
-              ><code>"HANCESTRO:0566"</code></a
-            >
-            for <i>undefined ancestry population</i>
-          </li>
-          <li>
-            The imported GEO term
-            <a
-              href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FGEO_000000374?lang=en"
-              ><code>"GEO:000000374"</code></a
-            >
-            for <i>continent</i> and its descendants:
-            <ul>
-              <li>
-                <a
-                  href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0029?lang=en"
-                  ><code>"HANCESTRO:0029"</code></a
-                >
-                for <i>Africa</i>
-              </li>
-              <li>
-                <a
-                  href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0030?lang=en"
-                  ><code>"HANCESTRO:0030"</code></a
-                >
-                for <i>Asia</i>
-              </li>
-              <li>
-                <a
-                  href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0031?lang=en"
-                  ><code>"HANCESTRO:0031"</code></a
-                >
-                for <i>Europe</i>
-              </li>
-              <li>
-                <a
-                  href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0032?lang=en"
-                  ><code>"HANCESTRO:0032"</code></a
-                >
-                for <i>Oceania</i>
-              </li>
-              <li>
-                <a
-                  href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0033?lang=en"
-                  ><code>"HANCESTRO:0033"</code></a
-                >
-                for <i>Latin America and the Caribbean</i>
-              </li>
-              <li>
-                <a
-                  href="https://www.ebi.ac.uk/ols4/ontologies/hancestro/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FHANCESTRO_0034?lang=en"
-                  ><code>"HANCESTRO:0034"</code></a
-                >
-                for <i>Northern America</i>
-              </li>
-            </ul>
-          </li>
+            For example, if the terms are <code>"HANCESTRO:0590</code> and <code>HANCESTRO:0580"</code> then the value of <code>self_reported_ethnicity_ontology_term_id</code> MUST be <code>"HANCESTRO:0580 || HANCESTRO:0590"</code>.<br><br>
         </ul>
-        <br />Otherwise, for all other organisms the
-        <code>str</code> value MUST be <code>"na"</code>.
       </td>
     </tr>
   </tbody>
 </table>
-<br />
-
+<br />   
 
 ### sex_ontology_term_id
 
@@ -947,7 +783,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if unavailable. If <code>organism_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A6239"><code>"NCBITaxon:6239"</code></a> for <i>Caenorhabditis elegans</i>, this MUST be <a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0000384"><code>"PATO:0000384"</code></a> for <i>male</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0001340"><code>"PATO:0001340"</code></a> for <i>hermaphrodite</i>; otherwise, this MUST be one of:<br><br>
+        <td>categorical with <code>str</code> categories.<br><br>If <code>tissue_type</code> is <code>"cell line"</code>, this MUST be <code>"na"</code>.<br><br>If unavailable, this MUST be <code>"unknown"</code>.<br><br>If <code>organism_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A6239"><code>"NCBITaxon:6239"</code></a> for <i>Caenorhabditis elegans</i>, this MUST be <a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0000384"><code>"PATO:0000384"</code></a> for <i>male</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0001340"><code>"PATO:0001340"</code></a> for <i>hermaphrodite</i>; otherwise, this MUST be one of:<br><br>
         <ul>
         <li><a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0000383"><code>"PATO:0000383"</code></a> for  <i>female</i></li>
         <li><a href="https://www.ebi.ac.uk/ols4/ontologies/pato/classes?obo_id=PATO%3A0000384"><code>"PATO:0000384"</code></a> for  <i>male</i></li>
@@ -1000,7 +836,11 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td><code>"cell"</code></td>
            </tr>
             <tr>
-              <td><i>CEL-seq2</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010010"><code>EFO:0010010</code></a>]</td>
+              <td><i>CEL-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008679"><code>EFO:0008679</code></a>]</td>
+              <td><code>"cell"</code></td>
+           </tr>
+            <tr>
+              <td><i>CEL-seq2</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010010"><code>EFO:0010010</code></a>] and its descendants</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
@@ -1043,6 +883,10 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td><i>Patch-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008853"><code>EFO:0008853</code></a>]</td>
               <td><code>"cell"</code></td>
            </tr>
+            <tr>
+              <td><i>Quartz-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008877"><code>EFO:0008877</code></a>]</td>
+              <td><code>"cell"</code></td>
+           </tr>
           <tr>
             <td><i>ScaleBio single cell RNA sequencing</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0022490"><code>EFO:0022490</code></a>]</td>
            <td><code>"cell"</code> or <code>"nucleus"</code></td>
@@ -1050,10 +894,6 @@ Curators MUST annotate the following columns in the `obs` dataframe:
             <tr>
               <td><i>sci-Plex</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030026"><code>EFO:0030026</code></a>]</td>
               <td><code>"nucleus"</code></td>
-           </tr>
-            <tr>
-              <td><i>sci-RNA-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010550"><code>EFO:0010550</code></a>]</td>
-              <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr>
             <tr>
               <td><i>sci-RNA-seq3</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030028"><code>EFO:0030028</code></a>]</td>
@@ -1072,11 +912,11 @@ Curators MUST annotate the following columns in the `obs` dataframe:
               <td><code>"na"</code></td>
            </tr> 
             <tr>
-              <td><i>SPLiT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0009919"><code>EFO:0009919</code></a>]</td>
+              <td><i>SPLiT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0009919"><code>EFO:0009919</code></a>] and its descendants</td>
               <td><code>"cell"</code> or <code>"nucleus"</code></td>
            </tr> 
             <tr>
-              <td><i>STRT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008953"><code>EFO:0008953</code></a>]</td>
+              <td><i>STRT-seq</i> [<a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008953"><code>EFO:0008953</code></a>] and its descendants</td>
               <td><code>"cell"</code></td>
            </tr>
             <tr>
@@ -1104,7 +944,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     <tr>
       <th>Value</th>
       <td>
-        categorical with <code>str</code> categories. If <code>tissue_type</code> is <code>"cell culture"</code> this MUST follow the requirements for <code>cell_type_ontology_term_id</code>.<br><br>If <code>tissue_type</code> is <code>"tissue"</code> or <code>"organoid"</code> then:<br><br>
+        categorical with <code>str</code> categories.<br><br>If <code>tissue_type</code> is <code>"cell line"</code>, this MUST be a Cellosaurus term.<br><br>If <code>tissue_type</code> is <code>"primary cell culture"</code>, this MUST follow the requirements for <code>cell_type_ontology_term_id</code>.<br><br>If <code>tissue_type</code> is <code>"organoid"</code>, this MUST NOT be <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0000922"><code>UBERON:0000922</code></a> for <i>embryo</i>. If the organoid is an embryoid, it is STRONGLY RECOMMENDED that the value is <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0014374"><code>UBERON:0014374</code></a> for <i>embryoid body</i>. If the organoid is a gastruloid, it is STRONGLY RECOMMENDED that the value is <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0004734"><code>UBERON:0004734</code></a> for <i>gastrula</i>.<br><br>Otherwise, if <code>tissue_type</code> is <code>"organoid"</code> or <code>"tissue"</code> then:<br><br>
         <table>
           <thead>
             <tr>
@@ -1118,7 +958,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
                 <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A6239"><code>"NCBITaxon:6239"</code></a><br>for <i>Caenorhabditis elegans</i>
               </td>
               <td>
-                MUST be either an UBERON term or the most accurate descendant<br>of <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0005766"><code>WBbt:0005766</code></a> for <i>Anatomy</i> excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0007849"><code>WBbt:0007849</code></a> for <i>hermaphrodite</i>,<br><a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0007850"><code>WBbt:0007850</code></a> for <i>male</i>, <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0008595"><code>WBbt:0008595</code></a> for <i>female</i>, <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0004017"><code>WBbt:0004017</code></a> for <i>Cell</i><br>and its descendants, and <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0006803"><code>WBbt:00006803</code></a> for <i>Nucleus</i> and its descendants
+                MUST be either the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0001062"><code>UBERON:0001062</code></a> for <i>anatomical entity</i> or the most accurate descendant<br>of <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0005766"><code>WBbt:0005766</code></a> for <i>Anatomy</i> excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0007849"><code>WBbt:0007849</code></a> for <i>hermaphrodite</i>,<br><a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0007850"><code>WBbt:0007850</code></a> for <i>male</i>, <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0008595"><code>WBbt:0008595</code></a> for <i>female</i>, <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0004017"><code>WBbt:0004017</code></a> for <i>Cell</i><br>and its descendants, and <a href="https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes?obo_id=WBBT%3A0006803"><code>WBbt:00006803</code></a> for <i>Nucleus</i> and its descendants
               </td>
             </tr>
             <tr>
@@ -1126,7 +966,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
                 <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A7955"><code>"NCBITaxon:7955"</code></a><br>for <i>Danio rerio</i>
               </td>
               <td>
-                MUST be either an UBERON term or the most accurate descendant of<br><a href="https://www.ebi.ac.uk/ols4/ontologies/zfa/classes?obo_id=ZFA%3A0100000"><code>ZFA:0100000</code></a> for <i>zebrafish anatomical entity</i> excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/zfa/classes?obo_id=ZFA%3A0001093"><code>ZFA:0001093</code></a> for<br><i>unspecified</i> and <a href="https://www.ebi.ac.uk/ols4/ontologies/zfa/classes?obo_id=ZFA%3A0009000"><code>ZFA:0009000</code></a> for <i>cell</i> and its descendants
+                MUST be either the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0001062"><code>UBERON:0001062</code></a> for <i>anatomical entity</i> or the most accurate descendant of<br><a href="https://www.ebi.ac.uk/ols4/ontologies/zfa/classes?obo_id=ZFA%3A0100000"><code>ZFA:0100000</code></a> for <i>zebrafish anatomical entity</i> excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/zfa/classes?obo_id=ZFA%3A0001093"><code>ZFA:0001093</code></a> for<br><i>unspecified</i> and <a href="https://www.ebi.ac.uk/ols4/ontologies/zfa/classes?obo_id=ZFA%3A0009000"><code>ZFA:0009000</code></a> for <i>cell</i> and its descendants
               </td>
             </tr>
             <tr>
@@ -1134,12 +974,19 @@ Curators MUST annotate the following columns in the `obs` dataframe:
                 <a href="https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon/classes?obo_id=NCBITaxon%3A7227"><code>"NCBITaxon:7227"</code></a><br>for <i>Drosophila melanogaster</i>
               </td>
               <td>
-                MUST be either an UBERON term or the most accurate descendant of<br><a href="https://www.ebi.ac.uk/ols4/ontologies/fbbt/classes?obo_id=FBBT%3A10000000"><code>FBbt:10000000</code></a> for <i>anatomical entity</i> excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/fbbt/classes?obo_id=FBbt%3A00007002"><code>FBbt:00007002</code></a> for <i>cell</i><br>and its descendants
+                MUST be either the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0001062"><code>UBERON:0001062</code></a> for <i>anatomical entity</i> or the most accurate descendant of<br><a href="https://www.ebi.ac.uk/ols4/ontologies/fbbt/classes?obo_id=FBBT%3A10000000"><code>FBbt:10000000</code></a> for <i>anatomical entity</i> excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/fbbt/classes?obo_id=FBbt%3A00007002"><code>FBbt:00007002</code></a> for <i>cell</i><br>and its descendants
               </td>
-            </tr>    
+              </tr>    
+              <tr>
+              <td>
+                For all other organisms
+              </td>
+              <td>
+              MUST be the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0001062"><code>UBERON:0001062</code></a> for <i>anatomical entity</i>
+              </td>
+              </tr>
           </tbody>
         </table>
-        <br>For all other organisms, this MUST be the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0001062"><code>UBERON:0001062</code></a> for <i>anatomical entity</i>.
       </td>
   </tr>
 </tbody></table>
@@ -1158,7 +1005,13 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"tissue"</code>, <code>"organoid"</code>, or <code>"cell culture"</code>.
+        <td>categorical with <code>str</code> categories. This MUST be one of:
+          <ul>
+            <li><code>"cell line"</code></li>
+            <li><code>"organoid"</code></li>
+            <li><code>"primary cell culture"</code></li>
+            <li><code>"tissue"</code></li>
+         </ul>
     </tr>
 </tbody></table>
 <br>
@@ -1197,11 +1050,12 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if the value of <code>cell_type_ontology_term_id</code> is <code>"unknown"</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>cell_type_ontology_term_id</code>.
+        <td>categorical with <code>str</code> categories.<br><br>This MUST be <code>"na"</code> if the value of  <code>cell_type_ontology_term_id</code> is <code>"na"</code>.<br><br>This MUST be <code>"unknown"</code> if the value of  <code>cell_type_ontology_term_id</code> is <code>"unknown"</code>.<br><br>Otherwise, this MUST be the human-readable name assigned to the value of <code>cell_type_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
 <br>
+
 
 ### development_stage
 
@@ -1216,27 +1070,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if the value of <code>development_stage_ontology_term_id</code> is <code>"unknown"</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>development_stage_ontology_term_id</code>.
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
-### disease
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>disease</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>CELLxGENE Discover MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be one or more human-readable names for the terms in <code>disease_ontology_term_id</code> in the same order separated by the delimiter <code>" || "</code>.<br><br>
-        For example, if the value of <code>disease_ontology_term_id</code> is <code>"MONDO:0004604 || MONDO:0043004 || MONDO:0800349 || MONDO:1030008"</code> then the value MUST be <code>"Hodgkin's lymphoma, lymphocytic-histiocytic predominance || Weil's disease || atrial fibrillation, familial, 16 || mitral valve insufficiency"</code>.<br><br>
+        <td>categorical with <code>str</code> categories.<br><br>This MUST be <code>"na"</code> if the value of <code>development_stage_ontology_term_id</code> is <code>"na"</code>.<br><br>This MUST be <code>"unknown"</code> if the value of <code>development_stage_ontology_term_id</code> is <code>"unknown"</code>.<br><br>Otherwise, this MUST be the human-readable name assigned to the value of <code>development_stage_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -1294,26 +1128,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be <code>"unknown"</code> if the value of  <code>sex_ontology_term_id</code> is <code>"unknown"</code>; otherwise, this MUST be the human-readable name assigned to the value of <code>sex_ontology_term_id</code>.
-        </td>
-    </tr>
-</tbody></table>
-<br>
-
-### tissue
-
-<table><tbody>
-    <tr>
-      <th>Key</th>
-      <td>tissue</td>
-    </tr>
-    <tr>
-      <th>Annotator</th>
-      <td>CELLxGENE Discover MUST annotate.</td>
-    </tr>
-    <tr>
-      <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>tissue_ontology_term_id</code>.
+        <td>categorical with <code>str</code> categories.<br><br>This MUST be <code>"na"</code> if the value of  <code>sex_ontology_term_id</code> is <code>"na"</code>.<br><br>This MUST be <code>"unknown"</code> if the value of  <code>sex_ontology_term_id</code> is <code>"unknown"</code>.<br><br>Otherwise, this MUST be the human-readable name assigned to the value of <code>sex_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
@@ -1923,7 +1738,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
     <tr>
       <th>Value</th>
         <td>
-          This MUST be <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/6.0.0/schema.md"</code>.
+          This MUST be <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/7.0.0/schema.md"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -1947,7 +1762,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
     <tr>
       <th>Value</th>
         <td>
-          This MUST be <code>"6.0.0"</code>.
+          This MUST be <code>"7.0.0"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -2315,7 +2130,7 @@ From every processed fragments file asset, CELLxGENE Discover MUST generate <cod
 
 Chromosome Tables are determined by the reference assembly for the gene annotation versions pinned in this version of the schema. Only chromosomes or scaffolds that have at least one gene feature present are included.
 
-### <a href="https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_44/GRCh38.primary_assembly.genome.fa.gz">Human (GRCh38.p14)</a>
+### <a href="https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_48/GRCh38.primary_assembly.genome.fa.gz">Human (GRCh38.p14)</a>
 
 <table>
   <thead>
@@ -2515,7 +2330,7 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
     </tr>
 </tbody></table>
 
-### <a href="https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M33/GRCm39.primary_assembly.genome.fa.gz">Mouse (GRCm39)</a>
+### <a href="https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M37/GRCm39.primary_assembly.genome.fa.gz">Mouse (GRCm39)</a>
 
 <table>
   <thead>
@@ -2686,6 +2501,55 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
 ---
 
 ## Appendix A. Changelog
+
+### schema v7.0.0
+* General Requirements
+  * Integration Metadata
+    * Updated the requirements for prefixed ontology identifiers to address the Cellosaurus exception
+* Required Ontologies
+  * Added Cellosaurus release 52.0
+  * Updated HANCESTRO to release 2025-04-01
+* Required Gene Annotations
+  * Updated *Caenorhabditis elegans* to WBcel235 (GCA_000002985.3) Ensembl 114
+  * Updated *Callithrix jacchus* to mCalJac1.pat.X (GCA_011100555.1) Ensembl 114
+  * Updated *Danio rerio* to GRCz11 (GCA_000002035.4) Ensembl 114
+  * Updated *Drosophila melanogaster* to BDGP6.54 (GCA_000001215.4) Ensembl 114
+  * Updated *Gorilla gorilla gorilla* to gorGor4 (GCA_000151905.3) Ensembl 114
+  * Updated *Homo sapiens* to GENCODE v48 (GRCh38.p14) Ensembl 114
+  * Updated *Macaca fascicularis* to Macaca_fascicularis_6. (GCA_011100615.1) Ensembl 114
+  * Updated *Macaca mulatta* to Mmul_10 (GCA_003339765.3) Ensembl 114
+  * Updated *Microcebus murinus* to Mmur_3.0 (GCA_000165445.3) Ensembl 114
+  * Updated *Mus musculus* to GENCODE vM37 (GRCm39) Ensembl 114
+  * Updated *Oryctolagus cuniculus* to OryCun2.0 (GCA_000003625.1) Ensembl 114
+  * Updated *Pan troglodytes* to Pan_tro_3.0 (GCA_000001515.5) Ensembl 114
+  * Updated *Rattus norvegicus* to GRCr8 (GCA_036323735.1) Ensembl 114
+  * Updated *Sus scrofa* to Sscrofa11.1 (GCA_000003025.6) Ensembl 114
+* obs (Cell metadata)
+  * Updated the requirements for <code>cell_type</code> to require <code>"na"</code> when the <code>cell_type_ontology_term_id</code> is <code>"na"</code>
+  * Updated the requirements for <code>cell_type_ontology_term_id</code> to allow <code>"na"</code> when the <code>tissue_type</code> is <code>"cell line"</code>
+  * Updated the requirements for <code>development_stage</code> to require <code>"na"</code> when the <code>development_stage__ontology_term_id</code> is <code>"na"</code>
+  * Updated the requirements for <code>development_stage_ontology_term_id</code> to require <code>"na"</code> when the <code>tissue_type</code> is <code>"cell line"</code>
+  * Updated the requirements for <code>donor_id</code> to require <code>"na"</code> when the <code>tissue_type</code> is <code>"cell line"</code>
+  * Updated the requirements for <code>self_reported_ethnicity_ontology_term_id</code> to require <code>"na"</code> when the <code>tissue_type</code> is <code>"cell line"</code>
+  * Updated the requirements for <code>self_reported_ethnicity_ontology_term_id</code> to require HANCESTRO or AfPO terms that are descendants of <code>"HANCESTRO:0601"</code> for <i>ethnicity category</i> or <code>"HANCESTRO:0602"</code> for <i>geography-based population category</i>
+  * Updated the requirements for <code>sex</code> to require <code>"na"</code> when the <code>sex_ontology_term_id</code> is <code>"na"</code>
+  * Updated the requirements for <code>sex_ontology_term_id</code> to require <code>"na"</code> when the <code>tissue_type</code> is <code>"cell line"</code>
+  * Updated the requirements for <code>suspension_type</code>:
+    * Added Cel-seq
+    * Added Quartz-seq
+    * Deleted sci-RNA-seq
+    * Updated CEL-seq2 to CEL-seq2 and its descendants
+    * Updated SPLiT-seq to SPLiT-seq and its descendants
+    * Updated STRT-seq to STRT-seq and its descendants
+  * **Breaking change**. Updated the requirements for <code>tissue_ontology_term_id</code> to rename the <code>tissue_type</code> of <code>"cell culture"</code> to <code>"primary cell culture"</code>
+  * Updated the requirements for <code>tissue_ontology_term_id</code> to add the <code>tissue_type</code> of <code>"cell line"</code>
+  * Updated the requirements for <code>tissue_ontology_term_id</code> when the <code>tissue_type</code> is <code>"organoid"</code> 
+  * Updated the requirements for <code>tissue_ontology_term_id</code> for species with taxon specific ontologies to require the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=UBERON%3A0001062"><code>UBERON:0001062</code></a> for <i>anatomical entity</i> when the <code>tissue_type</code> is <code>"tissue"</code> or <code>"organoid"</code>
+  * **Breaking change**. Updated the requirements for <code>tissue_type</code> to rename <code>"cell culture"</code> to <code>"primary cell culture"</code>
+  * Added <code>"cell line"</code> to <code>tissue_type</code>
+* uns (Dataset Metadata)
+  * Updated `schema_reference` to <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/7.0.0/schema.md"</code>
+  * Updated `schema_version` to <code>"7.0.0"</code>
 
 ### schema v6.0.0
 
