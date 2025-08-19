@@ -174,7 +174,6 @@ def process_fragment(
     fragment_file: str,
     anndata_file: str,
     generate_index: bool = False,
-    override_write_algorithm: Optional[str] = None,
     output_file: Optional[str] = None,
 ) -> list[str]:
     """
@@ -188,14 +187,11 @@ def process_fragment(
     :param output_file: The output file to write the bgzip file to. If not provided, the output file will be the same
 
     """
-    if shutil.which("sort") is None:
-        raise RuntimeError(
-            "The 'sort' command is not installed or not found in PATH. It is required to sort the fragment file."
-        )
-    if shutil.which("bgzip") is None:
-        raise RuntimeError(
-            "The 'bgzip' command is not installed or not found in PATH. It is required to compress the fragment file."
-        )
+
+    # generate the index
+    if generate_index:
+        logger.info(f"Sorting fragment and generating index for {fragment_file}")
+        index_fragment(fragment_file, output_file)
 
     with tempfile.TemporaryDirectory() as tempdir:
         # quick checks
@@ -222,10 +218,6 @@ def process_fragment(
         else:
             logger.info("Fragment and Anndata file are valid")
 
-        # generate the index
-        if generate_index:
-            logger.info(f"Sorting fragment and generating index for {fragment_file}")
-            index_fragment(fragment_file, output_file)
     logger.debug("cleaning up")
     return []
 
