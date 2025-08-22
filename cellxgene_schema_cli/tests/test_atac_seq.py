@@ -54,7 +54,7 @@ def mock_anndata_file(tmpdir):
     return anndata_file
 
 
-def create_test_fragment_file(tmpdir, filename, lines):
+def create_test_fragment_file(tmpdir, filename, lines) -> str:
     """Helper to create a gzip fragment file with specified content."""
     file_path = os.path.join(tmpdir, filename)
     with gzip.open(file_path, "wt") as f:
@@ -555,20 +555,16 @@ class TestIndexFragmentWithLineCountValidation:
         output_file = os.path.join(tmpdir, "output.bgz")
 
         # Mock write function to produce different line count (1 line instead of 2)
-        def mock_write_func(_input_file, output_file):
+        def mock_prepare_fragment(_input_file, output_file):
             with pysam.libcbgzf.BGZFile(output_file, mode="wb") as f_out:
                 f_out.write(f"chr1\t100\t200\t{TEST_BARCODE}\t5\n".encode())  # Only one line instead of two
 
         # Act & Assert
         with (
-            mock.patch("cellxgene_schema.atac_seq.write_bgzip_pysam", side_effect=mock_write_func),
+            mock.patch("cellxgene_schema.atac_seq.prepare_fragment", side_effect=mock_prepare_fragment),
             pytest.raises(ValueError, match="Line count validation failed"),
         ):
-            parquet_file = atac_seq.convert_to_parquet(test_fragment_file, str(tmpdir))
             atac_seq.index_fragment(
-                organism_ontology_term_id="NCBITaxon:9606",
                 fragment_file=test_fragment_file,
-                parquet_file=parquet_file,
-                tempdir=str(tmpdir),
                 output_file=output_file,
             )
