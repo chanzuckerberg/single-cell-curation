@@ -555,7 +555,7 @@ class TestIndexFragmentWithLineCountValidation:
         output_file = os.path.join(tmpdir, "output.bgz")
 
         # Mock write function to produce different line count (1 line instead of 2)
-        def mock_write_func(input_file, output_file):
+        def mock_write_func(_input_file, output_file):
             with pysam.libcbgzf.BGZFile(output_file, mode="wb") as f_out:
                 f_out.write(f"chr1\t100\t200\t{TEST_BARCODE}\t5\n".encode())  # Only one line instead of two
 
