@@ -1,8 +1,10 @@
+import gzip
 import logging
 import os
 import shutil
 import subprocess
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Optional
 
@@ -133,6 +135,20 @@ def log_calls(func):
         return func(*args, **kwargs)
 
     return wrapper
+
+
+def count_lines_in_compressed_file(file_path: str) -> int:
+    """
+    Count lines in a compressed file (gzip or bgzip).
+
+    :param file_path: Path to the compressed file
+    :return: Number of lines in the file
+    """
+    line_count = 0
+    with gzip.open(file_path, "rt") as f:
+        for _ in f:
+            line_count += 1
+    return line_count
 
 
 def is_atac(x: str) -> str:
@@ -391,6 +407,24 @@ def index_fragment(
     pysam.tabix_index(bgzip_output_file, preset="bed", force=True)
     tabix_output_file = bgzip_output_file + ".tbi"
     logger.info(f"Index file generated: {tabix_output_file}")
+
+    # Validate line count between original and output files
+    logger.info("Validating line count between original and output files")
+
+    # Count lines in parallel to reduce processing time for large files
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        original_future = executor.submit(count_lines_in_compressed_file, fragment_file)
+        output_future = executor.submit(count_lines_in_compressed_file, bgzip_output_file)
+
+        original_line_count = original_future.result()
+        output_line_count = output_future.result()
+
+    if original_line_count != output_line_count:
+        error_msg = f"Line count validation failed: original file has {original_line_count} lines, output file has {output_line_count} lines"
+        logger.error(error_msg)
+        raise ValueError(error_msg)
+
+    logger.info(f"Line count validation passed: {original_line_count} lines in both original and output files")
 
 
 def prepare_fragment(

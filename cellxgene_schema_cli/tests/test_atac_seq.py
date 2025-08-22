@@ -1,3 +1,4 @@
+import gzip
 import os
 from pathlib import Path
 from unittest import mock
@@ -9,6 +10,10 @@ import pysam
 import pytest
 from cellxgene_schema import atac_seq
 from fixtures.examples_validate import FIXTURES_ROOT
+
+# Test constants
+EXPECTED_LINE_COUNT = 37249
+TEST_BARCODE = "AAACAAACATTTTATCC-1"
 
 
 @pytest.fixture
@@ -23,6 +28,39 @@ def atac_fragment_index_file_path(atac_fragment_bgzip_file_path) -> Path:
     index_file = Path(str(atac_fragment_bgzip_file_path) + ".tbi")
     yield index_file
     index_file.unlink(missing_ok=True)
+
+
+@pytest.fixture
+def test_fragment_files():
+    """Returns paths to test fragment files."""
+    return {
+        "gzip": os.path.join(FIXTURES_ROOT, "atac_seq", "fragments.tsv.gz"),
+        "bgzip": os.path.join(FIXTURES_ROOT, "atac_seq", "fragments.tsv.bgz"),
+        "anndata": os.path.join(FIXTURES_ROOT, "atac_seq", "small_atac_seq.h5ad"),
+    }
+
+
+@pytest.fixture
+def mock_anndata_file(tmpdir):
+    """Create a mock anndata file for testing."""
+    adata = ad.AnnData(
+        obs=pd.DataFrame({"assay_ontology_term_id": ["EFO:0030059"], "is_primary_data": [True]}, index=[TEST_BARCODE]),
+        var=pd.DataFrame(index=["GENE1"]),
+    )
+    adata.uns["organism_ontology_term_id"] = "NCBITaxon:9606"
+
+    anndata_file = os.path.join(tmpdir, "test.h5ad")
+    adata.write(anndata_file)
+    return anndata_file
+
+
+def create_test_fragment_file(tmpdir, filename, lines) -> str:
+    """Helper to create a gzip fragment file with specified content."""
+    file_path = os.path.join(tmpdir, filename)
+    with gzip.open(file_path, "wt") as f:
+        for line in lines:
+            f.write(line)
+    return file_path
 
 
 def to_anndata_file(adata: ad.AnnData, path: str) -> str:
@@ -424,3 +462,109 @@ class TestGetOutputFile:
     )
     def test_none(self, fragment_file, output_file, expected):
         assert atac_seq.get_output_file(fragment_file, output_file) == expected
+
+
+class TestCountLinesInCompressedFile:
+    def test_count_lines_gzip_file(self, test_fragment_files):
+        """Test counting lines in a gzip compressed fragment file."""
+        # Arrange
+        fragment_file = test_fragment_files["gzip"]
+
+        # Act
+        line_count = atac_seq.count_lines_in_compressed_file(fragment_file)
+
+        # Assert
+        assert line_count == EXPECTED_LINE_COUNT
+
+    def test_count_lines_bgzip_file(self, test_fragment_files):
+        """Test counting lines in a bgzip compressed fragment file."""
+        # Arrange
+        fragment_file = test_fragment_files["bgzip"]
+
+        # Act
+        line_count = atac_seq.count_lines_in_compressed_file(fragment_file)
+
+        # Assert
+        assert line_count == EXPECTED_LINE_COUNT
+
+    def test_count_lines_empty_file(self, tmpdir):
+        """Test counting lines in an empty gzip file."""
+        # Arrange
+        empty_file = create_test_fragment_file(tmpdir, "empty.tsv.gz", [])
+
+        # Act
+        line_count = atac_seq.count_lines_in_compressed_file(empty_file)
+
+        # Assert
+        assert line_count == 0
+
+    def test_count_lines_single_line_file(self, tmpdir):
+        """Test counting lines in a single-line gzip file."""
+        # Arrange
+        lines = ["chr1\t100\t200\tbarcode1\t5\n"]
+        single_line_file = create_test_fragment_file(tmpdir, "single.tsv.gz", lines)
+
+        # Act
+        line_count = atac_seq.count_lines_in_compressed_file(single_line_file)
+
+        # Assert
+        assert line_count == 1
+
+    def test_count_lines_nonexistent_file(self):
+        """Test handling of non-existent file."""
+        # Arrange
+        nonexistent_file = "/nonexistent/file.gz"
+
+        # Act & Assert
+        with pytest.raises(FileNotFoundError):
+            atac_seq.count_lines_in_compressed_file(nonexistent_file)
+
+
+class TestIndexFragmentWithLineCountValidation:
+    def test_line_count_validation_success(
+        self, test_fragment_files, atac_fragment_bgzip_file_path, atac_fragment_index_file_path
+    ):
+        """Test that line count validation passes when input and output have same line count."""
+        # Arrange
+        anndata_file = test_fragment_files["anndata"]
+        fragment_file = test_fragment_files["gzip"]
+
+        # Act
+        result = atac_seq.process_fragment(
+            fragment_file,
+            anndata_file,
+            generate_index=True,
+            output_file=str(atac_fragment_bgzip_file_path),
+        )
+
+        # Assert
+        assert len(result) == 0
+        assert atac_fragment_bgzip_file_path.exists()
+        assert atac_fragment_index_file_path.exists()
+
+        # Verify line counts are equal
+        original_count = atac_seq.count_lines_in_compressed_file(fragment_file)
+        output_count = atac_seq.count_lines_in_compressed_file(str(atac_fragment_bgzip_file_path))
+        assert original_count == output_count == EXPECTED_LINE_COUNT
+
+    def test_line_count_validation_failure(self, tmpdir, mock_anndata_file):
+        """Test that line count validation fails when counts don't match."""
+        # Arrange
+        test_lines = [f"chr1\t100\t200\t{TEST_BARCODE}\t5\n", f"chr1\t300\t400\t{TEST_BARCODE}\t3\n"]
+        test_fragment_file = create_test_fragment_file(tmpdir, "test_fragments.tsv.gz", test_lines)
+        output_file = os.path.join(tmpdir, "output.bgz")
+
+        # Mock write function to produce different line count (1 line instead of 2)
+        def mock_prepare_fragment(_input_file, output_file):
+            with pysam.libcbgzf.BGZFile(output_file, mode="wb") as f_out:
+                f_out.write(f"chr1\t100\t200\t{TEST_BARCODE}\t5\n".encode())  # Only one line instead of two
+
+        # Act & Assert
+        with (
+            mock.patch("cellxgene_schema.atac_seq.prepare_fragment", side_effect=mock_prepare_fragment),
+            pytest.raises(ValueError, match="Line count validation failed"),
+        ):
+            atac_seq.index_fragment(
+                fragment_file=test_fragment_file,
+                output_file=output_file,
+            )
