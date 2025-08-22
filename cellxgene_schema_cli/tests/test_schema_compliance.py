@@ -1418,9 +1418,9 @@ class TestObs:
         validator.validate_adata()
         assert "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not an allowed term id." in validator.errors[0]
 
-    def test_tissue_type(self, validator_with_adata):
+    def test_tissue_type__invalid(self, validator_with_adata):
         """
-        tissue_type must be one of 'primary cell culture', 'tissue', 'organoid', or 'cell line
+        tissue_type must be one of 'primary cell culture', 'tissue', 'organoid', or 'cell line'
         """
         validator = validator_with_adata
         obs = validator.adata.obs
@@ -2964,12 +2964,13 @@ class TestZebrafish:
 
     @pytest.mark.parametrize(
         "tissue_type",
-        ["tissue", "primary cell culture", "organoid"],
+        ["tissue", "organoid"],
     )
     def test_organism_tissue_type_valid(self, validator_with_zebrafish_adata, tissue_type):
         validator = validator_with_zebrafish_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "tissue_type"] = tissue_type
+        validator.validate_adata()
         assert not validator.errors
 
     @pytest.mark.parametrize(
@@ -3187,12 +3188,13 @@ class TestFruitFly:
 
     @pytest.mark.parametrize(
         "tissue_type",
-        ["tissue", "primary cell culture", "organoid"],
+        ["tissue", "organoid"],
     )
     def test_organism_tissue_type_valid(self, validator_with_fruitfly_adata, tissue_type):
         validator = validator_with_fruitfly_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "tissue_type"] = tissue_type
+        validator.validate_adata()
         assert not validator.errors
 
     @pytest.mark.parametrize(
@@ -3422,12 +3424,13 @@ class TestRoundworm:
 
     @pytest.mark.parametrize(
         "tissue_type",
-        ["tissue", "primary cell culture", "organoid"],
+        ["tissue", "organoid"],
     )
     def test_organism_tissue_type_valid(self, validator_with_roundworm_adata, tissue_type):
         validator = validator_with_roundworm_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "tissue_type"] = tissue_type
+        validator.validate_adata()
         assert not validator.errors
 
     @pytest.mark.parametrize(
