@@ -1076,6 +1076,26 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
 </tbody></table>
 <br>
 
+### disease
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>disease</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>CELLxGENE Discover MUST annotate.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. This MUST be one or more human-readable names for the terms in <code>disease_ontology_term_id</code> in the same order separated by the delimiter <code>" || "</code>.<br><br>
+        For example, if the value of <code>disease_ontology_term_id</code> is <code>"MONDO:0004604 || MONDO:0043004 || MONDO:0800349 || MONDO:1030008"</code> then the value MUST be <code>"Hodgkin's lymphoma, lymphocytic-histiocytic predominance || Weil's disease || atrial fibrillation, familial, 16 || mitral valve insufficiency"</code>.<br><br>
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
 When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observation identifier for each cell. Curators MUST NOT annotate the following column.
 
 ### observation_joinid
@@ -1129,6 +1149,25 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
     <tr>
       <th>Value</th>
         <td>categorical with <code>str</code> categories.<br><br>This MUST be <code>"na"</code> if the value of  <code>sex_ontology_term_id</code> is <code>"na"</code>.<br><br>This MUST be <code>"unknown"</code> if the value of  <code>sex_ontology_term_id</code> is <code>"unknown"</code>.<br><br>Otherwise, this MUST be the human-readable name assigned to the value of <code>sex_ontology_term_id</code>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+### tissue
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>tissue</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>CELLxGENE Discover MUST annotate.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. This MUST be the human-readable name assigned to the value of <code>tissue_ontology_term_id</code>.
         </td>
     </tr>
 </tbody></table>
