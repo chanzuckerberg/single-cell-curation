@@ -2705,8 +2705,7 @@ class TestAddingLabels:
             - sex. categorical with str categories. This MUST be "unknown" if set in sex_ontology_term_id;
             otherwise, this MUST be the human-readable name assigned to the value of sex_ontology_term_id.
             - tissue. categorical with str categories. This MUST be the human-readable name assigned to the
-            value of tissue_ontology_term_id. " (cell culture)" or " (organoid)" MUST
-            be appended if present in tissue_ontology_term_id.
+            value of tissue_ontology_term_id.
         """
         expected_column = adata_with_labels.obs[column]
         obtained_column = label_writer.adata.obs[column]
@@ -2976,7 +2975,7 @@ class TestZebrafish:
     @pytest.mark.parametrize(
         "tissue_ontology_term_id",
         [
-            "CL:4023077",  # valid CL term for cell culture
+            "CL:4023077",  # valid CL term for primary cell culture
             "ZFA:0000003",  # valid ZFA term
         ],
     )
@@ -3199,7 +3198,7 @@ class TestFruitFly:
     @pytest.mark.parametrize(
         "tissue_ontology_term_id",
         [
-            "CL:4023077",  # valid CL term for cell culture
+            "CL:4023077",  # valid CL term for primary cell culture
             "FBbt:00049192",  # valid FBbt term
         ],
     )
@@ -3457,7 +3456,7 @@ class TestRoundworm:
     @pytest.mark.parametrize(
         "tissue_ontology_term_id",
         [
-            "CL:4023077",  # valid CL term for cell culture
+            "CL:4023077",  # valid CL term for primary cell culture
             "WBbt:0005762",  # valid WBbt term
         ],
     )
