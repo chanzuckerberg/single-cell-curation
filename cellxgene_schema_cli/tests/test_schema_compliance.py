@@ -1029,7 +1029,7 @@ class TestObs:
 
     def test_tissue_ontology_term_id__embryo(self, validator_with_adata):
         """
-        Test 'UBERON:0000922' tissue_ontology_term_id is invalid valid if tissue_type is 'organoid'
+        Test 'UBERON:0000922' tissue_ontology_term_id is invalid if tissue_type is 'organoid'
         """
         validator = validator_with_adata
         obs = validator.adata.obs
