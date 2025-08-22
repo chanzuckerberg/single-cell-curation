@@ -522,7 +522,7 @@ class Validator:
             }
             always_allowed_prefix = "UBERON"
 
-            if row[tissue_type_column] == "cell culture":
+            if row[tissue_type_column] == "primary cell culture":
                 if row[tissue_column] == "unknown":
                     return True
                 else:
@@ -541,7 +541,7 @@ class Validator:
                     "If organism is NCBITaxon:6239, it can be a valid UBERON term or a valid WBbt term. "
                     "If organism is NCBITaxon:7955, it can be a valid UBERON term or a valid ZFA term. "
                     "If organism is NCBITaxon:7227, it can be a valid UBERON term or a valid FBbt term. "
-                    "When tissue_type is cell culture, tissue_ontology_term_id must follow the validation rules for "
+                    "When tissue_type is primary cell culture, tissue_ontology_term_id must follow the validation rules for "
                     "cell_type_ontology_term_id."
                 )
         except Exception as e:
