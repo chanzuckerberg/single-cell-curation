@@ -879,7 +879,7 @@ class TestObs:
         ] = "na"
         validator.validate_adata()
         assert (
-            "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is not a valid ontology term id of 'UBERON'. When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition, 'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105' excluding 'UBERON:0000071', or unknown."
+            "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is not a valid ontology term id of 'UBERON'. When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition, 'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105' excluding 'UBERON:0000071', 'na', or unknown."
             in validator.errors
         )
 
@@ -894,7 +894,7 @@ class TestObs:
         ] = "na"
         validator.validate_adata()
         assert (
-            "ERROR: 'UBERON:0000071' in 'development_stage_ontology_term_id' is not allowed. When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition, 'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105' excluding 'UBERON:0000071', or unknown."
+            "ERROR: 'UBERON:0000071' in 'development_stage_ontology_term_id' is not allowed. When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition, 'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105' excluding 'UBERON:0000071', 'na', or unknown."
             in validator.errors
         )
 
@@ -2754,6 +2754,37 @@ class TestAddingLabels:
         label_writer._remove_categories_with_zero_values()
         case.assertCountEqual(label_writer.adata.obs["donor_id"].dtype.categories, ["donor_1"])
 
+    @pytest.mark.parametrize(
+        "development_stage_ontology_term_id,development_stage,errors",
+        [
+            (
+                "na",  # development_stage_ontology_term_id correctly set to "na"
+                "na",  # development_stage correctly set to "na" based on "na" value of development_stage_ontology_term_id
+                [],
+            ),
+            (
+                "HsapDv:0000003",  # valid development_stage_ontology_term_id for non cell line
+                "Carnegie stage 01",
+                [
+                    "ERROR: 'HsapDv:0000003' in 'development_stage_ontology_term_id' is not a valid value of 'development_stage_ontology_term_id'. When 'tissue_type' is 'cell line', 'development_stage_ontology_term_id' MUST be 'na'."
+                ],
+            ),
+        ],
+    )
+    def test_cell_line_development_stage_ontology_term_id(
+        self, validator_with_adata, development_stage_ontology_term_id, development_stage, errors
+    ):
+        obs = validator_with_adata.adata.obs
+        obs.loc[obs.index[0], "tissue_type"] = "cell line"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = development_stage_ontology_term_id
+        validator_with_adata.validate_adata()
+        assert validator_with_adata.errors == errors
+
+        labeler = AnnDataLabelAppender(validator_with_adata.adata)
+        labeler._add_labels()
+        labeled_obs = labeler.adata.obs
+        assert labeled_obs.loc[labeled_obs.index[0], "development_stage_ontology_term_id"] == development_stage
+
 
 class TestZebrafish:
     """
@@ -2869,7 +2900,7 @@ class TestZebrafish:
         zebrafish_error_message_suffix = (
             "When 'organism_ontology_term_id' is 'NCBITaxon:7955' (Danio rerio), "
             "'development_stage_ontology_term_id' MUST be the most accurate descendant of 'ZFS:0100000' and it "
-            "MUST NOT be 'ZFS:0000000' for Unknown. The str 'unknown' is acceptable."
+            "MUST NOT be 'ZFS:0000000' for Unknown. The str 'unknown' or 'na' is acceptable."
         )
         validator = validator_with_zebrafish_adata
         obs = validator.adata.obs
