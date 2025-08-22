@@ -2783,7 +2783,7 @@ class TestAddingLabels:
         labeler = AnnDataLabelAppender(validator_with_adata.adata)
         labeler._add_labels()
         labeled_obs = labeler.adata.obs
-        assert labeled_obs.loc[labeled_obs.index[0], "development_stage_ontology_term_id"] == development_stage
+        assert labeled_obs.loc[labeled_obs.index[0], "development_stage"] == development_stage
 
 
 class TestZebrafish:
