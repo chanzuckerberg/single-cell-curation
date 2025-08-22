@@ -1,8 +1,9 @@
+import gzip
 import logging
-import os
 import shutil
 import subprocess
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Optional
 
@@ -12,10 +13,11 @@ import ibis
 import pyarrow as pa
 import pyarrow.csv
 import pyarrow.dataset
+import pyarrow.parquet
 import pysam
 
 from .ontology_parser import ONTOLOGY_PARSER
-from .utils import GB, is_ontological_descendant_of
+from .utils import GB, get_chunks, is_ontological_descendant_of
 
 logger = logging.getLogger(__name__)
 
@@ -135,6 +137,20 @@ def log_calls(func):
     return wrapper
 
 
+def count_lines_in_compressed_file(file_path: str) -> int:
+    """
+    Count lines in a compressed file (gzip or bgzip).
+
+    :param file_path: Path to the compressed file
+    :return: Number of lines in the file
+    """
+    line_count = 0
+    with gzip.open(file_path, "rt") as f:
+        for _ in f:
+            line_count += 1
+    return line_count
+
+
 def is_atac(x: str) -> str:
     if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0010891"):
         if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0008913"):
@@ -174,6 +190,7 @@ def process_fragment(
     fragment_file: str,
     anndata_file: str,
     generate_index: bool = False,
+    override_write_algorithm: Optional[str] = None,
     output_file: Optional[str] = None,
 ) -> list[str]:
     """
@@ -187,7 +204,6 @@ def process_fragment(
     :param output_file: The output file to write the bgzip file to. If not provided, the output file will be the same
 
     """
-
     with tempfile.TemporaryDirectory() as tempdir:
         # quick checks
         errors = validate_anndata(anndata_file)
@@ -213,11 +229,12 @@ def process_fragment(
         else:
             logger.info("Fragment and Anndata file are valid")
 
-    # generate the index
-    if generate_index:
-        logger.info(f"Sorting fragment and generating index for {fragment_file}")
-        index_fragment(fragment_file, output_file)
-
+        # generate the index
+        if generate_index:
+            logger.info(f"Sorting fragment and generating index for {fragment_file}")
+            index_fragment(
+                organism_ontology_term_id, fragment_file, parquet_file, tempdir, override_write_algorithm, output_file
+            )
     logger.debug("cleaning up")
     return []
 
@@ -378,71 +395,136 @@ def get_output_file(fragment_file: str, output_file: Optional[str]) -> str:
 
 
 def index_fragment(
+    organism_ontology_term_id: str,
     fragment_file: str,
+    parquet_file: str,
+    tempdir: str,
+    override_write_algorithm: Optional[str] = None,
     output_file: Optional[str] = None,
 ):
     # sort the fragment by chromosome, start coordinate, and stop coordinate, then compress it with bgzip
     bgzip_output_file = get_output_file(fragment_file, output_file)
     bgzip_output_path = Path(bgzip_output_file)
     bgzip_output_path.unlink(missing_ok=True)
+    bgzip_output_path.touch()
 
-    prepare_fragment(fragment_file, bgzip_output_file)
+    if override_write_algorithm:
+        write_algorithm = write_algorithm_by_callable[override_write_algorithm]
+    elif not shutil.which("bgzip"):  # check if bgzip cli is installed
+        logger.warning("bgzip is not installed, using slower pysam implementation")
+        write_algorithm = write_algorithm_by_callable["pysam"]
+    else:
+        write_algorithm = write_algorithm_by_callable["cli"]
+
+    chromosomes = detect_chromosomes(parquet_file)
+    prepare_fragment(chromosomes, organism_ontology_term_id, parquet_file, bgzip_output_file, tempdir, write_algorithm)
     logger.info(f"Fragment sorted and compressed: {bgzip_output_file}")
+    #
     pysam.tabix_index(bgzip_output_file, preset="bed", force=True)
     tabix_output_file = bgzip_output_file + ".tbi"
     logger.info(f"Index file generated: {tabix_output_file}")
 
+    # Validate line count between original and output files
+    logger.info("Validating line count between original and output files")
+
+    # Count lines in parallel to reduce processing time for large files
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        original_future = executor.submit(count_lines_in_compressed_file, fragment_file)
+        output_future = executor.submit(count_lines_in_compressed_file, bgzip_output_file)
+
+        original_line_count = original_future.result()
+        output_line_count = output_future.result()
+
+    if original_line_count != output_line_count:
+        error_msg = f"Line count validation failed: original file has {original_line_count} lines, output file has {output_line_count} lines"
+        logger.error(error_msg)
+        raise ValueError(error_msg)
+
+    logger.info(f"Line count validation passed: {original_line_count} lines in both original and output files")
+
+
+def sort_fragment(parquet_file: str, write_path: str, chromosome: str, start: int, stop: int) -> Path:
+    temp_data = Path(write_path) / f"temp_{chromosome}.parquet"
+    t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
+    (
+        t.filter(t["chromosome"] == chromosome, t["start coordinate"] >= start, t["start coordinate"] <= stop)
+        .order_by(["start coordinate", "stop coordinate"])
+        .to_parquet(temp_data)
+    )
+    return temp_data
+
+
+def buffered_write(input_file: str) -> iter:
+    # Open the Parquet file and iterate through record batches
+    pfile = pa.parquet.ParquetFile(input_file)
+    for record_batch in pfile.iter_batches():
+        # Write the batch to an in-memory buffer
+        csv_buffer = pa.BufferOutputStream()
+        pa.csv.write_csv(
+            # Make sure columns are in right order
+            record_batch.select([f.name for f in schema]),
+            csv_buffer,
+            write_options=pa.csv.WriteOptions(
+                include_header=False,
+                delimiter="\t",
+                batch_size=1_000_000_000,  # this value could be further optimized
+                quoting_style="none",
+            ),
+        )
+        yield csv_buffer.getvalue().to_pybytes()
+
+
+def write_bgzip_pysam(input_file: str, bgzip_output_file: str):
+    with pysam.libcbgzf.BGZFile(bgzip_output_file, mode="ab") as f_out:
+        for data in buffered_write(input_file):
+            f_out.write(data)
+
+
+def write_bgzip_cli(input_file: str, bgzip_output_file: str):
+    with (
+        subprocess.Popen(
+            ["bgzip", "--threads", "-c"], stdin=subprocess.PIPE, stdout=open(bgzip_output_file, "ab")
+        ) as proc,
+    ):
+        for data in buffered_write(input_file):
+            proc.stdin.write(data)
+    return_code = proc.wait()
+    if return_code != 0:
+        logger.error(f"Subprocess exited with error code {return_code}")
+
+
+write_algorithm_by_callable = {"pysam": write_bgzip_pysam, "cli": write_bgzip_cli}
+
 
 def prepare_fragment(
-    fragment_file: str,
+    chromosomes: list[str],
+    organism_ontology_term_id: str,
+    parquet_file: str,
     bgzip_output_file: str,
+    tempdir: str,
+    write_algorithm: callable,
 ) -> None:
     """
     The sorting and writing of the fragment is done for each chromosome. Because of this the write order of
     the chromosomes may not be preserved. The chromosomes will all be stored in contiguous blocks in the bgzip file, and
     and sorted by start and stop coordinate within each chromosome.
-    :param fragment_file: The fragment file to process. This is a gzipped compressed fragment file.
-    :param bgzip_output_file: The output file to write the bgzip file to.
+
+    :param chromosomes:
+    :param parquet_file:
+    :param bgzip_output_file:
+    :param tempdir:
+    :param write_algorithm:
     :return:
     """
-
-    if shutil.which("sort") is None:
-        raise RuntimeError(
-            "The 'sort' command is not installed or not found in PATH. It is required to sort the fragment file."
-        )
-    if shutil.which("bgzip") is None:
-        raise RuntimeError(
-            "The 'bgzip' command is not installed or not found in PATH. It is required to compress the fragment file."
-        )
-    if shutil.which("pigz") is None:
-        raise RuntimeError(
-            "The 'pigz' command is not installed or not found in PATH. It is required to compress the fragment file."
-        )
-
-    num_cores = os.cpu_count()
-
-    with open(bgzip_output_file, "wb") as out_f:
-        gzip_proc = subprocess.Popen(["gzip", "-dc", fragment_file], stdout=subprocess.PIPE)
-        sort_proc = subprocess.Popen(
-            [
-                "sort",
-                f"--parallel={num_cores}",
-                "-t",
-                "\t",
-                "-k1,1",
-                "-k2,2n",
-                "-k3,3n",
-                "-S 40%",
-                '--compress-program="pigz -p {num_cores}"',
-            ],
-            stdin=gzip_proc.stdout,
-            stdout=subprocess.PIPE,
-            env={**os.environ, "LC_ALL": "C"},
-        )
-        gzip_proc.stdout.close()
-        bgzip_proc = subprocess.Popen(["bgzip", f"--threads={num_cores}", "-c"], stdin=sort_proc.stdout, stdout=out_f)
-        sort_proc.stdout.close()
-        bgzip_proc.wait()
-    if bgzip_proc.returncode != 0:
-        raise RuntimeError(f"bgzip compression failed with error code {bgzip_proc.returncode}")
+    step_size = 1000  # 10 million
+    for chromosome in chromosomes:
+        chromosome_table = organism_ontology_term_id_by_chromosome_length_table.get(organism_ontology_term_id)
+        chromosome_length = chromosome_table[chromosome]
+        chunks = get_chunks(step_size=step_size, total_size=chromosome_length)
+        temp_data = None
+        for chunk_start, chunk_end in chunks:
+            logger.info(f"Processing chromosome: {chromosome}, range: {chunk_start}-{chunk_end}")
+            temp_data = sort_fragment(parquet_file, tempdir, chromosome, chunk_start, chunk_end)
+            write_algorithm(temp_data, bgzip_output_file)
+        Path(temp_data).unlink(missing_ok=True)  # clean up temporary file
     logger.info(f"bgzip compression completed successfully for {bgzip_output_file}")
