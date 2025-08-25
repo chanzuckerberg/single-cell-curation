@@ -1846,7 +1846,7 @@ class TestVar:
             f"ERROR: Could not infer organism from feature ID 'ENSEBML_NOGENE' "
             f"in '{component_name}', make sure it is a valid ID.",
             f"ERROR: Could not infer organism from feature ID 'INVALID_GENE_ID' "
-            f"in '{component_name}', make sure it is a valid ID."
+            f"in '{component_name}', make sure it is a valid ID.",
         ]
 
     @pytest.mark.parametrize("component_name", ["var", "raw.var"])
