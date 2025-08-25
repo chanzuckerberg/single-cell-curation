@@ -454,7 +454,7 @@ def prepare_fragment(
         )
 
     num_cores = os.cpu_count()
-
+    sort_memory = 70 // num_cores
     with open(bgzip_output_file, "wb") as out_f:
         gzip_proc = subprocess.Popen(["gzip", "-dc", fragment_file], stdout=subprocess.PIPE)
         sort_proc = subprocess.Popen(
@@ -466,7 +466,8 @@ def prepare_fragment(
                 "-k1,1",
                 "-k2,2n",
                 "-k3,3n",
-                "-S 40%",
+                "-k4,4",
+                f"-S {sort_memory}%",
                 '--compress-program="pigz -p {num_cores}"',
             ],
             stdin=gzip_proc.stdout,
