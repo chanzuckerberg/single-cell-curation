@@ -465,7 +465,7 @@ class Validator:
                     f"Could not infer organism from feature ID '{feature_id}' in '{df_name}', "
                     f"make sure it is a valid ID."
                 )
-                return
+                continue
             else:
                 organism_ontology_id = organism.value
 
