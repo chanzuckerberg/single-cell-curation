@@ -1830,18 +1830,22 @@ class TestVar:
         """
         feature_id (var.index) str.
 
-        This tests the case of an ID with an incorrect format "ENSEBML_NOGENE"
+        This tests the case of an ID with an incorrect format where you can't infer the organism
+        from the ID.
         """
         validator = validator_with_adata
         component = getattr_anndata(validator.adata, component_name)
 
         new_index = list(component.index)
         new_index[0] = "ENSEBML_NOGENE"
+        new_index[1] = "INVALID_GENE_ID"
         component.set_index(pd.Index(new_index), inplace=True)
 
         validator.validate_adata()
         assert validator.errors == [
             f"ERROR: Could not infer organism from feature ID 'ENSEBML_NOGENE' "
+            f"in '{component_name}', make sure it is a valid ID.",
+            f"ERROR: Could not infer organism from feature ID 'INVALID_GENE_ID' "
             f"in '{component_name}', make sure it is a valid ID."
         ]
 
