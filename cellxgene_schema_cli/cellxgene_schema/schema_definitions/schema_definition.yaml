@@ -566,6 +566,33 @@ components:
               exceptions:
                 - unknown
                 - na
+          - # If organism is none of the above
+            rule:
+                uns_key: organism_ontology_term_id
+                exclude_ancestors_inclusive:
+                  ancestors:
+                    - NCBITaxon:10090
+                exclude_exact:
+                  terms:
+                    - NCBITaxon:6239
+                    - NCBITaxon:7955
+                    - NCBITaxon:7227
+                    - NCBITaxon:9606
+            error_message_suffix: >-
+              When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition, 'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105' excluding 'UBERON:0000071' or unknown.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - UBERON
+              allowed:
+                ancestors:
+                  UBERON:
+                    - UBERON:0000105
+              exceptions:
+                - unknown
+              forbidden:
+                terms:
+                  - UBERON:0000071
           - # If tissue_type is "cell line", development_stage_ontology_term_id must be "na"
             rule:
               column: tissue_type
@@ -580,22 +607,29 @@ components:
                 - NA
               exceptions:
                 - na
-        # If organism is none of the above
-        error_message_suffix: >-
-          When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition, 'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105' excluding 'UBERON:0000071', 'na', or unknown.
-        curie_constraints:
-          ontologies:
-            - UBERON
-          allowed:
-            ancestors:
-              UBERON:
-                - UBERON:0000105
-          exceptions:
-            - unknown
-            - na
-          forbidden:
-            terms:
-              - UBERON:0000071
+          - # If tissue_type is not "cell line", development_stage_ontology_term_id cannot be "na"
+            rule:
+              column: tissue_type
+              exclude_exact:
+                terms:
+                  - cell line
+            error_message_suffix: >-
+              When 'tissue_type' is not 'cell line', 'development_stage_ontology_term_id' cannot be 'na'.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - UBERON
+                - HsapDv
+                - MmusDv
+                - ZFA
+                - ZFS
+                - FBdv
+                - WBls
+              exceptions:
+                - unknown
+              forbidden:
+                terms:
+                  - na
         add_labels:
           - type: curie
             to_column: development_stage

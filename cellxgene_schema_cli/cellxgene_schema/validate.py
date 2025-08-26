@@ -400,6 +400,7 @@ class Validator:
 
         :rtype None
         """
+        
         # Check if term_id is forbidden by schema definition. Sometimes, these are also invalid ontology
         # terms, but it's preferred to report these as "not allowed" terms rather than "invalid ontology terms"
         if "forbidden" in curie_constraints:
@@ -750,13 +751,19 @@ class Validator:
         Validates subset of columns based on dependencies, e.g., if a column like 'development_stage_ontology_term_id'
         has allowed values that depend on other column values, either in the same dataframe (as specified by the
         keyword "column") or in the uns dictionary (as specified by the keyword "uns_key").
+        
+        Works with both terms_to_match and terms_to_exclude logic:
+        - terms_to_match: from 'match_exact' and 'match_ancestors_inclusive' rules
+        - terms_to_exclude: from 'exclude_exact' and 'exclude_ancestors_inclusive' rules
+        Final condition: (in terms_to_match OR no match terms specified) AND (not in terms_to_exclude OR no exclude terms specified)
 
         Returns a Series containing values from the column that were not matched by any rule.
         """
         all_rules = []
-
-        for dependency_def in dependencies:
+        
+        for i, dependency_def in enumerate(dependencies):
             terms_to_match = set()
+            terms_to_exclude = set()
             rule = dependency_def["rule"]
             column_to_match = rule.get("column")
             uns_key_to_match = rule.get("uns_key")
@@ -768,13 +775,30 @@ class Validator:
                     terms_to_match.update(get_descendants(ONTOLOGY_PARSER, ancestor, include_self=True))
             if "match_exact" in rule:
                 terms_to_match.update(rule["match_exact"]["terms"])
+            
+            # Build the set of terms to exclude
+            if "exclude_ancestors_inclusive" in rule:
+                ancestors = rule["exclude_ancestors_inclusive"]["ancestors"]
+                for ancestor in ancestors:
+                    terms_to_exclude.update(get_descendants(ONTOLOGY_PARSER, ancestor, include_self=True))
+            if "exclude_exact" in rule:
+                terms_to_exclude.update(rule["exclude_exact"]["terms"])
 
             try:
                 if column_to_match:
-                    match_query = df[column_to_match].isin(terms_to_match)
+                    match_query = pd.Series([True] * len(df), index=df.index)
+                    if terms_to_match:
+                        match_query = match_query & df[column_to_match].isin(terms_to_match)
+                    if terms_to_exclude:
+                        match_query = match_query & ~df[column_to_match].isin(terms_to_exclude)
                 elif uns_key_to_match:
                     uns_value = self.adata.uns[uns_key_to_match]
-                    match = uns_value in terms_to_match
+                    match = True
+                    if terms_to_match:
+                        match = match and (uns_value in terms_to_match)
+                    if terms_to_exclude:
+                        match = match and (uns_value not in terms_to_exclude)
+
                     match_query = pd.Series([match] * len(df), index=df.index)
                 else:
                     self.errors.append(f"Validation rule for '{column_name}' must define either 'column' or 'uns_key'.")
@@ -782,6 +806,7 @@ class Validator:
 
                 match_df = df[match_query]
                 column = match_df[column_name]
+                
                 error_message_suffix = dependency_def.get("error_message_suffix")
                 if not error_message_suffix:
                     if column_to_match:
@@ -794,12 +819,15 @@ class Validator:
                 continue
 
             all_rules.append(match_query)
+            
             self._validate_column(column, column_name, df_name, dependency_def, error_message_suffix)
 
         # Combine all match queries to exclude validated entries
         unmatched_mask = ~np.logical_or.reduce(all_rules) if all_rules else pd.Series([True] * len(df), index=df.index)
-
-        return df.loc[unmatched_mask, column_name]
+        
+        unmatched_values = df.loc[unmatched_mask, column_name]
+        
+        return unmatched_values
 
     def _validate_list(self, list_name: str, current_list: List[str], element_type: str):
         """
