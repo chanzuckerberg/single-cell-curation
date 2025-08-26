@@ -569,7 +569,7 @@ class TestIndexFragmentWithLineCountValidation:
         test_lines = [f"chr1\t100\t200\t{TEST_BARCODE}\t5\n", f"chr1\t300\t400\t{TEST_BARCODE}\t3\n"]
         test_fragment_file = create_fragment_file_from_dataframe(
             os.path.join(tmpdir, "test_fragments.tsv.gz"),
-            pd.DataFrame([line.split("\t") for line in test_lines], columns=atac_seq.column_ordering),
+            pd.DataFrame([line.rstrip('\n').split("\t") for line in test_lines], columns=atac_seq.column_ordering),
         )
         output_file = os.path.join(tmpdir, "output.bgz")
 

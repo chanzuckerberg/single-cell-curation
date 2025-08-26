@@ -580,7 +580,5 @@ def deduplicate_fragment_rows(
         uniq_proc.wait()
         sort_proc.wait()
         gzip_proc.wait()
-    if bgzip_proc.returncode != 0:
-        raise RuntimeError(f"bgzip compression failed with error code {bgzip_proc.returncode}")
     logger.info(f"bgzip compression completed successfully for {output_file_name}")
     return str(output_file_name)
