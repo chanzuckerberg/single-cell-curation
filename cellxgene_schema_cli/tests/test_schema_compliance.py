@@ -829,7 +829,7 @@ class TestObs:
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "development_stage_ontology_term_id"
         ]["dependencies"][0]["error_message_suffix"]
-        assert validator.errors == [self.get_format_error_message(error_message_suffix, error)]
+        assert self.get_format_error_message(error_message_suffix, error) in validator.errors
 
     @pytest.mark.parametrize(
         "development_stage_ontology_term_id,error",
@@ -862,7 +862,7 @@ class TestObs:
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "development_stage_ontology_term_id"
         ]["dependencies"][1]["error_message_suffix"]
-        assert validator.errors == [self.get_format_error_message(error_message_suffix, error)]
+        assert self.get_format_error_message(error_message_suffix, error) in validator.errors
 
     def test_development_stage_ontology_term_id_all_species(self, validator_with_adata):
         """
@@ -879,7 +879,7 @@ class TestObs:
         ] = "na"
         validator.validate_adata()
         assert (
-            "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is not a valid ontology term id of 'UBERON'. When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition, 'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105' excluding 'UBERON:0000071', or unknown."
+            "ERROR: 'EFO:0000001' in 'development_stage_ontology_term_id' is not a valid ontology term id of 'UBERON, HsapDv, MmusDv, ZFA, ZFS, FBdv, WBls'. When 'tissue_type' is not 'cell line', 'development_stage_ontology_term_id' cannot be 'na'."
             in validator.errors
         )
 
@@ -894,8 +894,57 @@ class TestObs:
         ] = "na"
         validator.validate_adata()
         assert (
-            "ERROR: 'UBERON:0000071' in 'development_stage_ontology_term_id' is not allowed. When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition, 'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105' excluding 'UBERON:0000071', or unknown."
+            "ERROR: 'UBERON:0000071' in 'development_stage_ontology_term_id' is not allowed. When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition, 'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105' excluding 'UBERON:0000071', 'na', or unknown."
             in validator.errors
+        )
+
+    @pytest.mark.parametrize(
+        "development_stage_ontology_term_id,development_stage,errors",
+        [
+            (
+                "na",  # development_stage_ontology_term_id correctly set to "na"
+                "na",  # development_stage correctly set to "na" based on "na" value of development_stage_ontology_term_id
+                [],
+            ),
+            (
+                "HsapDv:0000003",  # valid development_stage_ontology_term_id for non cell line
+                "Carnegie stage 01",
+                [
+                    "ERROR: 'HsapDv:0000003' in 'development_stage_ontology_term_id' is not a valid value of 'development_stage_ontology_term_id'. When 'tissue_type' is 'cell line', 'development_stage_ontology_term_id' MUST be 'na'."
+                ],
+            ),
+        ],
+    )
+    def test_cell_line_development_stage_ontology_term_id(
+        self, validator_with_adata, development_stage_ontology_term_id, development_stage, errors
+    ):
+        obs = validator_with_adata.adata.obs
+        obs.loc[obs.index[0], "tissue_type"] = "cell line"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = development_stage_ontology_term_id
+        validator_with_adata.validate_adata()
+        assert validator_with_adata.errors == errors
+
+        labeler = AnnDataLabelAppender(validator_with_adata.adata)
+        labeler._add_labels()
+        labeled_obs = labeler.adata.obs
+        assert labeled_obs.loc[labeled_obs.index[0], "development_stage"] == development_stage
+
+    @pytest.mark.parametrize(
+        "tissue_type",
+        [
+            "tissue",
+            "primary cell culture",
+            "organoid",
+        ],
+    )
+    def test_cell_line_cannot_be_na_for_tissue(self, validator_with_adata, tissue_type):
+        obs = validator_with_adata.adata.obs
+        obs.loc[obs.index[0], "tissue_type"] = tissue_type
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "na"
+        validator_with_adata.validate_adata()
+        assert (
+            "ERROR: 'na' in 'development_stage_ontology_term_id' is not allowed. When 'tissue_type' is not 'cell line', 'development_stage_ontology_term_id' cannot be 'na'."
+            in validator_with_adata.errors
         )
 
     def test_disease_ontology_term_id(self, validator_with_adata):
@@ -1001,13 +1050,13 @@ class TestObs:
 
     def test_tissue_ontology_term_id__unknown(self, validator_with_adata):
         """
-        Test 'unknown' tissue_ontology_term_id is valid if tissue_type is 'cell culture'
+        Test 'unknown' tissue_ontology_term_id is valid if tissue_type is 'primary cell culture'
         """
         validator = validator_with_adata
         obs = validator.adata.obs
 
-        # Arrange -- relies on "tissue_type" value for index "Y" being "cell culture", set explicitly
-        obs.at["Y", "tissue_type"] = "cell culture"
+        # Arrange -- relies on "tissue_type" value for index "Y" being "primary cell culture", set explicitly
+        obs.at["Y", "tissue_type"] = "primary cell culture"
         obs.at["Y", "tissue_ontology_term_id"] = "unknown"
 
         assert validator.validate_adata()
@@ -1015,7 +1064,7 @@ class TestObs:
 
     def test_tissue_ontology_term_id__unknown_invalid(self, validator_with_adata):
         """
-        Test 'unknown' tissue_ontology_term_id is invalid if tissue_type is NOT 'cell culture'
+        Test 'unknown' tissue_ontology_term_id is invalid if tissue_type is NOT 'primary cell culture'
         """
         validator = validator_with_adata
         obs = validator.adata.obs
@@ -1023,6 +1072,19 @@ class TestObs:
         # Arrange -- 'tissue_ontology_term_id' cannot be "unknown" when 'tissue_type is "tissue"
         obs.at["Y", "tissue_type"] = "tissue"
         obs.at["Y", "tissue_ontology_term_id"] = "unknown"
+
+        assert not validator.validate_adata()
+        assert len(validator.errors) > 0
+
+    def test_tissue_ontology_term_id__embryo(self, validator_with_adata):
+        """
+        Test 'UBERON:0000922' tissue_ontology_term_id is invalid if tissue_type is 'organoid'
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+
+        obs.at["Y", "tissue_type"] = "organoid"
+        obs.at["Y", "tissue_ontology_term_id"] = "UBERON:0000922"
 
         assert not validator.validate_adata()
         assert len(validator.errors) > 0
@@ -1325,7 +1387,7 @@ class TestObs:
         """
         validator = validator_with_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_type"] = "primary cell culture"
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CL:0000057 (cell culture)"
         validator.validate_adata()
         assert len(validator.errors) > 0
@@ -1336,7 +1398,7 @@ class TestObs:
         """
         validator = validator_with_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_type"] = "primary cell culture"
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = "EFO:0000001"
         validator.validate_adata()
         assert len(validator.errors) > 0
@@ -1353,14 +1415,14 @@ class TestObs:
         """
         validator = validator_with_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_type"] = "primary cell culture"
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = term
         validator.validate_adata()
 
         # Forbidden columns may be marked as either "not allowed" or "deprecated"
-        not_allowed_error = f"ERROR: '{term}' in 'tissue_ontology_term_id' is not allowed. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST follow the validation rules for cell_type_ontology_term_id."
-        deprecated_error = f"ERROR: '{term}' in 'tissue_ontology_term_id' is a deprecated term id of 'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST follow the validation rules for cell_type_ontology_term_id."
-        invalid_ontology_error = f"ERROR: '{term}' in 'tissue_ontology_term_id' is not a valid ontology term id of 'CL'. When 'tissue_type' is 'cell culture', 'tissue_ontology_term_id' MUST follow the validation rules for cell_type_ontology_term_id."
+        not_allowed_error = f"ERROR: '{term}' in 'tissue_ontology_term_id' is not allowed. When 'tissue_type' is 'primary cell culture', 'tissue_ontology_term_id' MUST follow the validation rules for cell_type_ontology_term_id."
+        deprecated_error = f"ERROR: '{term}' in 'tissue_ontology_term_id' is a deprecated term id of 'CL'. When 'tissue_type' is 'primary cell culture', 'tissue_ontology_term_id' MUST follow the validation rules for cell_type_ontology_term_id."
+        invalid_ontology_error = f"ERROR: '{term}' in 'tissue_ontology_term_id' is not a valid ontology term id of 'CL'. When 'tissue_type' is 'primary cell culture', 'tissue_ontology_term_id' MUST follow the validation rules for cell_type_ontology_term_id."
         assert (
             not_allowed_error in validator.errors
             or deprecated_error in validator.errors
@@ -1405,9 +1467,9 @@ class TestObs:
         validator.validate_adata()
         assert "ERROR: 'UBERON:0001062' in 'tissue_ontology_term_id' is not an allowed term id." in validator.errors[0]
 
-    def test_tissue_type(self, validator_with_adata):
+    def test_tissue_type__invalid(self, validator_with_adata):
         """
-        tissue_type must be one of 'cell culture', 'tissue', or 'organoid'
+        tissue_type must be one of 'primary cell culture', 'tissue', 'organoid', or 'cell line'
         """
         validator = validator_with_adata
         obs = validator.adata.obs
@@ -1416,7 +1478,7 @@ class TestObs:
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Column 'tissue_type' in dataframe 'obs' contains invalid values "
-            "'['organ']'. Values must be one of ['cell culture', 'organoid', 'tissue']"
+            "'['organ']'. Values must be one of ['primary cell culture', 'organoid', 'tissue', 'cell line']"
         ]
 
     def test_sex_ontology_term_id(self, validator_with_adata):
@@ -1696,7 +1758,6 @@ class TestVar:
         var.iloc[1, :] = tmp
 
         validator.validate_adata()
-        print("FOO", validator.errors)
         assert validator.errors == ["ERROR: Index of 'raw.var' is not identical to index of 'var'."]
 
     @pytest.mark.parametrize("component_name", ["var", "raw.var"])
@@ -1817,19 +1878,23 @@ class TestVar:
         """
         feature_id (var.index) str.
 
-        This tests the case of an ID with an incorrect format "ENSEBML_NOGENE"
+        This tests the case of an ID with an incorrect format where you can't infer the organism
+        from the ID.
         """
         validator = validator_with_adata
         component = getattr_anndata(validator.adata, component_name)
 
         new_index = list(component.index)
         new_index[0] = "ENSEBML_NOGENE"
+        new_index[1] = "INVALID_GENE_ID"
         component.set_index(pd.Index(new_index), inplace=True)
 
         validator.validate_adata()
         assert validator.errors == [
             f"ERROR: Could not infer organism from feature ID 'ENSEBML_NOGENE' "
-            f"in '{component_name}', make sure it is a valid ID."
+            f"in '{component_name}', make sure it is a valid ID.",
+            f"ERROR: Could not infer organism from feature ID 'INVALID_GENE_ID' "
+            f"in '{component_name}', make sure it is a valid ID.",
         ]
 
     @pytest.mark.parametrize("component_name", ["var", "raw.var"])
@@ -2692,8 +2757,7 @@ class TestAddingLabels:
             - sex. categorical with str categories. This MUST be "unknown" if set in sex_ontology_term_id;
             otherwise, this MUST be the human-readable name assigned to the value of sex_ontology_term_id.
             - tissue. categorical with str categories. This MUST be the human-readable name assigned to the
-            value of tissue_ontology_term_id. " (cell culture)" or " (organoid)" MUST
-            be appended if present in tissue_ontology_term_id.
+            value of tissue_ontology_term_id.
         """
         expected_column = adata_with_labels.obs[column]
         obtained_column = label_writer.adata.obs[column]
@@ -2712,7 +2776,7 @@ class TestAddingLabels:
         obs = adata.obs
 
         # Arrange
-        obs.at["Y", "tissue_type"] = "cell culture"  # Already set in example data, just setting explicitly here
+        obs.at["Y", "tissue_type"] = "primary cell culture"  # Already set in example data, just setting explicitly here
         obs.at["Y", "tissue_ontology_term_id"] = "unknown"  # Testing this term case
         labeler = AnnDataLabelAppender(adata)
         labeler._add_labels()  # Annotate
@@ -2853,7 +2917,7 @@ class TestZebrafish:
         zebrafish_error_message_suffix = (
             "When 'organism_ontology_term_id' is 'NCBITaxon:7955' (Danio rerio), "
             "'development_stage_ontology_term_id' MUST be the most accurate descendant of 'ZFS:0100000' and it "
-            "MUST NOT be 'ZFS:0000000' for Unknown. The str 'unknown' is acceptable."
+            "MUST NOT be 'ZFS:0000000' for Unknown. The str 'unknown' or 'na' is acceptable."
         )
         validator = validator_with_zebrafish_adata
         obs = validator.adata.obs
@@ -2920,7 +2984,7 @@ class TestZebrafish:
         "tissue_ontology_term_id",
         [
             "ZFA:0001262",  # valid descendant of ZFA:0100000
-            "UBERON:0002048",  # valid UBERON term
+            "UBERON:0002048",  # valid UBERON term that is a descendant of UBERON:0001062
         ],
     )
     def test_organism_tissue_type_ontology_term_id(self, validator_with_zebrafish_adata, tissue_ontology_term_id):
@@ -2938,6 +3002,7 @@ class TestZebrafish:
             "ZFA:0100000",  # Must be descendant of ZFA:0100000, not itself
             "ZFA:0009000",  # ZFA:0009000 is an explicitly forbidden term
             "ZFA:0000003",  # ZFA:0009000 descendant, an explicitly forbidden ancestor
+            "UBERON:0001062",  # Must be descendant of UBERON:0001062, cannot be itself
             "na",
             "unknown",
         ],
@@ -2951,25 +3016,26 @@ class TestZebrafish:
 
     @pytest.mark.parametrize(
         "tissue_type",
-        ["tissue", "cell culture", "organoid"],
+        ["tissue", "organoid"],
     )
     def test_organism_tissue_type_valid(self, validator_with_zebrafish_adata, tissue_type):
         validator = validator_with_zebrafish_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "tissue_type"] = tissue_type
+        validator.validate_adata()
         assert not validator.errors
 
     @pytest.mark.parametrize(
         "tissue_ontology_term_id",
         [
-            "CL:4023077",  # valid CL term for cell culture
+            "CL:4023077",  # valid CL term for primary cell culture
             "ZFA:0000003",  # valid ZFA term
         ],
     )
     def test_cell_culture_tissue_ontology_term_id(self, validator_with_zebrafish_adata, tissue_ontology_term_id):
         validator = validator_with_zebrafish_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_type"] = "primary cell culture"
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = tissue_ontology_term_id
         validator.validate_adata()
         assert not validator.errors
@@ -2977,7 +3043,7 @@ class TestZebrafish:
     def test_cell_culture_tissue_ontology_term_id_invalid(self, validator_with_zebrafish_adata):
         validator = validator_with_zebrafish_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_type"] = "primary cell culture"
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = (
             "UBERON:0002048"  # only valid UBERON term if not cell culture
         )
@@ -3143,7 +3209,7 @@ class TestFruitFly:
         "tissue_ontology_term_id",
         [
             "FBbt:00007337",  # valid descendant of FBbt:10000000
-            "UBERON:0002048",  # valid UBERON term
+            "UBERON:0002048",  # valid UBERON term that is a descendant of UBERON:0001062
         ],
     )
     def test_organism_tissue_type_ontology_term_id(self, validator_with_fruitfly_adata, tissue_ontology_term_id):
@@ -3160,6 +3226,7 @@ class TestFruitFly:
             "FBbt:10000000",  # Must be descendant of FBbt:10000000, not itself
             "FBbt:00007002",  # FBbt:00007002 is an explicitly forbidden term
             "FBbt:00007294",  # FBbt:00007002 descendant, an explicitly forbidden ancestor
+            "UBERON:0001062",  # Must be descendant of UBERON:0001062, cannot be itself
             "na",
             "unknown",
         ],
@@ -3173,25 +3240,26 @@ class TestFruitFly:
 
     @pytest.mark.parametrize(
         "tissue_type",
-        ["tissue", "cell culture", "organoid"],
+        ["tissue", "organoid"],
     )
     def test_organism_tissue_type_valid(self, validator_with_fruitfly_adata, tissue_type):
         validator = validator_with_fruitfly_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "tissue_type"] = tissue_type
+        validator.validate_adata()
         assert not validator.errors
 
     @pytest.mark.parametrize(
         "tissue_ontology_term_id",
         [
-            "CL:4023077",  # valid CL term for cell culture
+            "CL:4023077",  # valid CL term for primary cell culture
             "FBbt:00049192",  # valid FBbt term
         ],
     )
     def test_cell_culture_tissue_ontology_term_id(self, validator_with_fruitfly_adata, tissue_ontology_term_id):
         validator = validator_with_fruitfly_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_type"] = "primary cell culture"
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = tissue_ontology_term_id
         validator.validate_adata()
         assert not validator.errors
@@ -3199,7 +3267,7 @@ class TestFruitFly:
     def test_cell_culture_tissue_ontology_term_id_invalid(self, validator_with_fruitfly_adata):
         validator = validator_with_fruitfly_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_type"] = "primary cell culture"
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = (
             "UBERON:0002048"  # only valid UBERON term if not cell culture
         )
@@ -3372,7 +3440,7 @@ class TestRoundworm:
         "tissue_ontology_term_id",
         [
             "WBbt:0006750",  # valid descendant of WBbt:0005766
-            "UBERON:0002048",  # valid UBERON term
+            "UBERON:0002048",  # valid UBERON term that is a descendant of UBERON:0001062
         ],
     )
     def test_organism_tissue_type_ontology_term_id(self, validator_with_roundworm_adata, tissue_ontology_term_id):
@@ -3394,6 +3462,7 @@ class TestRoundworm:
             "WBbt:0008611",  # descendant of WBbt:0004017 (cell)
             "WBbt:00006803",  # nucleus, explicitly forbidden term
             "WBbt:0002702",  # descendant of WBbt:00006803 (nucleus)
+            "UBERON:0001062",  # Must be descendant of UBERON:0001062, cannot be itself
             "na",
             "unknown",
         ],
@@ -3407,12 +3476,13 @@ class TestRoundworm:
 
     @pytest.mark.parametrize(
         "tissue_type",
-        ["tissue", "cell culture", "organoid"],
+        ["tissue", "organoid"],
     )
     def test_organism_tissue_type_valid(self, validator_with_roundworm_adata, tissue_type):
         validator = validator_with_roundworm_adata
         obs = validator.adata.obs
         obs.loc[obs.index[0], "tissue_type"] = tissue_type
+        validator.validate_adata()
         assert not validator.errors
 
     @pytest.mark.parametrize(
@@ -3441,14 +3511,14 @@ class TestRoundworm:
     @pytest.mark.parametrize(
         "tissue_ontology_term_id",
         [
-            "CL:4023077",  # valid CL term for cell culture
+            "CL:4023077",  # valid CL term for primary cell culture
             "WBbt:0005762",  # valid WBbt term
         ],
     )
     def test_cell_culture_tissue_ontology_term_id(self, validator_with_roundworm_adata, tissue_ontology_term_id):
         validator = validator_with_roundworm_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_type"] = "primary cell culture"
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = tissue_ontology_term_id
         validator.validate_adata()
         assert not validator.errors
@@ -3456,7 +3526,7 @@ class TestRoundworm:
     def test_cell_culture_tissue_ontology_term_id_invalid(self, validator_with_roundworm_adata):
         validator = validator_with_roundworm_adata
         obs = validator.adata.obs
-        obs.loc[obs.index[0], "tissue_type"] = "cell culture"
+        obs.loc[obs.index[0], "tissue_type"] = "primary cell culture"
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = "UBERON:0002048"
         validator.validate_adata()
         assert len(validator.errors) > 0
@@ -3491,6 +3561,7 @@ class TestMultiSpecies:
             "ZFA:0001262",  # Valid for zebrafish, not valid for human or mouse data
             "FBbt:00007337",  # Valid for fruit fly, not valid for human or mouse data
             "WBbt:0006749",  # Valid for roundworm, not valid for human or mouse data
+            "UBERON:0001062",  # Must be descendant of UBERON:0001062, cannot be itself
             "na",
             "unknown",
         ],
