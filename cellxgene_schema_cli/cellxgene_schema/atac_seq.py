@@ -1,7 +1,6 @@
 import gzip
 import logging
 import os
-import shlex
 import shutil
 import subprocess
 import tempfile
@@ -547,11 +546,15 @@ def deduplicate_fragment_rows(
     gzip_cmd = ["gzip", "-dc", str(fragment_file_name)]
     sort_cmd = [
         "sort",
-        "-t", "\t",
-        "-k1,1", "-k2,2n", "-k3,3n", "-k4,4",
+        "-t",
+        "\t",
+        "-k1,1",
+        "-k2,2n",
+        "-k3,3n",
+        "-k4,4",
         f"-S{sort_memory}%",
         f"--parallel={num_cores}",
-        f'--compress-program=pigz -p {num_cores}',
+        f"--compress-program=pigz -p {num_cores}",
     ]
     uniq_cmd = ["uniq"]
     bgzip_cmd = ["bgzip", "-@", str(num_cores), "-c"]
