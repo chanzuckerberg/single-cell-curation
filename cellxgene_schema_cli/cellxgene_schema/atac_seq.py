@@ -427,6 +427,11 @@ def index_fragment(
     logger.info(f"Line count validation passed: {original_line_count} lines in both original and output files")
 
 
+SORT_MEMORY_PERCENTAGE = (
+    80  # percentage of memory to use for sort command. This is the default used by linux sort command.
+)
+
+
 def prepare_fragment(
     fragment_file: str,
     bgzip_output_file: str,
@@ -454,7 +459,7 @@ def prepare_fragment(
         )
 
     num_cores = os.cpu_count()
-
+    sort_memory = calculate_sort_memory(num_cores, SORT_MEMORY_PERCENTAGE)  # ensure at least 1% memory per core
     with open(bgzip_output_file, "wb") as out_f:
         gzip_proc = subprocess.Popen(["gzip", "-dc", fragment_file], stdout=subprocess.PIPE)
         sort_proc = subprocess.Popen(
@@ -466,8 +471,9 @@ def prepare_fragment(
                 "-k1,1",
                 "-k2,2n",
                 "-k3,3n",
-                "-S 40%",
-                '--compress-program="pigz -p {num_cores}"',
+                "-k4,4",
+                f"-S {sort_memory}%",
+                f'--compress-program="pigz -p {num_cores}"',
             ],
             stdin=gzip_proc.stdout,
             stdout=subprocess.PIPE,
@@ -480,3 +486,102 @@ def prepare_fragment(
     if bgzip_proc.returncode != 0:
         raise RuntimeError(f"bgzip compression failed with error code {bgzip_proc.returncode}")
     logger.info(f"bgzip compression completed successfully for {bgzip_output_file}")
+
+
+def calculate_sort_memory(num_cores: int, sort_memory_percent: int) -> int:
+    """
+    Calculate the memory percentage to allocate per sort thread.
+
+    :param num_cores: Number of CPU cores available.
+    :param sort_memory_percent: Total percentage of system memory to allocate for sorting.
+    :return: Percentage of memory to allocate per sort thread.
+    """
+    return max(sort_memory_percent // num_cores, 1)  # ensure at least 1% memory per core
+
+
+def deduplicate_fragment_rows(
+    fragment_file_name: str, output_file_name: str = None, sort_memory_percent: int = SORT_MEMORY_PERCENTAGE
+) -> str:
+    """
+    Deduplicate rows in a fragment file by sorting and using the uniq command, then compress the result with bgzip.
+
+    This function decompresses the input fragment file, sorts it by chromosome and coordinates using GNU sort
+    (with parallelization and pigz compression), removes duplicate rows, and writes the output as a bgzipped file.
+    The amount of memory allocated to sort is controlled by sort_memory_percent, divided among CPU cores.
+
+    :param fragment_file_name: Path to the input gzipped fragment file.
+    :param output_file_name: Path for the output deduplicated bgzipped file. If None, a default name is generated.
+    :param sort_memory_percent: Percentage of system memory to allocate per sort thread (default: 80).
+    :return: Path to the deduplicated bgzipped output file.
+    :raises RuntimeError: If the bgzip compression process fails.
+    """
+    if shutil.which("sort") is None:
+        raise RuntimeError(
+            "The 'sort' command is not installed or not found in PATH. It is required to sort the fragment file."
+        )
+    if shutil.which("bgzip") is None:
+        raise RuntimeError(
+            "The 'bgzip' command is not installed or not found in PATH. It is required to compress the fragment file."
+        )
+    if shutil.which("pigz") is None:
+        raise RuntimeError(
+            "The 'pigz' command is not installed or not found in PATH. It is required to compress the fragment file."
+        )
+    if shutil.which("uniq") is None:
+        raise RuntimeError(
+            "The 'uniq' command is not installed or not found in PATH. It is required to compress the fragment file."
+        )
+
+    logger.info(f"deduplicating fragment file: {fragment_file_name}")
+
+    output_file_name = (
+        Path(output_file_name)
+        if output_file_name
+        else (Path(fragment_file_name).stem.replace(".tsv", "") + "_dedup.tsv.bgz")
+    )
+
+    num_cores = os.cpu_count()
+    sort_memory = calculate_sort_memory(num_cores, sort_memory_percent)
+    # Build the pipeline: gzip -dc | sort | uniq | bgzip
+    gzip_cmd = ["gzip", "-dc", str(fragment_file_name)]
+    sort_cmd = [
+        "sort",
+        "-t",
+        "\t",
+        "-k1,1",
+        "-k2,2n",
+        "-k3,3n",
+        "-k4,4",
+        f"-S{sort_memory}%",
+        f"--parallel={num_cores}",
+        f"--compress-program=pigz -p {num_cores}",
+    ]
+    uniq_cmd = ["uniq"]
+    bgzip_cmd = ["bgzip", "-@", str(num_cores), "-c"]
+
+    with open(output_file_name, "wb") as outfile:
+        # Start gzip process
+        gzip_proc = subprocess.Popen(gzip_cmd, stdout=subprocess.PIPE)
+        # Start sort process
+        sort_proc = subprocess.Popen(
+            sort_cmd,
+            stdin=gzip_proc.stdout,
+            stdout=subprocess.PIPE,
+            env={**os.environ, "LC_ALL": "C"},
+        )
+        gzip_proc.stdout.close()  # Allow gzip_proc to receive a SIGPIPE if sort_proc exits.
+        # Start uniq process
+        uniq_proc = subprocess.Popen(uniq_cmd, stdin=sort_proc.stdout, stdout=subprocess.PIPE)
+        sort_proc.stdout.close()
+        # Start bgzip process
+        bgzip_proc = subprocess.Popen(bgzip_cmd, stdin=uniq_proc.stdout, stdout=outfile)
+        uniq_proc.stdout.close()
+        bgzip_proc.wait()
+        if bgzip_proc.returncode != 0:
+            raise RuntimeError(f"bgzip compression failed with error code {bgzip_proc.returncode}")
+        # Wait for the rest of the pipeline to finish and check for errors
+        uniq_proc.wait()
+        sort_proc.wait()
+        gzip_proc.wait()
+    logger.info(f"bgzip compression completed successfully for {output_file_name}")
+    return str(output_file_name)
