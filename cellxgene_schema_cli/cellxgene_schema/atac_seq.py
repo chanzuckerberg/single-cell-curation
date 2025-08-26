@@ -428,6 +428,11 @@ def index_fragment(
     logger.info(f"Line count validation passed: {original_line_count} lines in both original and output files")
 
 
+SORT_MEMORY_PERCENTAGE = (
+    80  # percentage of memory to use for sort command. This is the default used by linux sort command.
+)
+
+
 def prepare_fragment(
     fragment_file: str,
     bgzip_output_file: str,
@@ -455,7 +460,7 @@ def prepare_fragment(
         )
 
     num_cores = os.cpu_count()
-    sort_memory = 70 // num_cores
+    sort_memory = calculate_sort_memory(num_cores, SORT_MEMORY_PERCENTAGE)  # ensure at least 1% memory per core
     with open(bgzip_output_file, "wb") as out_f:
         gzip_proc = subprocess.Popen(["gzip", "-dc", fragment_file], stdout=subprocess.PIPE)
         sort_proc = subprocess.Popen(
@@ -469,7 +474,7 @@ def prepare_fragment(
                 "-k3,3n",
                 "-k4,4",
                 f"-S {sort_memory}%",
-                '--compress-program="pigz -p {num_cores}"',
+                f'--compress-program="pigz -p {num_cores}"',
             ],
             stdin=gzip_proc.stdout,
             stdout=subprocess.PIPE,
@@ -484,8 +489,19 @@ def prepare_fragment(
     logger.info(f"bgzip compression completed successfully for {bgzip_output_file}")
 
 
+def calculate_sort_memory(num_cores: int, sort_memory_percent: int) -> int:
+    """
+    Calculate the memory percentage to allocate per sort thread.
+
+    :param num_cores: Number of CPU cores available.
+    :param sort_memory_percent: Total percentage of system memory to allocate for sorting.
+    :return: Percentage of memory to allocate per sort thread.
+    """
+    return max(sort_memory_percent // num_cores, 1)  # ensure at least 1% memory per core
+
+
 def deduplicate_fragment_rows(
-    fragment_file_name: str, output_file_name: str = None, sort_memory_percent: int = 80
+    fragment_file_name: str, output_file_name: str = None, sort_memory_percent: int = SORT_MEMORY_PERCENTAGE
 ) -> str:
     """
     Deduplicate rows in a fragment file by sorting and using the uniq command, then compress the result with bgzip.
@@ -509,7 +525,7 @@ def deduplicate_fragment_rows(
     )
 
     num_cores = os.cpu_count()
-    sort_memory = sort_memory_percent // num_cores
+    sort_memory = calculate_sort_memory(num_cores, sort_memory_percent)
     cmd = (
         f"gzip -dc {shlex.quote(str(fragment_file_name))} | "
         f"LC_ALL=C sort -t $'\\t' -k1,1 -k2,2n -k3,3n -k4,4 "
