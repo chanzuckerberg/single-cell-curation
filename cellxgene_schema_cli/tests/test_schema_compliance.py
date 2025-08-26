@@ -894,10 +894,10 @@ class TestObs:
         ] = "na"
         validator.validate_adata()
         assert (
-            "ERROR: 'UBERON:0000071' in 'development_stage_ontology_term_id' is not allowed. When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition, 'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105' excluding 'UBERON:0000071' or unknown."
+            "ERROR: 'UBERON:0000071' in 'development_stage_ontology_term_id' is not allowed. When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition, 'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105' excluding 'UBERON:0000071', 'na', or unknown."
             in validator.errors
         )
-    
+
     @pytest.mark.parametrize(
         "development_stage_ontology_term_id,development_stage,errors",
         [
@@ -928,7 +928,7 @@ class TestObs:
         labeler._add_labels()
         labeled_obs = labeler.adata.obs
         assert labeled_obs.loc[labeled_obs.index[0], "development_stage"] == development_stage
-    
+
     @pytest.mark.parametrize(
         "tissue_type",
         [
@@ -942,7 +942,10 @@ class TestObs:
         obs.loc[obs.index[0], "tissue_type"] = tissue_type
         obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "na"
         validator_with_adata.validate_adata()
-        assert "ERROR: 'na' in 'development_stage_ontology_term_id' is not allowed. When 'tissue_type' is not 'cell line', 'development_stage_ontology_term_id' cannot be 'na'." in validator_with_adata.errors
+        assert (
+            "ERROR: 'na' in 'development_stage_ontology_term_id' is not allowed. When 'tissue_type' is not 'cell line', 'development_stage_ontology_term_id' cannot be 'na'."
+            in validator_with_adata.errors
+        )
 
     def test_disease_ontology_term_id(self, validator_with_adata):
         """

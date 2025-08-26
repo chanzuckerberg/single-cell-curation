@@ -579,7 +579,7 @@ components:
                     - NCBITaxon:7227
                     - NCBITaxon:9606
             error_message_suffix: >-
-              When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition, 'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105' excluding 'UBERON:0000071' or unknown.
+              When 'organism_ontology_term_id'-specific requirements are not defined in the schema definition, 'development_stage_ontology_term_id' MUST be a descendant term id of 'UBERON:0000105' excluding 'UBERON:0000071', 'na', or unknown.
             type: curie
             curie_constraints:
               ontologies:
