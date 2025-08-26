@@ -133,7 +133,7 @@ class TestProcessFragment:
         fragments_file = os.path.join(FIXTURES_ROOT, "atac_seq", fragment_file)
         # Act
         result = atac_seq.process_fragment(
-            fragments_file,
+            str(fragments_file),
             anndata_file,
             generate_index=True,
             output_file=str(atac_fragment_bgzip_file_path),
@@ -187,6 +187,8 @@ class TestProcessFragment:
             output_file=str(atac_fragment_bgzip_file_path),
         )
         result = [r for r in result if "Error" in r]
+        # Assert
+        assert len(result) == 1
 
 
 class TestPrepareFragment:

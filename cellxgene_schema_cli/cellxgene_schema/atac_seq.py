@@ -545,7 +545,7 @@ def deduplicate_fragment_rows(
     sort_memory = calculate_sort_memory(num_cores, sort_memory_percent)
     cmd = (
         f"gzip -dc {shlex.quote(str(fragment_file_name))} | "
-        f"LC_ALL=C sort -t $'\t' -k1,1 -k2,2n -k3,3n -k4,4 "
+        f"LC_ALL=C sort -t \\t -k1,1 -k2,2n -k3,3n -k4,4 "
         f"-S {sort_memory}% --parallel={num_cores} "
         f'--compress-program="pigz -p {num_cores}" | '
         f"uniq | bgzip -@ {num_cores} -c > {shlex.quote(str(output_file_name))}"
