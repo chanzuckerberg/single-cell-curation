@@ -1,6 +1,7 @@
 import gzip
 import logging
 import os
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -481,3 +482,44 @@ def prepare_fragment(
     if bgzip_proc.returncode != 0:
         raise RuntimeError(f"bgzip compression failed with error code {bgzip_proc.returncode}")
     logger.info(f"bgzip compression completed successfully for {bgzip_output_file}")
+
+
+def deduplicate_fragment_rows(
+    fragment_file_name: str, output_file_name: str = None, sort_memory_percent: int = 80
+) -> str:
+    """
+    Deduplicate rows in a fragment file by sorting and using the uniq command, then compress the result with bgzip.
+
+    This function decompresses the input fragment file, sorts it by chromosome and coordinates using GNU sort
+    (with parallelization and pigz compression), removes duplicate rows, and writes the output as a bgzipped file.
+    The amount of memory allocated to sort is controlled by sort_memory_percent, divided among CPU cores.
+
+    :param fragment_file_name: Path to the input gzipped fragment file.
+    :param output_file_name: Path for the output deduplicated bgzipped file. If None, a default name is generated.
+    :param sort_memory_percent: Percentage of system memory to allocate per sort thread (default: 80).
+    :return: Path to the deduplicated bgzipped output file.
+    :raises RuntimeError: If the bgzip compression process fails.
+    """
+    logger.info(f"deduplicating fragment file: {fragment_file_name}")
+
+    output_file_name = (
+        Path(output_file_name)
+        if output_file_name
+        else (Path(fragment_file_name).stem.replace(".tsv", "") + "_dedup.tsv.bgz")
+    )
+
+    num_cores = os.cpu_count()
+    sort_memory = sort_memory_percent // num_cores
+    cmd = (
+        f"gzip -dc {shlex.quote(str(fragment_file_name))} | "
+        f"LC_ALL=C sort -t $'\\t' -k1,1 -k2,2n -k3,3n -k4,4 "
+        f"-S {sort_memory}% --parallel={num_cores} "
+        f'--compress-program="pigz -p {num_cores}" | '
+        f"uniq | bgzip -@ {num_cores} -c > {shlex.quote(str(output_file_name))}"
+    )
+    bgzip_proc = subprocess.Popen(cmd, shell=True)
+    bgzip_proc.wait()
+    if bgzip_proc.returncode != 0:
+        raise RuntimeError(f"bgzip compression failed with error code {bgzip_proc.returncode}")
+    logger.info(f"bgzip compression completed successfully for {output_file_name}")
+    return str(output_file_name)

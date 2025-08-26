@@ -112,6 +112,27 @@ def fragment_validate(h5ad_file, fragment_file, generate_index, output_file):
         sys.exit(1)
 
 
+# add a cli command to deduplicate an ATAC fragment file
+@schema_cli.command(
+    name="deduplicate-fragment",
+    short_help="Deduplicate an ATAC SEQ fragment file.",
+    help="Deduplicate an ATAC SEQ fragment file. If deduplication fails this command will return an exit status of 1 "
+    "otherwise 0. The deduplicated fragment will have the file suffix .dedup.bgz and the index will have the file "
+    "suffix .dedup.bgz.tbi.",
+)
+@click.argument("fragment_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.option("-o", "--output-file", help="Output file for the deduplicated fragment.", type=click.Path(exists=False))
+@click.option("-m", "--memory", help="Memory limit as a percentage of total memory.", type=int, default=80)
+def deduplicate_fragment(fragment_file, output_file, tempdir, memory):
+    from .atac_seq import deduplicate_fragment_rows
+
+    try:
+        deduplicate_fragment_rows(fragment_file, output_file_name=output_file, sort_memory_percent=memory)
+    except Exception as e:
+        logger.error(f"Failed to deduplicate fragment file: {e}")
+        sys.exit(1)
+
+
 @schema_cli.command(
     name="check-anndata-requires-fragment",
     short_help="Check if that the anndata provided supports an Atac seq fragment file.",
