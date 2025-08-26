@@ -530,7 +530,7 @@ def deduplicate_fragment_rows(
         )
     if shutil.which("uniq") is None:
         raise RuntimeError(
-            "The 'pigz' command is not installed or not found in PATH. It is required to compress the fragment file."
+            "The 'uniq' command is not installed or not found in PATH. It is required to compress the fragment file."
         )
 
     logger.info(f"deduplicating fragment file: {fragment_file_name}")
@@ -543,15 +543,43 @@ def deduplicate_fragment_rows(
 
     num_cores = os.cpu_count()
     sort_memory = calculate_sort_memory(num_cores, sort_memory_percent)
-    cmd = (
-        f"gzip -dc {shlex.quote(str(fragment_file_name))} | "
-        f"LC_ALL=C sort -t \\t -k1,1 -k2,2n -k3,3n -k4,4 "
-        f"-S {sort_memory}% --parallel={num_cores} "
-        f'--compress-program="pigz -p {num_cores}" | '
-        f"uniq | bgzip -@ {num_cores} -c > {shlex.quote(str(output_file_name))}"
-    )
-    bgzip_proc = subprocess.Popen(cmd, shell=True)
-    bgzip_proc.wait()
+    # Build the pipeline: gzip -dc | sort | uniq | bgzip
+    gzip_cmd = ["gzip", "-dc", str(fragment_file_name)]
+    sort_cmd = [
+        "sort",
+        "-t", "\t",
+        "-k1,1", "-k2,2n", "-k3,3n", "-k4,4",
+        f"-S{sort_memory}%",
+        f"--parallel={num_cores}",
+        f'--compress-program=pigz -p {num_cores}',
+    ]
+    uniq_cmd = ["uniq"]
+    bgzip_cmd = ["bgzip", "-@", str(num_cores), "-c"]
+
+    with open(output_file_name, "wb") as outfile:
+        # Start gzip process
+        gzip_proc = subprocess.Popen(gzip_cmd, stdout=subprocess.PIPE)
+        # Start sort process
+        sort_proc = subprocess.Popen(
+            sort_cmd,
+            stdin=gzip_proc.stdout,
+            stdout=subprocess.PIPE,
+            env={**os.environ, "LC_ALL": "C"},
+        )
+        gzip_proc.stdout.close()  # Allow gzip_proc to receive a SIGPIPE if sort_proc exits.
+        # Start uniq process
+        uniq_proc = subprocess.Popen(uniq_cmd, stdin=sort_proc.stdout, stdout=subprocess.PIPE)
+        sort_proc.stdout.close()
+        # Start bgzip process
+        bgzip_proc = subprocess.Popen(bgzip_cmd, stdin=uniq_proc.stdout, stdout=outfile)
+        uniq_proc.stdout.close()
+        bgzip_proc.wait()
+        if bgzip_proc.returncode != 0:
+            raise RuntimeError(f"bgzip compression failed with error code {bgzip_proc.returncode}")
+        # Wait for the rest of the pipeline to finish and check for errors
+        uniq_proc.wait()
+        sort_proc.wait()
+        gzip_proc.wait()
     if bgzip_proc.returncode != 0:
         raise RuntimeError(f"bgzip compression failed with error code {bgzip_proc.returncode}")
     logger.info(f"bgzip compression completed successfully for {output_file_name}")

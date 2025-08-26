@@ -123,7 +123,7 @@ def fragment_validate(h5ad_file, fragment_file, generate_index, output_file):
 @click.argument("fragment_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
 @click.option("-o", "--output-file", help="Output file for the deduplicated fragment.", type=click.Path(exists=False))
 @click.option("-m", "--memory", help="Memory limit as a percentage of total memory.", type=int, default=80)
-def deduplicate_fragment(fragment_file, output_file, tempdir, memory):
+def deduplicate_fragment(fragment_file, output_file, memory):
     from .atac_seq import deduplicate_fragment_rows
 
     try:
