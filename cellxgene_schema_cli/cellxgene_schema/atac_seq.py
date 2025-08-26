@@ -1,5 +1,6 @@
 import gzip
 import logging
+import os
 import shutil
 import subprocess
 import tempfile
@@ -13,11 +14,10 @@ import ibis
 import pyarrow as pa
 import pyarrow.csv
 import pyarrow.dataset
-import pyarrow.parquet
 import pysam
 
 from .ontology_parser import ONTOLOGY_PARSER
-from .utils import GB, get_chunks, is_ontological_descendant_of
+from .utils import GB, is_ontological_descendant_of
 
 logger = logging.getLogger(__name__)
 
@@ -190,7 +190,6 @@ def process_fragment(
     fragment_file: str,
     anndata_file: str,
     generate_index: bool = False,
-    override_write_algorithm: Optional[str] = None,
     output_file: Optional[str] = None,
 ) -> list[str]:
     """
@@ -204,6 +203,7 @@ def process_fragment(
     :param output_file: The output file to write the bgzip file to. If not provided, the output file will be the same
 
     """
+
     with tempfile.TemporaryDirectory() as tempdir:
         # quick checks
         errors = validate_anndata(anndata_file)
@@ -229,12 +229,11 @@ def process_fragment(
         else:
             logger.info("Fragment and Anndata file are valid")
 
-        # generate the index
-        if generate_index:
-            logger.info(f"Sorting fragment and generating index for {fragment_file}")
-            index_fragment(
-                organism_ontology_term_id, fragment_file, parquet_file, tempdir, override_write_algorithm, output_file
-            )
+    # generate the index
+    if generate_index:
+        logger.info(f"Sorting fragment and generating index for {fragment_file}")
+        index_fragment(fragment_file, output_file)
+
     logger.debug("cleaning up")
     return []
 
@@ -395,31 +394,16 @@ def get_output_file(fragment_file: str, output_file: Optional[str]) -> str:
 
 
 def index_fragment(
-    organism_ontology_term_id: str,
     fragment_file: str,
-    parquet_file: str,
-    tempdir: str,
-    override_write_algorithm: Optional[str] = None,
     output_file: Optional[str] = None,
 ):
     # sort the fragment by chromosome, start coordinate, and stop coordinate, then compress it with bgzip
     bgzip_output_file = get_output_file(fragment_file, output_file)
     bgzip_output_path = Path(bgzip_output_file)
     bgzip_output_path.unlink(missing_ok=True)
-    bgzip_output_path.touch()
 
-    if override_write_algorithm:
-        write_algorithm = write_algorithm_by_callable[override_write_algorithm]
-    elif not shutil.which("bgzip"):  # check if bgzip cli is installed
-        logger.warning("bgzip is not installed, using slower pysam implementation")
-        write_algorithm = write_algorithm_by_callable["pysam"]
-    else:
-        write_algorithm = write_algorithm_by_callable["cli"]
-
-    chromosomes = detect_chromosomes(parquet_file)
-    prepare_fragment(chromosomes, organism_ontology_term_id, parquet_file, bgzip_output_file, tempdir, write_algorithm)
+    prepare_fragment(fragment_file, bgzip_output_file)
     logger.info(f"Fragment sorted and compressed: {bgzip_output_file}")
-    #
     pysam.tabix_index(bgzip_output_file, preset="bed", force=True)
     tabix_output_file = bgzip_output_file + ".tbi"
     logger.info(f"Index file generated: {tabix_output_file}")
@@ -443,88 +427,161 @@ def index_fragment(
     logger.info(f"Line count validation passed: {original_line_count} lines in both original and output files")
 
 
-def sort_fragment(parquet_file: str, write_path: str, chromosome: str, start: int, stop: int) -> Path:
-    temp_data = Path(write_path) / f"temp_{chromosome}.parquet"
-    t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
-    (
-        t.filter(t["chromosome"] == chromosome, t["start coordinate"] >= start, t["start coordinate"] <= stop)
-        .order_by(["start coordinate", "stop coordinate"])
-        .to_parquet(temp_data)
-    )
-    return temp_data
-
-
-def buffered_write(input_file: str) -> iter:
-    # Open the Parquet file and iterate through record batches
-    pfile = pa.parquet.ParquetFile(input_file)
-    for record_batch in pfile.iter_batches():
-        # Write the batch to an in-memory buffer
-        csv_buffer = pa.BufferOutputStream()
-        pa.csv.write_csv(
-            # Make sure columns are in right order
-            record_batch.select([f.name for f in schema]),
-            csv_buffer,
-            write_options=pa.csv.WriteOptions(
-                include_header=False,
-                delimiter="\t",
-                batch_size=1_000_000_000,  # this value could be further optimized
-                quoting_style="none",
-            ),
-        )
-        yield csv_buffer.getvalue().to_pybytes()
-
-
-def write_bgzip_pysam(input_file: str, bgzip_output_file: str):
-    with pysam.libcbgzf.BGZFile(bgzip_output_file, mode="ab") as f_out:
-        for data in buffered_write(input_file):
-            f_out.write(data)
-
-
-def write_bgzip_cli(input_file: str, bgzip_output_file: str):
-    with (
-        subprocess.Popen(
-            ["bgzip", "--threads", "-c"], stdin=subprocess.PIPE, stdout=open(bgzip_output_file, "ab")
-        ) as proc,
-    ):
-        for data in buffered_write(input_file):
-            proc.stdin.write(data)
-    return_code = proc.wait()
-    if return_code != 0:
-        logger.error(f"Subprocess exited with error code {return_code}")
-
-
-write_algorithm_by_callable = {"pysam": write_bgzip_pysam, "cli": write_bgzip_cli}
+SORT_MEMORY_PERCENTAGE = (
+    80  # percentage of memory to use for sort command. This is the default used by linux sort command.
+)
 
 
 def prepare_fragment(
-    chromosomes: list[str],
-    organism_ontology_term_id: str,
-    parquet_file: str,
+    fragment_file: str,
     bgzip_output_file: str,
-    tempdir: str,
-    write_algorithm: callable,
 ) -> None:
     """
     The sorting and writing of the fragment is done for each chromosome. Because of this the write order of
     the chromosomes may not be preserved. The chromosomes will all be stored in contiguous blocks in the bgzip file, and
     and sorted by start and stop coordinate within each chromosome.
-
-    :param chromosomes:
-    :param parquet_file:
-    :param bgzip_output_file:
-    :param tempdir:
-    :param write_algorithm:
+    :param fragment_file: The fragment file to process. This is a gzipped compressed fragment file.
+    :param bgzip_output_file: The output file to write the bgzip file to.
     :return:
     """
-    step_size = 1000  # 10 million
-    for chromosome in chromosomes:
-        chromosome_table = organism_ontology_term_id_by_chromosome_length_table.get(organism_ontology_term_id)
-        chromosome_length = chromosome_table[chromosome]
-        chunks = get_chunks(step_size=step_size, total_size=chromosome_length)
-        temp_data = None
-        for chunk_start, chunk_end in chunks:
-            logger.info(f"Processing chromosome: {chromosome}, range: {chunk_start}-{chunk_end}")
-            temp_data = sort_fragment(parquet_file, tempdir, chromosome, chunk_start, chunk_end)
-            write_algorithm(temp_data, bgzip_output_file)
-        Path(temp_data).unlink(missing_ok=True)  # clean up temporary file
+
+    if shutil.which("sort") is None:
+        raise RuntimeError(
+            "The 'sort' command is not installed or not found in PATH. It is required to sort the fragment file."
+        )
+    if shutil.which("bgzip") is None:
+        raise RuntimeError(
+            "The 'bgzip' command is not installed or not found in PATH. It is required to compress the fragment file."
+        )
+    if shutil.which("pigz") is None:
+        raise RuntimeError(
+            "The 'pigz' command is not installed or not found in PATH. It is required to compress the fragment file."
+        )
+
+    num_cores = os.cpu_count()
+    sort_memory = calculate_sort_memory(num_cores, SORT_MEMORY_PERCENTAGE)  # ensure at least 1% memory per core
+    with open(bgzip_output_file, "wb") as out_f:
+        gzip_proc = subprocess.Popen(["gzip", "-dc", fragment_file], stdout=subprocess.PIPE)
+        sort_proc = subprocess.Popen(
+            [
+                "sort",
+                f"--parallel={num_cores}",
+                "-t",
+                "\t",
+                "-k1,1",
+                "-k2,2n",
+                "-k3,3n",
+                "-k4,4",
+                f"-S {sort_memory}%",
+                f'--compress-program="pigz -p {num_cores}"',
+            ],
+            stdin=gzip_proc.stdout,
+            stdout=subprocess.PIPE,
+            env={**os.environ, "LC_ALL": "C"},
+        )
+        gzip_proc.stdout.close()
+        bgzip_proc = subprocess.Popen(["bgzip", f"--threads={num_cores}", "-c"], stdin=sort_proc.stdout, stdout=out_f)
+        sort_proc.stdout.close()
+        bgzip_proc.wait()
+    if bgzip_proc.returncode != 0:
+        raise RuntimeError(f"bgzip compression failed with error code {bgzip_proc.returncode}")
     logger.info(f"bgzip compression completed successfully for {bgzip_output_file}")
+
+
+def calculate_sort_memory(num_cores: int, sort_memory_percent: int) -> int:
+    """
+    Calculate the memory percentage to allocate per sort thread.
+
+    :param num_cores: Number of CPU cores available.
+    :param sort_memory_percent: Total percentage of system memory to allocate for sorting.
+    :return: Percentage of memory to allocate per sort thread.
+    """
+    return max(sort_memory_percent // num_cores, 1)  # ensure at least 1% memory per core
+
+
+def deduplicate_fragment_rows(
+    fragment_file_name: str, output_file_name: str = None, sort_memory_percent: int = SORT_MEMORY_PERCENTAGE
+) -> str:
+    """
+    Deduplicate rows in a fragment file by sorting and using the uniq command, then compress the result with bgzip.
+
+    This function decompresses the input fragment file, sorts it by chromosome and coordinates using GNU sort
+    (with parallelization and pigz compression), removes duplicate rows, and writes the output as a bgzipped file.
+    The amount of memory allocated to sort is controlled by sort_memory_percent, divided among CPU cores.
+
+    :param fragment_file_name: Path to the input gzipped fragment file.
+    :param output_file_name: Path for the output deduplicated bgzipped file. If None, a default name is generated.
+    :param sort_memory_percent: Percentage of system memory to allocate per sort thread (default: 80).
+    :return: Path to the deduplicated bgzipped output file.
+    :raises RuntimeError: If the bgzip compression process fails.
+    """
+    if shutil.which("sort") is None:
+        raise RuntimeError(
+            "The 'sort' command is not installed or not found in PATH. It is required to sort the fragment file."
+        )
+    if shutil.which("bgzip") is None:
+        raise RuntimeError(
+            "The 'bgzip' command is not installed or not found in PATH. It is required to compress the fragment file."
+        )
+    if shutil.which("pigz") is None:
+        raise RuntimeError(
+            "The 'pigz' command is not installed or not found in PATH. It is required to compress the fragment file."
+        )
+    if shutil.which("uniq") is None:
+        raise RuntimeError(
+            "The 'uniq' command is not installed or not found in PATH. It is required to compress the fragment file."
+        )
+
+    logger.info(f"deduplicating fragment file: {fragment_file_name}")
+
+    output_file_name = (
+        Path(output_file_name)
+        if output_file_name
+        else (Path(fragment_file_name).stem.replace(".tsv", "") + "_dedup.tsv.bgz")
+    )
+
+    num_cores = os.cpu_count()
+    sort_memory = calculate_sort_memory(num_cores, sort_memory_percent)
+    # Build the pipeline: gzip -dc | sort | uniq | bgzip
+    gzip_cmd = ["gzip", "-dc", str(fragment_file_name)]
+    sort_cmd = [
+        "sort",
+        "-t",
+        "\t",
+        "-k1,1",
+        "-k2,2n",
+        "-k3,3n",
+        "-k4,4",
+        f"-S{sort_memory}%",
+        f"--parallel={num_cores}",
+        f"--compress-program=pigz -p {num_cores}",
+    ]
+    uniq_cmd = ["uniq"]
+    bgzip_cmd = ["bgzip", "-@", str(num_cores), "-c"]
+
+    with open(output_file_name, "wb") as outfile:
+        # Start gzip process
+        gzip_proc = subprocess.Popen(gzip_cmd, stdout=subprocess.PIPE)
+        # Start sort process
+        sort_proc = subprocess.Popen(
+            sort_cmd,
+            stdin=gzip_proc.stdout,
+            stdout=subprocess.PIPE,
+            env={**os.environ, "LC_ALL": "C"},
+        )
+        gzip_proc.stdout.close()  # Allow gzip_proc to receive a SIGPIPE if sort_proc exits.
+        # Start uniq process
+        uniq_proc = subprocess.Popen(uniq_cmd, stdin=sort_proc.stdout, stdout=subprocess.PIPE)
+        sort_proc.stdout.close()
+        # Start bgzip process
+        bgzip_proc = subprocess.Popen(bgzip_cmd, stdin=uniq_proc.stdout, stdout=outfile)
+        uniq_proc.stdout.close()
+        bgzip_proc.wait()
+        if bgzip_proc.returncode != 0:
+            raise RuntimeError(f"bgzip compression failed with error code {bgzip_proc.returncode}")
+        # Wait for the rest of the pipeline to finish and check for errors
+        uniq_proc.wait()
+        sort_proc.wait()
+        gzip_proc.wait()
+    logger.info(f"bgzip compression completed successfully for {output_file_name}")
+    return str(output_file_name)

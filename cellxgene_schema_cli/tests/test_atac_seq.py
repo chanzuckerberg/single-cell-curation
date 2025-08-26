@@ -1,7 +1,7 @@
 import gzip
 import os
 from pathlib import Path
-from unittest.mock import patch
+from unittest import mock
 
 import anndata as ad
 import dask.dataframe as dd
@@ -54,7 +54,16 @@ def mock_anndata_file(tmpdir):
     return anndata_file
 
 
-def create_test_fragment_file(tmpdir, filename, lines):
+def create_fragment_file_from_dataframe(file_path: str, df: pd.DataFrame):
+    """Helper to create a gzip fragment file from a DataFrame."""
+    with gzip.open(file_path, "wt") as f:
+        for _, row in df.iterrows():
+            line = "\t".join(map(str, row.tolist())) + "\n"
+            f.write(line)
+    return file_path
+
+
+def create_test_fragment_file(tmpdir: Path, filename: str, lines: pd.DataFrame) -> str:
     """Helper to create a gzip fragment file with specified content."""
     file_path = os.path.join(tmpdir, filename)
     with gzip.open(file_path, "wt") as f:
@@ -113,33 +122,20 @@ def count_fragments_per_chromosome(fragment_file):
 
 
 class TestProcessFragment:
-    @pytest.mark.parametrize("override_write_algorithm", ["pysam", "cli", None])
-    def test_write_algorithms(
-        self, atac_fragment_bgzip_file_path, atac_fragment_index_file_path, override_write_algorithm
-    ):
-        self._test_process_fragment(
-            atac_fragment_bgzip_file_path, atac_fragment_index_file_path, override_write_algorithm, "fragments.tsv.bgz"
-        )
-
     @pytest.mark.parametrize("fragment_file", ["fragments.tsv.bgz", "fragments.tsv.gz"])
     def test_source_file_compression(self, atac_fragment_bgzip_file_path, atac_fragment_index_file_path, fragment_file):
-        self._test_process_fragment(
-            atac_fragment_bgzip_file_path, atac_fragment_index_file_path, "pysam", fragment_file
-        )
+        self._test_process_fragment(atac_fragment_bgzip_file_path, atac_fragment_index_file_path, fragment_file)
 
     @staticmethod
-    def _test_process_fragment(
-        atac_fragment_bgzip_file_path, atac_fragment_index_file_path, override_write_algorithm, fragment_file
-    ):
+    def _test_process_fragment(atac_fragment_bgzip_file_path, atac_fragment_index_file_path, fragment_file):
         # Arrange
         anndata_file = os.path.join(FIXTURES_ROOT, "atac_seq", "small_atac_seq.h5ad")
         fragments_file = os.path.join(FIXTURES_ROOT, "atac_seq", fragment_file)
         # Act
         result = atac_seq.process_fragment(
-            fragments_file,
+            str(fragments_file),
             anndata_file,
             generate_index=True,
-            override_write_algorithm=override_write_algorithm,
             output_file=str(atac_fragment_bgzip_file_path),
         )
         # Assert
@@ -191,6 +187,34 @@ class TestProcessFragment:
             output_file=str(atac_fragment_bgzip_file_path),
         )
         result = [r for r in result if "Error" in r]
+        # Assert
+        assert len(result) == 1
+
+
+class TestPrepareFragment:
+    def test_positive(self, atac_fragment_dataframe, tmpdir):
+        # Arrange
+        input_file = os.path.join(
+            tmpdir,
+            "fragment.tsv.gz",
+        )
+        atac_fragment_dataframe.to_csv(
+            input_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
+        )
+        output_file = os.path.join(tmpdir, "fragment.bgz")
+        # Act
+        atac_seq.prepare_fragment(input_file, output_file)
+        # Assert
+        assert Path(output_file).exists()
+
+    @pytest.mark.parametrize("tool", ["bgzip", "pigz", "sort"])
+    @mock.patch("shutil.which")
+    def test_missing_requirements(self, mock, tool, atac_fragment_file, tmpdir):
+        # Arrange
+        mock.return_value = None  # patch shutil to return None for the tool
+        # Act
+        with pytest.raises(RuntimeError):
+            atac_seq.prepare_fragment(atac_fragment_file, "fragment.bgz")
 
 
 class TestConvertToParquet:
@@ -477,7 +501,9 @@ class TestCountLinesInCompressedFile:
     def test_count_lines_empty_file(self, tmpdir):
         """Test counting lines in an empty gzip file."""
         # Arrange
-        empty_file = create_test_fragment_file(tmpdir, "empty.tsv.gz", [])
+        empty_file = create_fragment_file_from_dataframe(
+            os.path.join(tmpdir, "empty.tsv.gz"), pd.DataFrame(columns=atac_seq.column_ordering)
+        )
 
         # Act
         line_count = atac_seq.count_lines_in_compressed_file(empty_file)
@@ -488,8 +514,11 @@ class TestCountLinesInCompressedFile:
     def test_count_lines_single_line_file(self, tmpdir):
         """Test counting lines in a single-line gzip file."""
         # Arrange
-        lines = ["chr1\t100\t200\tbarcode1\t5\n"]
-        single_line_file = create_test_fragment_file(tmpdir, "single.tsv.gz", lines)
+        lines = ["chr1\t100\t200\tbarcode1\t5"]
+        single_line_file = create_fragment_file_from_dataframe(
+            os.path.join(tmpdir, "single.tsv.gz"),
+            pd.DataFrame([line.split("\t") for line in lines], columns=atac_seq.column_ordering),
+        )
 
         # Act
         line_count = atac_seq.count_lines_in_compressed_file(single_line_file)
@@ -538,24 +567,64 @@ class TestIndexFragmentWithLineCountValidation:
         """Test that line count validation fails when counts don't match."""
         # Arrange
         test_lines = [f"chr1\t100\t200\t{TEST_BARCODE}\t5\n", f"chr1\t300\t400\t{TEST_BARCODE}\t3\n"]
-        test_fragment_file = create_test_fragment_file(tmpdir, "test_fragments.tsv.gz", test_lines)
+        test_fragment_file = create_fragment_file_from_dataframe(
+            os.path.join(tmpdir, "test_fragments.tsv.gz"),
+            pd.DataFrame([line.rstrip("\n").split("\t") for line in test_lines], columns=atac_seq.column_ordering),
+        )
         output_file = os.path.join(tmpdir, "output.bgz")
 
         # Mock write function to produce different line count (1 line instead of 2)
-        def mock_write_func(input_file, output_file):
+        def mock_prepare_fragment(_input_file, output_file):
             with pysam.libcbgzf.BGZFile(output_file, mode="wb") as f_out:
                 f_out.write(f"chr1\t100\t200\t{TEST_BARCODE}\t5\n".encode())  # Only one line instead of two
 
         # Act & Assert
         with (
-            patch("cellxgene_schema.atac_seq.write_bgzip_pysam", side_effect=mock_write_func),
+            mock.patch("cellxgene_schema.atac_seq.prepare_fragment", side_effect=mock_prepare_fragment),
             pytest.raises(ValueError, match="Line count validation failed"),
         ):
-            parquet_file = atac_seq.convert_to_parquet(test_fragment_file, str(tmpdir))
             atac_seq.index_fragment(
-                organism_ontology_term_id="NCBITaxon:9606",
                 fragment_file=test_fragment_file,
-                parquet_file=parquet_file,
-                tempdir=str(tmpdir),
                 output_file=output_file,
             )
+
+
+class TestDeduplicateFragmentRows:
+    def test_deduplicate_rows(self, atac_fragment_dataframe, tmpdir):
+        # Arrange
+        atac_fragment_dataframe = pd.concat([atac_fragment_dataframe, atac_fragment_dataframe])
+        input_file = create_fragment_file_from_dataframe(
+            os.path.join(tmpdir, "fragment.tsv.gz"), atac_fragment_dataframe
+        )
+        output_file = os.path.join(tmpdir, "deduplicated.tsv.bgz")
+        # Act
+        atac_seq.deduplicate_fragment_rows(input_file, output_file)
+        # Assert
+        assert Path(output_file).exists()
+        df = pd.read_csv(
+            output_file,
+            compression="gzip",
+            sep="\t",
+            header=None,
+            names=["chromosome", "start coordinate", "stop coordinate", "barcode", "read support"],
+        )
+        assert len(df) == len(atac_fragment_dataframe) // 2
+
+    def test_no_duplicates(self, atac_fragment_dataframe, tmpdir):
+        # Arrange
+        input_file = create_fragment_file_from_dataframe(
+            os.path.join(tmpdir, "fragment.tsv.gz"), atac_fragment_dataframe
+        )
+        output_file = os.path.join(tmpdir, "deduplicated.tsv.bgz")
+        # Act
+        atac_seq.deduplicate_fragment_rows(input_file, output_file)
+        # Assert
+        assert Path(output_file).exists()
+        df = pd.read_csv(
+            output_file,
+            compression="gzip",
+            sep="\t",
+            header=None,
+            names=["chromosome", "start coordinate", "stop coordinate", "barcode", "read support"],
+        )
+        assert len(df) == len(atac_fragment_dataframe)
