@@ -222,7 +222,8 @@ def process_fragment(
     :param override_write_algorithm: Override the write algorithm used to write the bgzip file. Options are "pysam"
     and "cli"
     :param output_file: The output file to write the bgzip file to. If not provided, the output file will be the same
-
+    :param fragment_is_prepared: If True, skip the preparation step and assume the fragment is already sorted and bgzipped.
+    :return: A list of error messages. If the list is empty, the fragment is valid.
     """
 
     with tempfile.TemporaryDirectory() as tempdir:
@@ -252,8 +253,15 @@ def process_fragment(
 
     # generate the index
     if generate_index:
-        logger.info(f"Sorting fragment and generating index for {fragment_file}")
-        index_fragment(fragment_file, output_file, fragment_is_prepared)
+        if not fragment_is_prepared:
+            logger.info("Preparing fragment for indexing")
+            prepared_fragment_file = prepare_fragment(fragment_file, output_file)
+        else:
+            logger.info("Fragment is already prepared, skipping preparation step")
+            prepared_fragment_file = fragment_file
+
+        logger.info(f"Sorting fragment and generating index for {prepared_fragment_file}")
+        index_fragment(prepared_fragment_file)
 
     logger.debug("cleaning up")
     return []
@@ -414,25 +422,9 @@ def get_output_file(fragment_file: str, output_file: Optional[str]) -> str:
     return bgzip_output_file
 
 
-def index_fragment(
-    fragment_file: str,
-    output_file: Optional[str] = None,
-    fragment_is_prepared: bool = False,
-):
-    if fragment_is_prepared:
-        bgzip_output_file = fragment_file
-    else:
-        # sort the fragment by chromosome, start coordinate, and stop coordinate, then compress it with bgzip
-        bgzip_output_file = get_output_file(fragment_file, output_file)
-        bgzip_output_path = Path(bgzip_output_file)
-        bgzip_output_path.unlink(missing_ok=True)
-
-        prepare_fragment(fragment_file, bgzip_output_file)
-        line_counts_match(fragment_file, bgzip_output_file)
-
-    logger.info(f"Fragment sorted and compressed: {bgzip_output_file}")
-    pysam.tabix_index(bgzip_output_file, preset="bed", force=True)
-    tabix_output_file = bgzip_output_file + ".tbi"
+def index_fragment(bgzip_fragment_file: str) -> None:
+    pysam.tabix_index(bgzip_fragment_file, preset="bed", force=True)
+    tabix_output_file = bgzip_fragment_file + ".tbi"
     logger.info(f"Index file generated: {tabix_output_file}")
 
 
@@ -444,18 +436,24 @@ SORT_MEMORY_PERCENTAGE = (
 def prepare_fragment(
     fragment_file: str,
     bgzip_output_file: str,
-) -> None:
+) -> str:
     """
     The sorting and writing of the fragment is done for each chromosome. Because of this the write order of
     the chromosomes may not be preserved. The chromosomes will all be stored in contiguous blocks in the bgzip file, and
     and sorted by start and stop coordinate within each chromosome.
     :param fragment_file: The fragment file to process. This is a gzipped compressed fragment file.
     :param bgzip_output_file: The output file to write the bgzip file to.
-    :return:
+    :return: The path to the bgzip file.
     """
 
     check_external_requirements()
 
+    # remove existing output file if it exists
+    bgzip_output_file = get_output_file(fragment_file, bgzip_output_file)
+    bgzip_output_path = Path(bgzip_output_file)
+    bgzip_output_path.unlink(missing_ok=True)
+
+    logger.info(f"Fragment sorted and compressed: {bgzip_output_file}")
     num_cores = os.cpu_count()
     with open(bgzip_output_file, "wb") as out_f:
         gzip_proc = subprocess.Popen(get_gzip_command(fragment_file), stdout=subprocess.PIPE)
@@ -471,7 +469,9 @@ def prepare_fragment(
         bgzip_proc.wait()
     if bgzip_proc.returncode != 0:
         raise RuntimeError(f"bgzip compression failed with error code {bgzip_proc.returncode}")
+    line_counts_match(fragment_file, bgzip_output_file)
     logger.info(f"bgzip compression completed successfully for {bgzip_output_file}")
+    return bgzip_output_file
 
 
 def get_sort_command(num_cores: int, sort_memory_percent: int = SORT_MEMORY_PERCENTAGE) -> list[str]:
