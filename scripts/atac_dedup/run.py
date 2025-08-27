@@ -21,15 +21,10 @@ authenticate to the curation api
 """
 import json
 import logging
-import os
 import shutil
-import subprocess
 import sys
-import tempfile
 from pathlib import Path
-from typing import Dict, List, Tuple
-
-import requests
+from typing import Dict, List, Optional, Tuple
 
 # Add the curation API src to the path
 curation_api_path = Path(__file__).parent.parent.parent / "notebooks/curation_api/python"
@@ -37,10 +32,8 @@ sys.path.append(str(curation_api_path))
 
 from src.collection import create_revision, get_collections
 from src.dataset import (
-    download_assets_from_manifest,
     get_dataset_manifest,
     upload_datafiles_from_manifest,
-    upload_local_datafile,
 )
 from src.utils.config import set_api_access_config
 
@@ -65,8 +58,21 @@ def find_atac_collections() -> Tuple[List[Dict], List[Dict]]:
     logger.info("Fetching all collections...")
 
     # Get both public and private collections
-    public_collections = get_collections()
-    private_collections = get_collections(visibility="PRIVATE")
+    # INSERT_YOUR_CODE
+    import concurrent.futures
+
+    def _get_collections_with_visibility(visibility=None):
+        if visibility is None:
+            return get_collections()
+        else:
+            return get_collections(visibility=visibility)
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future_public = executor.submit(_get_collections_with_visibility, None)
+        future_private = executor.submit(_get_collections_with_visibility, "PRIVATE")
+        public_collections = future_public.result()
+        private_collections = future_private.result()
+
     all_collections = public_collections + private_collections
 
     logger.info(f"Found {len(all_collections)} total collections")
@@ -99,87 +105,23 @@ def get_atac_datasets_from_collection(collection: Dict) -> List[Dict]:
     atac_datasets = []
 
     for dataset in collection.get("datasets", []):
-        assay_ontology_terms = [a["ontology_term_id"] for a in dataset.get("assay", [])]
-        if any(atac_seq.is_atac(term) != "n" for term in assay_ontology_terms):
+        collection_id = collection["collection_id"]
+        dataset_id = dataset["dataset_id"]
+        manifest = get_dataset_manifest(collection_id, dataset_id)
+        if manifest.get("atac_fragment"):
             atac_datasets.append(dataset)
+        # assay_ontology_terms = [a["ontology_term_id"] for a in dataset.get("assay", [])]
+        # if any(atac_seq.is_atac(term) != "n" for term in assay_ontology_terms):
+        #     atac_datasets.append(dataset)
 
     return atac_datasets
 
 
-def process_fragment_file(fragment_file_path: str, output_dir: str) -> str:
-    """
-    Process (deduplicate and sort) a fragment file.
-
-    Args:
-        fragment_file_path: Path to the downloaded fragment file
-        output_dir: Directory to write the processed file
-
-    Returns:
-        Path to the processed fragment file
-    """
-
-    logger.info(f"Processing fragment file: {fragment_file_path}")
-
-    output_filename = Path(fragment_file_path).stem.replace(".tsv", "") + "_dedup.tsv.bgz"
-    bgzip_output_file = Path(output_dir) / output_filename
-
-    # Use the existing atac_seq processing functions to deduplicate and sort
-    try:
-        # The prepare_fragment function handles sorting and bgzip compression
-        # It expects a gzipped input file and outputs a bgzipped file
-        num_cores = os.cpu_count()
-
-        bgzip_proc = subprocess.Popen(
-            f"""gzip -dc "{fragment_file_path}" \
-| LC_ALL=C sort -t $'\t' -k1,1 -k2,2n -k3,3n -k4,4 \
-    -S 60% --parallel="{num_cores}" \
-    --compress-program="pigz -p {num_cores}" \
-| uniq | bgzip -@ "{num_cores}" -c > "{bgzip_output_file}" 
-            """,
-            shell=True,
-        )
-        bgzip_proc.wait()
-        # with open(bgzip_output_file, "wb") as out_f:
-        #     gzip_proc = subprocess.Popen(["gzip", "-dc", fragment_file_path], stdout=subprocess.PIPE)
-        #     sort_proc = subprocess.Popen(
-        #         [
-        #             "sort",
-        #             f"--parallel={num_cores}",
-        #             "-t",
-        #             "\t",
-        #             "-k1,1",
-        #             "-k2,2n",
-        #             "-k3,3n",
-        #             "-k4,4",
-        #             "-S 40%",
-        #             '--compress-program="pigz -p {num_cores}"',
-        #         ],
-        #         stdin=gzip_proc.stdout,
-        #         stdout=subprocess.PIPE,
-        #         env={**os.environ, "LC_ALL": "C"},
-        #     )
-        #     gzip_proc.stdout.close()
-        #     # run it through unique to remove any duplicate rows that may have been introduced
-        #     unique_proc = subprocess.Popen(
-        #         ["uniq"],
-        #         stdin=sort_proc.stdout,
-        #         stdout=subprocess.PIPE,
-        #     )
-        #     sort_proc.stdout.close()
-        #     bgzip_proc = subprocess.Popen(["bgzip", f"--threads={num_cores}", "-c"], stdin=unique_proc.stdout,
-        #     stdout=out_f)
-        #     unique_proc.stdout.close()
-        #     bgzip_proc.wait()
-        if bgzip_proc.returncode != 0:
-            raise RuntimeError(f"bgzip compression failed with error code {bgzip_proc.returncode}")
-        logger.info(f"bgzip compression completed successfully for {bgzip_output_file}")
-        return str(bgzip_output_file)
-    except Exception as e:
-        logger.exception(f"Error processing fragment file {fragment_file_path}: {e}")
-        raise
+ATAC_SIZE = []
+GB = 1024 * 1024 * 1024
 
 
-def process_dataset(collection_id: str, dataset: Dict, work_dir: str) -> bool:
+def process_dataset(collection_id: str, dataset: Dict) -> Optional[bool]:
     """
     Process a single ATAC-seq dataset by downloading, deduplicating, and re-uploading fragment files.
 
@@ -201,62 +143,11 @@ def process_dataset(collection_id: str, dataset: Dict, work_dir: str) -> bool:
 
         # Look for fragment files in the manifest
         fragment_files = {k: v for k, v in manifest.items() if "fragment" in k.lower()}
-
         if not fragment_files:
-            logger.warning(f"No fragment files found in dataset {dataset_id}")
-            return True  # Not an error, just no fragment files to process
-
-        logger.info(f"Found {len(fragment_files)} fragment files to process")
-
-        # Create dataset-specific work directory
-        dataset_work_dir = Path(work_dir) / dataset_id
-        dataset_work_dir.mkdir(exist_ok=True)
-
-        # Download fragment files
-        original_cwd = os.getcwd()
-        os.chdir(dataset_work_dir)
-
-        try:
-            # TODO: remove
-            content_length = requests.head(fragment_files["atac_fragment"]).headers.get("Content-Length")
-            if int(content_length) > 3 * 1024 * 1024 * 1024:  # 1 GB
-                logger.warning(f"Skipping large file (>1GB): {fragment_files['atac_fragment']}")
-                return True
-
-            download_assets_from_manifest(fragment_files)
-
-            # Process each fragment file
-            updated_manifest = manifest.copy()
-
-            for file_key, file_url in fragment_files.items():
-                original_filename = file_url.split("/")[-1]
-                original_file_path = dataset_work_dir / original_filename
-
-                if not original_file_path.exists():
-                    logger.warning(f"Downloaded file not found: {original_file_path}")
-                    continue
-
-                # Process the fragment file (deduplicate and sort)
-                processed_file_path = process_fragment_file(str(original_file_path), str(dataset_work_dir))
-
-                # Upload the processed file
-                s3_uri = upload_local_datafile(processed_file_path, collection_id, dataset_id)
-
-                # Update the manifest with the new file location
-                updated_manifest[file_key] = s3_uri
-                logger.info(f"Updated manifest entry {file_key}: {s3_uri}")
-
-            # Upload the updated manifest
-            upload_datafiles_from_manifest(updated_manifest, collection_id, dataset_id)
-            logger.info(f"Successfully updated manifest for dataset {dataset_id}")
-
-            return True
-        except Exception as e:
-            logger.exception(f"Error downloading or processing files for dataset {dataset_id}: {e}")
-            return False
-        finally:
-            os.chdir(original_cwd)
-
+            return None
+        manifest["flags"] = {"deduplicate_fragments": True}
+        upload_datafiles_from_manifest(collection_id, dataset_id, manifest)
+        return True
     except Exception as e:
         logger.exception(f"Error processing dataset {dataset_id}: {e}")
         return False
@@ -277,7 +168,7 @@ def main():
             "The 'pigz' command is not installed or not found in PATH. It is required to compress the fragment file."
         )
     # Configuration
-    api_key_path = "/Users/trentsmith/workspace/single-cell-curation/notebooks/curation_api/api-dev.key"
+    api_key_path = "./api-dev.key"
 
     logger.info("Starting ATAC-seq deduplication process")
 
@@ -289,9 +180,7 @@ def main():
         public_collections, private_collections = find_atac_collections()
 
         # Create revisions for public collections
-        with open(
-            "/Users/trentsmith/workspace/single-cell-curation/scripts/atac_dedup/public_to_revision_map.json"
-        ) as json_file:
+        with open("./public_to_revision_map.json") as json_file:
             public_revision_mapping = json.load(json_file)
         for collection in public_collections:
             if collection["collection_id"] in public_revision_mapping:
@@ -305,6 +194,8 @@ def main():
             except Exception as e:
                 logger.exception(f"Failed to create revision for collection {collection_id}: {e}")
                 continue
+        with open("./public_to_revision_map.json", "w") as json_file:
+            json.dump(public_revision_mapping, json_file)
 
         # Process all collections
         all_collections = public_collections + private_collections
@@ -327,17 +218,17 @@ def main():
             atac_datasets = get_atac_datasets_from_collection(collection)
 
             if not atac_datasets:
-                logger.info(f"No ATAC datasets found in collection {collection_id}")
                 continue
 
             logger.info(f"Processing {len(atac_datasets)} ATAC datasets in collection {collection_id}")
 
             collection_success = True
             for dataset in atac_datasets:
-                with tempfile.TemporaryDirectory(prefix="atac_dedup_") as work_dir:
-                    success = process_dataset(working_collection_id, dataset, work_dir)
-                    if not success:
-                        collection_success = False
+                success = process_dataset(working_collection_id, dataset)
+                if success is False:
+                    collection_success = False
+                elif success is None:
+                    logger.info(f"No fragment files found in dataset {dataset['dataset_id']}, skipping")
 
             if collection_success:
                 successful_collections.append(collection_id)
@@ -350,6 +241,7 @@ def main():
         logger.info("ATAC-seq deduplication process completed")
         logger.info(f"Successfully processed collections: {len(successful_collections)}")
         logger.info(f"Failed collections: {len(failed_collections)}")
+        logger.info(f"ATAC_SIZE: {max(ATAC_SIZE), min(ATAC_SIZE), sum(ATAC_SIZE) / len(ATAC_SIZE)}")
 
         # Print a link to the collections to be published
         logger.info("Links to processed public collections:")
