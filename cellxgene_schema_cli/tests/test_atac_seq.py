@@ -104,6 +104,10 @@ def atac_fragment_dataframe() -> pd.DataFrame:
     )
 
 
+def dataframe_to_csv(df: pd.DataFrame, file_path: str):
+    df.to_csv(file_path, sep="\t", index=False, header=False, compression="gzip", columns=atac_seq.column_ordering)
+
+
 @pytest.fixture
 def atac_fragment_file(atac_fragment_dataframe, tmpdir):
     return to_parquet_file(atac_fragment_dataframe, tmpdir)
@@ -190,6 +194,41 @@ class TestProcessFragment:
         # Assert
         assert len(result) == 1
 
+    def test_process_fragment_with_prepared_fragment(self, test_fragment_files, tmpdir):
+        """Test process_fragment with fragment_is_prepared=True using a properly prepared file."""
+        # Arrange - First prepare a fragment file properly
+        anndata_file = os.path.join(FIXTURES_ROOT, "atac_seq", "small_atac_seq.h5ad")
+        source_fragment = test_fragment_files["gzip"]  # Start with gzip
+        prepared_fragment = atac_seq.prepare_fragment(source_fragment, os.path.join(tmpdir, "prepared.bgz"))
+
+        # Act
+        result = atac_seq.process_fragment(
+            prepared_fragment, anndata_file, generate_index=True, fragment_is_prepared=True
+        )
+
+        # Assert - no errors and index file created
+        assert len(result) == 0
+        index_file = prepared_fragment + ".tbi"
+        assert Path(index_file).exists()
+
+        # Clean up is handled by tmpdir fixture
+
+    def test_process_fragment_with_unprepared_fragment(self, test_fragment_files, tmpdir):
+        """Test process_fragment with fragment_is_prepared=False."""
+        # Arrange
+        anndata_file = os.path.join(FIXTURES_ROOT, "atac_seq", "small_atac_seq.h5ad")
+        fragments_file = test_fragment_files["gzip"]  # Unprepared gzip file
+        output_file = os.path.join(tmpdir, "output.bgz")
+
+        # Act
+        result = atac_seq.process_fragment(
+            fragments_file, anndata_file, generate_index=True, output_file=output_file, fragment_is_prepared=False
+        )
+
+        # Assert - no errors and both bgz and index files created
+        assert len(result) == 0
+        assert Path(output_file).exists() or Path(output_file.replace(".bgz", "") + ".bgz").exists()
+
 
 class TestPrepareFragment:
     def test_positive(self, atac_fragment_dataframe, tmpdir):
@@ -198,9 +237,7 @@ class TestPrepareFragment:
             tmpdir,
             "fragment.tsv.gz",
         )
-        atac_fragment_dataframe.to_csv(
-            input_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
-        )
+        dataframe_to_csv(atac_fragment_dataframe, input_file)
         output_file = os.path.join(tmpdir, "fragment.bgz")
         # Act
         atac_seq.prepare_fragment(input_file, output_file)
@@ -223,9 +260,7 @@ class TestConvertToParquet:
             tmpdir,
             "fragment.tsv.gz",
         )
-        atac_fragment_dataframe.to_csv(
-            tsv_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
-        )
+        dataframe_to_csv(atac_fragment_dataframe, tsv_file)
         parquet_file = Path(atac_seq.convert_to_parquet(tsv_file, tmpdir))
         assert Path(parquet_file).is_dir()
 
@@ -241,18 +276,14 @@ class TestConvertToParquet:
     def test_invalid_column_dtype(self, tmpdir, atac_fragment_dataframe):
         atac_fragment_dataframe["start coordinate"] = "foo"
         tsv_file = os.path.join(tmpdir, "fragment.tsv.gz")
-        atac_fragment_dataframe.to_csv(
-            tsv_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
-        )
+        dataframe_to_csv(atac_fragment_dataframe, tsv_file)
         with pytest.raises(ValueError):
             atac_seq.convert_to_parquet(tsv_file, tmpdir)
 
     def test_with_na_columns(self, atac_fragment_dataframe, tmpdir):
         atac_fragment_dataframe["barcode"] = pd.NA
         tsv_file = os.path.join(tmpdir, "fragment.tsv.gz")
-        atac_fragment_dataframe.to_csv(
-            tsv_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
-        )
+        dataframe_to_csv(atac_fragment_dataframe, tsv_file)
         parquet_file = Path(atac_seq.convert_to_parquet(tsv_file, tmpdir))
         parquet_df = dd.read_parquet(parquet_file, columns=["barcode"])
         assert len(parquet_df[parquet_df["barcode"] != ""].compute()) == 0
@@ -602,92 +633,24 @@ class TestCountLinesInCompressedFile:
             atac_seq.count_lines_in_compressed_file("/nonexistent/file.gz")
 
 
-class TestIndexFragmentPrepared:
-    """Test fragment indexing with prepared/unprepared files."""
+class TestIndexFragment:
+    def test_index_fragment(self, tmpdir, atac_fragment_dataframe):
+        """Test index_fragment creates a tabix index file from a properly sorted bgzip file."""
+        # Arrange - create a properly sorted bgzip file for testing
 
-    def test_index_fragment_already_prepared(self, test_fragment_files, tmpdir):
-        """Test index_fragment with is_prepared=False (file already prepared)."""
-        # Arrange
-        fragment_file = test_fragment_files["bgzip"]  # Use already prepared bgzip file
+        # Create a gzip file first
+        input_file = os.path.join(tmpdir, "test_fragments.tsv.gz")
+        dataframe_to_csv(atac_fragment_dataframe, input_file)
 
-        # Act
-        atac_seq.index_fragment(
-            fragment_file=fragment_file,
-            output_file=None,
-            is_prepared=False,  # File is already prepared
-        )
-
-        # Assert
-        index_file = fragment_file + ".tbi"
-        assert Path(index_file).exists()
-
-        # Clean up
-        Path(index_file).unlink(missing_ok=True)
-
-    def test_index_fragment_needs_preparation(self, tmpdir, mock_anndata_file):
-        """Test index_fragment with is_prepared=True (needs preparation)."""
-        # Arrange
-        test_lines = [f"chr1\t100\t200\t{TEST_BARCODE}\t5\n", f"chr1\t300\t400\t{TEST_BARCODE}\t3\n"]
-        test_fragment_file = create_fragment_file_from_dataframe(
-            os.path.join(tmpdir, "test_fragments.tsv.gz"),
-            pd.DataFrame([line.rstrip("\n").split("\t") for line in test_lines], columns=atac_seq.column_ordering),
-        )
-        output_file = os.path.join(tmpdir, "output.bgz")
-        index_file = output_file + ".tbi"
-
-        # Mock prepare_fragment to create a proper bgzip file
-        def mock_prepare_fragment(input_file, output_file):
-            with gzip.open(input_file, "rt") as f_in:
-                data = f_in.read()
-            with gzip.open(output_file, "wt") as f_out:
-                f_out.write(data)
-
-        # Mock line_counts_match and tabix_index
-        def mock_line_counts_match(file1, file2):
-            pass  # Do nothing for test
-
-        def mock_tabix_index(bgzip_file, preset=None, force=None):
-            Path(bgzip_file + ".tbi").touch()
+        # Prepare it properly (this will sort and create bgzip)
+        bgzip_file = atac_seq.prepare_fragment(input_file, os.path.join(tmpdir, "test_fragments.bgz"))
 
         # Act
-        with (
-            mock.patch("cellxgene_schema.atac_seq.prepare_fragment", side_effect=mock_prepare_fragment),
-            mock.patch("cellxgene_schema.atac_seq.line_counts_match", side_effect=mock_line_counts_match),
-            mock.patch("pysam.tabix_index", side_effect=mock_tabix_index),
-        ):
-            atac_seq.index_fragment(
-                fragment_file=test_fragment_file,
-                output_file=output_file,
-                is_prepared=True,  # File needs preparation
-            )
+        atac_seq.index_fragment(bgzip_file)
 
         # Assert
-        assert Path(output_file).exists()
+        index_file = bgzip_file + ".tbi"
         assert Path(index_file).exists()
-
-    def test_index_fragment_parameter_logic(self):
-        """Test that index_fragment is_prepared parameter logic works correctly."""
-        with (
-            mock.patch("cellxgene_schema.atac_seq.prepare_fragment") as mock_prepare,
-            mock.patch("cellxgene_schema.atac_seq.line_counts_match") as mock_line_counts,
-            mock.patch("pysam.tabix_index") as mock_tabix,
-        ):
-            # Test is_prepared=True (should call prepare_fragment)
-            atac_seq.index_fragment("test.gz", "output.bgz", is_prepared=True)
-            mock_prepare.assert_called_once_with("test.gz", "output.bgz")
-            mock_line_counts.assert_called_once_with("test.gz", "output.bgz")
-            mock_tabix.assert_called_once()
-
-            # Reset mocks
-            mock_prepare.reset_mock()
-            mock_line_counts.reset_mock()
-            mock_tabix.reset_mock()
-
-            # Test is_prepared=False (should NOT call prepare_fragment)
-            atac_seq.index_fragment("test.bgz", None, is_prepared=False)
-            mock_prepare.assert_not_called()
-            mock_line_counts.assert_not_called()
-            mock_tabix.assert_called_once_with("test.bgz", preset="bed", force=True)
 
 
 class TestLineCountsMatch:
