@@ -475,96 +475,157 @@ class TestGetOutputFile:
         assert atac_seq.get_output_file(fragment_file, output_file) == expected
 
 
+class TestCommandGeneration:
+    """Test command generation functions for external tools."""
+
+    @pytest.mark.parametrize(
+        "func,args,expected_items",
+        [
+            (atac_seq.get_sort_command, (4,), ["sort", "-S20%", "--parallel=4", "-k1,1", "-k2,2n"]),
+            (atac_seq.get_sort_command, (8, 60), ["-S7%", "--parallel=8"]),  # custom memory
+            (atac_seq.get_bgzip_command, (6,), ["bgzip", "--threads=6", "-c"]),
+            (atac_seq.get_gzip_command, ("/path/to/file.tsv.gz",), ["gzip", "-dc", "/path/to/file.tsv.gz"]),
+        ],
+    )
+    def test_command_generation(self, func, args, expected_items):
+        """Test command generation functions return correct parameters."""
+        result = func(*args)
+        for item in expected_items:
+            assert item in result
+
+    def test_get_sort_command_full_structure(self):
+        """Test complete sort command structure for critical sorting parameters."""
+        command = atac_seq.get_sort_command(4)
+        expected_command = [
+            "sort",
+            "-t",
+            "\t",
+            "-k1,1",
+            "-k2,2n",
+            "-k3,3n",
+            "-k4,4",
+            "-S20%",
+            "--parallel=4",
+            '--compress-program="pigz -p 4"',
+        ]
+        assert command == expected_command
+
+
+class TestCalculateSortMemory:
+    """Test memory calculation for sort command."""
+
+    @pytest.mark.parametrize(
+        "cores,memory,expected",
+        [
+            (1, 80, 80),  # single core
+            (2, 80, 40),  # basic case
+            (4, 80, 20),  # common case
+            (8, 80, 10),  # multi-core
+            (16, 80, 5),  # many cores
+            (32, 80, 2),  # more cores
+            (64, 80, 1),  # minimum boundary
+            (100, 80, 1),  # excessive cores (minimum case)
+            (16, 10, 1),  # edge case - low memory percentage
+        ],
+    )
+    def test_calculate_sort_memory(self, cores, memory, expected):
+        """Test memory calculation with various scenarios including edge cases."""
+        assert atac_seq.calculate_sort_memory(cores, memory) == expected
+
+
+class TestCheckExternalRequirements:
+    """Test external tool requirements checking."""
+
+    def test_check_external_requirements_all_present(self):
+        """Test that check passes when all tools are present."""
+        with mock.patch("shutil.which", return_value="/usr/bin/tool"):
+            atac_seq.check_external_requirements()  # Should not raise
+
+    @pytest.mark.parametrize(
+        "missing_tool,expected_error",
+        [
+            ("sort", "The 'sort' command is not installed or not found in PATH"),
+            ("bgzip", "The 'bgzip' command is not installed or not found in PATH"),
+            ("pigz", "The 'pigz' command is not installed or not found in PATH"),
+            ("uniq", "The 'uniq' command is not installed or not found in PATH"),
+        ],
+    )
+    def test_check_external_requirements_missing_tool(self, missing_tool, expected_error):
+        """Test that check raises RuntimeError when specific tools are missing."""
+
+        def mock_which(tool):
+            return None if tool == missing_tool else "/usr/bin/tool"
+
+        with mock.patch("shutil.which", side_effect=mock_which), pytest.raises(RuntimeError, match=expected_error):
+            atac_seq.check_external_requirements()
+
+    def test_check_external_requirements_all_missing(self):
+        """Test that check raises error for first missing tool when all are missing."""
+        with (
+            mock.patch("shutil.which", return_value=None),
+            pytest.raises(RuntimeError, match="The 'sort' command is not installed"),
+        ):
+            atac_seq.check_external_requirements()
+
+
 class TestCountLinesInCompressedFile:
-    def test_count_lines_gzip_file(self, test_fragment_files):
-        """Test counting lines in a gzip compressed fragment file."""
-        # Arrange
-        fragment_file = test_fragment_files["gzip"]
+    """Test line counting in compressed files."""
 
-        # Act
-        line_count = atac_seq.count_lines_in_compressed_file(fragment_file)
+    @pytest.mark.parametrize(
+        "file_type,expected_count",
+        [
+            ("gzip", EXPECTED_LINE_COUNT),
+            ("bgzip", EXPECTED_LINE_COUNT),
+        ],
+    )
+    def test_count_lines_compressed_files(self, test_fragment_files, file_type, expected_count):
+        """Test counting lines in gzip and bgzip compressed fragment files."""
+        line_count = atac_seq.count_lines_in_compressed_file(test_fragment_files[file_type])
+        assert line_count == expected_count
 
-        # Assert
-        assert line_count == EXPECTED_LINE_COUNT
-
-    def test_count_lines_bgzip_file(self, test_fragment_files):
-        """Test counting lines in a bgzip compressed fragment file."""
-        # Arrange
-        fragment_file = test_fragment_files["bgzip"]
-
-        # Act
-        line_count = atac_seq.count_lines_in_compressed_file(fragment_file)
-
-        # Assert
-        assert line_count == EXPECTED_LINE_COUNT
-
-    def test_count_lines_empty_file(self, tmpdir):
-        """Test counting lines in an empty gzip file."""
-        # Arrange
-        empty_file = create_fragment_file_from_dataframe(
-            os.path.join(tmpdir, "empty.tsv.gz"), pd.DataFrame(columns=atac_seq.column_ordering)
-        )
-
-        # Act
-        line_count = atac_seq.count_lines_in_compressed_file(empty_file)
-
-        # Assert
-        assert line_count == 0
-
-    def test_count_lines_single_line_file(self, tmpdir):
-        """Test counting lines in a single-line gzip file."""
-        # Arrange
-        lines = ["chr1\t100\t200\tbarcode1\t5"]
-        single_line_file = create_fragment_file_from_dataframe(
-            os.path.join(tmpdir, "single.tsv.gz"),
-            pd.DataFrame([line.split("\t") for line in lines], columns=atac_seq.column_ordering),
-        )
-
-        # Act
-        line_count = atac_seq.count_lines_in_compressed_file(single_line_file)
-
-        # Assert
-        assert line_count == 1
+    @pytest.mark.parametrize(
+        "test_data,expected_count",
+        [
+            (pd.DataFrame(columns=atac_seq.column_ordering), 0),  # empty file
+            (pd.DataFrame([["chr1", 100, 200, "barcode1", 5]], columns=atac_seq.column_ordering), 1),  # single line
+        ],
+    )
+    def test_count_lines_various_sizes(self, tmpdir, test_data, expected_count):
+        """Test counting lines in files of various sizes."""
+        test_file = create_fragment_file_from_dataframe(os.path.join(tmpdir, "test.tsv.gz"), test_data)
+        line_count = atac_seq.count_lines_in_compressed_file(test_file)
+        assert line_count == expected_count
 
     def test_count_lines_nonexistent_file(self):
         """Test handling of non-existent file."""
-        # Arrange
-        nonexistent_file = "/nonexistent/file.gz"
-
-        # Act & Assert
         with pytest.raises(FileNotFoundError):
-            atac_seq.count_lines_in_compressed_file(nonexistent_file)
+            atac_seq.count_lines_in_compressed_file("/nonexistent/file.gz")
 
 
-class TestIndexFragmentWithLineCountValidation:
-    def test_line_count_validation_success(
-        self, test_fragment_files, atac_fragment_bgzip_file_path, atac_fragment_index_file_path
-    ):
-        """Test that line count validation passes when input and output have same line count."""
+class TestIndexFragmentPrepared:
+    """Test fragment indexing with prepared/unprepared files."""
+
+    def test_index_fragment_already_prepared(self, test_fragment_files, tmpdir):
+        """Test index_fragment with is_prepared=False (file already prepared)."""
         # Arrange
-        anndata_file = test_fragment_files["anndata"]
-        fragment_file = test_fragment_files["gzip"]
+        fragment_file = test_fragment_files["bgzip"]  # Use already prepared bgzip file
 
         # Act
-        result = atac_seq.process_fragment(
-            fragment_file,
-            anndata_file,
-            generate_index=True,
-            output_file=str(atac_fragment_bgzip_file_path),
+        atac_seq.index_fragment(
+            fragment_file=fragment_file,
+            output_file=None,
+            is_prepared=False,  # File is already prepared
         )
 
         # Assert
-        assert len(result) == 0
-        assert atac_fragment_bgzip_file_path.exists()
-        assert atac_fragment_index_file_path.exists()
+        index_file = fragment_file + ".tbi"
+        assert Path(index_file).exists()
 
-        # Verify line counts are equal
-        original_count = atac_seq.count_lines_in_compressed_file(fragment_file)
-        output_count = atac_seq.count_lines_in_compressed_file(str(atac_fragment_bgzip_file_path))
-        assert original_count == output_count == EXPECTED_LINE_COUNT
+        # Clean up
+        Path(index_file).unlink(missing_ok=True)
 
-    def test_line_count_validation_failure(self, tmpdir, mock_anndata_file):
-        """Test that line count validation fails when counts don't match."""
+    def test_index_fragment_needs_preparation(self, tmpdir, mock_anndata_file):
+        """Test index_fragment with is_prepared=True (needs preparation)."""
         # Arrange
         test_lines = [f"chr1\t100\t200\t{TEST_BARCODE}\t5\n", f"chr1\t300\t400\t{TEST_BARCODE}\t3\n"]
         test_fragment_file = create_fragment_file_from_dataframe(
@@ -572,21 +633,127 @@ class TestIndexFragmentWithLineCountValidation:
             pd.DataFrame([line.rstrip("\n").split("\t") for line in test_lines], columns=atac_seq.column_ordering),
         )
         output_file = os.path.join(tmpdir, "output.bgz")
+        index_file = output_file + ".tbi"
 
-        # Mock write function to produce different line count (1 line instead of 2)
-        def mock_prepare_fragment(_input_file, output_file):
-            with pysam.libcbgzf.BGZFile(output_file, mode="wb") as f_out:
-                f_out.write(f"chr1\t100\t200\t{TEST_BARCODE}\t5\n".encode())  # Only one line instead of two
+        # Mock prepare_fragment to create a proper bgzip file
+        def mock_prepare_fragment(input_file, output_file):
+            with gzip.open(input_file, "rt") as f_in:
+                data = f_in.read()
+            with gzip.open(output_file, "wt") as f_out:
+                f_out.write(data)
 
-        # Act & Assert
+        # Mock line_counts_match and tabix_index
+        def mock_line_counts_match(file1, file2):
+            pass  # Do nothing for test
+
+        def mock_tabix_index(bgzip_file, preset=None, force=None):
+            Path(bgzip_file + ".tbi").touch()
+
+        # Act
         with (
             mock.patch("cellxgene_schema.atac_seq.prepare_fragment", side_effect=mock_prepare_fragment),
-            pytest.raises(ValueError, match="Line count validation failed"),
+            mock.patch("cellxgene_schema.atac_seq.line_counts_match", side_effect=mock_line_counts_match),
+            mock.patch("pysam.tabix_index", side_effect=mock_tabix_index),
         ):
             atac_seq.index_fragment(
                 fragment_file=test_fragment_file,
                 output_file=output_file,
+                is_prepared=True,  # File needs preparation
             )
+
+        # Assert
+        assert Path(output_file).exists()
+        assert Path(index_file).exists()
+
+    def test_index_fragment_parameter_logic(self):
+        """Test that index_fragment is_prepared parameter logic works correctly."""
+        with (
+            mock.patch("cellxgene_schema.atac_seq.prepare_fragment") as mock_prepare,
+            mock.patch("cellxgene_schema.atac_seq.line_counts_match") as mock_line_counts,
+            mock.patch("pysam.tabix_index") as mock_tabix,
+        ):
+            # Test is_prepared=True (should call prepare_fragment)
+            atac_seq.index_fragment("test.gz", "output.bgz", is_prepared=True)
+            mock_prepare.assert_called_once_with("test.gz", "output.bgz")
+            mock_line_counts.assert_called_once_with("test.gz", "output.bgz")
+            mock_tabix.assert_called_once()
+
+            # Reset mocks
+            mock_prepare.reset_mock()
+            mock_line_counts.reset_mock()
+            mock_tabix.reset_mock()
+
+            # Test is_prepared=False (should NOT call prepare_fragment)
+            atac_seq.index_fragment("test.bgz", None, is_prepared=False)
+            mock_prepare.assert_not_called()
+            mock_line_counts.assert_not_called()
+            mock_tabix.assert_called_once_with("test.bgz", preset="bed", force=True)
+
+
+class TestLineCountsMatch:
+    """Test line count validation between files."""
+
+    @pytest.mark.parametrize(
+        "data1,data2,should_match",
+        [
+            # Both empty
+            (pd.DataFrame(columns=atac_seq.column_ordering), pd.DataFrame(columns=atac_seq.column_ordering), True),
+            # Same data
+            (
+                pd.DataFrame(
+                    {
+                        "chromosome": ["chr1", "chr2"],
+                        "start coordinate": [100, 200],
+                        "stop coordinate": [200, 300],
+                        "barcode": ["A", "B"],
+                        "read support": [1, 2],
+                    }
+                ),
+                pd.DataFrame(
+                    {
+                        "chromosome": ["chr1", "chr2"],
+                        "start coordinate": [100, 200],
+                        "stop coordinate": [200, 300],
+                        "barcode": ["A", "B"],
+                        "read support": [1, 2],
+                    }
+                ),
+                True,
+            ),
+            # Different lengths
+            (
+                pd.DataFrame(
+                    {
+                        "chromosome": ["chr1", "chr2"],
+                        "start coordinate": [100, 200],
+                        "stop coordinate": [200, 300],
+                        "barcode": ["A", "B"],
+                        "read support": [1, 2],
+                    }
+                ),
+                pd.DataFrame(
+                    {
+                        "chromosome": ["chr1"],
+                        "start coordinate": [100],
+                        "stop coordinate": [200],
+                        "barcode": ["A"],
+                        "read support": [1],
+                    }
+                ),
+                False,
+            ),
+        ],
+    )
+    def test_line_counts_match(self, tmpdir, data1, data2, should_match):
+        """Test line count matching with various data scenarios."""
+        file1 = create_fragment_file_from_dataframe(os.path.join(tmpdir, "file1.tsv.gz"), data1)
+        file2 = create_fragment_file_from_dataframe(os.path.join(tmpdir, "file2.tsv.gz"), data2)
+
+        if should_match:
+            atac_seq.line_counts_match(file1, file2)  # Should not raise
+        else:
+            with pytest.raises(ValueError, match="Line count validation failed"):
+                atac_seq.line_counts_match(file1, file2)
 
 
 class TestDeduplicateFragmentRows:
