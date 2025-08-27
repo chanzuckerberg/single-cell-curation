@@ -590,6 +590,7 @@ components:
                     - UBERON:0000105
               exceptions:
                 - unknown
+                - na
               forbidden:
                 terms:
                   - UBERON:0000071
