@@ -19,6 +19,7 @@ authenticate to the curation api
  - submit the updated manifest
 - any collection that was public should be publish. All private collections should remain private.
 """
+import datetime
 import json
 import logging
 import shutil
@@ -44,7 +45,12 @@ sys.path.append(str(schema_path))
 from cellxgene_schema import atac_seq
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+# output the logs to a file with date and time in the filename
+logging.basicConfig(
+    filename=f"atac_deduplication_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
 
 
