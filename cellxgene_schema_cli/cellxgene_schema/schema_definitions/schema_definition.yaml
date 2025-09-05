@@ -1,4 +1,4 @@
-title: Corpora schema version 5.X.X
+title: Corpora schema version 7.0.0
 type: anndata
 # If sparsity of any expression matrix is greater than this and not csr sparse matrix, then there will be warning.
 sparsity: 0.5
@@ -167,22 +167,60 @@ components:
                 - CL:0000000
             ancestors:
               ZFA:
-              - ZFA:0009000
+                - ZFA:0009000
               FBbt:
-              - FBbt:00007002
+                - FBbt:00007002
               WBbt:
-              - WBbt:0004017
+                - WBbt:0004017
               CL:
-              - CL:0000000
+                - CL:0000000
           forbidden:
             ancestors:
               WBbt:
-              - WBbt:0006803
+                - WBbt:0006803
             terms:
               - CL:0000255
               - CL:0000257
               - CL:0000548
               - WBbt:0006803
+        dependencies:
+          - rule:
+              column: tissue_type
+              match_exact:
+                terms:
+                  - cell line
+            type: curie
+            curie_constraints:
+              ontologies:
+                - CL
+                - ZFA
+                - FBbt
+                - WBbt
+              exceptions:
+                - unknown
+                - na
+              allowed:
+                terms:
+                  CL:
+                    - CL:0000000
+                ancestors:
+                  ZFA:
+                    - ZFA:0009000
+                  FBbt:
+                    - FBbt:00007002
+                  WBbt:
+                    - WBbt:0004017
+                  CL:
+                    - CL:0000000
+              forbidden:
+                ancestors:
+                  WBbt:
+                    - WBbt:0006803
+                terms:
+                  - CL:0000255
+                  - CL:0000257
+                  - CL:0000548
+                  - WBbt:0006803
         add_labels:
           - type: curie
             to_column: cell_type
