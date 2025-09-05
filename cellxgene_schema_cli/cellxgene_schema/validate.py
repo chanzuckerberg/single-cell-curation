@@ -572,7 +572,7 @@ class Validator:
         }
 
         def is_valid_row(row):
-            if row[cell_type_column] == "unknown":
+            if row[cell_type_column] == "unknown" or row[cell_type_column] == "na":
                 return True
             allowed = allowed_prefixes.get(organism_term, ("CL",))
             return row[cell_type_column].startswith(allowed)
