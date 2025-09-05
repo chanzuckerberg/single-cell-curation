@@ -1048,6 +1048,31 @@ class TestObs:
         assert validator.validate_adata()
         assert validator.errors == []
 
+    def test_cell_type_ontology_term_id__na_valid(self, validator_with_adata):
+        """
+        'na' cell_type_ontology_term_id is valid when tissue_type is "cell line"
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        obs.at["Y", "tissue_type"] = "cell line"
+        obs.at["Y", "cell_type_ontology_term_id"] = "na"
+        obs.at["Y", "development_stage_ontology_term_id"] = "na"
+        assert validator.validate_adata()
+        assert validator.errors == []
+
+    def test_cell_type_ontology_term_id__na_invalid(self, validator_with_adata):
+        """
+        'na' cell_type_ontology_term_id is invalid when tissue_type is not "cell line"
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        obs.at["Y", "cell_type_ontology_term_id"] = "na"
+        assert not validator.validate_adata()
+        assert (
+            "ERROR: 'na' in 'cell_type_ontology_term_id' is not a valid ontology term id of 'CL, ZFA, FBbt, WBbt'."
+            in validator.errors
+        )
+
     def test_tissue_ontology_term_id__unknown(self, validator_with_adata):
         """
         Test 'unknown' tissue_ontology_term_id is valid if tissue_type is 'primary cell culture'
@@ -2793,6 +2818,16 @@ class TestAddingLabels:
         labeler._add_labels()  # Annotate
 
         assert labeler.adata.obs.at["Y", "cell_type"] == "unknown"
+
+    def test_obs_added_cell_type_label__na(self):
+        adata = examples.adata.copy()
+        obs = adata.obs
+
+        obs.at["Y", "cell_type_ontology_term_id"] = "na"
+        labeler = AnnDataLabelAppender(adata)
+        labeler._add_labels()
+
+        assert labeler.adata.obs.at["Y", "cell_type"] == "na"
 
     def test_remove_unused_categories(self, label_writer, adata_with_labels):
         modified_donor_id = label_writer.adata.obs["donor_id"].cat.add_categories("donor_2")
