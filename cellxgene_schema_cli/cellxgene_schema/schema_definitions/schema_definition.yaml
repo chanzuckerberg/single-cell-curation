@@ -499,6 +499,9 @@ components:
                 - unknown
                 - na
           - # If organism is Zebrafish
+            # NOTE: ZFS terms are listed under ZFA ontology due to validation system limitations.
+            # Ideally, ZFS should be a separate ontology (as in the general fallback rule),
+            # but the validation system currently cannot validate ZFS terms independently.
             rule:
               uns_key: organism_ontology_term_id
               match_exact:
