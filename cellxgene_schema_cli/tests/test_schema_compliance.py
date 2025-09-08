@@ -1113,7 +1113,7 @@ class TestObs:
 
         assert not validator.validate_adata()
         assert len(validator.errors) > 0
-    
+
     def test_tissue_ontology_term_id__cell_line_valid(self, validator_with_adata):
         """
         Test 'CVCL_0001' tissue_ontology_term_id is valid if tissue_type is 'cell line'
@@ -1126,7 +1126,7 @@ class TestObs:
 
         assert validator.validate_adata()
         assert validator.errors == []
-    
+
     def test_tissue_ontology_term_id__cell_line_invalid(self, validator_with_adata):
         """
         Test 'UBERON:0000922' tissue_ontology_term_id is valid if tissue_type is 'cell line'
