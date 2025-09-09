@@ -528,6 +528,9 @@ class Validator:
                 else:
                     allowed_prefixes = allowed_cell_culture_prefixes
                     always_allowed_prefix = "CL"
+            elif row[tissue_type_column] == "cell line":
+                # Any CVCL term should be allowed, this is already enforced at the schema level
+                return True
 
             allowed = allowed_prefixes.get(organism_term, (always_allowed_prefix,))
             return row[tissue_column].startswith(allowed)

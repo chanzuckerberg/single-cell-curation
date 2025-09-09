@@ -308,48 +308,48 @@ components:
         type: curie
         dependencies:
           - # If tissue_type is tissue
-              rule:
-                column: tissue_type
-                match_exact:
-                  terms:
-                    - tissue
-              error_message_suffix: >-
-                When 'tissue_type' is 'tissue', 'tissue_ontology_term_id' must be a valid UBERON, ZFA, FBbt, or WBbt term.
-              type: curie
-              curie_constraints:
-                ontologies:
-                  - UBERON
-                  - ZFA
-                  - FBbt
-                  - WBbt
-                allowed:
-                  ancestors:
-                    ZFA:
-                      - ZFA:0100000
-                    FBbt:
-                      - FBbt:10000000
-                    WBbt:
-                      - WBbt:0005766
-                    UBERON:
-                      - UBERON:0001062
-                forbidden:
-                  terms:
+            rule:
+              column: tissue_type
+              match_exact:
+                terms:
+                  - tissue
+            error_message_suffix: >-
+              When 'tissue_type' is 'tissue', 'tissue_ontology_term_id' must be a valid UBERON, ZFA, FBbt, or WBbt term.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - UBERON
+                - ZFA
+                - FBbt
+                - WBbt
+              allowed:
+                ancestors:
+                  ZFA:
+                    - ZFA:0100000
+                  FBbt:
+                    - FBbt:10000000
+                  WBbt:
+                    - WBbt:0005766
+                  UBERON:
+                    - UBERON:0001062
+              forbidden:
+                terms:
+                  - ZFA:0009000
+                  - ZFA:0001093
+                  - FBbt:00007002
+                  - WBbt:0007849
+                  - WBbt:0007850
+                  - WBbt:0008595
+                  - WBbt:0004017
+                  - WBbt:0006803
+                ancestors:
+                  ZFA:
                     - ZFA:0009000
-                    - ZFA:0001093
-                    - FBbt:00007002
-                    - WBbt:0007849
-                    - WBbt:0007850
-                    - WBbt:0008595
+                  WBbt:
                     - WBbt:0004017
                     - WBbt:0006803
-                  ancestors:
-                    ZFA:
-                      - ZFA:0009000
-                    WBbt:
-                      - WBbt:0004017
-                      - WBbt:0006803
-                    FBbt:
-                      - FBbt:00007002
+                  FBbt:
+                    - FBbt:00007002
           - # If tissue_type is organoid
             rule:
               column: tissue_type
@@ -430,7 +430,7 @@ components:
                   - CL:0000257
                   - CL:0000548
                   - WBbt:0006803
-          - # If tissue_type is organoid
+          - # If tissue_type is cell line
             rule:
               column: tissue_type
               match_exact:
