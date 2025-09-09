@@ -1578,11 +1578,7 @@ class TestObs:
         obs = validator.adata.obs
         obs.loc[obs.index[0], "sex_ontology_term_id"] = "EFO:0000001"
         validator.validate_adata()
-        error_message = (
-            "ERROR: 'EFO:0000001' in 'sex_ontology_term_id' is "
-            "not a valid ontology term id of 'PATO'. Only 'PATO:0000383', 'PATO:0000384', 'PATO:0001340', "
-            "'na' or 'unknown' are allowed."
-        )
+        error_message = "ERROR: 'EFO:0000001' in 'sex_ontology_term_id' is not a valid ontology term id of 'PATO'. Only 'PATO:0000383', 'PATO:0000384', 'PATO:0001340', 'na' or 'unknown' are allowed."
         assert error_message in validator.errors
 
     def test_is_primary_data(self, validator_with_adata):

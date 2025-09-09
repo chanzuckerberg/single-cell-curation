@@ -296,7 +296,7 @@ components:
                   terms:
                     - NCBITaxon:6239
             error_message_suffix: >-
-              "Only 'PATO:0000383', 'PATO:0000384', 'PATO:0001340', 'na' or 'unknown' are allowed.
+              Only 'PATO:0000383', 'PATO:0000384', 'PATO:0001340', 'na' or 'unknown' are allowed.
             type: curie
             curie_constraints:
               ontologies:
