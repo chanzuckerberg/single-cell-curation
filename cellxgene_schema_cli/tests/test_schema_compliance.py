@@ -920,6 +920,7 @@ class TestObs:
     ):
         obs = validator_with_adata.adata.obs
         obs.loc[obs.index[0], "tissue_type"] = "cell line"
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CVCL_0001"
         obs.loc[obs.index[0], "development_stage_ontology_term_id"] = development_stage_ontology_term_id
         validator_with_adata.validate_adata()
         assert validator_with_adata.errors == errors
@@ -1057,6 +1058,7 @@ class TestObs:
         obs.at["Y", "tissue_type"] = "cell line"
         obs.at["Y", "cell_type_ontology_term_id"] = "na"
         obs.at["Y", "development_stage_ontology_term_id"] = "na"
+        obs.at["Y", "tissue_ontology_term_id"] = "CVCL_0001"
         assert validator.validate_adata()
         assert validator.errors == []
 
@@ -1109,6 +1111,33 @@ class TestObs:
         obs = validator.adata.obs
 
         obs.at["Y", "tissue_type"] = "organoid"
+        obs.at["Y", "tissue_ontology_term_id"] = "UBERON:0000922"
+
+        assert not validator.validate_adata()
+        assert len(validator.errors) > 0
+
+    def test_tissue_ontology_term_id__cell_line_valid(self, validator_with_adata):
+        """
+        Test 'CVCL_0001' tissue_ontology_term_id is valid if tissue_type is 'cell line'
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+
+        obs.at["Y", "tissue_type"] = "cell line"
+        obs.at["Y", "development_stage_ontology_term_id"] = "na"
+        obs.at["Y", "tissue_ontology_term_id"] = "CVCL_0001"
+
+        assert validator.validate_adata()
+        assert validator.errors == []
+
+    def test_tissue_ontology_term_id__cell_line_invalid(self, validator_with_adata):
+        """
+        Test 'UBERON:0000922' tissue_ontology_term_id is valid if tissue_type is 'cell line'
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+
+        obs.at["Y", "tissue_type"] = "cell line"
         obs.at["Y", "tissue_ontology_term_id"] = "UBERON:0000922"
 
         assert not validator.validate_adata()
