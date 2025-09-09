@@ -922,6 +922,7 @@ class TestObs:
         obs.loc[obs.index[0], "tissue_type"] = "cell line"
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CVCL_0001"
         obs.loc[obs.index[0], "development_stage_ontology_term_id"] = development_stage_ontology_term_id
+        obs.loc[obs.index[0], "sex_ontology_term_id"] = "na"
         validator_with_adata.validate_adata()
         assert validator_with_adata.errors == errors
 
@@ -929,6 +930,39 @@ class TestObs:
         labeler._add_labels()
         labeled_obs = labeler.adata.obs
         assert labeled_obs.loc[labeled_obs.index[0], "development_stage"] == development_stage
+    
+    @pytest.mark.parametrize(
+        "sex_ontology_term_id,sex,errors",
+        [
+            (
+                "na",  # sex_ontology_term_id correctly set to "na"
+                "na",  # sex correctly set to "na" based on "na" value of sex_ontology_term_id
+                [],
+            ),
+            (
+                "PATO:0000383",  # valid sex_ontology_term_id for non cell line
+                "female",
+                [
+                    "ERROR: 'PATO:0000383' in 'sex_ontology_term_id' is not a valid value of 'sex_ontology_term_id'. When 'tissue_type' is 'cell line', 'sex_ontology_term_id' MUST be 'na'."
+                ],
+            ),
+        ],
+    )
+    def test_cell_line_sex_ontology_term_id(
+        self, validator_with_adata, sex_ontology_term_id, sex, errors
+    ):
+        obs = validator_with_adata.adata.obs
+        obs.loc[obs.index[0], "tissue_type"] = "cell line"
+        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CVCL_0001"
+        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "na"
+        obs.loc[obs.index[0], "sex_ontology_term_id"] = sex_ontology_term_id
+        validator_with_adata.validate_adata()
+        assert validator_with_adata.errors == errors
+
+        labeler = AnnDataLabelAppender(validator_with_adata.adata)
+        labeler._add_labels()
+        labeled_obs = labeler.adata.obs
+        assert labeled_obs.loc[labeled_obs.index[0], "sex_ontology_term_id"] == sex_ontology_term_id
 
     @pytest.mark.parametrize(
         "tissue_type",
@@ -1058,6 +1092,7 @@ class TestObs:
         obs.at["Y", "tissue_type"] = "cell line"
         obs.at["Y", "cell_type_ontology_term_id"] = "na"
         obs.at["Y", "development_stage_ontology_term_id"] = "na"
+        obs.at["Y", "sex_ontology_term_id"] = "na"
         obs.at["Y", "tissue_ontology_term_id"] = "CVCL_0001"
         assert validator.validate_adata()
         assert validator.errors == []
@@ -1125,6 +1160,7 @@ class TestObs:
 
         obs.at["Y", "tissue_type"] = "cell line"
         obs.at["Y", "development_stage_ontology_term_id"] = "na"
+        obs.at["Y", "sex_ontology_term_id"] = "na"
         obs.at["Y", "tissue_ontology_term_id"] = "CVCL_0001"
 
         assert validator.validate_adata()
@@ -1544,11 +1580,12 @@ class TestObs:
         obs = validator.adata.obs
         obs.loc[obs.index[0], "sex_ontology_term_id"] = "EFO:0000001"
         validator.validate_adata()
-        assert validator.errors == [
+        error_message = (
             "ERROR: 'EFO:0000001' in 'sex_ontology_term_id' is "
             "not a valid ontology term id of 'PATO'. Only 'PATO:0000383', 'PATO:0000384', 'PATO:0001340', "
-            "or 'unknown' are allowed."
-        ]
+            "'na' or 'unknown' are allowed."
+        )
+        assert error_message in validator.errors
 
     def test_is_primary_data(self, validator_with_adata):
         """
@@ -3568,7 +3605,17 @@ class TestRoundworm:
         error_message = (
             "ERROR: 'PATO:0000383' in 'sex_ontology_term_id' is not an allowed term id. When "
             "'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans), "
-            "'sex_ontology_term_id' MUST be 'PATO:0000384' for male, 'PATO:0001340' for hermaphrodite, or 'unknown'."
+            "'sex_ontology_term_id' MUST be 'PATO:0000384' for male, 'PATO:0001340' for hermaphrodite, 'na' or 'unknown'."
+        )
+        assert error_message in validator.errors
+    
+    def test_sex_ontology_term_id__na_invalid(self, validator_with_roundworm_adata):
+        validator = validator_with_roundworm_adata
+        obs = validator.adata.obs
+        obs.loc[obs.index[0], "sex_ontology_term_id"] = "na"  # only valid when tissue_type is 'cell line'
+        validator.validate_adata()
+        error_message = (
+            "ERROR: 'na' in 'sex_ontology_term_id' is not a valid ontology term id of 'PATO'. When 'tissue_type' is not 'cell line', 'sex_ontology_term_id' cannot be 'na'."
         )
         assert error_message in validator.errors
 
