@@ -601,7 +601,6 @@ def deduplicate_fragment_rows(
             errors.append(f"sort command failed with error code {sort_proc.returncode}")
         if gzip_proc.returncode != 0:
             errors.append(f"gzip command failed with error code {gzip_proc.returncode}")
-        # bgzip_proc error already checked above; no need to check again here.
         if errors:
             raise RuntimeError(" | ".join(errors))
 
