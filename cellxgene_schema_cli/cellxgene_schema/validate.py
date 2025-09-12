@@ -578,16 +578,13 @@ class Validator:
         }
 
         cell_line_na_count = 0
-        cell_line_unknown_count = 0
 
         def is_valid_row(row):
-            nonlocal cell_line_na_count, cell_line_unknown_count
+            nonlocal cell_line_na_count
             # Count how many cell line observations have na and unknown
             if row[tissue_type_column] == "cell line":
                 if row[cell_type_column] == "na":
                     cell_line_na_count += 1
-                if row[cell_type_column] == "unknown":
-                    cell_line_unknown_count += 1
             # On an individual row basis, unknown and na are both allowed
             if row[cell_type_column] == "unknown" or row[cell_type_column] == "na":
                 return True
@@ -596,8 +593,9 @@ class Validator:
 
         try:
             invalid_rows = ~self.adata.obs.apply(is_valid_row, axis=1)
+            total_row_count = len(self.adata.obs)
 
-            if cell_line_na_count > 0 and cell_line_unknown_count > 0:
+            if cell_line_na_count > 0 and cell_line_na_count != total_row_count:
                 self.errors.append(
                     "When tissue_type is 'cell line', 'na' is allowed for 'cell_type_ontology_term_id' but then all observations where tissue_type is 'cell line' MUST be 'na'."
                 )
