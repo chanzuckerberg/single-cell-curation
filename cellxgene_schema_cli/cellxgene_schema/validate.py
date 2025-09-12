@@ -592,7 +592,7 @@ class Validator:
 
         try:
             invalid_rows = ~self.adata.obs.apply(is_valid_row, axis=1)
-            total_row_count = len(self.adata.obs)
+            total_row_count = len(self.adata.obs[self.adata.obs["tissue_type"] == "cell line"])
 
             if cell_line_na_count > 0 and cell_line_na_count != total_row_count:
                 self.errors.append(
