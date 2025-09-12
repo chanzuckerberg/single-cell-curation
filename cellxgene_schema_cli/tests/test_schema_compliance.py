@@ -1111,7 +1111,7 @@ class TestObs:
         assert validator.errors == [
             "ERROR: When tissue_type is 'cell line', 'na' is allowed for 'cell_type_ontology_term_id' but then all observations where tissue_type is 'cell line' MUST be 'na'."
         ]
-    
+
     def test_cell_type_ontology_term_id__na_valid_mixed(self, validator_with_adata):
         """
         'na' cell_type_ontology_term_id is valid when tissue_type is "cell line", but then all observations

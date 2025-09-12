@@ -582,9 +582,8 @@ class Validator:
         def is_valid_row(row):
             nonlocal cell_line_na_count
             # Count how many cell line observations have na and unknown
-            if row[tissue_type_column] == "cell line":
-                if row[cell_type_column] == "na":
-                    cell_line_na_count += 1
+            if row[tissue_type_column] == "cell line" and row[cell_type_column] == "na":
+                cell_line_na_count += 1
             # On an individual row basis, unknown and na are both allowed
             if row[cell_type_column] == "unknown" or row[cell_type_column] == "na":
                 return True
