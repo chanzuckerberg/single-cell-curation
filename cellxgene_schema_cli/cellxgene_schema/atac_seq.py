@@ -479,12 +479,21 @@ def prepare_fragment(
             stdout=subprocess.PIPE,
             env={**os.environ, "LC_ALL": "C"},
         )
-        gzip_proc.stdout.close()
         bgzip_proc = subprocess.Popen(["bgzip", f"--threads={num_cores}", "-c"], stdin=sort_proc.stdout, stdout=out_f)
-        sort_proc.stdout.close()
         bgzip_proc.wait()
+        sort_proc.wait()
+        gzip_proc.wait()
+
+    # check that all processes completed successfully
+    errors = []
+    if sort_proc.returncode != 0:
+        errors.append(f"sort command failed with error code {sort_proc.returncode}")
+    if gzip_proc.returncode != 0:
+        errors.append(f"gzip command failed with error code {gzip_proc.returncode}")
     if bgzip_proc.returncode != 0:
-        raise RuntimeError(f"bgzip compression failed with error code {bgzip_proc.returncode}")
+        errors.append(f"bgzip command failed with error code {bgzip_proc.returncode}")
+    if errors:
+        raise RuntimeError(" | ".join(errors))
     logger.info(f"bgzip compression completed successfully for {bgzip_output_file}")
 
 
@@ -577,11 +586,23 @@ def deduplicate_fragment_rows(
         bgzip_proc = subprocess.Popen(bgzip_cmd, stdin=uniq_proc.stdout, stdout=outfile)
         uniq_proc.stdout.close()
         bgzip_proc.wait()
-        if bgzip_proc.returncode != 0:
-            raise RuntimeError(f"bgzip compression failed with error code {bgzip_proc.returncode}")
-        # Wait for the rest of the pipeline to finish and check for errors
         uniq_proc.wait()
         sort_proc.wait()
         gzip_proc.wait()
+
+        if bgzip_proc.returncode != 0:
+            raise RuntimeError(f"bgzip compression failed with error code {bgzip_proc.returncode}")
+
+        # check that all processes completed successfully
+        errors = []
+        if uniq_proc.returncode != 0:
+            errors.append(f"uniq command failed with error code {uniq_proc.returncode}")
+        if sort_proc.returncode != 0:
+            errors.append(f"sort command failed with error code {sort_proc.returncode}")
+        if gzip_proc.returncode != 0:
+            errors.append(f"gzip command failed with error code {gzip_proc.returncode}")
+        if errors:
+            raise RuntimeError(" | ".join(errors))
+
     logger.info(f"bgzip compression completed successfully for {output_file_name}")
     return str(output_file_name)
