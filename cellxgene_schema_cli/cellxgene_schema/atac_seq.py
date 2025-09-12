@@ -493,7 +493,6 @@ def _pipeline_run(
     stages: Sequence[Tuple[str, List[str]]],
     output_file: Path,
     *,
-    timeout: Optional[int] = None,
     env: Optional[dict] = None,
 ) -> None:
     """
@@ -558,12 +557,7 @@ def _pipeline_run(
 # ---------- Public APIs ----------
 
 
-def prepare_fragment(
-    fragment_file: str,
-    bgzip_output_file: str,
-    *,
-    timeout: Optional[int] = None,
-) -> None:
+def prepare_fragment(fragment_file: str, bgzip_output_file: str) -> None:
     """
     Decompress -> sort -> bgzip.
     Sorts by (chrom, start, end, strand). Output is bgzipped; chromosomes may appear in non-input order,
@@ -592,7 +586,7 @@ def prepare_fragment(
         ("bgzip", _bgzip_command(ncores)),
     ]
 
-    _pipeline_run(stages, out_path, timeout=timeout, env=env)
+    _pipeline_run(stages, out_path, env=env)
     logger.info(f"bgzip compression completed successfully for {out_path}")
 
 
@@ -600,8 +594,6 @@ def deduplicate_fragment_rows(
     fragment_file_name: str,
     output_file_name: Optional[str] = None,
     sort_memory_percent: int = SORT_MEMORY_PERCENTAGE,
-    *,
-    timeout: Optional[int] = None,
 ) -> str:
     """
     Decompress -> sort -> uniq -> bgzip.
@@ -645,6 +637,6 @@ def deduplicate_fragment_rows(
         ("bgzip", _bgzip_command(ncores)),
     ]
 
-    _pipeline_run(stages, out_path, timeout=timeout, env=env)
+    _pipeline_run(stages, out_path, env=env)
     logger.info(f"bgzip compression completed successfully for {out_path}")
     return str(out_path)
