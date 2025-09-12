@@ -1106,6 +1106,7 @@ class TestObs:
         obs["cell_type_ontology_term_id"][:] = "na"
         obs["development_stage_ontology_term_id"][:] = "na"
         obs["tissue_ontology_term_id"][:] = "CVCL_0001"
+        obs["sex_ontology_term_id"][:] = "na"
         obs.at["Y", "cell_type_ontology_term_id"] = "unknown"
         assert not validator.validate_adata()
         assert validator.errors == [
@@ -1122,6 +1123,7 @@ class TestObs:
         obs["tissue_type"][:] = "cell line"
         obs["development_stage_ontology_term_id"][:] = "na"
         obs["tissue_ontology_term_id"][:] = "CVCL_0001"
+        obs["sex_ontology_term_id"][:] = "na"
         obs.at["Y", "cell_type_ontology_term_id"] = "na"
         assert not validator.validate_adata()
         assert validator.errors == [
