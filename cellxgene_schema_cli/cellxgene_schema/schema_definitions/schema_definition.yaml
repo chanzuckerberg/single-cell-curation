@@ -276,7 +276,7 @@ components:
                   terms:
                     - NCBITaxon:6239
             error_message_suffix: >-
-              When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans), 'sex_ontology_term_id' MUST be 'PATO:0000384' for male, 'PATO:0001340' for hermaphrodite, or 'unknown'.
+              When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans), 'sex_ontology_term_id' MUST be 'PATO:0000384' for male, 'PATO:0001340' for hermaphrodite, 'na' or 'unknown'.
             type: curie
             curie_constraints:
               ontologies:
@@ -288,19 +288,62 @@ components:
                     - PATO:0001340
               exceptions:
                 - unknown
-        # if organism is none of the above
-        error_message_suffix: "Only 'PATO:0000383', 'PATO:0000384', 'PATO:0001340', or 'unknown' are allowed."
-        curie_constraints:
-          ontologies:
-            - PATO
-          exceptions:
-            - unknown
-          allowed:
-            terms:
-              PATO:
-                - PATO:0000383
-                - PATO:0000384
-                - PATO:0001340
+                - na
+          - # If organism is not c. elegans
+            rule:
+                uns_key: organism_ontology_term_id
+                exclude_exact:
+                  terms:
+                    - NCBITaxon:6239
+            error_message_suffix: >-
+              Only 'PATO:0000383', 'PATO:0000384', 'PATO:0001340', 'na' or 'unknown' are allowed.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - PATO
+              exceptions:
+                - unknown
+                - na
+              allowed:
+                terms:
+                  PATO:
+                    - PATO:0000383
+                    - PATO:0000384
+                    - PATO:0001340
+          - # If tissue_type is "cell line", sex_ontology_term_id must be "na"
+            rule:
+              column: tissue_type
+              match_exact:
+                terms:
+                  - cell line
+            error_message_suffix: >-
+              When 'tissue_type' is 'cell line', 'sex_ontology_term_id' MUST be 'na'.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - NA
+              exceptions:
+                - na
+          - # If tissue_type is not "cell line", sex_ontology_term_id cannot be "na"
+            rule:
+              column: tissue_type
+              exclude_exact:
+                terms:
+                  - cell line
+            error_message_suffix: >-
+              When 'tissue_type' is not 'cell line', 'sex_ontology_term_id' cannot be 'na'.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - PATO
+              allowed:
+                terms:
+                  PATO:
+                    - PATO:0000383
+                    - PATO:0000384
+                    - PATO:0001340
+              exceptions:
+                - unknown
         add_labels:
           - type: curie
             to_column: sex
