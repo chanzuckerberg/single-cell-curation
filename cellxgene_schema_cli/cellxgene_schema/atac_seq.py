@@ -5,6 +5,7 @@ import os
 import shutil
 import subprocess as sp
 import tempfile
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Iterable, List, Optional, Sequence, Tuple
@@ -428,7 +429,7 @@ def index_fragment(
     logger.info(f"Line count validation passed: {original_line_count} lines in both original and output files")
 
 
-SORT_MEMORY_PERCENTAGE = int(os.environ.get("SORT_MEMORY_PERCENTAGE", "50"))
+SORT_MEMORY_PERCENTAGE = 50
 
 
 def _calculate_sort_memory(num_cores: int, sort_memory_percent: int) -> int:
@@ -453,15 +454,7 @@ def _ensure_tools(tools: Iterable[Tuple[str, str]]) -> None:
 
 def _default_cores() -> int:
     """Get CPU count, respecting container limits."""
-    # Check for container CPU limit first
-    container_cpus = os.environ.get("CONTAINER_CPUS")
-    if container_cpus:
-        try:
-            return max(1, int(container_cpus))
-        except ValueError:
-            pass
-
-    # Try to read cgroup CPU limit (Docker/Kubernetes)
+    # Try to read cgroup CPU limit (Docker/Kubernetes) - most reliable method
     try:
         # cgroup v1
         with open("/sys/fs/cgroup/cpu/cpu.cfs_quota_us") as f:
@@ -505,22 +498,7 @@ def _check_disk_space(path: str, required_gb: float = 10.0) -> None:
 
 def _deterministic_env() -> dict:
     # GNU coreutils behaviors (sort/uniq) are locale-sensitive; pin for determinism.
-    env = {**os.environ, "LC_ALL": "C"}
-
-    # Ensure sort has access to a writable temp directory with sufficient space
-    temp_dir = None
-    if os.path.exists("/tmp") and os.access("/tmp", os.W_OK):
-        temp_dir = "/tmp"
-        env["TMPDIR"] = "/tmp"
-    elif os.access(".", os.W_OK):
-        temp_dir = "."
-        env["TMPDIR"] = "."
-
-    # Check disk space in temp directory for large file operations
-    if temp_dir:
-        _check_disk_space(temp_dir, required_gb=5.0)  # Conservative estimate
-
-    return env
+    return {**os.environ, "LC_ALL": "C"}
 
 
 def _sort_command(num_cores: int, sort_mem_pct: int) -> List[str]:
@@ -549,25 +527,6 @@ def _bgzip_command(num_cores: int) -> List[str]:
 
 def _pigz_decompress_command(path: Path) -> List[str]:
     return ["pigz", "-dc", str(path)]
-
-
-def _is_transient_error(returncode: int, stderr: str) -> bool:
-    """Check if error might be transient and worth retrying in AWS Batch."""
-    if returncode == -13:  # Permission denied - could be temporary resource issue
-        return True
-
-    # Common transient error patterns in AWS Batch
-    transient_patterns = [
-        "no space left on device",
-        "cannot allocate memory",
-        "resource temporarily unavailable",
-        "transport endpoint is not connected",
-        "network is unreachable",
-        "connection timed out",
-    ]
-
-    stderr_lower = stderr.lower()
-    return any(pattern in stderr_lower for pattern in transient_patterns)
 
 
 def _monitor_pipeline_progress(procs: List[sp.Popen], stages: Sequence[Tuple[str, List[str]]]) -> None:
@@ -640,7 +599,6 @@ def _pipeline_run(
                 prev_stdout.close()
 
             # Start progress monitoring for long operations (in background thread)
-            import threading
 
             monitoring_thread = threading.Thread(target=_monitor_pipeline_progress, args=(procs, stages), daemon=True)
             monitoring_thread.start()
@@ -656,7 +614,6 @@ def _pipeline_run(
             # error aggregation
             if any(rc != 0 for rc in returncodes):
                 errs = []
-                transient_count = 0
 
                 for (stage_name, _), proc in zip(stages, procs):
                     if proc.returncode != 0:
@@ -665,15 +622,10 @@ def _pipeline_run(
                         except Exception:
                             err = ""
 
-                        if _is_transient_error(proc.returncode, err):
-                            transient_count += 1
-
                         errs.append(f"{stage_name} failed (rc={proc.returncode}): {err}")
 
                 # Provide AWS Batch specific guidance
                 error_msg = " | ".join(errs)
-                if transient_count > 0:
-                    error_msg += f" | {transient_count} stage(s) failed with potentially transient errors - consider retrying with more resources"
 
                 raise RuntimeError(error_msg)
 
@@ -688,9 +640,6 @@ def _pipeline_run(
         if monitoring_thread and monitoring_thread.is_alive():
             # Thread is daemon, will clean up automatically
             pass
-
-
-# ---------- Public APIs ----------
 
 
 def prepare_fragment(fragment_file: str, bgzip_output_file: str) -> None:
@@ -726,18 +675,6 @@ def prepare_fragment(fragment_file: str, bgzip_output_file: str) -> None:
     logger.info(f"bgzip compression completed successfully for {out_path}")
 
 
-def _estimate_temp_space_gb(input_file: Path) -> float:
-    """Estimate temporary disk space needed based on input file size."""
-    try:
-        input_size_gb = input_file.stat().st_size / (1024**3)
-        # Conservative estimate: 3x input size (decompressed + sort temps + output)
-        # For gzipped files, assume ~4x compression ratio
-        estimated_gb = input_size_gb * 3 * 4  # 12x compressed size
-        return max(estimated_gb, 5.0)  # Minimum 5GB
-    except Exception:
-        return 10.0  # Default fallback
-
-
 def deduplicate_fragment_rows(
     fragment_file_name: str,
     output_file_name: Optional[str] = None,
@@ -766,12 +703,6 @@ def deduplicate_fragment_rows(
     if not in_path.exists():
         raise FileNotFoundError(f"Input file not found: {in_path}")
 
-    # AWS Batch: Check disk space requirements based on input file size
-    required_space_gb = _estimate_temp_space_gb(in_path)
-    logger.info(
-        f"Input file: {in_path.stat().st_size / (1024**3):.2f}GB, estimated temp space needed: {required_space_gb:.1f}GB"
-    )
-
     if output_file_name is None:
         # <input minus .tsv[.gz]>_dedup.tsv.bgz
         stem_once = in_path.stem  # drops final suffix (e.g., ".gz")
@@ -781,16 +712,7 @@ def deduplicate_fragment_rows(
         out_path = Path(output_file_name)
 
     ncores = _default_cores()
-    sort_mem_pct = _calculate_sort_memory(ncores, sort_memory_percent)
-
-    # Check disk space with file-size-based requirements
-    env = _deterministic_env()
-    temp_dir = env.get("TMPDIR", "/tmp")
-    _check_disk_space(temp_dir, required_gb=required_space_gb)
-
-    # Also check output directory
-    output_dir = out_path.parent
-    _check_disk_space(str(output_dir), required_gb=required_space_gb * 0.3)  # Output is smaller
+    sort_mem_pct = _calculate_sort_memory(ncores, sort_memory_percent)  # Output is smaller
 
     stages = [
         ("pigz -dc", _pigz_decompress_command(in_path)),
@@ -800,6 +722,6 @@ def deduplicate_fragment_rows(
     ]
 
     logger.info(f"Starting deduplication pipeline: {ncores} cores, {sort_mem_pct}% memory per core")
-    _pipeline_run(stages, out_path, env=env)
+    _pipeline_run(stages, out_path, env=_deterministic_env())
     logger.info(f"bgzip compression completed successfully for {out_path}")
     return str(out_path)
