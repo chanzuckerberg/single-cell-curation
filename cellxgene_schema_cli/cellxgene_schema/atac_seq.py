@@ -452,7 +452,7 @@ def _ensure_tools(tools: Iterable[Tuple[str, str]]) -> None:
 
 
 def _default_cores() -> int:
-    """Get CPU count, respecting container limits and AWS instance optimization."""
+    """Get CPU count, respecting container limits."""
     # Check for container CPU limit first
     container_cpus = os.environ.get("CONTAINER_CPUS")
     if container_cpus:
@@ -509,9 +509,7 @@ def _deterministic_env() -> dict:
 
     # Ensure sort has access to a writable temp directory with sufficient space
     temp_dir = None
-    if "TMPDIR" in env:
-        temp_dir = env["TMPDIR"]
-    elif os.path.exists("/tmp") and os.access("/tmp", os.W_OK):
+    if os.path.exists("/tmp") and os.access("/tmp", os.W_OK):
         temp_dir = "/tmp"
         env["TMPDIR"] = "/tmp"
     elif os.access(".", os.W_OK):
@@ -655,7 +653,7 @@ def _pipeline_run(
                 rc = proc.returncode if proc is plast else proc.wait()
                 returncodes.append(rc)
 
-            # Enhanced error handling with AWS Batch context
+            # error aggregation
             if any(rc != 0 for rc in returncodes):
                 errs = []
                 transient_count = 0
@@ -748,8 +746,6 @@ def deduplicate_fragment_rows(
     """
     Decompress -> sort -> uniq -> bgzip.
     Removes duplicate lines after sorting by (chrom, start, end, strand).
-
-    AWS Batch optimized with disk space monitoring and resource planning.
 
     :param fragment_file_name: Path to the input gzipped fragment file.
     :param output_file_name: Path for the output deduplicated bgzipped file. If None, a default name is generated.
