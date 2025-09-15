@@ -765,38 +765,6 @@ class TestCalculateSortMemory:
         assert result == 10  # 20% / 2 cores = 10% per core
 
 
-class TestCheckDiskSpace:
-    """Test disk space checking functionality."""
-
-    @mock.patch("shutil.disk_usage")
-    def test_sufficient_disk_space(self, mock_disk_usage):
-        """Test when sufficient disk space is available."""
-        # Mock 20GB available
-        mock_disk_usage.return_value = mock.Mock(free=20 * 1024**3)
-
-        # Should not raise exception
-        atac_seq._check_disk_space("/tmp", required_gb=10.0)
-        mock_disk_usage.assert_called_once_with("/tmp")
-
-    @mock.patch("shutil.disk_usage")
-    def test_insufficient_disk_space(self, mock_disk_usage):
-        """Test when insufficient disk space raises RuntimeError."""
-        # Mock only 5GB available
-        mock_disk_usage.return_value = mock.Mock(free=5 * 1024**3)
-
-        with pytest.raises(RuntimeError, match="Insufficient disk space.*5.0GB available.*10.0GB required"):
-            atac_seq._check_disk_space("/tmp", required_gb=10.0)
-
-    @mock.patch("shutil.disk_usage", side_effect=OSError("Access denied"))
-    def test_disk_usage_error_warning(self, mock_disk_usage, caplog):
-        """Test graceful handling of disk usage errors."""
-        # Should not raise exception, just log warning
-        atac_seq._check_disk_space("/nonexistent", required_gb=5.0)
-
-        assert "Could not check disk space" in caplog.text
-        assert "Access denied" in caplog.text
-
-
 class TestSortCommand:
     """Test sort command generation."""
 
@@ -834,54 +802,6 @@ class TestSortCommand:
         result = atac_seq._sort_command(num_cores=2, sort_mem_pct=33)
 
         assert "33%" in result  # Should format memory as percentage
-
-
-class TestMonitorPipelineProgress:
-    """Test pipeline progress monitoring."""
-
-    @mock.patch("time.sleep")
-    @mock.patch("time.time")
-    @mock.patch("cellxgene_schema.atac_seq._check_disk_space")
-    def test_progress_monitoring_completion(self, mock_disk_check, mock_time, mock_sleep):
-        """Test monitoring completes when all processes finish."""
-        # Mock time progression
-        mock_time.side_effect = [0, 30, 60, 90]  # start, +30s, +60s, +90s
-
-        # Mock processes that complete after first check
-        mock_proc = mock.Mock()
-        mock_proc.poll.side_effect = [None, 0]  # Running, then completed
-        procs = [mock_proc]
-
-        stages = [("test_stage", ["test_cmd"])]
-
-        atac_seq._monitor_pipeline_progress(procs, stages)
-
-        # Should have called sleep once before process completed
-        mock_sleep.assert_called_with(30)
-
-    @mock.patch("time.sleep")
-    @mock.patch("time.time")
-    @mock.patch("os.environ.get", return_value="/tmp")
-    @mock.patch("cellxgene_schema.atac_seq._check_disk_space")
-    def test_progress_monitoring_with_logging(self, mock_disk_check, mock_env_get, mock_time, mock_sleep, caplog):
-        """Test progress monitoring with periodic logging."""
-        # Set log level to capture info messages
-        with caplog.at_level("INFO"):
-            # Mock time to trigger 5-minute logging interval
-            mock_time.side_effect = [0, 30, 330, 360, 400]  # start, +30s, +330s (>5min), +360s, +400s
-
-            # Mock long-running process
-            mock_proc = mock.Mock()
-            mock_proc.poll.side_effect = [None, None, None, 0]  # Running 3 times, then completed
-            procs = [mock_proc]
-
-            stages = [("long_stage", ["long_cmd"])]
-
-            atac_seq._monitor_pipeline_progress(procs, stages)
-
-            # Should have logged progress after 5+ minutes
-            assert "Pipeline running for" in caplog.text
-            assert "long_stage" in caplog.text
 
 
 class TestPipelineRun:
@@ -952,31 +872,6 @@ class TestPipelineRun:
         # Should have attempted to terminate the process (may be called multiple times)
         assert mock_proc.terminate.called
         assert mock_proc.terminate.call_count >= 1
-
-    @mock.patch("threading.Thread")
-    @mock.patch("subprocess.Popen")
-    @mock.patch("builtins.open", mock.mock_open())
-    def test_pipeline_monitoring_thread_creation(self, mock_popen, mock_thread):
-        """Test that monitoring thread is created for long-running operations."""
-        # Mock successful process
-        mock_proc = mock.Mock()
-        mock_proc.returncode = 0
-        mock_proc.wait.return_value = 0
-        mock_proc.stderr.read.return_value = b""
-        mock_popen.return_value = mock_proc
-
-        # Mock thread
-        mock_thread_instance = mock.Mock()
-        mock_thread.return_value = mock_thread_instance
-
-        stages = [("stage1", ["cmd1"])]
-        output_file = Path("/tmp/test_output.txt")
-
-        atac_seq._pipeline_run(stages, output_file)
-
-        # Should have created and started monitoring thread
-        mock_thread.assert_called_once()
-        mock_thread_instance.start.assert_called_once()
 
 
 class TestDeterministicEnv:
