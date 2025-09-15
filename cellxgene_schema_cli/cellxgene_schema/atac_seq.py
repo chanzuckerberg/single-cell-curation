@@ -5,7 +5,6 @@ import os
 import shutil
 import subprocess as sp
 import tempfile
-import threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Iterable, List, Optional, Sequence, Tuple
@@ -482,21 +481,6 @@ def _default_cores() -> int:
     return max(1, (os.cpu_count() or 1))
 
 
-def _check_disk_space(path: str, required_gb: float = 10.0) -> None:
-    """Check if sufficient disk space is available."""
-    try:
-        stat = shutil.disk_usage(path)
-        available_gb = stat.free / (1024**3)
-        if available_gb < required_gb:
-            raise RuntimeError(
-                f"Insufficient disk space: {available_gb:.1f}GB available, " f"{required_gb:.1f}GB required in {path}"
-            )
-        logger.info(f"Disk space check passed: {available_gb:.1f}GB available in {path}")
-    except (OSError, IOError, PermissionError) as e:
-        # Only catch disk access errors, not our intentional RuntimeError
-        logger.warning(f"Could not check disk space for {path}: {e}")
-
-
 def _deterministic_env() -> dict:
     # GNU coreutils behaviors (sort/uniq) are locale-sensitive; pin for determinism.
     return {**os.environ, "LC_ALL": "C"}
@@ -530,32 +514,6 @@ def _pigz_decompress_command(path: Path) -> List[str]:
     return ["pigz", "-dc", str(path)]
 
 
-def _monitor_pipeline_progress(procs: List[sp.Popen], stages: Sequence[Tuple[str, List[str]]]) -> None:
-    """Monitor pipeline progress for long-running AWS Batch jobs."""
-    import time
-
-    start_time = time.time()
-    last_log_time = start_time
-
-    while any(proc.poll() is None for proc in procs):
-        time.sleep(30)  # Check every 30 seconds
-        current_time = time.time()
-
-        # Log progress every 5 minutes
-        if current_time - last_log_time > 300:
-            elapsed = int(current_time - start_time)
-            running_stages = [stages[i][0] for i, proc in enumerate(procs) if proc.poll() is None]
-            logger.info(f"Pipeline running for {elapsed}s, active stages: {', '.join(running_stages)}")
-            last_log_time = current_time
-
-            # Check disk space periodically during long operations
-            try:
-                temp_dir = os.environ.get("TMPDIR", "/tmp")
-                _check_disk_space(temp_dir, required_gb=1.0)  # Minimal check during operation
-            except Exception as e:
-                logger.warning(f"Disk space check during operation: {e}")
-
-
 def _pipeline_run(
     stages: Sequence[Tuple[str, List[str]]],
     output_file: Path,
@@ -570,7 +528,6 @@ def _pipeline_run(
         raise ValueError("pipeline must have at least one stage")
 
     procs: List[sp.Popen] = []
-    monitoring_thread = None
 
     try:
         # open sink
@@ -598,11 +555,6 @@ def _pipeline_run(
             procs.append(plast)
             if prev_stdout is not None:
                 prev_stdout.close()
-
-            # Start progress monitoring for long operations (in background thread)
-
-            monitoring_thread = threading.Thread(target=_monitor_pipeline_progress, args=(procs, stages), daemon=True)
-            monitoring_thread.start()
 
             plast.wait()
 
@@ -636,11 +588,6 @@ def _pipeline_run(
             if p.poll() is None:
                 with contextlib.suppress(Exception):
                     p.terminate()
-
-        # Clean up monitoring thread
-        if monitoring_thread and monitoring_thread.is_alive():
-            # Thread is daemon, will clean up automatically
-            pass
 
 
 def prepare_fragment(fragment_file: str, bgzip_output_file: str) -> None:
