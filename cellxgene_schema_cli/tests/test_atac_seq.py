@@ -628,3 +628,309 @@ class TestDeduplicateFragmentRows:
             names=["chromosome", "start coordinate", "stop coordinate", "barcode", "read support"],
         )
         assert len(df) == len(atac_fragment_dataframe)
+
+
+class TestDefaultCores:
+    """Test CPU detection with container awareness."""
+
+    @mock.patch("builtins.open", side_effect=FileNotFoundError)
+    @mock.patch("os.cpu_count", return_value=8)
+    def test_fallback_to_system_cpu_count_when_cgroup_missing(self, mock_cpu_count, mock_open):
+        """Test fallback to os.cpu_count() when cgroup files don't exist (non-Docker)."""
+        result = atac_seq._default_cores()
+        assert result == 8
+        mock_cpu_count.assert_called_once()
+
+    @mock.patch("builtins.open")
+    @mock.patch("os.cpu_count", return_value=16)
+    def test_cgroup_v1_quota_detection(self, mock_cpu_count, mock_open):
+        """Test cgroup v1 CPU quota detection in containers."""
+        # Mock cgroup v1 files: quota=200000, period=100000 = 2 CPUs
+        mock_open.side_effect = [
+            mock.mock_open(read_data="200000").return_value,  # quota file
+            mock.mock_open(read_data="100000").return_value,  # period file
+        ]
+
+        result = atac_seq._default_cores()
+        assert result == 2  # Should use container limit, not system count
+        mock_cpu_count.assert_not_called()  # Should not fallback
+
+    @mock.patch("builtins.open")
+    @mock.patch("os.cpu_count", return_value=16)
+    def test_cgroup_v1_unlimited_fallback(self, mock_cpu_count, mock_open):
+        """Test fallback when cgroup v1 shows unlimited quota."""
+        # Mock cgroup v1 files: quota=-1 (unlimited), then v2 check fails
+        mock_open.side_effect = [
+            mock.mock_open(read_data="-1").return_value,  # unlimited quota
+            mock.mock_open(read_data="100000").return_value,  # period file
+            FileNotFoundError(),  # v2 file doesn't exist
+        ]
+
+        result = atac_seq._default_cores()
+        assert result == 16  # Should fallback to system count
+        mock_cpu_count.assert_called_once()
+
+    @mock.patch("builtins.open")
+    @mock.patch("os.cpu_count", return_value=12)
+    def test_cgroup_v2_quota_detection(self, mock_cpu_count, mock_open):
+        """Test cgroup v2 CPU quota detection."""
+
+        # Mock the file operations for cgroup detection
+        def mock_open_side_effect(path, *args, **kwargs):
+            if "cpu.cfs_quota_us" in path or "cpu.cfs_period_us" in path:
+                raise FileNotFoundError()
+            elif "cpu.max" in path:
+                return mock.mock_open(read_data="400000 100000").return_value
+            else:
+                return mock.mock_open().return_value
+
+        mock_open.side_effect = mock_open_side_effect
+
+        result = atac_seq._default_cores()
+        assert result == 4
+        mock_cpu_count.assert_not_called()
+
+    @mock.patch("builtins.open")
+    @mock.patch("os.cpu_count", return_value=12)
+    def test_cgroup_v2_unlimited_fallback(self, mock_cpu_count, mock_open):
+        """Test fallback when cgroup v2 shows unlimited."""
+
+        def mock_open_side_effect(path, *args, **kwargs):
+            if "cpu.cfs_quota_us" in path or "cpu.cfs_period_us" in path:
+                raise FileNotFoundError()
+            elif "cpu.max" in path:
+                return mock.mock_open(read_data="max").return_value
+            else:
+                return mock.mock_open().return_value
+
+        mock_open.side_effect = mock_open_side_effect
+
+        result = atac_seq._default_cores()
+        assert result == 12
+        mock_cpu_count.assert_called_once()
+
+    @mock.patch("builtins.open", side_effect=PermissionError)
+    @mock.patch("os.cpu_count", return_value=4)
+    def test_permission_error_fallback(self, mock_cpu_count, mock_open):
+        """Test fallback when cgroup files exist but can't be read."""
+        result = atac_seq._default_cores()
+        assert result == 4
+        mock_cpu_count.assert_called_once()
+
+    @mock.patch("builtins.open")
+    @mock.patch("os.cpu_count", return_value=None)
+    def test_os_cpu_count_none_fallback(self, mock_cpu_count, mock_open):
+        """Test minimum 1 CPU when os.cpu_count() returns None."""
+        mock_open.side_effect = FileNotFoundError
+
+        result = atac_seq._default_cores()
+        assert result == 1  # Should return minimum of 1
+
+    @mock.patch("builtins.open")
+    def test_cgroup_v1_zero_quota_fallback(self, mock_open):
+        """Test fallback when cgroup shows zero quota."""
+        mock_open.side_effect = [
+            mock.mock_open(read_data="0").return_value,  # zero quota
+            mock.mock_open(read_data="100000").return_value,  # period file
+            FileNotFoundError(),  # v2 file doesn't exist
+        ]
+
+        with mock.patch("os.cpu_count", return_value=8):
+            result = atac_seq._default_cores()
+            assert result == 8  # Should fallback due to quota <= 0
+
+
+class TestCalculateSortMemory:
+    """Test memory percentage calculation."""
+
+    def test_single_core_memory(self):
+        """Test memory calculation for single core."""
+        result = atac_seq._calculate_sort_memory(num_cores=1, sort_memory_percent=80)
+        assert result == 80  # Single core gets full percentage
+
+    def test_multi_core_memory_capping(self):
+        """Test memory capping for multiple cores."""
+        # With > 1 core, should cap at 50%
+        result = atac_seq._calculate_sort_memory(num_cores=4, sort_memory_percent=80)
+        assert result == 12  # 50% / 4 cores = 12.5%, but returns 12 (integer)
+
+    def test_memory_minimum_per_core(self):
+        """Test minimum 1% memory per core."""
+        result = atac_seq._calculate_sort_memory(num_cores=100, sort_memory_percent=30)
+        assert result == 1  # Should ensure minimum 1% per core
+
+    def test_low_memory_percentage(self):
+        """Test with already low memory percentage."""
+        result = atac_seq._calculate_sort_memory(num_cores=2, sort_memory_percent=20)
+        assert result == 10  # 20% / 2 cores = 10% per core
+
+
+class TestSortCommand:
+    """Test sort command generation."""
+
+    def test_sort_command_structure(self):
+        """Test basic sort command structure."""
+        result = atac_seq._sort_command(num_cores=4, sort_mem_pct=25)
+
+        expected_base = [
+            "sort",
+            "--parallel",
+            "4",
+            "-t",
+            "\t",
+            "-k1,1",
+            "-k2,2n",
+            "-k3,3n",
+            "-k4,4",
+            "-S",
+            "25%",
+            "--compress-program",
+            "pigz",
+        ]
+        assert result == expected_base
+
+    def test_sort_command_single_core(self):
+        """Test sort command with single core."""
+        result = atac_seq._sort_command(num_cores=1, sort_mem_pct=50)
+
+        assert "--parallel" in result
+        assert "1" in result  # Should still specify 1 core
+        assert "50%" in result
+
+    def test_sort_command_memory_formatting(self):
+        """Test memory percentage formatting."""
+        result = atac_seq._sort_command(num_cores=2, sort_mem_pct=33)
+
+        assert "33%" in result  # Should format memory as percentage
+
+
+class TestPipelineRun:
+    """Test enhanced pipeline execution."""
+
+    @mock.patch("subprocess.Popen")
+    @mock.patch("builtins.open", mock.mock_open())
+    def test_pipeline_success(self, mock_popen):
+        """Test successful pipeline execution."""
+        # Mock successful processes
+        mock_proc = mock.Mock()
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = 0
+        mock_proc.stderr.read.return_value = b""
+        mock_popen.return_value = mock_proc
+
+        stages = [("stage1", ["cmd1"]), ("stage2", ["cmd2"])]
+        output_file = Path("/tmp/test_output.txt")
+
+        # Should not raise exception
+        atac_seq._pipeline_run(stages, output_file)
+
+    @mock.patch("subprocess.Popen")
+    @mock.patch("builtins.open", mock.mock_open())
+    def test_pipeline_failure_error_aggregation(self, mock_popen):
+        """Test error aggregation when pipeline stages fail."""
+        # Mock failing processes
+        mock_proc1 = mock.Mock()
+        mock_proc1.returncode = 1
+        mock_proc1.wait.return_value = 1
+        mock_proc1.stderr.read.return_value = b"Stage 1 error"
+
+        mock_proc2 = mock.Mock()
+        mock_proc2.returncode = 2
+        mock_proc2.wait.return_value = 2
+        mock_proc2.stderr.read.return_value = b"Stage 2 error"
+
+        mock_popen.side_effect = [mock_proc1, mock_proc2]
+
+        stages = [("stage1", ["cmd1"]), ("stage2", ["cmd2"])]
+        output_file = Path("/tmp/test_output.txt")
+
+        with pytest.raises(RuntimeError) as exc_info:
+            atac_seq._pipeline_run(stages, output_file)
+
+        error_msg = str(exc_info.value)
+        assert "stage1 failed (rc=1): Stage 1 error" in error_msg
+        assert "stage2 failed (rc=2): Stage 2 error" in error_msg
+
+    @mock.patch("subprocess.Popen")
+    @mock.patch("builtins.open", mock.mock_open())
+    def test_pipeline_process_cleanup(self, mock_popen):
+        """Test that processes are properly terminated on failure."""
+        # Mock process that needs termination
+        mock_proc = mock.Mock()
+        mock_proc.returncode = 1
+        mock_proc.poll.return_value = None  # Still running
+        mock_proc.wait.return_value = 1
+        mock_proc.stderr.read.return_value = b"Error"
+        mock_popen.return_value = mock_proc
+
+        stages = [("stage1", ["cmd1"])]
+        output_file = Path("/tmp/test_output.txt")
+
+        with pytest.raises(RuntimeError):
+            atac_seq._pipeline_run(stages, output_file)
+
+        # Should have attempted to terminate the process (may be called multiple times)
+        assert mock_proc.terminate.called
+        assert mock_proc.terminate.call_count >= 1
+
+
+class TestDeterministicEnv:
+    """Test environment setup for deterministic operations."""
+
+    @mock.patch.dict(os.environ, {"LANG": "en_US.UTF-8", "CUSTOM_VAR": "value"})
+    def test_deterministic_env_locale_override(self):
+        """Test that LC_ALL=C is set for deterministic sorting."""
+        result = atac_seq._deterministic_env()
+
+        assert result["LC_ALL"] == "C"
+        assert "LANG" in result  # Should preserve other env vars
+        assert result["CUSTOM_VAR"] == "value"
+
+    @mock.patch.dict(os.environ, {"LC_ALL": "en_US.UTF-8"})
+    def test_deterministic_env_lc_all_override(self):
+        """Test that existing LC_ALL is overridden."""
+        result = atac_seq._deterministic_env()
+
+        assert result["LC_ALL"] == "C"  # Should override existing value
+
+
+class TestDeduplicateFragmentRowsIntegration:
+    """Integration tests for the main deduplication function with new enhancements."""
+
+    @mock.patch("cellxgene_schema.atac_seq._pipeline_run")
+    @mock.patch("cellxgene_schema.atac_seq._default_cores", return_value=4)
+    @mock.patch("cellxgene_schema.atac_seq._calculate_sort_memory", return_value=12)
+    def test_deduplicate_uses_enhanced_cpu_detection(
+        self, mock_calc_mem, mock_cores, mock_pipeline, test_fragment_files
+    ):
+        """Test that deduplication uses the enhanced CPU detection."""
+        input_file = test_fragment_files["gzip"]
+
+        result = atac_seq.deduplicate_fragment_rows(input_file)
+
+        # Should have called our enhanced CPU detection
+        mock_cores.assert_called_once()
+        mock_calc_mem.assert_called_once_with(4, 50)  # 4 cores from mock, 50% default memory
+
+        # Should have used the calculated values in pipeline
+        mock_pipeline.assert_called_once()
+
+        # Verify output path generation
+        assert result.endswith("_dedup.tsv.bgz")
+
+    @mock.patch("cellxgene_schema.atac_seq._pipeline_run")
+    @mock.patch("cellxgene_schema.atac_seq._default_cores", return_value=2)
+    def test_deduplicate_with_custom_memory_percentage(self, mock_cores, mock_pipeline, test_fragment_files):
+        """Test deduplication with custom memory percentage."""
+        input_file = test_fragment_files["gzip"]
+
+        atac_seq.deduplicate_fragment_rows(input_file, sort_memory_percent=30)
+
+        # Should pass custom memory percentage to calculation
+        args, kwargs = mock_pipeline.call_args
+        stages = args[0]
+
+        # Verify sort command includes memory settings
+        sort_stage = next(stage for stage_name, stage in stages if stage_name == "sort")
+        sort_cmd = " ".join(sort_stage)
+        assert "%" in sort_cmd  # Should contain memory percentage
