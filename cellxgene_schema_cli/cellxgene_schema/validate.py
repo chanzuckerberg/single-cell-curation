@@ -561,9 +561,12 @@ class Validator:
         """
         organism_key = "organism_ontology_term_id"
         cell_type_column = "cell_type_ontology_term_id"
+        tissue_type_column = "tissue_type"
         if cell_type_column not in self.adata.obs.columns:
             return
         if organism_key not in self.adata.uns:
+            return
+        if tissue_type_column not in self.adata.obs.columns:
             return
 
         organism_term = self.adata.uns[organism_key]
@@ -574,7 +577,14 @@ class Validator:
             "NCBITaxon:7227": ("FBbt", "CL"),
         }
 
+        cell_line_na_count = 0
+
         def is_valid_row(row):
+            nonlocal cell_line_na_count
+            # Count how many cell line observations have na and unknown
+            if row[tissue_type_column] == "cell line" and row[cell_type_column] == "na":
+                cell_line_na_count += 1
+            # On an individual row basis, unknown and na are both allowed
             if row[cell_type_column] == "unknown" or row[cell_type_column] == "na":
                 return True
             allowed = allowed_prefixes.get(organism_term, ("CL",))
@@ -582,6 +592,12 @@ class Validator:
 
         try:
             invalid_rows = ~self.adata.obs.apply(is_valid_row, axis=1)
+            total_row_count = len(self.adata.obs[self.adata.obs["tissue_type"] == "cell line"])
+
+            if cell_line_na_count > 0 and cell_line_na_count != total_row_count:
+                self.errors.append(
+                    "When tissue_type is 'cell line', 'na' is allowed for 'cell_type_ontology_term_id' but then all observations where tissue_type is 'cell line' MUST be 'na'."
+                )
 
             if invalid_rows.any():
                 self.errors.append(
