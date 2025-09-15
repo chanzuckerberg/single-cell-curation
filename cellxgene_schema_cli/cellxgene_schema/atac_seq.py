@@ -492,7 +492,8 @@ def _check_disk_space(path: str, required_gb: float = 10.0) -> None:
                 f"Insufficient disk space: {available_gb:.1f}GB available, " f"{required_gb:.1f}GB required in {path}"
             )
         logger.info(f"Disk space check passed: {available_gb:.1f}GB available in {path}")
-    except Exception as e:
+    except (OSError, IOError, PermissionError) as e:
+        # Only catch disk access errors, not our intentional RuntimeError
         logger.warning(f"Could not check disk space for {path}: {e}")
 
 
