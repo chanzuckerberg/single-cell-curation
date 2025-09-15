@@ -629,37 +629,6 @@ class TestDeduplicateFragmentRows:
         )
         assert len(df) == len(atac_fragment_dataframe)
 
-    #
-    # def test_deduplicate_and_index(self, atac_fragment_dataframe, atac_fragment_bgzip_file_path, tmpdir, atac_anndata_file):
-    #     # Arrange
-    #     atac_fragment_dataframe = pd.concat([atac_fragment_dataframe, atac_fragment_dataframe])
-    #     input_file = create_fragment_file_from_dataframe(
-    #         os.path.join(tmpdir, "fragment.tsv.gz"), atac_fragment_dataframe
-    #     )
-    #     input_file = "/Users/trentsmith/workspace/single-cell-curation/data/Human Fallopian Tube Ovary Atlas.tsv.bgz"
-    #     deduplicated_fragment = str(atac_fragment_bgzip_file_path)
-    #     output_file = os.path.join(tmpdir, "deduplicated_and_indexed.tsv.bgz")
-    #     # Act
-    #     output_1 = atac_seq.deduplicate_fragment_rows(input_file, deduplicated_fragment)
-    #     result = atac_seq.process_fragment(output_1, atac_anndata_file, generate_index=True, output_file=output_file)
-    #     # Assert
-    #     assert len(result) == 0
-    #     assert Path(output_file).exists()
-    #     assert Path(str(output_file) + ".tbi").exists()
-    #     df = pd.read_csv(
-    #         output_file,
-    #         compression="gzip",
-    #         sep="\t",
-    #         header=None,
-    #         names=["chromosome", "start coordinate", "stop coordinate", "barcode", "read support"],
-    #     )
-    #     assert len(df) == len(atac_fragment_dataframe) // 2
-
-
-# ========================================
-# Unit Tests for New Container-Aware Logic
-# ========================================
-
 
 class TestDefaultCores:
     """Test CPU detection with container awareness."""
