@@ -1068,7 +1068,7 @@ class TestObs:
             obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
         ] = "unknown"
-        assert validator.validate_adata()
+        assert validator.validate_adata(), validator.errors
         assert validator.errors == []
 
     def test_cell_type_ontology_term_id__unknown(self, validator_with_adata):
@@ -1078,7 +1078,7 @@ class TestObs:
         validator = validator_with_adata
         obs = validator.adata.obs
         obs.at["Y", "cell_type_ontology_term_id"] = "unknown"
-        assert validator.validate_adata()
+        assert validator.validate_adata(), validator.errors
         assert validator.errors == []
 
     def test_cell_type_ontology_term_id__na_valid(self, validator_with_adata):
@@ -1092,7 +1092,8 @@ class TestObs:
         obs.at["Y", "development_stage_ontology_term_id"] = "na"
         obs.at["Y", "sex_ontology_term_id"] = "na"
         obs.at["Y", "tissue_ontology_term_id"] = "CVCL_0001"
-        assert validator.validate_adata()
+        obs.at["Y", "self_reported_ethicity_ontology_term_id"] = "na"
+        assert validator.validate_adata(), validator.errors
         assert validator.errors == []
 
     def test_cell_type_ontology_term_id__na_invalid(self, validator_with_adata):
@@ -1119,7 +1120,7 @@ class TestObs:
         obs.at["Y", "tissue_type"] = "primary cell culture"
         obs.at["Y", "tissue_ontology_term_id"] = "unknown"
 
-        assert validator.validate_adata()
+        assert validator.validate_adata(), validator.errors
         assert validator.errors == []
 
     def test_tissue_ontology_term_id__unknown_invalid(self, validator_with_adata):
@@ -1160,8 +1161,8 @@ class TestObs:
         obs.at["Y", "development_stage_ontology_term_id"] = "na"
         obs.at["Y", "sex_ontology_term_id"] = "na"
         obs.at["Y", "tissue_ontology_term_id"] = "CVCL_0001"
-
-        assert validator.validate_adata()
+        obs.at["Y", "self_reported_ethicity_ontology_term_id"] = "na"
+        assert validator.validate_adata(), validator.errors
         assert validator.errors == []
 
     def test_tissue_ontology_term_id__cell_line_invalid(self, validator_with_adata):
@@ -1326,6 +1327,40 @@ class TestObs:
         validator.validate_adata()
         assert (
             "ERROR: 'HANCESTRO:0005' in 'self_reported_ethnicity_ontology_term_id' is not a valid value of 'self_reported_ethnicity_ontology_term_id'. When 'organism_ontology_term_id' is NOT 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be 'na'."
+            in validator.errors
+        )
+
+    def test_self_reported_ethnicity_ontology_term_id__cell_line_na_valid(self, validator_with_adata):
+        """
+        'na' self_reported_ethnicity_ontology_term_id is valid when tissue_type is "cell line"
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        # Set both rows to cell line to avoid validation conflicts
+        obs.loc[:, "tissue_type"] = "cell line"
+        obs.loc[:, "self_reported_ethnicity_ontology_term_id"] = "na"
+        obs.loc[:, "development_stage_ontology_term_id"] = "na"
+        obs.loc[:, "cell_type_ontology_term_id"] = "na"
+        obs.loc[:, "sex_ontology_term_id"] = "na"
+        assert validator.validate_adata(), validator.errors
+        assert validator.errors == []
+
+    def test_self_reported_ethnicity_ontology_term_id__cell_line_non_na_invalid(self, validator_with_adata):
+        """
+        Non-'na' self_reported_ethnicity_ontology_term_id is invalid when tissue_type is "cell line"
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        # Set up one row as cell line to test the validation
+        obs.loc["X", "tissue_type"] = "cell line"
+        obs.loc["X", "self_reported_ethnicity_ontology_term_id"] = "HANCESTRO:0005"
+        obs.loc["X", "development_stage_ontology_term_id"] = "na"
+        obs.loc["X", "cell_type_ontology_term_id"] = "na"
+        # Set the other row to valid values to avoid other validation errors
+        obs.loc["Y", "self_reported_ethnicity_ontology_term_id"] = "HANCESTRO:0580"
+        assert not validator.validate_adata()
+        assert (
+            "ERROR: 'HANCESTRO:0005' in 'self_reported_ethnicity_ontology_term_id' is not a valid value of 'self_reported_ethnicity_ontology_term_id'. When 'tissue_type' is 'cell line', 'self_reported_ethnicity_ontology_term_id' MUST be 'na'."
             in validator.errors
         )
 
@@ -2261,7 +2296,7 @@ class TestUns:
     def test_colors_happy_path(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata = examples.adata_with_colors.copy()
-        assert validator.validate_adata()
+        assert validator.validate_adata(), validator.errors
 
     def test_colors_happy_path_no_column_def(self, validator_with_adata):
         """
@@ -2273,22 +2308,22 @@ class TestUns:
         validator.adata.obs["test_column"] = ["one", "two"]
         validator.adata.obs["test_column"] = validator.adata.obs["test_column"].astype("category")
         validator.adata.uns["test_column_colors"] = numpy.array(["#000000", "#ffffff"])
-        assert validator.validate_adata()
+        assert validator.validate_adata(), validator.errors
 
     def test_uns_true_value(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.uns["log1p"] = True
-        assert validator.validate_adata()
+        assert validator.validate_adata(), validator.errors
 
     def test_uns_false_value(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.uns["log1p"] = False
-        assert validator.validate_adata()
+        assert validator.validate_adata(), validator.errors
 
     def test_uns_none_value(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.uns["log1p"] = None
-        assert validator.validate_adata()
+        assert validator.validate_adata(), validator.errors
 
     def test_uns_empty_numpy_array(self, validator_with_adata):
         validator = validator_with_adata
@@ -2359,7 +2394,7 @@ class TestUns:
     def test_colors_happy_path_duplicates(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.uns["suspension_type_colors"] = numpy.array(["lightgrey", "lightgrey"])
-        assert validator.validate_adata()
+        assert validator.validate_adata(), validator.errors
 
     def test_colors_not_numpy_array(self, validator_with_adata):
         validator = validator_with_adata
