@@ -923,6 +923,7 @@ class TestObs:
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CVCL_0001"
         obs.loc[obs.index[0], "development_stage_ontology_term_id"] = development_stage_ontology_term_id
         obs.loc[obs.index[0], "sex_ontology_term_id"] = "na"
+        obs.loc[:, "self_reported_ethnicity_ontology_term_id"] = "na"
         validator_with_adata.validate_adata()
         assert validator_with_adata.errors == errors
 
@@ -954,6 +955,7 @@ class TestObs:
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CVCL_0001"
         obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "na"
         obs.loc[obs.index[0], "sex_ontology_term_id"] = sex_ontology_term_id
+        obs.loc[:, "self_reported_ethnicity_ontology_term_id"] = "na"
         validator_with_adata.validate_adata()
         assert validator_with_adata.errors == errors
 
@@ -1087,12 +1089,12 @@ class TestObs:
         """
         validator = validator_with_adata
         obs = validator.adata.obs
-        obs.at["Y", "tissue_type"] = "cell line"
-        obs.at["Y", "cell_type_ontology_term_id"] = "na"
-        obs.at["Y", "development_stage_ontology_term_id"] = "na"
-        obs.at["Y", "sex_ontology_term_id"] = "na"
-        obs.at["Y", "tissue_ontology_term_id"] = "CVCL_0001"
-        obs.at["Y", "self_reported_ethicity_ontology_term_id"] = "na"
+        obs.loc[:, "tissue_type"] = "cell line"
+        obs.loc[:, "cell_type_ontology_term_id"] = "na"
+        obs.loc[:, "development_stage_ontology_term_id"] = "na"
+        obs.loc[:, "sex_ontology_term_id"] = "na"
+        obs.loc[:, "tissue_ontology_term_id"] = "CVCL_0001"
+        obs.loc[:, "self_reported_ethnicity_ontology_term_id"] = "na"
         assert validator.validate_adata(), validator.errors
         assert validator.errors == []
 
@@ -1157,11 +1159,11 @@ class TestObs:
         validator = validator_with_adata
         obs = validator.adata.obs
 
-        obs.at["Y", "tissue_type"] = "cell line"
-        obs.at["Y", "development_stage_ontology_term_id"] = "na"
-        obs.at["Y", "sex_ontology_term_id"] = "na"
-        obs.at["Y", "tissue_ontology_term_id"] = "CVCL_0001"
-        obs.at["Y", "self_reported_ethicity_ontology_term_id"] = "na"
+        obs.loc[:, "tissue_type"] = "cell line"
+        obs.loc[:, "development_stage_ontology_term_id"] = "na"
+        obs.loc[:, "sex_ontology_term_id"] = "na"
+        obs.loc[:, "tissue_ontology_term_id"] = "CVCL_0001"
+        obs.loc[:, "self_reported_ethnicity_ontology_term_id"] = "na"
         assert validator.validate_adata(), validator.errors
         assert validator.errors == []
 

@@ -473,6 +473,18 @@ components:
                   - CL:0000257
                   - CL:0000548
                   - WBbt:0006803
+          - # If tissue_type is cell line
+            rule:
+              column: tissue_type
+              match_exact:
+                terms:
+                  - cell line
+            error_message_suffix: >-
+              When 'tissue_type' is 'cell line', 'tissue_ontology_term_id' MUST be a Cellosaurus term.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - CVCL
         add_labels:
           - type: curie
             to_column: tissue
