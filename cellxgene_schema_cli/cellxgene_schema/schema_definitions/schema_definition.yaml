@@ -491,7 +491,6 @@ components:
           - type: curie
             to_column: tissue
       self_reported_ethnicity_ontology_term_id:
-        type: curie
         dependencies:
           - # If tissue_type is "cell line", self_reported_ethnicity_ontology_term_id must be "na"
             rule:
