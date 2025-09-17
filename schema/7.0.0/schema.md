@@ -238,7 +238,7 @@ The following ontology dependencies are *pinned* for this version of the schema.
 | [NCBI organismal classification] |  NCBITaxon: | [2025-03-13](https://github.com/obophenotype/ncbitaxon/releases/tag/v2025-03-13) | [ncbitaxon.owl](https://github.com/obophenotype/ncbitaxon/releases/download/v2025-03-13/ncbitaxon.owl.gz) |
 | [Phenotype And Trait Ontology] | PATO: | [2025-05-14](https://github.com/pato-ontology/pato/releases/tag/v2025-05-14) | [pato.owl](https://github.com/pato-ontology/pato/blob/v2025-05-14/pato.owl)  |
 | [Uberon multi-species anatomy ontology] |  UBERON: | [2025-08-15](https://github.com/obophenotype/uberon/releases/tag/v2025-08-15) | [uberon.owl](https://github.com/obophenotype/uberon/releases/download/v2025-08-15/uberon.owl) |
-| [Zebrafish Anatomy Ontology] | ZFA:<br>ZFS: | [2025-09-09](https://github.com/ZFIN/zebrafish-anatomical-ontology/releases/tag/v2025-09-09) | [zfa.owl](https://github.com/ZFIN/zebrafish-anatomical-ontology/blob/v2025-09-09/zfa.owl) |
+| [Zebrafish Anatomy Ontology] | ZFA:<br>ZFS: | [2025-09-09](https://github.com/ZFIN/zebrafish-anatomical-ontology/releases/tag/v2025-09-05) | [zfa.owl](https://github.com/ZFIN/zebrafish-anatomical-ontology/blob/v2025-09-05/zfa.owl) |
 | | | | |
 
 [C. elegans Development Ontology]: https://obofoundry.org/ontology/wbls.html
