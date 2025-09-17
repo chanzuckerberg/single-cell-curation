@@ -152,6 +152,8 @@ components:
       - observation_joinid
     columns:
       cell_type_ontology_term_id:
+        error_message_suffix: >-
+          cell_type_ontology_term_id must be a valid ontology term of CL or 'unknown'. WBbt, ZFA, and FBbt terms can be allowed depending on the organism. 'na' is allowed if tissue_type is 'cell line'.
         type: curie
         curie_constraints:
           ontologies:

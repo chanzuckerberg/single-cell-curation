@@ -773,8 +773,8 @@ class TestObs:
         validator.adata.obs.loc[validator.adata.obs.index[0], "cell_type_ontology_term_id"] = term
         validator.validate_adata()
         # Forbidden columns may be marked as either "not allowed" or "deprecated"
-        not_allowed_error_message = f"ERROR: '{term}' in 'cell_type_ontology_term_id' is not allowed."
-        deprecated_error_message = f"ERROR: '{term}' in 'cell_type_ontology_term_id' is a deprecated term id of 'CL'."
+        not_allowed_error_message = f"ERROR: '{term}' in 'cell_type_ontology_term_id' is not allowed. cell_type_ontology_term_id must be a valid ontology term of CL or 'unknown'. WBbt, ZFA, and FBbt terms can be allowed depending on the organism. 'na' is allowed if tissue_type is 'cell line'."
+        deprecated_error_message = f"ERROR: '{term}' in 'cell_type_ontology_term_id' is a deprecated term id of 'CL'. cell_type_ontology_term_id must be a valid ontology term of CL or 'unknown'. WBbt, ZFA, and FBbt terms can be allowed depending on the organism. 'na' is allowed if tissue_type is 'cell line'."
         assert not_allowed_error_message in validator.errors or deprecated_error_message in validator.errors
 
     @pytest.mark.parametrize(
@@ -1098,6 +1098,41 @@ class TestObs:
         assert validator.validate_adata(), validator.errors
         assert validator.errors == []
 
+    def test_cell_type_ontology_term_id__na_unknown_mixed(self, validator_with_adata):
+        """
+        'na' cell_type_ontology_term_id is valid when tissue_type is "cell line", but then all observations
+        must be 'na'
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        obs["tissue_type"][:] = "cell line"
+        obs["cell_type_ontology_term_id"][:] = "na"
+        obs["development_stage_ontology_term_id"][:] = "na"
+        obs["tissue_ontology_term_id"][:] = "CVCL_0001"
+        obs["sex_ontology_term_id"][:] = "na"
+        obs.at["Y", "cell_type_ontology_term_id"] = "unknown"
+        assert not validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: When tissue_type is 'cell line', 'na' is allowed for 'cell_type_ontology_term_id' but then all observations where tissue_type is 'cell line' MUST be 'na'."
+        ]
+
+    def test_cell_type_ontology_term_id__na_valid_mixed(self, validator_with_adata):
+        """
+        'na' cell_type_ontology_term_id is valid when tissue_type is "cell line", but then all observations
+        must be 'na'
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        obs["tissue_type"][:] = "cell line"
+        obs["development_stage_ontology_term_id"][:] = "na"
+        obs["tissue_ontology_term_id"][:] = "CVCL_0001"
+        obs["sex_ontology_term_id"][:] = "na"
+        obs.at["Y", "cell_type_ontology_term_id"] = "na"
+        assert not validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: When tissue_type is 'cell line', 'na' is allowed for 'cell_type_ontology_term_id' but then all observations where tissue_type is 'cell line' MUST be 'na'."
+        ]
+
     def test_cell_type_ontology_term_id__na_invalid(self, validator_with_adata):
         """
         'na' cell_type_ontology_term_id is invalid when tissue_type is not "cell line"
@@ -1107,7 +1142,7 @@ class TestObs:
         obs.at["Y", "cell_type_ontology_term_id"] = "na"
         assert not validator.validate_adata()
         assert (
-            "ERROR: 'na' in 'cell_type_ontology_term_id' is not a valid ontology term id of 'CL, ZFA, FBbt, WBbt'."
+            "ERROR: 'na' in 'cell_type_ontology_term_id' is not a valid ontology term id of 'CL, ZFA, FBbt, WBbt'. cell_type_ontology_term_id must be a valid ontology term of CL or 'unknown'. WBbt, ZFA, and FBbt terms can be allowed depending on the organism. 'na' is allowed if tissue_type is 'cell line'."
             in validator.errors
         )
 
