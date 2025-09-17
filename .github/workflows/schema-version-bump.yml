@@ -34,7 +34,7 @@ jobs:
         run: |
           pip install -r scripts/schema_bump_dry_run_ontologies/requirements.txt
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
@@ -77,7 +77,7 @@ jobs:
         run: |
           pip install -r scripts/schema_bump_dry_run_genes/requirements.txt
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
