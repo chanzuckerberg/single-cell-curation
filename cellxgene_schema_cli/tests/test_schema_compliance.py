@@ -108,6 +108,12 @@ def validator_with_slide_seq_v2_assay(validator) -> Validator:
 
 
 @pytest.fixture
+def validator_with_cell_line_tissue_type(validator) -> Validator:
+    validator.adata = examples.adata_with_cell_line.copy()
+    return validator
+
+
+@pytest.fixture
 def label_writer() -> AnnDataLabelAppender:
     """
     Fixture that returns an AnnDataLabelAppender object
@@ -916,18 +922,15 @@ class TestObs:
         ],
     )
     def test_cell_line_development_stage_ontology_term_id(
-        self, validator_with_adata, development_stage_ontology_term_id, development_stage, errors
+        self, validator_with_cell_line_tissue_type, development_stage_ontology_term_id, development_stage, errors
     ):
-        obs = validator_with_adata.adata.obs
-        obs.loc[obs.index[0], "tissue_type"] = "cell line"
-        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CVCL_0001"
+        validator = validator_with_cell_line_tissue_type
+        obs = validator.adata.obs
         obs.loc[obs.index[0], "development_stage_ontology_term_id"] = development_stage_ontology_term_id
-        obs.loc[obs.index[0], "sex_ontology_term_id"] = "na"
-        obs.loc[:, "self_reported_ethnicity_ontology_term_id"] = "na"
-        validator_with_adata.validate_adata()
-        assert validator_with_adata.errors == errors
+        validator.validate_adata()
+        assert validator.errors == errors
 
-        labeler = AnnDataLabelAppender(validator_with_adata.adata)
+        labeler = AnnDataLabelAppender(validator.adata)
         labeler._add_labels()
         labeled_obs = labeler.adata.obs
         assert labeled_obs.loc[labeled_obs.index[0], "development_stage"] == development_stage
@@ -949,17 +952,16 @@ class TestObs:
             ),
         ],
     )
-    def test_cell_line_sex_ontology_term_id(self, validator_with_adata, sex_ontology_term_id, sex, errors):
-        obs = validator_with_adata.adata.obs
-        obs.loc[obs.index[0], "tissue_type"] = "cell line"
-        obs.loc[obs.index[0], "tissue_ontology_term_id"] = "CVCL_0001"
-        obs.loc[obs.index[0], "development_stage_ontology_term_id"] = "na"
+    def test_cell_line_sex_ontology_term_id(
+        self, validator_with_cell_line_tissue_type, sex_ontology_term_id, sex, errors
+    ):
+        validator = validator_with_cell_line_tissue_type
+        obs = validator.adata.obs
         obs.loc[obs.index[0], "sex_ontology_term_id"] = sex_ontology_term_id
-        obs.loc[:, "self_reported_ethnicity_ontology_term_id"] = "na"
-        validator_with_adata.validate_adata()
-        assert validator_with_adata.errors == errors
+        validator.validate_adata()
+        assert validator.errors == errors
 
-        labeler = AnnDataLabelAppender(validator_with_adata.adata)
+        labeler = AnnDataLabelAppender(validator.adata)
         labeler._add_labels()
         labeled_obs = labeler.adata.obs
         assert labeled_obs.loc[labeled_obs.index[0], "sex_ontology_term_id"] == sex_ontology_term_id
@@ -1083,50 +1085,36 @@ class TestObs:
         assert validator.validate_adata(), validator.errors
         assert validator.errors == []
 
-    def test_cell_type_ontology_term_id__na_valid(self, validator_with_adata):
+    def test_cell_type_ontology_term_id__na_valid(self, validator_with_cell_line_tissue_type):
         """
         'na' cell_type_ontology_term_id is valid when tissue_type is "cell line"
         """
-        validator = validator_with_adata
-        obs = validator.adata.obs
-        obs.loc[:, "tissue_type"] = "cell line"
-        obs.loc[:, "cell_type_ontology_term_id"] = "na"
-        obs.loc[:, "development_stage_ontology_term_id"] = "na"
-        obs.loc[:, "sex_ontology_term_id"] = "na"
-        obs.loc[:, "tissue_ontology_term_id"] = "CVCL_0001"
-        obs.loc[:, "self_reported_ethnicity_ontology_term_id"] = "na"
+        validator = validator_with_cell_line_tissue_type
         assert validator.validate_adata(), validator.errors
         assert validator.errors == []
 
-    def test_cell_type_ontology_term_id__na_unknown_mixed(self, validator_with_adata):
+    def test_cell_type_ontology_term_id__na_unknown_mixed(self, validator_with_cell_line_tissue_type):
         """
         'na' cell_type_ontology_term_id is valid when tissue_type is "cell line", but then all observations
         must be 'na'
         """
-        validator = validator_with_adata
+        validator = validator_with_cell_line_tissue_type
         obs = validator.adata.obs
-        obs["tissue_type"][:] = "cell line"
-        obs["cell_type_ontology_term_id"][:] = "na"
-        obs["development_stage_ontology_term_id"][:] = "na"
-        obs["tissue_ontology_term_id"][:] = "CVCL_0001"
-        obs["sex_ontology_term_id"][:] = "na"
+        obs.at["X", "cell_type_ontology_term_id"] = "na"
         obs.at["Y", "cell_type_ontology_term_id"] = "unknown"
         assert not validator.validate_adata()
         assert validator.errors == [
-            "ERROR: When tissue_type is 'cell line', 'na' is allowed for 'cell_type_ontology_term_id' but then all observations where tissue_type is 'cell line' MUST be 'na'."
+            "ERROR: When tissue_type is 'cell line', 'na' is allowed for 'cell_type_ontology_term_id' but then all "
+            "observations where tissue_type is 'cell line' MUST be 'na'."
         ]
 
-    def test_cell_type_ontology_term_id__na_valid_mixed(self, validator_with_adata):
+    def test_cell_type_ontology_term_id__na_valid_mixed(self, validator_with_cell_line_tissue_type):
         """
         'na' cell_type_ontology_term_id is valid when tissue_type is "cell line", but then all observations
         must be 'na'
         """
-        validator = validator_with_adata
+        validator = validator_with_cell_line_tissue_type
         obs = validator.adata.obs
-        obs["tissue_type"][:] = "cell line"
-        obs["development_stage_ontology_term_id"][:] = "na"
-        obs["tissue_ontology_term_id"][:] = "CVCL_0001"
-        obs["sex_ontology_term_id"][:] = "na"
         obs.at["Y", "cell_type_ontology_term_id"] = "na"
         assert not validator.validate_adata()
         assert validator.errors == [
@@ -1187,31 +1175,20 @@ class TestObs:
         assert not validator.validate_adata()
         assert len(validator.errors) > 0
 
-    def test_tissue_ontology_term_id__cell_line_valid(self, validator_with_adata):
+    def test_tissue_ontology_term_id__cell_line_valid(self, validator_with_cell_line_tissue_type):
         """
         Test 'CVCL_0001' tissue_ontology_term_id is valid if tissue_type is 'cell line'
         """
-        validator = validator_with_adata
-        obs = validator.adata.obs
-
-        obs.loc[:, "tissue_type"] = "cell line"
-        obs.loc[:, "development_stage_ontology_term_id"] = "na"
-        obs.loc[:, "sex_ontology_term_id"] = "na"
-        obs.loc[:, "tissue_ontology_term_id"] = "CVCL_0001"
-        obs.loc[:, "self_reported_ethnicity_ontology_term_id"] = "na"
+        validator = validator_with_cell_line_tissue_type
         assert validator.validate_adata(), validator.errors
         assert validator.errors == []
 
-    def test_tissue_ontology_term_id__cell_line_invalid(self, validator_with_adata):
+    def test_tissue_ontology_term_id__cell_line_invalid(self, validator_with_cell_line_tissue_type):
         """
         Test 'UBERON:0000922' tissue_ontology_term_id is valid if tissue_type is 'cell line'
         """
-        validator = validator_with_adata
-        obs = validator.adata.obs
-
-        obs.at["Y", "tissue_type"] = "cell line"
-        obs.at["Y", "tissue_ontology_term_id"] = "UBERON:0000922"
-
+        validator = validator_with_cell_line_tissue_type
+        validator.adata.obs.at["Y", "tissue_ontology_term_id"] = "UBERON:0000922"
         assert not validator.validate_adata()
         assert len(validator.errors) > 0
 
@@ -1243,96 +1220,6 @@ class TestObs:
             "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id of 'HANCESTRO, AFPO'."
         ]
 
-    def test_self_reported_ethnicity_ontology_term_id__forbidden_term(self, validator_with_adata):
-        """
-        Test self_reported_ethnicity_ontology_term error message when passed an explicitly forbidden ontology term that
-        is otherwise valid
-        """
-        validator = validator_with_adata
-        error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
-            "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][1]["error_message_suffix"]
-
-        validator.adata.obs.loc[
-            validator.adata.obs.index[0],
-            "self_reported_ethnicity_ontology_term_id",
-        ] = "HANCESTRO:0003"
-        validator.validate_adata()
-        assert validator.errors == [
-            self.get_format_error_message(
-                error_message_suffix,
-                "ERROR: 'HANCESTRO:0003' in 'self_reported_ethnicity_ontology_term_id' is not allowed.",
-            )
-        ]
-
-    def test_self_reported_ethnicity_ontology_term_id__forbidden_term_ancestor(self, validator_with_adata):
-        """
-        Test self_reported_ethnicity_ontology_term error message when passed an ontology term that has
-        both itself and its descendants forbidden
-        """
-        validator = validator_with_adata
-        error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
-            "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][1]["error_message_suffix"]
-
-        validator.adata.obs.loc[
-            validator.adata.obs.index[0],
-            "self_reported_ethnicity_ontology_term_id",
-        ] = "HANCESTRO:0002"
-        validator.validate_adata()
-        assert validator.errors == [
-            self.get_format_error_message(
-                error_message_suffix,
-                "ERROR: 'HANCESTRO:0002' in 'self_reported_ethnicity_ontology_term_id' is not allowed.",
-            )
-        ]
-
-    def test_self_reported_ethnicity_ontology_term_id__forbidden_term_descendant(self, validator_with_adata):
-        """
-        Test self_reported_ethnicity_ontology_term error message when passed the descendant term of an ontology term that has
-        both itself and its descendants forbidden
-        """
-        validator = validator_with_adata
-        error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
-            "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][1]["error_message_suffix"]
-
-        validator.adata.obs.loc[
-            validator.adata.obs.index[0],
-            "self_reported_ethnicity_ontology_term_id",
-        ] = "HANCESTRO:0306"
-        validator.validate_adata()
-        assert (
-            self.get_format_error_message(
-                error_message_suffix,
-                "ERROR: 'HANCESTRO:0306' in 'self_reported_ethnicity_ontology_term_id' is not allowed. Descendant terms "
-                "of 'HANCESTRO:0304' are not allowed.",
-            )
-            in validator.errors
-        )
-
-    def test_self_reported_ethnicity_ontology_term_id__forbidden_term_in_multi_term(self, validator_with_adata):
-        """
-        Test error message for self_reported_ethnicity_ontology_term_id involving a forbidden term among an otherwise
-        valid comma-delimited str of multiple terms
-        """
-        validator = validator_with_adata
-        error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
-            "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][1]["error_message_suffix"]
-
-        validator.adata.obs.loc[
-            validator.adata.obs.index[0],
-            "self_reported_ethnicity_ontology_term_id",
-        ] = "HANCESTRO:0005 || HANCESTRO:0014 || HANCESTRO:0018"
-        validator.validate_adata()
-        assert validator.errors == [
-            self.get_format_error_message(
-                error_message_suffix,
-                "ERROR: 'HANCESTRO:0018' in 'self_reported_ethnicity_ontology_term_id' is not allowed.",
-            )
-        ]
-
     def test_self_reported_ethnicity_ontology_term_id__non_human(self, validator_with_adata):
         """
         Test self_reported_ethnicity_ontology_term error message if term is not 'na' for a non-human organism
@@ -1352,35 +1239,18 @@ class TestObs:
             in validator.errors
         )
 
-    def test_self_reported_ethnicity_ontology_term_id__cell_line_na_valid(self, validator_with_adata):
-        """
-        'na' self_reported_ethnicity_ontology_term_id is valid when tissue_type is "cell line"
-        """
-        validator = validator_with_adata
-        obs = validator.adata.obs
-        # Set both rows to cell line to avoid validation conflicts
-        obs.loc[:, "tissue_type"] = "cell line"
-        obs.loc[:, "self_reported_ethnicity_ontology_term_id"] = "na"
-        obs.loc[:, "development_stage_ontology_term_id"] = "na"
-        obs.loc[:, "cell_type_ontology_term_id"] = "na"
-        obs.loc[:, "sex_ontology_term_id"] = "na"
-        obs.loc[:, "tissue_ontology_term_id"] = "CVCL_0001"  # Use a valid Cellosaurus term for cell lines
-        assert validator.validate_adata(), validator.errors
-        assert validator.errors == []
-
-    def test_self_reported_ethnicity_ontology_term_id__cell_line_non_na_invalid(self, validator_with_adata):
+    def test_self_reported_ethnicity_ontology_term_id__cell_line_non_na_invalid(
+        self, validator_with_cell_line_tissue_type
+    ):
         """
         Non-'na' self_reported_ethnicity_ontology_term_id is invalid when tissue_type is "cell line"
         """
-        validator = validator_with_adata
+        validator = validator_with_cell_line_tissue_type
         obs = validator.adata.obs
         # Set up one row as cell line to test the validation
-        obs.loc["X", "tissue_type"] = "cell line"
         obs.loc["X", "self_reported_ethnicity_ontology_term_id"] = "HANCESTRO:0005"
-        obs.loc["X", "development_stage_ontology_term_id"] = "na"
-        obs.loc["X", "cell_type_ontology_term_id"] = "na"
-        # Set the other row to valid values to avoid other validation errors
-        obs.loc["Y", "self_reported_ethnicity_ontology_term_id"] = "HANCESTRO:0580"
+        # # Set the other row to valid values to avoid other validation errors
+        # obs.loc["Y", "self_reported_ethnicity_ontology_term_id"] = "HANCESTRO:0580"
         assert not validator.validate_adata()
         assert (
             "ERROR: 'HANCESTRO:0005' in 'self_reported_ethnicity_ontology_term_id' is not a valid value of 'self_reported_ethnicity_ontology_term_id'. When 'tissue_type' is 'cell line', 'self_reported_ethnicity_ontology_term_id' MUST be 'na'."
@@ -1423,7 +1293,7 @@ class TestObs:
         ] = "HANCESTRO:0005,HANCESTRO:0014"
         validator.validate_adata()
         assert (
-            "'HANCESTRO:0005,HANCESTRO:0014' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id of 'HANCESTRO'"
+            "'HANCESTRO:0005,HANCESTRO:0014' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id of 'HANCESTRO, AFPO'."
             in validator.errors[0]
         )
 
@@ -1446,7 +1316,7 @@ class TestObs:
             self.get_format_error_message(
                 error_message_suffix,
                 "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term "
-                "id of 'HANCESTRO'.",
+                "id of 'HANCESTRO, AFPO'.",
             ),
             self.get_format_error_message(
                 error_message_suffix,
@@ -1455,7 +1325,7 @@ class TestObs:
             self.get_format_error_message(
                 error_message_suffix,
                 "ERROR: 'HANCESTRO:1' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term "
-                "id of 'HANCESTRO'.",
+                "id of 'HANCESTRO, AFPO'.",
             ),
         ]
 

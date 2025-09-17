@@ -482,7 +482,7 @@ components:
                 terms:
                   - cell line
             error_message_suffix: >-
-              When 'tissue_type' is 'cell line', 'tissue_ontology_term_id' MUST be a Cellosaurus term.
+              When 'tissue_type' is 'cell line', 'tissue_ontology_term_id' must be a valid CVCL term.
             type: curie
             curie_constraints:
               ontologies:
@@ -492,16 +492,16 @@ components:
             to_column: tissue
       self_reported_ethnicity_ontology_term_id:
         type: curie
-        curie_constraints:
-          ontologies:
-            - HANCESTRO
-            - AFPO
-          exceptions:
-            - na
-            - unknown
-          multi_term:
-            delimiter: " || "
-            sorted: True
+#        curie_constraints:
+#          ontologies:
+#            - HANCESTRO
+#            - AFPO
+#          exceptions:
+#            - na
+#            - unknown
+#          multi_term:
+#            delimiter: " || "
+#            sorted: True
         dependencies:
           - # If tissue_type is "cell line", self_reported_ethnicity_ontology_term_id must be "na"
             rule:

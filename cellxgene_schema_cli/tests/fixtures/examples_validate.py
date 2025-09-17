@@ -340,6 +340,14 @@ good_obs_mouse["suspension_type"] = good_obs_mouse["suspension_type"].astype("ca
 good_obs_mouse["tissue_type"] = good_obs_mouse["tissue_type"].astype("category")
 good_obs_mouse["tissue_type"] = good_obs_mouse["tissue_type"].cat.add_categories(["tissue", "organoid", "cell line"])
 
+# Creating a cell line obs by copying good_obs and changing the necessary fields
+good_obs_cell_line = good_obs.copy()
+good_obs_cell_line.loc[:, "tissue_type"] = "cell line"
+good_obs_cell_line.loc[:, "tissue_ontology_term_id"] = "CVCL_0001"
+good_obs_cell_line.loc[:, "development_stage_ontology_term_id"] = "na"
+good_obs_cell_line.loc[:, "sex_ontology_term_id"] = "na"
+good_obs_cell_line.loc[:, "self_reported_ethnicity_ontology_term_id"] = "na"
+
 # ---
 # 2. Creating individual var components: valid object and valid object and with labels
 
@@ -554,6 +562,9 @@ adata_visium = anndata.AnnData(
 )
 adata_visium.raw = adata_visium.copy()
 adata_visium.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# Expected anndata with cell line data
+adata_with_cell_line = anndata.AnnData(X=X.copy(), obs=good_obs_cell_line, uns=good_uns, obsm=good_obsm, var=good_var)
 
 # Expected anndata with Slide-seqV2 spatial data
 adata_slide_seqv2 = anndata.AnnData(
