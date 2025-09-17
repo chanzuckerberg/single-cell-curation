@@ -1185,21 +1185,13 @@ class TestObs:
         Test 'unknown' self_reported_ethnicity_ontology_term is invalid when used in multi-term comma-delimited str
         """
         validator = validator_with_adata
-        error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
-            "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][0]["error_message_suffix"]
-
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
-        ] = "HANCESTRO:0005 || HANCESTRO:0014 || unknown"
+        ] = "HANCESTRO:0019 || HANCESTRO:0020 || unknown"
         validator.validate_adata()
         assert validator.errors == [
-            self.get_format_error_message(
-                error_message_suffix,
-                "ERROR: 'unknown' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id "
-                "of 'HANCESTRO'.",
-            )
+            "ERROR: 'unknown' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id of 'HANCESTRO, AFPO, NA'."
         ]
 
     def test_self_reported_ethnicity_ontology_term_id__invalid_ontology(self, validator_with_adata):
@@ -1207,20 +1199,13 @@ class TestObs:
         Test self_reported_ethnicity_ontology_term error message when passed a valid term from an invalid ontology
         """
         validator = validator_with_adata
-        error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
-            "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][0]["error_message_suffix"]
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
         ] = "EFO:0000001"
         validator.validate_adata()
         assert validator.errors == [
-            self.get_format_error_message(
-                error_message_suffix,
-                "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term "
-                "id of 'HANCESTRO'.",
-            )
+            "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id of 'HANCESTRO, AFPO, NA'."
         ]
 
     def test_self_reported_ethnicity_ontology_term_id__forbidden_term(self, validator_with_adata):
@@ -1231,7 +1216,7 @@ class TestObs:
         validator = validator_with_adata
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][0]["error_message_suffix"]
+        ]["dependencies"][1]["error_message_suffix"]
 
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
@@ -1253,7 +1238,7 @@ class TestObs:
         validator = validator_with_adata
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][0]["error_message_suffix"]
+        ]["dependencies"][1]["error_message_suffix"]
 
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
@@ -1275,7 +1260,7 @@ class TestObs:
         validator = validator_with_adata
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][0]["error_message_suffix"]
+        ]["dependencies"][1]["error_message_suffix"]
 
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
@@ -1299,7 +1284,7 @@ class TestObs:
         validator = validator_with_adata
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][0]["error_message_suffix"]
+        ]["dependencies"][1]["error_message_suffix"]
 
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
@@ -1344,6 +1329,7 @@ class TestObs:
         obs.loc[:, "development_stage_ontology_term_id"] = "na"
         obs.loc[:, "cell_type_ontology_term_id"] = "na"
         obs.loc[:, "sex_ontology_term_id"] = "na"
+        obs.loc[:, "tissue_ontology_term_id"] = "CVCL_0001"  # Use a valid Cellosaurus term for cell lines
         assert validator.validate_adata(), validator.errors
         assert validator.errors == []
 
@@ -1374,7 +1360,7 @@ class TestObs:
         validator = validator_with_adata
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][0]["error_message_suffix"]
+        ]["dependencies"][1]["error_message_suffix"]
 
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
@@ -1414,7 +1400,7 @@ class TestObs:
         validator = validator_with_adata
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][0]["error_message_suffix"]
+        ]["dependencies"][1]["error_message_suffix"]
 
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
@@ -1446,7 +1432,7 @@ class TestObs:
         validator = validator_with_adata
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][0]["error_message_suffix"]
+        ]["dependencies"][1]["error_message_suffix"]
 
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
@@ -1468,7 +1454,7 @@ class TestObs:
         validator = validator_with_adata
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][0]["error_message_suffix"]
+        ]["dependencies"][1]["error_message_suffix"]
 
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
