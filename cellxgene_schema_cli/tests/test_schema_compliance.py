@@ -1226,7 +1226,7 @@ class TestObs:
         ] = "HANCESTRO:0019 || HANCESTRO:0020 || unknown"
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: 'unknown' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id of 'HANCESTRO, AFPO, NA'."
+            "ERROR: 'unknown' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id of 'HANCESTRO, AFPO'."
         ]
 
     def test_self_reported_ethnicity_ontology_term_id__invalid_ontology(self, validator_with_adata):
@@ -1240,7 +1240,7 @@ class TestObs:
         ] = "EFO:0000001"
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id of 'HANCESTRO, AFPO, NA'."
+            "ERROR: 'EFO:0000001' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id of 'HANCESTRO, AFPO'."
         ]
 
     def test_self_reported_ethnicity_ontology_term_id__forbidden_term(self, validator_with_adata):

@@ -496,7 +496,6 @@ components:
           ontologies:
             - HANCESTRO
             - AFPO
-            - NA
           exceptions:
             - na
             - unknown
