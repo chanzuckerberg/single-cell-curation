@@ -1686,7 +1686,7 @@ class TestObs:
             "EFO:0030028": ["cell", "nucleus"],
             "EFO:0008992": ["na"],
             "EFO:0008679": ["cell"],
-            "EFO:0008877": ["cell"]
+            "EFO:0008877": ["cell"],
         }.items(),
     )
     def test_suspension_type(self, validator, assay, suspension_types):
