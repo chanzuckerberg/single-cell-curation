@@ -1,7 +1,7 @@
 import semver
 import yaml
 
-from . import __version__, env
+from . import __schema_version__, env
 
 
 def get_schema_definition() -> dict:
@@ -17,5 +17,5 @@ def get_schema_definition() -> dict:
 
 
 def get_current_schema_version() -> str:
-    current_version: semver.Version = semver.Version.parse(__version__)
+    current_version: semver.Version = semver.Version.parse(__schema_version__)
     return f"{str(current_version.major)}.{str(current_version.minor)}.0"
