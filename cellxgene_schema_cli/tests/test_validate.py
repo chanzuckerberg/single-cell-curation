@@ -267,9 +267,9 @@ class TestAddLabelFunctions:
     def test_get_dictionary_mapping_curie__self_reported_ethnicity_ontology_term_id(self, schema_def, label_writer):
         ids = ["HANCESTRO:0005", "HANCESTRO:0014", "HANCESTRO:0005 || HANCESTRO:0014", "unknown"]
         labels = [
-            "European ancestry",
+            "Afghan",
             "Latin or Admixed American ancestry",
-            "European ancestry || Latin or Admixed American ancestry",
+            "Afghan || Latin or Admixed American ancestry",
             "unknown",
         ]
         curie_constraints = schema_def["components"]["obs"]["columns"]["self_reported_ethnicity_ontology_term_id"][

@@ -1201,9 +1201,15 @@ class TestObs:
             validator.adata.obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
         ] = "HANCESTRO:0019 || HANCESTRO:0020 || unknown"
+        error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
+            "self_reported_ethnicity_ontology_term_id"
+        ]["dependencies"][0]["error_message_suffix"]
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: 'unknown' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id of 'HANCESTRO, AFPO'."
+            self.get_format_error_message(
+                error_message_suffix,
+                "ERROR: 'unknown' in 'self_reported_ethnicity_ontology_term_id' is not a valid ontology term id of 'HANCESTRO, AFPO'.",
+            )
         ]
 
     def test_self_reported_ethnicity_ontology_term_id__invalid_ontology(self, validator_with_adata):
@@ -1217,7 +1223,7 @@ class TestObs:
         ] = "EFO:0000001"
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][1]["error_message_suffix"]
+        ]["dependencies"][0]["error_message_suffix"]
         validator.validate_adata()
         assert validator.errors == [
             self.get_format_error_message(
