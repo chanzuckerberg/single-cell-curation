@@ -1376,11 +1376,11 @@ class TestObs:
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
-        ] = ["HANCESTRO:0005 || HANCESTRO:0014"]
+        ] = ["HANCESTRO:0019 || HANCESTRO:0014"]
         validator.validate_adata()
         assert validator.errors[1] == self.get_format_error_message(
             error_message_suffix,
-            "ERROR: '['HANCESTRO:0005 || HANCESTRO:0014']' in 'self_reported_ethnicity_ontology_term_id' is not "
+            "ERROR: '['HANCESTRO:0019 || HANCESTRO:0014']' in 'self_reported_ethnicity_ontology_term_id' is not "
             "a valid ontology term value, it must be a string.",
         )
 

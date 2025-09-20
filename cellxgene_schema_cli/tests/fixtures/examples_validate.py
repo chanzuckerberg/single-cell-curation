@@ -94,7 +94,7 @@ obs_expected = pd.DataFrame(
             "COVID-19",
             "female",
             "lung",
-            "Afghan",
+            "Japanese",
             "Carnegie stage 01",
         ],
         [
@@ -103,7 +103,7 @@ obs_expected = pd.DataFrame(
             "COVID-19",
             "female",
             "lung",
-            "Afghan",
+            "Japanese",
             "Carnegie stage 01",
         ],
     ],

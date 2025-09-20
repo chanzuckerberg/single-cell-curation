@@ -1930,6 +1930,10 @@ class Validator:
 
         :rtype none
         """
+        # Skip validation if tissue_position_maxes is None (happens when assay_ontology_term_id is missing)
+        if self.tissue_position_maxes is None:
+            return
+
         self._validate_spatial_tissue_position("array_col", 0, self.tissue_position_maxes[1])
         self._validate_spatial_tissue_position("array_row", 0, self.tissue_position_maxes[0])
         self._validate_spatial_tissue_position("in_tissue", 0, 1)
