@@ -75,8 +75,8 @@ valid_terms = {
         "EFO:0008931": "Smart-seq2",
     },
     "HANCESTRO": {
-        "HANCESTRO:0005": "European",
-        "HANCESTRO:0014": "Hispanic or Latin American",
+        "HANCESTRO:0019": "Japanese",
+        "HANCESTRO:0014": "Afghan",
     },
     "MONDO": {"MONDO:0100096": "COVID-19"},
     "MmusDv": {
