@@ -145,7 +145,7 @@ class Validator:
         if self._visium_tissue_position_max is None and self._is_visium_and_is_single_true:
             # visium 11 has different requirements than other visium
             if (
-                self.adata.obs["assay_ontology_term_id"]
+                self.adata.obs.get("assay_ontology_term_id", pd.Series([]))
                 .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
                 .astype(bool)
                 .any()
@@ -815,7 +815,7 @@ class Validator:
                 match_query = pd.Series([match] * len(df), index=df.index)
             else:
                 self.errors.append(f"Validation rule for '{column_name}' must define either 'column' or 'uns_key'.")
-                return None, None, None
+                return None, None
 
             error_message_suffix = None
             if column_to_match:
@@ -824,7 +824,7 @@ class Validator:
             elif uns_key_to_match:
                 error_message_suffix = f"when '{uns_key_to_match}' is '{uns_value}'"
         except KeyError:
-            return None, None, None
+            return None, None
 
         return match_query, error_message_suffix
 

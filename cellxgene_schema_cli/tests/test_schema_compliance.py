@@ -623,7 +623,7 @@ class TestObs:
         validator.adata.obs.drop("assay_ontology_term_id", axis=1, inplace=True)
         validator.validate_adata()
         assert validator.errors == [
-            "ERROR: Dataframe 'obs' is missing column " "'assay_ontology_term_id'.",
+            "ERROR: Dataframe 'obs' is missing column 'assay_ontology_term_id'.",
         ]
 
     @pytest.mark.parametrize(
