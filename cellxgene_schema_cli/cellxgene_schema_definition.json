@@ -1,0 +1,498 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/chanzuckerberg/single-cell-curation/schema-definition",
+  "title": "CellxGene Schema Definition",
+  "description": "JSON schema for validating CellxGene schema definition YAML files that specify validation rules for single-cell datasets",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Human-readable title for the schema version (e.g., 'Corpora schema version 5.X.X')"
+    },
+    "type": {
+      "type": "string",
+      "description": "The type of data structure this schema validates",
+      "enum": ["anndata"]
+    },
+    "sparsity": {
+      "type": "number",
+      "description": "Sparsity threshold (0-1) above which a warning is issued if the expression matrix is not in CSR sparse format",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "raw": {
+      "type": "object",
+      "description": "Defines conditions for when raw data requirements should be enforced",
+      "properties": {
+        "obs": {
+          "type": "object",
+          "description": "Observation-level conditions for raw data requirements",
+          "additionalProperties": {
+            "$ref": "#/$defs/field_validation_rules"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "components": {
+      "type": "object",
+      "description": "Main schema components defining validation rules for different parts of the AnnData object",
+      "properties": {
+        "uns": {
+          "$ref": "#/$defs/uns_component",
+          "description": "Unstructured annotations component"
+        },
+        "var": {
+          "$ref": "#/$defs/dataframe_component",
+          "description": "Gene/feature variables component"
+        },
+        "varm": {
+          "$ref": "#/$defs/annotation_mapping_component",
+          "description": "Gene/feature variable annotation matrices"
+        },
+        "varp": {
+          "$ref": "#/$defs/annotation_mapping_component",
+          "description": "Gene/feature variable pairwise annotations"
+        },
+        "obsm": {
+          "$ref": "#/$defs/annotation_mapping_component",
+          "description": "Cell observation annotation matrices (e.g., PCA, UMAP embeddings)"
+        },
+        "obsp": {
+          "$ref": "#/$defs/annotation_mapping_component",
+          "description": "Cell observation pairwise annotations (e.g., cell-cell distances)"
+        },
+        "raw.var": {
+          "$ref": "#/$defs/dataframe_component",
+          "description": "Raw gene/feature variables component (before filtering)"
+        },
+        "obs": {
+          "$ref": "#/$defs/obs_component",
+          "description": "Cell observations component containing cell metadata"
+        }
+      },
+      "additionalProperties": false,
+      "required": ["uns", "var", "obsm", "obs"]
+    }
+  },
+  "required": ["title", "type", "components"],
+  "additionalProperties": false,
+  "$defs": {
+    "field_validation_rules": {
+      "type": "object",
+      "description": "Generic validation rules that can be applied to any field",
+      "properties": {
+        "descendants_of_all": {
+          "$ref": "#/$defs/ontology_term_constraint",
+          "description": "Field must be a descendant of ALL specified terms"
+        },
+        "not_descendants_of": {
+          "$ref": "#/$defs/ontology_terms_by_prefix",
+          "description": "Field must NOT be a descendant of any of these terms"
+        }
+      },
+      "additionalProperties": true
+    },
+    "uns_component": {
+      "type": "object",
+      "description": "Unstructured annotations component containing dataset-level metadata",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["dict"],
+          "description": "Data type - must be dictionary/mapping"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether this component is required in the dataset"
+        },
+        "reserved_columns": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Column names reserved by the schema that should not be used by users"
+        },
+        "deprecated_columns": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Column names that are deprecated and should not be used"
+        },
+        "keys": {
+          "type": "object",
+          "description": "Validation rules for specific keys in the unstructured annotations",
+          "additionalProperties": {
+            "$ref": "#/$defs/field_specification"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "dataframe_component": {
+      "type": "object",
+      "description": "Component representing a pandas DataFrame with validation rules",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["dataframe"],
+          "description": "Data type - must be DataFrame"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether this component is required in the dataset"
+        },
+        "warn_if_less_than_rows": {
+          "type": "integer",
+          "description": "Issue a warning if the DataFrame has fewer than this many rows",
+          "minimum": 0
+        },
+        "index": {
+          "$ref": "#/$defs/index_specification",
+          "description": "Validation rules for the DataFrame index"
+        },
+        "columns": {
+          "type": "object",
+          "description": "Validation rules for specific DataFrame columns",
+          "additionalProperties": {
+            "$ref": "#/$defs/field_specification"
+          }
+        },
+        "forbidden_columns": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Column names that must not be present in this DataFrame"
+        },
+        "deprecated_columns": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Column names that are deprecated and should not be used"
+        },
+        "reserved_columns": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Column names reserved by the schema"
+        }
+      },
+      "additionalProperties": false
+    },
+    "annotation_mapping_component": {
+      "type": "object",
+      "description": "Component for annotation mappings (matrices or pairwise data)",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["annotation_mapping"],
+          "description": "Data type for annotation mappings"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether this component is required in the dataset"
+        }
+      },
+      "additionalProperties": false
+    },
+    "obs_component": {
+      "type": "object",
+      "description": "Cell observations component containing detailed cell metadata validation rules",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["dataframe"],
+          "description": "Data type - must be DataFrame"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether this component is required in the dataset"
+        },
+        "index": {
+          "$ref": "#/$defs/index_specification",
+          "description": "Validation rules for the DataFrame index (cell IDs)"
+        },
+        "deprecated_columns": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Column names that are deprecated and should not be used"
+        },
+        "reserved_columns": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Column names reserved by the schema"
+        },
+        "columns": {
+          "type": "object",
+          "description": "Validation rules for cell metadata columns",
+          "additionalProperties": {
+            "$ref": "#/$defs/field_specification"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "index_specification": {
+      "type": "object",
+      "description": "Validation rules for DataFrame indices",
+      "properties": {
+        "unique": {
+          "type": "boolean",
+          "description": "Whether index values must be unique"
+        },
+        "type": {
+          "type": "string",
+          "description": "The expected data type for index values",
+          "enum": ["feature_id", "string", "categorical"]
+        },
+        "add_labels": {
+          "type": "array",
+          "description": "Labels to automatically add based on index values",
+          "items": {
+            "$ref": "#/$defs/add_label_specification"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "field_specification": {
+      "type": "object",
+      "description": "Complete validation specification for a data field",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The data type expected for this field",
+          "enum": [
+            "curie", "string", "bool", "categorical", "list", 
+            "match_obs_columns", "match_obsm_keys", "feature_is_filtered"
+          ]
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether this field is required"
+        },
+        "enum": {
+          "type": "array",
+          "description": "List of allowed values for categorical fields",
+          "items": {"type": "string"}
+        },
+        "element_type": {
+          "type": "string",
+          "description": "For list fields, the type of elements in the list"
+        },
+        "subtype": {
+          "type": "string",
+          "description": "Subtype specification for the field"
+        },
+        "curie_constraints": {
+          "$ref": "#/$defs/curie_constraints",
+          "description": "Constraints for CURIE (Compact URI) fields referencing ontology terms"
+        },
+        "dependencies": {
+          "type": "array",
+          "description": "Conditional validation rules that depend on other field values",
+          "items": {
+            "$ref": "#/$defs/dependency_rule"
+          }
+        },
+        "add_labels": {
+          "type": "array",
+          "description": "Labels to automatically add based on field values",
+          "items": {
+            "$ref": "#/$defs/add_label_specification"
+          }
+        },
+        "error_message_suffix": {
+          "type": "string",
+          "description": "Custom error message to append when validation fails"
+        },
+        "warning_message": {
+          "type": "string",
+          "description": "Warning message to display for certain conditions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "curie_constraints": {
+      "type": "object",
+      "description": "Validation constraints for CURIE (ontology term) fields",
+      "properties": {
+        "ontologies": {
+          "type": "array",
+          "description": "List of allowed ontology prefixes (e.g., 'CL', 'EFO', 'MONDO')",
+          "items": {"type": "string"}
+        },
+        "allowed": {
+          "$ref": "#/$defs/term_constraints",
+          "description": "Terms or term ancestors that are allowed"
+        },
+        "forbidden": {
+          "$ref": "#/$defs/term_constraints",
+          "description": "Terms or term ancestors that are forbidden"
+        },
+        "exceptions": {
+          "type": "array",
+          "description": "Special string values that are allowed (e.g., 'unknown', 'na')",
+          "items": {"type": "string"}
+        },
+        "multi_term": {
+          "type": "object",
+          "description": "Rules for fields that can contain multiple ontology terms",
+          "properties": {
+            "delimiter": {
+              "type": "string",
+              "description": "String used to separate multiple terms (e.g., ' || ')"
+            },
+            "sorted": {
+              "type": "boolean",
+              "description": "Whether multiple terms must be in sorted order"
+            },
+            "multi_term_constraints": {"$ref": "#/$defs/multi_term_constraints"}
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "term_constraints": {
+      "type": "object",
+      "description": "Constraints specifying allowed or forbidden ontology terms",
+      "properties": {
+        "terms": {
+          "oneOf": [
+            {"type": "array", "items": {"type": "string"}},
+            {"$ref": "#/$defs/ontology_terms_by_prefix"}
+          ],
+          "description": "Specific terms that are allowed or forbidden"
+        },
+        "ancestors": {
+          "$ref": "#/$defs/ontology_terms_by_prefix",
+          "description": "Terms whose descendants are allowed or forbidden"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ontology_terms_by_prefix": {
+      "type": "object",
+      "description": "Ontology terms organized by their prefix/namespace",
+      "additionalProperties": {
+        "type": "array",
+        "items": {"type": "string"}
+      }
+    },
+    "ontology_term_constraint": {
+      "type": "object",
+      "description": "Constraint specifying ontology terms",
+      "properties": {
+        "terms": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "multi_term_constraints": {
+      "type": "object",
+      "properties": {
+        "ontologies": {
+          "type": "array",
+          "description": "List of allowed ontology prefixes (e.g., 'CL', 'EFO', 'MONDO')",
+          "items": {"type": "string"}
+        }
+      },
+      "description": "Additional constraints that apply only when multiple terms are present"
+    },
+    "dependency_rule": {
+      "type": "object",
+      "description": "Conditional validation rule that applies when certain conditions are met",
+      "properties": {
+        "rule": {
+          "$ref": "#/$defs/condition_rule",
+          "description": "The condition that must be met for this dependency to apply"
+        },
+        "error_message_suffix": {
+          "type": "string",
+          "description": "Custom error message for this specific dependency"
+        },
+        "type": {
+          "type": "string",
+          "description": "The data type required when this dependency applies"
+        },
+        "curie_constraints": {
+          "$ref": "#/$defs/curie_constraints",
+          "description": "CURIE constraints that apply when this dependency is active"
+        },
+        "enum": {
+          "type": "array",
+          "description": "Allowed values when this dependency is active",
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "condition_rule": {
+      "type": "object",
+      "description": "Rule specifying conditions for dependency activation",
+      "properties": {
+        "column": {
+          "type": "string",
+          "description": "Column name to check for the condition"
+        },
+        "uns_key": {
+          "type": "string",
+          "description": "Key in unstructured annotations to check"
+        },
+        "match_exact": {
+          "$ref": "#/$defs/match_constraint",
+          "description": "Values that must match exactly"
+        },
+        "match_ancestors_inclusive": {
+          "$ref": "#/$defs/match_constraint",
+          "description": "Values or their ancestors that must match (inclusive of the terms themselves)"
+        },
+        "exclude_exact": {
+          "$ref": "#/$defs/match_constraint",
+          "description": "Values that must not match exactly"
+        },
+        "exclude_ancestors_inclusive": {
+          "$ref": "#/$defs/match_constraint",
+          "description": "Values or their ancestors that must not match"
+        }
+      },
+      "additionalProperties": false
+    },
+    "match_constraint": {
+      "type": "object",
+      "description": "Constraint for matching values or ancestors",
+      "properties": {
+        "terms": {
+          "type": "array",
+          "description": "Specific terms to match",
+          "items": {"type": "string"}
+        },
+        "ancestors": {
+          "type": "array",
+          "description": "Ancestor terms to match",
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "add_label_specification": {
+      "type": "object",
+      "description": "Specification for automatically adding labels based on field values",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The type of label to add",
+          "enum": [
+            "curie", "feature_id", "feature_reference", "feature_biotype", 
+            "feature_length", "feature_type"
+          ]
+        },
+        "to_column": {
+          "type": "string",
+          "description": "Target column name for the added label"
+        },
+        "to_key": {
+          "type": "string",
+          "description": "Target key name for the added label (for unstructured data)"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
