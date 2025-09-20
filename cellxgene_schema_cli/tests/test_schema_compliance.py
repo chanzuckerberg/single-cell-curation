@@ -151,7 +151,7 @@ class TestH5adValidation:
 
     def test_validate(self, validator):
         h5ad_valid_file = examples.h5ad_valid
-        assert validator.validate_adata(h5ad_valid_file)
+        assert validator.validate_adata(h5ad_valid_file), validator.errors
 
     def test_invalidate(self, validator):
         h5ad_invalid_file = examples.h5ad_invalid
@@ -1277,17 +1277,17 @@ class TestObs:
         validator = validator_with_adata
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][1]["error_message_suffix"]
+        ]["dependencies"][0]["error_message_suffix"]
 
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
-        ] = "HANCESTRO:0014 || HANCESTRO:0005"
+        ] = "HANCESTRO:0342 || HANCESTRO:0341"
         validator.validate_adata()
         assert validator.errors == [
             self.get_format_error_message(
                 error_message_suffix,
-                "ERROR: 'HANCESTRO:0014 || HANCESTRO:0005' in 'self_reported_ethnicity_ontology_term_id' is not in "
+                "ERROR: 'HANCESTRO:0342 || HANCESTRO:0341' in 'self_reported_ethnicity_ontology_term_id' is not in "
                 "ascending lexical order.",
             )
         ]
@@ -1317,12 +1317,12 @@ class TestObs:
         validator = validator_with_adata
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][1]["error_message_suffix"]
+        ]["dependencies"][0]["error_message_suffix"]
 
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
-        ] = "EFO:0000001 || HANCESTRO:0004 || HANCESTRO:0014 || HANCESTRO:1"
+        ] = "EFO:0000001 || HANCESTRO:0004 || HANCESTRO:1"
         validator.validate_adata()
         assert validator.errors == [
             self.get_format_error_message(
@@ -1332,7 +1332,7 @@ class TestObs:
             ),
             self.get_format_error_message(
                 error_message_suffix,
-                "ERROR: 'HANCESTRO:0004' in 'self_reported_ethnicity_ontology_term_id' is not allowed.",
+                "ERROR: 'HANCESTRO:0004' in 'self_reported_ethnicity_ontology_term_id' is not an allowed term id.",
             ),
             self.get_format_error_message(
                 error_message_suffix,
@@ -1349,17 +1349,17 @@ class TestObs:
         validator = validator_with_adata
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][1]["error_message_suffix"]
+        ]["dependencies"][0]["error_message_suffix"]
 
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
             "self_reported_ethnicity_ontology_term_id",
-        ] = "HANCESTRO:0014 || HANCESTRO:0014"
+        ] = "HANCESTRO:0019 || HANCESTRO:0019"
         validator.validate_adata()
         assert validator.errors == [
             self.get_format_error_message(
                 error_message_suffix,
-                "ERROR: 'HANCESTRO:0014 || HANCESTRO:0014' in 'self_reported_ethnicity_ontology_term_id' contains "
+                "ERROR: 'HANCESTRO:0019 || HANCESTRO:0019' in 'self_reported_ethnicity_ontology_term_id' contains "
                 "duplicates.",
             )
         ]
@@ -1371,7 +1371,7 @@ class TestObs:
         validator = validator_with_adata
         error_message_suffix = validator.schema_def["components"]["obs"]["columns"][
             "self_reported_ethnicity_ontology_term_id"
-        ]["dependencies"][1]["error_message_suffix"]
+        ]["dependencies"][0]["error_message_suffix"]
 
         validator.adata.obs.loc[
             validator.adata.obs.index[0],
