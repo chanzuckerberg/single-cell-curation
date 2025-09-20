@@ -44,7 +44,7 @@ good_obs = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             True,
-            "HANCESTRO:0341",
+            "HANCESTRO:0019",  # Valid descendant of HANCESTRO:0601 or HANCESTRO:0602
             "HsapDv:0000003",
             "donor_1",
             "nucleus",
@@ -57,7 +57,7 @@ good_obs = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             True,
-            "HANCESTRO:0341",
+            "HANCESTRO:0019",  # Valid descendant of HANCESTRO:0601 or HANCESTRO:0602
             "HsapDv:0000003",
             "donor_1",
             "nucleus",
@@ -134,7 +134,7 @@ good_obs_visium = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             True,
-            "HANCESTRO:0341",
+            "HANCESTRO:0019",  # Valid descendant of HANCESTRO:0601 or HANCESTRO:0602
             "HsapDv:0000003",
             "donor_1",
             "na",
@@ -150,7 +150,7 @@ good_obs_visium = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             True,
-            "HANCESTRO:0341",
+            "HANCESTRO:0019",  # Valid descendant of HANCESTRO:0601 or HANCESTRO:0602
             "HsapDv:0000003",
             "donor_1",
             "na",
@@ -194,7 +194,7 @@ good_obs_slide_seqv2 = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             True,
-            "HANCESTRO:0341",
+            "HANCESTRO:0019",  # Valid descendant of HANCESTRO:0601 or HANCESTRO:0602
             "HsapDv:0000003",
             "donor_1",
             "na",
@@ -207,7 +207,7 @@ good_obs_slide_seqv2 = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             True,
-            "HANCESTRO:0341",
+            "HANCESTRO:0019",  # Valid descendant of HANCESTRO:0601 or HANCESTRO:0602
             "HsapDv:0000003",
             "donor_1",
             "na",
@@ -246,7 +246,7 @@ good_obs_visium_is_single_false = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             False,
-            "HANCESTRO:0341",
+            "HANCESTRO:0019",  # Valid descendant of HANCESTRO:0601 or HANCESTRO:0602
             "HsapDv:0000003",
             "donor_1",
             "na",
@@ -259,7 +259,7 @@ good_obs_visium_is_single_false = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             False,
-            "HANCESTRO:0341",
+            "HANCESTRO:0019",  # Valid descendant of HANCESTRO:0601 or HANCESTRO:0602
             "HsapDv:0000003",
             "donor_1",
             "na",
@@ -592,9 +592,9 @@ adata_mouse = anndata.AnnData(
 adata_with_cell_line = anndata.AnnData(
     X=X.copy(),
     obs=good_obs_cell_line,
-    uns=good_uns_mouse,
+    uns=good_uns,  # Use human organism since we test with human development stage terms
     obsm=good_obsm,
-    var=good_var_mouse,
+    var=good_var,  # Use human feature IDs since we're using human organism
 )
 
 # anndata for testing migration
