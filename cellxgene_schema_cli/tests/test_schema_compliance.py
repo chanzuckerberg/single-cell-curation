@@ -1575,25 +1575,23 @@ class TestObs:
     @pytest.mark.parametrize(
         "assay,suspension_types",
         {
-            "EFO:0010010": ["cell", "nucleus"],
             "EFO:0008720": ["nucleus"],
             "EFO:0008722": ["cell", "nucleus"],
             "EFO:0030002": ["cell"],
             "EFO:0008853": ["cell"],
             "EFO:0030026": ["nucleus"],
-            "EFO:0010550": ["cell", "nucleus"],
             "EFO:0008796": ["cell"],
             "EFO:0700003": ["cell"],
             "EFO:0700004": ["cell"],
             "EFO:0008780": ["cell", "nucleus"],
-            "EFO:0008953": ["cell"],
             "EFO:0700010": ["cell", "nucleus"],
             "EFO:0700011": ["cell", "nucleus"],
-            "EFO:0009919": ["cell", "nucleus"],
             "EFO:0030060": ["cell", "nucleus"],
             "EFO:0022490": ["cell", "nucleus"],
             "EFO:0030028": ["cell", "nucleus"],
             "EFO:0008992": ["na"],
+            "EFO:0008679": ["cell"],
+            "EFO:0008877": ["cell"],
         }.items(),
     )
     def test_suspension_type(self, validator, assay, suspension_types):
@@ -1631,6 +1629,9 @@ class TestObs:
             "EFO:0008994": ["na"],
             "EFO:0008919": ["cell"],
             "EFO:0002761": ["nucleus"],
+            "EFO:0010010": ["cell", "nucleus"],
+            "EFO:0009919": ["cell", "nucleus"],
+            "EFO:0008953": ["cell"],
         }.items(),
     )
     def test_suspension_type_ancestors_inclusive(self, validator_with_adata, assay, suspension_types):
