@@ -224,21 +224,21 @@ The following ontology dependencies are *pinned* for this version of the schema.
 
 | Ontology | Prefix | Release | Download |
 |:--|:--|:--|:--|
-| [C. elegans Development Ontology] | WBls: |  [2025-04-01 WS297](https://github.com/obophenotype/c-elegans-development-ontology/releases/tag/v2025-04-01) | [wbls.owl](https://github.com/obophenotype/c-elegans-development-ontology/blob/v2025-04-01/wbls.owl) |
-| [C. elegans Gross Anatomy Ontology] | WBbt: | [2025-03-26 WS297](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/releases/tag/v2025-03-26) | [wbbt.owl](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/blob/v2025-03-26/wbbt.owl) |
-| [Cell Ontology] | CL: |  [2025-04-10](https://github.com/obophenotype/cell-ontology/releases/tag/v2025-04-10) | [cl.owl](https://github.com/obophenotype/cell-ontology/releases/download/v2025-04-10/cl.owl)|
-| [Cellosaurus] | CVCL_ | 52.0 | [cellosaurus.obo ](https://ftp.expasy.org/databases/cellosaurus/cellosaurus.obo)_(Versioned releases are unavailable. Cellosaurus may replace this download with a newer release.)_ |
-| [Drosophila Anatomy Ontology] | FBbt: | [2025-03-27](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/tag/v2025-03-27)| [fbbt.owl](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/download/v2025-03-27/fbbt.owl) |
-| [Drosophila Development Ontology] | FBdv: | [2025-03-26](https://github.com/FlyBase/drosophila-developmental-ontology/releases/tag/v2025-03-26) | [fbdv.owl](https://github.com/FlyBase/drosophila-developmental-ontology/releases/download/v2025-03-26/fbdv.owl) |
-| [Experimental Factor Ontology] | EFO: | [2025-05-15 EFO 3.78.0](https://github.com/EBISPOT/efo/releases/tag/v3.78.0) | [efo.owl](https://github.com/EBISPOT/efo/releases/download/v3.78.0/efo.owl) |
+| [C. elegans Development Ontology] | WBls: |  [2025-08-12 WS298](https://github.com/obophenotype/c-elegans-development-ontology/releases/tag/v2025-08-12) | [wbls.owl](https://github.com/obophenotype/c-elegans-development-ontology/blob/v2025-08-12/wbls.owl) |
+| [C. elegans Gross Anatomy Ontology] | WBbt: | [2025-08-18 WS298](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/releases/tag/v2025-08-18) | [wbbt.owl](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/blob/v2025-08-18/wbbt.owl) |
+| [Cell Ontology] | CL: |  [2025-07-30](https://github.com/obophenotype/cell-ontology/releases/tag/v2025-07-30) | [cl.owl](https://github.com/obophenotype/cell-ontology/releases/download/v2025-07-30/cl.owl)|
+| [Cellosaurus] | CVCL_ | 53.0 | [cellosaurus.obo ](https://ftp.expasy.org/databases/cellosaurus/cellosaurus.obo)_(Versioned releases are unavailable. Cellosaurus may replace this download with a newer release.)_ |
+| [Drosophila Anatomy Ontology] | FBbt: | [2025-08-07](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/tag/v2025-08-07)| [fbbt.owl](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/download/v2025-08-07/fbbt.owl) |
+| [Drosophila Development Ontology] | FBdv: | [2025-05-29](https://github.com/FlyBase/drosophila-developmental-ontology/releases/tag/v2025-05-29) | [fbdv.owl](https://github.com/FlyBase/drosophila-developmental-ontology/releases/download/v2025-05-29/fbdv.owl) |
+| [Experimental Factor Ontology] | EFO: | [2025-09-15 EFO 3.82.0](https://github.com/EBISPOT/efo/releases/tag/v3.82.0) | [efo.owl](https://github.com/EBISPOT/efo/releases/download/v3.82.0/efo.owl) |
 | [Human Ancestry Ontology] | AfPO:<br>HANCESTRO: | [2025-04-01](https://github.com/EBISPOT/hancestro/releases/tag/v2025-04-01) | [hancestro-base.owl](https://github.com/EBISPOT/hancestro/blob/v2025-04-01/hancestro-base.owl) |
 | [Human Developmental Stages] |  HsapDv: | [2025-01-23](https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/v2025-01-23) | [hsapdv.owl](https://github.com/obophenotype/developmental-stage-ontologies/releases/download/v2025-01-23/hsapdv.owl) |
-| [Mondo Disease Ontology] | MONDO: | [2025-05-06](https://github.com/monarch-initiative/mondo/releases/tag/v2025-05-06) | [mondo.owl](https://github.com/monarch-initiative/mondo/releases/download/v2025-05-06/mondo.owl) |
+| [Mondo Disease Ontology] | MONDO: | [2025-09-02](https://github.com/monarch-initiative/mondo/releases/tag/v2025-09-02) | [mondo.owl](https://github.com/monarch-initiative/mondo/releases/download/v2025-09-02/mondo.owl) |
 | [Mouse Developmental Stages]| MmusDv: | [2025-01-23](https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/v2025-01-23) | [mmusdv.owl](https://github.com/obophenotype/developmental-stage-ontologies/releases/download/v2025-01-23/mmusdv.owl) |
-| [NCBI organismal classification] |  NCBITaxon: | [2025-03-13](https://github.com/obophenotype/ncbitaxon/releases/tag/v2025-03-13) | [ncbitaxon.owl](https://github.com/obophenotype/ncbitaxon/releases/download/v2025-03-13/ncbitaxon.owl.gz) |
+| [NCBI organismal classification] |  NCBITaxon: | [2025-09-11](https://github.com/obophenotype/ncbitaxon/releases/tag/v2025-09-11) | [ncbitaxon.owl](https://github.com/obophenotype/ncbitaxon/releases/download/v2025-09-11/ncbitaxon.owl.gz) |
 | [Phenotype And Trait Ontology] | PATO: | [2025-05-14](https://github.com/pato-ontology/pato/releases/tag/v2025-05-14) | [pato.owl](https://github.com/pato-ontology/pato/blob/v2025-05-14/pato.owl)  |
-| [Uberon multi-species anatomy ontology] |  UBERON: | [2025-05-28](https://github.com/obophenotype/uberon/releases/tag/v2025-05-28) | [uberon.owl](https://github.com/obophenotype/uberon/releases/download/v2025-05-28/uberon.owl) |
-| [Zebrafish Anatomy Ontology] | ZFA:<br>ZFS: | [2025-01-28](https://github.com/ZFIN/zebrafish-anatomical-ontology/releases/tag/v2025-01-28) | [zfa.owl](https://github.com/ZFIN/zebrafish-anatomical-ontology/blob/v2025-01-28/zfa.owl) |
+| [Uberon multi-species anatomy ontology] |  UBERON: | [2025-08-15](https://github.com/obophenotype/uberon/releases/tag/v2025-08-15) | [uberon.owl](https://github.com/obophenotype/uberon/releases/download/v2025-08-15/uberon.owl) |
+| [Zebrafish Anatomy Ontology] | ZFA:<br>ZFS: | [2025-09-05](https://github.com/ZFIN/zebrafish-anatomical-ontology/releases/tag/v2025-09-05) | [zfa.owl](https://github.com/ZFIN/zebrafish-anatomical-ontology/blob/v2025-09-05/zfa.owl) |
 | | | | |
 
 [C. elegans Development Ontology]: https://obofoundry.org/ontology/wbls.html
