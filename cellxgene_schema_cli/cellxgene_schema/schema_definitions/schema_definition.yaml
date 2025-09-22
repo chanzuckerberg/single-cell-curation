@@ -736,6 +736,19 @@ components:
       donor_id:
         type: categorical
         subtype: str
+        dependencies:
+          - # If tissue_type is "cell line", donor_id must be "na"
+            rule:
+              column: tissue_type
+              match_exact:
+                terms:
+                  - cell line
+            error_message_suffix: >-
+              when 'tissue_type' is 'cell line'.
+            type: categorical
+            subtype: str
+            enum:
+              - na
       suspension_type:
         type: categorical
         enum:

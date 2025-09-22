@@ -347,6 +347,8 @@ good_obs_cell_line.loc[:, "tissue_ontology_term_id"] = "CVCL_0001"
 good_obs_cell_line.loc[:, "development_stage_ontology_term_id"] = "na"
 good_obs_cell_line.loc[:, "sex_ontology_term_id"] = "na"
 good_obs_cell_line.loc[:, "self_reported_ethnicity_ontology_term_id"] = "na"
+good_obs_cell_line.loc[:, "donor_id"] = "na"
+good_obs_cell_line["donor_id"] = good_obs_cell_line["donor_id"].astype("category")
 
 # ---
 # 2. Creating individual var components: valid object and valid object and with labels
