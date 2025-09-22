@@ -2546,8 +2546,18 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Integration Metadata
     * Updated the requirements for prefixed ontology identifiers to address the Cellosaurus exception
 * Required Ontologies
-  * Added Cellosaurus release 52.0
-  * Updated HANCESTRO to release 2025-04-01
+  * Added Cellosaurus release 53.0
+  * Updated C. elegans Development Ontology (WBls) to release 2025-08-12 WS298
+  * Updated C. elegans Gross Anatomy Ontology (WBbt) to release 2025-08-18 WS298
+  * Updated Cell Ontology (CL) to release 2025-07-30
+  * Updated Drosophila Anatomy Ontology (FBbt) to release 2025-08-07
+  * Updated Drosophila Development Ontology (FBdv) to release 2025-05-29
+  * Updated Expermental Factor Ontology (EFO) to release 2025-09-15 EFO 3.82.0
+  * Updated Human Ancestry Ontology (HANCESTRO) to release 2025-04-01
+  * Updated Mondo Disease Ontology (MONDO) to release 2025-09-02
+  * Updated NCBI organismal classification (NCBITaxon) to release 2025-09-11
+  * Updated Uberon multi-species anatomy ontology (UBERON) to release 2025-08-15
+  * Updated Zebrafish Anatomy Ontology (ZFA+ZFS) release 2025-09-05
 * Required Gene Annotations
   * Updated *Caenorhabditis elegans* to WBcel235 (GCA_000002985.3) Ensembl 114
   * Updated *Callithrix jacchus* to mCalJac1.pat.X (GCA_011100555.1) Ensembl 114
