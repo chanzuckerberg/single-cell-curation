@@ -2552,7 +2552,7 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Updated Cell Ontology (CL) to release 2025-07-30
   * Updated Drosophila Anatomy Ontology (FBbt) to release 2025-08-07
   * Updated Drosophila Development Ontology (FBdv) to release 2025-05-29
-  * Updated Expermental Factor Ontology (EFO) to release 2025-09-15 EFO 3.82.0
+  * Updated Experimental Factor Ontology (EFO) to release 2025-09-15 EFO 3.82.0
   * Updated Human Ancestry Ontology (HANCESTRO) to release 2025-04-01
   * Updated Mondo Disease Ontology (MONDO) to release 2025-09-02
   * Updated NCBI organismal classification (NCBITaxon) to release 2025-09-11
@@ -2611,7 +2611,7 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Updated Cell Ontology (CL) to release 2025-04-10
   * Updated Drosophila Anatomy Ontology (FBbt) to release 2025-03-27
   * Updated Drosophila Development Ontology (FBdv) to release 2025-03-26
-  * Updated Expermental Factor Ontology (EFO) to release 2025-05-15 EFO 3.78.0
+  * Updated Experimental Factor Ontology (EFO) to release 2025-05-15 EFO 3.78.0
   * Updated Mondo Disease Ontology (MONDO) to release 2025-05-06
   * Updated NCBI organismal classification (NCBITaxon) to release 2025-03-13
   * Updated Phenotype And Trait Ontology (PATO) to release 2025-05-14
@@ -2648,7 +2648,7 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Updated Cell Ontology (CL) to the 2025-02-13 release
   * Added Drosophila Anatomy Ontology (FBbt) release 2025-02-13
   * Added Drosophila Development Ontology (FBdv) release 2025-02-12
-  * Updated Expermental Factor Ontology (EFO) to release 2025-02-17 EFO 3.75.0
+  * Updated Experimental Factor Ontology (EFO) to release 2025-02-17 EFO 3.75.0
   * Updated Human Developmental Stages (HsapDv) to release 2025-01-23
   * Updated Mondo Disease Ontology (MONDO) to release 2025-02-04
   * Updated Mouse Developmental Stages (MmusDv) to release 2025-01-2
