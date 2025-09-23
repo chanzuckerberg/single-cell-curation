@@ -1562,13 +1562,42 @@ class TestObs:
         obs["donor_id"] = obs["donor_id"].cat.add_categories("")
         obs["donor_id"].iloc[0] = ""
         validator.validate_adata()
-        assert validator.errors == ["ERROR: Column 'donor_id' in dataframe 'obs' " "must not contain empty values."]
+        assert validator.errors == ["ERROR: Column 'donor_id' in dataframe 'obs' must not contain empty values."]
 
     def test_donor_id_must_not_be_nan(self, validator_with_adata):
         validator = validator_with_adata
         validator.adata.obs["donor_id"][0] = numpy.nan
         validator.validate_adata()
-        assert validator.errors == ["ERROR: Column 'donor_id' in dataframe 'obs' " "must not contain NaN values."]
+        assert validator.errors == ["ERROR: Column 'donor_id' in dataframe 'obs' must not contain NaN values."]
+
+    def test_donor_id_is_not_na_when_tissue_type_is_cell_line(self, validator_with_cell_line_tissue_type):
+        """
+        donor_id is not 'na' when tissue_type is 'cell line', which is invalid
+        """
+        validator = validator_with_cell_line_tissue_type
+        error_message_suffix = validator.schema_def["components"]["obs"]["columns"]["donor_id"]["dependencies"][0][
+            "error_message_suffix"
+        ]
+        obs = validator.adata.obs
+        obs["donor_id"] = obs["donor_id"].cat.add_categories("donor_1")
+        obs["donor_id"][:] = "donor_1"
+
+        validator.validate_adata()
+        assert validator.errors == [
+            self.get_format_error_message(
+                error_message_suffix,
+                "ERROR: Column 'donor_id' in dataframe 'obs' contains invalid values "
+                "'['donor_1']'. Values must be one of ['na']",
+            )
+        ]
+
+    def test_donor_id_is_na_when_tissue_type_is_cell_line(self, validator_with_cell_line_tissue_type):
+        """
+        donor_id is 'na' when tissue_type is 'cell line', which is valid
+        """
+        validator = validator_with_cell_line_tissue_type
+        assert validator.validate_adata()
+        assert validator.errors == []
 
     @pytest.mark.parametrize(
         "assay,suspension_types",
