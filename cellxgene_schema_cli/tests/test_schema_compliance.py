@@ -1261,8 +1261,6 @@ class TestObs:
         obs = validator.adata.obs
         # Set up one row as cell line to test the validation
         obs.loc["X", "self_reported_ethnicity_ontology_term_id"] = "HANCESTRO:0005"
-        # # Set the other row to valid values to avoid other validation errors
-        # obs.loc["Y", "self_reported_ethnicity_ontology_term_id"] = "HANCESTRO:0580"
         assert not validator.validate_adata()
         assert (
             "ERROR: 'HANCESTRO:0005' in 'self_reported_ethnicity_ontology_term_id' is not a valid value of 'self_reported_ethnicity_ontology_term_id'. When 'tissue_type' is 'cell line', 'self_reported_ethnicity_ontology_term_id' MUST be 'na'."
