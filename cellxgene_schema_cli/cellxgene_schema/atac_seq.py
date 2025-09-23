@@ -428,19 +428,7 @@ def index_fragment(
     logger.info(f"Line count validation passed: {original_line_count} lines in both original and output files")
 
 
-SORT_MEMORY_PERCENTAGE = 50
-
-
-def _calculate_sort_memory(num_cores: int, sort_memory_percent: int) -> int:
-    """
-    Calculate the memory percentage to allocate per sort thread.
-
-    :param num_cores: Number of CPU cores available.
-    :param sort_memory_percent: Total percentage of system memory to allocate for sorting.
-    :return: Percentage of memory to allocate per sort thread.
-    """
-    effective_memory_pct = min(sort_memory_percent, 50) if num_cores > 1 else sort_memory_percent
-    return max(effective_memory_pct // num_cores, 1)  # ensure at least 1% memory per core
+SORT_MEMORY_PERCENTAGE = 60
 
 
 def _ensure_tools(tools: Iterable[Tuple[str, str]]) -> None:
@@ -610,12 +598,11 @@ def prepare_fragment(fragment_file: str, bgzip_output_file: str) -> None:
 
     out_path = Path(bgzip_output_file)
     ncores = _default_cores()
-    sort_mem_pct = _calculate_sort_memory(ncores, SORT_MEMORY_PERCENTAGE)
     env = _deterministic_env()
 
     stages = [
         ("pigz -dc", _pigz_decompress_command(in_path)),
-        ("sort", _sort_command(ncores, sort_mem_pct)),
+        ("sort", _sort_command(ncores, SORT_MEMORY_PERCENTAGE)),
         ("bgzip", _bgzip_command(ncores)),
     ]
 
@@ -660,16 +647,15 @@ def deduplicate_fragment_rows(
         out_path = Path(output_file_name)
 
     ncores = _default_cores()
-    sort_mem_pct = _calculate_sort_memory(ncores, sort_memory_percent)  # Output is smaller
 
     stages = [
         ("pigz -dc", _pigz_decompress_command(in_path)),
-        ("sort", _sort_command(ncores, sort_mem_pct)),
+        ("sort", _sort_command(ncores, sort_memory_percent)),
         ("uniq", ["uniq"]),
         ("bgzip", _bgzip_command(ncores)),
     ]
 
-    logger.info(f"Starting deduplication pipeline: {ncores} cores, {sort_mem_pct}% memory per core")
+    logger.info(f"Starting deduplication pipeline: {ncores} cores, {sort_memory_percent}% memory per core")
     _pipeline_run(stages, out_path, env=_deterministic_env())
     logger.info(f"bgzip compression completed successfully for {out_path}")
     return str(out_path)

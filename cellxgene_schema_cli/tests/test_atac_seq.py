@@ -740,31 +740,6 @@ class TestDefaultCores:
             assert result == 8  # Should fallback due to quota <= 0
 
 
-class TestCalculateSortMemory:
-    """Test memory percentage calculation."""
-
-    def test_single_core_memory(self):
-        """Test memory calculation for single core."""
-        result = atac_seq._calculate_sort_memory(num_cores=1, sort_memory_percent=80)
-        assert result == 80  # Single core gets full percentage
-
-    def test_multi_core_memory_capping(self):
-        """Test memory capping for multiple cores."""
-        # With > 1 core, should cap at 50%
-        result = atac_seq._calculate_sort_memory(num_cores=4, sort_memory_percent=80)
-        assert result == 12  # 50% / 4 cores = 12.5%, but returns 12 (integer)
-
-    def test_memory_minimum_per_core(self):
-        """Test minimum 1% memory per core."""
-        result = atac_seq._calculate_sort_memory(num_cores=100, sort_memory_percent=30)
-        assert result == 1  # Should ensure minimum 1% per core
-
-    def test_low_memory_percentage(self):
-        """Test with already low memory percentage."""
-        result = atac_seq._calculate_sort_memory(num_cores=2, sort_memory_percent=20)
-        assert result == 10  # 20% / 2 cores = 10% per core
-
-
 class TestSortCommand:
     """Test sort command generation."""
 
@@ -898,33 +873,12 @@ class TestDeduplicateFragmentRowsIntegration:
     """Integration tests for the main deduplication function with new enhancements."""
 
     @mock.patch("cellxgene_schema.atac_seq._pipeline_run")
-    @mock.patch("cellxgene_schema.atac_seq._default_cores", return_value=4)
-    @mock.patch("cellxgene_schema.atac_seq._calculate_sort_memory", return_value=12)
-    def test_deduplicate_uses_enhanced_cpu_detection(
-        self, mock_calc_mem, mock_cores, mock_pipeline, test_fragment_files
-    ):
-        """Test that deduplication uses the enhanced CPU detection."""
-        input_file = test_fragment_files["gzip"]
-
-        result = atac_seq.deduplicate_fragment_rows(input_file)
-
-        # Should have called our enhanced CPU detection
-        mock_cores.assert_called_once()
-        mock_calc_mem.assert_called_once_with(4, 50)  # 4 cores from mock, 50% default memory
-
-        # Should have used the calculated values in pipeline
-        mock_pipeline.assert_called_once()
-
-        # Verify output path generation
-        assert result.endswith("_dedup.tsv.bgz")
-
-    @mock.patch("cellxgene_schema.atac_seq._pipeline_run")
     @mock.patch("cellxgene_schema.atac_seq._default_cores", return_value=2)
     def test_deduplicate_with_custom_memory_percentage(self, mock_cores, mock_pipeline, test_fragment_files):
         """Test deduplication with custom memory percentage."""
         input_file = test_fragment_files["gzip"]
-
-        atac_seq.deduplicate_fragment_rows(input_file, sort_memory_percent=30)
+        expected_memory_precent = 30
+        atac_seq.deduplicate_fragment_rows(input_file, sort_memory_percent=expected_memory_precent)
 
         # Should pass custom memory percentage to calculation
         args, kwargs = mock_pipeline.call_args
@@ -933,4 +887,4 @@ class TestDeduplicateFragmentRowsIntegration:
         # Verify sort command includes memory settings
         sort_stage = next(stage for stage_name, stage in stages if stage_name == "sort")
         sort_cmd = " ".join(sort_stage)
-        assert "%" in sort_cmd  # Should contain memory percentage
+        assert f"{expected_memory_precent}%" in sort_cmd  # Should contain memory percentage
