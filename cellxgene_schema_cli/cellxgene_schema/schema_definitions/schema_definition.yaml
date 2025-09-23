@@ -493,62 +493,64 @@ components:
       self_reported_ethnicity_ontology_term_id:
         type: curie
         dependencies:
-          - # If organism is Human
+          - # If organism is Human and tissue_type is not "cell line"
             rule:
-              uns_key: organism_ontology_term_id
-              match_exact:
-                terms:
-                  - NCBITaxon:9606
+              - uns_key: organism_ontology_term_id
+                match_exact:
+                  terms:
+                    - NCBITaxon:9606
+              - column: tissue_type
+                exclude_exact:
+                  terms:
+                    - cell line
             error_message_suffix: >-
-              When 'organism_ontology_term_id' is 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be formatted as one or more HANCESTRO terms in ascending lexical order with the delimiter ` || `, or 'unknown' if unavailable. Cannot match any forbidden HANCESTRO terms listed in schema definition.
+              When 'organism_ontology_term_id' is 'NCBITaxon:9606' (Homo sapiens) and 'tissue_type' is not 'cell line', self_reported_ethnicity_ontology_term_id MUST be formatted as one or more AfPO or HANCESTRO terms that are descendants of 'HANCESTRO:0601' for ethnicity category or 'HANCESTRO:0602' for geography-based population category, in ascending lexical order with the delimiter ` || `, or 'unknown' if unavailable.
             type: curie
             curie_constraints:
               ontologies:
                 - HANCESTRO
+                - AFPO
               exceptions:
                 - unknown
-              forbidden:
-                terms:
-                  - HANCESTRO:0002
-                  - HANCESTRO:0003
-                  - HANCESTRO:0004
-                  - HANCESTRO:0018
-                  - HANCESTRO:0029
-                  - HANCESTRO:0030
-                  - HANCESTRO:0031
-                  - HANCESTRO:0032
-                  - HANCESTRO:0033
-                  - HANCESTRO:0034
-                  - HANCESTRO:0290
-                  - HANCESTRO:0304
-                  - HANCESTRO:0323
-                  - HANCESTRO:0324
-                  - HANCESTRO:0551
-                  - HANCESTRO:0554
-                  - HANCESTRO:0555
-                  - HANCESTRO:0557
-                  - HANCESTRO:0558
-                  - HANCESTRO:0559
-                  - HANCESTRO:0560
-                  - HANCESTRO:0561
-                  - HANCESTRO:0564
-                  - HANCESTRO:0565
-                  - HANCESTRO:0566
+              allowed:
                 ancestors:
                   HANCESTRO:
-                    - HANCESTRO:0002
-                    - HANCESTRO:0304
+                    - HANCESTRO:0601
+                    - HANCESTRO:0602
+                  AFPO:
+                    - HANCESTRO:0601
+                    - HANCESTRO:0602
               multi_term:
                 delimiter: " || "
                 sorted: True
-        # If organism is not Human
-        error_message_suffix: >-
-          When 'organism_ontology_term_id' is NOT 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be 'na'.
-        curie_constraints:
-          ontologies:
-            - NA
-          exceptions:
-            - na
+          - # If organism is not Human, self_reported_ethnicity_ontology_term_id must be "na"
+            rule:
+              uns_key: organism_ontology_term_id
+              exclude_exact:
+                terms:
+                  - NCBITaxon:9606
+            error_message_suffix: >-
+              When 'organism_ontology_term_id' is NOT 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be 'na'.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - NA
+              exceptions:
+                - na
+          - # If tissue_type is "cell line", self_reported_ethnicity_ontology_term_id must be "na"
+            rule:
+              column: tissue_type
+              match_exact:
+                terms:
+                  - cell line
+            error_message_suffix: >-
+              When 'tissue_type' is 'cell line', 'self_reported_ethnicity_ontology_term_id' MUST be 'na'.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - NA
+              exceptions:
+                - na
         add_labels:
           - type: curie
             to_column: self_reported_ethnicity
