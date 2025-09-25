@@ -806,13 +806,13 @@ components:
                 ancestors:
                   - EFO:0008919
                   - EFO:0008853
+                  - EFO:0008953
               match_exact:
                 terms:
                   - EFO:0030002
                   - EFO:0008796
                   - EFO:0700003
                   - EFO:0700004
-                  - EFO:0008953
                   - EFO:0008679
                   - EFO:0008877
             type: categorical
