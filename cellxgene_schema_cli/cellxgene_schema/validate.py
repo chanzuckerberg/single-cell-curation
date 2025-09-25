@@ -145,7 +145,7 @@ class Validator:
         if self._visium_tissue_position_max is None and self._is_visium_and_is_single_true:
             # visium 11 has different requirements than other visium
             if (
-                self.adata.obs["assay_ontology_term_id"]
+                self.adata.obs.get("assay_ontology_term_id", pd.Series([]))
                 .apply(lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_VISIUM_11M, True))
                 .astype(bool)
                 .any()
@@ -762,80 +762,137 @@ class Validator:
             for i in range(error_original_count, error_total_count):
                 self.errors[i] = self.errors[i] + " " + error_message_suffix
 
+    def _validate_single_dependency_rule(
+        self,
+        df: pd.DataFrame,
+        column_name: str,
+        rule: dict,
+    ) -> Tuple[Optional[pd.Series], Optional[str]]:
+        """
+        Validates a single dependency rule for a column.
+
+        :param pd.DataFrame df: DataFrame to validate
+        :param str column_name: Name of the column to validate
+        :param dict rule: Dependency rule containing match/exclude conditions
+
+        :return Tuple[Optional[pd.Series], Optional[pd.Series], str]:
+            Returns a tuple of (match_query, column, error_message_suffix) where match_query is a boolean mask Series,
+            column is the filtered column Series, and error_message_suffix is a string for error messages.
+        """
+        terms_to_match = set()
+        terms_to_exclude = set()
+        column_to_match = rule.get("column")
+        uns_key_to_match = rule.get("uns_key")
+
+        if "match_ancestors_inclusive" in rule:
+            ancestors = rule["match_ancestors_inclusive"]["ancestors"]
+            for ancestor in ancestors:
+                terms_to_match.update(get_descendants(ONTOLOGY_PARSER, ancestor))
+        if "match_exact" in rule:
+            terms_to_match.update(rule["match_exact"]["terms"])
+
+        if "exclude_ancestors_inclusive" in rule:
+            ancestors = rule["exclude_ancestors_inclusive"]["ancestors"]
+            for ancestor in ancestors:
+                terms_to_exclude.update(get_descendants(ONTOLOGY_PARSER, ancestor))
+        if "exclude_exact" in rule:
+            terms_to_exclude.update(rule["exclude_exact"]["terms"])
+
+        try:
+            if column_to_match:
+                match_query = pd.Series([True] * len(df), index=df.index)
+                if terms_to_match:
+                    match_query = match_query & df[column_to_match].isin(terms_to_match)
+                if terms_to_exclude:
+                    match_query = match_query & ~df[column_to_match].isin(terms_to_exclude)
+            elif uns_key_to_match:
+                uns_value = self.adata.uns[uns_key_to_match]
+                match = True
+                if terms_to_match:
+                    match = match and (uns_value in terms_to_match)
+                if terms_to_exclude:
+                    match = match and (uns_value not in terms_to_exclude)
+                match_query = pd.Series([match] * len(df), index=df.index)
+            else:
+                self.errors.append(f"Validation rule for '{column_name}' must define either 'column' or 'uns_key'.")
+                return None, None
+
+            error_message_suffix = None
+            if column_to_match:
+                matched_values = list(df[column_to_match][match_query].unique())
+                error_message_suffix = f"when '{column_to_match}' is in {matched_values}"
+            elif uns_key_to_match:
+                error_message_suffix = f"when '{uns_key_to_match}' is '{uns_value}'"
+        except KeyError:
+            return None, None
+
+        return match_query, error_message_suffix
+
+    def _validate_dependency_rule(
+        self,
+        df: pd.DataFrame,
+        df_name: str,
+        column_name: str,
+        dependency_def: dict,
+    ) -> Tuple[Optional[pd.Series], Optional[pd.Series]]:
+        """
+        Validates one or more dependency rules for a column.
+
+        :param pd.DataFrame df: DataFrame to validate
+        :param str df_name: Name of the DataFrame
+        :param str column_name: Name of the column to validate
+        :param dict dependency_def: Dependency definition containing rule(s) and error message suffix
+
+        :return Tuple[Optional[pd.Series], Optional[pd.Series]]:
+            Returns a tuple of (combined_query, combined_column) where combined_query is a boolean mask Series and combined_column is the filtered column Series.
+        """
+        rules = dependency_def.get("rule")
+        if not isinstance(rules, list):
+            rules = [rules]
+
+        match_queries = []
+        error_message_suffixes = []
+        for rule in rules:
+            match_query, error_message_suffix = self._validate_single_dependency_rule(df, column_name, rule)
+            if match_query is not None:
+                match_queries.append(match_query)
+            if error_message_suffix:
+                error_message_suffixes.append(error_message_suffix)
+
+        if not match_queries:
+            return None, None
+
+        # Combine all rule matches with AND
+        combined_query = np.logical_and.reduce(match_queries)
+
+        # Only validate if there are matching rows
+        if combined_query.any():
+            combined_column = df.loc[combined_query, column_name]
+
+            # Set up error message suffix
+            error_message_suffix = dependency_def.get("error_message_suffix")
+            if not error_message_suffix:
+                error_message_suffix = "; or ".join(error_message_suffixes)
+
+            # Validate only the rows that match all rules
+            self._validate_column(combined_column, column_name, df_name, dependency_def, error_message_suffix)
+
+        return combined_query, df.loc[combined_query, column_name]
+
     def _validate_column_dependencies(
         self, df: pd.DataFrame, df_name: str, column_name: str, dependencies: List[dict]
     ) -> pd.Series:
         """
-        Validates subset of columns based on dependencies, e.g., if a column like 'development_stage_ontology_term_id'
-        has allowed values that depend on other column values, either in the same dataframe (as specified by the
-        keyword "column") or in the uns dictionary (as specified by the keyword "uns_key").
-
+        Validates subset of columns based on dependencies.
         Returns a Series containing values from the column that were not matched by any rule.
         """
         all_rules = []
 
         for dependency_def in dependencies:
-            terms_to_match = set()
-            terms_to_exclude = set()
-            rule = dependency_def["rule"]
-            column_to_match = rule.get("column")
-            uns_key_to_match = rule.get("uns_key")
+            match_query, column = self._validate_dependency_rule(df, df_name, column_name, dependency_def)
+            if match_query is not None:
+                all_rules.append(match_query)
 
-            # Build the set of terms to match
-            if "match_ancestors_inclusive" in rule:
-                ancestors = rule["match_ancestors_inclusive"]["ancestors"]
-                for ancestor in ancestors:
-                    terms_to_match.update(get_descendants(ONTOLOGY_PARSER, ancestor, include_self=True))
-            if "match_exact" in rule:
-                terms_to_match.update(rule["match_exact"]["terms"])
-
-            # Build the set of terms to exclude
-            if "exclude_ancestors_inclusive" in rule:
-                ancestors = rule["exclude_ancestors_inclusive"]["ancestors"]
-                for ancestor in ancestors:
-                    terms_to_exclude.update(get_descendants(ONTOLOGY_PARSER, ancestor, include_self=True))
-            if "exclude_exact" in rule:
-                terms_to_exclude.update(rule["exclude_exact"]["terms"])
-
-            try:
-                if column_to_match:
-                    match_query = pd.Series([True] * len(df), index=df.index)
-                    if terms_to_match:
-                        match_query = match_query & df[column_to_match].isin(terms_to_match)
-                    if terms_to_exclude:
-                        match_query = match_query & ~df[column_to_match].isin(terms_to_exclude)
-                elif uns_key_to_match:
-                    uns_value = self.adata.uns[uns_key_to_match]
-                    match = True
-                    if terms_to_match:
-                        match = match and (uns_value in terms_to_match)
-                    if terms_to_exclude:
-                        match = match and (uns_value not in terms_to_exclude)
-
-                    match_query = pd.Series([match] * len(df), index=df.index)
-                else:
-                    self.errors.append(f"Validation rule for '{column_name}' must define either 'column' or 'uns_key'.")
-                    continue
-
-                match_df = df[match_query]
-                column = match_df[column_name]
-
-                error_message_suffix = dependency_def.get("error_message_suffix")
-                if not error_message_suffix:
-                    if column_to_match:
-                        matched_values = list(match_df[column_to_match].unique())
-                        error_message_suffix = f"when '{column_to_match}' is in {matched_values}"
-                    elif uns_key_to_match:
-                        error_message_suffix = f"when '{uns_key_to_match}' is '{uns_value}'"
-            except KeyError:
-                # If the column or uns key is not found, then we should surface an error elsewhere
-                continue
-
-            all_rules.append(match_query)
-
-            self._validate_column(column, column_name, df_name, dependency_def, error_message_suffix)
-
-        # Combine all match queries to exclude validated entries
         unmatched_mask = ~np.logical_or.reduce(all_rules) if all_rules else pd.Series([True] * len(df), index=df.index)
         unmatched_values = df.loc[unmatched_mask, column_name]
         return unmatched_values

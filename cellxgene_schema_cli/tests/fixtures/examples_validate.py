@@ -44,7 +44,7 @@ good_obs = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             True,
-            "HANCESTRO:0005",
+            "HANCESTRO:0019",
             "HsapDv:0000003",
             "donor_1",
             "nucleus",
@@ -57,7 +57,7 @@ good_obs = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             True,
-            "HANCESTRO:0005",
+            "HANCESTRO:0019",
             "HsapDv:0000003",
             "donor_1",
             "nucleus",
@@ -94,7 +94,7 @@ obs_expected = pd.DataFrame(
             "COVID-19",
             "female",
             "lung",
-            "European ancestry",
+            "Japanese",
             "Carnegie stage 01",
         ],
         [
@@ -103,7 +103,7 @@ obs_expected = pd.DataFrame(
             "COVID-19",
             "female",
             "lung",
-            "European ancestry",
+            "Japanese",
             "Carnegie stage 01",
         ],
     ],
@@ -134,7 +134,7 @@ good_obs_visium = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             True,
-            "HANCESTRO:0005",
+            "HANCESTRO:0019",
             "HsapDv:0000003",
             "donor_1",
             "na",
@@ -150,7 +150,7 @@ good_obs_visium = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             True,
-            "HANCESTRO:0005",
+            "HANCESTRO:0019",
             "HsapDv:0000003",
             "donor_1",
             "na",
@@ -194,7 +194,7 @@ good_obs_slide_seqv2 = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             True,
-            "HANCESTRO:0005",
+            "HANCESTRO:0019",
             "HsapDv:0000003",
             "donor_1",
             "na",
@@ -207,7 +207,7 @@ good_obs_slide_seqv2 = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             True,
-            "HANCESTRO:0005",
+            "HANCESTRO:0019",
             "HsapDv:0000003",
             "donor_1",
             "na",
@@ -246,7 +246,7 @@ good_obs_visium_is_single_false = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             False,
-            "HANCESTRO:0005",
+            "HANCESTRO:0019",
             "HsapDv:0000003",
             "donor_1",
             "na",
@@ -259,7 +259,7 @@ good_obs_visium_is_single_false = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             False,
-            "HANCESTRO:0005",
+            "HANCESTRO:0019",
             "HsapDv:0000003",
             "donor_1",
             "na",
@@ -339,6 +339,16 @@ good_obs_mouse["donor_id"] = good_obs_mouse["donor_id"].astype("category")
 good_obs_mouse["suspension_type"] = good_obs_mouse["suspension_type"].astype("category")
 good_obs_mouse["tissue_type"] = good_obs_mouse["tissue_type"].astype("category")
 good_obs_mouse["tissue_type"] = good_obs_mouse["tissue_type"].cat.add_categories(["tissue", "organoid", "cell line"])
+
+# Creating a cell line obs by copying good_obs and changing the necessary fields
+good_obs_cell_line = good_obs.copy()
+good_obs_cell_line.loc[:, "tissue_type"] = "cell line"
+good_obs_cell_line.loc[:, "tissue_ontology_term_id"] = "CVCL_0001"
+good_obs_cell_line.loc[:, "development_stage_ontology_term_id"] = "na"
+good_obs_cell_line.loc[:, "sex_ontology_term_id"] = "na"
+good_obs_cell_line.loc[:, "self_reported_ethnicity_ontology_term_id"] = "na"
+good_obs_cell_line.loc[:, "donor_id"] = "na"
+good_obs_cell_line["donor_id"] = good_obs_cell_line["donor_id"].astype("category")
 
 # ---
 # 2. Creating individual var components: valid object and valid object and with labels
@@ -579,7 +589,15 @@ adata_mouse = anndata.AnnData(
     obsm=good_obsm,
     var=good_var_mouse,
 )
-adata_mouse.uns["organism_ontology_term_id"] = "NCBITaxon:10090"
+
+# Expected anndata with cell line data
+adata_with_cell_line = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_cell_line,
+    uns=good_uns,  # Use human organism since we test with human development stage terms
+    obsm=good_obsm,
+    var=good_var,  # Use human feature IDs since we're using human organism
+)
 
 # anndata for testing migration
 unmigrated_obs = pd.DataFrame(
