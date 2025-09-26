@@ -1591,6 +1591,21 @@ class TestObs:
             )
         ]
 
+    def test_donor_id_cannot_be_na_when_tissue_type_is_not_cell_line(self, validator_with_adata):
+        """
+        donor_id is 'na' when tissue_type is not 'cell line', which is invalid
+        """
+        validator = validator_with_adata
+        obs = validator.adata.obs
+        obs["donor_id"] = obs["donor_id"].cat.add_categories("na")
+        obs["donor_id"][:] = "na"
+
+        validator.validate_adata()
+        assert validator.errors == [
+            "ERROR: Column 'donor_id' in dataframe 'obs' contains forbidden values "
+            "'['na']'. Values must not be one of ['na']"
+        ]
+
     def test_donor_id_is_na_when_tissue_type_is_cell_line(self, validator_with_cell_line_tissue_type):
         """
         donor_id is 'na' when tissue_type is 'cell line', which is valid
