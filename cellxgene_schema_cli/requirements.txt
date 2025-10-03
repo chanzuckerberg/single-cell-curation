@@ -1,5 +1,5 @@
 anndata==0.11.4
-cellxgene-ontology-guide==1.8.0-alpha
+cellxgene-ontology-guide==1.9.0
 click<9
 Cython<4
 dask[array, dataframe]==2024.12.0
