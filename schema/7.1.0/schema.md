@@ -5,7 +5,7 @@ Contact: brianraymor@chanzuckerberg.com
 
 Document Status: _Drafting_
 
-Version: 7.0.0
+Version: 7.1.0
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED" "MAY", and "OPTIONAL" in this document are to be interpreted as described in [BCP 14](https://tools.ietf.org/html/bcp14), [RFC2119](https://www.rfc-editor.org/rfc/rfc2119.txt), and [RFC8174](https://www.rfc-editor.org/rfc/rfc8174.txt) when, and only when, they appear in all capitals, as shown here.
 
@@ -1777,7 +1777,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
     <tr>
       <th>Value</th>
         <td>
-          This MUST be <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/7.0.0/schema.md"</code>.
+          This MUST be <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/7.1.0/schema.md"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -1801,7 +1801,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `schem
     <tr>
       <th>Value</th>
         <td>
-          This MUST be <code>"7.0.0"</code>.
+          This MUST be <code>"7.1.0"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -2540,6 +2540,11 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
 ---
 
 ## Appendix A. Changelog
+
+### schema v7.1.0
+* uns (Dataset Metadata)
+  * Updated `schema_reference` to <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/7.1.0/schema.md"</code>
+  * Updated `schema_version` to <code>"7.1.0"</code>
 
 ### schema v7.0.0
 * General Requirements

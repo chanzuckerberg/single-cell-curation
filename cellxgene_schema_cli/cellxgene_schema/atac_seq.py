@@ -1,9 +1,13 @@
+import contextlib
+import gzip
 import logging
+import os
 import shutil
-import subprocess
+import subprocess as sp
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Optional
+from typing import Iterable, List, Optional, Sequence, Tuple
 
 import anndata as ad
 import h5py
@@ -11,11 +15,10 @@ import ibis
 import pyarrow as pa
 import pyarrow.csv
 import pyarrow.dataset
-import pyarrow.parquet
 import pysam
 
 from .ontology_parser import ONTOLOGY_PARSER
-from .utils import GB, get_chunks, is_ontological_descendant_of
+from .utils import GB, is_ontological_descendant_of
 
 logger = logging.getLogger(__name__)
 
@@ -135,6 +138,20 @@ def log_calls(func):
     return wrapper
 
 
+def count_lines_in_compressed_file(file_path: str) -> int:
+    """
+    Count lines in a compressed file (gzip or bgzip).
+
+    :param file_path: Path to the compressed file
+    :return: Number of lines in the file
+    """
+    line_count = 0
+    with gzip.open(file_path, "rt") as f:
+        for _ in f:
+            line_count += 1
+    return line_count
+
+
 def is_atac(x: str) -> str:
     if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0010891"):
         if is_ontological_descendant_of(ONTOLOGY_PARSER, x, "EFO:0008913"):
@@ -174,7 +191,6 @@ def process_fragment(
     fragment_file: str,
     anndata_file: str,
     generate_index: bool = False,
-    override_write_algorithm: Optional[str] = None,
     output_file: Optional[str] = None,
 ) -> list[str]:
     """
@@ -188,6 +204,7 @@ def process_fragment(
     :param output_file: The output file to write the bgzip file to. If not provided, the output file will be the same
 
     """
+
     with tempfile.TemporaryDirectory() as tempdir:
         # quick checks
         errors = validate_anndata(anndata_file)
@@ -213,12 +230,11 @@ def process_fragment(
         else:
             logger.info("Fragment and Anndata file are valid")
 
-        # generate the index
-        if generate_index:
-            logger.info(f"Sorting fragment and generating index for {fragment_file}")
-            index_fragment(
-                organism_ontology_term_id, fragment_file, parquet_file, tempdir, override_write_algorithm, output_file
-            )
+    # generate the index
+    if generate_index:
+        logger.info(f"Sorting fragment and generating index for {fragment_file}")
+        index_fragment(fragment_file, output_file)
+
     logger.debug("cleaning up")
     return []
 
@@ -379,118 +395,281 @@ def get_output_file(fragment_file: str, output_file: Optional[str]) -> str:
 
 
 def index_fragment(
-    organism_ontology_term_id: str,
     fragment_file: str,
-    parquet_file: str,
-    tempdir: str,
-    override_write_algorithm: Optional[str] = None,
     output_file: Optional[str] = None,
 ):
     # sort the fragment by chromosome, start coordinate, and stop coordinate, then compress it with bgzip
     bgzip_output_file = get_output_file(fragment_file, output_file)
     bgzip_output_path = Path(bgzip_output_file)
     bgzip_output_path.unlink(missing_ok=True)
-    bgzip_output_path.touch()
 
-    if override_write_algorithm:
-        write_algorithm = write_algorithm_by_callable[override_write_algorithm]
-    elif not shutil.which("bgzip"):  # check if bgzip cli is installed
-        logger.warning("bgzip is not installed, using slower pysam implementation")
-        write_algorithm = write_algorithm_by_callable["pysam"]
-    else:
-        write_algorithm = write_algorithm_by_callable["cli"]
-
-    chromosomes = detect_chromosomes(parquet_file)
-    prepare_fragment(chromosomes, organism_ontology_term_id, parquet_file, bgzip_output_file, tempdir, write_algorithm)
+    prepare_fragment(fragment_file, bgzip_output_file)
     logger.info(f"Fragment sorted and compressed: {bgzip_output_file}")
-    #
     pysam.tabix_index(bgzip_output_file, preset="bed", force=True)
     tabix_output_file = bgzip_output_file + ".tbi"
     logger.info(f"Index file generated: {tabix_output_file}")
 
+    # Validate line count between original and output files
+    logger.info("Validating line count between original and output files")
 
-def sort_fragment(parquet_file: str, write_path: str, chromosome: str, start: int, stop: int) -> Path:
-    temp_data = Path(write_path) / f"temp_{chromosome}.parquet"
-    t = ibis.read_parquet(f"{parquet_file}/**", hive_partitioning=True)
-    (
-        t.filter(t["chromosome"] == chromosome, t["start coordinate"] >= start, t["start coordinate"] <= stop)
-        .order_by(["start coordinate", "stop coordinate"])
-        .to_parquet(temp_data)
-    )
-    return temp_data
+    # Count lines in parallel to reduce processing time for large files
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        original_future = executor.submit(count_lines_in_compressed_file, fragment_file)
+        output_future = executor.submit(count_lines_in_compressed_file, bgzip_output_file)
 
+        original_line_count = original_future.result()
+        output_line_count = output_future.result()
 
-def buffered_write(input_file: str) -> iter:
-    # Open the Parquet file and iterate through record batches
-    pfile = pa.parquet.ParquetFile(input_file)
-    for record_batch in pfile.iter_batches():
-        # Write the batch to an in-memory buffer
-        csv_buffer = pa.BufferOutputStream()
-        pa.csv.write_csv(
-            # Make sure columns are in right order
-            record_batch.select([f.name for f in schema]),
-            csv_buffer,
-            write_options=pa.csv.WriteOptions(
-                include_header=False,
-                delimiter="\t",
-                batch_size=1_000_000_000,  # this value could be further optimized
-                quoting_style="none",
-            ),
-        )
-        yield csv_buffer.getvalue().to_pybytes()
+    if original_line_count != output_line_count:
+        error_msg = f"Line count validation failed: original file has {original_line_count} lines, output file has {output_line_count} lines"
+        logger.error(error_msg)
+        raise ValueError(error_msg)
+
+    logger.info(f"Line count validation passed: {original_line_count} lines in both original and output files")
 
 
-def write_bgzip_pysam(input_file: str, bgzip_output_file: str):
-    with pysam.libcbgzf.BGZFile(bgzip_output_file, mode="ab") as f_out:
-        for data in buffered_write(input_file):
-            f_out.write(data)
+SORT_MEMORY_PERCENTAGE = 50
 
 
-def write_bgzip_cli(input_file: str, bgzip_output_file: str):
-    with (
-        subprocess.Popen(
-            ["bgzip", "--threads", "-c"], stdin=subprocess.PIPE, stdout=open(bgzip_output_file, "ab")
-        ) as proc,
-    ):
-        for data in buffered_write(input_file):
-            proc.stdin.write(data)
-    return_code = proc.wait()
-    if return_code != 0:
-        logger.error(f"Subprocess exited with error code {return_code}")
+def _calculate_sort_memory(num_cores: int, sort_memory_percent: int) -> int:
+    """
+    Calculate the memory percentage to allocate per sort thread.
+
+    :param num_cores: Number of CPU cores available.
+    :param sort_memory_percent: Total percentage of system memory to allocate for sorting.
+    :return: Percentage of memory to allocate per sort thread.
+    """
+    effective_memory_pct = min(sort_memory_percent, 50) if num_cores > 1 else sort_memory_percent
+    return max(effective_memory_pct // num_cores, 1)  # ensure at least 1% memory per core
 
 
-write_algorithm_by_callable = {"pysam": write_bgzip_pysam, "cli": write_bgzip_cli}
+def _ensure_tools(tools: Iterable[Tuple[str, str]]) -> None:
+    """Ensure required CLI tools are present in PATH."""
+    missing = [name for name, _ in tools if shutil.which(name) is None]
+    if missing:
+        msgs = dict(tools)
+        raise RuntimeError(" | ".join(f"Missing '{name}' in PATH; {msgs[name]}." for name in missing))
 
 
-def prepare_fragment(
-    chromosomes: list[str],
-    organism_ontology_term_id: str,
-    parquet_file: str,
-    bgzip_output_file: str,
-    tempdir: str,
-    write_algorithm: callable,
+def _default_cores() -> int:
+    """Get CPU count, respecting container limits."""
+    # Try to read cgroup CPU limit (Docker/Kubernetes) - most reliable method
+    try:
+        # cgroup v1
+        with open("/sys/fs/cgroup/cpu/cpu.cfs_quota_us") as f:
+            quota = int(f.read().strip())
+        with open("/sys/fs/cgroup/cpu/cpu.cfs_period_us") as f:
+            period = int(f.read().strip())
+        if quota > 0 and period > 0:
+            return max(1, quota // period)
+    except (FileNotFoundError, ValueError, PermissionError):
+        pass
+
+    try:
+        # cgroup v2
+        with open("/sys/fs/cgroup/cpu.max") as f:
+            content = f.read().strip()
+        if content != "max":
+            parts = content.split()
+            if len(parts) == 2:
+                quota, period = int(parts[0]), int(parts[1])
+                return max(1, quota // period)
+    except (FileNotFoundError, ValueError, PermissionError):
+        pass
+
+    # Fallback to system CPU count
+    return max(1, (os.cpu_count() or 1))
+
+
+def _deterministic_env() -> dict:
+    # GNU coreutils behaviors (sort/uniq) are locale-sensitive; pin for determinism.
+    return {**os.environ, "LC_ALL": "C"}
+
+
+def _sort_command(num_cores: int, sort_mem_pct: int) -> List[str]:
+    """Tab-delimited sort by (chrom, start, end, strand), numeric where needed, parallel, compressed temps via pigz."""
+    return [
+        "sort",
+        "--parallel",
+        str(num_cores),
+        "-t",
+        "\t",
+        "-k1,1",
+        "-k2,2n",
+        "-k3,3n",
+        "-k4,4",
+        "-S",
+        f"{sort_mem_pct}%",
+        "--compress-program",
+        "pigz",
+    ]
+
+
+def _bgzip_command(num_cores: int) -> List[str]:
+    # Prefer long form; widely supported on recent htslib/bgzip.
+    return ["bgzip", f"--threads={num_cores}", "-c"]
+
+
+def _pigz_decompress_command(path: Path) -> List[str]:
+    return ["pigz", "-dc", str(path)]
+
+
+def _pipeline_run(
+    stages: Sequence[Tuple[str, List[str]]],
+    output_file: Path,
+    *,
+    env: Optional[dict] = None,
 ) -> None:
     """
-    The sorting and writing of the fragment is done for each chromosome. Because of this the write order of
-    the chromosomes may not be preserved. The chromosomes will all be stored in contiguous blocks in the bgzip file, and
-    and sorted by start and stop coordinate within each chromosome.
-
-    :param chromosomes:
-    :param parquet_file:
-    :param bgzip_output_file:
-    :param tempdir:
-    :param write_algorithm:
-    :return:
+    Run a left-to-right streaming pipeline and write the last stage's stdout to output_file.
+    Each stage is (name, argv). Captures stderr per stage for error reporting.
     """
-    step_size = 10_000_000  # 10 million
-    for chromosome in chromosomes:
-        chromosome_table = organism_ontology_term_id_by_chromosome_length_table.get(organism_ontology_term_id)
-        chromosome_length = chromosome_table[chromosome]
-        chunks = get_chunks(step_size=step_size, total_size=chromosome_length)
-        temp_data = None
-        for chunk_start, chunk_end in chunks:
-            logger.info(f"Processing chromosome: {chromosome}, range: {chunk_start}-{chunk_end}")
-            temp_data = sort_fragment(parquet_file, tempdir, chromosome, chunk_start, chunk_end)
-            write_algorithm(temp_data, bgzip_output_file)
-        Path(temp_data).unlink(missing_ok=True)  # clean up temporary file
-    logger.info(f"bgzip compression completed successfully for {bgzip_output_file}")
+    if not stages:
+        raise ValueError("pipeline must have at least one stage")
+
+    procs: List[sp.Popen] = []
+
+    try:
+        # open sink
+        with open(output_file, "wb") as out_f:
+            # launch first
+            name0, cmd0 = stages[0]
+            logger.info(f"Starting pipeline stage: {name0}")
+            p0 = sp.Popen(cmd0, stdout=sp.PIPE, stderr=sp.PIPE, env=env)
+            procs.append(p0)
+
+            # chain middle (if any)
+            prev_stdout = p0.stdout
+            for stage_name, stage_cmd in stages[1:-1]:
+                logger.info(f"Starting pipeline stage: {stage_name}")
+                p = sp.Popen(stage_cmd, stdin=prev_stdout, stdout=sp.PIPE, stderr=sp.PIPE, env=env)
+                procs.append(p)
+                if prev_stdout is not None:
+                    prev_stdout.close()  # allow upstream SIGPIPE if we fail downstream
+                prev_stdout = p.stdout
+
+            # last -> file
+            last_name, last_cmd = stages[-1]
+            logger.info(f"Starting pipeline stage: {last_name}")
+            plast = sp.Popen(last_cmd, stdin=prev_stdout, stdout=out_f, stderr=sp.PIPE, env=env)
+            procs.append(plast)
+            if prev_stdout is not None:
+                prev_stdout.close()
+
+            plast.wait()
+
+            # collect return codes (downstream-first)
+            returncodes = []
+            for proc in reversed(procs):
+                rc = proc.returncode if proc is plast else proc.wait()
+                returncodes.append(rc)
+
+            # error aggregation
+            if any(rc != 0 for rc in returncodes):
+                errs = []
+
+                for (stage_name, _), proc in zip(stages, procs):
+                    if proc.returncode != 0:
+                        try:
+                            err = proc.stderr.read().decode(errors="replace").strip() if proc.stderr else ""
+                        except Exception:
+                            err = ""
+
+                        errs.append(f"{stage_name} failed (rc={proc.returncode}): {err}")
+
+                # Provide AWS Batch specific guidance
+                error_msg = " | ".join(errs)
+
+                raise RuntimeError(error_msg)
+
+    finally:
+        # harden against leaked children in edge cases
+        for p in procs:
+            if p.poll() is None:
+                with contextlib.suppress(Exception):
+                    p.terminate()
+
+
+def prepare_fragment(fragment_file: str, bgzip_output_file: str) -> None:
+    """
+    Decompress -> sort -> bgzip.
+    Sorts by (chrom, start, end, strand). Output is bgzipped; chromosomes may appear in non-input order,
+    but are internally sorted within chromosome.
+    """
+    _ensure_tools(
+        [
+            ("sort", "required to sort the fragment file"),
+            ("bgzip", "required to bgzip-compress the result"),
+            ("pigz", "required for parallel gzip (de)compression"),
+        ]
+    )
+
+    in_path = Path(fragment_file)
+    if not in_path.exists():
+        raise FileNotFoundError(f"Input file not found: {in_path}")
+
+    out_path = Path(bgzip_output_file)
+    ncores = _default_cores()
+    sort_mem_pct = _calculate_sort_memory(ncores, SORT_MEMORY_PERCENTAGE)
+    env = _deterministic_env()
+
+    stages = [
+        ("pigz -dc", _pigz_decompress_command(in_path)),
+        ("sort", _sort_command(ncores, sort_mem_pct)),
+        ("bgzip", _bgzip_command(ncores)),
+    ]
+
+    _pipeline_run(stages, out_path, env=env)
+    logger.info(f"bgzip compression completed successfully for {out_path}")
+
+
+def deduplicate_fragment_rows(
+    fragment_file_name: str,
+    output_file_name: Optional[str] = None,
+    sort_memory_percent: int = SORT_MEMORY_PERCENTAGE,
+) -> str:
+    """
+    Decompress -> sort -> uniq -> bgzip.
+    Removes duplicate lines after sorting by (chrom, start, end, strand).
+
+    :param fragment_file_name: Path to the input gzipped fragment file.
+    :param output_file_name: Path for the output deduplicated bgzipped file. If None, a default name is generated.
+    :param sort_memory_percent: Percentage of system memory to allocate per sort thread.
+    :return: Path to the deduplicated bgzipped output file.
+    :raises RuntimeError: If the operation fails due to resource constraints.
+    """
+    _ensure_tools(
+        [
+            ("sort", "required to sort the fragment file"),
+            ("bgzip", "required to bgzip-compress the result"),
+            ("pigz", "required for parallel gzip (de)compression"),
+            ("uniq", "required to remove duplicate rows"),
+        ]
+    )
+
+    in_path = Path(fragment_file_name)
+    if not in_path.exists():
+        raise FileNotFoundError(f"Input file not found: {in_path}")
+
+    if output_file_name is None:
+        # <input minus .tsv[.gz]>_dedup.tsv.bgz
+        stem_once = in_path.stem  # drops final suffix (e.g., ".gz")
+        stem_twice = Path(stem_once).stem  # drops ".tsv" if present
+        out_path = in_path.with_name(f"{stem_twice}_dedup.tsv.bgz")
+    else:
+        out_path = Path(output_file_name)
+
+    ncores = _default_cores()
+    sort_mem_pct = _calculate_sort_memory(ncores, sort_memory_percent)  # Output is smaller
+
+    stages = [
+        ("pigz -dc", _pigz_decompress_command(in_path)),
+        ("sort", _sort_command(ncores, sort_mem_pct)),
+        ("uniq", ["uniq"]),
+        ("bgzip", _bgzip_command(ncores)),
+    ]
+
+    logger.info(f"Starting deduplication pipeline: {ncores} cores, {sort_mem_pct}% memory per core")
+    _pipeline_run(stages, out_path, env=_deterministic_env())
+    logger.info(f"bgzip compression completed successfully for {out_path}")
+    return str(out_path)

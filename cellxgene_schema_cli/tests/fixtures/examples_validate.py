@@ -44,7 +44,7 @@ good_obs = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             True,
-            "HANCESTRO:0575",
+            "HANCESTRO:0019",
             "HsapDv:0000003",
             "donor_1",
             "nucleus",
@@ -57,7 +57,7 @@ good_obs = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             True,
-            "HANCESTRO:0575",
+            "HANCESTRO:0019",
             "HsapDv:0000003",
             "donor_1",
             "nucleus",
@@ -82,7 +82,7 @@ good_obs = pd.DataFrame(
 good_obs["donor_id"] = good_obs["donor_id"].astype("category")
 good_obs["suspension_type"] = good_obs["suspension_type"].astype("category")
 good_obs["tissue_type"] = good_obs["tissue_type"].astype("category")
-good_obs["tissue_type"] = good_obs["tissue_type"].cat.add_categories(["cell culture", "organoid"])
+good_obs["tissue_type"] = good_obs["tissue_type"].cat.add_categories(["primary cell culture", "organoid", "cell line"])
 
 # Expected obs, this is what the obs above should look like after adding the necessary columns with the validator,
 # these columns are defined in the schema
@@ -94,7 +94,7 @@ obs_expected = pd.DataFrame(
             "COVID-19",
             "female",
             "lung",
-            "Yoruban",
+            "Japanese",
             "Carnegie stage 01",
         ],
         [
@@ -103,7 +103,7 @@ obs_expected = pd.DataFrame(
             "COVID-19",
             "female",
             "lung",
-            "Yoruban",
+            "Japanese",
             "Carnegie stage 01",
         ],
     ],
@@ -134,7 +134,7 @@ good_obs_visium = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             True,
-            "HANCESTRO:0575",
+            "HANCESTRO:0019",
             "HsapDv:0000003",
             "donor_1",
             "na",
@@ -150,7 +150,7 @@ good_obs_visium = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             True,
-            "HANCESTRO:0575",
+            "HANCESTRO:0019",
             "HsapDv:0000003",
             "donor_1",
             "na",
@@ -179,7 +179,9 @@ good_obs_visium = pd.DataFrame(
 good_obs_visium["donor_id"] = good_obs_visium["donor_id"].astype("category")
 good_obs_visium["suspension_type"] = good_obs_visium["suspension_type"].astype("category")
 good_obs_visium["tissue_type"] = good_obs_visium["tissue_type"].astype("category")
-good_obs_visium["tissue_type"] = good_obs_visium["tissue_type"].cat.add_categories(["cell culture", "organoid"])
+good_obs_visium["tissue_type"] = good_obs_visium["tissue_type"].cat.add_categories(
+    ["primary cell culture", "organoid", "cell line"]
+)
 
 # Valid spatial obs per schema
 good_obs_slide_seqv2 = pd.DataFrame(
@@ -192,7 +194,7 @@ good_obs_slide_seqv2 = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             True,
-            "HANCESTRO:0575",
+            "HANCESTRO:0019",
             "HsapDv:0000003",
             "donor_1",
             "na",
@@ -205,7 +207,7 @@ good_obs_slide_seqv2 = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             True,
-            "HANCESTRO:0575",
+            "HANCESTRO:0019",
             "HsapDv:0000003",
             "donor_1",
             "na",
@@ -231,7 +233,7 @@ good_obs_slide_seqv2["donor_id"] = good_obs_slide_seqv2["donor_id"].astype("cate
 good_obs_slide_seqv2["suspension_type"] = good_obs_slide_seqv2["suspension_type"].astype("category")
 good_obs_slide_seqv2["tissue_type"] = good_obs_slide_seqv2["tissue_type"].astype("category")
 good_obs_slide_seqv2["tissue_type"] = good_obs_slide_seqv2["tissue_type"].cat.add_categories(
-    ["cell culture", "organoid"]
+    ["primary cell culture", "organoid", "cell line"]
 )
 
 good_obs_visium_is_single_false = pd.DataFrame(
@@ -244,7 +246,7 @@ good_obs_visium_is_single_false = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             False,
-            "HANCESTRO:0575",
+            "HANCESTRO:0019",
             "HsapDv:0000003",
             "donor_1",
             "na",
@@ -257,7 +259,7 @@ good_obs_visium_is_single_false = pd.DataFrame(
             "UBERON:0002048",
             "tissue",
             False,
-            "HANCESTRO:0575",
+            "HANCESTRO:0019",
             "HsapDv:0000003",
             "donor_1",
             "na",
@@ -285,7 +287,7 @@ good_obs_visium_is_single_false["suspension_type"] = good_obs_visium_is_single_f
 )
 good_obs_visium_is_single_false["tissue_type"] = good_obs_visium_is_single_false["tissue_type"].astype("category")
 good_obs_visium_is_single_false["tissue_type"] = good_obs_visium_is_single_false["tissue_type"].cat.add_categories(
-    ["cell culture", "organoid"]
+    ["primary cell culture", "organoid", "cell line"]
 )
 
 good_obs_mouse = pd.DataFrame(
@@ -296,7 +298,7 @@ good_obs_mouse = pd.DataFrame(
             "PATO:0000461",
             "unknown",
             "CL:0000192",
-            "cell culture",
+            "primary cell culture",
             False,
             "na",
             "MmusDv:0000003",
@@ -309,7 +311,7 @@ good_obs_mouse = pd.DataFrame(
             "PATO:0000461",
             "unknown",
             "CL:0000192",
-            "cell culture",
+            "primary cell culture",
             False,
             "na",
             "MmusDv:0000003",
@@ -336,7 +338,17 @@ good_obs_mouse = pd.DataFrame(
 good_obs_mouse["donor_id"] = good_obs_mouse["donor_id"].astype("category")
 good_obs_mouse["suspension_type"] = good_obs_mouse["suspension_type"].astype("category")
 good_obs_mouse["tissue_type"] = good_obs_mouse["tissue_type"].astype("category")
-good_obs_mouse["tissue_type"] = good_obs_mouse["tissue_type"].cat.add_categories(["tissue", "organoid"])
+good_obs_mouse["tissue_type"] = good_obs_mouse["tissue_type"].cat.add_categories(["tissue", "organoid", "cell line"])
+
+# Creating a cell line obs by copying good_obs and changing the necessary fields
+good_obs_cell_line = good_obs.copy()
+good_obs_cell_line.loc[:, "tissue_type"] = "cell line"
+good_obs_cell_line.loc[:, "tissue_ontology_term_id"] = "CVCL_0001"
+good_obs_cell_line.loc[:, "development_stage_ontology_term_id"] = "na"
+good_obs_cell_line.loc[:, "sex_ontology_term_id"] = "na"
+good_obs_cell_line.loc[:, "self_reported_ethnicity_ontology_term_id"] = "na"
+good_obs_cell_line.loc[:, "donor_id"] = "na"
+good_obs_cell_line["donor_id"] = good_obs_cell_line["donor_id"].astype("category")
 
 # ---
 # 2. Creating individual var components: valid object and valid object and with labels
@@ -577,7 +589,15 @@ adata_mouse = anndata.AnnData(
     obsm=good_obsm,
     var=good_var_mouse,
 )
-adata_mouse.uns["organism_ontology_term_id"] = "NCBITaxon:10090"
+
+# Expected anndata with cell line data
+adata_with_cell_line = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_cell_line,
+    uns=good_uns,  # Use human organism since we test with human development stage terms
+    obsm=good_obsm,
+    var=good_var,  # Use human feature IDs since we're using human organism
+)
 
 # anndata for testing migration
 unmigrated_obs = pd.DataFrame(

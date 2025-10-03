@@ -1,5 +1,7 @@
+import gzip
 import os
 from pathlib import Path
+from unittest import mock
 
 import anndata as ad
 import dask.dataframe as dd
@@ -8,6 +10,10 @@ import pysam
 import pytest
 from cellxgene_schema import atac_seq
 from fixtures.examples_validate import FIXTURES_ROOT
+
+# Test constants
+EXPECTED_LINE_COUNT = 37249
+TEST_BARCODE = "AAACAAACATTTTATCC-1"
 
 
 @pytest.fixture
@@ -22,6 +28,48 @@ def atac_fragment_index_file_path(atac_fragment_bgzip_file_path) -> Path:
     index_file = Path(str(atac_fragment_bgzip_file_path) + ".tbi")
     yield index_file
     index_file.unlink(missing_ok=True)
+
+
+@pytest.fixture
+def test_fragment_files():
+    """Returns paths to test fragment files."""
+    return {
+        "gzip": os.path.join(FIXTURES_ROOT, "atac_seq", "fragments.tsv.gz"),
+        "bgzip": os.path.join(FIXTURES_ROOT, "atac_seq", "fragments.tsv.bgz"),
+        "anndata": os.path.join(FIXTURES_ROOT, "atac_seq", "small_atac_seq.h5ad"),
+    }
+
+
+@pytest.fixture
+def mock_anndata_file(tmpdir):
+    """Create a mock anndata file for testing."""
+    adata = ad.AnnData(
+        obs=pd.DataFrame({"assay_ontology_term_id": ["EFO:0030059"], "is_primary_data": [True]}, index=[TEST_BARCODE]),
+        var=pd.DataFrame(index=["GENE1"]),
+    )
+    adata.uns["organism_ontology_term_id"] = "NCBITaxon:9606"
+
+    anndata_file = os.path.join(tmpdir, "test.h5ad")
+    adata.write(anndata_file)
+    return anndata_file
+
+
+def create_fragment_file_from_dataframe(file_path: str, df: pd.DataFrame):
+    """Helper to create a gzip fragment file from a DataFrame."""
+    with gzip.open(file_path, "wt") as f:
+        for _, row in df.iterrows():
+            line = "\t".join(map(str, row.tolist())) + "\n"
+            f.write(line)
+    return file_path
+
+
+def create_test_fragment_file(tmpdir: Path, filename: str, lines: pd.DataFrame) -> str:
+    """Helper to create a gzip fragment file with specified content."""
+    file_path = os.path.join(tmpdir, filename)
+    with gzip.open(file_path, "wt") as f:
+        for line in lines:
+            f.write(line)
+    return file_path
 
 
 def to_anndata_file(adata: ad.AnnData, path: str) -> str:
@@ -74,33 +122,20 @@ def count_fragments_per_chromosome(fragment_file):
 
 
 class TestProcessFragment:
-    @pytest.mark.parametrize("override_write_algorithm", ["pysam", "cli", None])
-    def test_write_algorithms(
-        self, atac_fragment_bgzip_file_path, atac_fragment_index_file_path, override_write_algorithm
-    ):
-        self._test_process_fragment(
-            atac_fragment_bgzip_file_path, atac_fragment_index_file_path, override_write_algorithm, "fragments.tsv.bgz"
-        )
-
     @pytest.mark.parametrize("fragment_file", ["fragments.tsv.bgz", "fragments.tsv.gz"])
     def test_source_file_compression(self, atac_fragment_bgzip_file_path, atac_fragment_index_file_path, fragment_file):
-        self._test_process_fragment(
-            atac_fragment_bgzip_file_path, atac_fragment_index_file_path, "pysam", fragment_file
-        )
+        self._test_process_fragment(atac_fragment_bgzip_file_path, atac_fragment_index_file_path, fragment_file)
 
     @staticmethod
-    def _test_process_fragment(
-        atac_fragment_bgzip_file_path, atac_fragment_index_file_path, override_write_algorithm, fragment_file
-    ):
+    def _test_process_fragment(atac_fragment_bgzip_file_path, atac_fragment_index_file_path, fragment_file):
         # Arrange
         anndata_file = os.path.join(FIXTURES_ROOT, "atac_seq", "small_atac_seq.h5ad")
         fragments_file = os.path.join(FIXTURES_ROOT, "atac_seq", fragment_file)
         # Act
         result = atac_seq.process_fragment(
-            fragments_file,
+            str(fragments_file),
             anndata_file,
             generate_index=True,
-            override_write_algorithm=override_write_algorithm,
             output_file=str(atac_fragment_bgzip_file_path),
         )
         # Assert
@@ -152,6 +187,34 @@ class TestProcessFragment:
             output_file=str(atac_fragment_bgzip_file_path),
         )
         result = [r for r in result if "Error" in r]
+        # Assert
+        assert len(result) == 1
+
+
+class TestPrepareFragment:
+    def test_positive(self, atac_fragment_dataframe, tmpdir):
+        # Arrange
+        input_file = os.path.join(
+            tmpdir,
+            "fragment.tsv.gz",
+        )
+        atac_fragment_dataframe.to_csv(
+            input_file, sep="\t", index=False, compression="gzip", header=False, columns=atac_seq.column_ordering
+        )
+        output_file = os.path.join(tmpdir, "fragment.bgz")
+        # Act
+        atac_seq.prepare_fragment(input_file, output_file)
+        # Assert
+        assert Path(output_file).exists()
+
+    @pytest.mark.parametrize("tool", ["bgzip", "pigz", "sort"])
+    @mock.patch("shutil.which")
+    def test_missing_requirements(self, mock, tool, atac_fragment_file, tmpdir):
+        # Arrange
+        mock.return_value = None  # patch shutil to return None for the tool
+        # Act
+        with pytest.raises(RuntimeError):
+            atac_seq.prepare_fragment(atac_fragment_file, "fragment.bgz")
 
 
 class TestConvertToParquet:
@@ -410,3 +473,464 @@ class TestGetOutputFile:
     )
     def test_none(self, fragment_file, output_file, expected):
         assert atac_seq.get_output_file(fragment_file, output_file) == expected
+
+
+class TestCountLinesInCompressedFile:
+    def test_count_lines_gzip_file(self, test_fragment_files):
+        """Test counting lines in a gzip compressed fragment file."""
+        # Arrange
+        fragment_file = test_fragment_files["gzip"]
+
+        # Act
+        line_count = atac_seq.count_lines_in_compressed_file(fragment_file)
+
+        # Assert
+        assert line_count == EXPECTED_LINE_COUNT
+
+    def test_count_lines_bgzip_file(self, test_fragment_files):
+        """Test counting lines in a bgzip compressed fragment file."""
+        # Arrange
+        fragment_file = test_fragment_files["bgzip"]
+
+        # Act
+        line_count = atac_seq.count_lines_in_compressed_file(fragment_file)
+
+        # Assert
+        assert line_count == EXPECTED_LINE_COUNT
+
+    def test_count_lines_empty_file(self, tmpdir):
+        """Test counting lines in an empty gzip file."""
+        # Arrange
+        empty_file = create_fragment_file_from_dataframe(
+            os.path.join(tmpdir, "empty.tsv.gz"), pd.DataFrame(columns=atac_seq.column_ordering)
+        )
+
+        # Act
+        line_count = atac_seq.count_lines_in_compressed_file(empty_file)
+
+        # Assert
+        assert line_count == 0
+
+    def test_count_lines_single_line_file(self, tmpdir):
+        """Test counting lines in a single-line gzip file."""
+        # Arrange
+        lines = ["chr1\t100\t200\tbarcode1\t5"]
+        single_line_file = create_fragment_file_from_dataframe(
+            os.path.join(tmpdir, "single.tsv.gz"),
+            pd.DataFrame([line.split("\t") for line in lines], columns=atac_seq.column_ordering),
+        )
+
+        # Act
+        line_count = atac_seq.count_lines_in_compressed_file(single_line_file)
+
+        # Assert
+        assert line_count == 1
+
+    def test_count_lines_nonexistent_file(self):
+        """Test handling of non-existent file."""
+        # Arrange
+        nonexistent_file = "/nonexistent/file.gz"
+
+        # Act & Assert
+        with pytest.raises(FileNotFoundError):
+            atac_seq.count_lines_in_compressed_file(nonexistent_file)
+
+
+class TestIndexFragmentWithLineCountValidation:
+    def test_line_count_validation_success(
+        self, test_fragment_files, atac_fragment_bgzip_file_path, atac_fragment_index_file_path
+    ):
+        """Test that line count validation passes when input and output have same line count."""
+        # Arrange
+        anndata_file = test_fragment_files["anndata"]
+        fragment_file = test_fragment_files["gzip"]
+
+        # Act
+        result = atac_seq.process_fragment(
+            fragment_file,
+            anndata_file,
+            generate_index=True,
+            output_file=str(atac_fragment_bgzip_file_path),
+        )
+
+        # Assert
+        assert len(result) == 0
+        assert atac_fragment_bgzip_file_path.exists()
+        assert atac_fragment_index_file_path.exists()
+
+        # Verify line counts are equal
+        original_count = atac_seq.count_lines_in_compressed_file(fragment_file)
+        output_count = atac_seq.count_lines_in_compressed_file(str(atac_fragment_bgzip_file_path))
+        assert original_count == output_count == EXPECTED_LINE_COUNT
+
+    def test_line_count_validation_failure(self, tmpdir, mock_anndata_file):
+        """Test that line count validation fails when counts don't match."""
+        # Arrange
+        test_lines = [f"chr1\t100\t200\t{TEST_BARCODE}\t5\n", f"chr1\t300\t400\t{TEST_BARCODE}\t3\n"]
+        test_fragment_file = create_fragment_file_from_dataframe(
+            os.path.join(tmpdir, "test_fragments.tsv.gz"),
+            pd.DataFrame([line.rstrip("\n").split("\t") for line in test_lines], columns=atac_seq.column_ordering),
+        )
+        output_file = os.path.join(tmpdir, "output.bgz")
+
+        # Mock write function to produce different line count (1 line instead of 2)
+        def mock_prepare_fragment(_input_file, output_file):
+            with pysam.libcbgzf.BGZFile(output_file, mode="wb") as f_out:
+                f_out.write(f"chr1\t100\t200\t{TEST_BARCODE}\t5\n".encode())  # Only one line instead of two
+
+        # Act & Assert
+        with (
+            mock.patch("cellxgene_schema.atac_seq.prepare_fragment", side_effect=mock_prepare_fragment),
+            pytest.raises(ValueError, match="Line count validation failed"),
+        ):
+            atac_seq.index_fragment(
+                fragment_file=test_fragment_file,
+                output_file=output_file,
+            )
+
+
+class TestDeduplicateFragmentRows:
+    def test_deduplicate_rows(self, atac_fragment_dataframe, tmpdir):
+        # Arrange
+        atac_fragment_dataframe = pd.concat([atac_fragment_dataframe, atac_fragment_dataframe])
+        input_file = create_fragment_file_from_dataframe(
+            os.path.join(tmpdir, "fragment.tsv.gz"), atac_fragment_dataframe
+        )
+        output_file = os.path.join(tmpdir, "deduplicated.tsv.bgz")
+        # Act
+        atac_seq.deduplicate_fragment_rows(input_file, output_file)
+        # Assert
+        assert Path(output_file).exists()
+        df = pd.read_csv(
+            output_file,
+            compression="gzip",
+            sep="\t",
+            header=None,
+            names=["chromosome", "start coordinate", "stop coordinate", "barcode", "read support"],
+        )
+        assert len(df) == len(atac_fragment_dataframe) // 2
+
+    def test_no_duplicates(self, atac_fragment_dataframe, tmpdir):
+        # Arrange
+        input_file = create_fragment_file_from_dataframe(
+            os.path.join(tmpdir, "fragment.tsv.gz"), atac_fragment_dataframe
+        )
+        output_file = os.path.join(tmpdir, "deduplicated.tsv.bgz")
+        # Act
+        atac_seq.deduplicate_fragment_rows(input_file, output_file)
+        # Assert
+        assert Path(output_file).exists()
+        df = pd.read_csv(
+            output_file,
+            compression="gzip",
+            sep="\t",
+            header=None,
+            names=["chromosome", "start coordinate", "stop coordinate", "barcode", "read support"],
+        )
+        assert len(df) == len(atac_fragment_dataframe)
+
+
+class TestDefaultCores:
+    """Test CPU detection with container awareness."""
+
+    @mock.patch("builtins.open", side_effect=FileNotFoundError)
+    @mock.patch("os.cpu_count", return_value=8)
+    def test_fallback_to_system_cpu_count_when_cgroup_missing(self, mock_cpu_count, mock_open):
+        """Test fallback to os.cpu_count() when cgroup files don't exist (non-Docker)."""
+        result = atac_seq._default_cores()
+        assert result == 8
+        mock_cpu_count.assert_called_once()
+
+    @mock.patch("builtins.open")
+    @mock.patch("os.cpu_count", return_value=16)
+    def test_cgroup_v1_quota_detection(self, mock_cpu_count, mock_open):
+        """Test cgroup v1 CPU quota detection in containers."""
+        # Mock cgroup v1 files: quota=200000, period=100000 = 2 CPUs
+        mock_open.side_effect = [
+            mock.mock_open(read_data="200000").return_value,  # quota file
+            mock.mock_open(read_data="100000").return_value,  # period file
+        ]
+
+        result = atac_seq._default_cores()
+        assert result == 2  # Should use container limit, not system count
+        mock_cpu_count.assert_not_called()  # Should not fallback
+
+    @mock.patch("builtins.open")
+    @mock.patch("os.cpu_count", return_value=16)
+    def test_cgroup_v1_unlimited_fallback(self, mock_cpu_count, mock_open):
+        """Test fallback when cgroup v1 shows unlimited quota."""
+        # Mock cgroup v1 files: quota=-1 (unlimited), then v2 check fails
+        mock_open.side_effect = [
+            mock.mock_open(read_data="-1").return_value,  # unlimited quota
+            mock.mock_open(read_data="100000").return_value,  # period file
+            FileNotFoundError(),  # v2 file doesn't exist
+        ]
+
+        result = atac_seq._default_cores()
+        assert result == 16  # Should fallback to system count
+        mock_cpu_count.assert_called_once()
+
+    @mock.patch("builtins.open")
+    @mock.patch("os.cpu_count", return_value=12)
+    def test_cgroup_v2_quota_detection(self, mock_cpu_count, mock_open):
+        """Test cgroup v2 CPU quota detection."""
+
+        # Mock the file operations for cgroup detection
+        def mock_open_side_effect(path, *args, **kwargs):
+            if "cpu.cfs_quota_us" in path or "cpu.cfs_period_us" in path:
+                raise FileNotFoundError()
+            elif "cpu.max" in path:
+                return mock.mock_open(read_data="400000 100000").return_value
+            else:
+                return mock.mock_open().return_value
+
+        mock_open.side_effect = mock_open_side_effect
+
+        result = atac_seq._default_cores()
+        assert result == 4
+        mock_cpu_count.assert_not_called()
+
+    @mock.patch("builtins.open")
+    @mock.patch("os.cpu_count", return_value=12)
+    def test_cgroup_v2_unlimited_fallback(self, mock_cpu_count, mock_open):
+        """Test fallback when cgroup v2 shows unlimited."""
+
+        def mock_open_side_effect(path, *args, **kwargs):
+            if "cpu.cfs_quota_us" in path or "cpu.cfs_period_us" in path:
+                raise FileNotFoundError()
+            elif "cpu.max" in path:
+                return mock.mock_open(read_data="max").return_value
+            else:
+                return mock.mock_open().return_value
+
+        mock_open.side_effect = mock_open_side_effect
+
+        result = atac_seq._default_cores()
+        assert result == 12
+        mock_cpu_count.assert_called_once()
+
+    @mock.patch("builtins.open", side_effect=PermissionError)
+    @mock.patch("os.cpu_count", return_value=4)
+    def test_permission_error_fallback(self, mock_cpu_count, mock_open):
+        """Test fallback when cgroup files exist but can't be read."""
+        result = atac_seq._default_cores()
+        assert result == 4
+        mock_cpu_count.assert_called_once()
+
+    @mock.patch("builtins.open")
+    @mock.patch("os.cpu_count", return_value=None)
+    def test_os_cpu_count_none_fallback(self, mock_cpu_count, mock_open):
+        """Test minimum 1 CPU when os.cpu_count() returns None."""
+        mock_open.side_effect = FileNotFoundError
+
+        result = atac_seq._default_cores()
+        assert result == 1  # Should return minimum of 1
+
+    @mock.patch("builtins.open")
+    def test_cgroup_v1_zero_quota_fallback(self, mock_open):
+        """Test fallback when cgroup shows zero quota."""
+        mock_open.side_effect = [
+            mock.mock_open(read_data="0").return_value,  # zero quota
+            mock.mock_open(read_data="100000").return_value,  # period file
+            FileNotFoundError(),  # v2 file doesn't exist
+        ]
+
+        with mock.patch("os.cpu_count", return_value=8):
+            result = atac_seq._default_cores()
+            assert result == 8  # Should fallback due to quota <= 0
+
+
+class TestCalculateSortMemory:
+    """Test memory percentage calculation."""
+
+    def test_single_core_memory(self):
+        """Test memory calculation for single core."""
+        result = atac_seq._calculate_sort_memory(num_cores=1, sort_memory_percent=80)
+        assert result == 80  # Single core gets full percentage
+
+    def test_multi_core_memory_capping(self):
+        """Test memory capping for multiple cores."""
+        # With > 1 core, should cap at 50%
+        result = atac_seq._calculate_sort_memory(num_cores=4, sort_memory_percent=80)
+        assert result == 12  # 50% / 4 cores = 12.5%, but returns 12 (integer)
+
+    def test_memory_minimum_per_core(self):
+        """Test minimum 1% memory per core."""
+        result = atac_seq._calculate_sort_memory(num_cores=100, sort_memory_percent=30)
+        assert result == 1  # Should ensure minimum 1% per core
+
+    def test_low_memory_percentage(self):
+        """Test with already low memory percentage."""
+        result = atac_seq._calculate_sort_memory(num_cores=2, sort_memory_percent=20)
+        assert result == 10  # 20% / 2 cores = 10% per core
+
+
+class TestSortCommand:
+    """Test sort command generation."""
+
+    def test_sort_command_structure(self):
+        """Test basic sort command structure."""
+        result = atac_seq._sort_command(num_cores=4, sort_mem_pct=25)
+
+        expected_base = [
+            "sort",
+            "--parallel",
+            "4",
+            "-t",
+            "\t",
+            "-k1,1",
+            "-k2,2n",
+            "-k3,3n",
+            "-k4,4",
+            "-S",
+            "25%",
+            "--compress-program",
+            "pigz",
+        ]
+        assert result == expected_base
+
+    def test_sort_command_single_core(self):
+        """Test sort command with single core."""
+        result = atac_seq._sort_command(num_cores=1, sort_mem_pct=50)
+
+        assert "--parallel" in result
+        assert "1" in result  # Should still specify 1 core
+        assert "50%" in result
+
+    def test_sort_command_memory_formatting(self):
+        """Test memory percentage formatting."""
+        result = atac_seq._sort_command(num_cores=2, sort_mem_pct=33)
+
+        assert "33%" in result  # Should format memory as percentage
+
+
+class TestPipelineRun:
+    """Test enhanced pipeline execution."""
+
+    @mock.patch("subprocess.Popen")
+    @mock.patch("builtins.open", mock.mock_open())
+    def test_pipeline_success(self, mock_popen):
+        """Test successful pipeline execution."""
+        # Mock successful processes
+        mock_proc = mock.Mock()
+        mock_proc.returncode = 0
+        mock_proc.wait.return_value = 0
+        mock_proc.stderr.read.return_value = b""
+        mock_popen.return_value = mock_proc
+
+        stages = [("stage1", ["cmd1"]), ("stage2", ["cmd2"])]
+        output_file = Path("/tmp/test_output.txt")
+
+        # Should not raise exception
+        atac_seq._pipeline_run(stages, output_file)
+
+    @mock.patch("subprocess.Popen")
+    @mock.patch("builtins.open", mock.mock_open())
+    def test_pipeline_failure_error_aggregation(self, mock_popen):
+        """Test error aggregation when pipeline stages fail."""
+        # Mock failing processes
+        mock_proc1 = mock.Mock()
+        mock_proc1.returncode = 1
+        mock_proc1.wait.return_value = 1
+        mock_proc1.stderr.read.return_value = b"Stage 1 error"
+
+        mock_proc2 = mock.Mock()
+        mock_proc2.returncode = 2
+        mock_proc2.wait.return_value = 2
+        mock_proc2.stderr.read.return_value = b"Stage 2 error"
+
+        mock_popen.side_effect = [mock_proc1, mock_proc2]
+
+        stages = [("stage1", ["cmd1"]), ("stage2", ["cmd2"])]
+        output_file = Path("/tmp/test_output.txt")
+
+        with pytest.raises(RuntimeError) as exc_info:
+            atac_seq._pipeline_run(stages, output_file)
+
+        error_msg = str(exc_info.value)
+        assert "stage1 failed (rc=1): Stage 1 error" in error_msg
+        assert "stage2 failed (rc=2): Stage 2 error" in error_msg
+
+    @mock.patch("subprocess.Popen")
+    @mock.patch("builtins.open", mock.mock_open())
+    def test_pipeline_process_cleanup(self, mock_popen):
+        """Test that processes are properly terminated on failure."""
+        # Mock process that needs termination
+        mock_proc = mock.Mock()
+        mock_proc.returncode = 1
+        mock_proc.poll.return_value = None  # Still running
+        mock_proc.wait.return_value = 1
+        mock_proc.stderr.read.return_value = b"Error"
+        mock_popen.return_value = mock_proc
+
+        stages = [("stage1", ["cmd1"])]
+        output_file = Path("/tmp/test_output.txt")
+
+        with pytest.raises(RuntimeError):
+            atac_seq._pipeline_run(stages, output_file)
+
+        # Should have attempted to terminate the process (may be called multiple times)
+        assert mock_proc.terminate.called
+        assert mock_proc.terminate.call_count >= 1
+
+
+class TestDeterministicEnv:
+    """Test environment setup for deterministic operations."""
+
+    @mock.patch.dict(os.environ, {"LANG": "en_US.UTF-8", "CUSTOM_VAR": "value"})
+    def test_deterministic_env_locale_override(self):
+        """Test that LC_ALL=C is set for deterministic sorting."""
+        result = atac_seq._deterministic_env()
+
+        assert result["LC_ALL"] == "C"
+        assert "LANG" in result  # Should preserve other env vars
+        assert result["CUSTOM_VAR"] == "value"
+
+    @mock.patch.dict(os.environ, {"LC_ALL": "en_US.UTF-8"})
+    def test_deterministic_env_lc_all_override(self):
+        """Test that existing LC_ALL is overridden."""
+        result = atac_seq._deterministic_env()
+
+        assert result["LC_ALL"] == "C"  # Should override existing value
+
+
+class TestDeduplicateFragmentRowsIntegration:
+    """Integration tests for the main deduplication function with new enhancements."""
+
+    @mock.patch("cellxgene_schema.atac_seq._pipeline_run")
+    @mock.patch("cellxgene_schema.atac_seq._default_cores", return_value=4)
+    @mock.patch("cellxgene_schema.atac_seq._calculate_sort_memory", return_value=12)
+    def test_deduplicate_uses_enhanced_cpu_detection(
+        self, mock_calc_mem, mock_cores, mock_pipeline, test_fragment_files
+    ):
+        """Test that deduplication uses the enhanced CPU detection."""
+        input_file = test_fragment_files["gzip"]
+
+        result = atac_seq.deduplicate_fragment_rows(input_file)
+
+        # Should have called our enhanced CPU detection
+        mock_cores.assert_called_once()
+        mock_calc_mem.assert_called_once_with(4, 50)  # 4 cores from mock, 50% default memory
+
+        # Should have used the calculated values in pipeline
+        mock_pipeline.assert_called_once()
+
+        # Verify output path generation
+        assert result.endswith("_dedup.tsv.bgz")
+
+    @mock.patch("cellxgene_schema.atac_seq._pipeline_run")
+    @mock.patch("cellxgene_schema.atac_seq._default_cores", return_value=2)
+    def test_deduplicate_with_custom_memory_percentage(self, mock_cores, mock_pipeline, test_fragment_files):
+        """Test deduplication with custom memory percentage."""
+        input_file = test_fragment_files["gzip"]
+
+        atac_seq.deduplicate_fragment_rows(input_file, sort_memory_percent=30)
+
+        # Should pass custom memory percentage to calculation
+        args, kwargs = mock_pipeline.call_args
+        stages = args[0]
+
+        # Verify sort command includes memory settings
+        sort_stage = next(stage for stage_name, stage in stages if stage_name == "sort")
+        sort_cmd = " ".join(sort_stage)
+        assert "%" in sort_cmd  # Should contain memory percentage
