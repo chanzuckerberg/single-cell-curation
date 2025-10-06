@@ -51,7 +51,12 @@ def map_deprecated_terms(
     for ontology_type in ONTOLOGY_TYPES:
         if ontology_type in dataset:
             for ontology_term in dataset[ontology_type]:
-                ontology_term_ids = ontology_term["ontology_term_id"].split(",")
+                if "," in ontology_term["ontology_term_id"]:
+                    ontology_term_ids = [term_id.strip() for term_id in ontology_term["ontology_term_id"].split(",")]
+                elif "||" in ontology_term["ontology_term_id"]:
+                    ontology_term_ids = [term_id.strip() for term_id in ontology_term["ontology_term_id"].split("||")]
+                else:
+                    ontology_term_ids = [ontology_term["ontology_term_id"]]
                 for ontology_term_id in ontology_term_ids:
                     if ontology_term_id in non_deprecated_term_cache:
                         continue
