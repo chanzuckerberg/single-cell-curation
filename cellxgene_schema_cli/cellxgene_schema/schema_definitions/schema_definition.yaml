@@ -736,6 +736,8 @@ components:
       donor_id:
         type: categorical
         subtype: str
+        forbidden:
+          - na
         dependencies:
           - # If tissue_type is "cell line", donor_id must be "na"
             rule:
