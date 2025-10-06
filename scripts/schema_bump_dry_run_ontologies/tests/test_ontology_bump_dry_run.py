@@ -212,14 +212,8 @@ class TestOntologyBumpDryRun:
             assert list(expected) == list(tmp)
             assert expected_replaced_by_map == json.load(tmp_json)
 
-    @pytest.mark.parametrize(
-        "separator,expected_file",
-        [
-            (",", "with_comma_delimited_onto_id_list_expected"),
-            ("||", "with_pipepipe_delimited_onto_id_list_expected"),
-        ],
-    )
-    def test_with_multi_delimited_onto_id_list(self, setup, separator, expected_file):  # type: ignore
+    @pytest.mark.parametrize("separator", [",", "||"])
+    def test_with_multi_delimited_onto_id_list(self, setup, separator):  # type: ignore
         public_datasets, private_collections, expected_replaced_by_map = setup
         private_collections.pop()
         public_datasets[0]["self_reported_ethnicity"] = [
@@ -227,7 +221,7 @@ class TestOntologyBumpDryRun:
         ]
         expected_replaced_by_map["self_reported_ethnicity"]["HANCESTRO:0000002"] = "HANCESTRO:0000003"
         with NamedTemporaryFile() as tmp, NamedTemporaryFile() as tmp_json, open(
-            f"{FIXTURES_ROOT}/{expected_file}", "rb"
+            f"{FIXTURES_ROOT}/delimited_onto_id_list_expected", "rb"
         ) as expected:
             ontology_bump_dry_run.dry_run(tmp.name, tmp_json.name)
             assert list(expected) == list(tmp)
