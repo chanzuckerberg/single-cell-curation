@@ -221,7 +221,7 @@ class TestOntologyBumpDryRun:
         ]
         expected_replaced_by_map["self_reported_ethnicity"]["HANCESTRO:0000002"] = "HANCESTRO:0000003"
         with NamedTemporaryFile() as tmp, NamedTemporaryFile() as tmp_json, open(
-            f"{FIXTURES_ROOT}/delimited_onto_id_list_expected", "rb"
+            f"{FIXTURES_ROOT}/with_comma_delimited_onto_id_list_expected", "rb"
         ) as expected:
             ontology_bump_dry_run.dry_run(tmp.name, tmp_json.name)
             assert list(expected) == list(tmp)
