@@ -729,6 +729,15 @@ class Validator:
                 # check for null values--skip on column defs with enums, since it will already be part of that check
                 if not column_def.get("enum") and column.isnull().any():
                     self.errors.append(f"Column '{column_name}' in dataframe '{df_name}' must not contain NaN values.")
+                if forbidden_values := column_def.get("forbidden"):
+                    # Check for forbidden values
+                    bad_values = column.drop_duplicates()[column.drop_duplicates().isin(forbidden_values)]
+                    bad_values = bad_values.tolist()
+                    if bad_values:
+                        self.errors.append(
+                            f"Column '{column_name}' in dataframe '{df_name}' contains forbidden values "
+                            f"'{bad_values}'. Values must not be one of {forbidden_values}"
+                        )
 
         if column_def.get("type") == "feature_is_filtered":
             self._validate_column_feature_is_filtered(column, column_name, df_name)
