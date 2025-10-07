@@ -26,6 +26,15 @@ ONTOLOGY_TYPES = {
 }
 
 
+def split_term(term: str) -> list[str]:
+    delimters = [",", "||"]
+    found_delimiters = filter(lambda x: x in term, delimters)
+    delimter = next(found_delimiters, None)
+    if delimter and next(found_delimiters, None):
+        raise ValueError(f"Term {term} has multiple delimiter types")
+    return [t.strip() for t in term.split(delimter)] if delimter else [term.strip()]
+
+
 def map_deprecated_terms(
     curator_report_entry_map: dict,  # type: ignore
     dataset: dict,  # type: ignore
@@ -51,7 +60,7 @@ def map_deprecated_terms(
     for ontology_type in ONTOLOGY_TYPES:
         if ontology_type in dataset:
             for ontology_term in dataset[ontology_type]:
-                ontology_term_ids = ontology_term["ontology_term_id"].split(",")
+                ontology_term_ids = split_term(ontology_term["ontology_term_id"])
                 for ontology_term_id in ontology_term_ids:
                     if ontology_term_id in non_deprecated_term_cache:
                         continue
