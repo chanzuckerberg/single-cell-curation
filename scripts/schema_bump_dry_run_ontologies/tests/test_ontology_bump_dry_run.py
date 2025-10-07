@@ -214,9 +214,6 @@ class TestSplitTerm:
         ]
 
 
-"poke"
-
-
 class TestOntologyBumpDryRun:
     def test_no_deprecated_terms_no_revisions(self, setup):  # type: ignore
         public_datasets, private_collections, expected_replaced_by_map = setup
