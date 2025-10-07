@@ -207,6 +207,12 @@ class TestSplitTerm:
         with pytest.raises(ValueError):
             ontology_bump_dry_run.split_term("HANCESTRO:0000001,HANCESTRO:0000002||HANCESTRO:0000003")
 
+    def test_split_term_spaces(self):
+        assert ontology_bump_dry_run.split_term(" HANCESTRO:0000001 , HANCESTRO:0000002 ") == [
+            "HANCESTRO:0000001",
+            "HANCESTRO:0000002",
+        ]
+
 
 class TestOntologyBumpDryRun:
     def test_no_deprecated_terms_no_revisions(self, setup):  # type: ignore

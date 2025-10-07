@@ -32,7 +32,7 @@ def split_term(term: str) -> list[str]:
     delimter = next(found_delimiters, None)
     if delimter and next(found_delimiters, None):
         raise ValueError(f"Term {term} has multiple delimiter types")
-    return term.split(delimter) if delimter else [term]
+    return [t.strip() for t in term.split(delimter)] if delimter else [term.strip()]
 
 
 def map_deprecated_terms(
