@@ -9172,7 +9172,22 @@ DEPRECATED_FEATURE_IDS = [
 ]
 
 # Dictionary for CURATOR-DEFINED remapping of deprecated feature IDs, if any, to new feature IDs.
-GENCODE_MAPPER = {}
+GENCODE_MAPPER = {
+  'ENSG00000148362': 'ENSG00000310560',
+  'ENSG00000272446': 'ENSG00000293614',
+  'ENSG00000248671': 'ENSG00000293546',
+  'ENSMUSG00000100257': 'ENSMUSG00000121928',
+  'FBgn0011655': 'FBgn0288966',
+  'FBgn0025830': 'FBgn0289323',
+  'FBgn0026749': 'FBgn0288857',
+  'FBgn0027585': 'FBgn0289556',
+  'FBgn0029656': 'FBgn0288967',
+  'FBgn0038893': 'FBgn0289108',
+  'FBgn0039632': 'FBgn0288875',
+  'FBgn0051320': 'FBgn0288976',
+  'FBgn0086613': 'FBgn0289122',
+  'FBgn0263118': 'FBgn0288888'
+}
 # fmt: on
 
 
@@ -9203,6 +9218,217 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     # elif collection_id == "<collection_2_id>":
     #   <custom transformation logic beyond scope of replace_ontology_term>
     # ...
+
+    # cl term replacement CL:0000055 (non-terminally differentiated cell) -> CL:0011026 (progenitor cell) <- this may change depending on contributor
+    if dataset_id == "cd4c96bb-ad66-4e83-ba9e-a7df8790eb12": # public
+        utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000055": "CL:0011026"})
+
+    if dataset_id == "b3a5a10f-b1cb-4e8e-abce-bf345448625b": # public
+        utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000055": "CL:0011026"})
+
+    # self_reported_ethnicity_term_id value replacements per Collection
+    if collection_id == "c672834e-c3e3-49cb-81a5-4c844be4a975":  # public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
+                                                                             "HANCESTRO:0005 || HANCESTRO:0008": "HANCESTRO:0590 || HANCESTRO:0847",
+                                                                             "HANCESTRO:0005 || HANCESTRO:0014": "HANCESTRO:0590 || HANCESTRO:0612",
+                                                                             "HANCESTRO:0005 || HANCESTRO:0013 || HANCESTRO:0568": "HANCESTRO:0590 || HANCESTRO:0846 || HANCESTRO:0568"})
+
+    if collection_id == "e4c9ed14-e560-4900-a3bf-b0f8d2ce6a10": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "0aab20b3-c30c-4606-bd2e-d20dae739c45": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "4b54248f-2165-477c-a027-dd55082e8818": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
+                                                                             "HANCESTRO:0008": "HANCESTRO:0862"})
+
+    if collection_id == "fbc5881f-1ee3-4ffe-8095-35e15e1a08fc": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
+                                                                             "HANCESTRO:0008": "HANCESTRO:0862"})
+
+    if collection_id == "a72afd53-ab92-4511-88da-252fb0e26b9a": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
+                                                                             "HANCESTRO:0008": "HANCESTRO:0862"})
+
+    if collection_id == "e1a9ca56-f2ee-435d-980a-4f49ab7a952b": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
+                                                                             "HANCESTRO:0008": "HANCESTRO:0862"})
+
+    if collection_id == "e2a4a67f-6a18-431a-ab9c-6e77dd31cc80": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "fe0e718d-2ee9-42cc-894b-0b490f437dfd": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0016": "HANCESTRO:0568",
+                                                                             "HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "e1fa9900-3fc9-4b57-9dce-c95724c88716": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "64b24fda-6591-4ce1-89e7-33eb6c43ad7b": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "f17b9205-f61f-4a0f-a65a-73ba91c50ade": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "e9c73b68-e980-49c2-8d0d-1c9cab21507e": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "2a9a17c9-1f61-4877-b384-b8cd5ffa4085": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "964581c3-b5ac-494d-9bd4-0dcb6fb058da": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "0d35c0fd-ef0b-4b70-bce6-645a4660e5fa": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "7c4552fd-8a6d-4da3-9854-2dfa8baca8bf": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0016": "HANCESTRO:0568",
+                                                                             "HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "b953c942-f5d8-434f-9da7-e726ba7c1481": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "625f6bf4-2f33-4942-962e-35243d284837": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "3a5dbf8a-9b3e-4309-b4c5-d8a024f83734": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0010": "HANCESTRO:0568",
+                                                                             "HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "cec4ef8e-1e70-49a2-ae43-1e6bf1fd5978": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "24d42e5e-ce6d-45ff-a66b-a3b3b715deaf": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "03cdc7f4-bd08-49d0-a395-4487c0e5a168": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "ecb739c5-fe0d-4b48-81c6-217c4d64eec4": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "51544e44-293b-4c2b-8c26-560678423380": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "0e54d4de-44f0-4d50-8649-b5c2bbe8f5d1": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "4195ab4c-20bd-4cd3-8b3d-65601277e731": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "77446b76-1c2d-4a71-8e59-0efd4374d98e": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
+                                                                             "HANCESTRO:0008": "HANCESTRO:0862"})
+
+    if collection_id == "c9706a92-0e5f-46c1-96d8-20e42467f287": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "af893e86-8e9f-41f1-a474-ef05359b1fb7": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "db468083-041c-41ca-8f6f-bf991a070adf": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "20eea6c8-9d64-42c9-9b6f-c11b5249e0e9": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "fc77d2ae-247d-44d7-aa24-3f4859254c2c": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "6686ada5-43a8-40b6-9a05-6894503606db": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0010": "HANCESTRO:0568",
+                                                                             "HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "380ade76-e561-49a8-afb2-0f10b39c2c72": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "d36ca85c-3e8b-444c-ba3e-a645040c6185": #open revision
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "436154da-bcf1-4130-9c8b-120ff9a888f2": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "dde06e0f-ab3b-46be-96a2-a8082383c4a1": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0346"})
+
+    if collection_id == "c1241244-b22d-483d-875b-75699efb9f3c": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0462"})
+
+    if collection_id == "4d74781b-8186-4c9a-b659-ff4dc4601d91": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0462"})
+
+    if collection_id == "e33ffcd3-7cbf-4b8c-b0f4-85587ad5019a": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0462"})
+
+    if collection_id == "7681c7d7-0168-4892-a547-6f02a6430ace": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0462"})
+
+    if collection_id == "7d7cabfd-1d1f-40af-96b7-26a0825a306d": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
+                                                                             "HANCESTRO:0017": "HANCESTRO:0574",
+                                                                             "HANCESTRO:0008": "HANCESTRO:0862"})
+
+    if collection_id == "05e3d0fc-c9dd-4f14-9163-2b242b3bb5c2": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
+                                                                             "HANCESTRO:0008": "HANCESTRO:0862"})
+
+    if collection_id == "48c15b0c-6039-4e0f-9668-b6b3c0b830ad": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
+                                                                             "HANCESTRO:0008": "HANCESTRO:0862"})
+
+    if collection_id == "0cbf8ef8-87bd-4b51-8521-ec3f68183e11": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
+                                                                             "HANCESTRO:0008": "HANCESTRO:0862"})
+
+    if collection_id == "0f7d022a-46c7-4e64-be4c-e34adbb78089": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
+                                                                             "HANCESTRO:0008": "HANCESTRO:0862"})
+
+    if collection_id == "4c6eaf5c-6d57-4c76-b1e9-60df8c655f1e": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
+                                                                             "HANCESTRO:0008": "HANCESTRO:0862"})
+
+    if collection_id == "ba84c7ba-8d8c-4720-a76e-3ee37dc89f0b": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if collection_id == "b9fc3d70-5a72-4479-a046-c2cc1ab19efc": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
+                                                                             "HANCESTRO:0008": "HANCESTRO:0862"})
+
+    if collection_id == "2f75d249-1bec-459b-bf2b-b86221097ced": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0462"})
+
+    if collection_id == "6f6d381a-7701-4781-935c-db10d30de293": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0462"})
+
+    if collection_id == "21bbfaec-6958-46bc-b1cd-1535752f6304": #public
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0014 || HANCESTRO:0590": "HANCESTRO:0612 || HANCESTRO:0590"})
+
+    if collection_id == "1ca90a2d-2943-483d-b678-b809bf464c30": #public
+        utils.replace_ontology_term(dataset.obs,"self_reported_ethnicity", {"HANCESTRO:0013 || HANCESTRO:0014": "HANCESTRO:0846 || HANCESTRO:0612"})
+
+    # for private collection 2fb8ebc0-8b2d-4eec-9a4d-688f0067e696 - 2 datasets, there are multiple term and single term ethnicities
+    if dataset.uns['title'] == "Neck_adipose_JDC_QC": #private 1st dataset in collection
+        utils.replace_ontology_term(dataset.obs,"self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
+                                                                            "HANCESTRO:0005 || HANCESTRO:0013":"HANCESTRO:0590 || HANCESTRO:0846"})
+
+    if dataset.uns['title'] == "Neck_adipose_UCLA_QC": #private 2nd dataset in collection
+        utils.replace_ontology_term(dataset.obs,"self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
+                                                                            "HANCESTRO:0005 || HANCESTRO:0013":"HANCESTRO:0590 || HANCESTRO:0846"})
+
+    # tissue_type replace cell culture to primary cell culture
+    if "cell culture" in dataset.obs["tissue_type"].cat.categories:
+        if dataset.obs["tissue_type"].dtype != "category":
+            dataset.obs["tissue_type"] = dataset.obs["tissue_type"].astype("category")
+
+        # add new term to categories
+        dataset.obs["tissue_type"] = dataset.obs["tissue_type"].cat.add_categories("primary cell culture")
+        # replace in dataset
+        dataset.obs.loc[dataset.obs["tissue_type"] == "cell culture", "tissue_type"] = "primary cell culture"
+        # remove deprecated_term from category
+        dataset.obs["tissue_type"] = dataset.obs["tissue_type"].cat.remove_categories("cell culture")
 
     if GENCODE_MAPPER:
         dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
