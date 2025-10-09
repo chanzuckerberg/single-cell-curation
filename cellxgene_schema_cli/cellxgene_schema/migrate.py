@@ -9301,11 +9301,11 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         )
 
 
-    # cl term replacement CL:0000055 (non-terminally differentiated cell) -> CL:0011026 (progenitor cell) <- this may change depending on contributor
-    if dataset_id == "cd4c96bb-ad66-4e83-ba9e-a7df8790eb12": # public
+    # cl term replacement per dataset
+    if dataset_id == "cd4c96bb-ad66-4e83-ba9e-a7df8790eb12":
         utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000055": "CL:0011026"})
 
-    if dataset_id == "b3a5a10f-b1cb-4e8e-abce-bf345448625b": # public
+    if dataset_id == "b3a5a10f-b1cb-4e8e-abce-bf345448625b":
         utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000055": "CL:0011026"})
 
 
@@ -9314,16 +9314,16 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         mapping = ETHNICITY_MAP[collection_id]
         utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", mapping)
 
-    # for private collection - 2 datasets, there are multiple term and single term ethnicities
-    if dataset.uns['title'] == "Neck_adipose_JDC_QC": #private 1st dataset in collection
+    # self_reported_ethnicity_term_id value replacements for private collection - 2 datasets
+    if dataset.uns['title'] == "Neck_adipose_JDC_QC":
         utils.replace_ontology_term(dataset.obs,"self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
                                                                             "HANCESTRO:0005 || HANCESTRO:0013":"HANCESTRO:0590 || HANCESTRO:0846"})
 
-    if dataset.uns['title'] == "Neck_adipose_UCLA_QC": #private 2nd dataset in collection
+    if dataset.uns['title'] == "Neck_adipose_UCLA_QC":
         utils.replace_ontology_term(dataset.obs,"self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
                                                                             "HANCESTRO:0005 || HANCESTRO:0013":"HANCESTRO:0590 || HANCESTRO:0846"})
 
-    # tissue_type replace cell culture to primary cell culture
+    # tissue_type replacement cell culture to primary cell culture
     if "cell culture" in dataset.obs["tissue_type"].cat.categories:
         if dataset.obs["tissue_type"].dtype != "category":
             dataset.obs["tissue_type"] = dataset.obs["tissue_type"].astype("category")
