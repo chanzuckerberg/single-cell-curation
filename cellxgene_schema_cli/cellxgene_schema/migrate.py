@@ -9276,6 +9276,23 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         )
 
 
+    # updates per single-cell-curation issue 1364
+    # need to update before changing cell culture to primary cell culture below
+    dataset_cell_line_updates = {
+        "ca421096-6240-4cee-8c12-d20899b3e005": "CVCL_0060",    # H1299
+        "4b9e0a15-c006-45d9-860f-b8a43ccf7d9d": "CVCL_0609",    # Calu-3
+        "fe2479fd-daff-41a8-97dc-a50457ab1871": "CVCL_0031",    # MCF-7
+        "38a78e91-e361-45c8-bae3-1d6d5108d18e": "CVCL_0004",    # K-562
+        "108c2b65-4ea9-4792-8b5b-451842faf35b": "CVCL_0023",    # A-549
+    }
+
+    if dataset_id in dataset_cell_line_updates:
+        utils.update_cell_line(
+            dataset.obs,
+            dataset_cell_line_updates[dataset_id]
+        )
+
+
     # cl term replacement CL:0000055 (non-terminally differentiated cell) -> CL:0011026 (progenitor cell) <- this may change depending on contributor
     if dataset_id == "cd4c96bb-ad66-4e83-ba9e-a7df8790eb12": # public
         utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000055": "CL:0011026"})
