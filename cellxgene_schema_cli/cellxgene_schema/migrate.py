@@ -23,6 +23,14 @@ ONTOLOGY_TERM_OBS_MAPS = {
     "disease": {
     },
     "self_reported_ethnicity": {
+        "HANCESTRO:0008": "HANCESTRO:0847",
+        "HANCESTRO:0006": "HANCESTRO:0848",
+        "HANCESTRO:0009": "HANCESTRO:0849",
+        "HANCESTRO:0007": "HANCESTRO:0850",
+        "HANCESTRO:0015": "HANCESTRO:0852",
+        "HANCESTRO:0013": "HANCESTRO:0846",
+        "HANCESTRO:0014": "HANCESTRO:0612",
+        "HANCESTRO:0286": "HANCESTRO:0851"
     },
     "sex": {
     },
