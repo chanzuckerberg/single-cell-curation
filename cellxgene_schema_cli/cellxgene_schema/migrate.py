@@ -9199,8 +9199,9 @@ GENCODE_MAPPER = {
 }
 # fmt: on
 
-hancestro_file = "migrate_files/schema7_hancestro_mapping.json"
-ETHNICITY_MAP = json.load(open(hancestro_file), "r")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+with open(os.path.join(BASE_DIR, "migrate_files/schema7_hancestro_mapping.json"), "r") as file:
+    ETHNICITY_MAP = json.load(file)
 
 ethnicity_terms_to_unknown = ["HANCESTRO:0005", "HANCESTRO:0010", "HANCESTRO:0016", "HANCESTRO:0017"]
 
