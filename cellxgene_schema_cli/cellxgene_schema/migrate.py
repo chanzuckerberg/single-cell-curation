@@ -9323,6 +9323,19 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         utils.replace_ontology_term(dataset.obs,"self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
                                                                             "HANCESTRO:0005 || HANCESTRO:0013":"HANCESTRO:0590 || HANCESTRO:0846"})
 
+    # self_reported_ethnicity_term_id value replacements for open revision - 4 datasets
+    if dataset.uns['title'] == "Fallopian tube RNA":
+        utils.replace_ontology_term(dataset.obs,"self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if dataset.uns['title'] == "Fallopian tube ATAC":
+        utils.replace_ontology_term(dataset.obs,"self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if dataset.uns['title'] == "Ovary RNA":
+        utils.replace_ontology_term(dataset.obs,"self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    if dataset.uns['title'] == "Ovary ATAC":
+        utils.replace_ontology_term(dataset.obs,"self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
     # tissue_type replacement cell culture to primary cell culture
     if "cell culture" in dataset.obs["tissue_type"].cat.categories:
         if dataset.obs["tissue_type"].dtype != "category":
