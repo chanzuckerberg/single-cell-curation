@@ -9238,7 +9238,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
             }
         )
 
-    if collection_id == "398e34a9-8736-4b27-a9a7-31a47a67f446":
+    if collection_id == "84ce6837-548d-4a1f-919f-0bc0d9a3952f":
         utils.map_ontology_term(
             dataset.obs,
             "disease",
