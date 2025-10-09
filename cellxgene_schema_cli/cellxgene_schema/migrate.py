@@ -9219,12 +9219,67 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     #   <custom transformation logic beyond scope of replace_ontology_term>
     # ...
 
+    # ontology bumps per issue 1416
+    # public collections
+    if collection_id == "398e34a9-8736-4b27-a9a7-31a47a67f446":
+        utils.map_ontology_term(
+            dataset.obs,
+            "assay",
+            "kit",
+            {
+                "Fluent-rep1": "EFO:0900000",
+                "Fluent-rep2": "EFO:0900000",
+                "Fluent-rep3": "EFO:0900000",
+                "Honeycomb-rep1": "EFO:0900002",
+                "Honeycomb-rep2": "EFO:0900002",
+                "Scipio-rep1": "EFO:0900001",
+                "Scipio-rep2": "EFO:0900001",
+
+            }
+        )
+
+    if collection_id == "398e34a9-8736-4b27-a9a7-31a47a67f446":
+        utils.map_ontology_term(
+            dataset.obs,
+            "disease",
+            "donor_id",
+            {
+                "Donor_872": "MONDO:7770001",
+                "Donor_1104": "MONDO:7770001",
+                "Donor_463": "MONDO:7770001",
+                "Donor_1114": "MONDO:1060151",
+                "Donor_251": "MONDO:1060151",
+                "Donor_1191": "MONDO:1060151",
+                "Donor_1119": "MONDO:1060151",
+                "Donor_1294": "MONDO:1060152",
+                "Donor_1205": "MONDO:1060152",
+
+            }
+        )
+
+    # private collection ontology updates
+    if "https://doi.org/10.1038/s41467-021-25125-1" in dataset.uns["citation"]:
+        utils.replace_ontology_term(
+            dataset.obs,
+            "cell_type",
+            {"CL:0000128": "CL:4072003"}
+        )
+
+    if dataset.uns["title"] == "Time-resolved single-cell analysis of Brca1 associated mammary tumourigenesis reveals aberrant differentiation of luminal progenitors":
+        utils.replace_ontology_term(
+            dataset.obs,
+            "cell_type",
+            {"CL:0000451": "CL:4047054"}
+        )
+
+
     # cl term replacement CL:0000055 (non-terminally differentiated cell) -> CL:0011026 (progenitor cell) <- this may change depending on contributor
     if dataset_id == "cd4c96bb-ad66-4e83-ba9e-a7df8790eb12": # public
         utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000055": "CL:0011026"})
 
     if dataset_id == "b3a5a10f-b1cb-4e8e-abce-bf345448625b": # public
         utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000055": "CL:0011026"})
+
 
     # self_reported_ethnicity_term_id value replacements per Collection
     if collection_id == "c672834e-c3e3-49cb-81a5-4c844be4a975":  # public
