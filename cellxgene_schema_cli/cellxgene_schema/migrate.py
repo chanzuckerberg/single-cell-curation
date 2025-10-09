@@ -9343,7 +9343,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     for dep_term in ethnicity_terms_to_unknown:
         if dep_term in dataset.obs["self_reported_ethnicity_term_id"].cat.categories:
             if dataset.obs["self_reported_ethnicity_term_id"].dtype != "category":
-            dataset.obs["self_reported_ethnicity_term_id"] = dataset.obs["self_reported_ethnicity_term_id"].astype("category")
+                dataset.obs["self_reported_ethnicity_term_id"] = dataset.obs["self_reported_ethnicity_term_id"].astype("category")
 
             # add "unknown" to categories
             if "unknown" not in dataset.obs["self_reported_ethnicity_term_id"].cat.categories:
