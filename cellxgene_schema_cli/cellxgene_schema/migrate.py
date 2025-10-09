@@ -9182,20 +9182,20 @@ DEPRECATED_FEATURE_IDS = [
 
 # Dictionary for CURATOR-DEFINED remapping of deprecated feature IDs, if any, to new feature IDs.
 GENCODE_MAPPER = {
-  'ENSG00000148362': 'ENSG00000310560',
-  'ENSG00000272446': 'ENSG00000293614',
-  'ENSG00000248671': 'ENSG00000293546',
-  'ENSMUSG00000100257': 'ENSMUSG00000121928',
-  'FBgn0011655': 'FBgn0288966',
-  'FBgn0025830': 'FBgn0289323',
-  'FBgn0026749': 'FBgn0288857',
-  'FBgn0027585': 'FBgn0289556',
-  'FBgn0029656': 'FBgn0288967',
-  'FBgn0038893': 'FBgn0289108',
-  'FBgn0039632': 'FBgn0288875',
-  'FBgn0051320': 'FBgn0288976',
-  'FBgn0086613': 'FBgn0289122',
-  'FBgn0263118': 'FBgn0288888'
+  "ENSG00000148362": "ENSG00000310560",
+  "ENSG00000272446": "ENSG00000293614",
+  "ENSG00000248671": "ENSG00000293546",
+  "ENSMUSG00000100257": "ENSMUSG00000121928",
+  "FBgn0011655": "FBgn0288966",
+  "FBgn0025830": "FBgn0289323",
+  "FBgn0026749": "FBgn0288857",
+  "FBgn0027585": "FBgn0289556",
+  "FBgn0029656": "FBgn0288967",
+  "FBgn0038893": "FBgn0289108",
+  "FBgn0039632": "FBgn0288875",
+  "FBgn0051320": "FBgn0288976",
+  "FBgn0086613": "FBgn0289122",
+  "FBgn0263118": "FBgn0288888"
 }
 # fmt: on
 
@@ -9306,38 +9306,65 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     # cl term replacement per dataset
     if dataset_id == "cd4c96bb-ad66-4e83-ba9e-a7df8790eb12":
-        utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000055": "CL:0011026"})
+        utils.replace_ontology_term(
+            dataset.obs,
+            "cell_type",
+            {"CL:0000055": "CL:0011026"})
 
     if dataset_id == "b3a5a10f-b1cb-4e8e-abce-bf345448625b":
-        utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000055": "CL:0011026"})
+        utils.replace_ontology_term(
+            dataset.obs,
+            "cell_type",
+            {"CL:0000055": "CL:0011026"})
 
 
     # self_reported_ethnicity_term_id value replacements per Collection
     if collection_id in ETHNICITY_MAP:
         mapping = ETHNICITY_MAP[collection_id]
-        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", mapping)
+        utils.replace_ontology_term(
+            dataset.obs,
+            "self_reported_ethnicity",
+            mapping)
 
     # self_reported_ethnicity_term_id value replacements for private collection - 2 datasets
-    if dataset.uns['title'] == "Neck_adipose_JDC_QC":
-        utils.replace_ontology_term(dataset.obs,"self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
-                                                                            "HANCESTRO:0005 || HANCESTRO:0013":"HANCESTRO:0590 || HANCESTRO:0846"})
+    if dataset.uns["title"] == "Neck_adipose_JDC_QC":
+        utils.replace_ontology_term(
+            dataset.obs,
+            "self_reported_ethnicity",
+            {"HANCESTRO:0005": "HANCESTRO:0590",
+            "HANCESTRO:0005 || HANCESTRO:0013":"HANCESTRO:0590 || HANCESTRO:0846"})
 
-    if dataset.uns['title'] == "Neck_adipose_UCLA_QC":
-        utils.replace_ontology_term(dataset.obs,"self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
-                                                                            "HANCESTRO:0005 || HANCESTRO:0013":"HANCESTRO:0590 || HANCESTRO:0846"})
+    if dataset.uns["title"] == "Neck_adipose_UCLA_QC":
+        utils.replace_ontology_term(
+            dataset.obs,
+            "self_reported_ethnicity",
+            {"HANCESTRO:0005": "HANCESTRO:0590",
+            "HANCESTRO:0005 || HANCESTRO:0013":"HANCESTRO:0590 || HANCESTRO:0846"})
 
     # self_reported_ethnicity_term_id value replacements for open revision - 4 datasets
-    if dataset.uns['title'] == "Fallopian tube RNA":
-        utils.replace_ontology_term(dataset.obs,"self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+    if dataset.uns["title"] == "Fallopian tube RNA":
+        utils.replace_ontology_term(
+            dataset.obs,
+            "self_reported_ethnicity",
+            {"HANCESTRO:0005": "HANCESTRO:0590"})
 
-    if dataset.uns['title'] == "Fallopian tube ATAC":
-        utils.replace_ontology_term(dataset.obs,"self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+    if dataset.uns["title"] == "Fallopian tube ATAC":
+        utils.replace_ontology_term(
+            dataset.obs,
+            "self_reported_ethnicity",
+            {"HANCESTRO:0005": "HANCESTRO:0590"})
 
-    if dataset.uns['title'] == "Ovary RNA":
-        utils.replace_ontology_term(dataset.obs,"self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+    if dataset.uns["title"] == "Ovary RNA":
+        utils.replace_ontology_term(
+            dataset.obs,
+            "self_reported_ethnicity",
+            {"HANCESTRO:0005": "HANCESTRO:0590"})
 
-    if dataset.uns['title'] == "Ovary ATAC":
-        utils.replace_ontology_term(dataset.obs,"self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+    if dataset.uns["title"] == "Ovary ATAC":
+        utils.replace_ontology_term(
+            dataset.obs,
+            "self_reported_ethnicity",
+            {"HANCESTRO:0005": "HANCESTRO:0590"})
 
     # self_reported_ethnicity_term_id value replacement for remaining deprecated terms to "unknown"
     for dep_term in ethnicity_terms_to_unknown:
