@@ -1,5 +1,6 @@
 import anndata as ad
 import dask
+import json
 
 from . import utils
 
@@ -9190,6 +9191,8 @@ GENCODE_MAPPER = {
 }
 # fmt: on
 
+hancestro_file = "migrate_files/schema7_hancestro_mapping.json"
+ETHNICITY_MAP = json.load(open(hancestro_file), "r")
 
 def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
@@ -9282,14 +9285,9 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
 
     # self_reported_ethnicity_term_id value replacements per Collection
-    if collection_id == "c672834e-c3e3-49cb-81a5-4c844be4a975":  # public
-        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590",
-                                                                             "HANCESTRO:0005 || HANCESTRO:0008": "HANCESTRO:0590 || HANCESTRO:0847",
-                                                                             "HANCESTRO:0005 || HANCESTRO:0014": "HANCESTRO:0590 || HANCESTRO:0612",
-                                                                             "HANCESTRO:0005 || HANCESTRO:0013 || HANCESTRO:0568": "HANCESTRO:0590 || HANCESTRO:0846 || HANCESTRO:0568"})
-
-    if collection_id == "e4c9ed14-e560-4900-a3bf-b0f8d2ce6a10": #public
-        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+    if collection_id in ETHNICITY_MAP:
+        mapping = ETHNICITY_MAP[collection_id]
+        utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", mapping)
 
     # for private collection - 2 datasets, there are multiple term and single term ethnicities
     if dataset.uns['title'] == "Neck_adipose_JDC_QC": #private 1st dataset in collection
