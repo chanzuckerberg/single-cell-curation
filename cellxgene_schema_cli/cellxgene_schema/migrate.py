@@ -9202,6 +9202,8 @@ GENCODE_MAPPER = {
 hancestro_file = "migrate_files/schema7_hancestro_mapping.json"
 ETHNICITY_MAP = json.load(open(hancestro_file), "r")
 
+ethnicity_terms_to_unknown = ["HANCESTRO:0005", "HANCESTRO:0010", "HANCESTRO:0016", "HANCESTRO:0017"]
+
 def migrate(input_file, output_file, collection_id, dataset_id):
     print(f"Converting {input_file} into {output_file}")
 
@@ -9335,6 +9337,21 @@ def migrate(input_file, output_file, collection_id, dataset_id):
 
     if dataset.uns['title'] == "Ovary ATAC":
         utils.replace_ontology_term(dataset.obs,"self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
+
+    # self_reported_ethnicity_term_id value replacement for remaining deprecated terms to "unknown"
+    for dep_term in ethnicity_terms_to_unknown:
+        if dep_term in dataset.obs["self_reported_ethnicity_term_id"].cat.categories:
+            if dataset.obs["self_reported_ethnicity_term_id"].dtype != "category":
+            dataset.obs["self_reported_ethnicity_term_id"] = dataset.obs["self_reported_ethnicity_term_id"].astype("category")
+
+            # add "unknown" to categories
+            if "unknown" not in dataset.obs["self_reported_ethnicity_term_id"].cat.categories:
+                dataset.obs["self_reported_ethnicity_term_id"] = dataset.obs["self_reported_ethnicity_term_id"].cat.add_categories("unknown")
+
+            # replace in dataset
+            dataset.obs.loc[dataset.obs["self_reported_ethnicity_term_id"] == dep_term, "self_reported_ethnicity_term_id"] = "unknown"
+            # remove deprecated_term from category
+            dataset.obs["self_reported_ethnicity_term_id"] = dataset.obs["self_reported_ethnicity_term_id"].cat.remove_categories(dep_term)
 
     # tissue_type replacement cell culture to primary cell culture
     if "cell culture" in dataset.obs["tissue_type"].cat.categories:
