@@ -133,6 +133,37 @@ def remap_deprecated_features(*, adata: ad.AnnData, remapped_features: Dict[str,
     return adata
 
 
+def update_cell_line(dataframe, cellosaurus_term):
+    cell_line_remapping = {
+        "development_stage_ontology_term_id": "na",
+        "sex_ontology_term_id": "na",
+        "self_reported_ethnicity_ontology_term_id": "na",
+        "donor_id": "na",
+        "tissue_ontology_term_id": cellosaurus_term,
+    }
+
+    # first update all "cell culture" values to "cell line"
+    if "cell line" not in dataframe["tissue_type"].cat.categories:
+        dataframe["tissue_type"] = dataframe["tissue_type"].cat.add_categories("cell line")
+
+    # replace in dataset
+    dataframe.loc[dataframe["tissue_type"] == "cell culture", "tissue_type"] = "cell line"
+
+    # remove deprecated_term from category
+    dataframe["tissue_type"] = dataframe["tissue_type"].cat.remove_unused_categories()
+
+    # per columns that now require na or cell_line info, set values appropriately
+    for column, new_value in cell_line_remapping.items():
+        if dataframe[column].dtype != "category":
+            dataframe[column] = dataframe[column].astype("category")
+
+        if new_value not in dataframe[column].cat.categories:
+            dataframe[column] = dataframe[column].cat.add_categories(new_value)
+
+        dataframe.loc[dataframe["tissue_type"] == "cell line", column] = new_value
+        dataframe[column] = dataframe[column].cat.remove_unused_categories()
+
+
 def getattr_anndata(adata: ad.AnnData, attr: str = None):
     """
     same as getattr but handles the special case of "raw.var" for an anndata.AndData object
