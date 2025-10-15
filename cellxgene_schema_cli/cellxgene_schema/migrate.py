@@ -15,14 +15,6 @@ from . import utils
 # If Curators have non-deprecated term changes to apply to all datasets in the corpus where applicable,
 # add them here.
 ONTOLOGY_TERM_OBS_MAPS = {
-    "assay": {
-    },
-    "cell_type": {
-    },
-    "development_stage": {
-    },
-    "disease": {
-    },
     "self_reported_ethnicity": {
         "HANCESTRO:0008": "HANCESTRO:0847",
         "HANCESTRO:0006": "HANCESTRO:0848",
@@ -32,16 +24,10 @@ ONTOLOGY_TERM_OBS_MAPS = {
         "HANCESTRO:0013": "HANCESTRO:0846",
         "HANCESTRO:0014": "HANCESTRO:0612",
         "HANCESTRO:0286": "HANCESTRO:0851"
-    },
-    "sex": {
-    },
-    "tissue": {
-    },
+    }
 }
 
 ONTOLOGY_TERM_UNS_MAPS = {
-    "organism": {
-    },
 }
 
 DEPRECATED_FEATURE_IDS = [
@@ -9272,7 +9258,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         )
 
     # private collection ontology updates
-    if "https://doi.org/10.1038/s41467-021-25125-1" in dataset.uns.get("citation"):
+    if "https://doi.org/10.1038/s41467-021-25125-1" in dataset.uns.get("citation", []):
         utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000128": "CL:4072003"})
 
     if (
