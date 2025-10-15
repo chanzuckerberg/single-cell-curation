@@ -9272,11 +9272,11 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         )
 
     # private collection ontology updates
-    if "https://doi.org/10.1038/s41467-021-25125-1" in dataset.uns["citation"]:
+    if "https://doi.org/10.1038/s41467-021-25125-1" in dataset.uns.get("citation"):
         utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000128": "CL:4072003"})
 
     if (
-        dataset.uns["title"]
+        dataset.uns.get("title")
         == "Time-resolved single-cell analysis of Brca1 associated mammary tumourigenesis reveals aberrant differentiation of luminal progenitors"
     ):
         utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000451": "CL:4047054"})
@@ -9307,7 +9307,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", mapping)
 
     # self_reported_ethnicity_term_id value replacements for private collection - 2 datasets
-    if dataset.uns["title"] == "Neck_adipose_JDC_QC":
+    if dataset.uns.get("title") == "Neck_adipose_JDC_QC":
         utils.replace_ontology_term(
             dataset.obs,
             "self_reported_ethnicity",
@@ -9317,7 +9317,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
             },
         )
 
-    if dataset.uns["title"] == "Neck_adipose_UCLA_QC":
+    if dataset.uns.get("title") == "Neck_adipose_UCLA_QC":
         utils.replace_ontology_term(
             dataset.obs,
             "self_reported_ethnicity",
@@ -9328,16 +9328,16 @@ def migrate(input_file, output_file, collection_id, dataset_id):
         )
 
     # self_reported_ethnicity_term_id value replacements for open revision - 4 datasets
-    if dataset.uns["title"] == "Fallopian tube RNA":
+    if dataset.uns.get("title") == "Fallopian tube RNA":
         utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
 
-    if dataset.uns["title"] == "Fallopian tube ATAC":
+    if dataset.uns.get("title") == "Fallopian tube ATAC":
         utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
 
-    if dataset.uns["title"] == "Ovary RNA":
+    if dataset.uns.get("title") == "Ovary RNA":
         utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
 
-    if dataset.uns["title"] == "Ovary ATAC":
+    if dataset.uns.get("title") == "Ovary ATAC":
         utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
 
     # self_reported_ethnicity_term_id value replacement for remaining deprecated terms to "unknown"
