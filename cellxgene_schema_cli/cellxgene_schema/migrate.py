@@ -9301,12 +9301,12 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     if dataset_id == "b3a5a10f-b1cb-4e8e-abce-bf345448625b":
         utils.replace_ontology_term(dataset.obs, "cell_type", {"CL:0000055": "CL:0011026"})
 
-    # self_reported_ethnicity_term_id value replacements per Collection
+    # self_reported_ethnicity_ontology_term_id value replacements per Collection
     if collection_id in ETHNICITY_MAP:
         mapping = ETHNICITY_MAP[collection_id]
         utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", mapping)
 
-    # self_reported_ethnicity_term_id value replacements for private collection - 2 datasets
+    # self_reported_ethnicity_ontology_term_id value replacements for private collection - 2 datasets
     if dataset.uns.get("title") == "Neck_adipose_JDC_QC":
         utils.replace_ontology_term(
             dataset.obs,
@@ -9327,7 +9327,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
             },
         )
 
-    # self_reported_ethnicity_term_id value replacements for open revision - 4 datasets
+    # self_reported_ethnicity_ontology_term_id value replacements for open revision - 4 datasets
     if dataset.uns.get("title") == "Fallopian tube RNA":
         utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
 
@@ -9340,27 +9340,28 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     if dataset.uns.get("title") == "Ovary ATAC":
         utils.replace_ontology_term(dataset.obs, "self_reported_ethnicity", {"HANCESTRO:0005": "HANCESTRO:0590"})
 
-    # self_reported_ethnicity_term_id value replacement for remaining deprecated terms to "unknown"
+    # self_reported_ethnicity_ontology_term_id value replacement for remaining deprecated terms to "unknown"
     for dep_term in ethnicity_terms_to_unknown:
-        if dep_term in dataset.obs["self_reported_ethnicity_term_id"].cat.categories:
-            if dataset.obs["self_reported_ethnicity_term_id"].dtype != "category":
-                dataset.obs["self_reported_ethnicity_term_id"] = dataset.obs["self_reported_ethnicity_term_id"].astype(
-                    "category"
-                )
+        if dep_term in dataset.obs["self_reported_ethnicity_ontology_term_id"].cat.categories:
+            if dataset.obs["self_reported_ethnicity_ontology_term_id"].dtype != "category":
+                dataset.obs["self_reported_ethnicity_ontology_term_id"] = dataset.obs[
+                    "self_reported_ethnicity_ontology_term_id"
+                ].astype("category")
 
             # add "unknown" to categories
-            if "unknown" not in dataset.obs["self_reported_ethnicity_term_id"].cat.categories:
-                dataset.obs["self_reported_ethnicity_term_id"] = dataset.obs[
-                    "self_reported_ethnicity_term_id"
+            if "unknown" not in dataset.obs["self_reported_ethnicity_ontology_term_id"].cat.categories:
+                dataset.obs["self_reported_ethnicity_ontology_term_id"] = dataset.obs[
+                    "self_reported_ethnicity_ontology_term_id"
                 ].cat.add_categories("unknown")
 
             # replace in dataset
             dataset.obs.loc[
-                dataset.obs["self_reported_ethnicity_term_id"] == dep_term, "self_reported_ethnicity_term_id"
+                dataset.obs["self_reported_ethnicity_ontology_term_id"] == dep_term,
+                "self_reported_ethnicity_ontology_term_id",
             ] = "unknown"
             # remove deprecated_term from category
-            dataset.obs["self_reported_ethnicity_term_id"] = dataset.obs[
-                "self_reported_ethnicity_term_id"
+            dataset.obs["self_reported_ethnicity_ontology_term_id"] = dataset.obs[
+                "self_reported_ethnicity_ontology_term_id"
             ].cat.remove_categories(dep_term)
 
     # tissue_type replacement cell culture to primary cell culture
