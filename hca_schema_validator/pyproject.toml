@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "hca-schema-validator"
+version = "0.1.0"
+description = "HCA schema validation for single-cell datasets"
+authors = ["Clever Canary <dave@clevercanary.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/clevercanary/hca-curation"
+packages = [{include = "hca_schema_validator", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+cellxgene-schema = {path = "../cellxgene_schema_cli", develop = true}
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

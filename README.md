@@ -1,8 +1,13 @@
+> 🔬 **HCA Fork Notice:** This is a Clever Canary fork with HCA-specific validation extensions.  
+> **📖 [See HCA Fork Documentation →](HCA-README.md)** | **📦 [HCA Schema Validator Package →](hca_schema_validator/)**
+
+---
+
 # cellxgene curation tools
 
 [![codecov](https://codecov.io/gh/chanzuckerberg/single-cell-curation/branch/main/graph/badge.svg?token=J8OT7OXKHJ)](https://codecov.io/gh/chanzuckerberg/single-cell-curation)
 
-This repository contains documents and code used by cellxgene's curation team. Issues/suggestions pertaining to datasets and how they interact with cellxgene should be created here. 
+This repository contains documents and code used by cellxgene's curation team. Issues/suggestions pertaining to datasets and how they interact with cellxgene should be created here.
 
 For information/issues about cellxgene and its portal please refer to:
 
@@ -22,7 +27,7 @@ pip install cellxgene-schema
 It can also be installed from the source by cloning this repository and running:
 
 ```
-make install 
+make install
 ```
 
 And you can run the tests with:
@@ -45,9 +50,9 @@ If the validation succeeds, the command returns a zero exit code; otherwise, it 
 
 ---
 
-This experimental validator also offers the option to annotate required columns `cell_type_ontology_term_id` and `tissue_ontology_term_id` in Zebrafish, Fruit Fly, or C. Elegans anndata BEFORE running validation commands above. 
+This experimental validator also offers the option to annotate required columns `cell_type_ontology_term_id` and `tissue_ontology_term_id` in Zebrafish, Fruit Fly, or C. Elegans anndata BEFORE running validation commands above.
 
-This relies on your anndata having the appropriate species-specific ontology terms (e.g. ZFA, FbBT, WBbt) labeled in `organism_cell_type_ontology_term_id` and `organism_tissue_ontology_term_id`, respectively. 
+This relies on your anndata having the appropriate species-specific ontology terms (e.g. ZFA, FbBT, WBbt) labeled in `organism_cell_type_ontology_term_id` and `organism_tissue_ontology_term_id`, respectively.
 
 ```
 cellxgene-schema map-species output.h5ad input.h5ad
@@ -71,14 +76,14 @@ This option SHOULD NOT be used by data contributors.
 
 ## Contributing
 
-Please read our contributing [guidelines](CONTRIBUTING.md) and make sure adhere to the Contributor Covenant [code of conduct](https://github.com/chanzuckerberg/.github/blob/master/CODE_OF_CONDUCT.md). 
+Please read our contributing [guidelines](CONTRIBUTING.md) and make sure adhere to the Contributor Covenant [code of conduct](https://github.com/chanzuckerberg/.github/blob/master/CODE_OF_CONDUCT.md).
 
-## Reporting Security Issues                     
-                                                
+## Reporting Security Issues
+
 Please read our [security reporting policy](SECURITY.md)
 
 ## Code of Conduct
 
 This project adheres to the Contributor Covenant [code of conduct](https://github.com/chanzuckerberg/.github/blob/master/CODE_OF_CONDUCT.md).
-By participating, you are expected to uphold this code. 
+By participating, you are expected to uphold this code.
 Please report unacceptable behavior to [opensource@chanzuckerberg.com](mailto:opensource@chanzuckerberg.com).
