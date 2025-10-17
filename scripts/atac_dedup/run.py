@@ -20,6 +20,7 @@ https://github.com/chanzuckerberg/cellxgene-schema-cli
 An API key can be generated from the Data Portal UI under your user settings.
 
 """
+import concurrent.futures
 import datetime
 import json
 import logging
@@ -59,7 +60,6 @@ def find_atac_collections(collection_ids: List[str]) -> List[Dict]:
     Returns:
         List of collections with ATAC-seq datasets (with updated manifests)
     """
-    import concurrent.futures
 
     collections_with_atac = []
 
@@ -94,7 +94,11 @@ def find_atac_collections(collection_ids: List[str]) -> List[Dict]:
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = [executor.submit(fetch_collection_and_manifests, cid) for cid in collection_ids]
         for future in concurrent.futures.as_completed(futures):
-            result = future.result()
+            try:
+                result = future.result()
+            except Exception as e:
+                logger.error(f"Error fetching collection: {e}")
+                result = None
             if result:
                 collections_with_atac.append(result)
 
@@ -145,118 +149,129 @@ def process_dataset(collection_id: str, dataset: Dict) -> Optional[bool]:
 
 def main():
     """Main execution function."""
+    FIND_ATAC_COLLECTIONS = True
+    CREATE_REVISIONS = True
+    RUN_DEDUPLICATION = True
     # Configuration
-    api_key_path = "./api-prod.key"
+    api_key_path = "./api-staging.key"
 
     logger.info("Starting ATAC-seq deduplication process")
 
     try:
         # Setup API access
-        set_api_access_config(api_key_path, "prod")
+        set_api_access_config(api_key_path, "staging")
 
-        # List the public collection IDs to process
-        public_collection_ids = ["d36ca85c-3e8b-444c-ba3e-a645040c6185", "5e469121-c203-4775-962d-dcf2e5d6a472"]
-        # List the private collection or revision IDs to process
-        private_collection_ids = []
+        if FIND_ATAC_COLLECTIONS:
+            with open("./public_collections_staging.json") as json_file:
+                public_collection_ids = [c["collection_id"] for c in json.load(json_file)]
+            with open("./private_collections_staging.json") as json_file:
+                private_collection_ids = [c["collection_id"] for c in json.load(json_file)]
 
-        # check if the public collections have an ATAC-seq dataset
-        public_collections = find_atac_collections(public_collection_ids)
-        logger.info(f"Found {len(public_collections)} public collections with ATAC-seq data")
-        private_collections = find_atac_collections(private_collection_ids)
-        logger.info(f"Found {len(private_collections)} private collections with ATAC-seq data")
+            # check if the public collections have an ATAC-seq dataset
+            public_collections = find_atac_collections(public_collection_ids)
+            logger.info(f"Found {len(public_collections)} public collections with ATAC-seq data")
+            private_collections = find_atac_collections(private_collection_ids)
+            logger.info(f"Found {len(private_collections)} private collections with ATAC-seq data")
 
-        # save the collections to a json file
-        with open("./atac_collections.json", "w") as json_file:
-            json.dump({"public": public_collections, "private": private_collections}, json_file)
+            # save the collections to a json file
+            with open("./atac_collections.json", "w") as json_file:
+                json.dump({"public": public_collections, "private": private_collections}, json_file)
 
         with open("./atac_collections.json") as json_file:
             collections = json.load(json_file)
         public_collections = collections["public"]
         private_collections = collections["private"]
 
-        # Create revisions for public collections
-        try:
+        if CREATE_REVISIONS:
+            # Create revisions for public collections
+            try:
+                with open("./public_to_revision_map.json") as json_file:
+                    public_revision_mapping = json.load(json_file)
+            except FileNotFoundError:
+                public_revision_mapping = {}
+
+            for collection in public_collections:
+                if collection["collection_id"] in public_revision_mapping:
+                    logger.info(
+                        f"Revision already exists for collection {collection['collection_id']}, skipping creation"
+                    )
+                    continue
+                collection_id = collection["collection_id"]
+                try:
+                    revision_id = create_revision(collection_id)
+                    public_revision_mapping[collection_id] = revision_id
+                    collection["revision_id"] = revision_id
+                    logger.info(f"Created revision {revision_id} for public collection {collection_id}")
+                except Exception as e:
+                    logger.exception(f"Failed to create revision for collection {collection_id}: {e}")
+                    continue
+            with open("./public_to_revision_map.json", "w") as json_file:
+                json.dump(public_revision_mapping, json_file)
+
+        if RUN_DEDUPLICATION:
             with open("./public_to_revision_map.json") as json_file:
                 public_revision_mapping = json.load(json_file)
-        except FileNotFoundError:
-            public_revision_mapping = {}
+            # Process all collections
+            all_collections = public_collections + private_collections
+            successful_collections = []
+            failed_collections = []
 
-        for collection in public_collections:
-            if collection["collection_id"] in public_revision_mapping:
-                logger.info(f"Revision already exists for collection {collection['collection_id']}, skipping creation")
-                continue
-            collection_id = collection["collection_id"]
-            try:
-                revision_id = create_revision(collection_id)
-                public_revision_mapping[collection_id] = revision_id
-                collection["revision_id"] = revision_id
-                logger.info(f"Created revision {revision_id} for public collection {collection_id}")
-            except Exception as e:
-                logger.exception(f"Failed to create revision for collection {collection_id}: {e}")
-                continue
-        with open("./public_to_revision_map.json", "w") as json_file:
-            json.dump(public_revision_mapping, json_file)
+            # for collection in [collections["private"][3]]:
+            for collection in all_collections:
+                collection_id = collection["collection_id"]
+                is_public = collection["visibility"] == "PUBLIC"
 
-        # Process all collections
-        all_collections = public_collections + private_collections
-        successful_collections = []
-        failed_collections = []
+                # Use revision ID for public collections
+                if is_public and collection_id in public_revision_mapping:
+                    working_collection_id = public_revision_mapping[collection_id]
+                    logger.info(f"Processing public collection {collection_id} via revision {working_collection_id}")
+                else:
+                    working_collection_id = collection_id
+                    logger.info(f"Processing private collection {collection_id}")
 
-        for collection in all_collections:
-            collection_id = collection["collection_id"]
-            is_public = collection["visibility"] == "PUBLIC"
+                # Get ATAC datasets from this collection
+                atac_datasets = [dataset for dataset in collection["datasets"] if dataset.get("manifest")]
 
-            # Use revision ID for public collections
-            if is_public and collection_id in public_revision_mapping:
-                working_collection_id = public_revision_mapping[collection_id]
-                logger.info(f"Processing public collection {collection_id} via revision {working_collection_id}")
-            else:
-                working_collection_id = collection_id
-                logger.info(f"Processing private collection {collection_id}")
+                if not atac_datasets:
+                    continue
 
-            # Get ATAC datasets from this collection
-            atac_datasets = [dataset for dataset in collection["datasets"] if dataset.get("manifest")]
+                logger.info(f"Processing {len(atac_datasets)} ATAC datasets in collection {collection_id}")
 
-            if not atac_datasets:
-                continue
+                collection_success = True
+                for dataset in atac_datasets:
+                    success = process_dataset(working_collection_id, dataset)
+                    if success is False:
+                        collection_success = False
+                    elif success is None:
+                        logger.info(f"No fragment files found in dataset {dataset['dataset_id']}, skipping")
 
-            logger.info(f"Processing {len(atac_datasets)} ATAC datasets in collection {collection_id}")
+                if collection_success:
+                    successful_collections.append(collection_id)
+                    logger.info(f"Successfully processed collection {collection_id}")
+                else:
+                    failed_collections.append(collection_id)
+                    logger.error(f"Failed to process collection {collection_id}")
 
-            collection_success = True
-            for dataset in atac_datasets:
-                success = process_dataset(working_collection_id, dataset)
-                if success is False:
-                    collection_success = False
-                elif success is None:
-                    logger.info(f"No fragment files found in dataset {dataset['dataset_id']}, skipping")
+            # Summary
+            logger.info("ATAC-seq deduplication process completed")
+            logger.info(f"Successfully processed collections: {len(successful_collections)}")
+            logger.info(f"Failed collections: {len(failed_collections)}")
 
-            if collection_success:
-                successful_collections.append(collection_id)
-                logger.info(f"Successfully processed collection {collection_id}")
-            else:
-                failed_collections.append(collection_id)
-                logger.error(f"Failed to process collection {collection_id}")
+            # Print a link to the collections to be published
+            logger.info("Links to processed public collections:")
+            for collection_id in successful_collections:
+                if collection_id in public_revision_mapping:
+                    revision_id = public_revision_mapping[collection_id]
+                    logger.info(f"https://cellxgene.cziscience.com/collections/{revision_id}")
 
-        # Summary
-        logger.info("ATAC-seq deduplication process completed")
-        logger.info(f"Successfully processed collections: {len(successful_collections)}")
-        logger.info(f"Failed collections: {len(failed_collections)}")
+            logger.info("Links to processed private collections:")
+            for collection_id in successful_collections:
+                if collection_id not in public_revision_mapping:
+                    logger.info(f"https://cellxgene.cziscience.com/collections/{collection_id}")
 
-        # Print a link to the collections to be published
-        logger.info("Links to processed public collections:")
-        for collection_id in successful_collections:
-            if collection_id in public_revision_mapping:
-                revision_id = public_revision_mapping[collection_id]
-                logger.info(f"https://cellxgene.cziscience.com/collections/{revision_id}")
-
-        logger.info("Links to processed private collections:")
-        for collection_id in successful_collections:
-            if collection_id not in public_revision_mapping:
-                logger.info(f"https://cellxgene.cziscience.com/collections/{collection_id}")
-
-        if failed_collections:
-            logger.error(f"Failed collection IDs: {failed_collections}")
-            sys.exit(1)
+            if failed_collections:
+                logger.error(f"Failed collection IDs: {failed_collections}")
+                sys.exit(1)
 
     except Exception as e:
         logger.exception(f"Script failed with error: {e}")
@@ -273,7 +288,11 @@ def get_smallest_fragment_file():
     set_api_access_config(api_key_path, "staging")
 
     # Find collections with ATAC-seq data
-    public_collections, private_collections = find_atac_collections()
+    with open("./atac_collections.json") as json_file:
+        collections = json.load(json_file)
+    public_collections = collections["public"]
+    private_collections = collections["private"]
+    # public_collections, private_collections = find_atac_collections()
 
     # Process all collections
     all_collections = public_collections + private_collections
