@@ -3,7 +3,7 @@
 
 Contact: brianraymor@chanzuckerberg.com
 
-Document Status: _Drafting_
+Document Status: _Approved_
 
 Version: 7.0.0
 
