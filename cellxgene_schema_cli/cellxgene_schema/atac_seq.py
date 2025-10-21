@@ -428,19 +428,17 @@ def index_fragment(
     logger.info(f"Line count validation passed: {original_line_count} lines in both original and output files")
 
 
-SORT_MEMORY_PERCENTAGE = 50
+SORT_MEMORY_PERCENTAGE = 60  # cap at 60% of system memory
 
 
-def _calculate_sort_memory(num_cores: int, sort_memory_percent: int) -> int:
+def _calculate_sort_memory(sort_memory_percent: int) -> int:
     """
-    Calculate the memory percentage to allocate per sort thread.
+    Calculate the memory percentage to allocate for sorting.
 
-    :param num_cores: Number of CPU cores available.
     :param sort_memory_percent: Total percentage of system memory to allocate for sorting.
-    :return: Percentage of memory to allocate per sort thread.
+    :return: Percentage of memory to allocate for sorting.
     """
-    effective_memory_pct = min(sort_memory_percent, 50) if num_cores > 1 else sort_memory_percent
-    return max(effective_memory_pct // num_cores, 1)  # ensure at least 1% memory per core
+    return min(sort_memory_percent, SORT_MEMORY_PERCENTAGE)
 
 
 def _ensure_tools(tools: Iterable[Tuple[str, str]]) -> None:
@@ -610,7 +608,7 @@ def prepare_fragment(fragment_file: str, bgzip_output_file: str) -> None:
 
     out_path = Path(bgzip_output_file)
     ncores = _default_cores()
-    sort_mem_pct = _calculate_sort_memory(ncores, SORT_MEMORY_PERCENTAGE)
+    sort_mem_pct = _calculate_sort_memory(SORT_MEMORY_PERCENTAGE)
     env = _deterministic_env()
 
     stages = [
@@ -660,7 +658,7 @@ def deduplicate_fragment_rows(
         out_path = Path(output_file_name)
 
     ncores = _default_cores()
-    sort_mem_pct = _calculate_sort_memory(ncores, sort_memory_percent)  # Output is smaller
+    sort_mem_pct = _calculate_sort_memory(sort_memory_percent)  # Output is smaller
 
     stages = [
         ("pigz -dc", _pigz_decompress_command(in_path)),

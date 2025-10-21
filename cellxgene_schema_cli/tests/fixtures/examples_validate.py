@@ -602,24 +602,8 @@ adata_with_cell_line = anndata.AnnData(
 # anndata for testing migration
 unmigrated_obs = pd.DataFrame(
     [
-        [
-            "cell_type:1",
-            "assay:1",
-            "disease:1",
-            "sex:1",
-            "tissue:1",
-            "sre:1",
-            "development_stage:1",
-        ],
-        [
-            "cell_type:1",
-            "assay:1",
-            "disease:1",
-            "sex:1",
-            "tissue:1",
-            "sre:1",
-            "development_stage:1",
-        ],
+        ["cell_type:1", "assay:1", "disease:1", "sex:1", "tissue:1", "sre:1", "development_stage:1", "tissue"],
+        ["cell_type:1", "assay:1", "disease:1", "sex:1", "tissue:1", "sre:1", "development_stage:1", "tissue"],
     ],
     index=["X", "Y"],
     columns=[
@@ -630,6 +614,7 @@ unmigrated_obs = pd.DataFrame(
         "tissue_ontology_term_id",
         "self_reported_ethnicity_ontology_term_id",
         "development_stage_ontology_term_id",
+        "tissue_type",
     ],
 )
 
