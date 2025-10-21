@@ -743,26 +743,15 @@ class TestDefaultCores:
 class TestCalculateSortMemory:
     """Test memory percentage calculation."""
 
-    def test_single_core_memory(self):
+    def test_memory_cap(self):
         """Test memory calculation for single core."""
-        result = atac_seq._calculate_sort_memory(num_cores=1, sort_memory_percent=80)
-        assert result == 80  # Single core gets full percentage
+        result = atac_seq._calculate_sort_memory(sort_memory_percent=80)
+        assert result == 60  # Single core gets full percentage
 
-    def test_multi_core_memory_capping(self):
-        """Test memory capping for multiple cores."""
-        # With > 1 core, should cap at 50%
-        result = atac_seq._calculate_sort_memory(num_cores=4, sort_memory_percent=80)
-        assert result == 12  # 50% / 4 cores = 12.5%, but returns 12 (integer)
-
-    def test_memory_minimum_per_core(self):
-        """Test minimum 1% memory per core."""
-        result = atac_seq._calculate_sort_memory(num_cores=100, sort_memory_percent=30)
-        assert result == 1  # Should ensure minimum 1% per core
-
-    def test_low_memory_percentage(self):
-        """Test with already low memory percentage."""
-        result = atac_seq._calculate_sort_memory(num_cores=2, sort_memory_percent=20)
-        assert result == 10  # 20% / 2 cores = 10% per core
+    def test_memory_set(self):
+        """Test memory if bellow max cap."""
+        result = atac_seq._calculate_sort_memory(sort_memory_percent=30)
+        assert result == 30
 
 
 class TestSortCommand:
@@ -910,7 +899,7 @@ class TestDeduplicateFragmentRowsIntegration:
 
         # Should have called our enhanced CPU detection
         mock_cores.assert_called_once()
-        mock_calc_mem.assert_called_once_with(4, 50)  # 4 cores from mock, 50% default memory
+        mock_calc_mem.assert_called_once_with(60)  # 60% default memory
 
         # Should have used the calculated values in pipeline
         mock_pipeline.assert_called_once()
