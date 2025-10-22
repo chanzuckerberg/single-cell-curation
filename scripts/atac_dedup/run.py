@@ -19,6 +19,8 @@ https://github.com/chanzuckerberg/cellxgene-schema-cli
 ## API Key:
 An API key can be generated from the Data Portal UI under your user settings.
 
+This script relies on the reverted changes made in: https://github.com/chanzuckerberg/single-cell-data-portal/pull/7678
+
 """
 import concurrent.futures
 import datetime
