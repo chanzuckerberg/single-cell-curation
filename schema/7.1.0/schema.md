@@ -747,7 +747,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
             <li><code>"control"</code></li>
             <li><code>"CRISPR activation screen"</code></li>
             <li><code>"CRISPR interference screen"</code></li>
-            <li><code>"CRISPR knockout mutant"</code></li>
+            <li><code>"CRISPR knockout mutant"</code> describes F0 (founder generation) samples and does not include subsequent generations of homozygous mutants.</li> 
             <li><code>"CRISPR knockout screen"</code></li>
          </ul>
         </td>
@@ -1479,7 +1479,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotation</th>
-      <td>CELLxGENE Discover MUST annotate when <code>genetic_perturbations[<i>id</i>]['target_genomic_regions']</code> is annotated and one or more features in the <a href="#required-gene-annotations">corresponding gene reference</a> of the <code>organism_ontology_term_id</code> overlapped a genomic region; otherwise, this key MUST NOT be present.  
+      <td>CELLxGENE Discover MUST annotate when <code>genetic_perturbations[<i>id</i>]['target_genomic_regions']</code> is annotated and one or more features in the <a href="#required-gene-annotations">corresponding gene reference</a> of the <code>organism_ontology_term_id</code> overlapped a genomic region by at least one nucleotide; otherwise, this key MUST NOT be present.  
     </tr>
     <tr>
       <th>Value</th>
@@ -1504,12 +1504,12 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotation</th>
-      <td>CELLxGENE Discover MUST annotate.  The key MUST be the <code>gene_id</code> attribute from the <a href="#required-gene-annotations">corresponding gene reference</a> of the <code>organism_ontology_term_id</code> for a feature that overlaps a genomic region in <code>genetic_perturbations[<i>id</i>]['target_genomic_region']</code>.</td>
+      <td>CELLxGENE Discover MUST annotate.  The key MUST be the <code>gene_id</code> attribute from the <a href="#required-gene-annotations">corresponding gene reference</a> of the <code>organism_ontology_term_id</code> for a feature that overlapped a genomic region in <code>genetic_perturbations[<i>id</i>]['target_genomic_region']</code> by at least one nucleotide.<br><br> Version numbers MUST be removed from the <code>gene_id</code> if it is prefixed with <code>"ENS"</code> for <i>Ensembl stable identifier</i>. See <a href="https://ensembl.org/Help/Faq?id=488">I have an Ensembl ID, what can I tell about it from the ID?</a> For example, if the <code>gene_id</code> is <code>“ENSG00000186092.7”</code>, then the <code><i>feature_id</i></code> MUST be <code>“ENSG00000186092”</code>.</td>
     </tr>
     <tr>
       <th>Value</th>
         <td>
-          <code>str</code>. If a <code>gene_name</code> attribute is assigned to the <code>gene_id</code> attribute in the <a href="#required-gene-annotations">corresponding gene reference</a> of the <code>organism_ontology_term_id</code>, the value MUST be the <code>gene_name</code>. Otherwise, the value MUST be the value of the <code>gene_id</code> attribute.
+          <code>str</code>. If a <code>gene_name</code> attribute is assigned to the <code>gene_id</code> attribute in the <a href="#required-gene-annotations">corresponding gene reference</a> of the <code>organism_ontology_term_id</code>, the value MUST be the <code>gene_name</code>. Otherwise, the value MUST be the <code><i>feature_id</i></code> key.
         </td>
     </tr>
 </tbody></table>
