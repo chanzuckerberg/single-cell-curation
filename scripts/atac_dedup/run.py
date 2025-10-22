@@ -32,7 +32,7 @@ from typing import Dict, List, Optional
 curation_api_path = Path(__file__).parent.parent.parent / "notebooks/curation_api/python"
 sys.path.append(str(curation_api_path))
 
-from src.collection import create_revision, get_collection
+from src.collection import create_revision, get_collection, get_collections
 from src.dataset import get_dataset_manifest, upload_datafiles_from_manifest
 from src.utils.config import set_api_access_config
 
@@ -149,33 +149,45 @@ def process_dataset(collection_id: str, dataset: Dict) -> Optional[bool]:
 
 def main():
     """Main execution function."""
-    FIND_ATAC_COLLECTIONS = True
-    CREATE_REVISIONS = True
+    FIND_ATAC_COLLECTIONS = False
+    CREATE_REVISIONS = False
     RUN_DEDUPLICATION = True
     # Configuration
-    api_key_path = "./api-staging.key"
+    api_key_path = "./api-prod.key"
 
     logger.info("Starting ATAC-seq deduplication process")
 
     try:
         # Setup API access
-        set_api_access_config(api_key_path, "staging")
+        set_api_access_config(api_key_path)
 
         if FIND_ATAC_COLLECTIONS:
-            with open("./public_collections_staging.json") as json_file:
-                public_collection_ids = [c["collection_id"] for c in json.load(json_file)]
-            with open("./private_collections_staging.json") as json_file:
-                private_collection_ids = [c["collection_id"] for c in json.load(json_file)]
 
-            # check if the public collections have an ATAC-seq dataset
-            public_collections = find_atac_collections(public_collection_ids)
-            logger.info(f"Found {len(public_collections)} public collections with ATAC-seq data")
-            private_collections = find_atac_collections(private_collection_ids)
-            logger.info(f"Found {len(private_collections)} private collections with ATAC-seq data")
+            try:
+                with open("./public_collections.json") as json_file:
+                    _public_collections = json.load(json_file)
+            except FileNotFoundError:
+                _public_collections = get_collections()
+                with open("./public_collections.json", "w") as json_file:
+                    json.dump(_public_collections, json_file)
+            public_collection_ids = [col["collection_id"] for col in _public_collections]
+            public_atac_collections = find_atac_collections(public_collection_ids)
+            logger.info(f"Found {len(public_atac_collections)} public collections with ATAC-seq data")
+
+            try:
+                with open("./private_collections.json") as json_file:
+                    _private_collections = json.load(json_file)
+            except FileNotFoundError:
+                _private_collections = get_collections(visibility="PRIVATE")
+                with open("./private_collections.json", "w") as json_file:
+                    json.dump(_private_collections, json_file)
+            private_collection_ids = [col["collection_id"] for col in _private_collections]
+            private_atac_collections = find_atac_collections(private_collection_ids)
+            logger.info(f"Found {len(private_atac_collections)} private collections with ATAC-seq data")
 
             # save the collections to a json file
             with open("./atac_collections.json", "w") as json_file:
-                json.dump({"public": public_collections, "private": private_collections}, json_file)
+                json.dump({"public": public_atac_collections, "private": private_atac_collections}, json_file)
 
         with open("./atac_collections.json") as json_file:
             collections = json.load(json_file)
