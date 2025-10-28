@@ -2256,7 +2256,7 @@ class Validator:
         :rtype None
         """
         logger.debug("Starting Pre Analysis Validation...")
-        
+
         # Checks for no obsm present
         self._pre_analysis_validate_no_obsm()
 
