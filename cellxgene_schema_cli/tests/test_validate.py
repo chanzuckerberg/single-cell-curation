@@ -380,6 +380,50 @@ class TestValidate:
         assert not success
         assert errors
 
+    def test__pre_analysis_validate_no_obsm_passes_with_no_obsm(self):
+        validator = Validator()
+        validator.adata = adata_with_labels.copy()
+        validator.adata.obsm = None
+        
+        validator._pre_analysis_validate_no_obsm() # Directly call private method for testing purposes
+
+        assert not validator.errors
+
+    def test__pre_analysis_validate_no_cell_type_ontology_term_id_passes_with_column_missing(self):
+        validator = Validator()
+        validator.adata = adata_with_labels.copy()
+        del validator.adata.obs["cell_type_ontology_term_id"]
+
+        validator._pre_analysis_validate_no_cell_type_ontology_term_id() # Directly call private method for testing purposes
+
+        assert not validator.errors
+
+    def test__pre_analysis_validate_no_uns_default_embedding(self):
+        validator = Validator()
+        validator.adata = adata_with_labels.copy()
+        del validator.adata.uns["default_embedding"]
+
+        validator._pre_analysis_validate_no_uns_default_embedding() # Directly call private method for testing purposes
+
+        assert not validator.errors
+
+    def test__pre_analysis_validate_no_obsm_fails_with_obsm(self):
+        success, errors, _ = validate(h5ad_valid, pre_analysis_flag=True)
+
+        assert not success
+        assert errors
+
+    def test__pre_analysis_validate_no_cell_type_ontology_term_id_fails_with_value_present(self):
+        success, errors, _ = validate(h5ad_valid, pre_analysis_flag=True)
+
+        assert not success
+        assert errors
+
+    def test__pre_analysis_validate_no_uns_default_embedding_fails_with_value_present(self):
+        success, errors, _ = validate(h5ad_valid, pre_analysis_flag=True)
+
+        assert not success
+        assert errors
 
 class TestCheckSpatial:
     @pytest.mark.parametrize(

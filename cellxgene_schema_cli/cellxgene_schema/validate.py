@@ -2228,7 +2228,7 @@ class Validator:
 
         :rtype None
         """
-        if self.adata.obsm is not None:
+        if self.adata.obsm:
             self.errors.append("Pre Analysis Validation requires that adata.obsm not be present")
 
     def _pre_analysis_validate_no_cell_type_ontology_term_id(self):
@@ -2247,7 +2247,7 @@ class Validator:
         :rtype None
         """
         if "default_embedding" in self.adata.uns:
-            self.errors.append("Pre Analysis Validation requires that the default_embedding")
+            self.errors.append("Pre Analysis Validation requires that the default_embedding is NOT present")
 
     def _pre_analysis_check(self):
         """
@@ -2261,6 +2261,11 @@ class Validator:
         self._pre_analysis_validate_no_obsm()
 
         # Checks for no cell_type_ontology_term_id
+        self._pre_analysis_validate_no_cell_type_ontology_term_id()
+
+        # Checks for no default_embedding
+        self._pre_analysis_validate_no_uns_default_embedding()
+
         logger.debug("Pre Analysis Validation Done")
 
     def _deep_check(self):
