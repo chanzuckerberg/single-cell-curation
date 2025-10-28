@@ -2222,33 +2222,6 @@ class Validator:
                 f"{max_dimension} pixels, it has a largest dimension of {max(image.shape)} pixels."
             )
 
-    def _pre_analysis_validate_no_obsm(self):
-        """
-        Pre analysis validation to confirm that the anndata object DOES NOT have an obsm value
-
-        :rtype None
-        """
-        if self.adata.obsm:
-            self.errors.append("Pre Analysis Validation requires that adata.obsm not be present")
-
-    def _pre_analysis_validate_no_cell_type_ontology_term_id(self):
-        """
-        Pre Analysis validation to confirm that the adata.obs.cell_type_ontology_term_id is NOT present
-
-        :rtype None
-        """
-        if "cell_type_ontology_term_id" in self.adata.obs:
-            self.errors.append("Pre Analysis Validation requires that cell_type_ontology_term_id not be present")
-
-    def _pre_analysis_validate_no_uns_default_embedding(self):
-        """
-        Pre Analysis validation to confirm that adata.uns.default_embedding is NOT present
-
-        :rtype None
-        """
-        if "default_embedding" in self.adata.uns:
-            self.errors.append("Pre Analysis Validation requires that the default_embedding is NOT present")
-
     def _pre_analysis_check(self):
         """
         Perform pre-analysis checks of the Ann Data object. Adds errors to self.errors if any
@@ -2256,16 +2229,21 @@ class Validator:
         :rtype None
         """
         logger.debug("Starting Pre Analysis Validation...")
-
-        # Checks for no obsm present
-        self._pre_analysis_validate_no_obsm()
-
-        # Checks for no cell_type_ontology_term_id
-        self._pre_analysis_validate_no_cell_type_ontology_term_id()
-
-        # Checks for no default_embedding
-        self._pre_analysis_validate_no_uns_default_embedding()
-
+        for pre_analysis_component, pre_analysis_body in self.schema_def["pre_analysis"].items():
+            is_required = pre_analysis_body.get("required")
+            is_allowed = pre_analysis_body.get("allowed")
+            c = getattr_anndata(self.adata, pre_analysis_component)
+            if not is_required and not is_allowed and c is not None:
+                # Verbose way to check if not allowed anndata attribute is invalidly present
+                self.errors.append(f"{pre_analysis_component} is not allowed to exist during pre analysis validation")
+                continue
+            elif is_required and is_allowed and c:
+                # If it is allowed and it does exist, validate its keys
+                for k, k_allowed in c.get("keys", {}).items():
+                    if not k_allowed and k in c:
+                        self.errors.append(
+                            f"{k} is not allowed to exist in {pre_analysis_component} during pre analysis validation"
+                        )
         logger.debug("Pre Analysis Validation Done")
 
     def _deep_check(self):
