@@ -2222,6 +2222,47 @@ class Validator:
                 f"{max_dimension} pixels, it has a largest dimension of {max(image.shape)} pixels."
             )
 
+    def _pre_analysis_validate_no_obsm(self):
+        """
+        Pre analysis validation to confirm that the anndata object DOES NOT have an obsm value
+
+        :rtype None
+        """
+        if self.adata.obsm is not None:
+            self.errors.append("Pre Analysis Validation requires that adata.obsm not be present")
+
+    def _pre_analysis_validate_no_cell_type_ontology_term_id(self):
+        """
+        Pre Analysis validation to confirm that the adata.obs.cell_type_ontology_term_id is NOT present
+
+        :rtype None
+        """
+        if "cell_type_ontology_term_id" in self.adata.obs:
+            self.errors.append("Pre Analysis Validation requires that cell_type_ontology_term_id not be present")
+
+    def _pre_analysis_validate_no_uns_default_embedding(self):
+        """
+        Pre Analysis validation to confirm that adata.uns.default_embedding is NOT present
+
+        :rtype None
+        """
+        if "default_embedding" in self.adata.uns:
+            self.errors.append("Pre Analysis Validation requires that the default_embedding")
+
+    def _pre_analysis_check(self):
+        """
+        Perform pre-analysis checks of the Ann Data object. Adds errors to self.errors if any
+
+        :rtype None
+        """
+        logger.debug("Starting Pre Analysis Validation...")
+        
+        # Checks for no obsm present
+        self._pre_analysis_validate_no_obsm()
+
+        # Checks for no cell_type_ontology_term_id
+        logger.debug("Pre Analysis Validation Done")
+
     def _deep_check(self):
         """
         Perform a "deep" check of the AnnData object using the schema definition. Adds errors to self.errors if any
@@ -2291,12 +2332,14 @@ class Validator:
                 "fixing current errors."
             )
 
-    def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None) -> bool:
+    def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None, pre_analysis_flag: bool = False) -> bool:
         """
         Validates adata
 
         :params Union[str, bytes, os.PathLike] h5ad_path: path to h5ad to validate, if None it will try to validate
         from self.adata
+
+        :params bool pre_analysis_flag: Boolean flag to include pre_analysis validation. If False, it will skip.
 
         :return True if successful validation, False otherwise
         :rtype bool
@@ -2317,6 +2360,8 @@ class Validator:
             self._set_schema_def()
 
             if not self.errors:
+                if pre_analysis_flag:
+                    self._pre_analysis_check()
                 self._deep_check()
         except Exception as e:
             self.errors.append(f"Unexpected validation error: {e}")
@@ -2347,6 +2392,7 @@ def validate(
     h5ad_path: Union[str, bytes, os.PathLike],
     add_labels_file: str = None,
     ignore_labels: bool = False,
+    pre_analysis_flag: bool = False,
 ) -> (bool, list, bool):
     from .write_labels import AnnDataLabelAppender
 
@@ -2355,6 +2401,7 @@ def validate(
 
     :param Union[str, bytes, os.PathLike] h5ad_path: Path to h5ad file to validate
     :param str add_labels_file: Path to new h5ad file with ontology/gene labels added
+    :params bool pre_analysis_flag: Boolean flag to include pre_analysis validation. If False, it will skip.
 
     :return (True, [], False) if successful validation, (False, [list_of_errors], False) otherwise;
     last bool is for seurat convertability which is deprecated / unused
@@ -2368,7 +2415,7 @@ def validate(
     )
 
     with dask.config.set({"scheduler": "threads"}):
-        validator.validate_adata(h5ad_path)
+        validator.validate_adata(h5ad_path, pre_analysis_flag)
         logger.info(f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}")
 
         # Stop if validation was unsuccessful
