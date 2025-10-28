@@ -2229,20 +2229,27 @@ class Validator:
         :rtype None
         """
         logger.debug("Starting Pre Analysis Validation...")
-        for pre_analysis_component, pre_analysis_body in self.schema_def["pre_analysis"].items():
+        for pre_analysis_adata_component, pre_analysis_body in self.schema_def["pre_analysis"].items():
+            logger.debug(f"Evaluating {pre_analysis_adata_component}")
             is_required = pre_analysis_body.get("required")
             is_allowed = pre_analysis_body.get("allowed")
-            c = getattr_anndata(self.adata, pre_analysis_component)
-            if not is_required and not is_allowed and c is not None:
+            c = getattr_anndata(self.adata, pre_analysis_adata_component)
+
+            if not is_required and not is_allowed and len(c):
                 # Verbose way to check if not allowed anndata attribute is invalidly present
-                self.errors.append(f"{pre_analysis_component} is not allowed to exist during pre analysis validation")
-                continue
-            elif is_required and is_allowed and c:
+                self.errors.append(
+                    f"[PRE ANALYSIS COMPONENT] {pre_analysis_adata_component} is not allowed to exist during pre analysis validation"
+                )
+            elif is_required and is_allowed and c is not None:
                 # If it is allowed and it does exist, validate its keys
-                for k, k_allowed in c.get("keys", {}).items():
-                    if not k_allowed and k in c:
+                for pre_analysis_schema_key, pre_analysis_definition in self.schema_def["pre_analysis"][
+                    pre_analysis_adata_component
+                ]["keys"].items():
+                    if (
+                        not pre_analysis_definition.get("allowed", True) and pre_analysis_schema_key in c
+                    ):  # if not allowed and present in adata
                         self.errors.append(
-                            f"{k} is not allowed to exist in {pre_analysis_component} during pre analysis validation"
+                            f"[PRE ANALYSIS COMPONENT CONTENT] {pre_analysis_schema_key} is not allowed to exist in {pre_analysis_adata_component} during pre analysis validation"
                         )
         logger.debug("Pre Analysis Validation Done")
 

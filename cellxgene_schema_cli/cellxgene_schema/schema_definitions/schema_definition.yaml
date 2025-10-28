@@ -33,7 +33,6 @@ pre_analysis:
     required: False
     allowed: False
 
-
 components:
   uns:
     type: dict
