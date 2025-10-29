@@ -33,6 +33,7 @@ from fixtures.examples_validate import (
     adata_visium,
     adata_with_labels,
     good_obs,
+    good_obsm,
     good_uns,
     good_uns_with_visium_spatial,
     h5ad_invalid,
@@ -66,6 +67,16 @@ def label_writer(valid_adata):
 @pytest.fixture
 def valid_adata():
     return adata_valid.copy()
+
+
+@pytest.fixture
+def valid_pre_analysis_adata(valid_adata):
+    pre = valid_adata
+    pre.obsm = None
+    del pre.obs["cell_type_ontology_term_id"]
+    del pre.uns["default_embedding"]
+
+    return pre
 
 
 class TestFieldValidation:
@@ -379,6 +390,59 @@ class TestValidate:
 
         assert not success
         assert errors
+
+    def test__pre_analysis_check_passes_with_well_formed_blob(self, valid_pre_analysis_adata):
+        validator = Validator()
+        validator.adata = valid_pre_analysis_adata
+        validator._set_schema_def()
+
+        validator._pre_analysis_check()  # Directly call private method for testing purposes
+
+        assert not validator.errors
+
+    def test__pre_analysis_validate_no_obsm_fails_with_obsm(self, valid_pre_analysis_adata):
+        validator = Validator()
+        validator.adata = valid_pre_analysis_adata.copy()
+        validator.adata.obsm = good_obsm
+        validator._set_schema_def()
+
+        validator._pre_analysis_check()  # Directly call private method for testing purposes
+
+        EXPECTED_ERROR_STRING = "[PRE ANALYSIS COMPONENT] obsm is not allowed to exist during pre analysis validation"
+
+        assert validator.errors
+        assert len(validator.errors) == 1
+        assert EXPECTED_ERROR_STRING in validator.errors
+
+    def test__pre_analysis_validate_no_cell_type_ontology_term_id_fails_with_value_present(
+        self, valid_pre_analysis_adata
+    ):
+        validator = Validator()
+        validator.adata = valid_pre_analysis_adata.copy()
+        validator.adata.obs["cell_type_ontology_term_id"] = 123
+        validator._set_schema_def()
+
+        validator._pre_analysis_check()  # Directly call private method for testing purposes
+
+        EXPECTED_ERROR_STRING = "[PRE ANALYSIS COMPONENT CONTENT] cell_type_ontology_term_id is not allowed to exist in obs during pre analysis validation"
+
+        assert validator.errors
+        assert len(validator.errors) == 1
+        assert EXPECTED_ERROR_STRING in validator.errors
+
+    def test__pre_analysis_validate_no_uns_default_embedding_fails_with_value_present(self, valid_pre_analysis_adata):
+        validator = Validator()
+        validator.adata = valid_pre_analysis_adata.copy()
+        validator.adata.uns["default_embedding"] = 123
+        validator._set_schema_def()
+
+        validator._pre_analysis_check()  # Directly call private method for testing purposes
+
+        EXPECTED_ERROR_STRING = "[PRE ANALYSIS COMPONENT CONTENT] default_embedding is not allowed to exist in uns during pre analysis validation"
+
+        assert validator.errors
+        assert len(validator.errors) == 1
+        assert EXPECTED_ERROR_STRING in validator.errors
 
 
 class TestCheckSpatial:

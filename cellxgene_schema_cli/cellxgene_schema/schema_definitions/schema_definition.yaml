@@ -16,6 +16,23 @@ raw:
           - EFO:0008804 # Methyl-seq
           - EFO:0000751 # methylation profiling
           - EFO:0008939 # snmC-seq
+pre_analysis:
+  uns:
+    required: True
+    allowed: True
+    keys:
+      default_embedding:
+        allowed: False
+  obs:
+    required: True
+    allowed: True
+    keys:
+      cell_type_ontology_term_id:
+        allowed: False
+  obsm:
+    required: False
+    allowed: False
+
 components:
   uns:
     type: dict
