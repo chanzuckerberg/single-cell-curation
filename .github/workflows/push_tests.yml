@@ -58,7 +58,7 @@ jobs:
       - name: cellxgene_schema_cli Unit tests
         run: make unit-test
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage-cli
           path: .coverage*
@@ -90,7 +90,7 @@ jobs:
       - name: migration_assistant Unit tests
         run: make migration-assistant-tests
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage-migration-assisstant
           path: .coverage*
@@ -122,7 +122,7 @@ jobs:
       - name: Ontology Dry Run Unit Tests
         run: make ontology-dry-run-tests
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage-ontology-dry-run
           path: .coverage*
@@ -154,7 +154,7 @@ jobs:
       - name: Gene Dry Run Unit Tests
         run: make gene-dry-run-tests
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage-genes-dry-run
           path: .coverage*
@@ -181,7 +181,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install coverage
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           pattern: coverage-*
           merge-multiple: true
