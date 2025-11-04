@@ -2228,7 +2228,8 @@ class Validator:
 
         :rtype None
         """
-        logger.debug("Starting Pre Analysis Validation...")
+        logger.info("Starting Pre Analysis Validation...")
+        pre_analysis_errors_found = False
         for pre_analysis_adata_component, pre_analysis_body in self.schema_def["pre_analysis"].items():
             logger.debug(f"Evaluating {pre_analysis_adata_component}")
             is_required = pre_analysis_body.get("required")
@@ -2240,6 +2241,7 @@ class Validator:
                 self.errors.append(
                     f"[PRE ANALYSIS COMPONENT] {pre_analysis_adata_component} is not allowed to exist during pre analysis validation"
                 )
+                pre_analysis_errors_found = True
             elif is_required and is_allowed and c is not None:
                 # If it is allowed and it does exist, validate its keys
                 for pre_analysis_schema_key, pre_analysis_definition in self.schema_def["pre_analysis"][
@@ -2251,7 +2253,10 @@ class Validator:
                         self.errors.append(
                             f"[PRE ANALYSIS COMPONENT CONTENT] {pre_analysis_schema_key} is not allowed to exist in {pre_analysis_adata_component} during pre analysis validation"
                         )
-        logger.debug("Pre Analysis Validation Done")
+                        pre_analysis_errors_found = True
+        if not pre_analysis_errors_found:
+            logger.info("[PRE ANALYSIS]Pre Analysis completed with no errors")
+        logger.info("Pre Analysis Validation Done")
 
     def _deep_check(self):
         """
