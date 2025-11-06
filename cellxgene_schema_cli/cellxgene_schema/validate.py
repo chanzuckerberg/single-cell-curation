@@ -70,7 +70,7 @@ ERROR_SUFFIX_SPARSE_FORMAT = f"Please ensure it is either a dense array or one o
 class Validator:
     """Handles validation of AnnData"""
 
-    def __init__(self, ignore_labels=False):
+    def __init__(self, ignore_labels=False, pre_analysis_check_flag=False):
         self.schema_def = dict()
         self.schema_version: str = None
         self.ignore_labels = ignore_labels
@@ -78,6 +78,7 @@ class Validator:
         self._hires_max_dimension_size = None
         self._visium_error_suffix = None
         self._visium_tissue_position_max = None
+        self.pre_analysis_check_flag = pre_analysis_check_flag
 
     def reset(self, hi_res_size: Optional[int] = None, true_mat_size: Optional[int] = None):
         self.errors = []
@@ -1029,6 +1030,7 @@ class Validator:
 
         df = getattr_anndata(self.adata, df_name)
         df_definition = self._get_component_def(df_name)
+        pre_analysis_constraints = self.schema_def["pre_analysis"]  # schema.yaml constraints for pre-analysis
 
         # Validate index if needed
         if "index" in self._get_component_def(df_name):
@@ -1088,6 +1090,11 @@ class Validator:
             for column_name in df_definition["columns"]:
                 logger.debug(f"Validating column: {column_name}...")
                 if column_name not in df.columns:
+                    if column_name in pre_analysis_constraints.get(df_name, {}).get("keys", {}):
+                        logger.debug(
+                            f"Skipping column {column_name} in dataframe {df_name} due to pre analysis constraint"
+                        )
+                        continue
                     self.errors.append(f"Dataframe '{df_name}' is missing column '{column_name}'.")
                     continue
 
@@ -1228,10 +1235,14 @@ class Validator:
         a suffix at least 1 character long. For keys that don't start with "X_", we will run them through the same
         validation checks, but raise warnings instead of errors.
 
+        In the case of the pre_analsysis_flag being True, obsm MUST NOT be present so if we do not see adata.obsm and
+        the flag is correctly set, we exit this validation.
         :rtype none
         """
 
         if not self.adata.obsm:
+            if self.pre_analysis_check_flag:
+                return
             self.errors.append("No embeddings found in 'adata.obsm'.")
             return
 
@@ -2228,7 +2239,8 @@ class Validator:
 
         :rtype None
         """
-        logger.debug("Starting Pre Analysis Validation...")
+        logger.info("Starting Pre Analysis Validation...")
+        pre_analysis_errors_found = False
         for pre_analysis_adata_component, pre_analysis_body in self.schema_def["pre_analysis"].items():
             logger.debug(f"Evaluating {pre_analysis_adata_component}")
             is_required = pre_analysis_body.get("required")
@@ -2240,6 +2252,7 @@ class Validator:
                 self.errors.append(
                     f"[PRE ANALYSIS COMPONENT] {pre_analysis_adata_component} is not allowed to exist during pre analysis validation"
                 )
+                pre_analysis_errors_found = True
             elif is_required and is_allowed and c is not None:
                 # If it is allowed and it does exist, validate its keys
                 for pre_analysis_schema_key, pre_analysis_definition in self.schema_def["pre_analysis"][
@@ -2251,7 +2264,10 @@ class Validator:
                         self.errors.append(
                             f"[PRE ANALYSIS COMPONENT CONTENT] {pre_analysis_schema_key} is not allowed to exist in {pre_analysis_adata_component} during pre analysis validation"
                         )
-        logger.debug("Pre Analysis Validation Done")
+                        pre_analysis_errors_found = True
+        if not pre_analysis_errors_found:
+            logger.info("[PRE ANALYSIS]Pre Analysis completed with no errors")
+        logger.info("Pre Analysis Validation Done")
 
     def _deep_check(self):
         """
@@ -2322,14 +2338,12 @@ class Validator:
                 "fixing current errors."
             )
 
-    def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None, pre_analysis_flag: bool = False) -> bool:
+    def validate_adata(self, h5ad_path: Union[str, bytes, os.PathLike] = None) -> bool:
         """
         Validates adata
 
         :params Union[str, bytes, os.PathLike] h5ad_path: path to h5ad to validate, if None it will try to validate
         from self.adata
-
-        :params bool pre_analysis_flag: Boolean flag to include pre_analysis validation. If False, it will skip.
 
         :return True if successful validation, False otherwise
         :rtype bool
@@ -2350,7 +2364,7 @@ class Validator:
             self._set_schema_def()
 
             if not self.errors:
-                if pre_analysis_flag:
+                if self.pre_analysis_check_flag:
                     self._pre_analysis_check()
                 self._deep_check()
         except Exception as e:
@@ -2400,12 +2414,10 @@ def validate(
 
     # Perform validation
     start = datetime.now()
-    validator = Validator(
-        ignore_labels=ignore_labels,
-    )
+    validator = Validator(ignore_labels=ignore_labels, pre_analysis_check_flag=pre_analysis_flag)
 
     with dask.config.set({"scheduler": "threads"}):
-        validator.validate_adata(h5ad_path, pre_analysis_flag)
+        validator.validate_adata(h5ad_path)
         logger.info(f"Validation complete in {datetime.now() - start} with status is_valid={validator.is_valid}")
 
         # Stop if validation was unsuccessful
