@@ -17,3 +17,16 @@ services:
       - ./scripts/memtest:/memtest
       - ./cellxgene_schema_cli:/cellxgene_schema_cli
       - ./data:/data
+
+  guidescan2:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: ./scripts/guidescan2/Dockerfile
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+    restart: "no"
+    volumes:
+      - ./cellxgene_schema_cli:/cellxgene_schema_cli
+      - ./data:/data
+      - ./scripts/guidescan2:/workspace
