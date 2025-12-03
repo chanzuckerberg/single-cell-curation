@@ -314,3 +314,279 @@ def test_handles_empty_input():
     genes_df = pd.DataFrame({"chrom": [], "start": [], "end": [], "gene_id": [], "gene_name": []})
     result = annotate_guides.find_gene_overlaps(empty_df, genes_df)
     assert len(result) == 0
+
+
+def test_update_h5ad_with_guide_annotations():
+    """Test updating h5ad with guide annotations."""
+    import anndata as ad
+
+    # Create a minimal AnnData object with genetic perturbations
+    adata = ad.AnnData()
+    adata.uns["genetic_perturbations"] = {
+        "guide1": {
+            "target_genomic_regions": [],
+            "target_features": {},
+        },
+        "guide2": {
+            "target_genomic_regions": [],
+            "target_features": {},
+        },
+    }
+
+    # Create annotations DataFrame with multiple gene overlaps
+    annotations_df = pd.DataFrame(
+        [
+            {
+                "id": "guide1",
+                "chromosome": "1",
+                "start": 999,
+                "end": 1019,
+                "sense": "+",
+                "gene_id": "ENSG00000123456",
+                "gene_name": "BRCA1",
+            },
+            {
+                "id": "guide1",
+                "chromosome": "1",
+                "start": 999,
+                "end": 1019,
+                "sense": "+",
+                "gene_id": "ENSG00000234567",
+                "gene_name": "BRCA1-AS1",
+            },
+            {
+                "id": "guide2",
+                "chromosome": "3",
+                "start": 1963,
+                "end": 1982,
+                "sense": "-",
+                "gene_id": "ENSG00000345678",
+                "gene_name": "EGFR",
+            },
+        ]
+    )
+
+    # Update the h5ad
+    result_adata = annotate_guides.update_h5ad_with_guide_annotations(adata, annotations_df)
+
+    # Check guide1 (overlaps 2 genes at same location)
+    guide1 = result_adata.uns["genetic_perturbations"]["guide1"]
+    # Only genomic annotations should be updated (not sequence/PAM)
+    assert len(guide1["target_genomic_regions"]) == 1
+    # Schema 7.1.0: 1-based coordinates (BED 999-1019 becomes 1000-1019)
+    assert "1:1000-1019(+)" in guide1["target_genomic_regions"]
+    assert len(guide1["target_features"]) == 2
+    assert guide1["target_features"]["ENSG00000123456"] == "BRCA1"
+    assert guide1["target_features"]["ENSG00000234567"] == "BRCA1-AS1"
+
+    # Check guide2 (overlaps 1 gene)
+    guide2 = result_adata.uns["genetic_perturbations"]["guide2"]
+    # Only genomic annotations should be updated (not sequence/PAM)
+    assert len(guide2["target_genomic_regions"]) == 1
+    # Schema 7.1.0: 1-based coordinates (BED 1963-1982 becomes 1964-1982)
+    assert "3:1964-1982(-)" in guide2["target_genomic_regions"]
+    assert len(guide2["target_features"]) == 1
+    assert guide2["target_features"]["ENSG00000345678"] == "EGFR"
+
+
+def test_update_h5ad_with_guide_annotations_skips_na():
+    """Test that guides with no gene overlaps are skipped."""
+    import anndata as ad
+
+    adata = ad.AnnData()
+    adata.uns["genetic_perturbations"] = {
+        "guide1": {
+            "target_genomic_regions": ["old:1-10(+)"],
+            "target_features": {"OLD_GENE": "OLD_NAME"},
+        }
+    }
+
+    # Annotations with no gene overlaps (all NA)
+    annotations_df = pd.DataFrame(
+        [
+            {
+                "id": "guide1",
+                "chromosome": "1",
+                "start": 999,
+                "end": 1019,
+                "sense": "+",
+                "gene_id": "NA",
+                "gene_name": "NA",
+            }
+        ]
+    )
+
+    # Update should skip this guide
+    result_adata = annotate_guides.update_h5ad_with_guide_annotations(adata, annotations_df)
+
+    # All values should be unchanged (guide was skipped due to no gene overlaps)
+    guide1 = result_adata.uns["genetic_perturbations"]["guide1"]
+    assert guide1["target_genomic_regions"] == ["old:1-10(+)"]
+    assert guide1["target_features"] == {"OLD_GENE": "OLD_NAME"}
+
+
+def test_update_h5ad_with_guide_annotations_missing_guide_error():
+    """Test that missing guide IDs raise ValueError."""
+    import anndata as ad
+
+    adata = ad.AnnData()
+    adata.uns["genetic_perturbations"] = {
+        "guide1": {},
+    }
+
+    # Annotations for guide that doesn't exist
+    annotations_df = pd.DataFrame(
+        [
+            {
+                "id": "guide_missing",
+                "chromosome": "1",
+                "start": 999,
+                "end": 1019,
+                "sense": "+",
+                "gene_id": "ENSG123",
+                "gene_name": "GENE1",
+            }
+        ]
+    )
+
+    # Should raise ValueError
+    with pytest.raises(ValueError, match="missing from adata.uns"):
+        annotate_guides.update_h5ad_with_guide_annotations(adata, annotations_df)
+
+
+def test_update_h5ad_with_guide_annotations_no_genetic_perturbations():
+    """Test that missing genetic_perturbations raises KeyError."""
+    import anndata as ad
+
+    adata = ad.AnnData()
+    # No genetic_perturbations in uns
+
+    annotations_df = pd.DataFrame(
+        [
+            {
+                "id": "guide1",
+                "chromosome": "1",
+                "start": 999,
+                "end": 1019,
+                "sense": "+",
+                "gene_id": "ENSG123",
+                "gene_name": "GENE1",
+            }
+        ]
+    )
+
+    # Should raise KeyError
+    with pytest.raises(KeyError, match="genetic_perturbations"):
+        annotate_guides.update_h5ad_with_guide_annotations(adata, annotations_df)
+
+
+def test_update_h5ad_chromosome_ensembl_format():
+    """Test that chromosomes are converted to ENSEMBL format per schema 7.1.0."""
+    import anndata as ad
+
+    adata = ad.AnnData()
+    adata.uns["genetic_perturbations"] = {
+        "guide1": {},
+        "guide2": {},
+        "guide3": {},
+    }
+
+    # Test various chromosome formats
+    annotations_df = pd.DataFrame(
+        [
+            # chr prefix should be removed
+            {
+                "id": "guide1",
+                "chromosome": "chr1",
+                "start": 999,
+                "end": 1019,
+                "sense": "+",
+                "gene_id": "ENSG123",
+                "gene_name": "GENE1",
+            },
+            # chrM should become MT
+            {
+                "id": "guide2",
+                "chromosome": "chrM",
+                "start": 100,
+                "end": 120,
+                "sense": "+",
+                "gene_id": "ENSG456",
+                "gene_name": "GENE2",
+            },
+            # M should become MT
+            {
+                "id": "guide3",
+                "chromosome": "M",
+                "start": 200,
+                "end": 220,
+                "sense": "-",
+                "gene_id": "ENSG789",
+                "gene_name": "GENE3",
+            },
+        ]
+    )
+
+    result_adata = annotate_guides.update_h5ad_with_guide_annotations(adata, annotations_df)
+
+    # chr1 should be converted to 1
+    guide1 = result_adata.uns["genetic_perturbations"]["guide1"]
+    assert "1:1000-1019(+)" in guide1["target_genomic_regions"]
+
+    # chrM should be converted to MT
+    guide2 = result_adata.uns["genetic_perturbations"]["guide2"]
+    assert "MT:101-120(+)" in guide2["target_genomic_regions"]
+
+    # M should be converted to MT
+    guide3 = result_adata.uns["genetic_perturbations"]["guide3"]
+    assert "MT:201-220(-)" in guide3["target_genomic_regions"]
+
+
+def test_update_h5ad_removes_ensembl_version():
+    """Test that Ensembl ID version numbers are removed per schema 7.1.0."""
+    import anndata as ad
+
+    adata = ad.AnnData()
+    adata.uns["genetic_perturbations"] = {
+        "guide1": {},
+        "guide2": {},
+    }
+
+    # Test gene IDs with and without versions
+    annotations_df = pd.DataFrame(
+        [
+            # Ensembl ID with version number
+            {
+                "id": "guide1",
+                "chromosome": "1",
+                "start": 999,
+                "end": 1019,
+                "sense": "+",
+                "gene_id": "ENSG00000186092.7",
+                "gene_name": "GENE1",
+            },
+            # Non-Ensembl ID should not be modified
+            {
+                "id": "guide2",
+                "chromosome": "2",
+                "start": 100,
+                "end": 120,
+                "sense": "+",
+                "gene_id": "SOME_OTHER_ID.5",
+                "gene_name": "GENE2",
+            },
+        ]
+    )
+
+    result_adata = annotate_guides.update_h5ad_with_guide_annotations(adata, annotations_df)
+
+    # Ensembl ID version should be removed
+    guide1 = result_adata.uns["genetic_perturbations"]["guide1"]
+    assert "ENSG00000186092" in guide1["target_features"]
+    assert "ENSG00000186092.7" not in guide1["target_features"]
+    assert guide1["target_features"]["ENSG00000186092"] == "GENE1"
+
+    # Non-Ensembl ID should keep version
+    guide2 = result_adata.uns["genetic_perturbations"]["guide2"]
+    assert "SOME_OTHER_ID.5" in guide2["target_features"]
+    assert guide2["target_features"]["SOME_OTHER_ID.5"] == "GENE2"

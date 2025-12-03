@@ -8,6 +8,7 @@ import logging
 import os
 from typing import Optional, Tuple
 
+import anndata as ad
 import bioframe as bf
 import pandas as pd
 
@@ -358,3 +359,131 @@ def annotate_guides_from_guidescan_csv(
         logger.info("Done!")
 
     return annotated
+
+
+def _convert_to_ensembl_format(chromosome: str) -> str:
+    """Convert chromosome name to ENSEMBL format.
+
+    Per schema 7.1.0:
+    - Remove "chr" prefix for GENCODE/UCSC identifiers
+    - Convert mitochondrial "M" to "MT"
+
+    :param str chromosome: Chromosome name (e.g., "chr1", "chrM", "1", "MT")
+    :return: ENSEMBL-formatted chromosome name
+    :rtype: str
+    """
+    chrom = chromosome
+
+    # Remove "chr" prefix if present
+    if chrom.startswith("chr"):
+        chrom = chrom[3:]
+
+    # Convert M to MT for mitochondrial chromosome
+    if chrom == "M":
+        chrom = "MT"
+
+    return chrom
+
+
+def _remove_ensembl_version(gene_id: str) -> str:
+    """Remove version number from Ensembl gene ID.
+
+    Per schema 7.1.0:
+    Version numbers MUST be removed from gene_id if it is prefixed with "ENS".
+    Example: "ENSG00000186092.7" → "ENSG00000186092"
+
+    :param str gene_id: Gene ID possibly with version number
+    :return: Gene ID without version number
+    :rtype: str
+    """
+    # Only remove version for Ensembl IDs (starting with "ENS")
+    if gene_id.startswith("ENS") and "." in gene_id:
+        return gene_id.split(".")[0]
+    return gene_id
+
+
+def update_h5ad_with_guide_annotations(adata: ad.AnnData, annotations_df: pd.DataFrame) -> ad.AnnData:
+    """Update h5ad genetic_perturbations with genomic annotations from guidescan2/bioframe.
+
+    Takes the output from annotate_guides_from_guidescan_csv and adds genomic location
+    and gene overlap information to adata.uns['genetic_perturbations']. Only updates
+    target_genomic_regions and target_features fields (does NOT modify protospacer_sequence
+    or protospacer_adjacent_motif which should already be present in the h5ad).
+
+    :param ad.AnnData adata: AnnData object with genetic_perturbations in uns
+    :param pd.DataFrame annotations_df: DataFrame from annotate_guides_from_guidescan_csv with
+        required columns: id, chromosome, start, end, sense, gene_id, gene_name
+    :return: Modified AnnData object
+    :rtype: ad.AnnData
+    :raises ValueError: If any guide IDs from annotations_df are missing from genetic_perturbations
+    :raises KeyError: If genetic_perturbations is not in adata.uns
+    """
+    # Check that genetic_perturbations exists
+    if "genetic_perturbations" not in adata.uns:
+        raise KeyError("adata.uns does not contain 'genetic_perturbations'")
+
+    genetic_perturbations = adata.uns["genetic_perturbations"]
+
+    # Validate that all guides in annotations exist in h5ad
+    annotation_guide_ids = set(annotations_df["id"].unique())
+    h5ad_guide_ids = set(genetic_perturbations.keys())
+    missing_guides = annotation_guide_ids - h5ad_guide_ids
+
+    if missing_guides:
+        raise ValueError(
+            f"The following guide IDs from annotations are missing from "
+            f"adata.uns['genetic_perturbations']: {sorted(missing_guides)}"
+        )
+
+    # Process each guide
+    for guide_id in annotation_guide_ids:
+        # Get all rows for this guide
+        guide_rows = annotations_df[annotations_df["id"] == guide_id]
+
+        # Skip guides with no gene overlaps (all gene_id are "NA")
+        if (guide_rows["gene_id"] == "NA").all():
+            logger.debug(f"Skipping guide {guide_id}: no gene overlaps found")
+            continue
+
+        # Filter out NA rows for processing
+        valid_rows = guide_rows[guide_rows["gene_id"] != "NA"]
+
+        # Build target_genomic_regions: unique list of "chrom:start-end(sense)"
+        # Schema requires 1-based, fully-closed coordinates (not BED format)
+        genomic_regions = set()
+        for _, row in valid_rows.iterrows():
+            # Skip rows with NA coordinates
+            if row["chromosome"] == "NA":
+                continue
+
+            # Convert chromosome to ENSEMBL format
+            chrom = _convert_to_ensembl_format(str(row["chromosome"]))
+
+            # Convert from BED (0-based start, 1-based end) to 1-based fully-closed
+            start_1based = int(row["start"]) + 1  # Convert 0-based to 1-based
+            end_1based = int(row["end"])  # Already 1-based in BED format
+
+            region = f"{chrom}:{start_1based}-{end_1based}({row['sense']})"
+            genomic_regions.add(region)
+
+        # Build target_features: dict of {gene_id: gene_name}
+        # Schema requires removing version numbers from Ensembl IDs
+        target_features = {}
+        for _, row in valid_rows.iterrows():
+            gene_id = row["gene_id"]
+            gene_name = row["gene_name"]
+            if gene_id != "NA":
+                # Remove version number from Ensembl IDs (e.g., "ENSG00000186092.7" → "ENSG00000186092")
+                gene_id_no_version = _remove_ensembl_version(gene_id)
+                target_features[gene_id_no_version] = gene_name
+
+        # Update the h5ad entry
+        genetic_perturbations[guide_id]["target_genomic_regions"] = list(genomic_regions)
+        genetic_perturbations[guide_id]["target_features"] = target_features
+
+        logger.info(f"Updated guide {guide_id}: {len(genomic_regions)} region(s), " f"{len(target_features)} gene(s)")
+
+    # Update the uns with modified genetic_perturbations
+    adata.uns["genetic_perturbations"] = genetic_perturbations
+
+    return adata
