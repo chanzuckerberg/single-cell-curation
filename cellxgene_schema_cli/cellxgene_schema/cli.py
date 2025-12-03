@@ -213,5 +213,45 @@ def map_species(input_file, output_file):
     map_species(input_file, output_file)
 
 
+@schema_cli.command(
+    name="annotate-guides",
+    short_help="Annotate guidescan2 gRNA output with gene overlaps",
+    help="Annotate guidescan2 enumerate CSV output with overlapping gene information using bioframe. "
+    "Processes guidescan2 output to identify which genes each gRNA overlaps with, producing a CSV "
+    "with columns: id, sequence, pam, chromosome, start, end, sense, gene_id, gene_name. "
+    "Requires preprocessed gene coordinate files (run preprocess_gtf_for_annotation.py first).",
+)
+@click.argument("guidescan_csv", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.argument("output_csv", nargs=1, type=click.Path(exists=False, dir_okay=False))
+@click.option(
+    "--species",
+    required=True,
+    type=str,
+    help="Species NCBITaxon ID (e.g., NCBITaxon:9606 for human, NCBITaxon:10090 for mouse)",
+)
+def annotate_guides(guidescan_csv, output_csv, species):
+    """Annotate guidescan2 gRNA output with overlapping gene information."""
+    logger.info("Loading annotation module")
+    try:
+        from .annotate_guides import annotate_guides_from_guidescan_csv
+    except ImportError as e:
+        raise click.ClickException(f"Failed to load annotation module: {e}") from None
+
+    logger.info(f"Annotating guides from {guidescan_csv}")
+    logger.info(f"Species: {species}")
+
+    try:
+        result_df = annotate_guides_from_guidescan_csv(guidescan_csv, species, output_csv)
+        logger.info(f"Successfully annotated {len(result_df)} guide entries")
+        logger.info(f"Output saved to {output_csv}")
+        sys.exit(0)
+    except FileNotFoundError as e:
+        logger.error(str(e))
+        sys.exit(1)
+    except Exception as e:
+        logger.error(f"Error during annotation: {e}")
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     schema_cli()
