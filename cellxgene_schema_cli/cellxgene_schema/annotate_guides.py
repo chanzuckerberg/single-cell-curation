@@ -6,7 +6,12 @@ information about which genes they overlap using genomic interval analysis.
 
 import logging
 import os
-from typing import Optional, Tuple
+import shutil
+import subprocess
+import tarfile
+import tempfile
+import urllib.request
+from typing import Dict, List, Optional, Tuple
 
 import anndata as ad
 import bioframe as bf
@@ -16,6 +21,67 @@ from . import env
 from .gencode import SupportedOrganisms
 
 logger = logging.getLogger(__name__)
+
+# Organisms supported for genetic_perturbations annotation per schema 7.1.0
+SUPPORTED_PERTURBATION_ORGANISMS = {
+    "NCBITaxon:7955",  # Danio rerio
+    "NCBITaxon:9606",  # Homo sapiens
+    "NCBITaxon:10090",  # Mus musculus
+}
+
+# Default PAM length for Cas9 (NGG is 3 nucleotides)
+DEFAULT_PAM_LENGTH = 3  # TODO should be support other PAM lengths?
+
+
+# ============================================================================
+# Schema Compliance Utilities
+# ============================================================================
+
+
+def _convert_to_ensembl_format(chromosome: str) -> str:
+    """Convert chromosome name to ENSEMBL format.
+
+    Per schema 7.1.0:
+    - Remove "chr" prefix for GENCODE/UCSC identifiers
+    - Convert mitochondrial "M" to "MT"
+
+    :param str chromosome: Chromosome name (e.g., "chr1", "chrM", "1", "MT")
+    :return: ENSEMBL-formatted chromosome name
+    :rtype: str
+    """
+    chrom = chromosome
+
+    # Remove "chr" prefix if present
+    if chrom.startswith("chr"):
+        chrom = chrom[3:]
+
+    # Convert M to MT for mitochondrial chromosome
+    if chrom == "M":
+        chrom = "MT"
+
+    return chrom
+
+
+def _remove_ensembl_version(gene_id: str) -> str:
+    """Remove version number from Ensembl gene ID.
+
+    Per schema 7.1.0:
+    Version numbers MUST be removed from gene_id if it is prefixed with "ENS".
+    Example: "ENSG00000186092.7" → "ENSG00000186092"
+
+    :param str gene_id: Gene ID possibly with version number
+    :return: Gene ID without version number
+    :rtype: str
+    """
+    # Only remove version for Ensembl IDs (starting with "ENS")
+    if gene_id.startswith("ENS") and "." in gene_id:
+        return gene_id.split(".")[0]
+    return gene_id
+
+
+# ============================================================================
+# Data Processing & Formatting
+# ============================================================================
 
 
 def get_best_matches(csv_file: str) -> pd.DataFrame:
@@ -97,7 +163,7 @@ def format_exact_matches(exact_df: pd.DataFrame) -> pd.DataFrame:
 
         # Parse sequence and PAM
         # PAM is typically last 3 nucleotides (e.g., NGG for Cas9)
-        pam_length = 3
+        pam_length = DEFAULT_PAM_LENGTH
         sequence_length = len(full_sequence)
         protospacer_length = sequence_length - pam_length
 
@@ -110,7 +176,7 @@ def format_exact_matches(exact_df: pd.DataFrame) -> pd.DataFrame:
         if strand == "+":
             # For + strand, position is the start
             start = position - 1  # Convert to 0-based
-            end = position + protospacer_length - 1  # Keep as 1-based
+            end = position + protospacer_length - 1  # BED end coordinate
         else:
             # For - strand, position is the end
             end = position
@@ -204,6 +270,11 @@ def normalize_chromosomes(guides_df: pd.DataFrame, genes_df: pd.DataFrame) -> Tu
     return guides_df, genes_df
 
 
+# ============================================================================
+# Bioframe Operations
+# ============================================================================
+
+
 def find_gene_overlaps(guides_df: pd.DataFrame, genes_df: pd.DataFrame) -> pd.DataFrame:
     """Find gene overlaps for guides using bioframe.
 
@@ -249,65 +320,387 @@ def create_annotated_output(
         id, sequence, pam, chromosome, start, end, sense, gene_id, gene_name
     :rtype: pd.DataFrame
     """
-    annotated_rows = []
+    result_dfs = []
 
+    # Process overlaps using vectorized operations
     if not overlaps_df.empty:
-        # Process overlaps
-        # bioframe adds '_' suffix to columns from second dataframe
-        for _, row in overlaps_df.iterrows():
-            annotated_rows.append(
-                {
-                    "id": row["id_"],
-                    "sequence": row["sequence_"],
-                    "pam": row["pam_"],
-                    "chromosome": row["chrom_"],
-                    "start": row["start_"],
-                    "end": row["end_"],
-                    "sense": row["sense_"],
-                    "gene_id": row["gene_id"],
-                    "gene_name": row["gene_name"],
-                }
-            )
+        # bioframe adds '_' suffix to columns from second dataframe (guides)
+        # Keep only the columns we need and rename guide columns
+        overlaps_formatted = overlaps_df[
+            ["id_", "sequence_", "pam_", "chrom_", "start_", "end_", "sense_", "gene_id", "gene_name"]
+        ].rename(
+            columns={
+                "id_": "id",
+                "sequence_": "sequence",
+                "pam_": "pam",
+                "chrom_": "chromosome",
+                "start_": "start",
+                "end_": "end",
+                "sense_": "sense",
+            }
+        )
+        result_dfs.append(overlaps_formatted)
 
     # Find guides with no overlaps (guides that were exact matches but didn't overlap any genes)
     if not guides_df.empty:
         overlapping_guide_ids = set(overlaps_df["id_"].unique()) if not overlaps_df.empty else set()
-
-        non_overlapping_guides = guides_df[~guides_df["id"].isin(overlapping_guide_ids)]
-
-        for _, row in non_overlapping_guides.iterrows():
-            annotated_rows.append(
-                {
-                    "id": row["id"],
-                    "sequence": row["sequence"],
-                    "pam": row["pam"],
-                    "chromosome": row["chromosome"],
-                    "start": row["start"],
-                    "end": row["end"],
-                    "sense": row["sense"],
-                    "gene_id": "NA",
-                    "gene_name": "NA",
-                }
-            )
+        non_overlapping_guides = guides_df[~guides_df["id"].isin(overlapping_guide_ids)].copy()
+        non_overlapping_guides["gene_id"] = "NA"
+        non_overlapping_guides["gene_name"] = "NA"
+        result_dfs.append(non_overlapping_guides)
 
     # Add no-match guides
     if not no_match_df.empty:
-        for _, row in no_match_df.iterrows():
-            annotated_rows.append(
-                {
-                    "id": row["id"],
-                    "sequence": row["sequence"],
-                    "pam": "",  # No PAM info for no-match guides
-                    "chromosome": "NA",
-                    "start": "NA",
-                    "end": "NA",
-                    "sense": "NA",
-                    "gene_id": "NA",
-                    "gene_name": "NA",
-                }
-            )
+        no_match_formatted = pd.DataFrame(
+            {
+                "id": no_match_df["id"],
+                "sequence": no_match_df["sequence"],
+                "pam": "",  # No PAM info for no-match guides
+                "chromosome": "NA",
+                "start": "NA",
+                "end": "NA",
+                "sense": "NA",
+                "gene_id": "NA",
+                "gene_name": "NA",
+            }
+        )
+        result_dfs.append(no_match_formatted)
 
-    return pd.DataFrame(annotated_rows)
+    return pd.concat(result_dfs, ignore_index=True) if result_dfs else pd.DataFrame()
+
+
+# ============================================================================
+# Manage GuideScan2 Index Files
+# ============================================================================
+
+
+def _get_guidescan_index_url(organism_id: str) -> str:
+    """Get download URL for guidescan2 index (STUB - to be implemented).
+
+    :param str organism_id: NCBITaxon ID (e.g., "NCBITaxon:9606")
+    :return: URL to download index tar.gz file
+    :rtype: str
+    :raises NotImplementedError: This is a stub for future implementation
+    """
+    # TODO: Map organism IDs to index URLs
+    # Will need to host index files and provide download URLs
+    raise NotImplementedError(
+        "GuideScan2 index download not yet implemented. " "Please provide index path using --index-path option."
+    )
+
+
+def _download_and_extract_index(organism_id: str, cache_dir: str) -> str:
+    """Download and extract guidescan2 index tar.gz file.
+
+    :param str organism_id: NCBITaxon ID (e.g., "NCBITaxon:9606")
+    :param str cache_dir: Directory to cache downloaded index
+    :return: Path to index_prefix (without file extension)
+    :rtype: str
+    :raises NotImplementedError: If index URL is not available (via _get_guidescan_index_url)
+    """
+    # Get organism name for file naming
+    organism = SupportedOrganisms(organism_id)
+    species_name = organism.name.lower()
+
+    # Get download URL
+    url = _get_guidescan_index_url(organism_id)
+
+    # Download tar.gz file
+    tar_path = os.path.join(cache_dir, f"guidescan_index_{species_name}.tar.gz")
+    logger.info(f"Downloading index from {url} to {tar_path}...")
+
+    # Implement download logic
+    urllib.request.urlretrieve(url, tar_path)
+
+    # Extract tar.gz safely
+    logger.info(f"Extracting {tar_path}...")
+    with tarfile.open(tar_path, "r:gz") as tar:
+        # Validate all members are safe (no path traversal)
+        for member in tar.getmembers():
+            if member.name.startswith("/") or ".." in member.name:
+                raise ValueError(f"Unsafe tar member: {member.name}")
+        tar.extractall(cache_dir)
+
+    # Return index prefix path
+    index_prefix = os.path.join(cache_dir, f"guidescan_index_{species_name}")
+    logger.info(f"Index extracted to {index_prefix}")
+
+    return index_prefix
+
+
+def _get_or_download_index(organism_id: str, index_path: Optional[str] = None) -> str:
+    """Get cached index or download if not present.
+
+    :param str organism_id: NCBITaxon ID (e.g., "NCBITaxon:9606")
+    :param Optional[str] index_path: Explicit path to index. If None, uses cache.
+    :return: Path to index_prefix (without file extension)
+    :rtype: str
+    """
+    # If explicit path provided, use it
+    if index_path:
+        logger.info(f"Using provided index path: {index_path}")
+        return index_path
+
+    # Otherwise, check cache or download
+    organism = SupportedOrganisms(organism_id)
+    species_name = organism.name.lower()
+
+    # Check if index exists in cache
+    cache_dir = env.GENCODE_DIR
+    index_prefix = os.path.join(cache_dir, f"guidescan_index_{species_name}")
+
+    # Check for any index files with this prefix
+    # Guidescan2 indices consist of 3 files with the extensions *.index.{forward,reverse,gs}
+    required_extensions = [".index.forward", ".index.reverse", ".index.gs"]
+    if all(os.path.exists(f"{index_prefix}{ext}") for ext in required_extensions):
+        logger.info(f"Using cached index: {index_prefix}")
+        return index_prefix
+
+    # Index not found, attempt download
+    logger.info("Index not found in cache, attempting download...")
+    return _download_and_extract_index(organism_id, cache_dir)
+
+
+# ============================================================================
+# GuideScan2 Integration
+# ============================================================================
+
+
+def _check_guidescan2_installed() -> None:
+    """Check if guidescan2 is installed and available.
+
+    :raises RuntimeError: If guidescan command is not found
+    """
+    logger.info("Checking for guidescan2 installation...")
+    if shutil.which("guidescan") is None:
+        raise RuntimeError(
+            "guidescan2 not found. Please install guidescan-cli from " "https://github.com/pritykinlab/guidescan-cli"
+        )
+    logger.info("✓ guidescan2 found")
+
+
+def _run_guidescan_enumerate(input_csv: str, index_prefix: str, output_csv: str) -> None:
+    """Run guidescan enumerate command.
+
+    :param str input_csv: Path to input CSV with guide sequences
+    :param str index_prefix: Path prefix to guidescan2 index files
+    :param str output_csv: Path to output CSV file
+    :raises RuntimeError: If guidescan enumerate fails
+    """
+    cmd = [
+        "guidescan",
+        "enumerate",
+        index_prefix,
+        "-f",
+        input_csv,
+        "-o",
+        output_csv,
+        "--format",
+        "csv",
+        "--mismatches",
+        "0",
+    ]
+
+    logger.info(f"Running guidescan enumerate: {' '.join(cmd)}")
+
+    try:
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        logger.info("Guidescan enumerate completed successfully")
+        if result.stdout:
+            logger.debug(f"Guidescan stdout: {result.stdout}")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Guidescan enumerate failed with exit code {e.returncode}")
+        logger.error(f"Stdout: {e.stdout}")
+        logger.error(f"Stderr: {e.stderr}")
+        raise RuntimeError(f"Guidescan enumerate failed: {e.stderr}") from e
+
+
+# ============================================================================
+# AnnData Extraction & Validation
+# ============================================================================
+
+
+def _get_organism_from_h5ad(adata: ad.AnnData) -> str:
+    """Extract organism NCBITaxon ID from h5ad.
+
+    :param ad.AnnData adata: AnnData object with organism_ontology_term_id in uns
+    :return: NCBITaxon ID (e.g., "NCBITaxon:9606")
+    :rtype: str
+    :raises KeyError: If organism_ontology_term_id is not in adata.uns
+    :raises ValueError: If organism is not supported for genetic perturbations annotation
+    """
+    if "organism_ontology_term_id" not in adata.uns:
+        raise KeyError("adata.uns does not contain 'organism_ontology_term_id'")
+
+    organism_id: str = str(adata.uns["organism_ontology_term_id"])
+
+    # Validate organism is supported for genetic perturbations
+    if organism_id not in SUPPORTED_PERTURBATION_ORGANISMS:
+        raise ValueError(
+            f"Organism {organism_id} is not supported for genetic perturbations annotation. "
+            f"Supported organisms: {', '.join(sorted(SUPPORTED_PERTURBATION_ORGANISMS))}"
+        )
+
+    # Validate organism exists in SupportedOrganisms enum
+    try:
+        organism = SupportedOrganisms(organism_id)
+    except ValueError:
+        raise ValueError(f"Invalid NCBITaxon ID: {organism_id}") from None
+
+    logger.info(f"Detected organism: {organism.name} ({organism_id})")
+    return organism_id
+
+
+def _extract_perturbations_to_guidescan_csv(adata: ad.AnnData, output_csv: str) -> None:
+    """Extract genetic perturbations to CSV for guidescan2 input.
+
+    Extracts guide sequences from adata.uns['genetic_perturbations'] and writes
+    them to a CSV file in guidescan2 enumerate input format (id, sequence, pam, chromosome, start, end, sense).
+    Only id, sequence, and pam are required to run guidescan enumerate. The other columns are empty.
+
+    :param ad.AnnData adata: AnnData object with genetic_perturbations in uns
+    :param str output_csv: Path to output CSV file
+    """
+    genetic_perturbations = adata.uns["genetic_perturbations"]
+
+    # Extract guide sequences
+    rows = []
+    for guide_id, guide_data in genetic_perturbations.items():
+        # Get protospacer and PAM
+        protospacer = guide_data.get("protospacer_sequence", "")
+        pam_motif = guide_data.get("protospacer_adjacent_motif", "")
+
+        # Extract PAM sequence (remove "3' " prefix if present)
+        pam = pam_motif[3:] if pam_motif.startswith("3' ") else pam_motif
+
+        # Combine into full sequence for guidescan2
+        full_sequence = protospacer + pam
+
+        rows.append(
+            {
+                "id": guide_id,
+                "sequence": full_sequence,
+                "pam": pam,
+                "chromosome": "",
+                "start": "",
+                "end": "",
+                "sense": "",
+            }
+        )
+
+    # Write to CSV
+    df = pd.DataFrame(rows)
+    df.to_csv(output_csv, index=False)
+    logger.info(f"Extracted {len(rows)} guide sequences to {output_csv}")
+
+
+# ============================================================================
+# AnnData Update Helpers
+# ============================================================================
+
+
+def _build_genomic_regions(valid_rows: pd.DataFrame) -> List[str]:
+    """Build list of genomic region strings from annotation rows.
+
+    Converts BED format coordinates to schema 7.1.0 format (1-based, fully-closed).
+
+    :param pd.DataFrame valid_rows: DataFrame with columns: chromosome, start, end, sense
+    :return: List of genomic region strings in format "chrom:start-end(sense)"
+    :rtype: List[str]
+    """
+    regions = set()
+    for _, row in valid_rows.iterrows():
+        if row["chromosome"] == "NA":
+            continue
+
+        # Convert chromosome to ENSEMBL format
+        chrom = _convert_to_ensembl_format(str(row["chromosome"]))
+
+        # Convert from BED (0-based start, 1-based end) to 1-based fully-closed
+        start_1based = int(row["start"]) + 1  # Convert 0-based to 1-based
+        end_1based = int(row["end"])  # BED end equals 1-based inclusive numerically
+
+        region = f"{chrom}:{start_1based}-{end_1based}({row['sense']})"
+        regions.add(region)
+
+    return list(regions)
+
+
+def _build_target_features(valid_rows: pd.DataFrame) -> Dict[str, str]:
+    """Build target_features dict from annotation rows.
+
+    Removes version numbers from Ensembl IDs per schema 7.1.0.
+
+    :param pd.DataFrame valid_rows: DataFrame with columns: gene_id, gene_name
+    :return: Dictionary mapping gene_id to gene_name
+    :rtype: Dict[str, str]
+    """
+    features: Dict[str, str] = {}
+    for _, row in valid_rows.iterrows():
+        if row["gene_id"] != "NA":
+            # Remove version number from Ensembl IDs
+            gene_id_no_version = _remove_ensembl_version(row["gene_id"])
+            features[gene_id_no_version] = row["gene_name"]
+
+    return features
+
+
+def update_h5ad_with_guide_annotations(adata: ad.AnnData, annotations_df: pd.DataFrame) -> ad.AnnData:
+    """Update h5ad genetic_perturbations with genomic annotations from guidescan2/bioframe.
+
+    Takes the output from annotate_guides_from_guidescan_csv and adds genomic location
+    and gene overlap information to adata.uns['genetic_perturbations']. Only updates
+    target_genomic_regions and target_features fields (does NOT modify protospacer_sequence
+    or protospacer_adjacent_motif which should already be present in the h5ad).
+
+    :param ad.AnnData adata: AnnData object with genetic_perturbations in uns
+    :param pd.DataFrame annotations_df: DataFrame from annotate_guides_from_guidescan_csv with
+        required columns: id, chromosome, start, end, sense, gene_id, gene_name
+    :return: Modified AnnData object
+    :rtype: ad.AnnData
+    :raises KeyError: If genetic_perturbations is not in adata.uns
+    """
+    # Check that genetic_perturbations exists
+    if "genetic_perturbations" not in adata.uns:
+        raise KeyError("adata.uns does not contain 'genetic_perturbations'")
+
+    genetic_perturbations = adata.uns["genetic_perturbations"]
+
+    # Filter annotations to only guides that exist in h5ad
+    h5ad_guide_ids = set(genetic_perturbations.keys())
+    extra_guides = set(annotations_df["id"].unique()) - h5ad_guide_ids
+
+    if extra_guides:
+        logger.warning(
+            f"Skipping {len(extra_guides)} guide(s) from annotations that are not in h5ad: " f"{sorted(extra_guides)}"
+        )
+
+    # Filter to valid guides with gene overlaps (vectorized)
+    valid_annotations = annotations_df[
+        (annotations_df["id"].isin(h5ad_guide_ids)) & (annotations_df["gene_id"] != "NA")
+    ].copy()
+
+    # Process each guide using groupby
+    for guide_id, guide_group in valid_annotations.groupby("id"):
+        # Build genomic regions and target features
+        genomic_regions = _build_genomic_regions(guide_group)
+        target_features = _build_target_features(guide_group)
+
+        # Update the h5ad entry
+        genetic_perturbations[guide_id]["target_genomic_regions"] = genomic_regions
+        genetic_perturbations[guide_id]["target_features"] = target_features
+
+        logger.info(f"Updated guide {guide_id}: {len(genomic_regions)} region(s), {len(target_features)} gene(s)")
+
+    # Update the uns with modified genetic_perturbations
+    adata.uns["genetic_perturbations"] = genetic_perturbations
+
+    return adata
+
+
+# ============================================================================
+# High-Level Pipeline Functions (Public API)
+# ============================================================================
 
 
 def annotate_guides_from_guidescan_csv(
@@ -361,129 +754,68 @@ def annotate_guides_from_guidescan_csv(
     return annotated
 
 
-def _convert_to_ensembl_format(chromosome: str) -> str:
-    """Convert chromosome name to ENSEMBL format.
+def annotate_perturbations_in_h5ad(adata: ad.AnnData, index_path: Optional[str] = None) -> ad.AnnData:
+    """Annotate genetic perturbations in an AnnData object.
 
-    Per schema 7.1.0:
-    - Remove "chr" prefix for GENCODE/UCSC identifiers
-    - Convert mitochondrial "M" to "MT"
+    This function orchestrates the annotation pipeline:
+    1. Check if genetic_perturbations exists (skip if not)
+    2. Check guidescan2 is installed
+    3. Detect organism from adata.uns
+    4. Extract perturbations to temp CSV
+    5. Get/download guidescan2 index for organism
+    6. Run guidescan enumerate (--mismatches 0)
+    7. Run bioframe annotation
+    8. Update adata with annotations
+    9. Return modified adata
 
-    :param str chromosome: Chromosome name (e.g., "chr1", "chrM", "1", "MT")
-    :return: ENSEMBL-formatted chromosome name
-    :rtype: str
-    """
-    chrom = chromosome
-
-    # Remove "chr" prefix if present
-    if chrom.startswith("chr"):
-        chrom = chrom[3:]
-
-    # Convert M to MT for mitochondrial chromosome
-    if chrom == "M":
-        chrom = "MT"
-
-    return chrom
-
-
-def _remove_ensembl_version(gene_id: str) -> str:
-    """Remove version number from Ensembl gene ID.
-
-    Per schema 7.1.0:
-    Version numbers MUST be removed from gene_id if it is prefixed with "ENS".
-    Example: "ENSG00000186092.7" → "ENSG00000186092"
-
-    :param str gene_id: Gene ID possibly with version number
-    :return: Gene ID without version number
-    :rtype: str
-    """
-    # Only remove version for Ensembl IDs (starting with "ENS")
-    if gene_id.startswith("ENS") and "." in gene_id:
-        return gene_id.split(".")[0]
-    return gene_id
-
-
-def update_h5ad_with_guide_annotations(adata: ad.AnnData, annotations_df: pd.DataFrame) -> ad.AnnData:
-    """Update h5ad genetic_perturbations with genomic annotations from guidescan2/bioframe.
-
-    Takes the output from annotate_guides_from_guidescan_csv and adds genomic location
-    and gene overlap information to adata.uns['genetic_perturbations']. Only updates
-    target_genomic_regions and target_features fields (does NOT modify protospacer_sequence
-    or protospacer_adjacent_motif which should already be present in the h5ad).
-
-    :param ad.AnnData adata: AnnData object with genetic_perturbations in uns
-    :param pd.DataFrame annotations_df: DataFrame from annotate_guides_from_guidescan_csv with
-        required columns: id, chromosome, start, end, sense, gene_id, gene_name
-    :return: Modified AnnData object
+    :param ad.AnnData adata: AnnData object (optionally with genetic_perturbations in uns)
+    :param Optional[str] index_path: Path to guidescan2 index. If None, uses default cache.
+    :return: Modified AnnData object with annotations (or unmodified if no perturbations)
     :rtype: ad.AnnData
-    :raises ValueError: If any guide IDs from annotations_df are missing from genetic_perturbations
-    :raises KeyError: If genetic_perturbations is not in adata.uns
+    :raises RuntimeError: If guidescan2 is not installed
     """
-    # Check that genetic_perturbations exists
+    # Check if genetic_perturbations exists
     if "genetic_perturbations" not in adata.uns:
-        raise KeyError("adata.uns does not contain 'genetic_perturbations'")
+        logger.info("No genetic_perturbations found in adata.uns, skipping annotation")
+        return adata
 
-    genetic_perturbations = adata.uns["genetic_perturbations"]
+    # Check guidescan2 is installed
+    _check_guidescan2_installed()
 
-    # Validate that all guides in annotations exist in h5ad
-    annotation_guide_ids = set(annotations_df["id"].unique())
-    h5ad_guide_ids = set(genetic_perturbations.keys())
-    missing_guides = annotation_guide_ids - h5ad_guide_ids
+    # Detect organism
+    logger.info("Detecting organism...")
+    organism_id = _get_organism_from_h5ad(adata)
 
-    if missing_guides:
-        raise ValueError(
-            f"The following guide IDs from annotations are missing from "
-            f"adata.uns['genetic_perturbations']: {sorted(missing_guides)}"
-        )
+    # Use temporary directory for intermediate files
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Extract perturbations to temp CSV
+        logger.info("Extracting perturbations to CSV...")
+        guides_csv = os.path.join(tmpdir, "guides_input.csv")
+        _extract_perturbations_to_guidescan_csv(adata, guides_csv)
 
-    # Process each guide
-    for guide_id in annotation_guide_ids:
-        # Get all rows for this guide
-        guide_rows = annotations_df[annotations_df["id"] == guide_id]
+        # Get/download guidescan2 index
+        logger.info("Getting guidescan2 index...")
+        try:
+            index_prefix = _get_or_download_index(organism_id, index_path)
+        except NotImplementedError as e:
+            logger.error(str(e))
+            raise RuntimeError(
+                f"GuideScan2 index for {organism_id} not found. "
+                "Please provide --index-path or implement index download."
+            ) from e
 
-        # Skip guides with no gene overlaps (all gene_id are "NA")
-        if (guide_rows["gene_id"] == "NA").all():
-            logger.debug(f"Skipping guide {guide_id}: no gene overlaps found")
-            continue
+        # Run guidescan enumerate
+        logger.info("Running guidescan enumerate...")
+        enumerate_csv = os.path.join(tmpdir, "guidescan_enumerate_output.csv")
+        _run_guidescan_enumerate(guides_csv, index_prefix, enumerate_csv)
 
-        # Filter out NA rows for processing
-        valid_rows = guide_rows[guide_rows["gene_id"] != "NA"]
+        # Run bioframe annotation
+        logger.info("Annotating with bioframe...")
+        annotations_df = annotate_guides_from_guidescan_csv(enumerate_csv, organism_id)
 
-        # Build target_genomic_regions: unique list of "chrom:start-end(sense)"
-        # Schema requires 1-based, fully-closed coordinates (not BED format)
-        genomic_regions = set()
-        for _, row in valid_rows.iterrows():
-            # Skip rows with NA coordinates
-            if row["chromosome"] == "NA":
-                continue
+        # Update adata with annotations
+        logger.info("Updating AnnData with annotations...")
+        adata = update_h5ad_with_guide_annotations(adata, annotations_df)
 
-            # Convert chromosome to ENSEMBL format
-            chrom = _convert_to_ensembl_format(str(row["chromosome"]))
-
-            # Convert from BED (0-based start, 1-based end) to 1-based fully-closed
-            start_1based = int(row["start"]) + 1  # Convert 0-based to 1-based
-            end_1based = int(row["end"])  # Already 1-based in BED format
-
-            region = f"{chrom}:{start_1based}-{end_1based}({row['sense']})"
-            genomic_regions.add(region)
-
-        # Build target_features: dict of {gene_id: gene_name}
-        # Schema requires removing version numbers from Ensembl IDs
-        target_features = {}
-        for _, row in valid_rows.iterrows():
-            gene_id = row["gene_id"]
-            gene_name = row["gene_name"]
-            if gene_id != "NA":
-                # Remove version number from Ensembl IDs (e.g., "ENSG00000186092.7" → "ENSG00000186092")
-                gene_id_no_version = _remove_ensembl_version(gene_id)
-                target_features[gene_id_no_version] = gene_name
-
-        # Update the h5ad entry
-        genetic_perturbations[guide_id]["target_genomic_regions"] = list(genomic_regions)
-        genetic_perturbations[guide_id]["target_features"] = target_features
-
-        logger.info(f"Updated guide {guide_id}: {len(genomic_regions)} region(s), " f"{len(target_features)} gene(s)")
-
-    # Update the uns with modified genetic_perturbations
-    adata.uns["genetic_perturbations"] = genetic_perturbations
-
+    logger.info("✓ Annotation complete!")
     return adata

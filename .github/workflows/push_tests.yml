@@ -55,6 +55,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install libbz2-dev liblzma-dev tabix
           which bgzip
+      - name: Install guidescan2
+        run: |
+          wget https://github.com/pritykinlab/guidescan-cli/releases/download/v1.2.1/guidescan-x86_64-unknown-linux-gnu.tar.gz
+          tar -xzf guidescan-x86_64-unknown-linux-gnu.tar.gz
+          sudo mv guidescan /usr/local/bin/
+          chmod +x /usr/local/bin/guidescan
+          which guidescan
+          guidescan --version
       - name: cellxgene_schema_cli Unit tests
         run: make unit-test
       - name: Upload coverage results as an artifact

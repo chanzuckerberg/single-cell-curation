@@ -214,42 +214,52 @@ def map_species(input_file, output_file):
 
 
 @schema_cli.command(
-    name="annotate-guides",
-    short_help="Annotate guidescan2 gRNA output with gene overlaps",
-    help="Annotate guidescan2 enumerate CSV output with overlapping gene information using bioframe. "
-    "Processes guidescan2 output to identify which genes each gRNA overlaps with, producing a CSV "
-    "with columns: id, sequence, pam, chromosome, start, end, sense, gene_id, gene_name. "
-    "Requires preprocessed gene coordinate files (run preprocess_gtf_for_annotation.py first).",
+    name="annotate-perturbations",
+    short_help="Annotate genetic perturbations with genomic locations and genes",
+    help="Complete pipeline to annotate genetic_perturbations in h5ad with "
+    "target_genomic_regions and target_features using guidescan2 and bioframe. "
+    "This command: (1) extracts perturbations from h5ad, (2) runs guidescan2 enumerate "
+    "to find genomic matches, (3) uses bioframe to find gene overlaps, and (4) updates "
+    "the h5ad with annotations. Requires guidescan2 to be installed "
+    "(https://github.com/pritykinlab/guidescan-cli).",
 )
-@click.argument("guidescan_csv", nargs=1, type=click.Path(exists=True, dir_okay=False))
-@click.argument("output_csv", nargs=1, type=click.Path(exists=False, dir_okay=False))
+@click.argument("input_h5ad", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.argument("output_h5ad", nargs=1, type=click.Path(exists=False, dir_okay=False))
 @click.option(
-    "--species",
-    required=True,
+    "--index-path",
+    help="Path to guidescan2 index prefix (without file extension). If not provided, uses default cache.",
     type=str,
-    help="Species NCBITaxon ID (e.g., NCBITaxon:9606 for human, NCBITaxon:10090 for mouse)",
+    default=None,
 )
-def annotate_guides(guidescan_csv, output_csv, species):
-    """Annotate guidescan2 gRNA output with overlapping gene information."""
-    logger.info("Loading annotation module")
-    try:
-        from .annotate_guides import annotate_guides_from_guidescan_csv
-    except ImportError as e:
-        raise click.ClickException(f"Failed to load annotation module: {e}") from None
+def annotate_perturbations(input_h5ad, output_h5ad, index_path):
+    """Annotate genetic perturbations with genomic and gene information."""
+    import anndata as ad
 
-    logger.info(f"Annotating guides from {guidescan_csv}")
-    logger.info(f"Species: {species}")
+    from .annotate_guides import annotate_perturbations_in_h5ad
+
+    logger.info(f"Loading h5ad file: {input_h5ad}")
 
     try:
-        result_df = annotate_guides_from_guidescan_csv(guidescan_csv, species, output_csv)
-        logger.info(f"Successfully annotated {len(result_df)} guide entries")
-        logger.info(f"Output saved to {output_csv}")
+        # Load h5ad
+        adata = ad.read_h5ad(input_h5ad)
+
+        # Annotate (returns modified adata)
+        adata = annotate_perturbations_in_h5ad(adata, index_path)
+
+        # Save result
+        logger.info(f"Saving annotated h5ad to: {output_h5ad}")
+        adata.write_h5ad(output_h5ad)
+
+        logger.info("Successfully annotated perturbations")
         sys.exit(0)
-    except FileNotFoundError as e:
+    except (RuntimeError, FileNotFoundError) as e:
         logger.error(str(e))
         sys.exit(1)
     except Exception as e:
         logger.error(f"Error during annotation: {e}")
+        import traceback
+
+        logger.error(traceback.format_exc())
         sys.exit(1)
 
 
