@@ -6,10 +6,12 @@ human:
   description: homo_sapiens
   url: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_{version}/gencode.v{version}.primary_assembly.annotation.gtf.gz
   version: 48
+  perturbation_support: true
 mouse:
   description: mus_musculus
   url: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_{version}/gencode.v{version}.primary_assembly.annotation.gtf.gz
   version: M37
+  perturbation_support: true
 sars_cov_2:
   description: sars_cov_2
   url: ftp://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz
@@ -19,6 +21,7 @@ fruit_fly:
 zebrafish:
   description: danio_rerio
   url: https://ftp.ensembl.org/pub/release-114/gtf/danio_rerio/Danio_rerio.GRCz11.114.gtf.gz
+  perturbation_support: true
 roundworm:
   description: caenorhabditis_elegans
   url: https://ftp.ensembl.org/pub/release-114/gtf/caenorhabditis_elegans/Caenorhabditis_elegans.WBcel235.114.gtf.gz

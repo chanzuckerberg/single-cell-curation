@@ -4,6 +4,10 @@
 This script downloads GTF files from URLs specified in gene_info.yml and extracts
 gene coordinates into BED-format CSV files for fast lookup during gRNA annotation.
 
+By default, only processes species with perturbation_support: true in gene_info.yml
+(human, mouse, zebrafish). Use --species to process a specific species regardless
+of perturbation support.
+
 Output format: chromosome, start, end, gene_id, gene_name, strand
 Coordinates are in BED format (0-based start, 1-based end)
 
@@ -185,9 +189,11 @@ def main() -> None:
 
         process_species(args.species, gene_info[args.species], gencode_dir)
     else:
-        # Process all species
-        print(f"Processing {len(gene_info)} species...")
-        for species_key, species_info in gene_info.items():
+        # Process only species with perturbation support
+        perturbation_species = {key: info for key, info in gene_info.items() if info.get("perturbation_support", False)}
+        print(f"Processing {len(perturbation_species)} species with perturbation support...")
+        print(f"Species: {', '.join(perturbation_species.keys())}")
+        for species_key, species_info in perturbation_species.items():
             process_species(species_key, species_info, gencode_dir)
 
     print("\n" + "=" * 60)
