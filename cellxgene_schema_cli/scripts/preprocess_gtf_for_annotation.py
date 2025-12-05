@@ -20,7 +20,6 @@ import argparse
 import gzip
 import os
 import sys
-import tempfile
 import urllib.request
 from typing import Dict, List, Tuple
 
@@ -39,6 +38,10 @@ def download_gtf(url: str, output_path: str) -> None:
     :param str output_path: Path to save the downloaded file
     :rtype: None
     """
+    if os.path.exists(output_path):
+        print(f"GTF file already exists at {output_path}, skipping download")
+        return
+
     print(f"Downloading {url}...")
     urllib.request.urlretrieve(url, output_path)
     print(f"Downloaded to {output_path}")
@@ -137,27 +140,25 @@ def process_species(species_key: str, species_info: Dict, gencode_dir: str) -> N
     if version:
         url = url.format(version=version)
 
-    # Use temporary directory for GTF download
-    with tempfile.TemporaryDirectory() as temp_dir:
-        try:
-            # Download GTF file to temporary directory
-            gtf_filename = f"temp_{description}.gtf.gz"
-            gtf_path = os.path.join(temp_dir, gtf_filename)
-            download_gtf(url, gtf_path)
+    try:
+        # Download GTF file to gencode_dir (will skip if already exists)
+        gtf_filename = f"{description}.gtf.gz"
+        gtf_path = os.path.join(gencode_dir, gtf_filename)
+        download_gtf(url, gtf_path)
 
-            # Parse GTF to extract gene coordinates
-            print("Parsing GTF file...")
-            coordinates = parse_gtf_for_gene_coordinates(gtf_path)
+        # Parse GTF to extract gene coordinates
+        print("Parsing GTF file...")
+        coordinates = parse_gtf_for_gene_coordinates(gtf_path)
 
-            # Write gene coordinates to gencode_dir
-            output_filename = f"gene_coordinates_{description}.csv.gz"
-            output_path = os.path.join(gencode_dir, output_filename)
-            write_gene_coordinates(coordinates, output_path)
+        # Write gene coordinates to gencode_dir
+        output_filename = f"gene_coordinates_{description}.csv.gz"
+        output_path = os.path.join(gencode_dir, output_filename)
+        write_gene_coordinates(coordinates, output_path)
 
-            print(f"✓ Successfully processed {species_key}")
+        print(f"✓ Successfully processed {species_key}")
 
-        except Exception as e:
-            print(f"✗ Error processing {species_key}: {e}")
+    except Exception as e:
+        print(f"✗ Error processing {species_key}: {e}")
 
 
 def main() -> None:
