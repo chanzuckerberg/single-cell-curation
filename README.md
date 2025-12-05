@@ -13,10 +13,7 @@ For information/issues about cellxgene and its portal please refer to:
 
 The primary curation tool is the `cellxgene-schema` CLI. It enables curators to perform [schema](./schema/3.0.0/schema.md) validation for datasets to be hosted on the [cellxgene Data Portal](https://cellxgene.cziscience.com/).
 
-The following version of python is required for cellxgene-schema.
-https://github.com/chanzuckerberg/single-cell-curation/blob/4fa23de520e208a4187177e862bc03e60e58f0a2/cellxgene_schema_cli/setup.py#L16-L16
-
-It is available through pip:
+It requires Python >= 3.8. It is available through pip:
 
 ```
 pip install cellxgene-schema
@@ -59,6 +56,18 @@ cellxgene-schema map-species output.h5ad input.h5ad
 The command will find the closest CL (for cell_type) or UBERON (for tissue) mapping for the given term, offering either an exact match for the given term or a match from the closest possible ancestor term. This is based on the CL and UBERON [SSSOM](https://mapping-commons.github.io/sssom/toolkit/) mappings.
 
 If there are multiple closest ancestors of the same distance with a match, the command will NOT annotate those rows and instead log your closest ancestor match options for your manual curation.
+
+---
+
+This experimental validator also offers the option to annotate genetic perturbations with genomic locations and target genes. This is useful for CRISPR perturbation datasets where you want to add `target_genomic_regions` and `target_features` annotations.
+
+This command requires [guidescan2](https://github.com/pritykinlab/guidescan-cli) to be installed on your system before use.
+
+```
+cellxgene-schema annotate-perturbations input.h5ad output.h5ad
+```
+
+The command will extract guide sequences from `genetic_perturbations`, run guidescan2 to find genomic matches, identify overlapping genes using bioframe, and update the h5ad file with the annotations.
 
 ---
 
