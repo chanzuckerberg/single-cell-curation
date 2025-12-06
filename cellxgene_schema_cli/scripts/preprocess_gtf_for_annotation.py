@@ -8,12 +8,73 @@ By default, only processes species with perturbation_support: true in gene_info.
 (human, mouse, zebrafish). Use --species to process a specific species regardless
 of perturbation support.
 
-Output format: chromosome, start, end, gene_id, gene_name, strand
-Coordinates are in BED format (0-based start, 1-based end)
+Input Files
+-----------
 
-Usage::
+1. **gene_info.yml** - Configuration file specifying GTF sources
+   
+   Example structure::
 
-    python preprocess_gtf_for_annotation.py [--species SPECIES]
+       human:
+         description: "gencode44_human"
+         version: "44"
+         url: "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_{version}/gencode.v{version}.annotation.gtf.gz"
+         perturbation_support: true
+         ensembl_species: "hsapiens"
+
+2. **GTF files** - Downloaded from URLs in gene_info.yml (gzipped)
+   
+   Standard GTF format with 9 tab-separated columns. Example lines::
+
+       chr1    HAVANA  gene    11869   14409   .   +   .   gene_id "ENSG00000223972.5"; gene_name "DDX11L1";
+       chr1    HAVANA  gene    14404   29570   .   -   .   gene_id "ENSG00000227232.5"; gene_name "WASH7P";
+
+   The script only processes lines where the 3rd column (feature type) is "gene".
+
+Output Files
+------------
+
+1. **Downloaded GTF files** - Saved to gencode directory
+   
+   Format: ``{description}.gtf.gz``
+   
+   Example: ``gencode44_human.gtf.gz``
+
+2. **Gene coordinate CSV files** - BED-format gene coordinates (gzipped)
+   
+   Format: ``gene_coordinates_{description}.csv.gz``
+   
+   Example: ``gene_coordinates_gencode44_human.csv.gz``
+   
+   CSV structure (bioframe-compatible)::
+
+       chrom,start,end,gene_id,gene_name,strand
+       chr1,11868,14409,ENSG00000223972.5,DDX11L1,+
+       chr1,14403,29570,ENSG00000227232.5,WASH7P,-
+       chr1,29553,31109,ENSG00000243485.5,MIR1302-2HG,+
+
+   - **chrom**: Chromosome name (as in GTF)
+   - **start**: 0-based start position (BED format)
+   - **end**: 1-based end position (BED format)
+   - **gene_id**: Ensembl gene ID from GTF
+   - **gene_name**: Gene symbol/name from GTF (defaults to gene_id if missing)
+   - **strand**: Strand orientation (+ or -)
+   
+   Notes:
+   - Rows are sorted by chromosome and start position
+   - PAR_Y genes (pseudo-autosomal region Y duplicates) are excluded
+   - Coordinates are in BED format: 0-based start, 1-based end (same as GTF end)
+
+Usage
+-----
+
+Process all species with perturbation support::
+
+    python preprocess_gtf_for_annotation.py
+
+Process a specific species::
+
+    python preprocess_gtf_for_annotation.py --species human
 """
 
 import argparse
