@@ -855,7 +855,7 @@ def test_guidescan2_real_integration(tmp_path):
     assert guidescan_path is not None, "guidescan should be in PATH"
 
     # Try to run with a non-existent index - should fail gracefully
-    fake_index = str(tmp_path / "nonexistent_index")  # TODO: Use a real index
+    fake_index = str(tmp_path / "nonexistent_index")  # Intentionally use a non-existent index to test error handling
 
     with pytest.raises(RuntimeError) as exc_info:
         annotate_guides._run_guidescan_enumerate(str(input_csv), fake_index, str(output_csv))

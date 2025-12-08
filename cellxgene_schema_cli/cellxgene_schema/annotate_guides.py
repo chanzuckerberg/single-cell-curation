@@ -30,7 +30,7 @@ SUPPORTED_PERTURBATION_ORGANISMS = {
 }
 
 # Default PAM length for Cas9 (NGG is 3 nucleotides)
-DEFAULT_PAM_LENGTH = 3  # TODO should be support other PAM lengths?
+DEFAULT_PAM_LENGTH = 3  # TODO should we support other PAM lengths?
 
 
 # ============================================================================
