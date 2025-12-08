@@ -230,7 +230,7 @@ def main() -> None:
         "--species",
         type=str,
         default=None,
-        help="Process only this species (e.g., 'human', 'mouse'). If not specified, processes all species.",
+        help="Process only this species (e.g., 'human', 'mouse'). If not specified, processes all species with perturbation_support.",
     )
 
     args = parser.parse_args()
