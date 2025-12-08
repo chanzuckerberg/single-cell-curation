@@ -29,9 +29,6 @@ SUPPORTED_PERTURBATION_ORGANISMS = {
     "NCBITaxon:10090",  # Mus musculus
 }
 
-# Default PAM length for Cas9 (NGG is 3 nucleotides)
-DEFAULT_PAM_LENGTH = 3  # TODO should we support other PAM lengths?
-
 
 # ============================================================================
 # Schema Compliance Utilities
@@ -162,8 +159,7 @@ def format_exact_matches(exact_df: pd.DataFrame) -> pd.DataFrame:
         strand = row["strand"]
 
         # Parse sequence and PAM
-        # PAM is typically last 3 nucleotides (e.g., NGG for Cas9)
-        pam_length = DEFAULT_PAM_LENGTH
+        pam_length = len(str(row["pam"]))
         sequence_length = len(full_sequence)
         protospacer_length = sequence_length - pam_length
 

@@ -258,6 +258,7 @@ def test_coordinate_conversion():
             {
                 "id": "test1",
                 "sequence": "AAAAAAAAAAAAAAAAAAAAAGG",
+                "pam": "AGG",
                 "chromosome": "1",
                 "position": "1000",
                 "strand": "+",
@@ -266,6 +267,7 @@ def test_coordinate_conversion():
             {
                 "id": "test2",
                 "sequence": "TTTTTTTTTTTTTTTTTTTTNGG",
+                "pam": "NGG",
                 "chromosome": "1",
                 "position": "2000",
                 "strand": "-",
@@ -289,6 +291,69 @@ def test_coordinate_conversion():
     test2 = formatted[formatted["id"] == "test2"].iloc[0]
     assert test2["start"] == 1980
     assert test2["end"] == 2000
+
+
+@pytest.mark.parametrize(
+    "guide_id,full_sequence,pam_column,expected_protospacer,expected_pam,expected_pam_length",
+    [
+        (
+            "test1",
+            "AAAAAAAAAAAAAAAAAAAAAGG",
+            "NGG",
+            "AAAAAAAAAAAAAAAAAAAA",
+            "AGG",
+            3,
+        ),
+        (
+            "test2",
+            "TTTTTTTTTTTTTTTTTTTTNGG",
+            "NGG",
+            "TTTTTTTTTTTTTTTTTTTT",
+            "NGG",
+            3,
+        ),
+        (
+            "test3",
+            "CCCCCCCCCCCCCCCCCCCCCCGG",
+            "GG",
+            "CCCCCCCCCCCCCCCCCCCCCC",
+            "GG",
+            2,
+        ),
+    ],
+)
+def test_pam_extracted_from_sequence(
+    guide_id, full_sequence, pam_column, expected_protospacer, expected_pam, expected_pam_length
+):
+    """Test that PAM is extracted from actual nucleotides after the 3' end of protospacer.
+
+    This verifies that PAM length is derived from the actual nucleotides in the sequence,
+    not just from the PAM column value. The PAM should be extracted from the full sequence
+    by taking the nucleotides after the protospacer (3' end).
+    """
+    test_df = pd.DataFrame(
+        [
+            {
+                "id": guide_id,
+                "sequence": full_sequence,
+                "pam": pam_column,
+                "chromosome": "1",
+                "position": "1000",
+                "strand": "+",
+                "distance": "0",
+            }
+        ]
+    )
+
+    formatted = annotate_guides.format_exact_matches(test_df)
+
+    assert len(formatted) == 1, "Should have exactly one formatted guide"
+    result = formatted.iloc[0]
+
+    assert result["id"] == guide_id
+    assert result["sequence"] == expected_protospacer, "Protospacer should be extracted correctly"
+    assert result["pam"] == expected_pam, "PAM should be extracted from sequence nucleotides after 3' end"
+    assert len(result["pam"]) == expected_pam_length, "PAM length should be derived from actual nucleotides"
 
 
 def test_handles_empty_input():
