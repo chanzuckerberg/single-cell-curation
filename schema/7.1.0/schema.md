@@ -227,7 +227,8 @@ The following ontology dependencies are *pinned* for this version of the schema.
 | [C. elegans Development Ontology] | WBls: |  [2025-08-12 WS298](https://github.com/obophenotype/c-elegans-development-ontology/releases/tag/v2025-08-12) | [wbls.owl](https://github.com/obophenotype/c-elegans-development-ontology/blob/v2025-08-12/wbls.owl) |
 | [C. elegans Gross Anatomy Ontology] | WBbt: | [2025-08-18 WS298](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/releases/tag/v2025-08-18) | [wbbt.owl](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/blob/v2025-08-18/wbbt.owl) |
 | [Cell Ontology] | CL: |  [2025-07-30](https://github.com/obophenotype/cell-ontology/releases/tag/v2025-07-30) | [cl.owl](https://github.com/obophenotype/cell-ontology/releases/download/v2025-07-30/cl.owl)|
-| [Cellosaurus] | CVCL_ | 53.0 | [cellosaurus.obo ](https://ftp.expasy.org/databases/cellosaurus/cellosaurus.obo)_(Versioned releases are unavailable. Cellosaurus may replace this download with a newer release.)_ |
+| [Cellosaurus] | CVCL_ | 53.0 | [cellosaurus.obo ](https://ftp.expasy.org/databases/cellosaurus/cellosaurus.obo)_(Cellosaurus may replace this download with a newer release. Previous releases are <b>unavailable</b>. )_  |
+| [Chemical Entities of Biological Interest] | CHEBI: | [2025-10-31](https://ftp.ebi.ac.uk/pub/databases/chebi/ontology/)<br>246 | [chebi-lite.owl](https://ftp.ebi.ac.uk/pub/databases/chebi/ontology/chebi_lite.owl.gz) _(CHEBI may replace this download with a newer release. Previous releases are [available](https://ftp.ebi.ac.uk/pub/databases/chebi/archive/). )_ |
 | [Drosophila Anatomy Ontology] | FBbt: | [2025-08-07](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/tag/v2025-08-07)| [fbbt.owl](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/download/v2025-08-07/fbbt.owl) |
 | [Drosophila Development Ontology] | FBdv: | [2025-05-29](https://github.com/FlyBase/drosophila-developmental-ontology/releases/tag/v2025-05-29) | [fbdv.owl](https://github.com/FlyBase/drosophila-developmental-ontology/releases/download/v2025-05-29/fbdv.owl) |
 | [Experimental Factor Ontology] | EFO: | [2025-09-15 EFO 3.82.0](https://github.com/EBISPOT/efo/releases/tag/v3.82.0) | [efo.owl](https://github.com/EBISPOT/efo/releases/download/v3.82.0/efo.owl) |
@@ -238,6 +239,7 @@ The following ontology dependencies are *pinned* for this version of the schema.
 | [NCBI organismal classification] |  NCBITaxon: | [2025-09-11](https://github.com/obophenotype/ncbitaxon/releases/tag/v2025-09-11) | [ncbitaxon.owl](https://github.com/obophenotype/ncbitaxon/releases/download/v2025-09-11/ncbitaxon.owl.gz) |
 | [Phenotype And Trait Ontology] | PATO: | [2025-05-14](https://github.com/pato-ontology/pato/releases/tag/v2025-05-14) | [pato.owl](https://github.com/pato-ontology/pato/blob/v2025-05-14/pato.owl)  |
 | [Uberon multi-species anatomy ontology] |  UBERON: | [2025-08-15](https://github.com/obophenotype/uberon/releases/tag/v2025-08-15) | [uberon.owl](https://github.com/obophenotype/uberon/releases/download/v2025-08-15/uberon.owl) |
+| [UniProt Knowledgebase] | uniprot: | [08-Oct-2025](https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/)<br>2025_04 | [uniprot_sprot.xml](https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz) _(UniProt may replace this download with a newer release. Previous releases are [available](https://ftp.uniprot.org/pub/databases/uniprot/previous_major_releases/).)_ | 
 | [Zebrafish Anatomy Ontology] | ZFA:<br>ZFS: | [2025-09-05](https://github.com/ZFIN/zebrafish-anatomical-ontology/releases/tag/v2025-09-05) | [zfa.owl](https://github.com/ZFIN/zebrafish-anatomical-ontology/blob/v2025-09-05/zfa.owl) |
 | | | | |
 
@@ -248,6 +250,8 @@ The following ontology dependencies are *pinned* for this version of the schema.
 [Cell Ontology]: https://obofoundry.org/ontology/cl.html
 
 [Cellosaurus]: https://www.cellosaurus.org/description.html
+
+[Chemical Entities of Biological Interest]: https://www.ebi.ac.uk/chebi/
 
 [Drosophila Anatomy Ontology]: https://obofoundry.org/ontology/fbbt.html
 
@@ -268,6 +272,8 @@ The following ontology dependencies are *pinned* for this version of the schema.
 [Phenotype And Trait Ontology]: https://www.obofoundry.org/ontology/pato.html
 
 [Uberon multi-species anatomy ontology]: https://www.obofoundry.org/ontology/uberon.html
+
+[UniProt Knowledgebase]: https://uniprot.org
 
 [Zebrafish Anatomy Ontology]: https://obofoundry.org/ontology/zfa.html
 
@@ -694,6 +700,173 @@ Curators MUST annotate the following columns in the `obs` dataframe:
         </td>
     </tr>
 </tbody></table>
+<br>
+
+### experimental_condition_ontology_term_id
+
+<table>
+  <tbody>
+    <tr>
+      <th>Key</th>
+      <td>experimental_condition_ontology_term_id</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>Curator MUST annotate.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+      <td>
+        categorical with <code>str</code> categories. The elements in the value MUST be formatted in ascending lexical order separated by the delimiter <code>" || "</code> with no duplication of elements.<br><br>For example, if the terms are <code>"uniprot:P05112"</code>, <code>"anti-uniprot:Q99467"</code>, <code>"EFO:0002757"</code>, <code>"CHEBI:16412"</code>, <code>"EFO:0001702"</code>, and <code>"CHEBI:41774"</code> then the value MUST be <code>"anti-uniprot:Q99467 || CHEBI:16412 || CHEBI:41774 || EFO:0001702 || EFO:0002757 || uniprot:P05112"</code>.<br><br>If the experimental condition is a protein perturbation, then the value MUST include one or more UniProt terms such as <code>"uniprot:P08575"</code> for proteins or a UniProt term prefixed with <code>"anti-"</code> such as <code>"anti-uniprot:P08575"</code> for antibodies.
+       <br><br>
+        If the experimental condition is a chemical perturbation, then the value MUST include one or more descendants of <a href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_24431?lang=en"><code>"CHEBI:24431"</code></a> for <i>chemical entity</i>.<br><br>The following CHEBI terms MUST NOT be used:
+        <ul>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_23367?lang=en"
+              ><code>"CHEBI:23367"</code></a
+            >
+            for <i>molecular entity</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_24431?lang=en"
+              ><code>"CHEBI:24431"</code></a
+            >
+            for <i>chemical entity</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_24835?lang=en"
+              ><code>"CHEBI:24835"</code></a
+            >
+            for <i>inorganic molecular entity</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_24867?lang=en"
+              ><code>"CHEBI:24867"</code></a
+            >
+            for <i>monoatomic ion</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_24870?lang=en"
+              ><code>"CHEBI:24870"</code></a
+            >
+            for <i>ion</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_25212?lang=en"
+              ><code>"CHEBI:25212"</code></a
+            >
+            for <i>metabolite</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_25367?lang=en"
+              ><code>"CHEBI:25367"</code></a
+            >
+            for <i>molecule</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_25699?lang=en"
+              ><code>"CHEBI:25699"</code></a
+            >
+            for <i>organic ion</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_33238?lang=en"
+              ><code>"CHEBI:33238"</code></a
+            >
+            for <i>monoatomic entity</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_33259?lang=en"
+              ><code>"CHEBI:33259"</code></a
+            >
+            for <i>elemental molecular entity</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_33497?lang=en"
+              ><code>"CHEBI:33497"</code></a
+            >
+            for <i>transition element molecular entity</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_33595?lang=en"
+              ><code>"CHEBI:33595"</code></a
+            >
+            for <i>cyclic compound</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_33674?lang=en"
+              ><code>"CHEBI:33674"</code></a
+            >
+            for <i>s-block molecular entity</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_33675?lang=en"
+              ><code>"CHEBI:33675"</code></a
+            >
+            for <i>p-block molecular entity</i>
+          </li> 
+           <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_36342?lang=en"
+              ><code>"CHEBI:36342"</code></a
+            >
+            for <i>subatomic particle</i> and its descendants
+          </li>         
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_36357?lang=en"
+              ><code>"CHEBI:36357"</code></a
+            >
+            for <i>polyatomic entity</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_36358?lang=en"
+              ><code>"CHEBI:36358"</code></a
+            >
+            for <i>polyatomic ion</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_36914?lang=en"
+              ><code>"CHEBI:36914"</code></a
+            >
+            for <i>inorganic ion</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_37577?lang=en"
+              ><code>"CHEBI:37577"</code></a
+            >
+            for <i>heteroatomic molecular entity</i>
+          </li>
+          <li>
+            <a
+              href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_50906?lang=en"
+              ><code>"CHEBI:50906"</code></a and its descendants
+            >
+            for <i>role</i> and its descendants
+          </li>
+        </ul>
+          <br>If the experimental condition is a diet perturbation, then the value MUST include either <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0002755"><code>"EFO:0002755"</code></a> for <i>diet</i> or its most accurate descendant.<br><br>If the experimental condition is a temperature perturbation, then the value MUST include <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0001702"><code>"EFO:0001702"</code></a> for <i>temperature</i>.<br><br>No other values MUST be present for experimental conditions. 
+      </td>
+    </tr>
+  </tbody>
+</table>
 <br>
 
 ### genetic_perturbation_id
@@ -1154,6 +1327,25 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
 </tbody></table>
 <br>
 
+### experimental_condition
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>experimental_condition</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>CELLxGENE Discover MUST annotate.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories. This MUST be one or more human-readable names for the terms in <code>experimental_condition_ontology_term_id</code> in the same order separated by the delimiter <code>" || "</code>.<br><br>If an antibody value is present, then the human-readable name is prefixed with <code>"anti-"</code> such as <code>"anti-PTPRC_HUMAN"</code>.<br><br>For example, if the value of <code>experimental_condition_ontology_term_id</code> is <code>"anti-uniprot:Q99467 || CHEBI:16412 || CHEBI:41774 || EFO:0001702 || EFO:0002757 || uniprot:P05112"</code> then the value of <code>experimental_condition</code> MUST be <code>"anti-CD180_HUMAN || lipopolysaccharide || tamoxifen || temperature || high fat diet || IL4_HUMAN"</code>.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
 When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observation identifier for each cell. Curators MUST NOT annotate the following column.
 
 ### observation_joinid
@@ -1170,6 +1362,32 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
     <tr>
       <th>Value</th>
         <td><code>str</code>
+    </tr>
+</tbody></table>
+<br>
+
+### perturbation_types
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>perturbation_types</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>CELLxGENE Discover MUST annotate.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>categorical with <code>str</code> categories.<br><br>The value MUST be the <b>set</b> of perturbation types present in the observation, limited to the following types:
+        <ul>
+          <li> <code>"chemical"</code></li>
+          <li> <code>"diet"</code></li>
+          <li> <code>"genetic"</code></li>
+          <li> <code>"protein"</code></li>
+          <li> <code>"temperature"</code></li>
+        </ul>and formatted in ascending lexical order separated by the delimiter <code>" || "</code> with no duplication of elements.<br><br>If <code>experimental_condition_ontology_term_id</code> contains a <code>"CHEBI:"</code> term identifier, then <code>"chemical"</code> MUST be added to the set of values.<br><br>If <code>experimental_condition_ontology_term_id</code> contains the <code>"EFO:0002755"</code> term identifier or its descendants, then <code>"diet"</code> MUST be added to the set of values.<br><br>If <code>genetic_perturbation_term_id</code> is present and its value is not <code>"na"</code>, then <code>"genetic"</code> MUST be added to the set of values.<br><br>If <code>experimental_condition_ontology_term_id</code> contains a <code>"uniprot:"</code> term identifier, then <code>"protein"</code> MUST be added to the set of values.<br><br>If <code>experimental_condition_ontology_term_id</code> contains the <code>"EFO:0001702"</code> term identifier, then <code>"temperature"</code> MUST be added to the set of values.<br><br> 
+      </td>
     </tr>
 </tbody></table>
 <br>
@@ -2811,10 +3029,14 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
 
 ### schema v7.1.0
 * Required Ontologies
-  * PENDING
+  * Added Chemical Entities of Biological Interest (CHEBI) release 246
+  * Added UniProt Knowledgebase (uniprot) release 2025_04
 * obs (Cell metadata)
+  * Added `experimental_condition`
+  * Added `experimental_condition_ontology_term_id`
   * Added `genetic_perturbation_id`
   * Added `genetic_perturbation_strategy`
+  * Added `perturbation_types`
 * uns (Dataset Metadata)
   * Added `genetic_perturbations`
   * Updated `schema_reference` to <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/7.1.0/schema.md"</code>
