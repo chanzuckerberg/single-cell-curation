@@ -263,5 +263,51 @@ def annotate_perturbations(input_h5ad, output_h5ad, index_path):
         sys.exit(1)
 
 
+# ============================================================================
+# Reference File Cache Management Commands
+# ============================================================================
+
+
+@schema_cli.command(
+    name="clear-cache",
+    short_help="Clear cached reference files",
+    help="Clear cached reference files (e.g., GuideScan2 indexes).",
+)
+@click.option("--category", type=str, default=None, help="Category to clear (e.g., 'guidescan_indexes')")
+def clear_cache(category):
+    """Clear cached reference files."""
+    from . import env
+    from .reference_file_manager import ReferenceFileManager
+
+    try:
+        manager = ReferenceFileManager(env.REFERENCE_CACHE_DIR, env.REFERENCE_FILES_YAML)
+        cleared = manager.clear_cache(category)
+        click.echo(f"Cleared {len(cleared)} cached item(s)")
+    except Exception as e:
+        logger.error(f"Error clearing cache: {e}")
+        sys.exit(1)
+
+
+@schema_cli.command(
+    name="list-references",
+    short_help="List available reference files",
+)
+def list_references():
+    """List available reference files."""
+    from . import env
+    from .reference_file_manager import ReferenceFileManager
+
+    try:
+        manager = ReferenceFileManager(env.REFERENCE_CACHE_DIR, env.REFERENCE_FILES_YAML)
+        for cat_name, cat_files in manager.list_available_files().items():
+            click.echo(f"\n{cat_name}:")
+            for key, info in cat_files.items():
+                click.echo(f"  {key}: {info.get('description', '')}")
+                click.echo(f"    url: {info.get('url')}")
+    except Exception as e:
+        logger.error(f"Error listing references: {e}")
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     schema_cli()
