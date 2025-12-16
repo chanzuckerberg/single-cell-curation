@@ -23,6 +23,15 @@ repos:
         args: [ "--config=pyproject.toml", "--fix" ]
         stages: [ pre-commit ]
 
-# We can't have mypy in the pre-commit hook without having it run on all files
-# in the repo, because (probably) the --all-files argument in pre-commit overrides
-# the more narrow specifying of files in pyproject.toml
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.19.1
+    hooks:
+      - id: mypy
+        stages: [pre-commit]
+        args: ["--config-file=pyproject.toml"]
+        files: ^scripts/
+        exclude: ^scripts/.*/(tests|venv)/
+        additional_dependencies:
+          - types-requests
+          - types-setuptools
+          - types-PyYAML
