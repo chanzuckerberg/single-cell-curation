@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
 Create a smaller test h5ad dataset from curated.h5ad that preserves
-the genetic perturbation fields required for schema 7.1.0 testing.
+the genetic perturbation fields required for schema 7.1.0 testing,
+and removes annotated fields.
 
 This script:
 1. Reads curated.h5ad in backed mode to avoid loading everything into memory
 2. Creates a subset with fewer cells and genes
 3. Preserves all genetic perturbation fields (obs and uns)
-4. Ensures the subset maintains schema 7.1.0 compliance
+4. Removes annotated fields (target_features and target_genomic_regions)
 """
 
 import argparse
@@ -26,9 +27,10 @@ def create_small_test_dataset(
     n_cells: int = 500,
     n_genes: int = 2000,
     seed: int = 42,
+    remove_annotations: bool = True,
 ) -> None:
     """
-    Create a smaller test dataset from a large h5ad file.
+    Create a smaller test dataset from a large h5ad file and optionally remove annotations.
 
     Parameters
     ----------
@@ -42,6 +44,8 @@ def create_small_test_dataset(
         Number of genes to include in the subset (default: 2000)
     seed : int
         Random seed for reproducibility (default: 42)
+    remove_annotations : bool
+        Whether to remove target_features and target_genomic_regions (default: True)
     """
     print(f"Reading {input_file}...")
 
@@ -139,18 +143,20 @@ def create_small_test_dataset(
         adata_subset.uns["genetic_perturbations"] = adata.uns["genetic_perturbations"].copy()
 
         # Filter target_features to only include genes that are in our subset
-        for pert_id, pert_data in adata_subset.uns["genetic_perturbations"].items():
-            if "target_features" in pert_data:
-                # Keep only features that are in our gene subset
-                target_features = pert_data["target_features"]
-                filtered_features = {
-                    feat_id: feat_name for feat_id, feat_name in target_features.items() if feat_id in genes_to_keep
-                }
-                if filtered_features:
-                    adata_subset.uns["genetic_perturbations"][pert_id]["target_features"] = filtered_features
-                else:
-                    # If no features remain, remove target_features key
-                    pert_data.pop("target_features", None)
+        # (only needed if we're keeping annotations)
+        if not remove_annotations:
+            for pert_id, pert_data in adata_subset.uns["genetic_perturbations"].items():
+                if "target_features" in pert_data:
+                    # Keep only features that are in our gene subset
+                    target_features = pert_data["target_features"]
+                    filtered_features = {
+                        feat_id: feat_name for feat_id, feat_name in target_features.items() if feat_id in genes_to_keep
+                    }
+                    if filtered_features:
+                        adata_subset.uns["genetic_perturbations"][pert_id]["target_features"] = filtered_features
+                    else:
+                        # If no features remain, remove target_features key
+                        pert_data.pop("target_features", None)
 
     # Ensure raw.var exists if raw exists
     if adata.raw is not None:
@@ -168,11 +174,32 @@ def create_small_test_dataset(
             if adata_subset.obsm[key].shape[0] != len(cells_to_keep):
                 print(f"  WARNING: {key} shape mismatch ({adata_subset.obsm[key].shape[0]} vs {len(cells_to_keep)})")
 
-    # Ensure schema version is set to 7.1.0
-    adata_subset.uns["schema_version"] = "7.1.0"
-    adata_subset.uns["schema_reference"] = (
-        "https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/7.1.0/schema.md"
-    )
+    # Remove annotated fields if requested
+    if remove_annotations and "genetic_perturbations" in adata_subset.uns:
+        print("\nRemoving annotated fields from genetic_perturbations...")
+        genetic_perturbations = adata_subset.uns["genetic_perturbations"]
+        removed_count = 0
+
+        # Iterate through all perturbation IDs
+        for pert_id in genetic_perturbations:
+            pert_data = genetic_perturbations[pert_id]
+
+            # Remove target_features if present
+            if "target_features" in pert_data:
+                del pert_data["target_features"]
+                removed_count += 1
+                print(f"  Removed 'target_features' from perturbation ID: {pert_id}")
+
+            # Remove target_genomic_regions if present
+            if "target_genomic_regions" in pert_data:
+                del pert_data["target_genomic_regions"]
+                removed_count += 1
+                print(f"  Removed 'target_genomic_regions' from perturbation ID: {pert_id}")
+
+        if removed_count == 0:
+            print("  No annotated fields found to remove.")
+        else:
+            print(f"  Removed {removed_count} field(s) total.")
 
     # Verify genetic perturbation fields are present
     print("\nVerifying genetic perturbation fields...")
@@ -198,8 +225,19 @@ def create_small_test_dataset(
         # Show details of each perturbation
         for pert_id, pert_data in adata_subset.uns["genetic_perturbations"].items():
             role = pert_data.get("role", "unknown")
-            n_targets = len(pert_data.get("target_features", {}))
-            print(f"    - {pert_id}: role={role}, {n_targets} target feature(s)")
+            n_targets_feat = len(pert_data.get("target_features", {}))
+            n_targets_reg = len(pert_data.get("target_genomic_regions", {}))
+
+            # Build description based on what's present
+            details = [f"role={role}"]
+            if n_targets_feat > 0:
+                details.append(f"{n_targets_feat} target feature(s)")
+            if n_targets_reg > 0:
+                details.append(f"{n_targets_reg} target region(s)")
+            if n_targets_feat == 0 and n_targets_reg == 0:
+                details.append("no targets")
+
+            print(f"    - {pert_id}: {', '.join(details)}")
     else:
         print("  ⚠ genetic_perturbations not found in uns")
         if has_genetic_pert:
@@ -214,6 +252,7 @@ def create_small_test_dataset(
     print(f"Reduction: {adata.n_obs/adata_subset.n_obs:.1f}x cells, {adata.n_vars/adata_subset.n_vars:.1f}x genes")
     print(f"Schema version: {adata_subset.uns.get('schema_version', 'not set')}")
     print(f"Genetic perturbation fields: {'✓ Present' if has_genetic_pert else '✗ Missing'}")
+    print(f"Annotations removed: {'✓ Yes' if remove_annotations else '✗ No'}")
     print("=" * 60)
 
     # Write the subset
@@ -229,7 +268,8 @@ def create_small_test_dataset(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Create a smaller test h5ad dataset preserving genetic perturbation fields"
+        description="Create a smaller test h5ad dataset preserving genetic perturbation fields "
+        "and optionally removing annotated fields"
     )
     parser.add_argument(
         "input_file",
@@ -259,6 +299,11 @@ def main() -> None:
         default=42,
         help="Random seed for reproducibility (default: 42)",
     )
+    parser.add_argument(
+        "--keep-annotations",
+        action="store_true",
+        help="Keep target_features and target_genomic_regions (by default they are removed)",
+    )
 
     args = parser.parse_args()
 
@@ -277,6 +322,7 @@ def main() -> None:
         n_cells=args.n_cells,
         n_genes=args.n_genes,
         seed=args.seed,
+        remove_annotations=not args.keep_annotations,
     )
 
 
