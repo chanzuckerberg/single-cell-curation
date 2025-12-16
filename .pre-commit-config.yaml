@@ -1,13 +1,13 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: 25.11.0
+    rev: 25.12.0
     hooks:
       - id: black
         stages: [pre-commit]
         args: ["--config=pyproject.toml"]
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.14.5
+    rev: v0.14.9
     hooks:
       - id: ruff
         args: ["--config=pyproject.toml", "--fix"]
