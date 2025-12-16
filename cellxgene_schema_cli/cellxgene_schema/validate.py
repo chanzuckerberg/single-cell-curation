@@ -303,9 +303,7 @@ class Validator:
                     is_descendant = ancestor in ONTOLOGY_PARSER.get_term_ancestors(term_id, inclusive)
                     checks.append(is_descendant)
 
-        if True not in checks:
-            return False
-        return True
+        return any(checks)
 
     def _validate_curie_ontology(self, term_id: str, column_name: str, allowed_ontologies: List[str]) -> bool:
         """
