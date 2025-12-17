@@ -15,4 +15,4 @@ semver<4
 xxhash<4
 matplotlib<4
 pysam>=0.13.0 # for atac-seq fragment files
-bioframe==0.4.0
+pooch>=1.8.0  # for managing downloaded reference files

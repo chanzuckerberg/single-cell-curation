@@ -213,53 +213,97 @@ def map_species(input_file, output_file):
     map_species(input_file, output_file)
 
 
+# ============================================================================
+# Reference File Cache Management Commands
+# ============================================================================
+
+
 @schema_cli.command(
-    name="annotate-perturbations",
-    short_help="Annotate genetic perturbations with genomic locations and genes",
-    help="Complete pipeline to annotate genetic_perturbations in h5ad with "
-    "target_genomic_regions and target_features using guidescan2 and bioframe. "
-    "This command: (1) extracts perturbations from h5ad, (2) runs guidescan2 enumerate "
-    "to find genomic matches, (3) uses bioframe to find gene overlaps, and (4) updates "
-    "the h5ad with annotations. Requires guidescan2 to be installed "
-    "(https://github.com/pritykinlab/guidescan-cli).",
+    name="clear-cache",
+    short_help="Clear cached reference files",
+    help="Clear cached reference files (e.g., GuideScan2 indexes).",
 )
-@click.argument("input_h5ad", nargs=1, type=click.Path(exists=True, dir_okay=False))
-@click.argument("output_h5ad", nargs=1, type=click.Path(exists=False, dir_okay=False))
-@click.option(
-    "--index-path",
-    help="Path to guidescan2 index prefix (without file extension). If not provided, uses default cache.",
-    type=str,
-    default=None,
-)
-def annotate_perturbations(input_h5ad, output_h5ad, index_path):
-    """Annotate genetic perturbations with genomic and gene information."""
-    import anndata as ad
-
-    from .annotate_guides import annotate_perturbations_in_h5ad
-
-    logger.info(f"Loading h5ad file: {input_h5ad}")
+@click.option("--category", type=str, default=None, help="Category to clear (e.g., 'guidescan_indexes')")
+def clear_cache(category):
+    """Clear cached reference files."""
+    from . import env
+    from .reference_file_manager import ReferenceFileManager
 
     try:
-        # Load h5ad
-        adata = ad.read_h5ad(input_h5ad)
-
-        # Annotate (returns modified adata)
-        adata = annotate_perturbations_in_h5ad(adata, index_path)
-
-        # Save result
-        logger.info(f"Saving annotated h5ad to: {output_h5ad}")
-        adata.write_h5ad(output_h5ad)
-
-        logger.info("Successfully annotated perturbations")
-        sys.exit(0)
-    except (RuntimeError, FileNotFoundError) as e:
-        logger.error(str(e))
-        sys.exit(1)
+        manager = ReferenceFileManager(env.REFERENCE_CACHE_DIR, env.REFERENCE_FILES_YAML)
+        cleared = manager.clear_cache(category)
+        click.echo(f"Cleared {len(cleared)} cached item(s)")
     except Exception as e:
-        logger.error(f"Error during annotation: {e}")
-        import traceback
+        logger.error(f"Error clearing cache: {e}")
+        sys.exit(1)
 
-        logger.error(traceback.format_exc())
+
+@schema_cli.command(
+    name="list-references",
+    short_help="List available reference files",
+)
+def list_references():
+    """List available reference files."""
+    from . import env
+    from .reference_file_manager import ReferenceFileManager
+
+    try:
+        manager = ReferenceFileManager(env.REFERENCE_CACHE_DIR, env.REFERENCE_FILES_YAML)
+        for cat_name, cat_files in manager.list_available_files().items():
+            click.echo(f"\n{cat_name}:")
+            for key, info in cat_files.items():
+                click.echo(f"  {key}: {info.get('description', '')}")
+                click.echo(f"    url: {info.get('url')}")
+    except Exception as e:
+        logger.error(f"Error listing references: {e}")
+        sys.exit(1)
+
+
+@schema_cli.command(
+    name="fetch-references",
+    short_help="Pre-download reference files",
+    help="Pre-download and cache reference files (e.g., GuideScan2 indexes) for offline use.",
+)
+@click.option("--category", type=str, default=None, help="Category to fetch (e.g., 'guidescan_indexes')")
+@click.option("--key", type=str, default=None, help="Specific key to fetch (e.g., 'human'). Requires --category.")
+@click.option("--all", "fetch_all", is_flag=True, help="Fetch all available reference files")
+def fetch_references(category, key, fetch_all):
+    """Pre-download reference files to cache."""
+    from . import env
+    from .reference_file_manager import ReferenceFileManager
+
+    try:
+        manager = ReferenceFileManager(env.REFERENCE_CACHE_DIR, env.REFERENCE_FILES_YAML)
+        config = manager.list_available_files()
+
+        if key and not category:
+            raise click.UsageError("--key requires --category to be specified")
+
+        if fetch_all:
+            # Fetch everything
+            for cat_name, cat_files in config.items():
+                for file_key in cat_files:
+                    click.echo(f"Fetching {cat_name}/{file_key}...")
+                    manager.fetch(cat_name, file_key)
+                    click.echo("  Done.")
+        elif category and key:
+            # Fetch specific file
+            click.echo(f"Fetching {category}/{key}...")
+            manager.fetch(category, key)
+            click.echo("Done.")
+        elif category:
+            # Fetch all files in category
+            if category not in config:
+                raise click.UsageError(f"Category '{category}' not found")
+            for file_key in config[category]:
+                click.echo(f"Fetching {category}/{file_key}...")
+                manager.fetch(category, file_key)
+                click.echo("  Done.")
+        else:
+            raise click.UsageError("Specify --category, --category with --key, or --all")
+
+    except Exception as e:
+        logger.error(f"Error fetching references: {e}")
         sys.exit(1)
 
 
