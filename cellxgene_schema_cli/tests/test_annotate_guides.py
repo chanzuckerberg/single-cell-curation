@@ -2,8 +2,10 @@
 Tests for guidescan2 gRNA annotation functionality.
 """
 
+import os
 import shutil
 import subprocess
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import anndata as ad
@@ -11,6 +13,49 @@ import numpy as np
 import pandas as pd
 import pytest
 from cellxgene_schema import annotate_guides
+
+
+# Fixtures
+@pytest.fixture
+def fixtures_dir():
+    """Return path to guidescan2 test fixtures directory."""
+    return Path(__file__).parent / "fixtures" / "guidescan2"
+
+
+@pytest.fixture
+def sample_guidescan_csv(fixtures_dir):
+    """Return path to sample guidescan2 output CSV."""
+    return str(fixtures_dir / "sample_guidescan_output.csv")
+
+
+@pytest.fixture
+def sample_guidescan_input_csv(fixtures_dir):
+    """Return path to sample guidescan2 input CSV."""
+    return str(fixtures_dir / "sample_guidescan_input.csv")
+
+
+@pytest.fixture
+def sample_gene_coordinates_csv(fixtures_dir):
+    """Return path to sample gene coordinates CSV."""
+    return str(fixtures_dir / "sample_gene_coordinates.csv")
+
+
+@pytest.fixture
+def expected_output_csv(fixtures_dir):
+    """Return path to expected annotated output CSV."""
+    return str(fixtures_dir / "expected_annotated_output.csv")
+
+
+@pytest.fixture
+def sample_gene_coordinates_df(sample_gene_coordinates_csv):
+    """Load sample gene coordinates as DataFrame."""
+    df = pd.read_csv(sample_gene_coordinates_csv)
+    df = df.rename(columns={"chromosome": "chrom"})
+    # Ensure proper dtypes for bioframe compatibility
+    df["chrom"] = df["chrom"].astype(str)
+    df["start"] = df["start"].astype("int64")
+    df["end"] = df["end"].astype("int64")
+    return df
 
 
 @pytest.mark.parametrize(
@@ -230,3 +275,360 @@ def test_guidescan2_real_integration(tmp_path):
 
     # The error should NOT be about command not found
     assert "command not found" not in error_msg.lower(), "Error should not be about missing guidescan binary"
+
+
+# Test individual functions
+
+
+def test_get_best_matches(sample_guidescan_csv, sample_guidescan_input_csv):
+    """Test that best matches are correctly selected per guide."""
+    result = annotate_guides.get_best_matches(sample_guidescan_csv, sample_guidescan_input_csv)
+
+    # Should have 6 unique guides
+    assert len(result) == 6
+
+    # guide1 should select distance=0 over distance=1
+    guide1_rows = result[result["id"] == "guide1"]
+    assert len(guide1_rows) == 1
+    assert guide1_rows.iloc[0]["distance"] == 0
+    assert guide1_rows.iloc[0]["chromosome"] == "1"
+
+    # guide6 should select distance=0 over distance=2
+    guide6_rows = result[result["id"] == "guide6"]
+    assert len(guide6_rows) == 1
+    assert guide6_rows.iloc[0]["distance"] == 0
+    assert guide6_rows.iloc[0]["position"] == "3005"
+
+    # guide3 should have NA match
+    guide3_rows = result[result["id"] == "guide3"]
+    assert len(guide3_rows) == 1
+    assert guide3_rows.iloc[0]["chromosome"] == "NA"
+
+
+def test_split_exact_and_no_matches(sample_guidescan_csv, sample_guidescan_input_csv):
+    """Test splitting of exact matches and no matches."""
+    best_matches = annotate_guides.get_best_matches(sample_guidescan_csv, sample_guidescan_input_csv)
+    exact, no_match = annotate_guides.split_exact_and_no_matches(best_matches)
+
+    # Should have 5 exact matches
+    assert len(exact) == 5
+    assert "guide1" in exact["id"].values
+    assert "guide2" in exact["id"].values
+    assert "guide4" in exact["id"].values
+    assert "guide5" in exact["id"].values
+    assert "guide6" in exact["id"].values
+
+    # Should have 1 no match
+    assert len(no_match) == 1
+    assert "guide3" in no_match["id"].values
+
+
+def test_format_exact_matches(sample_guidescan_csv, sample_guidescan_input_csv):
+    """Test formatting of exact matches with coordinate conversion."""
+    best_matches = annotate_guides.get_best_matches(sample_guidescan_csv, sample_guidescan_input_csv)
+    exact, _ = annotate_guides.split_exact_and_no_matches(best_matches)
+    formatted = annotate_guides.format_exact_matches(exact)
+
+    # Should have same number of rows
+    assert len(formatted) == len(exact)
+
+    # Check guide1 (+ strand, position 1000)
+    guide1 = formatted[formatted["id"] == "guide1"].iloc[0]
+    assert guide1["sequence"] == "TGCCTCGCGCAGCTCGCGG"  # 19bp protospacer
+    assert guide1["pam"] == "NGG"  # 3bp PAM
+    assert guide1["chromosome"] == "1"
+    assert guide1["start"] == 999  # 1000 - 1 (convert to 0-based)
+    assert guide1["end"] == 1018  # 1000 + 19 - 1
+    assert guide1["sense"] == "+"
+
+    # Check guide2 (- strand, position 1982)
+    guide2 = formatted[formatted["id"] == "guide2"].iloc[0]
+    assert guide2["sequence"] == "GAGTTCGCTGCGCGCTGTT"
+    assert guide2["pam"] == "NGG"
+    assert guide2["chromosome"] == "3"
+    assert guide2["start"] == 1963  # 1982 - 19
+    assert guide2["end"] == 1982  # position
+    assert guide2["sense"] == "-"
+
+
+@pytest.mark.parametrize(
+    "guide_chr,gene_chr,expected_gene_chr,description",
+    [
+        ("chr1", "1", "chr1", "guides have chr prefix, genes don't"),
+        ("1", "chr1", "1", "guides don't have chr prefix, genes do"),
+        ("1", "1", "1", "both use same format without prefix"),
+        ("chr1", "chr1", "chr1", "both use same format with prefix"),
+    ],
+)
+def test_normalize_chromosomes(guide_chr, gene_chr, expected_gene_chr, description):
+    """Test chromosome normalization across different formats."""
+    guides_df = pd.DataFrame({"id": ["g1"], "chromosome": [guide_chr], "start": [100], "end": [200]})
+    genes_df = pd.DataFrame({"chrom": [gene_chr], "start": [150], "end": [250]})
+
+    _, genes_norm = annotate_guides.normalize_chromosomes(guides_df, genes_df)
+
+    assert genes_norm["chrom"].iloc[0] == expected_gene_chr, f"Failed for: {description}"
+
+
+def test_find_gene_overlaps(sample_guidescan_csv, sample_guidescan_input_csv, sample_gene_coordinates_df):
+    """Test bioframe overlap detection."""
+    # Get formatted guides
+    best_matches = annotate_guides.get_best_matches(sample_guidescan_csv, sample_guidescan_input_csv)
+    exact, _ = annotate_guides.split_exact_and_no_matches(best_matches)
+    formatted_guides = annotate_guides.format_exact_matches(exact)
+
+    # Find overlaps
+    overlaps = annotate_guides.find_gene_overlaps(formatted_guides, sample_gene_coordinates_df)
+
+    # Should find overlaps for guide1 (overlaps 2 genes), guide2, guide5 (overlaps 2 genes), guide6
+    # guide4 should have no overlaps (different chromosome region)
+    assert len(overlaps) > 0
+
+    # Check that guide1 overlaps both BRCA1 and BRCA1-AS1
+    guide1_overlaps = overlaps[overlaps["id_"] == "guide1"]
+    assert len(guide1_overlaps) == 2
+    gene_names = set(guide1_overlaps["gene_name"].values)
+    assert "BRCA1" in gene_names
+    assert "BRCA1-AS1" in gene_names
+
+
+def test_create_annotated_output(sample_guidescan_csv, sample_guidescan_input_csv, sample_gene_coordinates_df):
+    """Test creation of final annotated output."""
+    # Process all steps
+    best_matches = annotate_guides.get_best_matches(sample_guidescan_csv, sample_guidescan_input_csv)
+    exact, no_match = annotate_guides.split_exact_and_no_matches(best_matches)
+    formatted_guides = annotate_guides.format_exact_matches(exact)
+    overlaps = annotate_guides.find_gene_overlaps(formatted_guides, sample_gene_coordinates_df)
+
+    # Create annotated output
+    result = annotate_guides.create_annotated_output(overlaps, formatted_guides, no_match)
+
+    # Should have rows for:
+    # - guide1 (2 overlaps with genes)
+    # - guide2 (1 overlap)
+    # - guide3 (1 no-match row)
+    # - guide4 (1 no-overlap row)
+    # - guide5 (2 overlaps with genes)
+    # - guide6 (1 overlap)
+    assert len(result) == 8
+
+    # Check guide3 (no genomic match)
+    guide3_rows = result[result["id"] == "guide3"]
+    assert len(guide3_rows) == 1
+    assert guide3_rows.iloc[0]["chromosome"] == "NA"
+    assert guide3_rows.iloc[0]["gene_id"] == "NA"
+    assert guide3_rows.iloc[0]["gene_name"] == "NA"
+
+    # Check guide4 (genomic match but no gene overlap)
+    guide4_rows = result[result["id"] == "guide4"]
+    assert len(guide4_rows) == 1
+    assert guide4_rows.iloc[0]["chromosome"] == "10"
+    assert guide4_rows.iloc[0]["gene_id"] == "NA"
+    assert guide4_rows.iloc[0]["gene_name"] == "NA"
+
+    # Check guide1 (overlaps 2 genes)
+    guide1_rows = result[result["id"] == "guide1"]
+    assert len(guide1_rows) == 2
+    gene_names = set(guide1_rows["gene_name"].values)
+    assert "BRCA1" in gene_names
+    assert "BRCA1-AS1" in gene_names
+
+
+def test_end_to_end_annotation(
+    sample_guidescan_csv, sample_guidescan_input_csv, sample_gene_coordinates_csv, tmp_path, monkeypatch
+):
+    """Test full end-to-end annotation pipeline."""
+    output_csv = str(tmp_path / "annotated_output.csv")
+
+    # Mock the load_gene_coordinates function to use our test data
+    def mock_load_gene_coordinates(species):
+        df = pd.read_csv(sample_gene_coordinates_csv)
+        df = df.rename(columns={"chromosome": "chrom"})
+        # Ensure proper dtypes for bioframe compatibility
+        df["chrom"] = df["chrom"].astype(str)
+        df["start"] = df["start"].astype("int64")
+        df["end"] = df["end"].astype("int64")
+        return df
+
+    monkeypatch.setattr(annotate_guides, "load_gene_coordinates", mock_load_gene_coordinates)
+
+    # Run annotation
+    annotate_guides.annotate_guides_from_guidescan_csv(
+        sample_guidescan_csv, "test_species", sample_guidescan_input_csv, output_csv=output_csv
+    )
+
+    # Check that output file was created
+    assert os.path.exists(output_csv), f"Output file not created at {output_csv}"
+
+    # Load and verify output
+    # Use keep_default_na=False to preserve "NA" as a string, not as pandas NA
+    output_df = pd.read_csv(output_csv, keep_default_na=False, na_values=[""])
+    assert len(output_df) == 8, f"Expected 8 rows, got {len(output_df)}"
+
+    # Verify required columns exist
+    required_cols = ["id", "sequence", "pam", "chromosome", "start", "end", "sense", "gene_id", "gene_name"]
+    for col in required_cols:
+        assert col in output_df.columns, f"Missing required column: {col}"
+
+    # Verify specific guides
+    guide1_rows = output_df[output_df["id"] == "guide1"]
+    assert len(guide1_rows) == 2, "guide1 should overlap 2 genes"
+
+    guide3_rows = output_df[output_df["id"] == "guide3"]
+    assert len(guide3_rows) == 1, "guide3 should have 1 row"
+    assert str(guide3_rows.iloc[0]["chromosome"]) == "NA", "guide3 should have no genomic match"
+
+
+def test_coordinate_conversion():
+    """Test that coordinate conversion from 1-based to 0-based BED format is correct."""
+    # Create test data with known coordinates
+    test_df = pd.DataFrame(
+        [
+            {
+                "id": "test1",
+                "sequence": "AAAAAAAAAAAAAAAAAAAAAGG",
+                "pam": "AGG",
+                "chromosome": "1",
+                "position": "1000",
+                "strand": "+",
+                "distance": "0",
+            },
+            {
+                "id": "test2",
+                "sequence": "TTTTTTTTTTTTTTTTTTTTNGG",
+                "pam": "NGG",
+                "chromosome": "1",
+                "position": "2000",
+                "strand": "-",
+                "distance": "0",
+            },
+        ]
+    )
+
+    formatted = annotate_guides.format_exact_matches(test_df)
+
+    # For + strand at position 1000:
+    # - guidescan2: 1-based position 1000
+    # - BED: start = 999 (0-based), end = 1019 (20bp sequence)
+    test1 = formatted[formatted["id"] == "test1"].iloc[0]
+    assert test1["start"] == 999
+    assert test1["end"] == 1019
+
+    # For - strand at position 2000:
+    # - guidescan2: 1-based position 2000 (end of sequence)
+    # - BED: start = 1980, end = 2000
+    test2 = formatted[formatted["id"] == "test2"].iloc[0]
+    assert test2["start"] == 1980
+    assert test2["end"] == 2000
+
+
+@pytest.mark.parametrize(
+    "guide_id,full_sequence,pam_column,expected_protospacer,expected_pam,expected_pam_length",
+    [
+        (
+            "test1",
+            "AAAAAAAAAAAAAAAAAAAAAGG",
+            "NGG",
+            "AAAAAAAAAAAAAAAAAAAA",
+            "AGG",
+            3,
+        ),
+        (
+            "test2",
+            "TTTTTTTTTTTTTTTTTTTTNGG",
+            "NGG",
+            "TTTTTTTTTTTTTTTTTTTT",
+            "NGG",
+            3,
+        ),
+        (
+            "test3",
+            "CCCCCCCCCCCCCCCCCCCCCCGG",
+            "GG",
+            "CCCCCCCCCCCCCCCCCCCCCC",
+            "GG",
+            2,
+        ),
+    ],
+)
+def test_pam_extracted_from_sequence(
+    guide_id, full_sequence, pam_column, expected_protospacer, expected_pam, expected_pam_length
+):
+    """Test that PAM is extracted from actual nucleotides after the 3' end of protospacer.
+
+    This verifies that PAM length is derived from the actual nucleotides in the sequence,
+    not just from the PAM column value. The PAM should be extracted from the full sequence
+    by taking the nucleotides after the protospacer (3' end).
+    """
+    test_df = pd.DataFrame(
+        [
+            {
+                "id": guide_id,
+                "sequence": full_sequence,
+                "pam": pam_column,
+                "chromosome": "1",
+                "position": "1000",
+                "strand": "+",
+                "distance": "0",
+            }
+        ]
+    )
+
+    formatted = annotate_guides.format_exact_matches(test_df)
+
+    assert len(formatted) == 1, "Should have exactly one formatted guide"
+    result = formatted.iloc[0]
+
+    assert result["id"] == guide_id
+    assert result["sequence"] == expected_protospacer, "Protospacer should be extracted correctly"
+    assert result["pam"] == expected_pam, "PAM should be extracted from sequence nucleotides after 3' end"
+    assert len(result["pam"]) == expected_pam_length, "PAM length should be derived from actual nucleotides"
+
+
+def test_handles_empty_input():
+    """Test that functions handle empty DataFrames gracefully."""
+    empty_df = pd.DataFrame()
+
+    # format_exact_matches should return empty DataFrame with correct columns
+    result = annotate_guides.format_exact_matches(empty_df)
+    assert len(result) == 0
+    assert "id" in result.columns
+    assert "sequence" in result.columns
+
+    # find_gene_overlaps should return empty DataFrame
+    genes_df = pd.DataFrame({"chrom": [], "start": [], "end": [], "gene_id": [], "gene_name": []})
+    result = annotate_guides.find_gene_overlaps(empty_df, genes_df)
+    assert len(result) == 0
+
+
+def test_get_best_matches_variable_pam_length(tmp_path):
+    """Test that get_best_matches handles variable-length PAMs correctly."""
+    # Create input CSV with different PAM lengths
+    input_csv = tmp_path / "input.csv"
+    input_csv.write_text(
+        "id,sequence,pam,chromosome,position,sense\n"
+        "guide1,AAAAAAAAAAAAAAAAAAAA,NGG,,,\n"  # 3-char PAM (SpCas9)
+        "guide2,BBBBBBBBBBBBBBBBBBBB,TTTN,,,\n"  # 4-char PAM (Cas12a)
+        "guide3,CCCCCCCCCCCCCCCCCCCC,NNGRRT,,,\n"  # 6-char PAM
+    )
+
+    # Create mock guidescan output (simulating what guidescan would return)
+    output_csv = tmp_path / "output.csv"
+    output_csv.write_text(
+        "id,sequence,match_chrm,match_position,match_strand,match_distance,match_sequence,rna_bulges,dna_bulges,specificity\n"
+        "guide1,AAAAAAAAAAAAAAAAAAAANGG,chr1,1000,+,0,AAAAAAAAAAAAAAAAAAAACGG,0,0,1.0\n"
+        "guide2,BBBBBBBBBBBBBBBBBBBBTTTN,chr2,2000,-,0,BBBBBBBBBBBBBBBBBBBBTTTT,0,0,1.0\n"
+        "guide3,CCCCCCCCCCCCCCCCCCCCNNGRRT,chr3,3000,+,0,CCCCCCCCCCCCCCCCCCCCAAGAAT,0,0,1.0\n"
+    )
+
+    # Test with input CSV (should preserve original PAM from input)
+    result = annotate_guides.get_best_matches(str(output_csv), str(input_csv))
+
+    assert len(result) == 3
+    assert result.loc[result["id"] == "guide1", "pam"].iloc[0] == "NGG"
+    assert result.loc[result["id"] == "guide2", "pam"].iloc[0] == "TTTN"
+    assert result.loc[result["id"] == "guide3", "pam"].iloc[0] == "NNGRRT"
+
+    # Test that input_csv is now required - should raise error without it
+    with pytest.raises(TypeError, match="missing 1 required positional argument"):
+        annotate_guides.get_best_matches(str(output_csv))
