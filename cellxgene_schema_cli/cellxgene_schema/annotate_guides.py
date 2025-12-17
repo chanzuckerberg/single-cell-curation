@@ -80,7 +80,7 @@ def _remove_ensembl_version(gene_id: str) -> str:
 # ============================================================================
 
 
-def get_best_matches(csv_file: str) -> pd.DataFrame:
+def get_best_matches(csv_file: str, input_csv_file: str) -> pd.DataFrame:
     """Process guidescan2 enumerate output to get the best match per guide.
 
     - Keep best match per guide_id based on distance
@@ -88,12 +88,37 @@ def get_best_matches(csv_file: str) -> pd.DataFrame:
     - Among non-NA matches, prefer lowest distance
 
     :param str csv_file: Path to guidescan2 enumerate CSV output
-    :return: DataFrame with best match per guide_id
+    :param str input_csv_file: Path to guidescan2 input CSV (to get PAM info for variable-length PAM support)
+    :return: DataFrame with best match per guide_id, normalized column names
     :rtype: pd.DataFrame
     """
     # Load the entire CSV into a DataFrame
     # Keep "NA" as a string, not as pandas NA
     df = pd.read_csv(csv_file, keep_default_na=False, na_values=[""])
+
+    # Normalize column names (guidescan v2.2.1 uses match_* prefixes)
+    column_mapping = {
+        "match_chrm": "chromosome",
+        "match_position": "position",
+        "match_strand": "strand",
+        "match_distance": "distance",
+        "match_sequence": "matched_sequence",
+    }
+    df = df.rename(columns=column_mapping)
+
+    # Extract PAM from input CSV (for variable-length PAM support)
+    # This allows support for PAMs of any length (NGG, TTTN, NNGRRT, etc.)
+    input_df = pd.read_csv(input_csv_file, keep_default_na=False, na_values=[""])
+    if "pam" not in input_df.columns:
+        raise ValueError(f"Input CSV {input_csv_file} must contain 'pam' column for PAM motif information")
+
+    # Join with input to get original PAM motif
+    df = df.merge(input_df[["id", "pam"]], on="id", how="left", suffixes=("", "_input"))
+
+    # Use pam from input (handle both cases where merge creates pam_input or overwrites pam)
+    if "pam_input" in df.columns:
+        df["pam"] = df["pam_input"]
+        df = df.drop(columns=["pam_input"])
 
     # Create helper column: True for NA matches, False for actual matches
     df["is_no_match"] = df["chromosome"] == "NA"
@@ -283,6 +308,16 @@ def find_gene_overlaps(guides_df: pd.DataFrame, genes_df: pd.DataFrame) -> pd.Da
     if guides_df.empty:
         return pd.DataFrame()
 
+    # Filter genes to major chromosomes only (chr1-22, X, Y, M, MT)
+    # Alternate scaffolds/patches can cause issues with bioframe and are not typically targeted
+    major_chroms = [f"chr{i}" for i in range(1, 23)] + ["chrX", "chrY", "chrM", "chrMT"]
+    # Also include versions without "chr" prefix
+    major_chroms_no_prefix = [str(i) for i in range(1, 23)] + ["X", "Y", "M", "MT"]
+    all_major_chroms = major_chroms + major_chroms_no_prefix
+
+    genes_df = genes_df[genes_df["chrom"].isin(all_major_chroms)].copy()
+    logger.info(f"Filtered to {len(genes_df)} genes on major chromosomes")
+
     # Normalize chromosome naming
     guides_df, genes_df = normalize_chromosomes(guides_df, genes_df)
 
@@ -381,12 +416,12 @@ def _get_or_download_index(organism_id: str) -> str:
     # pooch handles caching - returns list of extracted files
     files = manager.fetch(GUIDESCAN_INDEX_CATEGORY, key)
 
-    # Find the index prefix from .index.gs file
+    # Find the index prefix from .gs file (guidescan2 expects prefix.gs, prefix.forward, prefix.reverse)
     for f in files:
-        if f.endswith(".index.gs"):
-            return f[: -len(".index.gs")]
+        if f.endswith(".gs"):
+            return f[: -len(".gs")]
 
-    raise ValueError(f"No .index.gs file found in downloaded index for {organism_id}")
+    raise ValueError(f"No .gs file found in downloaded index for {organism_id}")
 
 
 # ============================================================================
@@ -483,8 +518,9 @@ def _extract_perturbations_to_guidescan_csv(adata: ad.AnnData, output_csv: str) 
     """Extract genetic perturbations to CSV for guidescan2 input.
 
     Extracts guide sequences from adata.uns['genetic_perturbations'] and writes
-    them to a CSV file in guidescan2 enumerate input format (id, sequence, pam, chromosome, start, end, sense).
-    Only id, sequence, and pam are required to run guidescan enumerate. The other columns are empty.
+    them to a CSV file in guidescan2 enumerate input format.
+    Guidescan enumerate requires: id, sequence, pam, chromosome, position, sense
+    (chromosome, position, sense can be empty for enumeration)
 
     :param ad.AnnData adata: AnnData object with genetic_perturbations in uns
     :param str output_csv: Path to output CSV file
@@ -494,31 +530,24 @@ def _extract_perturbations_to_guidescan_csv(adata: ad.AnnData, output_csv: str) 
     # Extract guide sequences
     rows = []
     for guide_id, guide_data in genetic_perturbations.items():
-        # Get protospacer and PAM
         protospacer = guide_data.get("protospacer_sequence", "")
         pam_motif = guide_data.get("protospacer_adjacent_motif", "")
-
-        # Extract PAM sequence (remove "3' " prefix if present)
         pam = pam_motif[3:] if pam_motif.startswith("3' ") else pam_motif
-
-        # Combine into full sequence for guidescan2
-        full_sequence = protospacer + pam
 
         rows.append(
             {
                 "id": guide_id,
-                "sequence": full_sequence,
+                "sequence": protospacer,
                 "pam": pam,
-                "chromosome": "",
-                "start": "",
-                "end": "",
-                "sense": "",
+                "chromosome": None,
+                "position": None,
+                "sense": None,
             }
         )
 
     # Write to CSV
     df = pd.DataFrame(rows)
-    df.to_csv(output_csv, index=False)
+    df.to_csv(output_csv, index=False, na_rep="")
     logger.info(f"Extracted {len(rows)} guide sequences to {output_csv}")
 
 
@@ -632,20 +661,21 @@ def update_h5ad_with_guide_annotations(adata: ad.AnnData, annotations_df: pd.Dat
 
 
 def annotate_guides_from_guidescan_csv(
-    guidescan_csv: str, species: str, output_csv: Optional[str] = None
+    guidescan_csv: str, species: str, input_csv: str, output_csv: Optional[str] = None
 ) -> pd.DataFrame:
     """Main function to annotate guides from guidescan2 enumerate output.
 
     :param str guidescan_csv: Path to guidescan2 enumerate CSV output
     :param str species: Species NCBITaxon ID (e.g., "NCBITaxon:9606") or
         species name (e.g., "homo_sapiens")
+    :param str input_csv: Path to guidescan2 input CSV (required for PAM info and variable-length PAM support)
     :param Optional[str] output_csv: Path to save annotated output CSV. If None, doesn't save.
     :return: Annotated guides DataFrame
     :rtype: pd.DataFrame
     """
     # Step 1: Get best matches
     logger.info("Processing best matches...")
-    best_matches = get_best_matches(guidescan_csv)
+    best_matches = get_best_matches(guidescan_csv, input_csv_file=input_csv)
     logger.info(f"Found {len(best_matches)} unique guides")
 
     # Step 2: Split exact vs no matches
@@ -672,6 +702,12 @@ def annotate_guides_from_guidescan_csv(
     logger.info("Creating annotated output...")
     annotated = create_annotated_output(overlaps, formatted_guides, no_matches)
     logger.info(f"Final output: {len(annotated)} rows")
+
+    # Log statistics about annotations
+    guides_with_genes = len(annotated[annotated["gene_id"] != "NA"])
+    guides_without_genes = len(annotated[annotated["gene_id"] == "NA"])
+    logger.info(f"  Guides with gene overlaps: {guides_with_genes}")
+    logger.info(f"  Guides without gene overlaps: {guides_without_genes}")
 
     # Save if output path provided
     if output_csv:
@@ -732,7 +768,7 @@ def annotate_perturbations_in_h5ad(adata: ad.AnnData, index_path: Optional[str] 
 
         # Run bioframe annotation
         logger.info("Annotating with bioframe...")
-        annotations_df = annotate_guides_from_guidescan_csv(enumerate_csv, organism_id)
+        annotations_df = annotate_guides_from_guidescan_csv(enumerate_csv, organism_id, guides_csv)
 
         # Update adata with annotations
         logger.info("Updating AnnData with annotations...")

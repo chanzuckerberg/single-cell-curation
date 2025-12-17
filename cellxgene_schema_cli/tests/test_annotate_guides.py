@@ -29,6 +29,12 @@ def sample_guidescan_csv(fixtures_dir):
 
 
 @pytest.fixture
+def sample_guidescan_input_csv(fixtures_dir):
+    """Return path to sample guidescan2 input CSV."""
+    return str(fixtures_dir / "sample_guidescan_input.csv")
+
+
+@pytest.fixture
 def sample_gene_coordinates_csv(fixtures_dir):
     """Return path to sample gene coordinates CSV."""
     return str(fixtures_dir / "sample_gene_coordinates.csv")
@@ -55,9 +61,9 @@ def sample_gene_coordinates_df(sample_gene_coordinates_csv):
 # Test individual functions
 
 
-def test_get_best_matches(sample_guidescan_csv):
+def test_get_best_matches(sample_guidescan_csv, sample_guidescan_input_csv):
     """Test that best matches are correctly selected per guide."""
-    result = annotate_guides.get_best_matches(sample_guidescan_csv)
+    result = annotate_guides.get_best_matches(sample_guidescan_csv, sample_guidescan_input_csv)
 
     # Should have 6 unique guides
     assert len(result) == 6
@@ -80,9 +86,9 @@ def test_get_best_matches(sample_guidescan_csv):
     assert guide3_rows.iloc[0]["chromosome"] == "NA"
 
 
-def test_split_exact_and_no_matches(sample_guidescan_csv):
+def test_split_exact_and_no_matches(sample_guidescan_csv, sample_guidescan_input_csv):
     """Test splitting of exact matches and no matches."""
-    best_matches = annotate_guides.get_best_matches(sample_guidescan_csv)
+    best_matches = annotate_guides.get_best_matches(sample_guidescan_csv, sample_guidescan_input_csv)
     exact, no_match = annotate_guides.split_exact_and_no_matches(best_matches)
 
     # Should have 5 exact matches
@@ -98,9 +104,9 @@ def test_split_exact_and_no_matches(sample_guidescan_csv):
     assert "guide3" in no_match["id"].values
 
 
-def test_format_exact_matches(sample_guidescan_csv):
+def test_format_exact_matches(sample_guidescan_csv, sample_guidescan_input_csv):
     """Test formatting of exact matches with coordinate conversion."""
-    best_matches = annotate_guides.get_best_matches(sample_guidescan_csv)
+    best_matches = annotate_guides.get_best_matches(sample_guidescan_csv, sample_guidescan_input_csv)
     exact, _ = annotate_guides.split_exact_and_no_matches(best_matches)
     formatted = annotate_guides.format_exact_matches(exact)
 
@@ -113,7 +119,7 @@ def test_format_exact_matches(sample_guidescan_csv):
     assert guide1["pam"] == "NGG"  # 3bp PAM
     assert guide1["chromosome"] == "1"
     assert guide1["start"] == 999  # 1000 - 1 (convert to 0-based)
-    assert guide1["end"] == 1018  # 1000 + 20 - 1
+    assert guide1["end"] == 1018  # 1000 + 19 - 1
     assert guide1["sense"] == "+"
 
     # Check guide2 (- strand, position 1982)
@@ -121,7 +127,7 @@ def test_format_exact_matches(sample_guidescan_csv):
     assert guide2["sequence"] == "GAGTTCGCTGCGCGCTGTT"
     assert guide2["pam"] == "NGG"
     assert guide2["chromosome"] == "3"
-    assert guide2["start"] == 1963  # 1982 - 20
+    assert guide2["start"] == 1963  # 1982 - 19
     assert guide2["end"] == 1982  # position
     assert guide2["sense"] == "-"
 
@@ -145,10 +151,10 @@ def test_normalize_chromosomes(guide_chr, gene_chr, expected_gene_chr, descripti
     assert genes_norm["chrom"].iloc[0] == expected_gene_chr, f"Failed for: {description}"
 
 
-def test_find_gene_overlaps(sample_guidescan_csv, sample_gene_coordinates_df):
+def test_find_gene_overlaps(sample_guidescan_csv, sample_guidescan_input_csv, sample_gene_coordinates_df):
     """Test bioframe overlap detection."""
     # Get formatted guides
-    best_matches = annotate_guides.get_best_matches(sample_guidescan_csv)
+    best_matches = annotate_guides.get_best_matches(sample_guidescan_csv, sample_guidescan_input_csv)
     exact, _ = annotate_guides.split_exact_and_no_matches(best_matches)
     formatted_guides = annotate_guides.format_exact_matches(exact)
 
@@ -167,10 +173,10 @@ def test_find_gene_overlaps(sample_guidescan_csv, sample_gene_coordinates_df):
     assert "BRCA1-AS1" in gene_names
 
 
-def test_create_annotated_output(sample_guidescan_csv, sample_gene_coordinates_df):
+def test_create_annotated_output(sample_guidescan_csv, sample_guidescan_input_csv, sample_gene_coordinates_df):
     """Test creation of final annotated output."""
     # Process all steps
-    best_matches = annotate_guides.get_best_matches(sample_guidescan_csv)
+    best_matches = annotate_guides.get_best_matches(sample_guidescan_csv, sample_guidescan_input_csv)
     exact, no_match = annotate_guides.split_exact_and_no_matches(best_matches)
     formatted_guides = annotate_guides.format_exact_matches(exact)
     overlaps = annotate_guides.find_gene_overlaps(formatted_guides, sample_gene_coordinates_df)
@@ -209,7 +215,9 @@ def test_create_annotated_output(sample_guidescan_csv, sample_gene_coordinates_d
     assert "BRCA1-AS1" in gene_names
 
 
-def test_end_to_end_annotation(sample_guidescan_csv, sample_gene_coordinates_csv, tmp_path, monkeypatch):
+def test_end_to_end_annotation(
+    sample_guidescan_csv, sample_guidescan_input_csv, sample_gene_coordinates_csv, tmp_path, monkeypatch
+):
     """Test full end-to-end annotation pipeline."""
     output_csv = str(tmp_path / "annotated_output.csv")
 
@@ -226,7 +234,9 @@ def test_end_to_end_annotation(sample_guidescan_csv, sample_gene_coordinates_csv
     monkeypatch.setattr(annotate_guides, "load_gene_coordinates", mock_load_gene_coordinates)
 
     # Run annotation
-    annotate_guides.annotate_guides_from_guidescan_csv(sample_guidescan_csv, "test_species", output_csv)
+    annotate_guides.annotate_guides_from_guidescan_csv(
+        sample_guidescan_csv, "test_species", sample_guidescan_input_csv, output_csv=output_csv
+    )
 
     # Check that output file was created
     assert os.path.exists(output_csv), f"Output file not created at {output_csv}"
@@ -756,10 +766,10 @@ def test_extract_perturbations_to_guidescan_csv(tmp_path):
 
     # Check full sequence (protospacer + PAM)
     guide1_row = df[df["id"] == "guide1"].iloc[0]
-    assert guide1_row["sequence"] == "TGCCTCGCGCAGCTCGCGGNGG"
+    assert guide1_row["sequence"] == "TGCCTCGCGCAGCTCGCGG"
 
     guide2_row = df[df["id"] == "guide2"].iloc[0]
-    assert guide2_row["sequence"] == "ACGTACGTACGTACGTACGTGG"
+    assert guide2_row["sequence"] == "ACGTACGTACGTACGTACG"
 
 
 def test_annotate_perturbations_skips_when_no_perturbations():
@@ -848,8 +858,10 @@ def test_get_or_download_index_uses_reference_manager(monkeypatch):
 
     result = annotate_guides._get_or_download_index("NCBITaxon:9606")
 
-    # Should return the index prefix (path without .index.gs)
-    assert result == "/cache/human"
+    # Should return the index prefix (path without .gs extension)
+    # With files like "human.index.gs", "human.index.forward", "human.index.reverse",
+    # the prefix should be "human.index"
+    assert result == "/cache/human.index"
     mock_manager.fetch.assert_called_once()
 
 
@@ -946,3 +958,36 @@ def test_guidescan2_real_integration(tmp_path):
 
     # The error should NOT be about command not found
     assert "command not found" not in error_msg.lower(), "Error should not be about missing guidescan binary"
+
+
+def test_get_best_matches_variable_pam_length(tmp_path):
+    """Test that get_best_matches handles variable-length PAMs correctly."""
+    # Create input CSV with different PAM lengths
+    input_csv = tmp_path / "input.csv"
+    input_csv.write_text(
+        "id,sequence,pam,chromosome,position,sense\n"
+        "guide1,AAAAAAAAAAAAAAAAAAAA,NGG,,,\n"  # 3-char PAM (SpCas9)
+        "guide2,BBBBBBBBBBBBBBBBBBBB,TTTN,,,\n"  # 4-char PAM (Cas12a)
+        "guide3,CCCCCCCCCCCCCCCCCCCC,NNGRRT,,,\n"  # 6-char PAM
+    )
+
+    # Create mock guidescan output (simulating what guidescan would return)
+    output_csv = tmp_path / "output.csv"
+    output_csv.write_text(
+        "id,sequence,match_chrm,match_position,match_strand,match_distance,match_sequence,rna_bulges,dna_bulges,specificity\n"
+        "guide1,AAAAAAAAAAAAAAAAAAAANGG,chr1,1000,+,0,AAAAAAAAAAAAAAAAAAAACGG,0,0,1.0\n"
+        "guide2,BBBBBBBBBBBBBBBBBBBBTTTN,chr2,2000,-,0,BBBBBBBBBBBBBBBBBBBBTTTT,0,0,1.0\n"
+        "guide3,CCCCCCCCCCCCCCCCCCCCNNGRRT,chr3,3000,+,0,CCCCCCCCCCCCCCCCCCCCAAGAAT,0,0,1.0\n"
+    )
+
+    # Test with input CSV (should preserve original PAM from input)
+    result = annotate_guides.get_best_matches(str(output_csv), str(input_csv))
+
+    assert len(result) == 3
+    assert result.loc[result["id"] == "guide1", "pam"].iloc[0] == "NGG"
+    assert result.loc[result["id"] == "guide2", "pam"].iloc[0] == "TTTN"
+    assert result.loc[result["id"] == "guide3", "pam"].iloc[0] == "NNGRRT"
+
+    # Test that input_csv is now required - should raise error without it
+    with pytest.raises(TypeError, match="missing 1 required positional argument"):
+        annotate_guides.get_best_matches(str(output_csv))
