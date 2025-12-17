@@ -12,7 +12,7 @@ Input Files
 -----------
 
 1. **gene_info.yml** - Configuration file specifying GTF sources
-   
+
    Example structure::
 
        human:
@@ -23,7 +23,7 @@ Input Files
          ensembl_species: "hsapiens"
 
 2. **GTF files** - Downloaded from URLs in gene_info.yml (gzipped)
-   
+
    Standard GTF format with 9 tab-separated columns. Example lines::
 
        chr1    HAVANA  gene    11869   14409   .   +   .   gene_id "ENSG00000223972.5"; gene_name "DDX11L1";
@@ -35,17 +35,17 @@ Output Files
 ------------
 
 1. **Downloaded GTF files** - Saved to gencode directory
-   
+
    Format: ``{description}.gtf.gz``
-   
+
    Example: ``gencode44_human.gtf.gz``
 
 2. **Gene coordinate CSV files** - BED-format gene coordinates (gzipped)
-   
+
    Format: ``gene_coordinates_{description}.csv.gz``
-   
+
    Example: ``gene_coordinates_gencode44_human.csv.gz``
-   
+
    CSV structure (bioframe-compatible)::
 
        chrom,start,end,gene_id,gene_name,strand
@@ -59,7 +59,7 @@ Output Files
    - **gene_id**: Ensembl gene ID from GTF
    - **gene_name**: Gene symbol/name from GTF (defaults to gene_id if missing)
    - **strand**: Strand orientation (+ or -)
-   
+
    Notes:
    - Rows are sorted by chromosome and start position
    - PAR_Y genes (pseudo-autosomal region Y duplicates) are excluded
