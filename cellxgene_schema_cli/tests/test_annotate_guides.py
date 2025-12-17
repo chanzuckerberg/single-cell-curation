@@ -41,12 +41,6 @@ def sample_gene_coordinates_csv(fixtures_dir):
 
 
 @pytest.fixture
-def expected_output_csv(fixtures_dir):
-    """Return path to expected annotated output CSV."""
-    return str(fixtures_dir / "expected_annotated_output.csv")
-
-
-@pytest.fixture
 def sample_gene_coordinates_df(sample_gene_coordinates_csv):
     """Load sample gene coordinates as DataFrame."""
     df = pd.read_csv(sample_gene_coordinates_csv)
