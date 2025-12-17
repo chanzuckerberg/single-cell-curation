@@ -1,7 +1,6 @@
 from unittest.mock import patch
 
 import yaml
-
 from scripts.update_genes import get_latest_release_from_gencode, update_gene_info
 
 

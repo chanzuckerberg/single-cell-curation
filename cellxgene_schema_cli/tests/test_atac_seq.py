@@ -579,9 +579,8 @@ class TestIndexFragmentWithLineCountValidation:
                 f_out.write(f"chr1\t100\t200\t{TEST_BARCODE}\t5\n".encode())  # Only one line instead of two
 
         # Act & Assert
-        with (
-            mock.patch("cellxgene_schema.atac_seq.prepare_fragment", side_effect=mock_prepare_fragment),
-            pytest.raises(ValueError, match="Line count validation failed"),
+        with mock.patch("cellxgene_schema.atac_seq.prepare_fragment", side_effect=mock_prepare_fragment), pytest.raises(
+            ValueError, match="Line count validation failed"
         ):
             atac_seq.index_fragment(
                 fragment_file=test_fragment_file,
