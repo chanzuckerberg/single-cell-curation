@@ -823,19 +823,34 @@ def test_run_guidescan_enumerate_failure(tmp_path, monkeypatch):
         annotate_guides._run_guidescan_enumerate(str(input_csv), index_prefix, str(output_csv))
 
 
-def test_get_or_download_index_with_path():
-    """Test using explicit index path."""
-    explicit_path = "/explicit/path/to/index"
-    result = annotate_guides._get_or_download_index("NCBITaxon:9606", explicit_path)
-    assert result == explicit_path
+def test_get_or_download_index_unsupported_organism():
+    """Test error for unsupported organism ID."""
+    with pytest.raises(ValueError, match="not available"):
+        annotate_guides._get_or_download_index("NCBITaxon:99999")
 
 
-def test_get_or_download_index_not_implemented():
-    """Test that downloading index raises NotImplementedError."""
-    # Without an explicit path and no cached index, should try to download and fail
-    with pytest.raises((NotImplementedError, RuntimeError)):
-        # This will fail because the index doesn't exist and download is not implemented
-        annotate_guides._get_or_download_index("NCBITaxon:9606", index_path=None)
+def test_get_or_download_index_uses_reference_manager(monkeypatch):
+    """Test that _get_or_download_index uses ReferenceFileManager."""
+    from cellxgene_schema import reference_file_manager
+
+    # Mock ReferenceFileManager
+    mock_manager = MagicMock()
+    mock_manager.get_key_by_organism_id.return_value = "human"
+    mock_manager.fetch.return_value = [
+        "/cache/human.index.forward",
+        "/cache/human.index.reverse",
+        "/cache/human.index.gs",
+    ]
+
+    mock_manager_class = MagicMock(return_value=mock_manager)
+    monkeypatch.setattr(reference_file_manager, "ReferenceFileManager", mock_manager_class)
+    monkeypatch.setattr(annotate_guides, "ReferenceFileManager", mock_manager_class)
+
+    result = annotate_guides._get_or_download_index("NCBITaxon:9606")
+
+    # Should return the index prefix (path without .index.gs)
+    assert result == "/cache/human"
+    mock_manager.fetch.assert_called_once()
 
 
 def test_annotate_perturbations_in_h5ad_no_guidescan(tmp_path, monkeypatch):

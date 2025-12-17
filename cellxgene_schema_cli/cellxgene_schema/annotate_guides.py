@@ -8,9 +8,7 @@ import logging
 import os
 import shutil
 import subprocess
-import tarfile
 import tempfile
-import urllib.request
 from typing import Dict, List, Optional, Tuple
 
 import anndata as ad
@@ -19,6 +17,7 @@ import pandas as pd
 
 from . import env
 from .gencode import SupportedOrganisms
+from .reference_file_manager import ReferenceFileManager
 
 logger = logging.getLogger(__name__)
 
@@ -369,92 +368,25 @@ def create_annotated_output(
 # Manage GuideScan2 Index Files
 # ============================================================================
 
-
-def _get_guidescan_index_url(organism_id: str) -> str:
-    """Get download URL for guidescan2 index (STUB - to be implemented).
-
-    :param str organism_id: NCBITaxon ID (e.g., "NCBITaxon:9606")
-    :return: URL to download index tar.gz file
-    :rtype: str
-    :raises NotImplementedError: This is a stub for future implementation
-    """
-    # TODO: Map organism IDs to index URLs
-    # Will need to host index files and provide download URLs
-    raise NotImplementedError(
-        "GuideScan2 index download not yet implemented. " "Please provide index path using --index-path option."
-    )
+GUIDESCAN_INDEX_CATEGORY = "guidescan_indexes"
 
 
-def _download_and_extract_index(organism_id: str, cache_dir: str) -> str:
-    """Download and extract guidescan2 index tar.gz file.
+def _get_or_download_index(organism_id: str) -> str:
+    """Get cached index or download if not present. Returns index prefix path."""
+    manager = ReferenceFileManager(env.REFERENCE_CACHE_DIR, env.REFERENCE_FILES_YAML)
+    key = manager.get_key_by_organism_id(GUIDESCAN_INDEX_CATEGORY, organism_id)
+    if key is None:
+        raise ValueError(f"GuideScan2 index not available for organism {organism_id}.")
 
-    :param str organism_id: NCBITaxon ID (e.g., "NCBITaxon:9606")
-    :param str cache_dir: Directory to cache downloaded index
-    :return: Path to index_prefix (without file extension)
-    :rtype: str
-    :raises NotImplementedError: If index URL is not available (via _get_guidescan_index_url)
-    """
-    # Get organism name for file naming
-    organism = SupportedOrganisms(organism_id)
-    species_name = organism.name.lower()
+    # pooch handles caching - returns list of extracted files
+    files = manager.fetch(GUIDESCAN_INDEX_CATEGORY, key)
 
-    # Get download URL
-    url = _get_guidescan_index_url(organism_id)
+    # Find the index prefix from .index.gs file
+    for f in files:
+        if f.endswith(".index.gs"):
+            return f[: -len(".index.gs")]
 
-    # Download tar.gz file
-    tar_path = os.path.join(cache_dir, f"guidescan_index_{species_name}.tar.gz")
-    logger.info(f"Downloading index from {url} to {tar_path}...")
-
-    # Implement download logic
-    urllib.request.urlretrieve(url, tar_path)
-
-    # Extract tar.gz safely
-    logger.info(f"Extracting {tar_path}...")
-    with tarfile.open(tar_path, "r:gz") as tar:
-        # Validate all members are safe (no path traversal)
-        for member in tar.getmembers():
-            if member.name.startswith("/") or ".." in member.name:
-                raise ValueError(f"Unsafe tar member: {member.name}")
-        tar.extractall(cache_dir)
-
-    # Return index prefix path
-    index_prefix = os.path.join(cache_dir, f"guidescan_index_{species_name}")
-    logger.info(f"Index extracted to {index_prefix}")
-
-    return index_prefix
-
-
-def _get_or_download_index(organism_id: str, index_path: Optional[str] = None) -> str:
-    """Get cached index or download if not present.
-
-    :param str organism_id: NCBITaxon ID (e.g., "NCBITaxon:9606")
-    :param Optional[str] index_path: Explicit path to index. If None, uses cache.
-    :return: Path to index_prefix (without file extension)
-    :rtype: str
-    """
-    # If explicit path provided, use it
-    if index_path:
-        logger.info(f"Using provided index path: {index_path}")
-        return index_path
-
-    # Otherwise, check cache or download
-    organism = SupportedOrganisms(organism_id)
-    species_name = organism.name.lower()
-
-    # Check if index exists in cache
-    cache_dir = env.GENCODE_DIR
-    index_prefix = os.path.join(cache_dir, f"guidescan_index_{species_name}")
-
-    # Check for any index files with this prefix
-    # Guidescan2 indices consist of 3 files with the extensions *.index.{forward,reverse,gs}
-    required_extensions = [".index.forward", ".index.reverse", ".index.gs"]
-    if all(os.path.exists(f"{index_prefix}{ext}") for ext in required_extensions):
-        logger.info(f"Using cached index: {index_prefix}")
-        return index_prefix
-
-    # Index not found, attempt download
-    logger.info("Index not found in cache, attempting download...")
-    return _download_and_extract_index(organism_id, cache_dir)
+    raise ValueError(f"No .index.gs file found in downloaded index for {organism_id}")
 
 
 # ============================================================================
@@ -791,14 +723,7 @@ def annotate_perturbations_in_h5ad(adata: ad.AnnData, index_path: Optional[str] 
 
         # Get/download guidescan2 index
         logger.info("Getting guidescan2 index...")
-        try:
-            index_prefix = _get_or_download_index(organism_id, index_path)
-        except NotImplementedError as e:
-            logger.error(str(e))
-            raise RuntimeError(
-                f"GuideScan2 index for {organism_id} not found. "
-                "Please provide --index-path or implement index download."
-            ) from e
+        index_prefix: str = index_path or _get_or_download_index(organism_id)
 
         # Run guidescan enumerate
         logger.info("Running guidescan enumerate...")
