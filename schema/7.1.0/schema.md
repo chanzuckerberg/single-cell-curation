@@ -1542,9 +1542,9 @@ Curators MUST annotate the following keys and values in `uns`:
           <li>genetic_perturbations[<i>id</i>]['role']</li>
           <li>genetic_perturbations[<i>id</i>]['protospacer_sequence']</li>
           <li>genetic_perturbations[<i>id</i>]['protospacer_adjacent_motif']</li>
-          <li>genetic_perturbations[<i>id</i>]['target_genomic_regions']</li>
-          <li>genetic_perturbations[<i>id</i>]['target_features']</li>
-          <li>genetic_perturbations[<i>id</i>]['target_features'][<i>feature_id</i>]</li>
+          <li>genetic_perturbations[<i>id</i>]['derived_genomic_regions']</li>
+          <li>genetic_perturbations[<i>id</i>]['derived_features']</li>
+          <li>genetic_perturbations[<i>id</i>]['derived_features'][<i>feature_id</i>]</li>
          </ul><br>Additional key-value pairs MUST NOT be present.
         </td>
     </tr>
@@ -1570,9 +1570,9 @@ Curators MUST annotate the following keys and values in `uns`:
           <li>genetic_perturbations[<i>id</i>]['role']</li>
           <li>genetic_perturbations[<i>id</i>]['protospacer_sequence']</li>
           <li>genetic_perturbations[<i>id</i>]['protospacer_adjacent_motif']</li>
-          <li>genetic_perturbations[<i>id</i>]['target_genomic_regions']</li>
-          <li>genetic_perturbations[<i>id</i>]['target_features']</li>
-          <li>genetic_perturbations[<i>id</i>]['target_features'][<i>feature_id</i>]</li>
+          <li>genetic_perturbations[<i>id</i>]['derived_genomic_regions']</li>
+          <li>genetic_perturbations[<i>id</i>]['derived_features']</li>
+          <li>genetic_perturbations[<i>id</i>]['derived_features'][<i>feature_id</i>]</li>
          </ul><br>Additional key-value pairs MUST NOT be present.
         </td>
     </tr>
@@ -1640,11 +1640,11 @@ Curators MUST annotate the following keys and values in `uns`:
 </tbody></table>
 <br>
 
-#### genetic_perturbations[<i>id</i>]['target_genomic_regions']
+#### genetic_perturbations[<i>id</i>]['derived_genomic_regions']
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>target_genomic_regions</td>
+      <td>derived_genomic_regions</td>
     </tr>
     <tr>
       <th>Annotation</th>
@@ -1689,29 +1689,29 @@ Curators MUST annotate the following keys and values in `uns`:
 <br>
 
 
-#### genetic_perturbations[<i>id</i>]['target_features']
+#### genetic_perturbations[<i>id</i>]['derived_features']
 <table><tbody>
     <tr>
       <th>Key</th>
-      <td>target_features</td>
+      <td>derived_features</td>
     </tr>
     <tr>
       <th>Annotation</th>
-      <td>CELLxGENE Discover MUST annotate when <code>genetic_perturbations[<i>id</i>]['target_genomic_regions']</code> is annotated and one or more features in the <a href="#required-gene-annotations">corresponding gene reference</a> of the <code>organism_ontology_term_id</code> overlapped a genomic region by at least one nucleotide; otherwise, this key MUST NOT be present.  
+      <td>CELLxGENE Discover MUST annotate when <code>genetic_perturbations[<i>id</i>]['derived_genomic_regions']</code> is annotated and one or more features in the <a href="#required-gene-annotations">corresponding gene reference</a> of the <code>organism_ontology_term_id</code> overlapped a genomic region by at least one nucleotide; otherwise, this key MUST NOT be present.  
     </tr>
     <tr>
       <th>Value</th>
         <td>
           <code>dict</code>. The requirements for the key-value pair and its annotator are documented in the following section:
           <ul>
-          <li>genetic_perturbations[<i>id</i>]['target_features'][<i>feature_id</i>]</li>
+          <li>genetic_perturbations[<i>id</i>]['derived_features'][<i>feature_id</i>]</li>
          </ul><br>Additional key-value pairs MUST NOT be present.
         </td>
     </tr>
 </tbody></table>
 
 
-#### genetic_perturbations[<i>id</i>]['target_features'][<i>feature_id</i>]
+#### genetic_perturbations[<i>id</i>]['derived_features'][<i>feature_id</i>]
 
 <table><tbody>
     <tr>
@@ -1722,7 +1722,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotation</th>
-      <td>CELLxGENE Discover MUST annotate.  The key MUST be the <code>gene_id</code> attribute from the <a href="#required-gene-annotations">corresponding gene reference</a> of the <code>organism_ontology_term_id</code> for a feature that overlapped a genomic region in <code>genetic_perturbations[<i>id</i>]['target_genomic_region']</code> by at least one nucleotide.<br><br> Version numbers MUST be removed from the <code>gene_id</code> if it is prefixed with <code>"ENS"</code> for <i>Ensembl stable identifier</i>. See <a href="https://ensembl.org/Help/Faq?id=488">I have an Ensembl ID, what can I tell about it from the ID?</a> For example, if the <code>gene_id</code> is <code>“ENSG00000186092.7”</code>, then the <code><i>feature_id</i></code> MUST be <code>“ENSG00000186092”</code>.</td>
+      <td>CELLxGENE Discover MUST annotate.  The key MUST be the <code>gene_id</code> attribute from the <a href="#required-gene-annotations">corresponding gene reference</a> of the <code>organism_ontology_term_id</code> for a feature that overlapped a genomic region in <code>genetic_perturbations[<i>id</i>]['derived_genomic_region']</code> by at least one nucleotide.<br><br> Version numbers MUST be removed from the <code>gene_id</code> if it is prefixed with <code>"ENS"</code> for <i>Ensembl stable identifier</i>. See <a href="https://ensembl.org/Help/Faq?id=488">I have an Ensembl ID, what can I tell about it from the ID?</a> For example, if the <code>gene_id</code> is <code>“ENSG00000186092.7”</code>, then the <code><i>feature_id</i></code> MUST be <code>“ENSG00000186092”</code>.</td>
     </tr>
     <tr>
       <th>Value</th>
