@@ -192,7 +192,7 @@ def _convert_to_ensembl_format(chromosome: str) -> str:
     - Remove "chr" prefix for GENCODE/UCSC identifiers
     - Convert mitochondrial "M" to "MT"
 
-    :param str chromosome: Chromosome name (e.g., "chr1", "chrM", "1", "MT")
+    :param str chromosome: Chromosome name (e.g., "chr1", "chrM", "1", "MT", "M")
     :return: ENSEMBL-formatted chromosome name
     :rtype: str
     """
@@ -384,11 +384,12 @@ def load_gene_coordinates(species: str) -> pd.DataFrame:
         try:
             organism = SupportedOrganisms(species)
             # Simply use the enum name in lowercase
-            species_name = organism.name.lower()
+            species_name = organism.name
         except ValueError:
             raise ValueError(f"Invalid NCBITaxon ID: {species}") from None
     else:
         species_name = species
+    species_name = species_name.lower()
 
     # Load gene coordinates file
     coord_file = os.path.join(env.GENCODE_DIR, f"gene_coordinates_{species_name}.csv.gz")
