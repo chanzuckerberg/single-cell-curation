@@ -213,5 +213,99 @@ def map_species(input_file, output_file):
     map_species(input_file, output_file)
 
 
+# ============================================================================
+# Reference File Cache Management Commands
+# ============================================================================
+
+
+@schema_cli.command(
+    name="clear-cache",
+    short_help="Clear cached reference files",
+    help="Clear cached reference files (e.g., GuideScan2 indexes).",
+)
+@click.option("--category", type=str, default=None, help="Category to clear (e.g., 'guidescan_indexes')")
+def clear_cache(category):
+    """Clear cached reference files."""
+    from . import env
+    from .reference_file_manager import ReferenceFileManager
+
+    try:
+        manager = ReferenceFileManager(env.REFERENCE_CACHE_DIR, env.REFERENCE_FILES_YAML)
+        cleared = manager.clear_cache(category)
+        click.echo(f"Cleared {len(cleared)} cached item(s)")
+    except Exception as e:
+        logger.error(f"Error clearing cache: {e}")
+        sys.exit(1)
+
+
+@schema_cli.command(
+    name="list-references",
+    short_help="List available reference files",
+)
+def list_references():
+    """List available reference files."""
+    from . import env
+    from .reference_file_manager import ReferenceFileManager
+
+    try:
+        manager = ReferenceFileManager(env.REFERENCE_CACHE_DIR, env.REFERENCE_FILES_YAML)
+        for cat_name, cat_files in manager.list_available_files().items():
+            click.echo(f"\n{cat_name}:")
+            for key, info in cat_files.items():
+                click.echo(f"  {key}: {info.get('description', '')}")
+                click.echo(f"    url: {info.get('url')}")
+    except Exception as e:
+        logger.error(f"Error listing references: {e}")
+        sys.exit(1)
+
+
+@schema_cli.command(
+    name="fetch-references",
+    short_help="Pre-download reference files",
+    help="Pre-download and cache reference files (e.g., GuideScan2 indexes) for offline use.",
+)
+@click.option("--category", type=str, default=None, help="Category to fetch (e.g., 'guidescan_indexes')")
+@click.option("--key", type=str, default=None, help="Specific key to fetch (e.g., 'human'). Requires --category.")
+@click.option("--all", "fetch_all", is_flag=True, help="Fetch all available reference files")
+def fetch_references(category, key, fetch_all):
+    """Pre-download reference files to cache."""
+    from . import env
+    from .reference_file_manager import ReferenceFileManager
+
+    try:
+        manager = ReferenceFileManager(env.REFERENCE_CACHE_DIR, env.REFERENCE_FILES_YAML)
+        config = manager.list_available_files()
+
+        if key and not category:
+            raise click.UsageError("--key requires --category to be specified")
+
+        if fetch_all:
+            # Fetch everything
+            for cat_name, cat_files in config.items():
+                for file_key in cat_files:
+                    click.echo(f"Fetching {cat_name}/{file_key}...")
+                    manager.fetch(cat_name, file_key)
+                    click.echo("  Done.")
+        elif category and key:
+            # Fetch specific file
+            click.echo(f"Fetching {category}/{key}...")
+            manager.fetch(category, key)
+            click.echo("Done.")
+        elif category:
+            # Fetch all files in category
+            if category not in config:
+                raise click.UsageError(f"Category '{category}' not found")
+            for file_key in config[category]:
+                click.echo(f"Fetching {category}/{file_key}...")
+                manager.fetch(category, file_key)
+                click.echo("  Done.")
+        else:
+            raise click.UsageError("Specify --category, --category with --key, or --all")
+
+    except Exception as e:
+        logger.error(f"Error fetching references: {e}")
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     schema_cli()
