@@ -42,7 +42,7 @@ def _check_guidescan2_installed() -> None:
     logger.info("Checking for guidescan2 installation...")
     if shutil.which("guidescan") is None:
         raise RuntimeError(
-            "guidescan2 not found. Please install guidescan-cli from " "https://github.com/pritykinlab/guidescan-cli"
+            "guidescan2 not found. Please install guidescan-cli from https://github.com/pritykinlab/guidescan-cli"
         )
     logger.info("✓ guidescan2 found")
 
@@ -65,7 +65,7 @@ def _get_organism_from_h5ad(adata: ad.AnnData) -> str:
     if organism_id not in SUPPORTED_PERTURBATION_ORGANISMS:
         raise ValueError(
             f"Organism {organism_id} is not supported for genetic perturbations annotation. "
-            f"Supported organisms: {', '.join(sorted(SUPPORTED_PERTURBATION_ORGANISMS))}"
+            f"Supported organisms: {', '.join(SUPPORTED_PERTURBATION_ORGANISMS)}"
         )
 
     # Validate organism exists in SupportedOrganisms enum
@@ -193,7 +193,7 @@ def _convert_to_ensembl_format(chromosome: str) -> str:
     - Remove "chr" prefix for GENCODE/UCSC identifiers
     - Convert mitochondrial "M" to "MT"
 
-    :param str chromosome: Chromosome name (e.g., "chr1", "chrM", "1", "MT")
+    :param str chromosome: Chromosome name (e.g., "chr1", "chrM", "1", "MT", "M")
     :return: ENSEMBL-formatted chromosome name
     :rtype: str
     """
@@ -385,11 +385,12 @@ def load_gene_coordinates(species: str) -> pd.DataFrame:
         try:
             organism = SupportedOrganisms(species)
             # Simply use the enum name in lowercase
-            species_name = organism.name.lower()
+            species_name = organism.name
         except ValueError:
             raise ValueError(f"Invalid NCBITaxon ID: {species}") from None
     else:
         species_name = species
+    species_name = species_name.lower()
 
     # Load gene coordinates file
     coord_file = os.path.join(env.GENCODE_DIR, f"gene_coordinates_{species_name}.csv.gz")
