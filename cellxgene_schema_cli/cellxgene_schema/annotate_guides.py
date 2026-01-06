@@ -41,7 +41,7 @@ def _check_guidescan2_installed() -> None:
     logger.info("Checking for guidescan2 installation...")
     if shutil.which("guidescan") is None:
         raise RuntimeError(
-            "guidescan2 not found. Please install guidescan-cli from " "https://github.com/pritykinlab/guidescan-cli"
+            "guidescan2 not found. Please install guidescan-cli from https://github.com/pritykinlab/guidescan-cli"
         )
     logger.info("✓ guidescan2 found")
 
@@ -64,7 +64,7 @@ def _get_organism_from_h5ad(adata: ad.AnnData) -> str:
     if organism_id not in SUPPORTED_PERTURBATION_ORGANISMS:
         raise ValueError(
             f"Organism {organism_id} is not supported for genetic perturbations annotation. "
-            f"Supported organisms: {', '.join(sorted(SUPPORTED_PERTURBATION_ORGANISMS))}"
+            f"Supported organisms: {', '.join(SUPPORTED_PERTURBATION_ORGANISMS)}"
         )
 
     # Validate organism exists in SupportedOrganisms enum
