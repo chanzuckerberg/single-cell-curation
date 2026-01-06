@@ -205,7 +205,10 @@ def test_guidescan2_real_integration(tmp_path):
     """
     # Create a simple input CSV with a guide sequence
     input_csv = tmp_path / "guides_input.csv"
-    input_csv.write_text("id,sequence,pam,chromosome,start,end,sense\n" "test_guide,AAAAAAAAAAAAAAAAAAAAAGG,NGG,,,,\n")
+    input_csv.write_text(
+        "id,sequence,pam,chromosome,start,end,sense\n"
+        "test_guide,AAAAAAAAAAAAAAAAAAAAAGG,NGG,,,,\n"
+    )
 
     output_csv = tmp_path / "guidescan_output.csv"
 
