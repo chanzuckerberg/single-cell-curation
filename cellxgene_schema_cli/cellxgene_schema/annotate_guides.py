@@ -688,7 +688,7 @@ def update_h5ad_with_guide_annotations(adata: ad.AnnData, annotations_df: pd.Dat
 
     if extra_guides:
         logger.warning(
-            f"Skipping {len(extra_guides)} guide(s) from annotations that are not in h5ad: " f"{sorted(extra_guides)}"
+            f"Skipping {len(extra_guides)} guide(s) from annotations that are not in h5ad: {sorted(extra_guides)}"
         )
 
     # Filter to valid guides with gene overlaps (vectorized)
