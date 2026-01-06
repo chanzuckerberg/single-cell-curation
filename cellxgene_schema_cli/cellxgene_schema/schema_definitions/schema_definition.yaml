@@ -1,4 +1,4 @@
-title: Corpora schema version 5.X.X
+title: Corpora schema version 7.0.0
 type: anndata
 # If sparsity of any expression matrix is greater than this and not csr sparse matrix, then there will be warning.
 sparsity: 0.5
@@ -16,6 +16,23 @@ raw:
           - EFO:0008804 # Methyl-seq
           - EFO:0000751 # methylation profiling
           - EFO:0008939 # snmC-seq
+pre_analysis:
+  uns:
+    required: True
+    allowed: True
+    keys:
+      default_embedding:
+        allowed: False
+  obs:
+    required: True
+    allowed: True
+    keys:
+      cell_type_ontology_term_id:
+        allowed: False
+  obsm:
+    required: False
+    allowed: False
+
 components:
   uns:
     type: dict
@@ -152,6 +169,8 @@ components:
       - observation_joinid
     columns:
       cell_type_ontology_term_id:
+        error_message_suffix: >-
+          cell_type_ontology_term_id must be a valid ontology term of CL or 'unknown'. WBbt, ZFA, and FBbt terms can be allowed depending on the organism. 'na' is allowed if tissue_type is 'cell line'.
         type: curie
         curie_constraints:
           ontologies:
@@ -167,22 +186,60 @@ components:
                 - CL:0000000
             ancestors:
               ZFA:
-              - ZFA:0009000
+                - ZFA:0009000
               FBbt:
-              - FBbt:00007002
+                - FBbt:00007002
               WBbt:
-              - WBbt:0004017
+                - WBbt:0004017
               CL:
-              - CL:0000000
+                - CL:0000000
           forbidden:
             ancestors:
               WBbt:
-              - WBbt:0006803
+                - WBbt:0006803
             terms:
               - CL:0000255
               - CL:0000257
               - CL:0000548
               - WBbt:0006803
+        dependencies:
+          - rule:
+              column: tissue_type
+              match_exact:
+                terms:
+                  - cell line
+            type: curie
+            curie_constraints:
+              ontologies:
+                - CL
+                - ZFA
+                - FBbt
+                - WBbt
+              exceptions:
+                - unknown
+                - na
+              allowed:
+                terms:
+                  CL:
+                    - CL:0000000
+                ancestors:
+                  ZFA:
+                    - ZFA:0009000
+                  FBbt:
+                    - FBbt:00007002
+                  WBbt:
+                    - WBbt:0004017
+                  CL:
+                    - CL:0000000
+              forbidden:
+                ancestors:
+                  WBbt:
+                    - WBbt:0006803
+                terms:
+                  - CL:0000255
+                  - CL:0000257
+                  - CL:0000548
+                  - WBbt:0006803
         add_labels:
           - type: curie
             to_column: cell_type
@@ -238,7 +295,7 @@ components:
                   terms:
                     - NCBITaxon:6239
             error_message_suffix: >-
-              When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans), 'sex_ontology_term_id' MUST be 'PATO:0000384' for male, 'PATO:0001340' for hermaphrodite, or 'unknown'.
+              When 'organism_ontology_term_id' is 'NCBITaxon:6239' (Caenorhabditis elegans), 'sex_ontology_term_id' MUST be 'PATO:0000384' for male, 'PATO:0001340' for hermaphrodite, 'na' or 'unknown'.
             type: curie
             curie_constraints:
               ontologies:
@@ -250,19 +307,62 @@ components:
                     - PATO:0001340
               exceptions:
                 - unknown
-        # if organism is none of the above
-        error_message_suffix: "Only 'PATO:0000383', 'PATO:0000384', 'PATO:0001340', or 'unknown' are allowed."
-        curie_constraints:
-          ontologies:
-            - PATO
-          exceptions:
-            - unknown
-          allowed:
-            terms:
-              PATO:
-                - PATO:0000383
-                - PATO:0000384
-                - PATO:0001340
+                - na
+          - # If organism is not c. elegans
+            rule:
+                uns_key: organism_ontology_term_id
+                exclude_exact:
+                  terms:
+                    - NCBITaxon:6239
+            error_message_suffix: >-
+              Only 'PATO:0000383', 'PATO:0000384', 'PATO:0001340', 'na' or 'unknown' are allowed.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - PATO
+              exceptions:
+                - unknown
+                - na
+              allowed:
+                terms:
+                  PATO:
+                    - PATO:0000383
+                    - PATO:0000384
+                    - PATO:0001340
+          - # If tissue_type is "cell line", sex_ontology_term_id must be "na"
+            rule:
+              column: tissue_type
+              match_exact:
+                terms:
+                  - cell line
+            error_message_suffix: >-
+              When 'tissue_type' is 'cell line', 'sex_ontology_term_id' MUST be 'na'.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - NA
+              exceptions:
+                - na
+          - # If tissue_type is not "cell line", sex_ontology_term_id cannot be "na"
+            rule:
+              column: tissue_type
+              exclude_exact:
+                terms:
+                  - cell line
+            error_message_suffix: >-
+              When 'tissue_type' is not 'cell line', 'sex_ontology_term_id' cannot be 'na'.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - PATO
+              allowed:
+                terms:
+                  PATO:
+                    - PATO:0000383
+                    - PATO:0000384
+                    - PATO:0001340
+              exceptions:
+                - unknown
         add_labels:
           - type: curie
             to_column: sex
@@ -270,48 +370,48 @@ components:
         type: curie
         dependencies:
           - # If tissue_type is tissue
-              rule:
-                column: tissue_type
-                match_exact:
-                  terms:
-                    - tissue
-              error_message_suffix: >-
-                When 'tissue_type' is 'tissue', 'tissue_ontology_term_id' must be a valid UBERON, ZFA, FBbt, or WBbt term.
-              type: curie
-              curie_constraints:
-                ontologies:
-                  - UBERON
-                  - ZFA
-                  - FBbt
-                  - WBbt
-                allowed:
-                  ancestors:
-                    ZFA:
-                      - ZFA:0100000
-                    FBbt:
-                      - FBbt:10000000
-                    WBbt:
-                      - WBbt:0005766
-                    UBERON:
-                      - UBERON:0001062
-                forbidden:
-                  terms:
+            rule:
+              column: tissue_type
+              match_exact:
+                terms:
+                  - tissue
+            error_message_suffix: >-
+              When 'tissue_type' is 'tissue', 'tissue_ontology_term_id' must be a valid UBERON, ZFA, FBbt, or WBbt term.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - UBERON
+                - ZFA
+                - FBbt
+                - WBbt
+              allowed:
+                ancestors:
+                  ZFA:
+                    - ZFA:0100000
+                  FBbt:
+                    - FBbt:10000000
+                  WBbt:
+                    - WBbt:0005766
+                  UBERON:
+                    - UBERON:0001062
+              forbidden:
+                terms:
+                  - ZFA:0009000
+                  - ZFA:0001093
+                  - FBbt:00007002
+                  - WBbt:0007849
+                  - WBbt:0007850
+                  - WBbt:0008595
+                  - WBbt:0004017
+                  - WBbt:0006803
+                ancestors:
+                  ZFA:
                     - ZFA:0009000
-                    - ZFA:0001093
-                    - FBbt:00007002
-                    - WBbt:0007849
-                    - WBbt:0007850
-                    - WBbt:0008595
+                  WBbt:
                     - WBbt:0004017
                     - WBbt:0006803
-                  ancestors:
-                    ZFA:
-                      - ZFA:0009000
-                    WBbt:
-                      - WBbt:0004017
-                      - WBbt:0006803
-                    FBbt:
-                      - FBbt:00007002
+                  FBbt:
+                    - FBbt:00007002
           - # If tissue_type is organoid
             rule:
               column: tissue_type
@@ -392,68 +492,82 @@ components:
                   - CL:0000257
                   - CL:0000548
                   - WBbt:0006803
+          - # If tissue_type is cell line
+            rule:
+              column: tissue_type
+              match_exact:
+                terms:
+                  - cell line
+            error_message_suffix: >-
+              When 'tissue_type' is 'cell line', 'tissue_ontology_term_id' must be a valid CVCL term.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - CVCL
         add_labels:
           - type: curie
             to_column: tissue
       self_reported_ethnicity_ontology_term_id:
         type: curie
         dependencies:
-          - # If organism is Human
+          - # If organism is Human and tissue_type is not "cell line"
             rule:
-              uns_key: organism_ontology_term_id
-              match_exact:
-                terms:
-                  - NCBITaxon:9606
+              - uns_key: organism_ontology_term_id
+                match_exact:
+                  terms:
+                    - NCBITaxon:9606
+              - column: tissue_type
+                exclude_exact:
+                  terms:
+                    - cell line
             error_message_suffix: >-
-              When 'organism_ontology_term_id' is 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be formatted as one or more HANCESTRO terms in ascending lexical order with the delimiter ` || `, or 'unknown' if unavailable. Cannot match any forbidden HANCESTRO terms listed in schema definition.
+              When 'organism_ontology_term_id' is 'NCBITaxon:9606' (Homo sapiens) and 'tissue_type' is not 'cell line', self_reported_ethnicity_ontology_term_id MUST be formatted as one or more AfPO or HANCESTRO terms that are descendants of 'HANCESTRO:0601' for ethnicity category or 'HANCESTRO:0602' for geography-based population category, in ascending lexical order with the delimiter ` || `, or 'unknown' if unavailable.
             type: curie
             curie_constraints:
               ontologies:
                 - HANCESTRO
+                - AFPO
               exceptions:
                 - unknown
-              forbidden:
-                terms:
-                  - HANCESTRO:0002
-                  - HANCESTRO:0003
-                  - HANCESTRO:0004
-                  - HANCESTRO:0018
-                  - HANCESTRO:0029
-                  - HANCESTRO:0030
-                  - HANCESTRO:0031
-                  - HANCESTRO:0032
-                  - HANCESTRO:0033
-                  - HANCESTRO:0034
-                  - HANCESTRO:0290
-                  - HANCESTRO:0304
-                  - HANCESTRO:0323
-                  - HANCESTRO:0324
-                  - HANCESTRO:0551
-                  - HANCESTRO:0554
-                  - HANCESTRO:0555
-                  - HANCESTRO:0557
-                  - HANCESTRO:0558
-                  - HANCESTRO:0559
-                  - HANCESTRO:0560
-                  - HANCESTRO:0561
-                  - HANCESTRO:0564
-                  - HANCESTRO:0565
-                  - HANCESTRO:0566
+              allowed:
                 ancestors:
                   HANCESTRO:
-                    - HANCESTRO:0002
-                    - HANCESTRO:0304
+                    - HANCESTRO:0601
+                    - HANCESTRO:0602
+                  AFPO:
+                    - HANCESTRO:0601
+                    - HANCESTRO:0602
               multi_term:
                 delimiter: " || "
                 sorted: True
-        # If organism is not Human
-        error_message_suffix: >-
-          When 'organism_ontology_term_id' is NOT 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be 'na'.
-        curie_constraints:
-          ontologies:
-            - NA
-          exceptions:
-            - na
+          - # If organism is not Human, self_reported_ethnicity_ontology_term_id must be "na"
+            rule:
+              uns_key: organism_ontology_term_id
+              exclude_exact:
+                terms:
+                  - NCBITaxon:9606
+            error_message_suffix: >-
+              When 'organism_ontology_term_id' is NOT 'NCBITaxon:9606' (Homo sapiens), self_reported_ethnicity_ontology_term_id MUST be 'na'.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - NA
+              exceptions:
+                - na
+          - # If tissue_type is "cell line", self_reported_ethnicity_ontology_term_id must be "na"
+            rule:
+              column: tissue_type
+              match_exact:
+                terms:
+                  - cell line
+            error_message_suffix: >-
+              When 'tissue_type' is 'cell line', 'self_reported_ethnicity_ontology_term_id' MUST be 'na'.
+            type: curie
+            curie_constraints:
+              ontologies:
+                - NA
+              exceptions:
+                - na
         add_labels:
           - type: curie
             to_column: self_reported_ethnicity
@@ -642,6 +756,21 @@ components:
       donor_id:
         type: categorical
         subtype: str
+        forbidden:
+          - na
+        dependencies:
+          - # If tissue_type is "cell line", donor_id must be "na"
+            rule:
+              column: tissue_type
+              match_exact:
+                terms:
+                  - cell line
+            error_message_suffix: >-
+              when 'tissue_type' is 'cell line'.
+            type: categorical
+            subtype: str
+            enum:
+              - na
       suspension_type:
         type: categorical
         enum:
@@ -663,15 +792,14 @@ components:
                 ancestors:
                   - EFO:0030080
                   - EFO:0010184
+                  - EFO:0010010
+                  - EFO:0009919
               match_exact:
                 terms:
-                  - EFO:0010010
                   - EFO:0008722
-                  - EFO:0010550
                   - EFO:0008780
                   - EFO:0700010
                   - EFO:0700011
-                  - EFO:0009919
                   - EFO:0030060
                   - EFO:0022490
                   - EFO:0030028
@@ -699,14 +827,16 @@ components:
               match_ancestors_inclusive:
                 ancestors:
                   - EFO:0008919
+                  - EFO:0008853
+                  - EFO:0008953
               match_exact:
                 terms:
                   - EFO:0030002
-                  - EFO:0008853
                   - EFO:0008796
                   - EFO:0700003
                   - EFO:0700004
-                  - EFO:0008953
+                  - EFO:0008679
+                  - EFO:0008877
             type: categorical
             enum:
               - "cell"

@@ -53,7 +53,7 @@ class AnnDataLabelAppender:
             else:
                 value_1 = dict1[key]
 
-                if not type(value_1) == type(value_2):
+                if type(value_1) is not type(value_2):
                     raise ValueError("Inconsistent types, impossible to merge")
 
                 if isinstance(value_2, str):

@@ -192,6 +192,28 @@ def setup(mock_ontology_parser, public_datasets, private_collections, mock_fetch
     patcher.stop()
 
 
+class TestSplitTerm:
+    def test_split_term_no_delimiter(self):
+        assert ontology_bump_dry_run.split_term("HANCESTRO:0000001") == ["HANCESTRO:0000001"]
+
+    @pytest.mark.parametrize("delimiter", [",", "||"])
+    def test_split_term_delimiter(self, delimiter):
+        assert ontology_bump_dry_run.split_term(f"HANCESTRO:0000001{delimiter}HANCESTRO:0000002") == [
+            "HANCESTRO:0000001",
+            "HANCESTRO:0000002",
+        ]
+
+    def test_split_term_mixed_delimiters_raises(self):
+        with pytest.raises(ValueError):
+            ontology_bump_dry_run.split_term("HANCESTRO:0000001,HANCESTRO:0000002||HANCESTRO:0000003")
+
+    def test_split_term_spaces(self):
+        assert ontology_bump_dry_run.split_term(" HANCESTRO:0000001 , HANCESTRO:0000002 ") == [
+            "HANCESTRO:0000001",
+            "HANCESTRO:0000002",
+        ]
+
+
 class TestOntologyBumpDryRun:
     def test_no_deprecated_terms_no_revisions(self, setup):  # type: ignore
         public_datasets, private_collections, expected_replaced_by_map = setup
@@ -212,7 +234,7 @@ class TestOntologyBumpDryRun:
             assert list(expected) == list(tmp)
             assert expected_replaced_by_map == json.load(tmp_json)
 
-    def test_with_comma_delimited_onto_id_list(self, setup):  # type: ignore
+    def test_with_multi_delimited_onto_id_list(self, setup):  # type: ignore
         public_datasets, private_collections, expected_replaced_by_map = setup
         private_collections.pop()
         public_datasets[0]["self_reported_ethnicity"] = [{"ontology_term_id": "HANCESTRO:0000001,HANCESTRO:0000002"}]

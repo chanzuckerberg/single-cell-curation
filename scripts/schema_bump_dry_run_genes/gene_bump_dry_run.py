@@ -46,14 +46,14 @@ class RunReporter:
 run_reporter = RunReporter()  # type: ignore
 
 
-def generate_report(data) -> str:  # type: ignore
+def generate_report(data: Dict[str, Any]) -> str:
     file_path = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(file_path, "report_template.jinja"), "r") as fp:
         report = fp.read()
 
     j2_template = Template(report, trim_blocks=True, lstrip_blocks=True)
-    report = j2_template.render(data)
-    return report
+    rendered_report: str = j2_template.render(data)
+    return rendered_report
 
 
 def get_genes(dataset: dict) -> List[str]:  # type: ignore

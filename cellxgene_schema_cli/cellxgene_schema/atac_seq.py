@@ -1,12 +1,13 @@
+import contextlib
 import gzip
 import logging
 import os
 import shutil
-import subprocess
+import subprocess as sp
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Optional
+from typing import Iterable, List, Optional, Sequence, Tuple
 
 import anndata as ad
 import h5py
@@ -427,161 +428,246 @@ def index_fragment(
     logger.info(f"Line count validation passed: {original_line_count} lines in both original and output files")
 
 
-SORT_MEMORY_PERCENTAGE = (
-    80  # percentage of memory to use for sort command. This is the default used by linux sort command.
-)
+SORT_MEMORY_PERCENTAGE = 60  # cap at 60% of system memory
 
 
-def prepare_fragment(
-    fragment_file: str,
-    bgzip_output_file: str,
-) -> None:
+def _calculate_sort_memory(sort_memory_percent: int) -> int:
     """
-    The sorting and writing of the fragment is done for each chromosome. Because of this the write order of
-    the chromosomes may not be preserved. The chromosomes will all be stored in contiguous blocks in the bgzip file, and
-    and sorted by start and stop coordinate within each chromosome.
-    :param fragment_file: The fragment file to process. This is a gzipped compressed fragment file.
-    :param bgzip_output_file: The output file to write the bgzip file to.
-    :return:
-    """
+    Calculate the memory percentage to allocate for sorting.
 
-    if shutil.which("sort") is None:
-        raise RuntimeError(
-            "The 'sort' command is not installed or not found in PATH. It is required to sort the fragment file."
-        )
-    if shutil.which("bgzip") is None:
-        raise RuntimeError(
-            "The 'bgzip' command is not installed or not found in PATH. It is required to compress the fragment file."
-        )
-    if shutil.which("pigz") is None:
-        raise RuntimeError(
-            "The 'pigz' command is not installed or not found in PATH. It is required to compress the fragment file."
-        )
-
-    num_cores = os.cpu_count()
-    sort_memory = calculate_sort_memory(num_cores, SORT_MEMORY_PERCENTAGE)  # ensure at least 1% memory per core
-    with open(bgzip_output_file, "wb") as out_f:
-        gzip_proc = subprocess.Popen(["gzip", "-dc", fragment_file], stdout=subprocess.PIPE)
-        sort_proc = subprocess.Popen(
-            [
-                "sort",
-                f"--parallel={num_cores}",
-                "-t",
-                "\t",
-                "-k1,1",
-                "-k2,2n",
-                "-k3,3n",
-                "-k4,4",
-                f"-S {sort_memory}%",
-                f'--compress-program="pigz -p {num_cores}"',
-            ],
-            stdin=gzip_proc.stdout,
-            stdout=subprocess.PIPE,
-            env={**os.environ, "LC_ALL": "C"},
-        )
-        gzip_proc.stdout.close()
-        bgzip_proc = subprocess.Popen(["bgzip", f"--threads={num_cores}", "-c"], stdin=sort_proc.stdout, stdout=out_f)
-        sort_proc.stdout.close()
-        bgzip_proc.wait()
-    if bgzip_proc.returncode != 0:
-        raise RuntimeError(f"bgzip compression failed with error code {bgzip_proc.returncode}")
-    logger.info(f"bgzip compression completed successfully for {bgzip_output_file}")
-
-
-def calculate_sort_memory(num_cores: int, sort_memory_percent: int) -> int:
-    """
-    Calculate the memory percentage to allocate per sort thread.
-
-    :param num_cores: Number of CPU cores available.
     :param sort_memory_percent: Total percentage of system memory to allocate for sorting.
-    :return: Percentage of memory to allocate per sort thread.
+    :return: Percentage of memory to allocate for sorting.
     """
-    return max(sort_memory_percent // num_cores, 1)  # ensure at least 1% memory per core
+    return min(sort_memory_percent, SORT_MEMORY_PERCENTAGE)
 
 
-def deduplicate_fragment_rows(
-    fragment_file_name: str, output_file_name: str = None, sort_memory_percent: int = SORT_MEMORY_PERCENTAGE
-) -> str:
-    """
-    Deduplicate rows in a fragment file by sorting and using the uniq command, then compress the result with bgzip.
+def _ensure_tools(tools: Iterable[Tuple[str, str]]) -> None:
+    """Ensure required CLI tools are present in PATH."""
+    missing = [name for name, _ in tools if shutil.which(name) is None]
+    if missing:
+        msgs = dict(tools)
+        raise RuntimeError(" | ".join(f"Missing '{name}' in PATH; {msgs[name]}." for name in missing))
 
-    This function decompresses the input fragment file, sorts it by chromosome and coordinates using GNU sort
-    (with parallelization and pigz compression), removes duplicate rows, and writes the output as a bgzipped file.
-    The amount of memory allocated to sort is controlled by sort_memory_percent, divided among CPU cores.
 
-    :param fragment_file_name: Path to the input gzipped fragment file.
-    :param output_file_name: Path for the output deduplicated bgzipped file. If None, a default name is generated.
-    :param sort_memory_percent: Percentage of system memory to allocate per sort thread (default: 80).
-    :return: Path to the deduplicated bgzipped output file.
-    :raises RuntimeError: If the bgzip compression process fails.
-    """
-    if shutil.which("sort") is None:
-        raise RuntimeError(
-            "The 'sort' command is not installed or not found in PATH. It is required to sort the fragment file."
-        )
-    if shutil.which("bgzip") is None:
-        raise RuntimeError(
-            "The 'bgzip' command is not installed or not found in PATH. It is required to compress the fragment file."
-        )
-    if shutil.which("pigz") is None:
-        raise RuntimeError(
-            "The 'pigz' command is not installed or not found in PATH. It is required to compress the fragment file."
-        )
-    if shutil.which("uniq") is None:
-        raise RuntimeError(
-            "The 'uniq' command is not installed or not found in PATH. It is required to compress the fragment file."
-        )
+def _default_cores() -> int:
+    """Get CPU count, respecting container limits."""
+    # Try to read cgroup CPU limit (Docker/Kubernetes) - most reliable method
+    try:
+        # cgroup v1
+        with open("/sys/fs/cgroup/cpu/cpu.cfs_quota_us") as f:
+            quota = int(f.read().strip())
+        with open("/sys/fs/cgroup/cpu/cpu.cfs_period_us") as f:
+            period = int(f.read().strip())
+        if quota > 0 and period > 0:
+            return max(1, quota // period)
+    except (FileNotFoundError, ValueError, PermissionError):
+        pass
 
-    logger.info(f"deduplicating fragment file: {fragment_file_name}")
+    try:
+        # cgroup v2
+        with open("/sys/fs/cgroup/cpu.max") as f:
+            content = f.read().strip()
+        if content != "max":
+            parts = content.split()
+            if len(parts) == 2:
+                quota, period = int(parts[0]), int(parts[1])
+                return max(1, quota // period)
+    except (FileNotFoundError, ValueError, PermissionError):
+        pass
 
-    output_file_name = (
-        Path(output_file_name)
-        if output_file_name
-        else (Path(fragment_file_name).stem.replace(".tsv", "") + "_dedup.tsv.bgz")
-    )
+    # Fallback to system CPU count
+    return max(1, (os.cpu_count() or 1))
 
-    num_cores = os.cpu_count()
-    sort_memory = calculate_sort_memory(num_cores, sort_memory_percent)
-    # Build the pipeline: gzip -dc | sort | uniq | bgzip
-    gzip_cmd = ["gzip", "-dc", str(fragment_file_name)]
-    sort_cmd = [
+
+def _deterministic_env() -> dict:
+    # GNU coreutils behaviors (sort/uniq) are locale-sensitive; pin for determinism.
+    return {**os.environ, "LC_ALL": "C"}
+
+
+def _sort_command(num_cores: int, sort_mem_pct: int) -> List[str]:
+    """Tab-delimited sort by (chrom, start, end, strand), numeric where needed, parallel, compressed temps via pigz."""
+    return [
         "sort",
+        "--parallel",
+        str(num_cores),
         "-t",
         "\t",
         "-k1,1",
         "-k2,2n",
         "-k3,3n",
         "-k4,4",
-        f"-S{sort_memory}%",
-        f"--parallel={num_cores}",
-        f"--compress-program=pigz -p {num_cores}",
+        "-S",
+        f"{sort_mem_pct}%",
+        "--compress-program",
+        "pigz",
     ]
-    uniq_cmd = ["uniq"]
-    bgzip_cmd = ["bgzip", "-@", str(num_cores), "-c"]
 
-    with open(output_file_name, "wb") as outfile:
-        # Start gzip process
-        gzip_proc = subprocess.Popen(gzip_cmd, stdout=subprocess.PIPE)
-        # Start sort process
-        sort_proc = subprocess.Popen(
-            sort_cmd,
-            stdin=gzip_proc.stdout,
-            stdout=subprocess.PIPE,
-            env={**os.environ, "LC_ALL": "C"},
-        )
-        gzip_proc.stdout.close()  # Allow gzip_proc to receive a SIGPIPE if sort_proc exits.
-        # Start uniq process
-        uniq_proc = subprocess.Popen(uniq_cmd, stdin=sort_proc.stdout, stdout=subprocess.PIPE)
-        sort_proc.stdout.close()
-        # Start bgzip process
-        bgzip_proc = subprocess.Popen(bgzip_cmd, stdin=uniq_proc.stdout, stdout=outfile)
-        uniq_proc.stdout.close()
-        bgzip_proc.wait()
-        if bgzip_proc.returncode != 0:
-            raise RuntimeError(f"bgzip compression failed with error code {bgzip_proc.returncode}")
-        # Wait for the rest of the pipeline to finish and check for errors
-        uniq_proc.wait()
-        sort_proc.wait()
-        gzip_proc.wait()
-    logger.info(f"bgzip compression completed successfully for {output_file_name}")
-    return str(output_file_name)
+
+def _bgzip_command(num_cores: int) -> List[str]:
+    # Prefer long form; widely supported on recent htslib/bgzip.
+    return ["bgzip", f"--threads={num_cores}", "-c"]
+
+
+def _pigz_decompress_command(path: Path) -> List[str]:
+    return ["pigz", "-dc", str(path)]
+
+
+def _pipeline_run(
+    stages: Sequence[Tuple[str, List[str]]],
+    output_file: Path,
+    *,
+    env: Optional[dict] = None,
+) -> None:
+    """
+    Run a left-to-right streaming pipeline and write the last stage's stdout to output_file.
+    Each stage is (name, argv). Captures stderr per stage for error reporting.
+    """
+    if not stages:
+        raise ValueError("pipeline must have at least one stage")
+
+    procs: List[sp.Popen] = []
+
+    try:
+        # open sink
+        with open(output_file, "wb") as out_f:
+            # launch first
+            name0, cmd0 = stages[0]
+            logger.info(f"Starting pipeline stage: {name0}")
+            p0 = sp.Popen(cmd0, stdout=sp.PIPE, stderr=sp.PIPE, env=env)
+            procs.append(p0)
+
+            # chain middle (if any)
+            prev_stdout = p0.stdout
+            for stage_name, stage_cmd in stages[1:-1]:
+                logger.info(f"Starting pipeline stage: {stage_name}")
+                p = sp.Popen(stage_cmd, stdin=prev_stdout, stdout=sp.PIPE, stderr=sp.PIPE, env=env)
+                procs.append(p)
+                if prev_stdout is not None:
+                    prev_stdout.close()  # allow upstream SIGPIPE if we fail downstream
+                prev_stdout = p.stdout
+
+            # last -> file
+            last_name, last_cmd = stages[-1]
+            logger.info(f"Starting pipeline stage: {last_name}")
+            plast = sp.Popen(last_cmd, stdin=prev_stdout, stdout=out_f, stderr=sp.PIPE, env=env)
+            procs.append(plast)
+            if prev_stdout is not None:
+                prev_stdout.close()
+
+            plast.wait()
+
+            # collect return codes (downstream-first)
+            returncodes = []
+            for proc in reversed(procs):
+                rc = proc.returncode if proc is plast else proc.wait()
+                returncodes.append(rc)
+
+            # error aggregation
+            if any(rc != 0 for rc in returncodes):
+                errs = []
+
+                for (stage_name, _), proc in zip(stages, procs):
+                    if proc.returncode != 0:
+                        try:
+                            err = proc.stderr.read().decode(errors="replace").strip() if proc.stderr else ""
+                        except Exception:
+                            err = ""
+
+                        errs.append(f"{stage_name} failed (rc={proc.returncode}): {err}")
+
+                # Provide AWS Batch specific guidance
+                error_msg = " | ".join(errs)
+
+                raise RuntimeError(error_msg)
+
+    finally:
+        # harden against leaked children in edge cases
+        for p in procs:
+            if p.poll() is None:
+                with contextlib.suppress(Exception):
+                    p.terminate()
+
+
+def prepare_fragment(fragment_file: str, bgzip_output_file: str) -> None:
+    """
+    Decompress -> sort -> bgzip.
+    Sorts by (chrom, start, end, strand). Output is bgzipped; chromosomes may appear in non-input order,
+    but are internally sorted within chromosome.
+    """
+    _ensure_tools(
+        [
+            ("sort", "required to sort the fragment file"),
+            ("bgzip", "required to bgzip-compress the result"),
+            ("pigz", "required for parallel gzip (de)compression"),
+        ]
+    )
+
+    in_path = Path(fragment_file)
+    if not in_path.exists():
+        raise FileNotFoundError(f"Input file not found: {in_path}")
+
+    out_path = Path(bgzip_output_file)
+    ncores = _default_cores()
+    sort_mem_pct = _calculate_sort_memory(SORT_MEMORY_PERCENTAGE)
+    env = _deterministic_env()
+
+    stages = [
+        ("pigz -dc", _pigz_decompress_command(in_path)),
+        ("sort", _sort_command(ncores, sort_mem_pct)),
+        ("bgzip", _bgzip_command(ncores)),
+    ]
+
+    _pipeline_run(stages, out_path, env=env)
+    logger.info(f"bgzip compression completed successfully for {out_path}")
+
+
+def deduplicate_fragment_rows(
+    fragment_file_name: str,
+    output_file_name: Optional[str] = None,
+    sort_memory_percent: int = SORT_MEMORY_PERCENTAGE,
+) -> str:
+    """
+    Decompress -> sort -> uniq -> bgzip.
+    Removes duplicate lines after sorting by (chrom, start, end, strand).
+
+    :param fragment_file_name: Path to the input gzipped fragment file.
+    :param output_file_name: Path for the output deduplicated bgzipped file. If None, a default name is generated.
+    :param sort_memory_percent: Percentage of system memory to allocate per sort thread.
+    :return: Path to the deduplicated bgzipped output file.
+    :raises RuntimeError: If the operation fails due to resource constraints.
+    """
+    _ensure_tools(
+        [
+            ("sort", "required to sort the fragment file"),
+            ("bgzip", "required to bgzip-compress the result"),
+            ("pigz", "required for parallel gzip (de)compression"),
+            ("uniq", "required to remove duplicate rows"),
+        ]
+    )
+
+    in_path = Path(fragment_file_name)
+    if not in_path.exists():
+        raise FileNotFoundError(f"Input file not found: {in_path}")
+
+    if output_file_name is None:
+        # <input minus .tsv[.gz]>_dedup.tsv.bgz
+        stem_once = in_path.stem  # drops final suffix (e.g., ".gz")
+        stem_twice = Path(stem_once).stem  # drops ".tsv" if present
+        out_path = in_path.with_name(f"{stem_twice}_dedup.tsv.bgz")
+    else:
+        out_path = Path(output_file_name)
+
+    ncores = _default_cores()
+    sort_mem_pct = _calculate_sort_memory(sort_memory_percent)  # Output is smaller
+
+    stages = [
+        ("pigz -dc", _pigz_decompress_command(in_path)),
+        ("sort", _sort_command(ncores, sort_mem_pct)),
+        ("uniq", ["uniq"]),
+        ("bgzip", _bgzip_command(ncores)),
+    ]
+
+    logger.info(f"Starting deduplication pipeline: {ncores} cores, {sort_mem_pct}% memory per core")
+    _pipeline_run(stages, out_path, env=_deterministic_env())
+    logger.info(f"bgzip compression completed successfully for {out_path}")
+    return str(out_path)
