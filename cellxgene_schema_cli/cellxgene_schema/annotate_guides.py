@@ -8,7 +8,8 @@ import logging
 import os
 import shutil
 import subprocess
-from typing import Optional, Tuple
+import tempfile
+from typing import Dict, List, Optional, Tuple
 
 import anndata as ad
 import bioframe as bf
@@ -607,3 +608,172 @@ def annotate_guides_from_guidescan_csv(
         logger.info("Done!")
 
     return annotated
+
+
+# ============================================================================
+# AnnData Update Helpers
+# ============================================================================
+
+
+def _build_genomic_regions(valid_rows: pd.DataFrame) -> List[str]:
+    """Build list of genomic region strings from annotation rows.
+
+    Converts BED format coordinates to schema 7.1.0 format (1-based, fully-closed).
+
+    :param pd.DataFrame valid_rows: DataFrame with columns: chromosome, start, end, sense
+    :return: List of genomic region strings in format "chrom:start-end(sense)"
+    :rtype: List[str]
+    """
+    regions = set()
+    for _, row in valid_rows.iterrows():
+        if row["chromosome"] == "NA":
+            continue
+
+        # Convert chromosome to ENSEMBL format
+        chrom = _convert_to_ensembl_format(str(row["chromosome"]))
+
+        # Convert from BED (0-based start, 1-based end) to 1-based fully-closed
+        start_1based = int(row["start"]) + 1  # Convert 0-based to 1-based
+        end_1based = int(row["end"])  # BED end equals 1-based inclusive numerically
+
+        region = f"{chrom}:{start_1based}-{end_1based}({row['sense']})"
+        regions.add(region)
+
+    return list(regions)
+
+
+def _build_target_features(valid_rows: pd.DataFrame) -> Dict[str, str]:
+    """Build target_features dict from annotation rows.
+
+    Removes version numbers from Ensembl IDs per schema 7.1.0.
+
+    :param pd.DataFrame valid_rows: DataFrame with columns: gene_id, gene_name
+    :return: Dictionary mapping gene_id to gene_name
+    :rtype: Dict[str, str]
+    """
+    features: Dict[str, str] = {}
+    for _, row in valid_rows.iterrows():
+        if row["gene_id"] != "NA":
+            # Remove version number from Ensembl IDs
+            gene_id_no_version = _remove_ensembl_version(row["gene_id"])
+            features[gene_id_no_version] = row["gene_name"]
+
+    return features
+
+
+def update_h5ad_with_guide_annotations(adata: ad.AnnData, annotations_df: pd.DataFrame) -> ad.AnnData:
+    """Update h5ad genetic_perturbations with genomic annotations from guidescan2/bioframe.
+
+    Takes the output from annotate_guides_from_guidescan_csv and adds genomic location
+    and gene overlap information to adata.uns['genetic_perturbations']. Only updates
+    target_genomic_regions and target_features fields (does NOT modify protospacer_sequence
+    or protospacer_adjacent_motif which should already be present in the h5ad).
+
+    :param ad.AnnData adata: AnnData object with genetic_perturbations in uns
+    :param pd.DataFrame annotations_df: DataFrame from annotate_guides_from_guidescan_csv with
+        required columns: id, chromosome, start, end, sense, gene_id, gene_name
+    :return: Modified AnnData object
+    :rtype: ad.AnnData
+    :raises KeyError: If genetic_perturbations is not in adata.uns
+    """
+    # Check that genetic_perturbations exists
+    if "genetic_perturbations" not in adata.uns:
+        raise KeyError("adata.uns does not contain 'genetic_perturbations'")
+
+    genetic_perturbations = adata.uns["genetic_perturbations"]
+
+    # Filter annotations to only guides that exist in h5ad
+    h5ad_guide_ids = set(genetic_perturbations.keys())
+    extra_guides = set(annotations_df["id"].unique()) - h5ad_guide_ids
+
+    if extra_guides:
+        logger.warning(
+            f"Skipping {len(extra_guides)} guide(s) from annotations that are not in h5ad: {sorted(extra_guides)}"
+        )
+
+    # Filter to valid guides with gene overlaps (vectorized)
+    valid_annotations = annotations_df[
+        (annotations_df["id"].isin(h5ad_guide_ids)) & (annotations_df["gene_id"] != "NA")
+    ].copy()
+
+    # Process each guide using groupby
+    for guide_id, guide_group in valid_annotations.groupby("id"):
+        # Build genomic regions and target features
+        genomic_regions = _build_genomic_regions(guide_group)
+        target_features = _build_target_features(guide_group)
+
+        # Update the h5ad entry
+        genetic_perturbations[guide_id]["target_genomic_regions"] = genomic_regions
+        genetic_perturbations[guide_id]["target_features"] = target_features
+
+        logger.info(f"Updated guide {guide_id}: {len(genomic_regions)} region(s), {len(target_features)} gene(s)")
+
+    # Update the uns with modified genetic_perturbations
+    adata.uns["genetic_perturbations"] = genetic_perturbations
+
+    return adata
+
+
+# ============================================================================
+# High-Level Pipeline Functions (Public API)
+# ============================================================================
+
+
+def annotate_perturbations_in_h5ad(adata: ad.AnnData, index_path: Optional[str] = None) -> ad.AnnData:
+    """Annotate genetic perturbations in an AnnData object.
+
+    This function orchestrates the annotation pipeline:
+    1. Check if genetic_perturbations exists (skip if not)
+    2. Check guidescan2 is installed
+    3. Detect organism from adata.uns
+    4. Extract perturbations to temp CSV
+    5. Get/download guidescan2 index for organism
+    6. Run guidescan enumerate (--mismatches 0)
+    7. Run bioframe annotation
+    8. Update adata with annotations
+    9. Return modified adata
+
+    :param ad.AnnData adata: AnnData object (optionally with genetic_perturbations in uns)
+    :param Optional[str] index_path: Path to guidescan2 index. If None, uses default cache.
+    :return: Modified AnnData object with annotations (or unmodified if no perturbations)
+    :rtype: ad.AnnData
+    :raises RuntimeError: If guidescan2 is not installed
+    """
+    # Check if genetic_perturbations exists
+    if "genetic_perturbations" not in adata.uns:
+        logger.info("No genetic_perturbations found in adata.uns, skipping annotation")
+        return adata
+
+    # Check guidescan2 is installed
+    _check_guidescan2_installed()
+
+    # Detect organism
+    logger.info("Detecting organism...")
+    organism_id = _get_organism_from_h5ad(adata)
+
+    # Use temporary directory for intermediate files
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Extract perturbations to temp CSV
+        logger.info("Extracting perturbations to CSV...")
+        guides_csv = os.path.join(tmpdir, "guides_input.csv")
+        _extract_perturbations_to_guidescan_csv(adata, guides_csv)
+
+        # Get/download guidescan2 index
+        logger.info("Getting guidescan2 index...")
+        index_prefix: str = index_path or _get_or_download_index(organism_id)
+
+        # Run guidescan enumerate
+        logger.info("Running guidescan enumerate...")
+        enumerate_csv = os.path.join(tmpdir, "guidescan_enumerate_output.csv")
+        _run_guidescan_enumerate(guides_csv, index_prefix, enumerate_csv)
+
+        # Run bioframe annotation
+        logger.info("Annotating with bioframe...")
+        annotations_df = annotate_guides_from_guidescan_csv(enumerate_csv, organism_id, guides_csv)
+
+        # Update adata with annotations
+        logger.info("Updating AnnData with annotations...")
+        adata = update_h5ad_with_guide_annotations(adata, annotations_df)
+
+    logger.info("✓ Annotation complete!")
+    return adata

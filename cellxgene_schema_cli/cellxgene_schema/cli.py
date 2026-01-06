@@ -213,6 +213,56 @@ def map_species(input_file, output_file):
     map_species(input_file, output_file)
 
 
+@schema_cli.command(
+    name="annotate-perturbations",
+    short_help="Annotate genetic perturbations with genomic locations and genes",
+    help="Complete pipeline to annotate genetic_perturbations in h5ad with "
+    "target_genomic_regions and target_features using guidescan2 and bioframe. "
+    "This command: (1) extracts perturbations from h5ad, (2) runs guidescan2 enumerate "
+    "to find genomic matches, (3) uses bioframe to find gene overlaps, and (4) updates "
+    "the h5ad with annotations. Requires guidescan2 to be installed "
+    "(https://github.com/pritykinlab/guidescan-cli).",
+)
+@click.argument("input_h5ad", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.argument("output_h5ad", nargs=1, type=click.Path(exists=False, dir_okay=False))
+@click.option(
+    "--index-path",
+    help="Path to guidescan2 index prefix (without file extension). If not provided, uses default cache.",
+    type=str,
+    default=None,
+)
+def annotate_perturbations(input_h5ad, output_h5ad, index_path):
+    """Annotate genetic perturbations with genomic and gene information."""
+    import anndata as ad
+
+    from .annotate_guides import annotate_perturbations_in_h5ad
+
+    logger.info(f"Loading h5ad file: {input_h5ad}")
+
+    try:
+        # Load h5ad
+        adata = ad.read_h5ad(input_h5ad)
+
+        # Annotate (returns modified adata)
+        adata = annotate_perturbations_in_h5ad(adata, index_path)
+
+        # Save result
+        logger.info(f"Saving annotated h5ad to: {output_h5ad}")
+        adata.write_h5ad(output_h5ad)
+
+        logger.info("Successfully annotated perturbations")
+        sys.exit(0)
+    except (RuntimeError, FileNotFoundError) as e:
+        logger.error(str(e))
+        sys.exit(1)
+    except Exception as e:
+        logger.error(f"Error during annotation: {e}")
+        import traceback
+
+        logger.error(traceback.format_exc())
+        sys.exit(1)
+
+
 # ============================================================================
 # Reference File Cache Management Commands
 # ============================================================================
