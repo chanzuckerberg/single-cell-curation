@@ -6,11 +6,14 @@ information about which genes they overlap using genomic interval analysis.
 
 import logging
 import shutil
+import subprocess
 
 import anndata as ad
 import pandas as pd
 
+from . import env
 from .gencode import SupportedOrganisms
+from .reference_file_manager import ReferenceFileManager
 
 logger = logging.getLogger(__name__)
 
@@ -106,3 +109,69 @@ def _extract_perturbations_to_guidescan_csv(adata: ad.AnnData, output_csv: str) 
     df = pd.DataFrame(rows)
     df.to_csv(output_csv, index=False, na_rep="")
     logger.info(f"Extracted {len(rows)} guide sequences to {output_csv}")
+
+
+# ============================================================================
+# Manage GuideScan2 Index Files
+# ============================================================================
+
+GUIDESCAN_INDEX_CATEGORY = "guidescan_indexes"
+
+
+def _get_or_download_index(organism_id: str) -> str:
+    """Get cached index or download if not present. Returns index prefix path."""
+    manager = ReferenceFileManager(env.REFERENCE_CACHE_DIR, env.REFERENCE_FILES_YAML)
+    key = manager.get_key_by_organism_id(GUIDESCAN_INDEX_CATEGORY, organism_id)
+    if key is None:
+        raise ValueError(f"GuideScan2 index not available for organism {organism_id}.")
+
+    # pooch handles caching - returns list of extracted files
+    files = manager.fetch(GUIDESCAN_INDEX_CATEGORY, key)
+
+    # Find the index prefix from .gs file (guidescan2 expects prefix.gs, prefix.forward, prefix.reverse)
+    for f in files:
+        if f.endswith(".gs"):
+            return f[: -len(".gs")]
+
+    raise ValueError(f"No .gs file found in downloaded index for {organism_id}")
+
+
+# ============================================================================
+# GuideScan2 Integration
+# ============================================================================
+
+
+def _run_guidescan_enumerate(input_csv: str, index_prefix: str, output_csv: str) -> None:
+    """Run guidescan enumerate command.
+
+    :param str input_csv: Path to input CSV with guide sequences
+    :param str index_prefix: Path prefix to guidescan2 index files
+    :param str output_csv: Path to output CSV file
+    :raises RuntimeError: If guidescan enumerate fails
+    """
+    cmd = [
+        "guidescan",
+        "enumerate",
+        index_prefix,
+        "-f",
+        input_csv,
+        "-o",
+        output_csv,
+        "--format",
+        "csv",
+        "--mismatches",
+        "0",
+    ]
+
+    logger.info(f"Running guidescan enumerate: {' '.join(cmd)}")
+
+    try:
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        logger.info("Guidescan enumerate completed successfully")
+        if result.stdout:
+            logger.debug(f"Guidescan stdout: {result.stdout}")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Guidescan enumerate failed with exit code {e.returncode}")
+        logger.error(f"Stdout: {e.stdout}")
+        logger.error(f"Stderr: {e.stderr}")
+        raise RuntimeError(f"Guidescan enumerate failed: {e.stderr}") from e
