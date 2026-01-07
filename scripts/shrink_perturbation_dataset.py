@@ -24,7 +24,8 @@ def create_small_test_dataset(
     input_file: str,
     output_file: str,
     n_cells: int = 500,
-    n_genes: int = 2000,
+    n_genes: int = 500,
+    n_genetic_perturbations: int = 10,
     seed: int = 42,
 ) -> None:
     """
@@ -151,6 +152,14 @@ def create_small_test_dataset(
                 else:
                     # If no features remain, remove target_features key
                     pert_data.pop("target_features", None)
+        # Only keep at most n_genetic_perturbations if specified. Select randomly.
+        if n_genetic_perturbations > 0:
+            pert_ids = list(adata_subset.uns["genetic_perturbations"].keys())
+            if len(pert_ids) > n_genetic_perturbations:
+                selected_pert_ids = np.random.choice(pert_ids, size=n_genetic_perturbations, replace=False)
+                adata_subset.uns["genetic_perturbations"] = {
+                    pid: adata_subset.uns["genetic_perturbations"][pid] for pid in selected_pert_ids
+                }
 
     # Ensure raw.var exists if raw exists
     if adata.raw is not None:
