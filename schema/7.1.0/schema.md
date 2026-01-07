@@ -228,7 +228,7 @@ The following ontology dependencies are *pinned* for this version of the schema.
 | [C. elegans Gross Anatomy Ontology] | WBbt: | [2025-08-18 WS298](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/releases/tag/v2025-08-18) | [wbbt.owl](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/blob/v2025-08-18/wbbt.owl) |
 | [Cell Ontology] | CL: |  [2025-07-30](https://github.com/obophenotype/cell-ontology/releases/tag/v2025-07-30) | [cl.owl](https://github.com/obophenotype/cell-ontology/releases/download/v2025-07-30/cl.owl)|
 | [Cellosaurus] | CVCL_ | 53.0 | [cellosaurus.obo ](https://ftp.expasy.org/databases/cellosaurus/cellosaurus.obo)_(Cellosaurus may replace this download with a newer release. Previous releases are <b>unavailable</b>. )_  |
-| [Chemical Entities of Biological Interest] | CHEBI: | [2025-10-31](https://ftp.ebi.ac.uk/pub/databases/chebi/ontology/)<br>246 | [chebi-lite.owl](https://ftp.ebi.ac.uk/pub/databases/chebi/ontology/chebi_lite.owl.gz) _(CHEBI may replace this download with a newer release. Previous releases are [available](https://ftp.ebi.ac.uk/pub/databases/chebi/archive/). )_ |
+| [Chemical Entities of Biological Interest] | CHEBI: | [2026-01-06](https://ftp.ebi.ac.uk/pub/databases/chebi/ontology/)<br>248 | [chebi-lite.owl](https://ftp.ebi.ac.uk/pub/databases/chebi/ontology/chebi_lite.owl.gz) _(CHEBI may replace this download with a newer release. Previous releases are [available](https://ftp.ebi.ac.uk/pub/databases/chebi/archive/). )_ |
 | [Drosophila Anatomy Ontology] | FBbt: | [2025-08-07](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/tag/v2025-08-07)| [fbbt.owl](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/download/v2025-08-07/fbbt.owl) |
 | [Drosophila Development Ontology] | FBdv: | [2025-05-29](https://github.com/FlyBase/drosophila-developmental-ontology/releases/tag/v2025-05-29) | [fbdv.owl](https://github.com/FlyBase/drosophila-developmental-ontology/releases/download/v2025-05-29/fbdv.owl) |
 | [Experimental Factor Ontology] | EFO: | [2025-09-15 EFO 3.82.0](https://github.com/EBISPOT/efo/releases/tag/v3.82.0) | [efo.owl](https://github.com/EBISPOT/efo/releases/download/v3.82.0/efo.owl) |
@@ -3035,7 +3035,7 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
 
 ### schema v7.1.0
 * Required Ontologies
-  * Added Chemical Entities of Biological Interest (CHEBI) release 246
+  * Added Chemical Entities of Biological Interest (CHEBI) release 248
   * Added UniProt Knowledgebase (uniprot) release 2025_04
 * obs (Cell metadata)
   * Added `experimental_condition`
