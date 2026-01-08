@@ -34,6 +34,21 @@
       },
       "additionalProperties": false
     },
+    "pre_analysis": {
+      "type": "object",
+      "description": "Rules for what is allowed/required before analysis (e.g., ensuring certain fields/keys are absent/present)",
+      "properties": {
+        "uns": { "$ref": "#/$defs/pre_analysis_component_rules" },
+        "obs": { "$ref": "#/$defs/pre_analysis_component_rules" },
+        "obsm": { "$ref": "#/$defs/pre_analysis_component_rules" },
+        "var": { "$ref": "#/$defs/pre_analysis_component_rules" },
+        "varm": { "$ref": "#/$defs/pre_analysis_component_rules" },
+        "varp": { "$ref": "#/$defs/pre_analysis_component_rules" },
+        "obsp": { "$ref": "#/$defs/pre_analysis_component_rules" },
+        "raw.var": { "$ref": "#/$defs/pre_analysis_component_rules" }
+      },
+      "additionalProperties": false
+    },
     "components": {
       "type": "object",
       "description": "Main schema components defining validation rules for different parts of the AnnData object",
@@ -78,6 +93,33 @@
   "required": ["title", "type", "components"],
   "additionalProperties": false,
   "$defs": {
+    "pre_analysis_component_rules": {
+      "type": "object",
+      "description": "Allowed/required rules for a component and optional per-key rules",
+      "properties": {
+        "required": {
+          "type": "boolean",
+          "description": "Whether this component must exist"
+        },
+        "allowed": {
+          "type": "boolean",
+          "description": "Whether this component is allowed to exist"
+        },
+        "keys": {
+          "type": "object",
+          "description": "Per-key allow/require rules (used for uns keys, etc.)",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "allowed": { "type": "boolean" },
+              "required": { "type": "boolean" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "field_validation_rules": {
       "type": "object",
       "description": "Generic validation rules that can be applied to any field",
@@ -303,6 +345,11 @@
         "warning_message": {
           "type": "string",
           "description": "Warning message to display for certain conditions"
+        },
+        "forbidden":{
+          "type": "array",
+          "description": "List of disallowed values for categorical fields",
+          "items": { "type": "string" }
         }
       },
       "additionalProperties": false
@@ -400,7 +447,7 @@
       "description": "Conditional validation rule that applies when certain conditions are met",
       "properties": {
         "rule": {
-          "$ref": "#/$defs/condition_rule",
+          "$ref": "#/$defs/condition_rule_or_list",
           "description": "The condition that must be met for this dependency to apply"
         },
         "error_message_suffix": {
@@ -419,9 +466,24 @@
           "type": "array",
           "description": "Allowed values when this dependency is active",
           "items": {"type": "string"}
+        },
+        "subtype":{
+          "type": "string",
+          "description": "Subtype specification for the field"
         }
       },
       "additionalProperties": false
+    },
+    "condition_rule_or_list": {
+      "description": "A single condition rule, or a list of condition rules (AND semantics)",
+      "oneOf": [
+        { "$ref": "#/$defs/condition_rule" },
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/condition_rule" }
+        }
+      ]
     },
     "condition_rule": {
       "type": "object",
