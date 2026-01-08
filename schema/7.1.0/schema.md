@@ -1382,7 +1382,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
       <th>Value</th>
         <td>categorical with <code>str</code> categories.<br><br>         The value MUST be <code>"no perturbations"</code> when:
         <ul>
-          <li>one of <code>obs['experimental_condition_ontology_term_id']</code> or <code>obs['genetic_perturbation_id']</code> is present and its value is <code>"na"</code></li>
+          <li>only one of <code>obs['experimental_condition_ontology_term_id']</code> or <code>obs['genetic_perturbation_id']</code> is present and its value is <code>"na"</code></li>
           <li>both <code>obs['experimental_condition_ontology_term_id']</code> and <code>obs['genetic_perturbation_id']</code> are present and their values are <code>"na"</code></li>
        </ul>
        Otherwise, the value MUST be the <b>set</b> of perturbation types present in the observation, limited to the following types:
