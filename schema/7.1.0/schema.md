@@ -228,7 +228,7 @@ The following ontology dependencies are *pinned* for this version of the schema.
 | [C. elegans Gross Anatomy Ontology] | WBbt: | [2025-08-18 WS298](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/releases/tag/v2025-08-18) | [wbbt.owl](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/blob/v2025-08-18/wbbt.owl) |
 | [Cell Ontology] | CL: |  [2025-07-30](https://github.com/obophenotype/cell-ontology/releases/tag/v2025-07-30) | [cl.owl](https://github.com/obophenotype/cell-ontology/releases/download/v2025-07-30/cl.owl)|
 | [Cellosaurus] | CVCL_ | 53.0 | [cellosaurus.obo ](https://ftp.expasy.org/databases/cellosaurus/cellosaurus.obo)_(Cellosaurus may replace this download with a newer release. Previous releases are <b>unavailable</b>. )_  |
-| [Chemical Entities of Biological Interest] | CHEBI: | [2025-10-31](https://ftp.ebi.ac.uk/pub/databases/chebi/ontology/)<br>246 | [chebi-lite.owl](https://ftp.ebi.ac.uk/pub/databases/chebi/ontology/chebi_lite.owl.gz) _(CHEBI may replace this download with a newer release. Previous releases are [available](https://ftp.ebi.ac.uk/pub/databases/chebi/archive/). )_ |
+| [Chemical Entities of Biological Interest] | CHEBI: | [2026-01-06](https://ftp.ebi.ac.uk/pub/databases/chebi/ontology/)<br>248 | [chebi-lite.owl](https://ftp.ebi.ac.uk/pub/databases/chebi/ontology/chebi_lite.owl.gz) _(CHEBI may replace this download with a newer release. Previous releases are [available](https://ftp.ebi.ac.uk/pub/databases/chebi/archive/). )_ |
 | [Drosophila Anatomy Ontology] | FBbt: | [2025-08-07](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/tag/v2025-08-07)| [fbbt.owl](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/download/v2025-08-07/fbbt.owl) |
 | [Drosophila Development Ontology] | FBdv: | [2025-05-29](https://github.com/FlyBase/drosophila-developmental-ontology/releases/tag/v2025-05-29) | [fbdv.owl](https://github.com/FlyBase/drosophila-developmental-ontology/releases/download/v2025-05-29/fbdv.owl) |
 | [Experimental Factor Ontology] | EFO: | [2025-09-15 EFO 3.82.0](https://github.com/EBISPOT/efo/releases/tag/v3.82.0) | [efo.owl](https://github.com/EBISPOT/efo/releases/download/v3.82.0/efo.owl) |
@@ -717,7 +717,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     <tr>
       <th>Value</th>
       <td>
-        categorical with <code>str</code> categories. The elements in the value MUST be formatted in ascending lexical order separated by the delimiter <code>" || "</code> with no duplication of elements.<br><br>For example, if the terms are <code>"uniprot:P05112"</code>, <code>"anti-uniprot:Q99467"</code>, <code>"EFO:0002757"</code>, <code>"CHEBI:16412"</code>, <code>"EFO:0001702"</code>, and <code>"CHEBI:41774"</code> then the value MUST be <code>"anti-uniprot:Q99467 || CHEBI:16412 || CHEBI:41774 || EFO:0001702 || EFO:0002757 || uniprot:P05112"</code>.<br><br>If the experimental condition is a protein perturbation, then the value MUST include one or more UniProt terms such as <code>"uniprot:P08575"</code> for proteins or a UniProt term prefixed with <code>"anti-"</code> such as <code>"anti-uniprot:P08575"</code> for antibodies.
+        categorical with <code>str</code> categories. The value MUST be either be <code>"na"</code> or one or more experimental condition term identifiers in ascending lexical order separated by the delimiter <code>" || "</code> with no duplication of identifiers.<br><br>For example, if the terms are <code>"uniprot:P05112"</code>, <code>"anti-uniprot:Q99467"</code>, <code>"EFO:0002757"</code>, <code>"CHEBI:16412"</code>, <code>"EFO:0001702"</code>, and <code>"CHEBI:41774"</code> then the value MUST be <code>"CHEBI:16412 || CHEBI:41774 || EFO:0001702 || EFO:0002757 || anti-uniprot:Q99467 || uniprot:P05112"</code>.<br><br>The value MUST be <code>"na"</code> when there is no experimental condition for this observation. If all observations are <code>"na"</code>, then this field MUST NOT be present.<br><br>If the experimental condition is a protein perturbation, then the value MUST include one or more UniProt terms such as <code>"uniprot:P08575"</code> for proteins or a UniProt term prefixed with <code>"anti-"</code> such as <code>"anti-uniprot:P08575"</code> for antibodies.
        <br><br>
         If the experimental condition is a chemical perturbation, then the value MUST include one or more descendants of <a href="https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_24431?lang=en"><code>"CHEBI:24431"</code></a> for <i>chemical entity</i>.<br><br>The following CHEBI terms MUST NOT be used:
         <ul>
@@ -867,7 +867,6 @@ Curators MUST annotate the following columns in the `obs` dataframe:
     </tr>
   </tbody>
 </table>
-<br>
 
 ### genetic_perturbation_id
 
@@ -1336,11 +1335,13 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover MUST annotate.</td>
+      <td>CELLxGENE Discover MUST annotate if <code>obs['experimental_condition_ontology_term_id']</code> is present; otherwise this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories. This MUST be one or more human-readable names for the terms in <code>experimental_condition_ontology_term_id</code> in the same order separated by the delimiter <code>" || "</code>.<br><br>If an antibody value is present, then the human-readable name is prefixed with <code>"anti-"</code> such as <code>"anti-PTPRC_HUMAN"</code>.<br><br>For example, if the value of <code>experimental_condition_ontology_term_id</code> is <code>"anti-uniprot:Q99467 || CHEBI:16412 || CHEBI:41774 || EFO:0001702 || EFO:0002757 || uniprot:P05112"</code> then the value of <code>experimental_condition</code> MUST be <code>"anti-CD180_HUMAN || lipopolysaccharide || tamoxifen || temperature || high fat diet || IL4_HUMAN"</code>.
+        <td>categorical with <code>str</code> categories.<br><br>
+          This MUST be <code>"na"</code> if the value of <code>experimental_condition_ontology_term_id</code> is <code>"na"</code>.<br><br>
+          Otherwise, this MUST be one or more human-readable names for the terms in <code>experimental_condition_ontology_term_id</code> in the same order separated by the delimiter <code>" || "</code>.<br><br>If an antibody value is present, then the human-readable name is prefixed with <code>"anti-"</code> such as <code>"anti-PTPRC_HUMAN"</code>.<br><br>For example, if the value of <code>experimental_condition_ontology_term_id</code> is <code>"CHEBI:16412 || CHEBI:41774 || EFO:0001702 || EFO:0002757 || anti-uniprot:Q99467 || uniprot:P05112"</code> then the value of <code>experimental_condition</code> MUST be <code>"lipopolysaccharide || tamoxifen || temperature || high fat diet || anti-CD180_HUMAN || IL4_HUMAN"</code>.
         </td>
     </tr>
 </tbody></table>
@@ -1375,11 +1376,16 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover MUST annotate.</td>
+      <td>CELLxGENE Discover MUST annotate if <code>obs['experimental_condition_ontology_term_id']</code> or <code>obs['genetic_perturbation_id']</code> is present; otherwise this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
-        <td>categorical with <code>str</code> categories.<br><br>The value MUST be the <b>set</b> of perturbation types present in the observation, limited to the following types:
+        <td>categorical with <code>str</code> categories.<br><br>         The value MUST be <code>"no perturbations"</code> when:
+        <ul>
+          <li>only one of <code>obs['experimental_condition_ontology_term_id']</code> or <code>obs['genetic_perturbation_id']</code> is present and its value is <code>"na"</code></li>
+          <li>both <code>obs['experimental_condition_ontology_term_id']</code> and <code>obs['genetic_perturbation_id']</code> are present and their values are <code>"na"</code></li>
+       </ul>
+       Otherwise, the value MUST be the <b>set</b> of perturbation types present in the observation, limited to the following types:
         <ul>
           <li> <code>"chemical"</code></li>
           <li> <code>"diet"</code></li>
@@ -3029,7 +3035,7 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
 
 ### schema v7.1.0
 * Required Ontologies
-  * Added Chemical Entities of Biological Interest (CHEBI) release 246
+  * Added Chemical Entities of Biological Interest (CHEBI) release 248
   * Added UniProt Knowledgebase (uniprot) release 2025_04
 * obs (Cell metadata)
   * Added `experimental_condition`
