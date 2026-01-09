@@ -2,8 +2,10 @@
 Tests for schema compliance of an AnnData object
 """
 
+import json
 import unittest
 from copy import deepcopy
+from pathlib import Path
 
 import anndata
 import fixtures.examples_validate as examples
@@ -11,6 +13,7 @@ import numpy
 import pandas as pd
 import pytest
 import scipy.sparse
+import yaml
 from cellxgene_schema.schema import get_schema_definition
 from cellxgene_schema.utils import getattr_anndata, read_h5ad
 from cellxgene_schema.validate import (
@@ -30,6 +33,7 @@ from cellxgene_schema.validate import (
 from cellxgene_schema.write_labels import AnnDataLabelAppender
 from dask.array import from_array
 from fixtures.examples_validate import visium_library_id
+from jsonschema import Draft7Validator, SchemaError, ValidationError
 
 schema_def = get_schema_definition()
 
@@ -3658,3 +3662,40 @@ class TestMultiSpecies:
         obs.loc[obs.index[0], "tissue_ontology_term_id"] = tissue_ontology_term_id
         validator.validate_adata()
         assert len(validator.errors) > 0
+
+
+@pytest.fixture(scope="module")
+def cellxgene_schema_definition():
+    schema_path = Path(__file__).parent.parent / "cellxgene_schema_definition.json"
+    with open(schema_path, "r") as f:
+        json_schema = json.load(f)
+    return json_schema
+
+
+@pytest.fixture(scope="module")
+def cellxgene_schema():
+    schema_path = Path(__file__).parent.parent / "cellxgene_schema" / "schema_definitions" / "schema_definition.yaml"
+    with open(schema_path, "r") as f:
+        schema = yaml.safe_load(f)
+    return schema
+
+
+def test_schema_definition_compliance(cellxgene_schema_definition):
+    """
+    Test that the schema files are compliant with the JSON Schema specification.
+    """
+    try:
+        Draft7Validator.check_schema(cellxgene_schema_definition)
+    except SchemaError as e:
+        pytest.fail(f"Schema cellxgene_schema_definition is not compliant: {e}")
+
+
+def test_cellxgene_schema_compliance(cellxgene_schema_definition, cellxgene_schema):
+    """
+    Test that the cellxgene schema files are compliant with the JSON Schema specification.
+    """
+    validator = Draft7Validator(cellxgene_schema_definition)
+    try:
+        validator.validate(cellxgene_schema)
+    except ValidationError as e:
+        pytest.fail(f"cellxgene_schema is not compliant with cellxgene_schema_definition: {e}")
