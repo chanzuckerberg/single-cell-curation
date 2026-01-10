@@ -6,3 +6,4 @@ types-setuptools
 typing_extensions
 types-PyYAML
 pre-commit
+jsonschema 
