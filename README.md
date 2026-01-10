@@ -59,16 +59,6 @@ If there are multiple closest ancestors of the same distance with a match, the c
 
 ---
 
-This experimental validator also offers the option to annotate genetic perturbations with genomic locations and target genes. This is useful for CRISPR perturbation datasets where you want to add `target_genomic_regions` and `target_features` annotations.
-
-This command requires [guidescan2](https://github.com/pritykinlab/guidescan-cli) to be installed on your system before use.
-
-```
-cellxgene-schema annotate-perturbations input.h5ad output.h5ad
-```
-
-The command will extract guide sequences from `genetic_perturbations`, run guidescan2 to find genomic matches, identify overlapping genes using bioframe, and update the h5ad file with the annotations.
-
 ---
 
 The data portal runs the following in the backend:
