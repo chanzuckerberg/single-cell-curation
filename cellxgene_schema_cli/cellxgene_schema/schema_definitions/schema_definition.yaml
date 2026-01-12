@@ -106,6 +106,36 @@ components:
         enum:
           - count
           - normal
+      genetic_perturbations:
+        type: dictionary
+        required: False
+        # Each key is a perturbation identifier mapping to a dictionary describing the perturbation.
+        # Curator-submitted dictionaries MUST only contain the keys defined below. Discover-only keys
+        # (derived_genomic_regions, derived_features) MUST NOT be present in curator submissions.
+        keys:
+          # Per-perturbation id (wildcard for any id keys)
+          __id__:
+            type: dictionary
+            keys:
+              role:
+                type: string
+                required: True
+                enum:
+                  - control
+                  - targeting
+              protospacer_sequence:
+                type: string
+                required: True
+                # Only uppercase A/C/G/T characters allowed, length 14-22
+                pattern: "^[ACGT]{14,22}$"
+              protospacer_adjacent_motif:
+                type: string
+                required: True
+                # Format like: "3' NGG" where MOTIF uses allowed ambiguity codes
+                pattern: "^3' [ABCDGHKMNRSTVWY]+$"
+            forbidden_keys:
+              - derived_genomic_regions
+              - derived_features
   var:
     type: dataframe
     required: True
@@ -751,8 +781,78 @@ components:
         add_labels:
           - type: curie
             to_column: development_stage
+      genetic_perturbation_id:
+        type: categorical
+        subtype: str
+        forbidden:
+          - na
+        dependencies:
+          - # if uns['genetic_perturbations'] is present
+            rule:
+              uns_key: genetic_perturbations
+            type: dictionary
+          - # if uns['genetic_perturbations'] is not present
+            rule:
+              exclude_uns_key: genetic_perturbations
+            type: forbidden
+          - # organism must be one of supported organisms for perturbations
+            rule:
+              column: organism_ontology_term_id
+              match_exact:
+                terms:
+                  - NCBITaxon:7955
+                  - NCBITaxon:9606
+                  - NCBITaxon:10090
+            type: categorical
+            subtype: str
+            forbidden:
+              - na
+          - # If genetic_perturbation_strategy == 'control', then referenced perturbations in uns MUST have role 'control'.
+            rule:
+              column: genetic_perturbation_strategy
+              match_exact:
+                terms:
+                  - control
+            type: categorical
+            subtype: str
+        
+
+
       is_primary_data:
         type: bool
+      genetic_perturbation_strategy:
+        type: categorical
+        subtype: str
+        enum:
+          - control
+          - CRISPR activation screen
+          - CRISPR interference screen
+          - CRISPR knockout mutant
+          - CRISPR knockout screen
+          - no perturbations
+        dependencies:
+          - # If obs['genetic_perturbation_id'] == 'na' then strategy MUST be 'no perturbations'
+            rule:
+              column: genetic_perturbation_id
+              match_exact:
+                terms:
+                  - na
+            type: categorical
+            enum:
+              - no perturbations
+          - # If obs['genetic_perturbation_id'] != 'na' then strategy MUST be one of the listed perturbation strategies
+            rule:
+              column: genetic_perturbation_id
+              exclude_exact:
+                terms:
+                  - na
+            type: categorical
+            enum:
+              - control
+              - CRISPR activation screen
+              - CRISPR interference screen
+              - CRISPR knockout mutant
+              - CRISPR knockout screen
       donor_id:
         type: categorical
         subtype: str
