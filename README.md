@@ -59,7 +59,6 @@ If there are multiple closest ancestors of the same distance with a match, the c
 
 ---
 
----
 
 The data portal runs the following in the backend:
 
