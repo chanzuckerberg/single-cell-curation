@@ -16,6 +16,7 @@ FIXTURES_ROOT = os.path.join(os.path.dirname(__file__))
 h5ad_dir = os.path.join(FIXTURES_ROOT, "h5ads")
 h5ad_valid = os.path.join(h5ad_dir, "example_valid.h5ad")
 h5ad_invalid = os.path.join(h5ad_dir, "example_invalid_CL.h5ad")
+h5ad_perturbations = os.path.join(h5ad_dir, "small_perturbations.h5ad")
 
 # -----------------------------------------------------------------#
 # Manually creating minimal anndata objects.
@@ -639,3 +640,242 @@ adata_with_labels_unmigrated = anndata.AnnData(
     obsm={"X_umap": numpy.zeros([unmigrated_X.shape[0], 2])},
 )
 adata_with_labels_unmigrated.raw = adata_with_labels_unmigrated.copy()
+
+# -----------------------------------------------------------------#
+# Genetic perturbation fixtures (schema 7.1.0)
+
+gp_id_1 = "CERS6-2"
+gp_id_2 = "KARS-1"
+
+# -------------------------
+# Valid: non-control perturbations
+# - No obs row may contain "na"
+# - One row uses a single ID, the other uses two IDs joined with " || " in lexical order
+good_obs_gene_perturbations = good_obs.copy()
+good_obs_gene_perturbations["genetic_perturbation_id"] = pd.Categorical(
+    [gp_id_1, f"{gp_id_1} || {gp_id_2}"],
+    categories=[gp_id_1, gp_id_2, f"{gp_id_1} || {gp_id_2}"],
+)
+good_obs_gene_perturbations["genetic_perturbation_strategy"] = pd.Categorical(
+    ["CRISPR knockout screen", "CRISPR knockout screen"],
+    categories=[
+        "control",
+        "CRISPR activation screen",
+        "CRISPR interference screen",
+        "CRISPR knockout mutant",
+        "CRISPR knockout screen",
+        "no perturbations",
+    ],
+)
+
+good_uns_with_gene_perturbations_curator = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "CAGAGGGAGGAGAGAACCG",  
+            "protospacer_adjacent_motif": "3' NGG",
+        },
+        gp_id_2: {
+            "role": "targeting",
+            "protospacer_sequence": "GGGCCCTCCGGGAAGATGG",  
+            "protospacer_adjacent_motif": "3' NGG",
+        },
+    },
+}
+
+adata_gene_perturbations = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations,
+    uns=good_uns_with_gene_perturbations_curator,
+    obsm=good_obsm,
+    var=good_var,
+)
+adata_gene_perturbations.raw = adata_gene_perturbations.copy()
+adata_gene_perturbations.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: control perturbations (strategy == "control" => role MUST be "control")
+gp_control_id = "CTRL-1"
+good_obs_gene_perturbations_control = good_obs.copy()
+good_obs_gene_perturbations_control["genetic_perturbation_id"] = pd.Categorical(
+    [gp_control_id, gp_control_id],
+    categories=[gp_control_id],
+)
+good_obs_gene_perturbations_control["genetic_perturbation_strategy"] = pd.Categorical(
+    ["control", "control"],
+    categories=[
+        "control",
+        "CRISPR activation screen",
+        "CRISPR interference screen",
+        "CRISPR knockout mutant",
+        "CRISPR knockout screen",
+        "no perturbations",
+    ],
+)
+
+good_uns_with_gene_perturbations_control = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_control_id: {
+            "role": "control",
+            "protospacer_sequence": "TTTTTTTTTTTTTTTTTTTT",  # 20bp
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+
+adata_gene_perturbations_control = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations_control,
+    uns=good_uns_with_gene_perturbations_control,
+    obsm=good_obsm,
+    var=good_var,
+)
+adata_gene_perturbations_control.raw = adata_gene_perturbations_control.copy()
+adata_gene_perturbations_control.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Invalid: obs contains "na" (explicitly forbidden by "All observations MUST NOT contain 'na'")
+bad_obs_gene_perturbations_contains_na = good_obs.copy()
+bad_obs_gene_perturbations_contains_na["genetic_perturbation_id"] = pd.Categorical(
+    [gp_id_1, "na"],
+    categories=[gp_id_1, "na"],
+)
+bad_obs_gene_perturbations_contains_na["genetic_perturbation_strategy"] = pd.Categorical(
+    ["CRISPR knockout screen", "no perturbations"],
+    categories=[
+        "control",
+        "CRISPR activation screen",
+        "CRISPR interference screen",
+        "CRISPR knockout mutant",
+        "CRISPR knockout screen",
+        "no perturbations",
+    ],
+)
+adata_gene_perturbations_invalid_contains_na = anndata.AnnData(
+    X=X.copy(),
+    obs=bad_obs_gene_perturbations_contains_na,
+    uns=good_uns_with_gene_perturbations_curator,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: strategy is "no perturbations" when id is not "na"
+bad_obs_gene_perturbations_bad_strategy = good_obs.copy()
+bad_obs_gene_perturbations_bad_strategy["genetic_perturbation_id"] = pd.Categorical(
+    [gp_id_1, gp_id_1],
+    categories=[gp_id_1],
+)
+bad_obs_gene_perturbations_bad_strategy["genetic_perturbation_strategy"] = pd.Categorical(
+    ["no perturbations", "no perturbations"],
+    categories=[
+        "control",
+        "CRISPR activation screen",
+        "CRISPR interference screen",
+        "CRISPR knockout mutant",
+        "CRISPR knockout screen",
+        "no perturbations",
+    ],
+)
+adata_gene_perturbations_invalid_bad_strategy = anndata.AnnData(
+    X=X.copy(),
+    obs=bad_obs_gene_perturbations_bad_strategy,
+    uns=good_uns_with_gene_perturbations_curator,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: multi-id not in ascending lexical order OR contains duplicates
+bad_obs_gene_perturbations_bad_multi = good_obs.copy()
+bad_obs_gene_perturbations_bad_multi["genetic_perturbation_id"] = pd.Categorical(
+    [f"{gp_id_2} || {gp_id_1}", f"{gp_id_1} || {gp_id_1}"],  # wrong order, duplicate
+    categories=[gp_id_1, gp_id_2, f"{gp_id_2} || {gp_id_1}", f"{gp_id_1} || {gp_id_1}"],
+)
+bad_obs_gene_perturbations_bad_multi["genetic_perturbation_strategy"] = pd.Categorical(
+    ["CRISPR knockout screen", "CRISPR knockout screen"],
+    categories=[
+        "control",
+        "CRISPR activation screen",
+        "CRISPR interference screen",
+        "CRISPR knockout mutant",
+        "CRISPR knockout screen",
+        "no perturbations",
+    ],
+)
+adata_gene_perturbations_invalid_bad_multi = anndata.AnnData(
+    X=X.copy(),
+    obs=bad_obs_gene_perturbations_bad_multi,
+    uns=good_uns_with_gene_perturbations_curator,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: obs references an ID missing from uns['genetic_perturbations']
+bad_obs_gene_perturbations_missing_key = good_obs.copy()
+bad_obs_gene_perturbations_missing_key["genetic_perturbation_id"] = pd.Categorical(
+    ["MISSING_ID", "MISSING_ID"],
+    categories=["MISSING_ID"],
+)
+bad_obs_gene_perturbations_missing_key["genetic_perturbation_strategy"] = pd.Categorical(
+    ["CRISPR knockout screen", "CRISPR knockout screen"],
+    categories=[
+        "control",
+        "CRISPR activation screen",
+        "CRISPR interference screen",
+        "CRISPR knockout mutant",
+        "CRISPR knockout screen",
+        "no perturbations",
+    ],
+)
+adata_gene_perturbations_invalid_missing_key = anndata.AnnData(
+    X=X.copy(),
+    obs=bad_obs_gene_perturbations_missing_key,
+    uns=good_uns_with_gene_perturbations_curator,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: strategy == "control" but role is not "control"
+bad_uns_gene_perturbations_control_role_mismatch = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_control_id: {
+            "role": "targeting",  # invalid when strategy is "control"
+            "protospacer_sequence": "TTTTTTTTTTTTTTTTTTTT",
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_control_role_mismatch = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations_control,
+    uns=bad_uns_gene_perturbations_control_role_mismatch,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: Discover-only key present in curator submission
+bad_uns_gene_perturbations_contains_derived = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            "protospacer_adjacent_motif": "3' NGG",
+            "derived_genomic_regions": ["16:75647615-75647633(-)"],  # Discover-only
+        }
+    },
+}
+adata_gene_perturbations_invalid_contains_derived = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_gene_perturbations_contains_derived,
+    obsm=good_obsm,
+    var=good_var,
+)

@@ -107,35 +107,40 @@ components:
           - count
           - normal
       genetic_perturbations:
-        type: dictionary
+        type: dict
         required: False
-        # Each key is a perturbation identifier mapping to a dictionary describing the perturbation.
-        # Curator-submitted dictionaries MUST only contain the keys defined below. Discover-only keys
-        # (derived_genomic_regions, derived_features) MUST NOT be present in curator submissions.
+        dependencies:
+          - # if obs['genetic_perturbation_id'] is present
+            rule:
+              obs_key: genetic_perturbation_id
+            type: dict
+          - # if obs['genetic_perturbation_id'] is not present
+            rule:
+              exclude_obs_key: genetic_perturbation_id
+            type: forbidden
         keys:
-          # Per-perturbation id (wildcard for any id keys)
-          __id__:
-            type: dictionary
-            keys:
-              role:
-                type: string
-                required: True
-                enum:
-                  - control
-                  - targeting
-              protospacer_sequence:
-                type: string
-                required: True
-                # Only uppercase A/C/G/T characters allowed, length 14-22
-                pattern: "^[ACGT]{14,22}$"
-              protospacer_adjacent_motif:
-                type: string
-                required: True
-                # Format like: "3' NGG" where MOTIF uses allowed ambiguity codes
-                pattern: "^3' [ABCDGHKMNRSTVWY]+$"
-            forbidden_keys:
-              - derived_genomic_regions
-              - derived_features
+          key_pattern: '^[^\s/,"'']+$'  # No whitespace, slash, comma, double or single quotes
+          type: dict
+          keys:
+            role:
+              type: string
+              required: True
+              enum:
+                - control
+                - targeting
+            protospacer_sequence:
+              type: string
+              required: True
+              # Only uppercase A/C/G/T characters allowed, length 14-22
+              pattern: '^[ACGT]{14,22}$'
+            protospacer_adjacent_motif:
+              type: string
+              required: True
+              # Format like: "3' NGG" where MOTIF uses allowed ambiguity codes
+              pattern: '^3'' [ABCDGHKMNRSTVWY]+$'
+          forbidden_keys:
+            - derived_genomic_regions
+            - derived_features
   var:
     type: dataframe
     required: True
@@ -790,7 +795,7 @@ components:
           - # if uns['genetic_perturbations'] is present
             rule:
               uns_key: genetic_perturbations
-            type: dictionary
+            type: dict
           - # if uns['genetic_perturbations'] is not present
             rule:
               exclude_uns_key: genetic_perturbations
