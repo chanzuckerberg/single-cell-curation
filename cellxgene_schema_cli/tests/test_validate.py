@@ -4,6 +4,7 @@ import re
 import tempfile
 from typing import Union
 from unittest import mock
+from unittest.mock import patch
 
 import anndata
 import numpy as np
@@ -322,6 +323,46 @@ class TestAddLabelFunctions:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
             assert not label_writer.write_labels(labels_path)
         assert label_writer.errors
+
+    def test__annotate_genetic_perturbations_runtime_error(self, label_writer):
+        """Test that RuntimeError (e.g., guidescan2 not installed) is handled gracefully."""
+        with patch("cellxgene_schema.write_labels.annotate_perturbations_in_h5ad") as mock_annotate:
+            mock_annotate.side_effect = RuntimeError()
+            label_writer._annotate_genetic_perturbations()
+
+            assert len(label_writer.errors) == 1
+            error_msg, error_tb = label_writer.errors[0]
+            assert "Genetic perturbations annotation skipped" in error_msg
+            assert error_tb is None
+
+    def test__annotate_genetic_perturbations_generic_exception(self, label_writer):
+        """Test that other exceptions (e.g., organism not supported) are handled gracefully."""
+        with patch("cellxgene_schema.write_labels.annotate_perturbations_in_h5ad") as mock_annotate:
+            mock_annotate.side_effect = ValueError()
+            label_writer._annotate_genetic_perturbations()
+
+            assert len(label_writer.errors) == 1
+            error_msg, error_tb = label_writer.errors[0]
+            assert "Genetic perturbations annotation failed" in error_msg
+            assert error_tb is not None
+
+    def test__annotate_genetic_perturbations_success(self, label_writer):
+        """Test that successful annotation doesn't add errors."""
+        with patch("cellxgene_schema.write_labels.annotate_perturbations_in_h5ad") as mock_annotate:
+            mock_annotate.return_value = label_writer.adata
+            label_writer._annotate_genetic_perturbations()
+
+            assert len(label_writer.errors) == 0
+            mock_annotate.assert_called_once_with(label_writer.adata, index_path=None)
+
+    def test__annotate_genetic_perturbations_no_perturbations(self, label_writer):
+        """Test that annotation is skipped when genetic_perturbations doesn't exist."""
+        with patch("cellxgene_schema.write_labels.annotate_perturbations_in_h5ad") as mock_annotate:
+            mock_annotate.return_value = label_writer.adata
+            label_writer._annotate_genetic_perturbations()
+
+            mock_annotate.assert_called_once_with(label_writer.adata, index_path=None)
+            assert len(label_writer.errors) == 0
 
 
 class TestIgnoreLabelFunctions:
