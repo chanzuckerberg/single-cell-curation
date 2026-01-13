@@ -1,17 +1,17 @@
 import tempfile
-import pytest
 
+import pytest
+from cellxgene_schema.validate import validate
 from fixtures.examples_validate import (
     adata_gene_perturbations,
     adata_gene_perturbations_control,
-    adata_gene_perturbations_invalid_contains_na,
-    adata_gene_perturbations_invalid_bad_strategy,
     adata_gene_perturbations_invalid_bad_multi,
-    adata_gene_perturbations_invalid_missing_key,
-    adata_gene_perturbations_invalid_control_role_mismatch,
+    adata_gene_perturbations_invalid_bad_strategy,
     adata_gene_perturbations_invalid_contains_derived,
+    adata_gene_perturbations_invalid_contains_na,
+    adata_gene_perturbations_invalid_control_role_mismatch,
+    adata_gene_perturbations_invalid_missing_key,
 )
-from cellxgene_schema.validate import validate
 
 
 def _validate_adata(adata):

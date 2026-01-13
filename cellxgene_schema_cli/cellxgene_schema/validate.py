@@ -1054,7 +1054,7 @@ class Validator:
                     # Find corresponding value_def
                     pat_str = matched_patterns[0]
                     value_def = None
-                    for (pstr, vdef, cre) in pattern_entries:
+                    for pstr, vdef, _cre in pattern_entries:
                         if pstr == pat_str:
                             value_def = vdef
                             break
@@ -1231,7 +1231,10 @@ class Validator:
                                 if not isinstance(rules, list):
                                     rules = [rules]
                                 # consider only rules that reference uns
-                                if not any(isinstance(r, dict) and (r.get("uns_key") or r.get("exclude_uns_key")) for r in rules):
+                                if not any(
+                                    isinstance(r, dict) and (r.get("uns_key") or r.get("exclude_uns_key"))
+                                    for r in rules
+                                ):
                                     continue
                                 for rule in rules:
                                     match_query, _ = self._validate_single_dependency_rule(df, column_name, rule)
@@ -1239,10 +1242,7 @@ class Validator:
                                         continue
                                     if match_query.any():
                                         # if dependency_def type is 'forbidden', it indicates column must be absent
-                                        if dependency_def.get("type") == "forbidden":
-                                            uns_required = False
-                                        else:
-                                            uns_required = True
+                                        uns_required = dependency_def.get("type") != "forbidden"
                                         break
                                 if uns_required is not None:
                                     break
@@ -1270,9 +1270,12 @@ class Validator:
                                     if (col == column_name) or ("na" in terms):
                                         presence_rules_exist = True
                                         match_query, _ = self._validate_single_dependency_rule(df, column_name, rule)
-                                        if match_query is not None and match_query.any():
-                                            if dependency_def.get("type") != "forbidden":
-                                                required_by_obs = True
+                                        if (
+                                            match_query is not None
+                                            and match_query.any()
+                                            and dependency_def.get("type") != "forbidden"
+                                        ):
+                                            required_by_obs = True
                                         # continue scanning other rules
                                 # continue outer loop
 
@@ -1562,7 +1565,8 @@ class Validator:
         except Exception:
             sub_def = {}
 
-        allowed_fields = set(sub_def.get("keys", {}).keys())
+        # allowed_fields intentionally not used directly; keep for clarity
+        # allowed_fields = set(sub_def.get("keys", {}).keys())
         required_fields = {k for k, v in sub_def.get("keys", {}).items() if v.get("required")}
         forbidden_keys = set(sub_def.get("forbidden_keys", []))
 
@@ -1613,10 +1617,10 @@ class Validator:
         uns['genetic_perturbations'].
         """
         # If no genetic_perturbations defined in uns, nothing to do
-        if "genetic_perturbations" not in getattr(self, "_adata").uns:
+        if "genetic_perturbations" not in self._adata.uns:
             return
 
-        gp_uns = getattr(self, "_adata").uns.get("genetic_perturbations", {})
+        gp_uns = self._adata.uns.get("genetic_perturbations", {})
         obs = getattr_anndata(self.adata, "obs")
 
         # Require obs columns when uns has genetic perturbations

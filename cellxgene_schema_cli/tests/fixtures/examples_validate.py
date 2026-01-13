@@ -673,12 +673,12 @@ good_uns_with_gene_perturbations_curator = {
     "genetic_perturbations": {
         gp_id_1: {
             "role": "targeting",
-            "protospacer_sequence": "CAGAGGGAGGAGAGAACCG",  
+            "protospacer_sequence": "CAGAGGGAGGAGAGAACCG",
             "protospacer_adjacent_motif": "3' NGG",
         },
         gp_id_2: {
             "role": "targeting",
-            "protospacer_sequence": "GGGCCCTCCGGGAAGATGG",  
+            "protospacer_sequence": "GGGCCCTCCGGGAAGATGG",
             "protospacer_adjacent_motif": "3' NGG",
         },
     },
