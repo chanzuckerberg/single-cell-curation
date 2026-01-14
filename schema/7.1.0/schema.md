@@ -2156,7 +2156,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator MAY annotate only if <code>uns['pre_analysis']</code> is <code>False</code>; otherwise this key MUST NOT be present. </td>
+      <td>Curator MAY annotate only if <code>uns['is_pre_analysis']</code> is <code>False</code>; otherwise this key MUST NOT be present. </td>
     </tr>
     <tr>
       <th>Value</th>
