@@ -506,7 +506,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
   </tr>
   <tr>
     <th>Annotator</th>
-    <td>Curator MUST annotate.</td>
+    <td>Curator MUST annotate if <code>uns['is_pre_analysis']</code> is <code>False</code>; otherwise, this key MUST NOT be present.</td>
   </tr>
   <tr>
     <th>Value</th>
@@ -1276,7 +1276,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the matchi
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>CELLxGENE Discover MUST annotate.</td>
+      <td>CELLxGENE Discover MUST annotate if <code>cell_type_ontology_term_id</code> is present; otherwise, otherwise this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1457,10 +1457,11 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
 
 ## `obsm` (Embeddings)
 
-
 The value for each `str` key MUST be a  `numpy.ndarray` of shape `(n_obs, m)`, where `n_obs` is the number of rows in `X` and `m >= 1`. 
 
-To display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more** embeddings of at least two-dimensions (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`.<br><br>
+`obsm` MUST NOT be present if <code>uns['is_pre_analysis']</code> is <code>True</code>.
+
+Otherwise, to display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more** embeddings of at least two-dimensions (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`.<br><br>
 
 ### spatial
 
@@ -2155,7 +2156,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator MAY annotate.</td>
+      <td>Curator MAY annotate only if <code>uns['pre_analysis']</code> is <code>False</code>; otherwise this key MUST NOT be present. </td>
     </tr>
     <tr>
       <th>Value</th>
@@ -2227,6 +2228,27 @@ When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `citat
           </tbody></table>
           A citation for a H5AD dataset with a Publication DOI:<br><br>"<code><b>Publication:</b> https://doi.org/10.1126/science.abl4896 <b>Dataset Version:</b> https://datasets.cellxgene.cziscience.com/dbd8b789-3efa-4a63-9243-90cff64f2045.h5ad <b>curated and distributed by CZ CELLxGENE Discover in Collection:</b> https://cellxgene.cziscience.com/collections/e5f58829-1a66-40b5-a624-9046778e74f5"</code><br><br>
           A citation for a RDS dataset without a Publication DOI:<br><br><code>"<b>Dataset Version:</b> https://datasets.cellxgene.cziscience.com/08ea16dc-3f4e-4c84-8692-74d70be22d12.rds <b>curated and distributed by CZ CELLxGENE Discover in Collection:</b> https://cellxgene.cziscience.com/collections/10bf5c50-8d85-4c5f-94b4-22c1363d9f31"</code><br><br>
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+When a dataset is uploaded, CELLxGENE Discover MUST automatically add the `is_pre_analysis` key and set its value.
+
+### is_pre_analysis
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>is_pre_analysis</td>
+    </tr>
+    <tr>
+      <th>Annotator</th>
+      <td>CELLxGENE Discover MUST annotate.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td><code>bool</code>. This MUST be <code>True</code> if the dataset is included in a pre-analysis collection. Otherwise, this MUST be <code>False</code>.
         </td>
     </tr>
 </tbody></table>
@@ -3043,8 +3065,14 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Added `genetic_perturbation_id`
   * Added `genetic_perturbation_strategy`
   * Added `perturbation_types`
+  * Updated the requirements for `cell_type_ontology_term_id` to depend on `[uns]['is_pre_analysis']`
+  * Updated the requirements for `cell_type` to depend on `[uns]['is_pre_analysis']`
+* obsm (Embeddings)
+  * Updated the general requirements to depend on `[uns]['is_pre_analysis']`
 * uns (Dataset Metadata)
   * Added `genetic_perturbations`
+  * Added `is_pre_analysis`
+  * Updated the requirements for `default_embedding` to depend on `[uns]['is_pre_analysis']`
   * Updated `schema_reference` to <code>"https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/7.1.0/schema.md"</code>
   * Updated `schema_version` to <code>"7.1.0"</code>
 
