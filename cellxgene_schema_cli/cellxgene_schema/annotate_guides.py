@@ -642,8 +642,8 @@ def _build_genomic_regions(valid_rows: pd.DataFrame) -> List[str]:
     return list(regions)
 
 
-def _build_target_features(valid_rows: pd.DataFrame) -> Dict[str, str]:
-    """Build target_features dict from annotation rows.
+def _build_derived_features(valid_rows: pd.DataFrame) -> Dict[str, str]:
+    """Build derived_features dict from annotation rows.
 
     Removes version numbers from Ensembl IDs per schema 7.1.0.
 
@@ -666,7 +666,7 @@ def update_h5ad_with_guide_annotations(adata: ad.AnnData, annotations_df: pd.Dat
 
     Takes the output from annotate_guides_from_guidescan_csv and adds genomic location
     and gene overlap information to adata.uns['genetic_perturbations']. Only updates
-    target_genomic_regions and target_features fields (does NOT modify protospacer_sequence
+    derived_genomic_regions and derived_features fields (does NOT modify protospacer_sequence
     or protospacer_adjacent_motif which should already be present in the h5ad).
 
     :param ad.AnnData adata: AnnData object with genetic_perturbations in uns
@@ -698,15 +698,15 @@ def update_h5ad_with_guide_annotations(adata: ad.AnnData, annotations_df: pd.Dat
 
     # Process each guide using groupby
     for guide_id, guide_group in valid_annotations.groupby("id"):
-        # Build genomic regions and target features
+        # Build genomic regions and derived features
         genomic_regions = _build_genomic_regions(guide_group)
-        target_features = _build_target_features(guide_group)
+        derived_features = _build_derived_features(guide_group)
 
         # Update the h5ad entry
-        genetic_perturbations[guide_id]["target_genomic_regions"] = genomic_regions
-        genetic_perturbations[guide_id]["target_features"] = target_features
+        genetic_perturbations[guide_id]["derived_genomic_regions"] = genomic_regions
+        genetic_perturbations[guide_id]["derived_features"] = derived_features
 
-        logger.info(f"Updated guide {guide_id}: {len(genomic_regions)} region(s), {len(target_features)} gene(s)")
+        logger.info(f"Updated guide {guide_id}: {len(genomic_regions)} region(s), {len(derived_features)} gene(s)")
 
     # Update the uns with modified genetic_perturbations
     adata.uns["genetic_perturbations"] = genetic_perturbations

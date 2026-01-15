@@ -634,12 +634,12 @@ def test_update_h5ad_with_guide_annotations():
     adata = ad.AnnData()
     adata.uns["genetic_perturbations"] = {
         "guide1": {
-            "target_genomic_regions": [],
-            "target_features": {},
+            "derived_genomic_regions": [],
+            "derived_features": {},
         },
         "guide2": {
-            "target_genomic_regions": [],
-            "target_features": {},
+            "derived_genomic_regions": [],
+            "derived_features": {},
         },
     }
 
@@ -683,28 +683,28 @@ def test_update_h5ad_with_guide_annotations():
     guide1 = result_adata.uns["genetic_perturbations"]["guide1"]
     # Only genomic annotations should be updated (not sequence/PAM)
     assert (
-        len(guide1["target_genomic_regions"]) == 1
-    ), f"Expected 1 genomic region, got {len(guide1['target_genomic_regions'])}"
+        len(guide1["derived_genomic_regions"]) == 1
+    ), f"Expected 1 genomic region, got {len(guide1['derived_genomic_regions'])}"
     # Schema 7.1.0: 1-based coordinates (BED 999-1019 becomes 1000-1019)
     assert (
-        "1:1000-1019(+)" in guide1["target_genomic_regions"]
-    ), f"Expected 1:1000-1019(+), got {guide1['target_genomic_regions']}"
-    assert len(guide1["target_features"]) == 2, f"Expected 2 target features, got {len(guide1['target_features'])}"
-    assert guide1["target_features"]["ENSG00000123456"] == "BRCA1"
-    assert guide1["target_features"]["ENSG00000234567"] == "BRCA1-AS1"
+        "1:1000-1019(+)" in guide1["derived_genomic_regions"]
+    ), f"Expected 1:1000-1019(+), got {guide1['derived_genomic_regions']}"
+    assert len(guide1["derived_features"]) == 2, f"Expected 2 derived features, got {len(guide1['derived_features'])}"
+    assert guide1["derived_features"]["ENSG00000123456"] == "BRCA1"
+    assert guide1["derived_features"]["ENSG00000234567"] == "BRCA1-AS1"
 
     # Check guide2 (overlaps 1 gene)
     guide2 = result_adata.uns["genetic_perturbations"]["guide2"]
     # Only genomic annotations should be updated (not sequence/PAM)
     assert (
-        len(guide2["target_genomic_regions"]) == 1
-    ), f"Expected 1 genomic region, got {len(guide2['target_genomic_regions'])}"
+        len(guide2["derived_genomic_regions"]) == 1
+    ), f"Expected 1 genomic region, got {len(guide2['derived_genomic_regions'])}"
     # Schema 7.1.0: 1-based coordinates (BED 1963-1982 becomes 1964-1982)
     assert (
-        "3:1964-1982(-)" in guide2["target_genomic_regions"]
-    ), f"Expected 3:1964-1982(-), got {guide2['target_genomic_regions']}"
-    assert len(guide2["target_features"]) == 1, f"Expected 1 target feature, got {len(guide2['target_features'])}"
-    assert guide2["target_features"]["ENSG00000345678"] == "EGFR"
+        "3:1964-1982(-)" in guide2["derived_genomic_regions"]
+    ), f"Expected 3:1964-1982(-), got {guide2['derived_genomic_regions']}"
+    assert len(guide2["derived_features"]) == 1, f"Expected 1 derived feature, got {len(guide2['derived_features'])}"
+    assert guide2["derived_features"]["ENSG00000345678"] == "EGFR"
 
 
 def test_update_h5ad_with_guide_annotations_skips_na():
@@ -712,8 +712,8 @@ def test_update_h5ad_with_guide_annotations_skips_na():
     adata = ad.AnnData()
     adata.uns["genetic_perturbations"] = {
         "guide1": {
-            "target_genomic_regions": ["old:1-10(+)"],
-            "target_features": {"OLD_GENE": "OLD_NAME"},
+            "derived_genomic_regions": ["old:1-10(+)"],
+            "derived_features": {"OLD_GENE": "OLD_NAME"},
         }
     }
 
@@ -737,8 +737,8 @@ def test_update_h5ad_with_guide_annotations_skips_na():
 
     # All values should be unchanged (guide was skipped due to no gene overlaps)
     guide1 = result_adata.uns["genetic_perturbations"]["guide1"]
-    assert guide1["target_genomic_regions"] == ["old:1-10(+)"], "Guide with no gene overlaps should not be updated"
-    assert guide1["target_features"] == {"OLD_GENE": "OLD_NAME"}, "Target features should remain unchanged"
+    assert guide1["derived_genomic_regions"] == ["old:1-10(+)"], "Guide with no gene overlaps should not be updated"
+    assert guide1["derived_features"] == {"OLD_GENE": "OLD_NAME"}, "Derived features should remain unchanged"
 
 
 def test_update_h5ad_with_guide_annotations_missing_guide_warning(caplog):
@@ -850,15 +850,15 @@ def test_update_h5ad_chromosome_ensembl_format():
 
     # chr1 should be converted to 1
     guide1 = result_adata.uns["genetic_perturbations"]["guide1"]
-    assert "1:1000-1019(+)" in guide1["target_genomic_regions"]
+    assert "1:1000-1019(+)" in guide1["derived_genomic_regions"]
 
     # chrM should be converted to MT
     guide2 = result_adata.uns["genetic_perturbations"]["guide2"]
-    assert "MT:101-120(+)" in guide2["target_genomic_regions"]
+    assert "MT:101-120(+)" in guide2["derived_genomic_regions"]
 
     # M should be converted to MT
     guide3 = result_adata.uns["genetic_perturbations"]["guide3"]
-    assert "MT:201-220(-)" in guide3["target_genomic_regions"]
+    assert "MT:201-220(-)" in guide3["derived_genomic_regions"]
 
 
 def test_update_h5ad_removes_ensembl_version():
@@ -899,14 +899,14 @@ def test_update_h5ad_removes_ensembl_version():
 
     # Ensembl ID version should be removed
     guide1 = result_adata.uns["genetic_perturbations"]["guide1"]
-    assert "ENSG00000186092" in guide1["target_features"]
-    assert "ENSG00000186092.7" not in guide1["target_features"]
-    assert guide1["target_features"]["ENSG00000186092"] == "GENE1"
+    assert "ENSG00000186092" in guide1["derived_features"]
+    assert "ENSG00000186092.7" not in guide1["derived_features"]
+    assert guide1["derived_features"]["ENSG00000186092"] == "GENE1"
 
     # Non-Ensembl ID should keep version
     guide2 = result_adata.uns["genetic_perturbations"]["guide2"]
-    assert "SOME_OTHER_ID.5" in guide2["target_features"]
-    assert guide2["target_features"]["SOME_OTHER_ID.5"] == "GENE2"
+    assert "SOME_OTHER_ID.5" in guide2["derived_features"]
+    assert guide2["derived_features"]["SOME_OTHER_ID.5"] == "GENE2"
 
 
 def test_annotate_perturbations_skips_when_no_perturbations():
