@@ -1,0 +1,18 @@
+# Reference files configuration for cellxgene-schema-cli
+# This file maps reference data keys to their download URLs
+# Used by ReferenceFileManager to download and cache reference files
+
+guidescan_indexes:
+  human:
+    organism_id: NCBITaxon:9606
+    url: https://czi-biohub-references.s3.us-west-2.amazonaws.com/guidescan-indexes/GRCh38.primary_assembly.genome.fa.tar.gz
+    description: GuideScan2 index for Homo sapiens (GRCh38)
+  mouse:
+    organism_id: NCBITaxon:10090
+    url: https://czi-biohub-references.s3.us-west-2.amazonaws.com/guidescan-indexes/GRCm39.primary_assembly.genome.fa.tar.gz
+    description: GuideScan2 index for Mus musculus (GRCm39)
+  zebrafish:
+    organism_id: NCBITaxon:7955
+    url: https://czi-biohub-references.s3.us-west-2.amazonaws.com/guidescan-indexes/Danio_rerio.GRCz11.dna.primary_assembly.fa.tar.gz
+    description: GuideScan2 index for Danio rerio (GRCz11)
+

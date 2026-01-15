@@ -1,3 +1,6 @@
 *owl
 *gtf.gz
 
+# Reference file cache directory (except .gitkeep)
+.cache/*
+!.cache/.gitkeep

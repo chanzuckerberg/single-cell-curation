@@ -1,5 +1,9 @@
 include requirements.txt
 include cellxgene_schema/gencode_files/*.gz
+include cellxgene_schema/gencode_files/*.yml
 include cellxgene_schema/schema_definitions/*.yaml
 include cellxgene_schema/migrate_files/*.json
 include cellxgene_schema/migrate_files/*.txt
+
+# Exclude reference file cache directory
+prune cellxgene_schema/gencode_files/.cache

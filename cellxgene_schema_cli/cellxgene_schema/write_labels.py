@@ -6,6 +6,7 @@ import anndata
 import pandas as pd
 
 from . import gencode, schema
+from .annotate_guides import annotate_perturbations_in_h5ad
 from .env import SCHEMA_REFERENCE_BASE_URL, SCHEMA_REFERENCE_FILE_NAME
 from .gencode import get_gene_checker
 from .ontology_parser import ONTOLOGY_PARSER
@@ -361,6 +362,27 @@ class AnnDataLabelAppender:
             if col.dtype == "category":
                 df[column] = col.cat.remove_unused_categories()
 
+    def _annotate_genetic_perturbations(self):
+        """
+        Annotate genetic perturbations with genomic locations and target genes if genetic_perturbations exists in uns.
+        """
+        try:
+            self.adata = annotate_perturbations_in_h5ad(self.adata, index_path=None)
+            logger.info("Genetic perturbations annotation completed")
+        except RuntimeError as e:
+            # guidescan2 not installed or other runtime errors
+            error_msg = f"Genetic perturbations annotation skipped: {e}"
+            logger.warning(error_msg)
+            self.errors.append((error_msg, None))
+        except Exception as e:
+            # Other errors (organism not supported, etc.)
+            error_msg = f"Genetic perturbations annotation failed: {e}"
+            logger.warning(error_msg)
+            import traceback
+
+            tb = traceback.format_exc()
+            self.errors.append((error_msg, tb))
+
     def _build_schema_reference_url(self, schema_version: str):
         return f"{SCHEMA_REFERENCE_BASE_URL}/{schema_version}/{SCHEMA_REFERENCE_FILE_NAME}"
 
@@ -377,6 +399,9 @@ class AnnDataLabelAppender:
 
         # Add columns to dataset dataframes based on values in other columns, as defined in schema definition yaml
         self._add_labels()
+
+        # Annotate genetic perturbations if present
+        self._annotate_genetic_perturbations()
 
         # Remove unused categories
         self._remove_categories_with_zero_values()
