@@ -118,29 +118,30 @@ components:
             rule:
               exclude_obs_key: genetic_perturbation_id
             type: forbidden
-        keys:
-          key_pattern: '^[^\s/,"'']+$'  # No whitespace, slash, comma, double or single quotes
-          type: dict
-          keys:
-            role:
-              type: string
-              required: True
-              enum:
-                - control
-                - targeting
-            protospacer_sequence:
-              type: string
-              required: True
-              # Only uppercase A/C/G/T characters allowed, length 14-22
-              pattern: '^[ACGT]{14,22}$'
-            protospacer_adjacent_motif:
-              type: string
-              required: True
-              # Format like: "3' NGG" where MOTIF uses allowed ambiguity codes
-              pattern: '^3'' [ABCDGHKMNRSTVWY]+$'
-          forbidden_keys:
-            - derived_genomic_regions
-            - derived_features
+        keys: 
+          genetic_perturbation_ids:
+            key_pattern: '^[^\s/,"'']+$'  # No whitespace, slash, comma, double or single quotes
+            type: dict
+            keys:
+              role:
+                type: string
+                required: True
+                enum:
+                  - control
+                  - targeting
+              protospacer_sequence:
+                type: string
+                required: True
+                # Only uppercase A/C/G/T characters allowed, length 14-22
+                pattern: '^[ACGT]{14,22}$'
+              protospacer_adjacent_motif:
+                type: string
+                required: True
+                # Format like: "3' NGG" where MOTIF uses allowed ambiguity codes
+                pattern: '^3'' [ABCDGHKMNRSTVWY]+$'
+            forbidden_keys:
+              - derived_genomic_regions
+              - derived_features
   var:
     type: dataframe
     required: True
@@ -795,8 +796,6 @@ components:
           # Each identifier MUST match a key in uns['genetic_perturbations']
           multi_term_constraints:
             uns_key: genetic_perturbations.keys()
-            in:
-              True
         forbidden:
           - na
         dependencies:
@@ -872,11 +871,13 @@ components:
               # Source: split genetic_perturbation_id by delimiter, look up each ID in uns dict, check nested key value
               column: genetic_perturbation_id
               delimiter: " || "
-              uns_key: genetic_perturbations
-              nested_key: role
-              match_exact:
-                terms:
-                  - control
+              in: 
+                uns_key: genetic_perturbations.keys()  # python dict keys 
+                nested_constraints:
+                  - key: role
+                    match_exact:
+                      terms:
+                        - control
       donor_id:
         type: categorical
         subtype: str
