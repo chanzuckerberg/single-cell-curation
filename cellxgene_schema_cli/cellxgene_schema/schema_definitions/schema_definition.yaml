@@ -792,6 +792,7 @@ components:
         multi_term:
           delimiter: " || "
           sorted: True
+          # Each identifier MUST match a key in uns['genetic_perturbations']
           multi_term_constraints:
             uns_key: genetic_perturbations.keys()
             in:
@@ -801,7 +802,7 @@ components:
         dependencies:
           - # if uns['genetic_perturbations'] is present
             rule:
-            uns_key: genetic_perturbations
+              uns_key: genetic_perturbations
             type: dict
           - # if uns['genetic_perturbations'] is not present
             rule:
@@ -819,14 +820,6 @@ components:
             subtype: str
             forbidden:
               - na
-          # - # If genetic_perturbation_strategy == 'control', then referenced perturbations in uns MUST have role 'control'.
-          #   rule:
-          #     column: genetic_perturbation_strategy
-          #     match_exact:
-          #       terms:
-          #         - control
-          #   type: categorical
-          #   subtype: str
         error_message_suffix: >-
           The value MUST be either 'na' or one or more genetic perturbation identifiers in ascending lexical order
           separated by the delimiter ` || ` with no duplication of identifiers. Each identifier MUST match a key in
@@ -837,6 +830,7 @@ components:
         type: categorical
         subtype: str
         enum:
+          - no perturbations
           - control
           - CRISPR activation screen
           - CRISPR interference screen
@@ -865,6 +859,24 @@ components:
               - CRISPR interference screen
               - CRISPR knockout mutant
               - CRISPR knockout screen
+          - # If genetic_perturbation_strategy == 'control', validate that the corresponding uns['genetic_perturbations'][id]['role'] is 'control'
+            rule:
+              column: genetic_perturbation_strategy
+              match_exact:
+                terms:
+                  - control
+            # Cross-validation: for each ID from column 'genetic_perturbation_id', uns['genetic_perturbations'][ID]['role'] must match expected value
+            type: categorical
+            subtype: str
+            multi_term_constraints:
+              # Source: split genetic_perturbation_id by delimiter, look up each ID in uns dict, check nested key value
+              column: genetic_perturbation_id
+              delimiter: " || "
+              uns_key: genetic_perturbations
+              nested_key: role
+              match_exact:
+                terms:
+                  - control
       donor_id:
         type: categorical
         subtype: str
