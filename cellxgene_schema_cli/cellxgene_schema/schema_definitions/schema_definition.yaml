@@ -106,6 +106,42 @@ components:
         enum:
           - count
           - normal
+      genetic_perturbations:
+        type: dict
+        required: False
+        dependencies:
+          - # if obs['genetic_perturbation_id'] is present
+            rule:
+              obs_key: genetic_perturbation_id
+            type: dict
+          - # if obs['genetic_perturbation_id'] is not present
+            rule:
+              exclude_obs_key: genetic_perturbation_id
+            type: forbidden
+        keys: 
+          genetic_perturbation_ids:
+            key_pattern: '^[^\s/,"'']+$'  # No whitespace, slash, comma, double or single quotes
+            type: dict
+            keys:
+              role:
+                type: string
+                required: True
+                enum:
+                  - control
+                  - targeting
+              protospacer_sequence:
+                type: string
+                required: True
+                # Only uppercase A/C/G/T characters allowed, length 14-22
+                pattern: '^[ACGT]{14,22}$'
+              protospacer_adjacent_motif:
+                type: string
+                required: True
+                # Format like: "3' NGG" where MOTIF uses allowed ambiguity codes
+                pattern: '^3'' [ABCDGHKMNRSTVWY]+$'
+            forbidden_keys:
+              - derived_genomic_regions
+              - derived_features
   var:
     type: dataframe
     required: True
@@ -751,8 +787,97 @@ components:
         add_labels:
           - type: curie
             to_column: development_stage
+      genetic_perturbation_id:
+        type: categorical
+        subtype: str
+        multi_term:
+          delimiter: " || "
+          sorted: True
+          # Each identifier MUST match a key in uns['genetic_perturbations']
+          multi_term_constraints:
+            uns_key: genetic_perturbations.keys()
+        forbidden:
+          - na
+        dependencies:
+          - # if uns['genetic_perturbations'] is present
+            rule:
+              uns_key: genetic_perturbations
+            type: dict
+          - # if uns['genetic_perturbations'] is not present
+            rule:
+              exclude_uns_key: genetic_perturbations
+            type: forbidden
+          - # organism must be one of supported organisms for perturbations
+            rule:
+              uns_key: organism_ontology_term_id
+              match_exact:
+                terms:
+                  - NCBITaxon:7955
+                  - NCBITaxon:9606
+                  - NCBITaxon:10090
+            type: categorical
+            subtype: str
+            forbidden:
+              - na
+        error_message_suffix: >-
+          The value MUST be either 'na' or one or more genetic perturbation identifiers in ascending lexical order
+          separated by the delimiter ` || ` with no duplication of identifiers. Each identifier MUST match a key in
+          uns['genetic_perturbations'].
       is_primary_data:
         type: bool
+      genetic_perturbation_strategy:
+        type: categorical
+        subtype: str
+        enum:
+          - no perturbations
+          - control
+          - CRISPR activation screen
+          - CRISPR interference screen
+          - CRISPR knockout mutant
+          - CRISPR knockout screen
+        dependencies:
+          - # If obs['genetic_perturbation_id'] == 'na' then strategy MUST be 'no perturbations'
+            rule:
+              column: genetic_perturbation_id
+              match_exact:
+                terms:
+                  - na
+            type: categorical
+            enum:
+              - no perturbations
+          - # If obs['genetic_perturbation_id'] != 'na' then strategy MUST be one of the listed perturbation strategies
+            rule:
+              column: genetic_perturbation_id
+              exclude_exact:
+                terms:
+                  - na
+            type: categorical
+            enum:
+              - control
+              - CRISPR activation screen
+              - CRISPR interference screen
+              - CRISPR knockout mutant
+              - CRISPR knockout screen
+          - # If genetic_perturbation_strategy == 'control', validate that the corresponding uns['genetic_perturbations'][id]['role'] is 'control'
+            rule:
+              column: genetic_perturbation_strategy
+              match_exact:
+                terms:
+                  - control
+            # Cross-validation: for each ID from column 'genetic_perturbation_id', uns['genetic_perturbations'][ID]['role'] must match expected value
+            type: categorical
+            subtype: str
+            multi_term_constraints:
+              # Source: split genetic_perturbation_id by delimiter, look up each ID in uns dict, check nested key value
+              column: genetic_perturbation_id
+              delimiter: " || "
+              in: 
+                uns_key: genetic_perturbations.keys()  # python dict keys 
+                nested_constraints:
+                  - key: role
+                    match_exact:
+                      terms:
+                        - control
       donor_id:
         type: categorical
         subtype: str

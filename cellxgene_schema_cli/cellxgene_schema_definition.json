@@ -298,8 +298,8 @@
         "type": {
           "type": "string",
           "description": "The data type expected for this field",
-          "enum": [
-            "curie", "string", "bool", "categorical", "list", 
+            "enum": [
+            "curie", "string", "bool", "categorical", "list", "dict",
             "match_obs_columns", "match_obsm_keys", "feature_is_filtered"
           ]
         },
@@ -350,6 +350,34 @@
           "type": "array",
           "description": "List of disallowed values for categorical fields",
           "items": { "type": "string" }
+        }
+        ,
+        "pattern": {
+          "type": "string",
+          "description": "Regex pattern for string fields"
+        }
+        ,
+        "keys": {
+          "type": "object",
+          "description": "For dictionary fields, specification for key names and their nested field specifications",
+          "properties": {
+            "key_pattern": { "type": "string", "description": "Regex pattern that keys must match" },
+            "type": {
+              "type": "string",
+              "description": "The data type expected for dictionary values",
+              "enum": ["curie", "string", "bool", "categorical", "list", "dict", "match_obs_columns", "match_obsm_keys", "feature_is_filtered"]
+            },
+            "keys": {
+              "type": "object",
+              "description": "Per-key validation rules for dictionary values",
+              "additionalProperties": { "$ref": "#/$defs/field_specification" }
+            },
+            "forbidden_keys": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -467,6 +495,11 @@
           "description": "Allowed values when this dependency is active",
           "items": {"type": "string"}
         },
+        "forbidden": {
+          "type": "array",
+          "description": "Forbidden values when this dependency is active",
+          "items": {"type": "string"}
+        },
         "subtype":{
           "type": "string",
           "description": "Subtype specification for the field"
@@ -493,9 +526,21 @@
           "type": "string",
           "description": "Column name to check for the condition"
         },
+        "obs_key": {
+          "type": "string",
+          "description": "(Alias) Column name in `obs` to check for the condition (legacy key)"
+        },
+        "exclude_obs_key": {
+          "type": "string",
+          "description": "(Alias) Column name in `obs` that must NOT be present for the condition to apply (legacy key)"
+        },
         "uns_key": {
           "type": "string",
           "description": "Key in unstructured annotations to check"
+        },
+        "exclude_uns_key": {
+          "type": "string",
+          "description": "Unstructured key that must NOT be present for the condition to apply (legacy key)"
         },
         "match_exact": {
           "$ref": "#/$defs/match_constraint",
