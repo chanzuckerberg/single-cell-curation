@@ -789,12 +789,19 @@ components:
       genetic_perturbation_id:
         type: categorical
         subtype: str
+        multi_term:
+          delimiter: " || "
+          sorted: True
+          multi_term_constraints:
+            uns_key: genetic_perturbations.keys()
+            in:
+              True
         forbidden:
           - na
         dependencies:
           - # if uns['genetic_perturbations'] is present
             rule:
-              uns_key: genetic_perturbations
+            uns_key: genetic_perturbations
             type: dict
           - # if uns['genetic_perturbations'] is not present
             rule:
@@ -802,7 +809,7 @@ components:
             type: forbidden
           - # organism must be one of supported organisms for perturbations
             rule:
-              column: organism_ontology_term_id
+              uns_key: organism_ontology_term_id
               match_exact:
                 terms:
                   - NCBITaxon:7955
@@ -812,17 +819,18 @@ components:
             subtype: str
             forbidden:
               - na
-          - # If genetic_perturbation_strategy == 'control', then referenced perturbations in uns MUST have role 'control'.
-            rule:
-              column: genetic_perturbation_strategy
-              match_exact:
-                terms:
-                  - control
-            type: categorical
-            subtype: str
-        
-
-
+          # - # If genetic_perturbation_strategy == 'control', then referenced perturbations in uns MUST have role 'control'.
+          #   rule:
+          #     column: genetic_perturbation_strategy
+          #     match_exact:
+          #       terms:
+          #         - control
+          #   type: categorical
+          #   subtype: str
+        error_message_suffix: >-
+          The value MUST be either 'na' or one or more genetic perturbation identifiers in ascending lexical order
+          separated by the delimiter ` || ` with no duplication of identifiers. Each identifier MUST match a key in
+          uns['genetic_perturbations'].
       is_primary_data:
         type: bool
       genetic_perturbation_strategy:
@@ -834,7 +842,6 @@ components:
           - CRISPR interference screen
           - CRISPR knockout mutant
           - CRISPR knockout screen
-          - no perturbations
         dependencies:
           - # If obs['genetic_perturbation_id'] == 'na' then strategy MUST be 'no perturbations'
             rule:
