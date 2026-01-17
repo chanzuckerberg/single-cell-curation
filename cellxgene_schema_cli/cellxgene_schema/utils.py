@@ -1,10 +1,9 @@
 import logging
 import os
-import re
 import sys
 from base64 import b85encode
 from functools import lru_cache
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Union
 
 import anndata as ad
 import h5py
@@ -165,107 +164,23 @@ def update_cell_line(dataframe, cellosaurus_term):
         dataframe[column] = dataframe[column].cat.remove_unused_categories()
 
 
-# Compiled regex pattern for parsing list indexing (e.g., "key[0]")
-_LIST_INDEX_PATTERN = re.compile(r"^(.+?)\[(\d+)\]$")
-
-
-def getattr_anndata(adata: ad.AnnData, attr: Optional[str] = None) -> Optional[Any]:
+def getattr_anndata(adata: ad.AnnData, attr: str = None):
     """
-    Extended getattr for AnnData objects that supports nested access using dot notation and list indexing.
+    same as getattr but handles the special case of "raw.var" for an anndata.AndData object
 
-    Supports:
-    - Simple attributes: "obs", "var", "uns", "X", etc.
-    - Nested dictionary access: "uns.key_name" -> adata.uns['key_name']
-    - Column access: "obs.column_name" -> adata.obs['column_name']
-    - List indexing: "uns.some_list[0]" -> adata.uns['some_list'][0]
-    - Raw access: "raw.var", "raw.obs.column_name", etc.
-    - Combined: "uns.some_list[0].nested_key" -> adata.uns['some_list'][0]['nested_key']
+    :param anndata.AnnData adata: the anndata.AnnData object from which to extract an attribute
+    :param str attr: name of the attribute to extract
 
-    Examples:
-        getattr_anndata(adata, "obs") -> adata.obs
-        getattr_anndata(adata, "obs.cell_type") -> adata.obs['cell_type']
-        getattr_anndata(adata, "uns.species_ontology_term_id") -> adata.uns['species_ontology_term_id']
-        getattr_anndata(adata, "uns.some_list[0]") -> adata.uns['some_list'][0]
-        getattr_anndata(adata, "uns.some_list[0].nested_key") -> adata.uns['some_list'][0]['nested_key']
-        getattr_anndata(adata, "raw.var") -> adata.raw.var
-        getattr_anndata(adata, "raw.obs.cell_type") -> adata.raw.obs['cell_type']
-
-    :param ad.AnnData adata: the anndata.AnnData object from which to extract an attribute
-    :param Optional[str] attr: name of the attribute to extract, supports dot notation and bracket notation for nested access
-    :return: the attribute or None if it does not exist
-    :rtype: Optional[Any]
+    :return the attribute or none if it does not exist
     """
-    if attr is None or not attr:
-        return None
 
-    def parse_part(part: str) -> Tuple[str, Optional[int]]:
-        """Parse a part that might contain bracket notation for list indexing."""
-        match = _LIST_INDEX_PATTERN.match(part)
-        if match:
-            return match.group(1), int(match.group(2))
-        return part, None
-
-    def access_value(obj: Any, key: str, index: Optional[int] = None) -> Optional[Any]:
-        """Access a value from an object, handling dict, list, DataFrame, or attribute access."""
-        # First, get the value by key/attribute
-        if isinstance(obj, dict):
-            if key not in obj:
-                return None
-            value = obj[key]
-        elif hasattr(obj, "columns"):
-            # DataFrame - access column
-            if key not in obj.columns:
-                return None
-            value = obj[key]
+    if attr == "raw.var":
+        if adata.raw:
+            return adata.raw.var
         else:
-            # Try attribute access
-            if not hasattr(obj, key):
-                return None
-            value = getattr(obj, key, None)
-            if value is None:
-                return None
-
-        # If we have an index, apply it to the value
-        if index is not None:
-            if isinstance(value, (list, tuple)) or hasattr(value, "__getitem__"):
-                try:
-                    return value[index]
-                except (IndexError, KeyError, TypeError):
-                    return None
             return None
-
-        return value
-
-    # Split by dots to handle nested access
-    parts = attr.split(".")
-    if not parts or not any(parts):  # Handle empty string or only dots
-        return None
-
-    # Start with the AnnData object
-    # Note: current changes type as we traverse (AnnData -> dict/DataFrame/list/etc.)
-    current: Any = adata
-
-    # Traverse the path
-    for part in parts:
-        if not part:  # Empty parts indicate invalid path (e.g., from "a..b")
-            raise ValueError("Invalid attribute path: empty part found (consecutive dots not allowed)")
-
-        # Check if we're accessing raw
-        if part == "raw":
-            if not hasattr(current, "raw") or current.raw is None:
-                return None
-            current = current.raw
-            continue
-
-        # Parse the part for potential list indexing
-        key, index = parse_part(part)
-
-        # Access the value
-        current = access_value(current, key, index)
-        if current is None:
-            return None
-
-    return current
+    else:
+        return getattr(adata, attr)
 
 
 def read_backed(f: h5py.File, chunk_size: int) -> ad.AnnData:
