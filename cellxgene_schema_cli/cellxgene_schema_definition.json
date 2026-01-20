@@ -342,6 +342,16 @@
           "type": "string",
           "description": "Custom error message to append when validation fails"
         },
+        "multi_term": {
+          "type": "object",
+          "description": "Settings for fields that accept multiple terms in a single string",
+          "properties": {
+            "delimiter": { "type": "string" },
+            "sorted": { "type": "boolean" },
+            "multi_term_constraints": { "$ref": "#/$defs/curie_constraints" }
+          },
+          "additionalProperties": false
+        },
         "warning_message": {
           "type": "string",
           "description": "Warning message to display for certain conditions"
@@ -466,9 +476,47 @@
           "type": "array",
           "description": "List of allowed ontology prefixes (e.g., 'CL', 'EFO', 'MONDO')",
           "items": {"type": "string"}
+        },
+        "uns_key": {
+          "type": "string",
+          "description": "Reference to a key in uns for cross-validation (e.g., 'genetic_perturbations.keys()')"
+        },
+        "column": {
+          "type": "string",
+          "description": "Reference to another obs column for cross-validation"
+        },
+        "delimiter": {
+          "type": "string",
+          "description": "Delimiter for splitting multi-term values"
+        },
+        "in": {
+          "type": "object",
+          "description": "Validation rule for checking if values are in a set",
+          "properties": {
+            "uns_key": {"type": "string"},
+            "nested_constraints": {
+              "type": "array",
+              "description": "Constraints on nested dictionary values",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {"type": "string"},
+                  "match_exact": {
+                    "type": "object",
+                    "properties": {
+                      "terms": {
+                        "type": "array",
+                        "items": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       },
-      "description": "Additional constraints that apply only when multiple terms are present"
+      "description": "Additional constraints that apply only when multiple terms are present, including cross-validation with uns or other obs columns"
     },
     "dependency_rule": {
       "type": "object",
@@ -503,6 +551,10 @@
         "subtype":{
           "type": "string",
           "description": "Subtype specification for the field"
+        },
+        "multi_term_constraints": {
+          "$ref": "#/$defs/multi_term_constraints",
+          "description": "Multi-term constraints that apply when this dependency is active"
         }
       },
       "additionalProperties": false
