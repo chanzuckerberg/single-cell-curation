@@ -991,7 +991,7 @@ class Validator:
         if value not in enum:
             self.errors.append(f"'{value}' in '{dict_name}['{key}']' is not valid. " f"Allowed terms: {enum}.")
 
-    def _validate_dict(self, dictionary: dict, dict_name: str, dict_def: dict):
+    def _validate_dict(self, dictionary: dict[str, any], dict_name: str, dict_def: dict):
         """
         Verifies the dictionary follows the schema. Adds errors to self.errors if any
 
@@ -1002,138 +1002,61 @@ class Validator:
         :rtype None
         """
 
-        # Normalize keys definition
-        keys_def = dict_def.get("keys", {})
-
-        # Separate explicit keys from pattern-based keys
-        pattern_entries = []  # list of (pattern_str, value_def, compiled_re)
-        explicit_key_defs = {}
-
-        # Support two shapes for `keys` in the schema:
-        # 1) Named entries: { key_name: { ...spec... }, other_key: { ... } }
-        # 2) Single anonymous pattern: { key_pattern: "regex", type: ..., keys: { ... } }
-        if isinstance(keys_def, dict) and "key_pattern" in keys_def and isinstance(keys_def.get("key_pattern"), str):
-            try:
-                cre = re.compile(keys_def.get("key_pattern"))
-            except Exception:
-                cre = re.compile(str(keys_def.get("key_pattern")))
-            pattern_entries.append((keys_def.get("key_pattern"), keys_def, cre))
-        else:
-            for k, v in keys_def.items():
-                # pattern-defined entries are dicts that include a `key_pattern` property
-                if isinstance(v, dict) and v.get("key_pattern"):
-                    try:
-                        cre = re.compile(v.get("key_pattern"))
-                    except Exception:
-                        cre = re.compile(str(v.get("key_pattern")))
-                    pattern_entries.append((v.get("key_pattern"), v, cre))
-                elif isinstance(v, dict):
-                    explicit_key_defs[k] = v
-                else:
-                    # ignore non-dict metadata entries (e.g., key_pattern placed at the top-level)
-                    continue
-
-        # Validate keys that match patterns first (skip explicit keys)
-        if pattern_entries:
-            # For each key in the provided dictionary, determine which patterns it matches
-            for dict_key, dict_value in dictionary.items():
-                # Skip explicit keys: they'll be validated below
-                if dict_key in explicit_key_defs:
-                    continue
-
-                matched_patterns = [pat for (pat, vdef, cre) in pattern_entries if cre.match(dict_key)]
-
-                if len(matched_patterns) > 1:
-                    self.errors.append(
-                        f"'{dict_key}' in '{dict_name}' matches multiple key patterns {matched_patterns}."
-                    )
-                    # Do not attempt validation when ambiguous
-                    continue
-
-                if len(matched_patterns) == 1:
-                    # Find corresponding value_def
-                    pat_str = matched_patterns[0]
-                    value_def = None
-                    for pstr, vdef, _cre in pattern_entries:
-                        if pstr == pat_str:
-                            value_def = vdef
-                            break
-                    if value_def is None:
-                        continue
-
-                    # Validate the value according to the pattern's definition
-                    value = dict_value
-                    vtype = value_def.get("type")
-                    if vtype == "string":
-                        if not self._validate_str_in_dict(value, dict_name, dict_key):
-                            continue
-                        if "enum" in value_def:
-                            self._validate_enum_in_dict(value, value_def["enum"], dict_name, dict_key)
-                    elif vtype == "match_obsm_keys":
-                        if not self._validate_str_in_dict(value, dict_name, dict_key):
-                            continue
-                        if value not in self.adata.obsm:
-                            self.errors.append(
-                                f"'{value}' in '{dict_name}['{dict_key}']' is not valid, it must be a key of 'adata.obsm'."
-                            )
-                    elif vtype == "list":
-                        if not (isinstance(value, (list, np.ndarray))):
-                            self.errors.append(
-                                f"'{value}' in '{dict_name}['{dict_key}']' is not valid, it must be a list or numpy array."
-                            )
-                            continue
-                        self._validate_list(dict_key, value, value_def.get("element_type"))
-                    elif vtype in ("dict", "dictionary"):
-                        if not isinstance(value, dict):
-                            self.errors.append(
-                                f"'{value}' in '{dict_name}['{dict_key}']' is not valid, it must be a dictionary."
-                            )
-                            continue
-                        # Recurse into nested dict
-                        self._validate_dict(value, f"{dict_name}['{dict_key}']", value_def)
-
-        # Now validate explicit keys as before
-        for key, value_def in explicit_key_defs.items():
-            logger.debug(f"Validating uns dict for key: {key}")
+        def _validate(key: str, _dict_name: str, value_def: dict) -> None:
+            logger.debug(f"Validating {_dict_name} dict for key: {key}")
             if key not in dictionary:
                 if value_def.get("required", False):
-                    self.errors.append(f"'{key}' in '{dict_name}' is not present.")
-                continue
+                    self.errors.append(f"'{key}' in '{_dict_name}' is not present.")
+                return
 
             value = dictionary[key]
 
             if value_def.get("type") == "string":
-                if not self._validate_str_in_dict(value, dict_name, key):
-                    continue
+                if not self._validate_str_in_dict(value, _dict_name, key):
+                    return
 
                 if "enum" in value_def:
-                    self._validate_enum_in_dict(value, value_def["enum"], dict_name, key)
+                    self._validate_enum_in_dict(value, value_def["enum"], _dict_name, key)
 
             if value_def.get("type") == "match_obsm_keys":
-                if not self._validate_str_in_dict(value, dict_name, key):
-                    continue
+                if not self._validate_str_in_dict(value, _dict_name, key):
+                    return
 
                 if value not in self.adata.obsm:
                     self.errors.append(
-                        f"'{value}' in '{dict_name}['{key}']' is not valid, " f"it must be a key of 'adata.obsm'."
+                        f"'{value}' in '{_dict_name}['{key}']' is not valid, it must be a key of 'adata.obsm'."
                     )
 
             if value_def.get("type") == "list":
                 if not (isinstance(value, (list, np.ndarray))):
                     self.errors.append(
-                        f"'{value}' in '{dict_name}['{key}']' is not valid, " f"it must be a list or numpy array."
+                        f"'{value}' in '{_dict_name}['{key}']' is not valid, it must be a list or numpy array."
                     )
-                    continue
+                    return
 
                 self._validate_list(key, value, value_def.get("element_type"))
 
             if value_def.get("type") in ("dict", "dictionary"):
                 if not isinstance(value, dict):
-                    self.errors.append(
-                        f"'{value}' in '{dict_name}['{key}']' is not valid, " f"it must be a dictionary."
-                    )
-                    continue
-                self._validate_dict(value, f"{dict_name}['{key}']", value_def)
+                    self.errors.append(f"'{value}' in '{_dict_name}['{key}']' is not valid, it must be a dictionary.")
+                    return
+                self._validate_dict(value, f"{_dict_name}['{key}']", value_def)
+
+        key_patterns = dict()  # key name to pattern
+        explicit_keys = set()  # used to skip explicit keys when validating patterns
+        for k in dict_def.get("keys", {}):
+            if key_pattern := k.get("key_pattern"):
+                key_patterns[k] = re.compile(key_pattern)
+            else:
+                explicit_keys.add(k)
+
+        for k in dictionary:
+            if k not in explicit_keys:
+                for pattern in key_patterns:
+                    if re.match(pattern, k):
+                        _validate(k, dict_name, dict_def[k])
+            else:
+                _validate(k, dict_name, dict_def[k])
 
     def _validate_dataframe(self, df_name: str):
         """
@@ -2076,6 +1999,47 @@ class Validator:
                     )
                 component_columns.add(column)
 
+    def _check_key_availability_dict(self, dictionary: dict, schema_def: dict, parent_path: list[str] = None):
+        """
+        This method will check for keys that are reserved in a dictionary, and traverse the dictionary to validate that they are
+         available as expected
+        :param dictionary: the dictionary to check
+        :param schema_def: the schema definition for the dictionary
+        :param parent_name: the name of the parent dictionary or list index
+        :return:
+        """
+        parent_path = parent_path or []
+
+        for name, _schema_def in schema_def.items():
+            parent_path.append(name)
+            parent_name = ".".join(parent_path)
+            # Do it for keys that are forbidden
+            if "forbidden_keys" in _schema_def:
+                for key in _schema_def["forbidden_keys"]:
+                    if key in dictionary:
+                        self.errors.append(f"Key '{key}' must not be present in '{parent_name}'.")
+
+            # If ignore_labels is set, we will skip all the subsequent label checks
+            if self.ignore_labels:
+                continue
+
+            # Do it for keys that map to other keys, for post-upload annotation
+            if "keys" in _schema_def:
+                for key, key_def in _schema_def["keys"].items():
+                    if "add_labels" in key_def:
+                        self._check_single_column_availability(f"{parent_name}.{key}", key_def["add_labels"])
+                    if _schema_def.get("type") == "dict":
+                        self._check_key_availability_dict(dictionary.get(name), key_def, parent_path + [name])
+
+            # Do it for metadata columns that are reserved for annotation after data portal upload
+            if "reserved_columns" in _schema_def:
+                for key in _schema_def["reserved_columns"]:
+                    if key in dictionary:
+                        self.errors.append(
+                            f"Column '{key}' is a reserved column name "
+                            f"of '{parent_name}'. Remove it from h5ad and try again."
+                        )
+
     def _check_column_availability(self):
         """
         This method will check for columns that are reserved in components and validate that they are
@@ -2122,9 +2086,11 @@ class Validator:
 
             # Do it for key that map to columns
             if "keys" in component_def:
-                for key_def in component_def["keys"].values():
+                for key, key_def in component_def["keys"].items():
                     if "add_labels" in key_def:
                         self._check_single_column_availability(component, key_def["add_labels"])
+                    if key_def.get("type") == "dict":
+                        self._check_key_availability_dict(key, key_def, [component, key])
 
     def _check_spatial(self):
         """
