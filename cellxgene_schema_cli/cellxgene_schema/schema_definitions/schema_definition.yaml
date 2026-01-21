@@ -118,7 +118,7 @@ components:
             rule:
               exclude_obs_key: genetic_perturbation_id
             type: forbidden
-        keys: 
+        keys:
           genetic_perturbation_ids:
             key_pattern: '^[^\s/,"'']+$'  # No whitespace, slash, comma, double or single quotes
             type: dict
@@ -139,7 +139,7 @@ components:
                 required: True
                 # Format like: "3' NGG" where MOTIF uses allowed ambiguity codes
                 pattern: '^3'' [ABCDGHKMNRSTVWY]+$'
-            forbidden_keys:
+            reserved_columns:
               - derived_genomic_regions
               - derived_features
   var:
