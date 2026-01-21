@@ -2020,42 +2020,79 @@ class Validator:
         """
         This method will check for keys that are reserved in a dictionary, and traverse the dictionary to validate that they are
          available as expected
-        :param dictionary: the dictionary to check
+        :param dictionary: the dictionary to check (actual data dictionary)
         :param schema_def: the schema definition for the dictionary
-        :param parent_name: the name of the parent dictionary or list index
+        :param parent_path: the path to the parent dictionary (e.g., ["uns", "genetic_perturbations"])
         :return:
         """
+        if not isinstance(dictionary, dict):
+            return
+
         parent_path = parent_path or []
+        parent_name = ".".join(parent_path) if parent_path else ""
 
-        for name, _schema_def in schema_def.items():
-            parent_path.append(name)
-            parent_name = ".".join(parent_path)
-            # Do it for keys that are forbidden
-            if isinstance(_schema_def, dict) and "forbidden_keys" in _schema_def:
-                for key in _schema_def["forbidden_keys"]:
-                    if key in dictionary:
-                        self.errors.append(f"Key '{key}' must not be present in '{parent_name}'.")
+        # Check reserved_columns at the current dictionary level
+        if "reserved_columns" in schema_def:
+            for reserved_key in schema_def["reserved_columns"]:
+                if reserved_key in dictionary:
+                    self.errors.append(
+                        f"Column '{reserved_key}' is a reserved column name "
+                        f"of '{parent_name}'. Remove it from h5ad and try again."
+                    )
 
-            # If ignore_labels is set, we will skip all the subsequent label checks
-            if self.ignore_labels:
-                continue
+        # If ignore_labels is set, we will skip all the subsequent label checks
+        if self.ignore_labels:
+            return
 
-            # Do it for keys that map to other keys, for post-upload annotation
-            if isinstance(_schema_def, dict) and "keys" in _schema_def:
-                for key, key_def in _schema_def["keys"].items():
-                    if isinstance(key_def, dict) and "add_labels" in key_def:
-                        self._check_single_column_availability(f"{parent_name}.{key}", key_def["add_labels"])
-                    if isinstance(key_def, dict) and key_def.get("type") == "dict":
-                        self._check_key_availability_dict(dictionary.get(name), key_def, parent_path + [name])
+        # Check forbidden_keys at the current dictionary level
+        if "forbidden_keys" in schema_def:
+            for forbidden_key in schema_def["forbidden_keys"]:
+                if forbidden_key in dictionary:
+                    self.errors.append(f"Key '{forbidden_key}' must not be present in '{parent_name}'.")
 
-            # Do it for metadata columns that are reserved for annotation after data portal upload
-            if isinstance(_schema_def, dict) and "reserved_columns" in _schema_def:
-                for key in _schema_def["reserved_columns"]:
-                    if key in dictionary:
-                        self.errors.append(
-                            f"Column '{key}' is a reserved column name "
-                            f"of '{parent_name}'. Remove it from h5ad and try again."
-                        )
+        # Build pattern matchers for pattern-matched keys (similar to _validate_dict)
+        key_patterns = dict()  # schema key name to compiled regex pattern
+        explicit_keys = set()  # used to skip explicit keys when checking patterns
+        keys_def = schema_def.get("keys", {})
+
+        if isinstance(keys_def, dict):
+            for schema_key, key_def in keys_def.items():
+                if isinstance(key_def, dict) and (key_pattern := key_def.get("key_pattern")):
+                    key_patterns[schema_key] = re.compile(key_pattern)
+                else:
+                    explicit_keys.add(schema_key)
+
+        # Iterate over actual dictionary keys
+        for actual_key in dictionary:
+            # Determine which schema definition applies to this key
+            key_def = None
+
+            if actual_key in explicit_keys:
+                # Explicit key match
+                if isinstance(keys_def, dict) and actual_key in keys_def:
+                    key_def = keys_def[actual_key]
+            else:
+                # Check if this dictionary key matches any pattern (in schema order)
+                for schema_key, compiled_pattern in key_patterns.items():
+                    if compiled_pattern.match(actual_key):
+                        # Key matches a pattern - use first matching pattern
+                        if isinstance(keys_def, dict) and schema_key in keys_def:
+                            key_def = keys_def[schema_key]
+                        break
+
+            # Process the key definition if we found a match
+            if key_def is not None:
+                # Check for add_labels
+                if isinstance(key_def, dict) and "add_labels" in key_def:
+                    key_path = f"{parent_name}.{actual_key}" if parent_name else actual_key
+                    self._check_single_column_availability(key_path, key_def["add_labels"])
+
+                # Recursively check nested dictionaries
+                if isinstance(key_def, dict) and key_def.get("type") == "dict":
+                    nested_dict_value = dictionary[actual_key]
+                    if isinstance(nested_dict_value, dict):
+                        nested_path = parent_path + [actual_key]
+                        self._check_key_availability_dict(nested_dict_value, key_def, nested_path)
 
     def _check_column_availability(self):
         """
@@ -2107,7 +2144,11 @@ class Validator:
                     if "add_labels" in key_def:
                         self._check_single_column_availability(component, key_def["add_labels"])
                     if key_def.get("type") == "dict":
-                        self._check_key_availability_dict(key, key_def, [component, key])
+                        component_data = getattr_anndata(self.adata, component)
+                        if isinstance(component_data, dict) and key in component_data:
+                            nested_dict = component_data[key]
+                            if isinstance(nested_dict, dict):
+                                self._check_key_availability_dict(nested_dict, key_def, [component, key])
 
     def _check_spatial(self):
         """

@@ -2078,6 +2078,73 @@ class TestUns:
             f"of 'uns'. Remove it from h5ad and try again."
         ]
 
+    @pytest.mark.parametrize(
+        "reserved_column",
+        ["derived_genomic_regions", "derived_features"],
+    )
+    def test_nested_dict_reserved_columns_presence(self, validator_with_adata, reserved_column):
+        """
+        Reserved columns must NOT be used in nested dictionaries (pattern-matched keys).
+        Tests reserved_columns in uns.genetic_perturbations.<guide_id> dictionaries.
+        """
+        validator = validator_with_adata
+        # Set up genetic_perturbations with a guide that has a reserved column
+        # Need to match the length of the obs index (which has 2 rows)
+        validator.adata.obs["genetic_perturbation_id"] = pd.Categorical(["guide1", "guide1"], categories=["guide1"])
+        validator.adata.obs["genetic_perturbation_strategy"] = pd.Categorical(
+            ["CRISPR knockout screen", "CRISPR knockout screen"],
+            categories=["CRISPR knockout screen"],
+        )
+        validator.adata.uns["genetic_perturbations"] = {
+            "guide1": {
+                "role": "targeting",
+                "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+                "protospacer_adjacent_motif": "3' NGG",
+                reserved_column: ["test_value"],  # This should trigger an error
+            }
+        }
+        validator.validate_adata()
+        # Check that the error mentions the reserved column
+        assert any(
+            f"Column '{reserved_column}' is a reserved column name" in error for error in validator.errors
+        ), f"Expected error about reserved column '{reserved_column}', but got: {validator.errors}"
+        # Verify the error mentions the correct path
+        assert any(
+            "genetic_perturbations" in error or "uns" in error for error in validator.errors
+        ), f"Expected error to mention the path, but got: {validator.errors}"
+
+    def test_nested_dict_reserved_columns_multiple_guides(self, validator_with_adata):
+        """
+        Test that reserved_columns are checked for all pattern-matched keys in nested dictionaries.
+        """
+        validator = validator_with_adata
+        # Set up genetic_perturbations with multiple guides, one with reserved column
+        validator.adata.obs["genetic_perturbation_id"] = pd.Categorical(
+            ["guide1", "guide2"], categories=["guide1", "guide2"]
+        )
+        validator.adata.obs["genetic_perturbation_strategy"] = pd.Categorical(
+            ["CRISPR knockout screen", "CRISPR knockout screen"],
+            categories=["CRISPR knockout screen"],
+        )
+        validator.adata.uns["genetic_perturbations"] = {
+            "guide1": {
+                "role": "targeting",
+                "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+                "protospacer_adjacent_motif": "3' NGG",
+            },
+            "guide2": {
+                "role": "targeting",
+                "protospacer_sequence": "ACGTACGTACGTACGTACGT",
+                "protospacer_adjacent_motif": "3' NGG",
+                "derived_genomic_regions": ["16:75647615-75647633(-)"],  # Reserved column
+            },
+        }
+        validator.validate_adata()
+        # Should have error about derived_genomic_regions
+        assert any(
+            "derived_genomic_regions" in error and "reserved column name" in error for error in validator.errors
+        ), f"Expected error about reserved column 'derived_genomic_regions', but got: {validator.errors}"
+
     def test_required_fields_title(self, validator_with_adata):
         """
         Curators MUST annotate `schema_version` and values in uns (title)
