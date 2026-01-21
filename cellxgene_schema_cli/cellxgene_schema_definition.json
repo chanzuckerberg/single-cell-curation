@@ -148,7 +148,7 @@
           "type": "boolean",
           "description": "Whether this component is required in the dataset"
         },
-        "reserved_columns": {
+        "reserved_keys": {
           "type": "array",
           "items": {"type": "string"},
           "description": "Column names reserved by the schema that should not be used by users"
@@ -365,29 +365,22 @@
         "pattern": {
           "type": "string",
           "description": "Regex pattern for string fields"
-        }
-        ,
+        },
+        "key_pattern": { "type": "string", "description": "Regex pattern that keys must match" },
+        "forbidden_keys": {
+          "description": "List of disallowed keys in the dictionary",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "reserved_keys": {
+          "description": "List of reserved keys in the dictionary",
+          "type": "array",
+          "items": { "type": "string" }
+        },
         "keys": {
           "type": "object",
           "description": "For dictionary fields, specification for key names and their nested field specifications",
-          "properties": {
-            "key_pattern": { "type": "string", "description": "Regex pattern that keys must match" },
-            "type": {
-              "type": "string",
-              "description": "The data type expected for dictionary values",
-              "enum": ["curie", "string", "bool", "categorical", "list", "dict", "match_obs_columns", "match_obsm_keys", "feature_is_filtered"]
-            },
-            "keys": {
-              "type": "object",
-              "description": "Per-key validation rules for dictionary values",
-              "additionalProperties": { "$ref": "#/$defs/field_specification" }
-            },
-            "forbidden_keys": {
-              "type": "array",
-              "items": { "type": "string" }
-            }
-          },
-          "additionalProperties": false
+          "additionalProperties": {"$ref": "#/$defs/field_specification"}
         }
       },
       "additionalProperties": false

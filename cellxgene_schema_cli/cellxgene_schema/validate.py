@@ -2031,12 +2031,12 @@ class Validator:
         parent_path = parent_path or []
         parent_name = ".".join(parent_path) if parent_path else ""
 
-        # Check reserved_columns at the current dictionary level
-        if "reserved_columns" in schema_def:
-            for reserved_key in schema_def["reserved_columns"]:
+        # Check reserved_keys at the current dictionary level
+        if "reserved_keys" in schema_def:
+            for reserved_key in schema_def["reserved_keys"]:
                 if reserved_key in dictionary:
                     self.errors.append(
-                        f"Column '{reserved_key}' is a reserved column name "
+                        f"Key '{reserved_key}' is a reserved key name "
                         f"of '{parent_name}'. Remove it from h5ad and try again."
                     )
 

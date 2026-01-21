@@ -38,9 +38,9 @@ class AnnDataLabelRemover:
                     if "add_labels" in column_def:
                         self._remove_columns(component, column_def)
 
-            # Remove automatically annotated columns
-            if "reserved_columns" in component_def:
-                for field in component_def["reserved_columns"]:
+            # Remove automatically annotated columns and keys
+            for key in ("reserved_columns", "reserved_keys"):
+                for field in component_def.get(key, []):
                     del component[field]
 
             # Doing it for index
