@@ -1042,21 +1042,38 @@ class Validator:
                     return
                 self._validate_dict(value, f"{_dict_name}['{key}']", value_def)
 
-        key_patterns = dict()  # key name to pattern
+        key_patterns = dict()  # schema key name to compiled regex pattern
         explicit_keys = set()  # used to skip explicit keys when validating patterns
-        for k in dict_def.get("keys", {}):
-            if key_pattern := k.get("key_pattern"):
-                key_patterns[k] = re.compile(key_pattern)
-            else:
-                explicit_keys.add(k)
+        keys_def = dict_def.get("keys", {})
+        if isinstance(keys_def, dict):
+            for schema_key, key_def in keys_def.items():
+                if isinstance(key_def, dict) and (key_pattern := key_def.get("key_pattern")):
+                    key_patterns[schema_key] = re.compile(key_pattern)
+                else:
+                    explicit_keys.add(schema_key)
 
         for k in dictionary:
             if k not in explicit_keys:
-                for pattern in key_patterns:
-                    if re.match(pattern, k):
-                        _validate(k, dict_name, dict_def[k])
-            else:
-                _validate(k, dict_name, dict_def[k])
+                # Check if this dictionary key matches any pattern (in schema order)
+                matched_pattern_key = None
+                for schema_key, compiled_pattern in key_patterns.items():
+                    if compiled_pattern.match(k):
+                        # Key matches a pattern - use first matching pattern
+                        matched_pattern_key = schema_key
+                        break
+                # Validate against pattern definition if matched, otherwise ignore
+                if matched_pattern_key is not None and isinstance(keys_def, dict) and matched_pattern_key in keys_def:
+                    _validate(k, dict_name, keys_def[matched_pattern_key])
+            else:  # If no pattern matched and not explicit, ignore the key
+                # Explicit key - validate it
+                if isinstance(keys_def, dict) and k in keys_def:
+                    _validate(k, dict_name, keys_def[k])
+
+        # Validate required explicit keys that are missing from dictionary
+        if isinstance(keys_def, dict):
+            for schema_key in explicit_keys:
+                if schema_key not in dictionary and schema_key in keys_def:
+                    _validate(schema_key, dict_name, keys_def[schema_key])
 
     def _validate_dataframe(self, df_name: str):
         """
@@ -2014,7 +2031,7 @@ class Validator:
             parent_path.append(name)
             parent_name = ".".join(parent_path)
             # Do it for keys that are forbidden
-            if "forbidden_keys" in _schema_def:
+            if isinstance(_schema_def, dict) and "forbidden_keys" in _schema_def:
                 for key in _schema_def["forbidden_keys"]:
                     if key in dictionary:
                         self.errors.append(f"Key '{key}' must not be present in '{parent_name}'.")
@@ -2024,15 +2041,15 @@ class Validator:
                 continue
 
             # Do it for keys that map to other keys, for post-upload annotation
-            if "keys" in _schema_def:
+            if isinstance(_schema_def, dict) and "keys" in _schema_def:
                 for key, key_def in _schema_def["keys"].items():
-                    if "add_labels" in key_def:
+                    if isinstance(key_def, dict) and "add_labels" in key_def:
                         self._check_single_column_availability(f"{parent_name}.{key}", key_def["add_labels"])
-                    if _schema_def.get("type") == "dict":
+                    if isinstance(key_def, dict) and key_def.get("type") == "dict":
                         self._check_key_availability_dict(dictionary.get(name), key_def, parent_path + [name])
 
             # Do it for metadata columns that are reserved for annotation after data portal upload
-            if "reserved_columns" in _schema_def:
+            if isinstance(_schema_def, dict) and "reserved_columns" in _schema_def:
                 for key in _schema_def["reserved_columns"]:
                     if key in dictionary:
                         self.errors.append(
@@ -2688,7 +2705,10 @@ class Validator:
                     self._pre_analysis_check()
                 self._deep_check()
         except Exception as e:
-            self.errors.append(f"Unexpected validation error: {e}")
+            import traceback
+
+            tb = traceback.format_exc()
+            self.errors.append(f"Unexpected validation error: {e}\n{tb}")
 
         # Print warnings if any
         if self.warnings:
