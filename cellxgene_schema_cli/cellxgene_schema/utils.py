@@ -167,6 +167,7 @@ def update_cell_line(dataframe, cellosaurus_term):
 def getattr_anndata(adata: ad.AnnData, attr: str = None):
     """
     same as getattr but handles the special case of "raw.var" for an anndata.AndData object
+    and "genetic_perturbations" which is accessed via uns['genetic_perturbations']
 
     :param anndata.AnnData adata: the anndata.AnnData object from which to extract an attribute
     :param str attr: name of the attribute to extract
@@ -179,6 +180,8 @@ def getattr_anndata(adata: ad.AnnData, attr: str = None):
             return adata.raw.var
         else:
             return None
+    elif attr == "genetic_perturbations":
+        return adata.uns.get("genetic_perturbations")
     else:
         return getattr(adata, attr)
 

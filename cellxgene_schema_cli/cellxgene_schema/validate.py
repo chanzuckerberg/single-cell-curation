@@ -2116,6 +2116,14 @@ class Validator:
                             f"Column '{column}' is a reserved column name "
                             f"of '{component}'. Remove it from h5ad and try again."
                         )
+            if "reserved_keys" in component_def:
+                for key in component_def["reserved_keys"]:
+                    component_data = getattr_anndata(self.adata, component)
+                    if isinstance(component_data, dict) and key in component_data:
+                        self.errors.append(
+                            f"Key '{key}' is a reserved key name "
+                            f"of '{component}'. Remove it from h5ad and try again."
+                        )
 
             # Do it for columns that map to other columns, for post-upload annotation
             if "columns" in component_def:
