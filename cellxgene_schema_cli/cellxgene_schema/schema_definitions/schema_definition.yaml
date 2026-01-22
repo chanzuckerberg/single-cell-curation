@@ -860,7 +860,7 @@ components:
               - CRISPR knockout screen
           - # If genetic_perturbation_strategy == 'control', validate that the corresponding uns['genetic_perturbations'][id]['role'] is 'control'
             rule:
-              column: genetxic_perturbation_strategy
+              column: genetic_perturbation_strategy
               match_exact:
                 terms:
                   - control

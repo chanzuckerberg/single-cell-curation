@@ -1499,18 +1499,12 @@ class Validator:
             return
 
         # dict_def is expected to have a keys entry with a __id__ sub-definition
-        sub_def = {}
-        try:
-            sub_def = dict_def.get("keys", {}).get("__id__", {})
-        except Exception:
-            sub_def = {}
+        sub_def = dict_def.get("keys", {}).get("__id__", {})
 
         # allowed_fields intentionally not used directly; keep for clarity
         # allowed_fields = set(sub_def.get("keys", {}).keys())
         required_fields = {k for k, v in sub_def.get("keys", {}).items() if v.get("required")}
         forbidden_keys = set(sub_def.get("forbidden_keys", []))
-
-        import re
 
         seq_pattern = re.compile(r"^[ACGT]{14,22}$")
         pam_pattern = re.compile(r"^3' [ABCDGHKMNRSTVWY]+$")
@@ -1575,12 +1569,9 @@ class Validator:
             strat = row.get("genetic_perturbation_strategy")
 
             # Skip nulls (they are validated elsewhere); flag if explicit NaN
-            try:
-                if pd.isnull(gid):
-                    self.errors.append(f"obs['genetic_perturbation_id'] contains NaN for observation '{ix}'.")
-                    continue
-            except Exception:
-                pass
+            if gid is None or pd.isna(gid):
+                self.errors.append(f"obs['genetic_perturbation_id'] contains NaN for observation '{ix}'.")
+                continue
 
             gid_str = str(gid)
 
@@ -1605,7 +1596,7 @@ class Validator:
                     )
 
             # Strategy semantics: 'no perturbations' is incompatible with real ids
-            if strat == "no perturbations" and gid_str != "na":
+            if strat == "no perturbations":
                 self.errors.append(
                     "When obs['genetic_perturbation_id'] is not 'na', 'genetic_perturbation_strategy' cannot be 'no perturbations'."
                 )
