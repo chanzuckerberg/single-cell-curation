@@ -991,7 +991,7 @@ class Validator:
         if value not in enum:
             self.errors.append(f"'{value}' in '{dict_name}['{key}']' is not valid. " f"Allowed terms: {enum}.")
 
-    def _validate_dict(self, dictionary: dict, dict_name: str, dict_def: dict):
+    def _validate_dict(self, dictionary: dict[str, any], dict_name: str, dict_def: dict):
         """
         Verifies the dictionary follows the schema. Adds errors to self.errors if any
 
@@ -1002,138 +1002,78 @@ class Validator:
         :rtype None
         """
 
-        # Normalize keys definition
-        keys_def = dict_def.get("keys", {})
-
-        # Separate explicit keys from pattern-based keys
-        pattern_entries = []  # list of (pattern_str, value_def, compiled_re)
-        explicit_key_defs = {}
-
-        # Support two shapes for `keys` in the schema:
-        # 1) Named entries: { key_name: { ...spec... }, other_key: { ... } }
-        # 2) Single anonymous pattern: { key_pattern: "regex", type: ..., keys: { ... } }
-        if isinstance(keys_def, dict) and "key_pattern" in keys_def and isinstance(keys_def.get("key_pattern"), str):
-            try:
-                cre = re.compile(keys_def.get("key_pattern"))
-            except Exception:
-                cre = re.compile(str(keys_def.get("key_pattern")))
-            pattern_entries.append((keys_def.get("key_pattern"), keys_def, cre))
-        else:
-            for k, v in keys_def.items():
-                # pattern-defined entries are dicts that include a `key_pattern` property
-                if isinstance(v, dict) and v.get("key_pattern"):
-                    try:
-                        cre = re.compile(v.get("key_pattern"))
-                    except Exception:
-                        cre = re.compile(str(v.get("key_pattern")))
-                    pattern_entries.append((v.get("key_pattern"), v, cre))
-                elif isinstance(v, dict):
-                    explicit_key_defs[k] = v
-                else:
-                    # ignore non-dict metadata entries (e.g., key_pattern placed at the top-level)
-                    continue
-
-        # Validate keys that match patterns first (skip explicit keys)
-        if pattern_entries:
-            # For each key in the provided dictionary, determine which patterns it matches
-            for dict_key, dict_value in dictionary.items():
-                # Skip explicit keys: they'll be validated below
-                if dict_key in explicit_key_defs:
-                    continue
-
-                matched_patterns = [pat for (pat, vdef, cre) in pattern_entries if cre.match(dict_key)]
-
-                if len(matched_patterns) > 1:
-                    self.errors.append(
-                        f"'{dict_key}' in '{dict_name}' matches multiple key patterns {matched_patterns}."
-                    )
-                    # Do not attempt validation when ambiguous
-                    continue
-
-                if len(matched_patterns) == 1:
-                    # Find corresponding value_def
-                    pat_str = matched_patterns[0]
-                    value_def = None
-                    for pstr, vdef, _cre in pattern_entries:
-                        if pstr == pat_str:
-                            value_def = vdef
-                            break
-                    if value_def is None:
-                        continue
-
-                    # Validate the value according to the pattern's definition
-                    value = dict_value
-                    vtype = value_def.get("type")
-                    if vtype == "string":
-                        if not self._validate_str_in_dict(value, dict_name, dict_key):
-                            continue
-                        if "enum" in value_def:
-                            self._validate_enum_in_dict(value, value_def["enum"], dict_name, dict_key)
-                    elif vtype == "match_obsm_keys":
-                        if not self._validate_str_in_dict(value, dict_name, dict_key):
-                            continue
-                        if value not in self.adata.obsm:
-                            self.errors.append(
-                                f"'{value}' in '{dict_name}['{dict_key}']' is not valid, it must be a key of 'adata.obsm'."
-                            )
-                    elif vtype == "list":
-                        if not (isinstance(value, (list, np.ndarray))):
-                            self.errors.append(
-                                f"'{value}' in '{dict_name}['{dict_key}']' is not valid, it must be a list or numpy array."
-                            )
-                            continue
-                        self._validate_list(dict_key, value, value_def.get("element_type"))
-                    elif vtype in ("dict", "dictionary"):
-                        if not isinstance(value, dict):
-                            self.errors.append(
-                                f"'{value}' in '{dict_name}['{dict_key}']' is not valid, it must be a dictionary."
-                            )
-                            continue
-                        # Recurse into nested dict
-                        self._validate_dict(value, f"{dict_name}['{dict_key}']", value_def)
-
-        # Now validate explicit keys as before
-        for key, value_def in explicit_key_defs.items():
-            logger.debug(f"Validating uns dict for key: {key}")
+        def _validate(key: str, _dict_name: str, value_def: dict) -> None:
+            logger.debug(f"Validating {_dict_name} dict for key: {key}")
             if key not in dictionary:
                 if value_def.get("required", False):
-                    self.errors.append(f"'{key}' in '{dict_name}' is not present.")
-                continue
+                    self.errors.append(f"'{key}' in '{_dict_name}' is not present.")
+                return
 
             value = dictionary[key]
 
             if value_def.get("type") == "string":
-                if not self._validate_str_in_dict(value, dict_name, key):
-                    continue
+                if not self._validate_str_in_dict(value, _dict_name, key):
+                    return
 
                 if "enum" in value_def:
-                    self._validate_enum_in_dict(value, value_def["enum"], dict_name, key)
+                    self._validate_enum_in_dict(value, value_def["enum"], _dict_name, key)
 
             if value_def.get("type") == "match_obsm_keys":
-                if not self._validate_str_in_dict(value, dict_name, key):
-                    continue
+                if not self._validate_str_in_dict(value, _dict_name, key):
+                    return
 
                 if value not in self.adata.obsm:
                     self.errors.append(
-                        f"'{value}' in '{dict_name}['{key}']' is not valid, " f"it must be a key of 'adata.obsm'."
+                        f"'{value}' in '{_dict_name}['{key}']' is not valid, it must be a key of 'adata.obsm'."
                     )
 
             if value_def.get("type") == "list":
                 if not (isinstance(value, (list, np.ndarray))):
                     self.errors.append(
-                        f"'{value}' in '{dict_name}['{key}']' is not valid, " f"it must be a list or numpy array."
+                        f"'{value}' in '{_dict_name}['{key}']' is not valid, it must be a list or numpy array."
                     )
-                    continue
+                    return
 
                 self._validate_list(key, value, value_def.get("element_type"))
 
             if value_def.get("type") in ("dict", "dictionary"):
                 if not isinstance(value, dict):
-                    self.errors.append(
-                        f"'{value}' in '{dict_name}['{key}']' is not valid, " f"it must be a dictionary."
-                    )
-                    continue
-                self._validate_dict(value, f"{dict_name}['{key}']", value_def)
+                    self.errors.append(f"'{value}' in '{_dict_name}['{key}']' is not valid, it must be a dictionary.")
+                    return
+                self._validate_dict(value, f"{_dict_name}['{key}']", value_def)
+
+        key_patterns = dict()  # schema key name to compiled regex pattern
+        explicit_keys = set()  # used to skip explicit keys when validating patterns
+        keys_def = dict_def.get("keys", {})
+        if isinstance(keys_def, dict):
+            for schema_key, key_def in keys_def.items():
+                if isinstance(key_def, dict) and (key_pattern := key_def.get("key_pattern")):
+                    key_patterns[schema_key] = re.compile(key_pattern)
+                else:
+                    explicit_keys.add(schema_key)
+
+        for k in dictionary:
+            if k not in explicit_keys:
+                # Check if this dictionary key matches any pattern (in schema order)
+                matched_pattern_key = None
+                for schema_key, compiled_pattern in key_patterns.items():
+                    if compiled_pattern.match(k):
+                        # Key matches a pattern - use first matching pattern
+                        matched_pattern_key = schema_key
+                        break
+                # Validate against pattern definition if matched, otherwise ignore
+                if matched_pattern_key is not None and isinstance(keys_def, dict) and matched_pattern_key in keys_def:
+                    _validate(k, dict_name, keys_def[matched_pattern_key])
+            else:  # If no pattern matched and not explicit, ignore the key
+                # Explicit key - validate it
+                if isinstance(keys_def, dict) and k in keys_def:
+                    _validate(k, dict_name, keys_def[k])
+
+        # Validate required explicit keys that are missing from dictionary
+        if isinstance(keys_def, dict):
+            for schema_key in explicit_keys:
+                if schema_key not in dictionary and schema_key in keys_def:
+                    _validate(schema_key, dict_name, keys_def[schema_key])
 
     def _validate_dataframe(self, df_name: str):
         """
@@ -1559,18 +1499,12 @@ class Validator:
             return
 
         # dict_def is expected to have a keys entry with a __id__ sub-definition
-        sub_def = {}
-        try:
-            sub_def = dict_def.get("keys", {}).get("__id__", {})
-        except Exception:
-            sub_def = {}
+        sub_def = dict_def.get("keys", {}).get("__id__", {})
 
         # allowed_fields intentionally not used directly; keep for clarity
         # allowed_fields = set(sub_def.get("keys", {}).keys())
         required_fields = {k for k, v in sub_def.get("keys", {}).items() if v.get("required")}
         forbidden_keys = set(sub_def.get("forbidden_keys", []))
-
-        import re
 
         seq_pattern = re.compile(r"^[ACGT]{14,22}$")
         pam_pattern = re.compile(r"^3' [ABCDGHKMNRSTVWY]+$")
@@ -1635,12 +1569,9 @@ class Validator:
             strat = row.get("genetic_perturbation_strategy")
 
             # Skip nulls (they are validated elsewhere); flag if explicit NaN
-            try:
-                if pd.isnull(gid):
-                    self.errors.append(f"obs['genetic_perturbation_id'] contains NaN for observation '{ix}'.")
-                    continue
-            except Exception:
-                pass
+            if gid is None or pd.isna(gid):
+                self.errors.append(f"obs['genetic_perturbation_id'] contains NaN for observation '{ix}'.")
+                continue
 
             gid_str = str(gid)
 
@@ -1665,7 +1596,7 @@ class Validator:
                     )
 
             # Strategy semantics: 'no perturbations' is incompatible with real ids
-            if strat == "no perturbations" and gid_str != "na":
+            if strat == "no perturbations":
                 self.errors.append(
                     "When obs['genetic_perturbation_id'] is not 'na', 'genetic_perturbation_strategy' cannot be 'no perturbations'."
                 )
@@ -2076,6 +2007,84 @@ class Validator:
                     )
                 component_columns.add(column)
 
+    def _check_key_availability_dict(self, dictionary: dict, schema_def: dict, parent_path: list[str] = None):
+        """
+        This method will check for keys that are reserved in a dictionary, and traverse the dictionary to validate that they are
+         available as expected
+        :param dictionary: the dictionary to check (actual data dictionary)
+        :param schema_def: the schema definition for the dictionary
+        :param parent_path: the path to the parent dictionary (e.g., ["uns", "genetic_perturbations"])
+        :return:
+        """
+        if not isinstance(dictionary, dict):
+            return
+
+        parent_path = parent_path or []
+        parent_name = ".".join(parent_path) if parent_path else ""
+
+        # Check reserved_keys at the current dictionary level
+        if "reserved_keys" in schema_def:
+            for reserved_key in schema_def["reserved_keys"]:
+                if reserved_key in dictionary:
+                    self.errors.append(
+                        f"Key '{reserved_key}' is a reserved key name "
+                        f"of '{parent_name}'. Remove it from h5ad and try again."
+                    )
+
+        # If ignore_labels is set, we will skip all the subsequent label checks
+        if self.ignore_labels:
+            return
+
+        # Check forbidden_keys at the current dictionary level
+        if "forbidden_keys" in schema_def:
+            for forbidden_key in schema_def["forbidden_keys"]:
+                if forbidden_key in dictionary:
+                    self.errors.append(f"Key '{forbidden_key}' must not be present in '{parent_name}'.")
+
+        # Build pattern matchers for pattern-matched keys (similar to _validate_dict)
+        key_patterns = dict()  # schema key name to compiled regex pattern
+        explicit_keys = set()  # used to skip explicit keys when checking patterns
+        keys_def = schema_def.get("keys", {})
+
+        if isinstance(keys_def, dict):
+            for schema_key, key_def in keys_def.items():
+                if isinstance(key_def, dict) and (key_pattern := key_def.get("key_pattern")):
+                    key_patterns[schema_key] = re.compile(key_pattern)
+                else:
+                    explicit_keys.add(schema_key)
+
+        # Iterate over actual dictionary keys
+        for actual_key in dictionary:
+            # Determine which schema definition applies to this key
+            key_def = None
+
+            if actual_key in explicit_keys:
+                # Explicit key match
+                if isinstance(keys_def, dict) and actual_key in keys_def:
+                    key_def = keys_def[actual_key]
+            else:
+                # Check if this dictionary key matches any pattern (in schema order)
+                for schema_key, compiled_pattern in key_patterns.items():
+                    if compiled_pattern.match(actual_key):
+                        # Key matches a pattern - use first matching pattern
+                        if isinstance(keys_def, dict) and schema_key in keys_def:
+                            key_def = keys_def[schema_key]
+                        break
+
+            # Process the key definition if we found a match
+            if key_def is not None:
+                # Check for add_labels
+                if isinstance(key_def, dict) and "add_labels" in key_def:
+                    key_path = f"{parent_name}.{actual_key}" if parent_name else actual_key
+                    self._check_single_column_availability(key_path, key_def["add_labels"])
+
+                # Recursively check nested dictionaries
+                if isinstance(key_def, dict) and key_def.get("type") == "dict":
+                    nested_dict_value = dictionary[actual_key]
+                    if isinstance(nested_dict_value, dict):
+                        nested_path = parent_path + [actual_key]
+                        self._check_key_availability_dict(nested_dict_value, key_def, nested_path)
+
     def _check_column_availability(self):
         """
         This method will check for columns that are reserved in components and validate that they are
@@ -2107,6 +2116,14 @@ class Validator:
                             f"Column '{column}' is a reserved column name "
                             f"of '{component}'. Remove it from h5ad and try again."
                         )
+            if "reserved_keys" in component_def:
+                for key in component_def["reserved_keys"]:
+                    component_data = getattr_anndata(self.adata, component)
+                    if isinstance(component_data, dict) and key in component_data:
+                        self.errors.append(
+                            f"Key '{key}' is a reserved key name "
+                            f"of '{component}'. Remove it from h5ad and try again."
+                        )
 
             # Do it for columns that map to other columns, for post-upload annotation
             if "columns" in component_def:
@@ -2122,9 +2139,15 @@ class Validator:
 
             # Do it for key that map to columns
             if "keys" in component_def:
-                for key_def in component_def["keys"].values():
+                for key, key_def in component_def["keys"].items():
                     if "add_labels" in key_def:
                         self._check_single_column_availability(component, key_def["add_labels"])
+                    if key_def.get("type") == "dict":
+                        component_data = getattr_anndata(self.adata, component)
+                        if isinstance(component_data, dict) and key in component_data:
+                            nested_dict = component_data[key]
+                            if isinstance(nested_dict, dict):
+                                self._check_key_availability_dict(nested_dict, key_def, [component, key])
 
     def _check_spatial(self):
         """
@@ -2722,7 +2745,10 @@ class Validator:
                     self._pre_analysis_check()
                 self._deep_check()
         except Exception as e:
-            self.errors.append(f"Unexpected validation error: {e}")
+            import traceback
+
+            tb = traceback.format_exc()
+            self.errors.append(f"Unexpected validation error: {e}\n{tb}")
 
         # Print warnings if any
         if self.warnings:

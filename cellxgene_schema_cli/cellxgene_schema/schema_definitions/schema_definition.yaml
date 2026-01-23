@@ -37,7 +37,7 @@ components:
   uns:
     type: dict
     required: True
-    reserved_columns:
+    reserved_keys:
       - schema_version
       - schema_reference
       - citation
@@ -118,7 +118,7 @@ components:
             rule:
               exclude_obs_key: genetic_perturbation_id
             type: forbidden
-        keys: 
+        keys:
           genetic_perturbation_ids:
             key_pattern: '^[^\s/,"'']+$'  # No whitespace, slash, comma, double or single quotes
             type: dict
@@ -139,7 +139,7 @@ components:
                 required: True
                 # Format like: "3' NGG" where MOTIF uses allowed ambiguity codes
                 pattern: '^3'' [ABCDGHKMNRSTVWY]+$'
-            forbidden_keys:
+            reserved_keys:
               - derived_genomic_regions
               - derived_features
   var:
@@ -871,8 +871,8 @@ components:
               # Source: split genetic_perturbation_id by delimiter, look up each ID in uns dict, check nested key value
               column: genetic_perturbation_id
               delimiter: " || "
-              in: 
-                uns_key: genetic_perturbations.keys()  # python dict keys 
+              in:
+                uns_key: genetic_perturbations.keys()  # python dict keys
                 nested_constraints:
                   - key: role
                     match_exact:

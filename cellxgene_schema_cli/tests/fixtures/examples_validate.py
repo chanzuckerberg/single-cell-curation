@@ -879,3 +879,14 @@ adata_gene_perturbations_invalid_contains_derived = anndata.AnnData(
     obsm=good_obsm,
     var=good_var,
 )
+
+# -------------------------
+# Invalid: uns has genetic_perturbations but obs is missing required columns
+# This tests the cross-validation check that requires obs columns when uns has genetic_perturbations
+adata_gene_perturbations_invalid_missing_obs_columns = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs.copy(),  # good_obs doesn't have genetic_perturbation_id or genetic_perturbation_strategy
+    uns=good_uns_with_gene_perturbations_curator,  # uns has genetic_perturbations
+    obsm=good_obsm,
+    var=good_var,
+)
