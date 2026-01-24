@@ -1147,24 +1147,24 @@ class Validator:
                 # Only check columns that are actually present
                 if column_name not in df.columns:
                     continue
-                
+
                 try:
                     column_def = self._get_column_def(df_name, column_name)
                     deps = column_def.get("dependencies")
                     if not deps:
                         continue
-                    
+
                     dep_defs = deps if isinstance(deps, list) else [deps]
-                    
+
                     # Check if any dependency rule with type='forbidden' matches
                     for dependency_def in dep_defs:
                         if dependency_def.get("type") != "forbidden":
                             continue
-                        
+
                         rules = dependency_def.get("rule")
                         if not isinstance(rules, list):
                             rules = [rules]
-                        
+
                         # Check if all rules in this dependency match
                         all_rules_match = True
                         for rule in rules:
@@ -1172,7 +1172,7 @@ class Validator:
                             if match_query is None or not match_query.any():
                                 all_rules_match = False
                                 break
-                        
+
                         # If all rules match and type is forbidden, the column should not exist
                         if all_rules_match:
                             # Build error message based on rule type
@@ -1187,7 +1187,7 @@ class Validator:
                                 elif rule.get("obs_key") or rule.get("column"):
                                     col = rule.get("column") or rule.get("obs_key")
                                     error_parts.append(f"obs column '{col}' has specific values")
-                            
+
                             condition = " and ".join(error_parts) if error_parts else "certain conditions are met"
                             self.errors.append(
                                 f"Column '{column_name}' in dataframe '{df_name}' must not be present when {condition}."
