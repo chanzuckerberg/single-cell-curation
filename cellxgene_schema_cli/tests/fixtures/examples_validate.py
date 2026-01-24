@@ -890,3 +890,275 @@ adata_gene_perturbations_invalid_missing_obs_columns = anndata.AnnData(
     obsm=good_obsm,
     var=good_var,
 )
+
+# -------------------------
+# Invalid: key name contains whitespace (violates key_pattern)
+bad_uns_key_with_whitespace = {
+    **good_uns,
+    "genetic_perturbations": {
+        "guide 1": {  # Contains space
+            "role": "targeting",
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_key_whitespace = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_key_with_whitespace,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: key name contains slash (violates key_pattern)
+bad_uns_key_with_slash = {
+    **good_uns,
+    "genetic_perturbations": {
+        "guide/1": {  # Contains slash
+            "role": "targeting",
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_key_slash = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_key_with_slash,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: key name contains comma (violates key_pattern)
+bad_uns_key_with_comma = {
+    **good_uns,
+    "genetic_perturbations": {
+        "guide,1": {  # Contains comma
+            "role": "targeting",
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_key_comma = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_key_with_comma,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: key name contains single quote (violates key_pattern)
+bad_uns_key_with_quote = {
+    **good_uns,
+    "genetic_perturbations": {
+        "guide'1": {  # Contains single quote
+            "role": "targeting",
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_key_quote = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_key_with_quote,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: protospacer_sequence too short (< 14bp)
+bad_uns_protospacer_too_short = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "ACGTACGTACGT",  # Only 12bp, need 14-22
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_protospacer_short = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_protospacer_too_short,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: protospacer_sequence too long (> 22bp)
+bad_uns_protospacer_too_long = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "ACGTACGTACGTACGTACGTACG",  # 23bp, need 14-22
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_protospacer_long = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_protospacer_too_long,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: protospacer_sequence contains non-ACGT characters
+bad_uns_protospacer_invalid_chars = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "ACGTACGTACGTACGN",  # Contains 'N', need only ACGT
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_protospacer_chars = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_protospacer_invalid_chars,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: protospacer_adjacent_motif wrong format (doesn't start with "3' ")
+bad_uns_pam_wrong_format = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            "protospacer_adjacent_motif": "NGG",  # Missing "3' " prefix
+        }
+    },
+}
+adata_gene_perturbations_invalid_pam_format = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_pam_wrong_format,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: missing required field 'role'
+bad_uns_missing_role = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            # "role": "targeting",  # Missing required field
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_missing_role = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_missing_role,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: missing required field 'protospacer_sequence'
+bad_uns_missing_protospacer = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            # "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",  # Missing required field
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_missing_protospacer = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_missing_protospacer,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: missing required field 'protospacer_adjacent_motif'
+bad_uns_missing_pam = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            # "protospacer_adjacent_motif": "3' NGG",  # Missing required field
+        }
+    },
+}
+adata_gene_perturbations_invalid_missing_pam = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_missing_pam,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: role has invalid enum value
+bad_uns_invalid_role = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "unknown",  # Invalid, must be 'control' or 'targeting'
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_role_enum = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_invalid_role,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: reserved key 'derived_features' present
+bad_uns_contains_derived_features = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            "protospacer_adjacent_motif": "3' NGG",
+            "derived_features": ["ENSG00000012345"],  # Reserved key
+        }
+    },
+}
+adata_gene_perturbations_invalid_contains_derived_features = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_contains_derived_features,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: obs has genetic_perturbation columns but uns is missing genetic_perturbations
+# This tests the dependency that requires uns['genetic_perturbations'] when obs columns are present
+adata_gene_perturbations_invalid_obs_without_uns = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),  # Has genetic_perturbation_id and genetic_perturbation_strategy
+    uns=good_uns,  # Does NOT have genetic_perturbations
+    obsm=good_obsm,
+    var=good_var,
+)

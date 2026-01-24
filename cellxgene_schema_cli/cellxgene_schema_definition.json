@@ -348,7 +348,7 @@
           "properties": {
             "delimiter": { "type": "string" },
             "sorted": { "type": "boolean" },
-            "multi_term_constraints": { "$ref": "#/$defs/curie_constraints" }
+            "multi_term_constraints": { "$ref": "#/$defs/multi_term_constraints" }
           },
           "additionalProperties": false
         },
