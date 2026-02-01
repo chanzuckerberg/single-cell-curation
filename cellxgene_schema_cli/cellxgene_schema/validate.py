@@ -878,36 +878,41 @@ class Validator:
             uns_required = None
             presence_rules_exist = False
             required_by_obs = False
-            
+
             for dep_def in dep_defs:
                 rules = dep_def.get("rule")
                 if not isinstance(rules, list):
                     rules = [rules]
-                
+
                 has_uns_rule = any(r.get("uns_key") or r.get("exclude_uns_key") for r in rules)
                 has_presence_rule = any(
-                    (r.get("column") == column_name) or 
-                    (r.get("column") and ("na" in r.get("match_exact", {}).get("terms", []) or
-                                          "na" in r.get("exclude_exact", {}).get("terms", [])))
+                    (r.get("column") == column_name)
+                    or (
+                        r.get("column")
+                        and (
+                            "na" in r.get("match_exact", {}).get("terms", [])
+                            or "na" in r.get("exclude_exact", {}).get("terms", [])
+                        )
+                    )
                     for r in rules
                 )
-                
+
                 if has_presence_rule:
                     presence_rules_exist = True
-                
+
                 combined_match, _ = self._validate_dependency_rule(
                     df, df_name, column_name, dep_def, validate_column_values=False
                 )
-                
+
                 if combined_match is None:
                     continue
-                
+
                 if has_uns_rule and combined_match.any() and uns_required is None:
                     uns_required = dep_def.get("type") != "forbidden"
-                
+
                 if has_presence_rule and combined_match.any() and dep_def.get("type") != "forbidden":
                     required_by_obs = True
-            
+
             # Decision logic: determine if column is required
             if uns_required is False:
                 return pd.Series([False]), None  # Not required
@@ -919,7 +924,7 @@ class Validator:
                 if presence_rules_exist and not required_by_obs:
                     return pd.Series([False]), None  # Not required
                 return pd.Series([True]), None  # Required
-        
+
         # Single dependency processing
         rules = dependency_def.get("rule")
         if not isinstance(rules, list):
@@ -953,7 +958,7 @@ class Validator:
             self._validate_column(combined_column, column_name, df_name, dependency_def, error_message_suffix)
 
             return combined_query, combined_column
-        
+
         # For presence checking, don't access the column if it doesn't exist
         return combined_query, None
 
@@ -1068,7 +1073,7 @@ class Validator:
 
                 if "enum" in value_def:
                     self._validate_enum_in_dict(value, value_def["enum"], _dict_name, key)
-                
+
                 if "pattern" in value_def:
                     pattern = re.compile(value_def["pattern"])
                     if not isinstance(value, str) or not pattern.fullmatch(value):
@@ -1524,7 +1529,7 @@ class Validator:
         obs = getattr_anndata(self.adata, "obs")
         has_gp_in_uns = "genetic_perturbations" in self.adata.uns
         has_gp_id_in_obs = "genetic_perturbation_id" in obs.columns
-        
+
         # Check if genetic_perturbations exists in uns
         if not has_gp_in_uns:
             # If uns doesn't have genetic_perturbations, obs MUST NOT have genetic_perturbation_id
@@ -1534,7 +1539,7 @@ class Validator:
                     "When genetic perturbation columns exist in obs, uns['genetic_perturbations'] must be present."
                 )
             return
-            
+
         gp_uns = getattr_anndata(self.adata, "genetic_perturbations")
 
         # Require obs columns when uns has genetic perturbations
