@@ -75,13 +75,13 @@ def test_valid_gene_perturbations_control():
 )
 def test_invalid_gene_perturbations(bad):
     success, errors = _validate_adata(bad)
-    assert not success
+    assert not success, f"Expected validation to fail but it succeeded. Errors: {errors}"
 
 
 def test_invalid_gene_perturbations_missing_obs_columns():
     """Test that missing obs columns when uns has genetic_perturbations is caught."""
     success, errors = _validate_adata(adata_gene_perturbations_invalid_missing_obs_columns)
-    assert not success
+    assert not success, f"Expected validation to fail but it succeeded. Errors: {errors}"
     assert any(
         "When adata.uns['genetic_perturbations'] is present, obs must contain 'genetic_perturbation_id' and 'genetic_perturbation_strategy'."
         in error

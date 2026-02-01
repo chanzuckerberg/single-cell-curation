@@ -112,7 +112,7 @@ components:
         dependencies:
           - # if obs['genetic_perturbation_id'] is present
             rule:
-              obs_key: genetic_perturbation_id
+              column: genetic_perturbation_id
             type: dict
           - # if obs['genetic_perturbation_id'] is not present
             rule:
