@@ -148,7 +148,7 @@
           "type": "boolean",
           "description": "Whether this component is required in the dataset"
         },
-        "reserved_columns": {
+        "reserved_keys": {
           "type": "array",
           "items": {"type": "string"},
           "description": "Column names reserved by the schema that should not be used by users"
@@ -298,8 +298,8 @@
         "type": {
           "type": "string",
           "description": "The data type expected for this field",
-          "enum": [
-            "curie", "string", "bool", "categorical", "list", 
+            "enum": [
+            "curie", "string", "bool", "categorical", "list", "dict",
             "match_obs_columns", "match_obsm_keys", "feature_is_filtered"
           ]
         },
@@ -342,6 +342,16 @@
           "type": "string",
           "description": "Custom error message to append when validation fails"
         },
+        "multi_term": {
+          "type": "object",
+          "description": "Settings for fields that accept multiple terms in a single string",
+          "properties": {
+            "delimiter": { "type": "string" },
+            "sorted": { "type": "boolean" },
+            "multi_term_constraints": { "$ref": "#/$defs/multi_term_constraints" }
+          },
+          "additionalProperties": false
+        },
         "warning_message": {
           "type": "string",
           "description": "Warning message to display for certain conditions"
@@ -350,6 +360,27 @@
           "type": "array",
           "description": "List of disallowed values for categorical fields",
           "items": { "type": "string" }
+        }
+        ,
+        "pattern": {
+          "type": "string",
+          "description": "Regex pattern for string fields"
+        },
+        "key_pattern": { "type": "string", "description": "Regex pattern that keys must match" },
+        "forbidden_keys": {
+          "description": "List of disallowed keys in the dictionary",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "reserved_keys": {
+          "description": "List of reserved keys in the dictionary",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "keys": {
+          "type": "object",
+          "description": "For dictionary fields, specification for key names and their nested field specifications",
+          "additionalProperties": {"$ref": "#/$defs/field_specification"}
         }
       },
       "additionalProperties": false
@@ -438,9 +469,47 @@
           "type": "array",
           "description": "List of allowed ontology prefixes (e.g., 'CL', 'EFO', 'MONDO')",
           "items": {"type": "string"}
+        },
+        "uns_key": {
+          "type": "string",
+          "description": "Reference to a key in uns for cross-validation (e.g., 'genetic_perturbations.keys()')"
+        },
+        "column": {
+          "type": "string",
+          "description": "Reference to another obs column for cross-validation"
+        },
+        "delimiter": {
+          "type": "string",
+          "description": "Delimiter for splitting multi-term values"
+        },
+        "in": {
+          "type": "object",
+          "description": "Validation rule for checking if values are in a set",
+          "properties": {
+            "uns_key": {"type": "string"},
+            "nested_constraints": {
+              "type": "array",
+              "description": "Constraints on nested dictionary values",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {"type": "string"},
+                  "match_exact": {
+                    "type": "object",
+                    "properties": {
+                      "terms": {
+                        "type": "array",
+                        "items": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       },
-      "description": "Additional constraints that apply only when multiple terms are present"
+      "description": "Additional constraints that apply only when multiple terms are present, including cross-validation with uns or other obs columns"
     },
     "dependency_rule": {
       "type": "object",
@@ -467,9 +536,18 @@
           "description": "Allowed values when this dependency is active",
           "items": {"type": "string"}
         },
+        "forbidden": {
+          "type": "array",
+          "description": "Forbidden values when this dependency is active",
+          "items": {"type": "string"}
+        },
         "subtype":{
           "type": "string",
           "description": "Subtype specification for the field"
+        },
+        "multi_term_constraints": {
+          "$ref": "#/$defs/multi_term_constraints",
+          "description": "Multi-term constraints that apply when this dependency is active"
         }
       },
       "additionalProperties": false
@@ -493,9 +571,21 @@
           "type": "string",
           "description": "Column name to check for the condition"
         },
+        "obs_key": {
+          "type": "string",
+          "description": "(Alias) Column name in `obs` to check for the condition (legacy key)"
+        },
+        "exclude_obs_key": {
+          "type": "string",
+          "description": "(Alias) Column name in `obs` that must NOT be present for the condition to apply (legacy key)"
+        },
         "uns_key": {
           "type": "string",
           "description": "Key in unstructured annotations to check"
+        },
+        "exclude_uns_key": {
+          "type": "string",
+          "description": "Unstructured key that must NOT be present for the condition to apply (legacy key)"
         },
         "match_exact": {
           "$ref": "#/$defs/match_constraint",

@@ -1802,6 +1802,290 @@ class TestObs:
             in validator.errors
         )
 
+    def test_genetic_perturbation_control_role_valid_single_id(self, validator_with_adata):
+        """
+        Valid case: genetic_perturbation_strategy is 'control' with a single ID,
+        and the corresponding uns entry has role 'control' - should pass validation.
+        """
+        validator = validator_with_adata
+        gp_control_id = "CTRL-1"
+
+        # Set up obs with control strategy and single control ID
+        validator.adata.obs["genetic_perturbation_id"] = pd.Categorical(
+            [gp_control_id, gp_control_id],
+            categories=[gp_control_id],
+        )
+        validator.adata.obs["genetic_perturbation_strategy"] = pd.Categorical(
+            ["control", "control"],
+            categories=[
+                "control",
+                "CRISPR activation screen",
+                "CRISPR interference screen",
+                "CRISPR knockout mutant",
+                "CRISPR knockout screen",
+                "no perturbations",
+            ],
+        )
+
+        # Set up uns with genetic_perturbations where role is 'control'
+        validator.adata.uns["genetic_perturbations"] = {
+            gp_control_id: {
+                "role": "control",
+                "protospacer_sequence": "TTTTTTTTTTTTTTTTTTTT",
+                "protospacer_adjacent_motif": "3' NGG",
+            }
+        }
+
+        validator.validate_adata()
+        # Should pass - no errors related to control role validation
+        control_role_errors = [err for err in validator.errors if "control" in err.lower() and "role" in err.lower()]
+        assert len(control_role_errors) == 0, f"Unexpected control role errors: {control_role_errors}"
+
+    def test_genetic_perturbation_control_role_valid_multiple_ids(self, validator_with_adata):
+        """
+        Valid case: genetic_perturbation_strategy is 'control' with multiple IDs (separated by " || "),
+        and all corresponding uns entries have role 'control' - should pass validation.
+        """
+        validator = validator_with_adata
+        gp_control_id_1 = "CTRL-1"
+        gp_control_id_2 = "CTRL-2"
+
+        # Set up obs with control strategy and multiple control IDs
+        validator.adata.obs["genetic_perturbation_id"] = pd.Categorical(
+            [f"{gp_control_id_1} || {gp_control_id_2}", f"{gp_control_id_1} || {gp_control_id_2}"],
+            categories=[gp_control_id_1, gp_control_id_2, f"{gp_control_id_1} || {gp_control_id_2}"],
+        )
+        validator.adata.obs["genetic_perturbation_strategy"] = pd.Categorical(
+            ["control", "control"],
+            categories=[
+                "control",
+                "CRISPR activation screen",
+                "CRISPR interference screen",
+                "CRISPR knockout mutant",
+                "CRISPR knockout screen",
+                "no perturbations",
+            ],
+        )
+
+        # Set up uns with genetic_perturbations where both have role 'control'
+        validator.adata.uns["genetic_perturbations"] = {
+            gp_control_id_1: {
+                "role": "control",
+                "protospacer_sequence": "TTTTTTTTTTTTTTTTTTTT",
+                "protospacer_adjacent_motif": "3' NGG",
+            },
+            gp_control_id_2: {
+                "role": "control",
+                "protospacer_sequence": "AAAAAAAAAAAAAAAAAAAA",
+                "protospacer_adjacent_motif": "3' NGG",
+            },
+        }
+
+        validator.validate_adata()
+        # Should pass - no errors related to control role validation
+        control_role_errors = [err for err in validator.errors if "control" in err.lower() and "role" in err.lower()]
+        assert len(control_role_errors) == 0, f"Unexpected control role errors: {control_role_errors}"
+
+    def test_genetic_perturbation_control_role_invalid_single_id(self, validator_with_adata):
+        """
+        Invalid case: genetic_perturbation_strategy is 'control' but the corresponding uns entry
+        has role 'targeting' (or other non-control role) - should fail with appropriate error.
+        """
+        validator = validator_with_adata
+        gp_control_id = "CTRL-1"
+
+        # Set up obs with control strategy
+        validator.adata.obs["genetic_perturbation_id"] = pd.Categorical(
+            [gp_control_id, gp_control_id],
+            categories=[gp_control_id],
+        )
+        validator.adata.obs["genetic_perturbation_strategy"] = pd.Categorical(
+            ["control", "control"],
+            categories=[
+                "control",
+                "CRISPR activation screen",
+                "CRISPR interference screen",
+                "CRISPR knockout mutant",
+                "CRISPR knockout screen",
+                "no perturbations",
+            ],
+        )
+
+        # Set up uns with genetic_perturbations where role is NOT 'control'
+        validator.adata.uns["genetic_perturbations"] = {
+            gp_control_id: {
+                "role": "targeting",  # Wrong role - should be 'control'
+                "protospacer_sequence": "TTTTTTTTTTTTTTTTTTTT",
+                "protospacer_adjacent_motif": "3' NGG",
+            }
+        }
+
+        validator.validate_adata()
+        # Should fail with error about role mismatch
+        control_role_errors = [err for err in validator.errors if "control" in err.lower() and "role" in err.lower()]
+        assert len(control_role_errors) > 0, f"Expected control role validation error, but got: {validator.errors}"
+        assert any(
+            gp_control_id in err for err in control_role_errors
+        ), f"Error should mention the ID '{gp_control_id}', but got: {control_role_errors}"
+
+    def test_genetic_perturbation_control_role_invalid_multiple_ids(self, validator_with_adata):
+        """
+        Invalid case: genetic_perturbation_strategy is 'control' with multiple IDs,
+        but at least one has role != 'control' - should fail.
+        """
+        validator = validator_with_adata
+        gp_control_id_1 = "CTRL-1"
+        gp_control_id_2 = "CTRL-2"
+
+        # Set up obs with control strategy and multiple IDs
+        validator.adata.obs["genetic_perturbation_id"] = pd.Categorical(
+            [f"{gp_control_id_1} || {gp_control_id_2}", f"{gp_control_id_1} || {gp_control_id_2}"],
+            categories=[gp_control_id_1, gp_control_id_2, f"{gp_control_id_1} || {gp_control_id_2}"],
+        )
+        validator.adata.obs["genetic_perturbation_strategy"] = pd.Categorical(
+            ["control", "control"],
+            categories=[
+                "control",
+                "CRISPR activation screen",
+                "CRISPR interference screen",
+                "CRISPR knockout mutant",
+                "CRISPR knockout screen",
+                "no perturbations",
+            ],
+        )
+
+        # Set up uns with genetic_perturbations where one has wrong role
+        validator.adata.uns["genetic_perturbations"] = {
+            gp_control_id_1: {
+                "role": "control",  # Correct
+                "protospacer_sequence": "TTTTTTTTTTTTTTTTTTTT",
+                "protospacer_adjacent_motif": "3' NGG",
+            },
+            gp_control_id_2: {
+                "role": "targeting",  # Wrong - should be 'control'
+                "protospacer_sequence": "AAAAAAAAAAAAAAAAAAAA",
+                "protospacer_adjacent_motif": "3' NGG",
+            },
+        }
+
+        validator.validate_adata()
+        # Should fail with error about role mismatch for the ID with wrong role
+        control_role_errors = [err for err in validator.errors if "control" in err.lower() and "role" in err.lower()]
+        assert len(control_role_errors) > 0, f"Expected control role validation error, but got: {validator.errors}"
+        assert any(
+            gp_control_id_2 in err for err in control_role_errors
+        ), f"Error should mention the ID '{gp_control_id_2}' with wrong role, but got: {control_role_errors}"
+
+    def test_genetic_perturbation_control_role_invalid_missing_role(self, validator_with_adata):
+        """
+        Invalid case: genetic_perturbation_strategy is 'control' but the uns entry
+        is missing the 'role' key - should fail.
+        """
+        validator = validator_with_adata
+        gp_control_id = "CTRL-1"
+
+        # Set up obs with control strategy
+        validator.adata.obs["genetic_perturbation_id"] = pd.Categorical(
+            [gp_control_id, gp_control_id],
+            categories=[gp_control_id],
+        )
+        validator.adata.obs["genetic_perturbation_strategy"] = pd.Categorical(
+            ["control", "control"],
+            categories=[
+                "control",
+                "CRISPR activation screen",
+                "CRISPR interference screen",
+                "CRISPR knockout mutant",
+                "CRISPR knockout screen",
+                "no perturbations",
+            ],
+        )
+
+        # Set up uns with genetic_perturbations where role key is missing
+        validator.adata.uns["genetic_perturbations"] = {
+            gp_control_id: {
+                # Missing 'role' key
+                "protospacer_sequence": "TTTTTTTTTTTTTTTTTTTT",
+                "protospacer_adjacent_motif": "3' NGG",
+            }
+        }
+
+        validator.validate_adata()
+        # Should fail - either with error about missing role or about role not being 'control'
+        # The exact error depends on how the validation handles missing keys
+        control_role_errors = [
+            err
+            for err in validator.errors
+            if ("control" in err.lower() and "role" in err.lower())
+            or ("role" in err.lower() and "not present" in err.lower())
+            or ("role" in err.lower() and "missing" in err.lower())
+        ]
+        assert (
+            len(control_role_errors) > 0 or len(validator.errors) > 0
+        ), f"Expected validation error for missing role, but got: {validator.errors}"
+
+    def test_genetic_perturbation_control_role_invalid_mixed_roles(self, validator_with_adata):
+        """
+        Invalid case: genetic_perturbation_strategy is 'control' with multiple IDs
+        where some have role 'control' and others don't - should fail.
+        """
+        validator = validator_with_adata
+        gp_control_id_1 = "CTRL-1"
+        gp_control_id_2 = "CTRL-2"
+        gp_control_id_3 = "CTRL-3"
+
+        # Set up obs with control strategy and multiple IDs
+        validator.adata.obs["genetic_perturbation_id"] = pd.Categorical(
+            [
+                f"{gp_control_id_1} || {gp_control_id_2} || {gp_control_id_3}",
+                f"{gp_control_id_1} || {gp_control_id_2} || {gp_control_id_3}",
+            ],
+            categories=[
+                gp_control_id_1,
+                gp_control_id_2,
+                gp_control_id_3,
+                f"{gp_control_id_1} || {gp_control_id_2} || {gp_control_id_3}",
+            ],
+        )
+        validator.adata.obs["genetic_perturbation_strategy"] = pd.Categorical(
+            ["control", "control"],
+            categories=[
+                "control",
+                "CRISPR activation screen",
+                "CRISPR interference screen",
+                "CRISPR knockout mutant",
+                "CRISPR knockout screen",
+                "no perturbations",
+            ],
+        )
+
+        # Set up uns with genetic_perturbations where some have control role and others don't
+        validator.adata.uns["genetic_perturbations"] = {
+            gp_control_id_1: {
+                "role": "control",  # Correct
+                "protospacer_sequence": "TTTTTTTTTTTTTTTTTTTT",
+                "protospacer_adjacent_motif": "3' NGG",
+            },
+            gp_control_id_2: {
+                "role": "control",  # Correct
+                "protospacer_sequence": "AAAAAAAAAAAAAAAAAAAA",
+                "protospacer_adjacent_motif": "3' NGG",
+            },
+            gp_control_id_3: {
+                "role": "targeting",  # Wrong - should be 'control'
+                "protospacer_sequence": "GGGGGGGGGGGGGGGGGGGG",
+                "protospacer_adjacent_motif": "3' NGG",
+            },
+        }
+
+        validator.validate_adata()
+        # Should fail with error about role mismatch for the ID(s) with wrong role
+        control_role_errors = [err for err in validator.errors if "control" in err.lower() and "role" in err.lower()]
+        assert len(control_role_errors) > 0, f"Expected control role validation error, but got: {validator.errors}"
+        assert any(
+            gp_control_id_3 in err for err in control_role_errors
+        ), f"Error should mention the ID '{gp_control_id_3}' with wrong role, but got: {control_role_errors}"
+
 
 class TestVar:
     """
@@ -2065,18 +2349,84 @@ class TestUns:
     Fail cases in adata.uns
     """
 
-    @pytest.mark.parametrize("reserved_column", schema_def["components"]["uns"]["reserved_columns"])
-    def test_reserved_columns_presence(self, validator_with_adata, reserved_column):
+    @pytest.mark.parametrize("reserved_keys", schema_def["components"]["uns"]["reserved_keys"])
+    def test_reserved_keys_presence(self, validator_with_adata, reserved_keys):
         """
         Reserved columns must NOT be used in uns
         """
         validator = validator_with_adata
-        validator.adata.uns[reserved_column] = "dummy_value"
+        validator.adata.uns[reserved_keys] = "dummy_value"
         validator.validate_adata()
         assert validator.errors == [
-            f"ERROR: Column '{reserved_column}' is a reserved column name "
-            f"of 'uns'. Remove it from h5ad and try again."
+            f"ERROR: Key '{reserved_keys}' is a reserved key name " f"of 'uns'. Remove it from h5ad and try again."
         ]
+
+    @pytest.mark.parametrize(
+        "reserved_keys",
+        ["derived_genomic_regions", "derived_features"],
+    )
+    def test_nested_dict_reserved_keys_presence(self, validator_with_adata, reserved_keys):
+        """
+        Reserved columns must NOT be used in nested dictionaries (pattern-matched keys).
+        Tests reserved_columns in uns.genetic_perturbations.<guide_id> dictionaries.
+        """
+        validator = validator_with_adata
+        # Set up genetic_perturbations with a guide that has a reserved column
+        # Need to match the length of the obs index (which has 2 rows)
+        validator.adata.obs["genetic_perturbation_id"] = pd.Categorical(["guide1", "guide1"], categories=["guide1"])
+        validator.adata.obs["genetic_perturbation_strategy"] = pd.Categorical(
+            ["CRISPR knockout screen", "CRISPR knockout screen"],
+            categories=["CRISPR knockout screen"],
+        )
+        validator.adata.uns["genetic_perturbations"] = {
+            "guide1": {
+                "role": "targeting",
+                "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+                "protospacer_adjacent_motif": "3' NGG",
+                reserved_keys: ["test_value"],  # This should trigger an error
+            }
+        }
+        validator.validate_adata()
+        # Check that the error mentions the reserved column
+        assert any(
+            f"Key '{reserved_keys}' is a reserved key name" in error for error in validator.errors
+        ), f"Expected error about reserved key '{reserved_keys}', but got: {validator.errors}"
+        # Verify the error mentions the correct path
+        assert any(
+            "genetic_perturbations" in error or "uns" in error for error in validator.errors
+        ), f"Expected error to mention the path, but got: {validator.errors}"
+
+    def test_nested_dict_reserved_columns_multiple_guides(self, validator_with_adata):
+        """
+        Test that reserved_columns are checked for all pattern-matched keys in nested dictionaries.
+        """
+        validator = validator_with_adata
+        # Set up genetic_perturbations with multiple guides, one with reserved column
+        validator.adata.obs["genetic_perturbation_id"] = pd.Categorical(
+            ["guide1", "guide2"], categories=["guide1", "guide2"]
+        )
+        validator.adata.obs["genetic_perturbation_strategy"] = pd.Categorical(
+            ["CRISPR knockout screen", "CRISPR knockout screen"],
+            categories=["CRISPR knockout screen"],
+        )
+        validator.adata.uns["genetic_perturbations"] = {
+            "guide1": {
+                "role": "targeting",
+                "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+                "protospacer_adjacent_motif": "3' NGG",
+            },
+            "guide2": {
+                "role": "targeting",
+                "protospacer_sequence": "ACGTACGTACGTACGTACGT",
+                "protospacer_adjacent_motif": "3' NGG",
+                "derived_genomic_regions": ["16:75647615-75647633(-)"],  # Reserved column
+            },
+        }
+        validator.validate_adata()
+        # Should have error about derived_genomic_regions
+        assert any(
+            "derived_genomic_regions" in error and "reserved key name" in error for error in validator.errors
+        ), f"Expected error about reserved key 'derived_genomic_regions', but got: {validator.errors}"
 
     def test_required_fields_title(self, validator_with_adata):
         """
