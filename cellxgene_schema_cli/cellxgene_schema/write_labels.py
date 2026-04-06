@@ -21,13 +21,15 @@ class AnnDataLabelAppender:
     to adata.obs and adata.var respectively as indicated in the schema definition
     """
 
-    def __init__(self, adata: anndata.AnnData):
+    def __init__(self, adata: anndata.AnnData, pre_analysis: bool = False):
         """
         From a list of ids and defined constraints, creates a mapping dictionary {id: label, ...}
 
         :param str file_name: Path to h5ad file
+        :param bool pre_analysis: Whether the dataset is pre-analysis
         """
         self.adata = adata
+        self.pre_analysis = pre_analysis
         self.schema_version = schema.get_current_schema_version()
         self.schema_def = schema.get_schema_definition()
         self.errors = []
@@ -410,6 +412,7 @@ class AnnDataLabelAppender:
 
         self.adata.uns["schema_version"] = self.schema_version
         self.adata.uns["schema_reference"] = self._build_schema_reference_url(self.schema_version)
+        self.adata.uns["is_pre_analysis"] = self.pre_analysis
         self.adata.obs["observation_joinid"] = get_hash_digest_column(self.adata.obs)
         logger.info(f"Labels have been added. Writing to {add_labels_file}")
         # Write file

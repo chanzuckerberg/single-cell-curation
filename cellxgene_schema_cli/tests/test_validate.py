@@ -317,6 +317,20 @@ class TestAddLabelFunctions:
             assert label_writer.write_labels(labels_path)
         assert not label_writer.errors
 
+    def test__write__is_pre_analysis_defaults_false(self, valid_adata):
+        writer = AnnDataLabelAppender(valid_adata)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            labels_path = "/".join([temp_dir, "labels.h5ad"])
+            writer.write_labels(labels_path)
+        assert writer.adata.uns["is_pre_analysis"] is False
+
+    def test__write__is_pre_analysis_true_when_flag_set(self, valid_adata):
+        writer = AnnDataLabelAppender(valid_adata, pre_analysis=True)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            labels_path = "/".join([temp_dir, "labels.h5ad"])
+            writer.write_labels(labels_path)
+        assert writer.adata.uns["is_pre_analysis"] is True
+
     def test__write__Fail(self, label_writer):
         label_writer.adata.write_h5ad = mock.Mock(side_effect=Exception("Test Fail"))
         with tempfile.TemporaryDirectory() as temp_dir:
