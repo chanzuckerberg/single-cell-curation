@@ -381,6 +381,10 @@
           "type": "object",
           "description": "For dictionary fields, specification for key names and their nested field specifications",
           "additionalProperties": {"$ref": "#/$defs/field_specification"}
+        },
+        "forbidden_when_all_na": {
+          "type": "boolean",
+          "description": "If true, the column must not be present when all values are 'na'"
         }
       },
       "additionalProperties": false
@@ -406,6 +410,14 @@
           "type": "array",
           "description": "Special string values that are allowed (e.g., 'unknown', 'na')",
           "items": {"type": "string"}
+        },
+        "stripped_prefixes": {
+          "type": "object",
+          "description": "Per-ontology label prefixes to strip before ontology validation. The prefix is retained in error messages and prepended to labels (e.g. {\"UniProt\": [\"anti-\"]} strips 'anti-' from 'anti-uniprot:X' before validating against UniProt).",
+          "additionalProperties": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
         },
         "multi_term": {
           "type": "object",

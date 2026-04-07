@@ -203,6 +203,8 @@ components:
       - organism_ontology_term_id
     reserved_columns:
       - observation_joinid
+      - experimental_condition
+      - perturbation_types
     columns:
       cell_type_ontology_term_id:
         error_message_suffix: >-
@@ -823,6 +825,68 @@ components:
           The value MUST be either 'na' or one or more genetic perturbation identifiers in ascending lexical order
           separated by the delimiter ` || ` with no duplication of identifiers. Each identifier MUST match a key in
           uns['genetic_perturbations'].
+      experimental_condition_ontology_term_id:
+        type: curie
+        required: False
+        forbidden_when_all_na: True
+        curie_constraints:
+          ontologies:
+            - CHEBI
+            - EFO
+            - UniProt
+          stripped_prefixes:
+            UniProt:
+              - "anti-"
+          exceptions:
+            - na
+          forbidden:
+            terms:
+              - CHEBI:23367
+              - CHEBI:24431
+              - CHEBI:24835
+              - CHEBI:24867
+              - CHEBI:24870
+              - CHEBI:25212
+              - CHEBI:25367
+              - CHEBI:25699
+              - CHEBI:33238
+              - CHEBI:33259
+              - CHEBI:33497
+              - CHEBI:33595
+              - CHEBI:33674
+              - CHEBI:33675
+              - CHEBI:36342
+              - CHEBI:36357
+              - CHEBI:36358
+              - CHEBI:36914
+              - CHEBI:37577
+              - CHEBI:50906
+            ancestors:
+              CHEBI:
+                - CHEBI:36342  # subatomic particle and descendants
+                - CHEBI:50906  # role and descendants
+          allowed:
+            terms:
+              EFO:
+                - EFO:0001702  # temperature (exact)
+                - EFO:0002755  # diet (exact match; descendants covered by ancestors below)
+              UniProt:
+                - all
+            ancestors:
+              CHEBI:
+                - CHEBI:24431  # chemical entity and descendants
+              EFO:
+                - EFO:0002755  # diet and descendants
+          multi_term:
+            delimiter: " || "
+            sorted: True
+        add_labels:
+          - type: curie
+            to_column: experimental_condition
+        error_message_suffix: >-
+          The value MUST be "na" or one or more term identifiers in ascending lexical order separated by " || "
+          with no duplication. Allowed: descendants of CHEBI:24431 (excluding listed forbidden CHEBI terms),
+          EFO:0001702 (temperature) or EFO:0002755 (diet) or its descendants, uniprot: terms, anti-uniprot: terms.
       is_primary_data:
         type: bool
       genetic_perturbation_strategy:
