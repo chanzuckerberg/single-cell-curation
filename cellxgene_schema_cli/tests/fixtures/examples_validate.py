@@ -1162,3 +1162,206 @@ adata_gene_perturbations_invalid_obs_without_uns = anndata.AnnData(
     obsm=good_obsm,
     var=good_var,
 )
+
+# -----------------------------------------------------------------#
+# Experimental condition fixtures (schema 7.1.0)
+
+# -------------------------
+# Valid: single CHEBI term (aspirin = chemical perturbation)
+good_obs_ec_chebi = good_obs.copy()
+good_obs_ec_chebi["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["CHEBI:15365", "CHEBI:15365"],
+    categories=["CHEBI:15365"],
+)
+
+adata_ec_valid_chebi = anndata.AnnData(X=X.copy(), obs=good_obs_ec_chebi, uns=good_uns, obsm=good_obsm, var=good_var)
+adata_ec_valid_chebi.raw = adata_ec_valid_chebi.copy()
+adata_ec_valid_chebi.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: anti-uniprot protein term (antibody)
+good_obs_ec_anti_uniprot = good_obs.copy()
+good_obs_ec_anti_uniprot["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["anti-uniprot:Q99467", "anti-uniprot:Q99467"],
+    categories=["anti-uniprot:Q99467"],
+)
+
+adata_ec_valid_anti_uniprot = anndata.AnnData(
+    X=X.copy(), obs=good_obs_ec_anti_uniprot, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_valid_anti_uniprot.raw = adata_ec_valid_anti_uniprot.copy()
+adata_ec_valid_anti_uniprot.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: uniprot protein term (no anti- prefix)
+good_obs_ec_uniprot = good_obs.copy()
+good_obs_ec_uniprot["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["uniprot:Q99467", "uniprot:Q99467"],
+    categories=["uniprot:Q99467"],
+)
+
+adata_ec_valid_uniprot = anndata.AnnData(
+    X=X.copy(), obs=good_obs_ec_uniprot, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_valid_uniprot.raw = adata_ec_valid_uniprot.copy()
+adata_ec_valid_uniprot.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: EFO:0001702 temperature term
+good_obs_ec_temperature = good_obs.copy()
+good_obs_ec_temperature["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["EFO:0001702", "EFO:0001702"],
+    categories=["EFO:0001702"],
+)
+
+adata_ec_valid_temperature = anndata.AnnData(
+    X=X.copy(), obs=good_obs_ec_temperature, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_valid_temperature.raw = adata_ec_valid_temperature.copy()
+adata_ec_valid_temperature.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: EFO:0002755 diet root term
+good_obs_ec_diet_root = good_obs.copy()
+good_obs_ec_diet_root["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["EFO:0002755", "EFO:0002755"],
+    categories=["EFO:0002755"],
+)
+
+adata_ec_valid_diet_root = anndata.AnnData(
+    X=X.copy(), obs=good_obs_ec_diet_root, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_valid_diet_root.raw = adata_ec_valid_diet_root.copy()
+adata_ec_valid_diet_root.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: EFO:0002757 (a descendant of diet EFO:0002755)
+good_obs_ec_diet_desc = good_obs.copy()
+good_obs_ec_diet_desc["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["EFO:0002757", "EFO:0002757"],
+    categories=["EFO:0002757"],
+)
+
+adata_ec_valid_diet_descendant = anndata.AnnData(
+    X=X.copy(), obs=good_obs_ec_diet_desc, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_valid_diet_descendant.raw = adata_ec_valid_diet_descendant.copy()
+adata_ec_valid_diet_descendant.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: multi-term sorted " || " (CHEBI + EFO:0002755)
+good_obs_ec_multi = good_obs.copy()
+good_obs_ec_multi["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["CHEBI:15365 || EFO:0002755", "CHEBI:15365 || EFO:0002755"],
+    categories=["CHEBI:15365 || EFO:0002755"],
+)
+
+adata_ec_valid_multi = anndata.AnnData(X=X.copy(), obs=good_obs_ec_multi, uns=good_uns, obsm=good_obsm, var=good_var)
+adata_ec_valid_multi.raw = adata_ec_valid_multi.copy()
+adata_ec_valid_multi.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: absent (column not present) — field is not required
+adata_ec_absent = adata  # reuse base adata without the column
+
+# -------------------------
+# Valid: all "na" values — column absent is preferred but this must fail
+# (forbidden_when_all_na)
+bad_obs_ec_all_na = good_obs.copy()
+bad_obs_ec_all_na["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["na", "na"],
+    categories=["na"],
+)
+
+adata_ec_invalid_all_na = anndata.AnnData(X=X.copy(), obs=bad_obs_ec_all_na, uns=good_uns, obsm=good_obsm, var=good_var)
+adata_ec_invalid_all_na.raw = adata_ec_invalid_all_na.copy()
+adata_ec_invalid_all_na.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Invalid: forbidden CHEBI term (CHEBI:23367 = molecular entity)
+bad_obs_ec_forbidden_chebi = good_obs.copy()
+bad_obs_ec_forbidden_chebi["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["CHEBI:23367", "CHEBI:23367"],
+    categories=["CHEBI:23367"],
+)
+
+adata_ec_invalid_forbidden_chebi = anndata.AnnData(
+    X=X.copy(), obs=bad_obs_ec_forbidden_chebi, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_invalid_forbidden_chebi.raw = adata_ec_invalid_forbidden_chebi.copy()
+adata_ec_invalid_forbidden_chebi.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Invalid: EFO term that is not allowed (not EFO:0001702 / not a diet descendant)
+bad_obs_ec_efo_not_allowed = good_obs.copy()
+bad_obs_ec_efo_not_allowed["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["EFO:0009899", "EFO:0009899"],  # 10x 3' v2 assay — valid EFO but not allowed here
+    categories=["EFO:0009899"],
+)
+
+adata_ec_invalid_efo_not_allowed = anndata.AnnData(
+    X=X.copy(), obs=bad_obs_ec_efo_not_allowed, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_invalid_efo_not_allowed.raw = adata_ec_invalid_efo_not_allowed.copy()
+adata_ec_invalid_efo_not_allowed.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Invalid: multi-term unsorted
+bad_obs_ec_unsorted = good_obs.copy()
+bad_obs_ec_unsorted["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["EFO:0002755 || CHEBI:15365", "EFO:0002755 || CHEBI:15365"],  # unsorted (should be CHEBI first)
+    categories=["EFO:0002755 || CHEBI:15365"],
+)
+
+adata_ec_invalid_multi_unsorted = anndata.AnnData(
+    X=X.copy(), obs=bad_obs_ec_unsorted, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_invalid_multi_unsorted.raw = adata_ec_invalid_multi_unsorted.copy()
+adata_ec_invalid_multi_unsorted.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Invalid: reserved column 'experimental_condition' manually set by curator
+bad_obs_ec_reserved = good_obs.copy()
+bad_obs_ec_reserved["experimental_condition"] = pd.Categorical(
+    ["some label", "some label"],
+    categories=["some label"],
+)
+
+adata_ec_invalid_reserved_label_column = anndata.AnnData(
+    X=X.copy(), obs=bad_obs_ec_reserved, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_invalid_reserved_label_column.raw = adata_ec_invalid_reserved_label_column.copy()
+adata_ec_invalid_reserved_label_column.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Invalid: reserved column 'perturbation_types' manually set by curator
+bad_obs_perturbation_types_reserved = good_obs.copy()
+bad_obs_perturbation_types_reserved["perturbation_types"] = pd.Categorical(
+    ["chemical", "chemical"],
+    categories=["chemical"],
+)
+
+adata_ec_invalid_reserved_perturbation_types = anndata.AnnData(
+    X=X.copy(), obs=bad_obs_perturbation_types_reserved, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_invalid_reserved_perturbation_types.raw = adata_ec_invalid_reserved_perturbation_types.copy()
+adata_ec_invalid_reserved_perturbation_types.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: experimental_condition_ontology_term_id + genetic_perturbation_id together
+# (used for perturbation_types derivation: chemical + genetic)
+good_obs_ec_and_gp = good_obs_gene_perturbations.copy()
+good_obs_ec_and_gp["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["CHEBI:15365", "CHEBI:15365"],
+    categories=["CHEBI:15365"],
+)
+
+adata_ec_valid_with_gp = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_ec_and_gp,
+    uns=good_uns_with_gene_perturbations_curator,
+    obsm=good_obsm,
+    var=good_var,
+)
+adata_ec_valid_with_gp.raw = adata_ec_valid_with_gp.copy()
+adata_ec_valid_with_gp.raw.var.drop("feature_is_filtered", axis=1, inplace=True)

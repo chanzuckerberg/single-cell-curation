@@ -98,21 +98,41 @@ class AnnDataLabelAppender:
 
         return flatten
 
-    def _get_ontology_term_label(self, term_id: str, allowed_ontologies: List[str]) -> str:
+    def _get_ontology_term_label(
+        self, term_id: str, allowed_ontologies: List[str], stripped_prefixes: Optional[dict] = None
+    ) -> str:
         """
         Fetches human-readable label corresponding to a single ontology term_id, if it is a term_id defined in one of the
          allowed_ontologies. Raises ValueError if no ontology term label is found (should've triggered validation
          error if term_id is not valid).
 
+        When stripped_prefixes is provided, terms matching a configured prefix (e.g. "anti-" for UniProt) are
+        stripped before lookup and the prefix is prepended to the returned label
+        (e.g. "anti-uniprot:Q99467" → "anti-" + label("uniprot:Q99467") = "anti-CD180_HUMAN").
+
         :param term_id: str single ontology term ID
         :param allowed_ontologies: List[str] list of ontologies to check for term_id label in
+        :param stripped_prefixes: Optional[dict] prefix stripping rules from curie_constraints,
+            e.g. {"UniProt": ["anti-"]}
         :return: str term label
         """
+        label_prefix = ""
+        term_to_look_up = term_id
+        if stripped_prefixes:
+            for _, prefixes in stripped_prefixes.items():
+                for prefix in prefixes:
+                    if term_id.startswith(prefix):
+                        label_prefix = prefix
+                        term_to_look_up = term_id[len(prefix) :]
+                        break
+                if label_prefix:
+                    break
+
         for ontology_name in allowed_ontologies:
             if ontology_name == "NA":
                 continue
-            elif ONTOLOGY_PARSER.is_valid_term_id(term_id, ontology_name):
-                return ONTOLOGY_PARSER.get_term_label(term_id)
+            elif ONTOLOGY_PARSER.is_valid_term_id(term_to_look_up, ontology_name):
+                return label_prefix + ONTOLOGY_PARSER.get_term_label(term_to_look_up)
         raise ValueError(f"Add labels error: Unable to get label for '{term_id}'")
 
     def _get_mapping_dict_curie(self, ids: List[str], curie_constraints: dict) -> Dict[str, str]:
@@ -131,6 +151,7 @@ class AnnDataLabelAppender:
         allowed_ontologies = curie_constraints["ontologies"]
         multi_term_def = curie_constraints.get("multi_term")
         delimiter = None if multi_term_def is None else multi_term_def["delimiter"]
+        stripped_prefixes = curie_constraints.get("stripped_prefixes")
 
         # Map term_ids to their human-readable ontology labels
         for term_id in ids:
@@ -140,10 +161,13 @@ class AnnDataLabelAppender:
                 continue
 
             if delimiter is not None:
-                labels = [self._get_ontology_term_label(term, allowed_ontologies) for term in term_id.split(delimiter)]
+                labels = [
+                    self._get_ontology_term_label(term, allowed_ontologies, stripped_prefixes)
+                    for term in term_id.split(delimiter)
+                ]
                 mapping_dict[term_id] = delimiter.join(labels)
             else:
-                mapping_dict[term_id] = self._get_ontology_term_label(term_id, allowed_ontologies)
+                mapping_dict[term_id] = self._get_ontology_term_label(term_id, allowed_ontologies, stripped_prefixes)
 
         return mapping_dict
 
@@ -333,8 +357,12 @@ class AnnDataLabelAppender:
 
             # Doing it for columns
             if "columns" in self.schema_def["components"][component]:
+                component_df = getattr_anndata(self.adata, component)
                 for column, column_def in self.schema_def["components"][component]["columns"].items():
                     if "add_labels" in column_def:
+                        # Skip optional columns that are not present in the dataframe
+                        if not column_def.get("required", True) and column not in component_df.columns:
+                            continue
                         self._add_column(component, column, column_def)
 
             # Doing it for index
@@ -363,6 +391,72 @@ class AnnDataLabelAppender:
             col = df[column]
             if col.dtype == "category":
                 df[column] = col.cat.remove_unused_categories()
+
+    def _get_perturbation_types_for_obs(self, ec_val: Optional[str], gp_val: Optional[str]) -> str:
+        """
+        Derive the perturbation_types value for a single observation.
+
+        :param ec_val: value of experimental_condition_ontology_term_id, or None if absent
+        :param gp_val: value of genetic_perturbation_id, or None if absent
+        :return: "no perturbations" or sorted " || "-delimited perturbation type set
+        """
+        DIET_ONTO_TERM = "EFO:0002755"
+        TEMPERATURE_ONTO_TERM = "EFO:0001702"
+
+        ec_is_na = ec_val is None or ec_val == "na"
+        gp_is_na = gp_val is None or gp_val == "na"
+
+        if ec_is_na and gp_is_na:
+            return "no perturbations"
+
+        types: set = set()
+        delimiter = " || "
+
+        if not ec_is_na:
+            for term in ec_val.split(delimiter):
+                if term.startswith("CHEBI:"):
+                    types.add("chemical")
+                elif term.startswith("uniprot:") or term.startswith("anti-uniprot:"):
+                    types.add("protein")
+                elif term == TEMPERATURE_ONTO_TERM:
+                    types.add("temperature")
+                elif term.startswith("EFO:"):
+                    ancestors = ONTOLOGY_PARSER.get_term_ancestors(term, include_self=True)
+                    if DIET_ONTO_TERM in ancestors:
+                        types.add("diet")
+
+        if not gp_is_na:
+            types.add("genetic")
+
+        return delimiter.join(sorted(types)) if types else "no perturbations"
+
+    def _annotate_perturbation_types(self):
+        """
+        Add obs['perturbation_types'] when experimental_condition_ontology_term_id or
+        genetic_perturbation_id is present in obs.
+
+        perturbation_types is a cross-column derivation (depends on both
+        experimental_condition_ontology_term_id and genetic_perturbation_id) that cannot be expressed
+        as a single-source add_labels entry, so it is handled here explicitly.
+        """
+        obs = self.adata.obs
+        has_ec = "experimental_condition_ontology_term_id" in obs.columns
+        has_gp = "genetic_perturbation_id" in obs.columns
+
+        if not has_ec and not has_gp:
+            return
+
+        ec_vals = obs["experimental_condition_ontology_term_id"].astype(str) if has_ec else None
+        gp_vals = obs["genetic_perturbation_id"].astype(str) if has_gp else None
+
+        # Only compute once per unique (ec_val, gp_val) pair for efficiency
+        iter_ec = ec_vals if ec_vals is not None else (["na"] * len(obs))
+        iter_gp = gp_vals if gp_vals is not None else (["na"] * len(obs))
+        unique_combos = set(zip(iter_ec, iter_gp))
+        combo_to_type = {(ec, gp): self._get_perturbation_types_for_obs(ec, gp) for ec, gp in unique_combos}
+
+        pt_values = [combo_to_type[(ec, gp)] for ec, gp in zip(iter_ec, iter_gp)]
+        obs["perturbation_types"] = pd.Categorical(pt_values)
 
     def _annotate_genetic_perturbations(self):
         """
@@ -401,6 +495,9 @@ class AnnDataLabelAppender:
 
         # Add columns to dataset dataframes based on values in other columns, as defined in schema definition yaml
         self._add_labels()
+
+        # Annotate perturbation_types (cross-column derivation from ec and gp fields)
+        self._annotate_perturbation_types()
 
         # Annotate genetic perturbations if present
         self._annotate_genetic_perturbations()

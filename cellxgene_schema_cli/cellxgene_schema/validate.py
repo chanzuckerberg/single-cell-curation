@@ -263,6 +263,9 @@ class Validator:
 
         :returns bool
         """
+        # Terms not recognized by the OntologyParser (e.g. anti-uniprot: prefix) cannot have ancestors checked
+        if not ONTOLOGY_PARSER.is_valid_term_id(term_id):
+            return False
         for ontology_name in forbidden_def:
             for ancestor in forbidden_def[ontology_name]:
                 if ancestor in ONTOLOGY_PARSER.get_term_ancestors(term_id):
@@ -305,19 +308,26 @@ class Validator:
 
         return any(checks)
 
-    def _validate_curie_ontology(self, term_id: str, column_name: str, allowed_ontologies: List[str]) -> bool:
+    def _validate_curie_ontology(
+        self,
+        term_id: str,
+        column_name: str,
+        allowed_ontologies: List[str],
+        report_term_id: Optional[str] = None,
+    ) -> bool:
         """
         Validate a single curie term id belongs to specified ontologies. If it does belong to an allowed ontology
         verifies that it is not deprecated (obsolete).
         If there are any errors, it adds them to self.errors
 
-        :param str term_id: the curie term id to validate
+        :param str term_id: the curie term id to validate (may be a normalized form, e.g. with prefix stripped)
         :param str column_name: original column name in adata where the term_id comes from (used for error messages)
         :param List[str] allowed_ontologies: allowed ontologies
+        :param Optional[str] report_term_id: term id to use in error messages (defaults to term_id)
 
         :rtype bool
         """
-
+        report_id = report_term_id if report_term_id is not None else term_id
         checks = []
 
         for ontology_name in allowed_ontologies:
@@ -328,12 +338,12 @@ class Validator:
             checks.append(is_valid)
 
             if is_valid and ONTOLOGY_PARSER.is_term_deprecated(term_id):
-                self.errors.append(f"'{term_id}' in '{column_name}' is a deprecated term id of '{ontology_name}'.")
+                self.errors.append(f"'{report_id}' in '{column_name}' is a deprecated term id of '{ontology_name}'.")
                 return False
 
         if sum(checks) == 0:
             self.errors.append(
-                f"'{term_id}' in '{column_name}' is not a valid ontology term id of '{', '.join(allowed_ontologies)}'."
+                f"'{report_id}' in '{column_name}' is not a valid ontology term id of '{', '.join(allowed_ontologies)}'."
             )
             return False
         return True
@@ -399,23 +409,47 @@ class Validator:
 
         :rtype None
         """
-        # Check if term_id is forbidden by schema definition. Sometimes, these are also invalid ontology
+        # Apply stripped_prefixes: some fields allow terms with a label prefix (e.g. "anti-uniprot:")
+        # whose underlying ontology term (e.g. "uniprot:Q99467") must be validated. The prefix is stripped
+        # before ontology checks but retained in user-facing error messages.
+        #
+        # stripped_prefixes format: {ontology_name: [prefix, ...], ...}
+        #   For "anti-uniprot:Q99467" with {UniProt: ["anti-"]}:
+        #     term_id           = "anti-uniprot:Q99467"  (retained for error messages)
+        #     ontology_term_id  = "uniprot:Q99467"        (used for all OntologyParser lookups)
+        #   For "CHEBI:16412" (no matching prefix):
+        #     term_id = ontology_term_id = "CHEBI:16412"  (unchanged)
+        ontology_term_id = term_id
+        stripped_prefixes = curie_constraints.get("stripped_prefixes", {})
+        for _, prefixes in stripped_prefixes.items():
+            for prefix in prefixes:
+                if term_id.startswith(prefix):
+                    ontology_term_id = term_id[len(prefix) :]
+                    break
+            if ontology_term_id != term_id:
+                break
+
+        # Check if ontology_term_id is forbidden by schema definition. Sometimes, these are also invalid ontology
         # terms, but it's preferred to report these as "not allowed" terms rather than "invalid ontology terms"
         if "forbidden" in curie_constraints:
             forbidden_terms = curie_constraints["forbidden"].get("terms", [])
-            if term_id in forbidden_terms:
+            if ontology_term_id in forbidden_terms:
                 self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
                 return
 
         # If the term id does not belong to an allowed ontology, the subsequent checks are redundant
-        if not self._validate_curie_ontology(term_id, column_name, curie_constraints["ontologies"]):
+        if not self._validate_curie_ontology(
+            ontology_term_id, column_name, curie_constraints["ontologies"], report_term_id=term_id
+        ):
             return
 
         # Must be valid ontology term to validate against forbidden curie ancestors
         if (
             "forbidden" in curie_constraints
             and "ancestors" in curie_constraints["forbidden"]
-            and self._has_forbidden_curie_ancestor(term_id, column_name, curie_constraints["forbidden"]["ancestors"])
+            and self._has_forbidden_curie_ancestor(
+                ontology_term_id, column_name, curie_constraints["forbidden"]["ancestors"]
+            )
         ):
             self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
             return
@@ -425,15 +459,15 @@ class Validator:
             is_allowed = False
             if "terms" in curie_constraints["allowed"]:
                 for ontology_name, allow_list in curie_constraints["allowed"]["terms"].items():
-                    if ONTOLOGY_PARSER.is_valid_term_id(term_id, ontology_name) and (
-                        allow_list == ["all"] or term_id in set(allow_list)
+                    if ONTOLOGY_PARSER.is_valid_term_id(ontology_term_id, ontology_name) and (
+                        allow_list == ["all"] or ontology_term_id in set(allow_list)
                     ):
                         is_allowed = True
                         # break
             if (
                 not is_allowed
                 and "ancestors" in curie_constraints["allowed"]
-                and self._validate_curie_ancestors(term_id, curie_constraints["allowed"]["ancestors"])
+                and self._validate_curie_ancestors(ontology_term_id, curie_constraints["allowed"]["ancestors"])
             ):
                 is_allowed = True
 
@@ -701,6 +735,13 @@ class Validator:
 
         if column_def.get("unique") and column.nunique() != len(column):
             self.errors.append(f"Column '{column_name}' in dataframe '{df_name}' is not unique.")
+
+        # If forbidden_when_all_na is set, the column must not exist when every row value is "na".
+        if column_def.get("forbidden_when_all_na") and (column == "na").all():
+            self.errors.append(
+                f"Column '{column_name}' in dataframe '{df_name}' MUST NOT be present when all "
+                f"values are 'na'. Remove it from h5ad and try again."
+            )
 
         if column_def.get("type") == "bool" and column.dtype != bool:
             self.errors.append(
@@ -1271,6 +1312,9 @@ class Validator:
                     # Validate columns that are only required in certain circumstances
                     try:
                         column_def = self._get_column_def(df_name, column_name)
+                        # If the column is explicitly marked as not required, skip the missing-column error
+                        if not column_def.get("required", True):
+                            continue
                         deps = column_def.get("dependencies")
                         if deps:
                             dep_defs = deps if isinstance(deps, list) else [deps]
@@ -1933,11 +1977,17 @@ class Validator:
 
         :rtype none
         """
+        # Columns already listed in reserved_columns are handled by the reserved_columns check;
+        # skip them here to avoid duplicate error messages.
+        component_reserved = set(self._get_component_def(component).get("reserved_columns", []))
 
         for label_def in add_labels_def:
             reserved_name = label_def.get("to_column")
             if reserved_name is None:
                 reserved_name = label_def.get("to_key")
+
+            if reserved_name in component_reserved:
+                continue
 
             if reserved_name in getattr_anndata(self.adata, component):
                 self.errors.append(
