@@ -1593,19 +1593,17 @@ class Validator:
             )
             return
 
-        # Load delimiter and forbidden values from schema
+        # Load delimiter from schema
         gp_id_col_def = self._get_column_def("obs", "genetic_perturbation_id")
         delimiter = gp_id_col_def["multi_term"]["delimiter"]
-        forbidden_values = gp_id_col_def.get("forbidden", [])
 
         for _, row in obs.iterrows():
             gid = row.get("genetic_perturbation_id")
             strat = row.get("genetic_perturbation_strategy")
             gid_str = str(gid)
 
-            # Check if value is forbidden
-            if gid_str in forbidden_values:
-                self.errors.append(f"obs['genetic_perturbation_id'] contains '{gid_str}' which is not allowed.")
+            # 'na' is valid and means no perturbation for this cell; skip multi-term checks
+            if gid_str == "na":
                 continue
 
             # Multi-id delimiter from schema
@@ -1624,11 +1622,10 @@ class Validator:
                         f"'{p}' in 'genetic_perturbation_id' does not match any key in uns['genetic_perturbations']."
                     )
 
-            # Strategy semantics: 'no perturbations' is incompatible with real ids
+            # Strategy semantics: 'no perturbations' is only valid when gid is 'na'
             if strat == "no perturbations":
-                forbidden_str = f"'{forbidden_values[0]}'" if forbidden_values else "'na'"
                 self.errors.append(
-                    f"When obs['genetic_perturbation_id'] is not {forbidden_str}, 'genetic_perturbation_strategy' cannot be 'no perturbations'."
+                    "When obs['genetic_perturbation_id'] is not 'na', 'genetic_perturbation_strategy' cannot be 'no perturbations'."
                 )
 
             # If observation strategy is control, all referenced uns entries must have role 'control'
