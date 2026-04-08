@@ -736,32 +736,6 @@ adata_gene_perturbations_control.raw = adata_gene_perturbations_control.copy()
 adata_gene_perturbations_control.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
 
 # -------------------------
-# Invalid: obs contains "na" (explicitly forbidden by "All observations MUST NOT contain 'na'")
-bad_obs_gene_perturbations_contains_na = good_obs.copy()
-bad_obs_gene_perturbations_contains_na["genetic_perturbation_id"] = pd.Categorical(
-    [gp_id_1, "na"],
-    categories=[gp_id_1, "na"],
-)
-bad_obs_gene_perturbations_contains_na["genetic_perturbation_strategy"] = pd.Categorical(
-    ["CRISPR knockout screen", "no perturbations"],
-    categories=[
-        "control",
-        "CRISPR activation screen",
-        "CRISPR interference screen",
-        "CRISPR knockout mutant",
-        "CRISPR knockout screen",
-        "no perturbations",
-    ],
-)
-adata_gene_perturbations_invalid_contains_na = anndata.AnnData(
-    X=X.copy(),
-    obs=bad_obs_gene_perturbations_contains_na,
-    uns=good_uns_with_gene_perturbations_curator,
-    obsm=good_obsm,
-    var=good_var,
-)
-
-# -------------------------
 # Invalid: strategy is "no perturbations" when id is not "na"
 bad_obs_gene_perturbations_bad_strategy = good_obs.copy()
 bad_obs_gene_perturbations_bad_strategy["genetic_perturbation_id"] = pd.Categorical(

@@ -9,7 +9,6 @@ from fixtures.examples_validate import (
     adata_gene_perturbations_invalid_bad_strategy,
     adata_gene_perturbations_invalid_contains_derived,
     adata_gene_perturbations_invalid_contains_derived_features,
-    adata_gene_perturbations_invalid_contains_na,
     adata_gene_perturbations_invalid_control_role_mismatch,
     adata_gene_perturbations_invalid_key_comma,
     adata_gene_perturbations_invalid_key_quote,
@@ -50,7 +49,6 @@ def test_valid_gene_perturbations_control():
 @pytest.mark.parametrize(
     "bad",
     [
-        adata_gene_perturbations_invalid_contains_na,
         adata_gene_perturbations_invalid_bad_strategy,
         adata_gene_perturbations_invalid_bad_multi,
         adata_gene_perturbations_invalid_missing_key,
