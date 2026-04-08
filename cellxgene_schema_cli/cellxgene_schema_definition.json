@@ -377,6 +377,10 @@
           "type": "array",
           "items": { "type": "string" }
         },
+        "no_additional_keys": {
+          "type": "boolean",
+          "description": "If true, keys beyond those declared in 'keys', 'reserved_keys', and matching 'key_pattern' are forbidden"
+        },
         "keys": {
           "type": "object",
           "description": "For dictionary fields, specification for key names and their nested field specifications",
