@@ -62,7 +62,7 @@ def validator_with_minimal_adata():
 
 @pytest.fixture
 def label_writer(valid_adata):
-    return AnnDataLabelAppender(adata_valid)
+    return AnnDataLabelAppender(valid_adata)
 
 
 @pytest.fixture
@@ -330,6 +330,22 @@ class TestAddLabelFunctions:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
             writer.write_labels(labels_path)
         assert writer.adata.uns["is_pre_analysis"] is True
+
+    def test__write__pre_analysis_adata_skips_forbidden_fields(self, valid_pre_analysis_adata):
+        """
+        write_labels with a pre-analysis-shaped adata (no cell_type_ontology_term_id,
+        no obsm, no uns['default_embedding']) must not crash and must not add the
+        cell_type label column.
+        """
+        writer = AnnDataLabelAppender(valid_pre_analysis_adata, pre_analysis=True)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            labels_path = "/".join([temp_dir, "labels.h5ad"])
+            result = writer.write_labels(labels_path)
+        assert result
+        assert not writer.errors
+        assert writer.adata.uns["is_pre_analysis"] is True
+        assert "cell_type_ontology_term_id" not in writer.adata.obs.columns
+        assert "cell_type" not in writer.adata.obs.columns
 
     def test__write__Fail(self, label_writer):
         label_writer.adata.write_h5ad = mock.Mock(side_effect=Exception("Test Fail"))
