@@ -350,18 +350,29 @@ class AnnDataLabelAppender:
         """
         Add columns to dataset dataframes based on values in other columns, as defined in schema definition yaml.
         """
+        pre_analysis_constraints = self.schema_def.get("pre_analysis", {}) if self.pre_analysis else {}
+
         for component in ["obs", "var", "raw.var"]:
             # If the component does not exist, skip (this is for raw.var)
             if getattr_anndata(self.adata, component) is None:
                 continue
 
+            # Skip components not allowed in pre-analysis mode (e.g. obsm)
+            comp_pa = pre_analysis_constraints.get(component, {})
+            if not comp_pa.get("allowed", True):
+                continue
+
             # Doing it for columns
             if "columns" in self.schema_def["components"][component]:
                 component_df = getattr_anndata(self.adata, component)
+                pa_forbidden_keys = {k for k, v in comp_pa.get("keys", {}).items() if not v.get("allowed", True)}
                 for column, column_def in self.schema_def["components"][component]["columns"].items():
                     if "add_labels" in column_def:
                         # Skip optional columns that are not present in the dataframe
                         if not column_def.get("required", True) and column not in component_df.columns:
+                            continue
+                        # Skip columns explicitly forbidden in pre-analysis mode
+                        if column in pa_forbidden_keys:
                             continue
                         self._add_column(component, column, column_def)
 
@@ -371,9 +382,15 @@ class AnnDataLabelAppender:
                 self._add_column(component, "index", index_def)
 
         uns_def = self.schema_def["components"]["uns"]
+        uns_pa_forbidden_keys = {
+            k for k, v in pre_analysis_constraints.get("uns", {}).get("keys", {}).items() if not v.get("allowed", True)
+        }
         for key in uns_def["keys"]:
             key_def = uns_def["keys"][key]
             if "add_labels" in key_def:
+                # Skip uns keys explicitly forbidden in pre-analysis mode (e.g. default_embedding)
+                if key in uns_pa_forbidden_keys:
+                    continue
                 label_type = key_def["add_labels"][0]["type"]
                 if label_type == "curie":
                     label_to_write = key_def["add_labels"][0]["to_key"]
