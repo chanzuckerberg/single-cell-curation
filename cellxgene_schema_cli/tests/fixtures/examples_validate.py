@@ -1137,6 +1137,88 @@ adata_gene_perturbations_invalid_obs_without_uns = anndata.AnnData(
     var=good_var,
 )
 
+# -------------------------
+# Invalid: uns['genetic_perturbations'] uses "na" as a perturbation identifier key.
+# The literal string "na" is reserved (means "no perturbation" in obs) and MUST NOT be a key.
+bad_obs_na_key = good_obs.copy()
+bad_obs_na_key["genetic_perturbation_id"] = pd.Categorical(
+    ["na", "na"],
+    categories=["na"],
+)
+bad_obs_na_key["genetic_perturbation_strategy"] = pd.Categorical(
+    ["no perturbations", "no perturbations"],
+    categories=[
+        "control",
+        "CRISPR activation screen",
+        "CRISPR interference screen",
+        "CRISPR knockout mutant",
+        "CRISPR knockout screen",
+        "no perturbations",
+    ],
+)
+bad_uns_na_key = {
+    **good_uns,
+    "genetic_perturbations": {
+        "na": {
+            "role": "targeting",
+            "protospacer_sequence": "CAGAGGGAGGAGAGAACCG",
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_na_key = anndata.AnnData(
+    X=X.copy(),
+    obs=bad_obs_na_key,
+    uns=bad_uns_na_key,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: obs contains genetic_perturbation_strategy but genetic_perturbation_id is absent.
+# genetic_perturbation_strategy MUST NOT be present when genetic_perturbation_id is absent.
+bad_obs_strategy_without_id = good_obs.copy()
+bad_obs_strategy_without_id["genetic_perturbation_strategy"] = pd.Categorical(
+    ["CRISPR knockout screen", "CRISPR knockout screen"],
+    categories=[
+        "control",
+        "CRISPR activation screen",
+        "CRISPR interference screen",
+        "CRISPR knockout mutant",
+        "CRISPR knockout screen",
+        "no perturbations",
+    ],
+)
+adata_gene_perturbations_invalid_strategy_without_id = anndata.AnnData(
+    X=X.copy(),
+    obs=bad_obs_strategy_without_id,  # Has genetic_perturbation_strategy but NO genetic_perturbation_id
+    uns=good_uns,  # Does NOT have genetic_perturbations
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: a perturbation entry contains an unrecognised extra key.
+# Additional key-value pairs MUST NOT be present in genetic_perturbations[id].
+bad_uns_extra_key = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "CAGAGGGAGGAGAGAACCG",
+            "protospacer_adjacent_motif": "3' NGG",
+            "extra_annotation": "not_allowed",  # Unknown extra key
+        }
+    },
+}
+adata_gene_perturbations_invalid_extra_key = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_extra_key,
+    obsm=good_obsm,
+    var=good_var,
+)
+
 # -----------------------------------------------------------------#
 # Experimental condition fixtures (schema 7.1.0)
 

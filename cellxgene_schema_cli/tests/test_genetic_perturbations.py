@@ -10,6 +10,7 @@ from fixtures.examples_validate import (
     adata_gene_perturbations_invalid_contains_derived,
     adata_gene_perturbations_invalid_contains_derived_features,
     adata_gene_perturbations_invalid_control_role_mismatch,
+    adata_gene_perturbations_invalid_extra_key,
     adata_gene_perturbations_invalid_key_comma,
     adata_gene_perturbations_invalid_key_quote,
     adata_gene_perturbations_invalid_key_slash,
@@ -19,12 +20,14 @@ from fixtures.examples_validate import (
     adata_gene_perturbations_invalid_missing_pam,
     adata_gene_perturbations_invalid_missing_protospacer,
     adata_gene_perturbations_invalid_missing_role,
+    adata_gene_perturbations_invalid_na_key,
     adata_gene_perturbations_invalid_obs_without_uns,
     adata_gene_perturbations_invalid_pam_format,
     adata_gene_perturbations_invalid_protospacer_chars,
     adata_gene_perturbations_invalid_protospacer_long,
     adata_gene_perturbations_invalid_protospacer_short,
     adata_gene_perturbations_invalid_role_enum,
+    adata_gene_perturbations_invalid_strategy_without_id,
 )
 
 
@@ -69,6 +72,9 @@ def test_valid_gene_perturbations_control():
         adata_gene_perturbations_invalid_role_enum,
         adata_gene_perturbations_invalid_contains_derived_features,
         adata_gene_perturbations_invalid_obs_without_uns,
+        adata_gene_perturbations_invalid_na_key,
+        adata_gene_perturbations_invalid_strategy_without_id,
+        adata_gene_perturbations_invalid_extra_key,
     ],
 )
 def test_invalid_gene_perturbations(bad):
@@ -85,3 +91,24 @@ def test_invalid_gene_perturbations_missing_obs_columns():
         in error
         for error in errors
     )
+
+
+def test_invalid_gene_perturbations_na_key():
+    """uns['genetic_perturbations'] must not use 'na' as a perturbation identifier key."""
+    success, errors = _validate_adata(adata_gene_perturbations_invalid_na_key)
+    assert not success, f"Expected validation to fail but it succeeded. Errors: {errors}"
+    assert any("'na'" in error and "MUST NOT be present" in error for error in errors)
+
+
+def test_invalid_gene_perturbations_strategy_without_id():
+    """genetic_perturbation_strategy must not be present when genetic_perturbation_id is absent."""
+    success, errors = _validate_adata(adata_gene_perturbations_invalid_strategy_without_id)
+    assert not success, f"Expected validation to fail but it succeeded. Errors: {errors}"
+    assert any("genetic_perturbation_strategy" in error and "not present" in error for error in errors)
+
+
+def test_invalid_gene_perturbations_extra_key():
+    """Unknown extra keys in a genetic_perturbations entry must be rejected."""
+    success, errors = _validate_adata(adata_gene_perturbations_invalid_extra_key)
+    assert not success, f"Expected validation to fail but it succeeded. Errors: {errors}"
+    assert any("extra_annotation" in error and "MUST NOT be present" in error for error in errors)
