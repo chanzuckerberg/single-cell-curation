@@ -62,7 +62,7 @@ def validator_with_minimal_adata():
 
 @pytest.fixture
 def label_writer(valid_adata):
-    return AnnDataLabelAppender(adata_valid)
+    return AnnDataLabelAppender(valid_adata)
 
 
 @pytest.fixture
@@ -334,7 +334,7 @@ class TestAddLabelFunctions:
     def test__write__pre_analysis_adata_skips_forbidden_fields(self, valid_pre_analysis_adata):
         """
         write_labels with a pre-analysis-shaped adata (no cell_type_ontology_term_id,
-        no obsm, no default_embedding) must not crash and must not add the
+        no obsm, no uns['default_embedding']) must not crash and must not add the
         cell_type label column.
         """
         writer = AnnDataLabelAppender(valid_pre_analysis_adata, pre_analysis=True)
