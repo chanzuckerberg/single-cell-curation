@@ -23,7 +23,8 @@ class AnnDataLabelRemover:
     def remove_labels(self):
         """
         Removes specified columns and keys from self.adata based on the schema definition,
-        including handling genetic_perturbations and nested reserved_keys.
+        including handling genetic_perturbations, nested reserved_keys, pre-analysis datasets,
+        perturbation datasets, and experimental condition fields.
         """
         for component_name in ["obs", "var", "raw.var", "uns", "genetic_perturbations"]:
             component = getattr_anndata(self.adata, component_name)
@@ -74,6 +75,14 @@ class AnnDataLabelRemover:
                         # Also check for reserved_keys directly in key_def
                         if "reserved_keys" in key_def:
                             self._remove_reserved(component[key], key_def["reserved_keys"])
+
+        # Remove intended_features from each genetic_perturbation entry if present.
+        # This field is not part of the schema but may exist in legacy datasets.
+        genetic_perturbations = self.adata.uns.get("genetic_perturbations")
+        if genetic_perturbations:
+            for pert_data in genetic_perturbations.values():
+                if isinstance(pert_data, dict) and "intended_features" in pert_data:
+                    del pert_data["intended_features"]
 
     def _remove_reserved(self, component, reserved):
         """

@@ -41,6 +41,7 @@ components:
       - schema_version
       - schema_reference
       - citation
+      - is_pre_analysis
     deprecated_columns:
       - X_normalization
       - default_field
@@ -798,8 +799,7 @@ components:
           # Each identifier MUST match a key in uns['genetic_perturbations']
           multi_term_constraints:
             uns_key: genetic_perturbations.keys()
-        forbidden:
-          - na
+        forbidden_when_all_na: True
         dependencies:
           - # if uns['genetic_perturbations'] is present
             rule:
@@ -819,8 +819,6 @@ components:
                   - NCBITaxon:10090
             type: categorical
             subtype: str
-            forbidden:
-              - na
         error_message_suffix: >-
           The value MUST be either 'na' or one or more genetic perturbation identifiers in ascending lexical order
           separated by the delimiter ` || ` with no duplication of identifiers. Each identifier MUST match a key in
