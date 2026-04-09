@@ -110,6 +110,10 @@ components:
       genetic_perturbations:
         type: dict
         required: False
+        # The literal string "na" is reserved to mean "no perturbation" in obs and MUST NOT be used
+        # as a perturbation identifier key.
+        forbidden_keys:
+          - na
         dependencies:
           - # if obs['genetic_perturbation_id'] is present
             rule:
@@ -123,6 +127,9 @@ components:
           genetic_perturbation_ids:
             key_pattern: '^[^\s/,"'']+$'  # No whitespace, slash, comma, double or single quotes
             type: dict
+            # No keys beyond role/protospacer_sequence/protospacer_adjacent_motif (curator-supplied)
+            # and derived_genomic_regions/derived_features (Discover-reserved) are permitted.
+            no_additional_keys: true
             keys:
               role:
                 type: string
@@ -898,6 +905,10 @@ components:
           - CRISPR knockout mutant
           - CRISPR knockout screen
         dependencies:
+          - # MUST NOT be present when genetic_perturbation_id is absent (schema: "MUST NOT be present otherwise")
+            rule:
+              exclude_obs_key: genetic_perturbation_id
+            type: forbidden
           - # If obs['genetic_perturbation_id'] == 'na' then strategy MUST be 'no perturbations'
             rule:
               column: genetic_perturbation_id

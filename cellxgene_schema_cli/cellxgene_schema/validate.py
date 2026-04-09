@@ -1154,6 +1154,14 @@ class Validator:
                 else:
                     explicit_keys.add(schema_key)
 
+        # Enforce forbidden_keys: specific literal key names that must not appear in this dict.
+        for forbidden_key in dict_def.get("forbidden_keys", []):
+            if forbidden_key in dictionary:
+                self.errors.append(
+                    f"Key '{forbidden_key}' MUST NOT be present in '{dict_name}'. "
+                    f"Remove it from the h5ad and try again."
+                )
+
         for k in dictionary:
             if k not in explicit_keys:
                 # Check if this dictionary key matches any pattern (in schema order)
@@ -1166,8 +1174,8 @@ class Validator:
                 # Validate against pattern definition if matched, otherwise ignore
                 if matched_pattern_key is not None and isinstance(keys_def, dict) and matched_pattern_key in keys_def:
                     _validate(k, dict_name, keys_def[matched_pattern_key])
-            else:  # If no pattern matched and not explicit, ignore the key
-                # Explicit key - validate it
+            else:
+                # k is an explicit key — validate it
                 if isinstance(keys_def, dict) and k in keys_def:
                     _validate(k, dict_name, keys_def[k])
 
@@ -1176,6 +1184,24 @@ class Validator:
             for schema_key in explicit_keys:
                 if schema_key not in dictionary and schema_key in keys_def:
                     _validate(schema_key, dict_name, keys_def[schema_key])
+
+        # Enforce no_additional_keys: every key in the dictionary must be either an explicit schema
+        # key, match a key_pattern, or appear in reserved_keys (reserved keys are already caught
+        # separately as a distinct error, so they are excluded here to avoid double-reporting).
+        if dict_def.get("no_additional_keys"):
+            reserved = set(dict_def.get("reserved_keys", []))
+            extra = set()
+            for k in dictionary:
+                if k in explicit_keys or k in reserved:
+                    continue
+                if any(compiled_pattern.fullmatch(k) for compiled_pattern in key_patterns.values()):
+                    continue
+                extra.add(k)
+            if extra:
+                self.errors.append(
+                    f"'{dict_name}' contains unexpected key(s) {sorted(extra)}. "
+                    f"Additional key-value pairs MUST NOT be present."
+                )
 
     def _validate_dataframe(self, df_name: str):
         """
@@ -1597,10 +1623,15 @@ class Validator:
         gp_id_col_def = self._get_column_def("obs", "genetic_perturbation_id")
         delimiter = gp_id_col_def["multi_term"]["delimiter"]
 
-        for _, row in obs.iterrows():
-            gid = row.get("genetic_perturbation_id")
-            strat = row.get("genetic_perturbation_strategy")
-            gid_str = str(gid)
+        # Operate on unique (gid, strategy) pairs rather than every obs row. Both columns are
+        # categorical, so the deduplicated set is bounded by the number of distinct perturbation
+        # combinations rather than the number of cells. This avoids O(N) iteration and ensures
+        # each validation error is only reported once regardless of how many cells share a value.
+        unique_pairs = obs[["genetic_perturbation_id", "genetic_perturbation_strategy"]].drop_duplicates()
+
+        for _, row in unique_pairs.iterrows():
+            gid_str = str(row["genetic_perturbation_id"])
+            strat = row["genetic_perturbation_strategy"]
 
             # 'na' is valid and means no perturbation for this cell; skip multi-term checks
             if gid_str == "na":
