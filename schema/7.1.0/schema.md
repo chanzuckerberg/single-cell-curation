@@ -1,7 +1,7 @@
 
 # Schema
 
-Contact: brianraymor@chanzuckerberg.com
+Contact: BAevermann@chanzuckerberg.com
 
 Document Status: _Drafting_
 
