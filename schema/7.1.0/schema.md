@@ -1750,7 +1750,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotation</th>
-      <td>CELLxGENE Curator MAY annotate when <code>genetic_perturbations[<i>id</i>]['derived_features']</code> is annotated; otherwise, this key MUST NOT be present.  
+      <td>CELLxGENE Curator MAY annotate.  
     </tr>
     <tr>
       <th>Value</th>
@@ -1775,7 +1775,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotation</th>
-      <td>CELLxGENE Curator MAY annotate.  The key MUST be the <code>gene_id</code> attribute from the <a href="#required-gene-annotations">corresponding gene reference</a> of the <code>organism_ontology_term_id</code>.<br><br> Version numbers MUST be removed from the <code>gene_id</code> if it is prefixed with <code>"ENS"</code> for <i>Ensembl stable identifier</i>. See <a href="https://ensembl.org/Help/Faq?id=488">I have an Ensembl ID, what can I tell about it from the ID?</a> For example, if the <code>gene_id</code> is <code>“ENSG00000186092.7”</code>, then the <code><i>feature_id</i></code> MUST be <code>“ENSG00000186092”</code>.</td>
+      <td>CELLxGENE Discover MUST annotate.  The key MUST be the <code>gene_id</code> attribute from the <a href="#required-gene-annotations">corresponding gene reference</a> of the <code>organism_ontology_term_id</code>.<br><br> Version numbers MUST be removed from the <code>gene_id</code> if it is prefixed with <code>"ENS"</code> for <i>Ensembl stable identifier</i>. See <a href="https://ensembl.org/Help/Faq?id=488">I have an Ensembl ID, what can I tell about it from the ID?</a> For example, if the <code>gene_id</code> is <code>“ENSG00000186092.7”</code>, then the <code><i>feature_id</i></code> MUST be <code>“ENSG00000186092”</code>.</td>
     </tr>
     <tr>
       <th>Value</th>
