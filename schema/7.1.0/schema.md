@@ -1459,7 +1459,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
 
 The value for each `str` key MUST be a  `numpy.ndarray` of shape `(n_obs, m)`, where `n_obs` is the number of rows in `X` and `m >= 1`. 
 
-Otherwise, to display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more** embeddings of at least two-dimensions (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`.<br><br>
+In order to display a dataset in CELLxGENE Explorer, uns['is_pre_analysis'] MUST NOT be True AND Curators MUST annotate one or more embeddings of at least two-dimensions (e.g. tSNE, UMAP, PCA, spatial coordinates) as numpy.ndarrays in obsm.<br><br>
 
 ### spatial
 
