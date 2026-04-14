@@ -76,13 +76,16 @@ class AnnDataLabelRemover:
                         if "reserved_keys" in key_def:
                             self._remove_reserved(component[key], key_def["reserved_keys"])
 
-        # Remove intended_features from each genetic_perturbation entry if present.
-        # This field is not part of the schema but may exist in legacy datasets.
+        # Reset intended_features values in each genetic_perturbation entry.
+        # write_labels populates each value with the feature name; remove_labels resets them
+        # to empty strings so the keys (curator-supplied) are preserved but the written labels
+        # are undone, restoring the artifact to a pre-write-labels state.
         genetic_perturbations = self.adata.uns.get("genetic_perturbations")
         if genetic_perturbations:
             for pert_data in genetic_perturbations.values():
-                if isinstance(pert_data, dict) and "intended_features" in pert_data:
-                    del pert_data["intended_features"]
+                if isinstance(pert_data, dict) and isinstance(pert_data.get("intended_features"), dict):
+                    for feature_id in pert_data["intended_features"]:
+                        pert_data["intended_features"][feature_id] = ""
 
     def _remove_reserved(self, component, reserved):
         """

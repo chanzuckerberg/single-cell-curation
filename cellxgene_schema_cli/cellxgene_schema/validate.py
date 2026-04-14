@@ -474,15 +474,18 @@ class Validator:
             if not is_allowed:
                 self.errors.append(f"'{term_id}' in '{column_name}' is not an allowed term id.")
 
-    def _validate_feature_ids(self, column: pd.Series, df_name: str):
+    def _validate_feature_ids(self, column, path: str):
         """
-        Validates all feature ids, i.e. checks that it's present in the reference
-        If there are any errors, it adds them to self.errors
+        Validates all feature IDs in ``column`` against the gene reference.
 
-        :param str column: feature_id column
-        :param str df_name: name of dataframe the feauter id comes from (var or raw.var)
+        Accepts any iterable of feature ID strings — a ``pd.Series``, ``dict.keys()``,
+        a list, etc.  Reports errors using ``path`` to identify the source location.
 
-        :rtype none
+        :param column: iterable of feature ID strings to validate
+        :param str path: human-readable path used in error messages (e.g. ``"var"`` or
+            ``"uns['genetic_perturbations']['g1']['intended_features']"``)
+
+        :rtype None
         """
 
         # Keep track of all of the gene ids that come from different organisms
@@ -495,7 +498,7 @@ class Validator:
 
             if not organism:
                 self.errors.append(
-                    f"Could not infer organism from feature ID '{feature_id}' in '{df_name}', "
+                    f"Could not infer organism from feature ID '{feature_id}' in '{path}', "
                     f"make sure it is a valid ID."
                 )
                 continue
@@ -505,7 +508,7 @@ class Validator:
             valid_gene_id = get_gene_checker(organism).is_valid_id(feature_id)
 
             if not valid_gene_id:
-                self.errors.append(f"'{feature_id}' is not a valid feature ID in '{df_name}'.")
+                self.errors.append(f"'{feature_id}' is not a valid feature ID in '{path}'.")
 
             if dataset_organism is not None and organism_ontology_id is not None and valid_gene_id:
                 # If the gene id is valid, check if that organism matches the dataset's organism
@@ -1202,6 +1205,11 @@ class Validator:
                     f"'{dict_name}' contains unexpected key(s) {sorted(extra)}. "
                     f"Additional key-value pairs MUST NOT be present."
                 )
+
+        # Generic feature-ID key validation: when the schema marks a dict with
+        # validate_keys_as: feature_id, every key must be a valid feature ID.
+        if dict_def.get("validate_keys_as") == "feature_id":
+            self._validate_feature_ids(dictionary.keys(), dict_name)
 
     def _validate_dataframe(self, df_name: str):
         """
@@ -2137,10 +2145,16 @@ class Validator:
 
             # Process the key definition if we found a match
             if key_def is not None:
-                # Check for add_labels
+                # Check for add_labels that write to a new column/key (to_column / to_key present).
+                # In-place label types (no to_column/to_key, e.g. feature_name on dict values)
+                # do not add new columns and need no availability check here.
                 if isinstance(key_def, dict) and "add_labels" in key_def:
-                    key_path = f"{parent_name}.{actual_key}" if parent_name else actual_key
-                    self._check_single_column_availability(key_path, key_def["add_labels"])
+                    labels_with_targets = [
+                        lbl for lbl in key_def["add_labels"] if lbl.get("to_column") or lbl.get("to_key")
+                    ]
+                    if labels_with_targets:
+                        key_path = f"{parent_name}.{actual_key}" if parent_name else actual_key
+                        self._check_single_column_availability(key_path, labels_with_targets)
 
                 # Recursively check nested dictionaries
                 if isinstance(key_def, dict) and key_def.get("type") == "dict":

@@ -127,8 +127,9 @@ components:
           genetic_perturbation_ids:
             key_pattern: '^[^\s/,"'']+$'  # No whitespace, slash, comma, double or single quotes
             type: dict
-            # No keys beyond role/protospacer_sequence/protospacer_adjacent_motif (curator-supplied)
-            # and derived_genomic_regions/derived_features (Discover-reserved) are permitted.
+            # No keys beyond role/protospacer_sequence/protospacer_adjacent_motif/intended_features
+            # (curator-supplied) and derived_genomic_regions/derived_features (Discover-reserved)
+            # are permitted.
             no_additional_keys: true
             keys:
               role:
@@ -147,6 +148,21 @@ components:
                 required: True
                 # Format like: "3' NGG" where MOTIF uses allowed ambiguity codes
                 pattern: '^3'' [ABCDGHKMNRSTVWY]+$'
+              intended_features:
+                type: dict
+                required: False
+                # Each key MUST be a valid feature_id from the gene reference for the dataset organism.
+                # ENS-prefixed IDs must have version numbers removed (e.g. ENSG00000186092.7 -> ENSG00000186092).
+                # Values are feature_name (or feature_id if no name is assigned); populated by write_labels.
+                # Additional key-value pairs MUST NOT be present.
+                validate_keys_as: feature_id  # triggers generic feature-id key validation
+                add_labels:
+                  - type: feature_name  # populate each dict value with the feature name for its key
+                no_additional_keys: true
+                keys:
+                  feature_ids:
+                    key_pattern: '^\S+$'  # Non-whitespace; deep gene-reference validation done in code
+                    type: string
             reserved_keys:
               - derived_genomic_regions
               - derived_features
@@ -158,7 +174,7 @@ components:
       unique: true
       type: feature_id
       add_labels:
-        - type: feature_id
+        - type: feature_name
           to_column: feature_name
         - type: feature_reference
           to_column: feature_reference
@@ -189,7 +205,7 @@ components:
       unique: true
       type: feature_id
       add_labels:
-        - type: feature_id
+        - type: feature_name
           to_column: feature_name
         - type: feature_reference
           to_column: feature_reference

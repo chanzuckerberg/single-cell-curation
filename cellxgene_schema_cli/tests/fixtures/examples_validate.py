@@ -1219,6 +1219,123 @@ adata_gene_perturbations_invalid_extra_key = anndata.AnnData(
     var=good_var,
 )
 
+# -------------------------
+# Valid: intended_features present with valid human gene IDs (no version suffix)
+good_uns_with_intended_features = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "CAGAGGGAGGAGAGAACCG",
+            "protospacer_adjacent_motif": "3' NGG",
+            "intended_features": {
+                "ENSG00000141510": "",  # TP53 — value is arbitrary; write_labels will populate
+                "ENSG00000012048": "anything",  # BRCA1
+            },
+        },
+        gp_id_2: {
+            "role": "targeting",
+            "protospacer_sequence": "GGGCCCTCCGGGAAGATGG",
+            "protospacer_adjacent_motif": "3' NGG",
+            # No intended_features — optional field absent is also valid
+        },
+    },
+}
+
+adata_gene_perturbations_with_intended_features = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=good_uns_with_intended_features,
+    obsm=good_obsm,
+    var=good_var,
+)
+adata_gene_perturbations_with_intended_features.raw = adata_gene_perturbations_with_intended_features.copy()
+adata_gene_perturbations_with_intended_features.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Invalid: intended_features key has ENS version suffix (must be stripped)
+# Both perturbation IDs are present so obs cross-validation passes; only the
+# intended_features key is invalid.
+bad_uns_intended_features_versioned_id = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "CAGAGGGAGGAGAGAACCG",
+            "protospacer_adjacent_motif": "3' NGG",
+            "intended_features": {
+                "ENSG00000141510.7": "",  # version suffix — invalid
+            },
+        },
+        gp_id_2: {
+            "role": "targeting",
+            "protospacer_sequence": "GGGCCCTCCGGGAAGATGG",
+            "protospacer_adjacent_motif": "3' NGG",
+        },
+    },
+}
+adata_gene_perturbations_invalid_intended_features_versioned = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_intended_features_versioned_id,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: intended_features key is not a valid gene ID
+bad_uns_intended_features_bad_id = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "CAGAGGGAGGAGAGAACCG",
+            "protospacer_adjacent_motif": "3' NGG",
+            "intended_features": {
+                "NOT_A_GENE_ID": "",
+            },
+        },
+        gp_id_2: {
+            "role": "targeting",
+            "protospacer_sequence": "GGGCCCTCCGGGAAGATGG",
+            "protospacer_adjacent_motif": "3' NGG",
+        },
+    },
+}
+adata_gene_perturbations_invalid_intended_features_bad_id = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_intended_features_bad_id,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: intended_features is not a dict (wrong type)
+bad_uns_intended_features_not_dict = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "CAGAGGGAGGAGAGAACCG",
+            "protospacer_adjacent_motif": "3' NGG",
+            "intended_features": ["ENSG00000141510"],  # list, not dict
+        },
+        gp_id_2: {
+            "role": "targeting",
+            "protospacer_sequence": "GGGCCCTCCGGGAAGATGG",
+            "protospacer_adjacent_motif": "3' NGG",
+        },
+    },
+}
+adata_gene_perturbations_invalid_intended_features_not_dict = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_intended_features_not_dict,
+    obsm=good_obsm,
+    var=good_var,
+)
+
 # -----------------------------------------------------------------#
 # Experimental condition fixtures (schema 7.1.0)
 

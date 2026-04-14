@@ -184,6 +184,55 @@ class TestRemoveLabelsGeneticPerturbations:
 
         assert "genetic_perturbations" not in minimal_adata.uns
 
+    def test_intended_features_values_reset(self, minimal_adata):
+        """intended_features keys are preserved but values are reset to empty strings."""
+        minimal_adata.uns["genetic_perturbations"] = {
+            "guide1": {
+                "role": "targeting",
+                "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+                "protospacer_adjacent_motif": "3' NGG",
+                "intended_features": {
+                    "ENSG00000141510": "TP53",  # populated by write_labels
+                    "ENSG00000012048": "BRCA1",
+                },
+            },
+            "guide2": {
+                "role": "targeting",
+                "protospacer_sequence": "GGGCCCTCCGGGAAGATGG",
+                "protospacer_adjacent_motif": "3' NGG",
+                # No intended_features — should remain unaffected
+            },
+        }
+
+        remover = AnnDataLabelRemover(minimal_adata)
+        remover.remove_labels()
+
+        gp = minimal_adata.uns["genetic_perturbations"]
+        # Keys must be preserved
+        assert "intended_features" in gp["guide1"]
+        assert "ENSG00000141510" in gp["guide1"]["intended_features"]
+        assert "ENSG00000012048" in gp["guide1"]["intended_features"]
+        # Values must be reset to empty strings
+        assert gp["guide1"]["intended_features"]["ENSG00000141510"] == ""
+        assert gp["guide1"]["intended_features"]["ENSG00000012048"] == ""
+        # Guide without intended_features is unaffected
+        assert "intended_features" not in gp["guide2"]
+
+    def test_intended_features_absent_no_error(self, minimal_adata):
+        """No error when no perturbation entry has intended_features."""
+        minimal_adata.uns["genetic_perturbations"] = {
+            "guide1": {
+                "role": "targeting",
+                "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+                "protospacer_adjacent_motif": "3' NGG",
+            },
+        }
+
+        remover = AnnDataLabelRemover(minimal_adata)
+        remover.remove_labels()  # must not raise
+
+        assert "intended_features" not in minimal_adata.uns["genetic_perturbations"]["guide1"]
+
 
 class TestRemoveReservedRecursive:
     """Test recursive removal of reserved_keys with nested structures"""
