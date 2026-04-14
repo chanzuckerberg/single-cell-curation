@@ -381,6 +381,11 @@
           "type": "boolean",
           "description": "If true, keys beyond those declared in 'keys', 'reserved_keys', and matching 'key_pattern' are forbidden"
         },
+        "validate_keys_as": {
+          "type": "string",
+          "description": "Triggers generic key validation; 'feature_id' validates each key against the gene reference for the dataset organism",
+          "enum": ["feature_id"]
+        },
         "keys": {
           "type": "object",
           "description": "For dictionary fields, specification for key names and their nested field specifications",
@@ -647,7 +652,7 @@
           "type": "string",
           "description": "The type of label to add",
           "enum": [
-            "curie", "feature_id", "feature_reference", "feature_biotype", 
+            "curie", "feature_name", "feature_reference", "feature_biotype",
             "feature_length", "feature_type"
           ]
         },

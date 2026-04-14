@@ -1,4 +1,5 @@
 import logging
+import re
 import traceback
 from typing import Dict, List, Optional
 
@@ -306,7 +307,7 @@ class AnnDataLabelAppender:
 
             mapping_dict = self._get_mapping_dict_curie(ids, column_definition["curie_constraints"])
 
-        elif label_type == "feature_id":
+        elif label_type == "feature_name":
             mapping_dict = self._get_mapping_dict_feature_id(ids=ids)
 
         elif label_type == "feature_reference":
@@ -345,6 +346,55 @@ class AnnDataLabelAppender:
             new_column = self._get_labels(component, column, column_definition, label_def["type"])
             new_column_name = label_def["to_column"]
             getattr_anndata(self.adata, component)[new_column_name] = new_column
+
+    def _apply_dict_labels(self, data: dict, schema_def: dict) -> None:
+        """
+        Recursively walk ``data`` guided by ``schema_def`` and, for any dict value whose schema
+        entry carries ``add_labels``, apply the declared label types in-place.
+
+        Supported label types for dicts:
+        * ``feature_name`` — for each key (feature_id) in the dict, set its value to the feature
+          name returned by the gene reference (or to the key itself when no name is found).
+
+        Any future dict in schema_definition.yaml annotated with
+        ``add_labels: [{type: feature_name}]`` is handled automatically here.
+        """
+        keys_def = schema_def.get("keys", {})
+        if not isinstance(keys_def, dict):
+            return
+
+        key_patterns: Dict[str, re.Pattern] = {}
+        explicit_keys: set = set()
+        for schema_key, key_def in keys_def.items():
+            if isinstance(key_def, dict) and key_def.get("key_pattern"):
+                key_patterns[schema_key] = re.compile(key_def["key_pattern"])
+            else:
+                explicit_keys.add(schema_key)
+
+        for actual_key, actual_value in data.items():
+            matching_key_def = None
+            if actual_key in explicit_keys:
+                matching_key_def = keys_def.get(actual_key)
+            else:
+                for schema_key, compiled_pattern in key_patterns.items():
+                    if compiled_pattern.match(actual_key):
+                        matching_key_def = keys_def.get(schema_key)
+                        break
+
+            if not isinstance(matching_key_def, dict) or matching_key_def.get("type") != "dict":
+                continue
+            if not isinstance(actual_value, dict):
+                continue
+
+            for label_def in matching_key_def.get("add_labels", []):
+                if label_def.get("type") == "feature_name":
+                    feature_ids = list(actual_value.keys())
+                    name_map = self._get_mapping_dict_feature_id(ids=feature_ids)
+                    for feature_id, name in name_map.items():
+                        actual_value[feature_id] = name
+
+            # Recurse into sub-dicts
+            self._apply_dict_labels(actual_value, matching_key_def)
 
     def _add_labels(self):
         """
@@ -401,6 +451,10 @@ class AnnDataLabelAppender:
                     )
                 else:
                     raise TypeError(f"'{label_type}' is not supported with uns 'add-labels'")
+
+        # Apply feature_name labels to nested uns dicts (e.g. intended_features inside
+        # genetic_perturbations entries) driven by add_labels in the schema definition.
+        self._apply_dict_labels(self.adata.uns, uns_def)
 
     def _remove_categories_with_zero_values(self):
         df = self.adata.obs
