@@ -1775,12 +1775,12 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotation</th>
-      <td>CELLxGENE Discover MUST annotate.  The key MUST be the <code>gene_id</code> attribute from the <a href="#required-gene-annotations">corresponding gene reference</a> of the <code>organism_ontology_term_id</code>.<br><br> Version numbers MUST be removed from the <code>gene_id</code> if it is prefixed with <code>"ENS"</code> for <i>Ensembl stable identifier</i>. See <a href="https://ensembl.org/Help/Faq?id=488">I have an Ensembl ID, what can I tell about it from the ID?</a> For example, if the <code>gene_id</code> is <code>“ENSG00000186092.7”</code>, then the <code><i>feature_id</i></code> MUST be <code>“ENSG00000186092”</code>.</td>
+      <td>CELLxGENE Curator MAY annotate.  The key MUST be the <code>gene_id</code> attribute from the <a href="#required-gene-annotations">corresponding gene reference</a> of the <code>organism_ontology_term_id</code>.<br><br> Version numbers MUST be removed from the <code>gene_id</code> if it is prefixed with <code>"ENS"</code> for <i>Ensembl stable identifier</i>. See <a href="https://ensembl.org/Help/Faq?id=488">I have an Ensembl ID, what can I tell about it from the ID?</a> For example, if the <code>gene_id</code> is <code>“ENSG00000186092.7”</code>, then the <code><i>feature_id</i></code> MUST be <code>“ENSG00000186092”</code>.</td>
     </tr>
     <tr>
       <th>Value</th>
         <td>
-          <code>str</code>. If a <code>gene_name</code> attribute is assigned to the <code>gene_id</code> attribute in the <a href="#required-gene-annotations">corresponding gene reference</a> of the <code>organism_ontology_term_id</code>, the value MUST be the <code>gene_name</code>. Otherwise, the value MUST be the <code><i>feature_id</i></code> key.
+          <code>str</code>. Discover MUST annotate. If a <code>gene_name</code> attribute is assigned to the <code>gene_id</code> attribute in the <a href="#required-gene-annotations">corresponding gene reference</a> of the <code>organism_ontology_term_id</code>, the value MUST be the <code>gene_name</code>. Otherwise, the value MUST be the <code><i>feature_id</i></code> key.
         </td>
     </tr>
 </tbody></table>
