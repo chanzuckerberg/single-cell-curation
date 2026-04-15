@@ -45,15 +45,27 @@ jobs:
 
       - name: Configure kubeconfig
         run: |
-          kubectl config set-cluster staging-sci-data \
-            --server=https://52C68FF109165DCC8B5F9AA5D3A66A14.gr7.us-east-1.eks.amazonaws.com \
-            --certificate-authority-data=${{ secrets.KUBE_CA_DATA }}
-          kubectl config set-credentials github-actions-workflow-submitter \
-            --token=${{ secrets.KUBE_SA_TOKEN }}
-          kubectl config set-context staging-sci-data \
-            --cluster=staging-sci-data \
-            --user=github-actions-workflow-submitter
-          kubectl config use-context staging-sci-data
+          mkdir -p ~/.kube
+          cat > ~/.kube/config << EOF
+          apiVersion: v1
+          kind: Config
+          clusters:
+          - name: staging-sci-data
+            cluster:
+              server: https://52C68FF109165DCC8B5F9AA5D3A66A14.gr7.us-east-1.eks.amazonaws.com
+              certificate-authority-data: ${{ secrets.KUBE_CA_DATA }}
+          contexts:
+          - name: staging-sci-data
+            context:
+              cluster: staging-sci-data
+              user: github-actions-workflow-submitter
+              namespace: argo-workflows
+          current-context: staging-sci-data
+          users:
+          - name: github-actions-workflow-submitter
+            user:
+              token: ${{ secrets.KUBE_SA_TOKEN }}
+          EOF
 
       - name: Submit Argo jobs and wait for completion
         run: python3 cellxgene_schema_cli/scripts/submit_guidescan_argo_jobs.py
