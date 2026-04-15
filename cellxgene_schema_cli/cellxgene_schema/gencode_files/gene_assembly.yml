@@ -1,0 +1,29 @@
+# Genome assembly configuration for perturbation-support species.
+# Changes to this file trigger the guidescan-index.yml GHA workflow, which
+# rebuilds and re-uploads the GuideScan2 genomic index for every species listed here.
+#
+# Update this file when the genome ASSEMBLY changes (e.g. GRCh38 -> GRCh39).
+#
+# IMPORTANT: a genome assembly change always requires a matching annotation update.
+# GENCODE/Ensembl GTF files are assembly-specific, so a new assembly ships with a
+# new annotation release and new/relocated gene IDs. When you update this file,
+# also update gene_info.yml (gtf_url, version) for the same species in the same PR
+# so both the guidescan-index and gencode-process GHA workflows fire together.
+#
+# fasta_url must be a fully-resolved URL (no templating). It points to the
+# primary assembly FASTA for the current assembly_version.
+human:
+  description: homo_sapiens
+  organism_id: NCBITaxon:9606
+  assembly_version: GRCh38
+  fasta_url: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_48/GRCh38.primary_assembly.genome.fa.gz
+mouse:
+  description: mus_musculus
+  organism_id: NCBITaxon:10090
+  assembly_version: GRCm39
+  fasta_url: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M37/GRCm39.primary_assembly.genome.fa.gz
+zebrafish:
+  description: danio_rerio
+  organism_id: NCBITaxon:7955
+  assembly_version: GRCz11
+  fasta_url: https://ftp.ensembl.org/pub/release-114/fasta/danio_rerio/dna/Danio_rerio.GRCz11.dna.primary_assembly.fa.gz

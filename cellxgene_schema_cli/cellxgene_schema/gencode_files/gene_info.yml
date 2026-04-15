@@ -1,6 +1,6 @@
 # Changes to this file will trigger a run of the gencode_process.yml GHA job, which will run the gene_processing.py script. poke
-# For species with perturbation_support: true, changing fasta_url or assembly_version will also trigger the
-# guidescan-index.yml GHA job, which rebuilds and re-uploads the GuideScan2 genomic index for that species.
+# For genome assembly changes (e.g. GRCh38 -> GRCh39), update gene_assembly.yml instead.
+# An assembly change always requires a matching version bump here too — update both files in the same PR.
 ercc:
   description: ercc
   gtf_url: https://assets.thermofisher.com/TFS-Assets/LSG/manuals/cms_095047.txt
@@ -9,15 +9,11 @@ human:
   gtf_url: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_{version}/gencode.v{version}.primary_assembly.annotation.gtf.gz
   version: 48
   perturbation_support: true
-  assembly_version: GRCh38
-  fasta_url: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_{version}/{assembly_version}.primary_assembly.genome.fa.gz
 mouse:
   description: mus_musculus
   gtf_url: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_{version}/gencode.v{version}.primary_assembly.annotation.gtf.gz
   version: M37
   perturbation_support: true
-  assembly_version: GRCm39
-  fasta_url: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_{version}/{assembly_version}.primary_assembly.genome.fa.gz
 sars_cov_2:
   description: sars_cov_2
   gtf_url: ftp://ftp.ensemblgenomes.org/pub/viruses/gtf/sars_cov_2/Sars_cov_2.ASM985889v3.101.gtf.gz
@@ -26,11 +22,9 @@ fruit_fly:
   gtf_url: https://ftp.ensembl.org/pub/release-114/gtf/drosophila_melanogaster/Drosophila_melanogaster.BDGP6.54.114.gtf.gz
 zebrafish:
   description: danio_rerio
-  gtf_url: https://ftp.ensembl.org/pub/release-{version}/gtf/danio_rerio/Danio_rerio.{assembly_version}.{version}.gtf.gz
+  gtf_url: https://ftp.ensembl.org/pub/release-{version}/gtf/danio_rerio/Danio_rerio.GRCz11.{version}.gtf.gz
   version: 114
   perturbation_support: true
-  assembly_version: GRCz11
-  fasta_url: https://ftp.ensembl.org/pub/release-{version}/fasta/danio_rerio/dna/Danio_rerio.{assembly_version}.dna.primary_assembly.fa.gz
 roundworm:
   description: caenorhabditis_elegans
   gtf_url: https://ftp.ensembl.org/pub/release-114/gtf/caenorhabditis_elegans/Caenorhabditis_elegans.WBcel235.114.gtf.gz

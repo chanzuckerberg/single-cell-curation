@@ -1,23 +1,22 @@
 #!/usr/bin/env python3
-"""Submit guidescan2 index Argo jobs via kubectl for perturbation-support species.
+"""Submit guidescan2 index Argo jobs via kubectl for all species in gene_assembly.yml.
 
-Generates a Workflow manifest referencing the guidescan2-index-v1
-ClusterWorkflowTemplate, submits it via `kubectl create`, then polls
-`kubectl get workflow` until the workflow reaches a terminal phase
-(Succeeded / Failed / Error).
+Reads gene_assembly.yml, submits a Workflow manifest referencing the
+guidescan2-index-v1 ClusterWorkflowTemplate for each species, and polls
+kubectl until every workflow reaches a terminal phase (Succeeded/Failed/Error).
+
+This script is invoked by the guidescan-index.yml GHA workflow whenever
+gene_assembly.yml changes. It always processes every species in the file;
+the GHA path trigger is the change-detection mechanism.
 
 kubectl must be on PATH and configured to reach the staging cluster
 (e.g. via `aws eks update-kubeconfig`). No Argo CLI required.
 
-Usage:
-    python submit_guidescan_argo_jobs.py human mouse zebrafish
-
 Exit codes:
-  0 — all jobs Succeeded
-  1 — one or more jobs Failed/Errored, timed out, or species not found
+  0 — all workflows Succeeded
+  1 — one or more workflows Failed/Errored, timed out, or config missing
 """
 
-import argparse
 import json
 import subprocess
 import sys
@@ -26,7 +25,7 @@ from pathlib import Path
 
 import yaml
 
-GENE_INFO_PATH = Path(__file__).parents[1] / "cellxgene_schema" / "gencode_files" / "gene_info.yml"
+GENE_ASSEMBLY_PATH = Path(__file__).parents[1] / "cellxgene_schema" / "gencode_files" / "gene_assembly.yml"
 
 ARGO_NAMESPACE = "argo-workflows"
 WORKFLOW_TEMPLATE = "guidescan2-index-v1"
@@ -36,13 +35,6 @@ S3_OUTPUT_PATH = "s3://czi-biohub-references/guidescan-indexes/"
 TERMINAL_PHASES = {"Succeeded", "Failed", "Error"}
 POLL_INTERVAL_SECONDS = 30
 POLL_TIMEOUT_SECONDS = 14400  # 4 hours — FASTA download + indexing is slow
-
-
-def expand_fasta_url(species_info: dict) -> str:
-    url = species_info["fasta_url"]
-    version = str(species_info.get("version", ""))
-    assembly_version = str(species_info.get("assembly_version", ""))
-    return url.format(version=version, assembly_version=assembly_version)
 
 
 def build_workflow_manifest(species_key: str, fasta_url: str) -> dict:
@@ -134,38 +126,20 @@ def submit_and_wait(species_key: str, fasta_url: str) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Submit guidescan2 index Argo jobs via kubectl")
-    parser.add_argument(
-        "species",
-        nargs="+",
-        help="Species keys from gene_info.yml (e.g. human mouse zebrafish)",
-    )
-    args = parser.parse_args()
-
-    with open(GENE_INFO_PATH) as f:
-        gene_info = yaml.safe_load(f) or {}
+    with open(GENE_ASSEMBLY_PATH) as f:
+        gene_assembly = yaml.safe_load(f) or {}
 
     errors: list[str] = []
 
-    for species_key in args.species:
-        if species_key not in gene_info:
-            print(f"ERROR: '{species_key}' not found in gene_info.yml", file=sys.stderr)
-            errors.append(species_key)
-            continue
-
-        info = gene_info[species_key]
-
-        if not info.get("fasta_url"):
+    for species_key, info in gene_assembly.items():
+        fasta_url = info.get("fasta_url")
+        if not fasta_url:
             print(f"ERROR: no fasta_url configured for '{species_key}'", file=sys.stderr)
             errors.append(species_key)
             continue
 
-        if not info.get("perturbation_support"):
-            print(f"WARNING: '{species_key}' has no perturbation_support, skipping")
-            continue
-
         try:
-            submit_and_wait(species_key, expand_fasta_url(info))
+            submit_and_wait(species_key, fasta_url)
         except (subprocess.CalledProcessError, RuntimeError, TimeoutError) as e:
             print(f"ERROR: {e}", file=sys.stderr)
             errors.append(species_key)
