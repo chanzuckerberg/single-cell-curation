@@ -46,7 +46,7 @@ def get_gene_info_at_head_minus_1() -> dict:
 
 def get_current_gene_info() -> dict:
     """Return gene_info.yml content from the working tree."""
-    repo_root = Path(__file__).parents[3]
+    repo_root = Path(__file__).parents[2]
     path = repo_root / GENE_INFO_REPO_PATH
     with open(path) as f:
         return yaml.safe_load(f) or {}
