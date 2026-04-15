@@ -18,6 +18,7 @@ on:
   push:
     paths:
       - '**/cellxgene_schema_cli/cellxgene_schema/gencode_files/gene_assembly.yml'
+      - '.github/workflows/guidescan-index.yml'  # tmp: remove after testing
     branches-ignore:
       - main
 
