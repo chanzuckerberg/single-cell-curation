@@ -10,7 +10,8 @@ name: Rebuild GuideScan2 Indexes
 # with the new S3 index URLs.
 #
 # Prerequisites (one-time setup, not managed here):
-#   - AWS OIDC role secret : AWS_ROLE_TO_ASSUME
+#   - GitHub secret KUBE_SA_TOKEN : token for github-actions-workflow-submitter SA
+#   - GitHub secret KUBE_CA_DATA  : base64-encoded CA cert for staging-sci-data
 #   - guidescan2-index-v1 ClusterWorkflowTemplate deployed on staging-sci-data
 #   - sci-data-staging-guidescan2-sa ServiceAccount in argo-workflows namespace
 
@@ -23,7 +24,6 @@ on:
       - main
 
 permissions:
-  id-token: write   # required for AWS OIDC
   contents: write   # required to push the reference_files.yml update
 
 jobs:
@@ -43,17 +43,17 @@ jobs:
       - name: Install Python dependencies
         run: pip install PyYAML
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_STAGING_ROLE_TO_ASSUME }}
-
-      - name: Configure kubeconfig for EKS
+      - name: Configure kubeconfig
         run: |
-          aws eks update-kubeconfig \
-            --region us-east-1 \
-            --name staging-sci-data
+          kubectl config set-cluster staging-sci-data \
+            --server=https://52C68FF109165DCC8B5F9AA5D3A66A14.gr7.us-east-1.eks.amazonaws.com \
+            --certificate-authority-data=${{ secrets.KUBE_CA_DATA }}
+          kubectl config set-credentials github-actions-workflow-submitter \
+            --token=${{ secrets.KUBE_SA_TOKEN }}
+          kubectl config set-context staging-sci-data \
+            --cluster=staging-sci-data \
+            --user=github-actions-workflow-submitter
+          kubectl config use-context staging-sci-data
 
       - name: Submit Argo jobs and wait for completion
         run: python3 cellxgene_schema_cli/scripts/submit_guidescan_argo_jobs.py
