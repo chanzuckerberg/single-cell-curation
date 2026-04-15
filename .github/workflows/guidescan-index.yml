@@ -11,9 +11,7 @@ name: Rebuild GuideScan2 Indexes
 #
 # Prerequisites (one-time setup, not managed here):
 #   - AWS OIDC role secret : AWS_ROLE_TO_ASSUME
-#   - EKS cluster name     : EKS_CLUSTER_NAME   (e.g. "staging-sci-data")
-#   - EKS cluster region   : EKS_CLUSTER_REGION (e.g. "us-east-1")
-#   - guidescan2-index-v1 ClusterWorkflowTemplate deployed on the cluster
+#   - guidescan2-index-v1 ClusterWorkflowTemplate deployed on staging-sci-data
 #   - sci-data-staging-guidescan2-sa ServiceAccount in argo-workflows namespace
 
 on:
@@ -53,8 +51,8 @@ jobs:
       - name: Configure kubeconfig for EKS
         run: |
           aws eks update-kubeconfig \
-            --region ${{ secrets.EKS_CLUSTER_REGION }} \
-            --name ${{ secrets.EKS_CLUSTER_NAME }}
+            --region us-east-1 \
+            --name staging-sci-data
 
       - name: Submit Argo jobs and wait for completion
         run: python3 cellxgene_schema_cli/scripts/submit_guidescan_argo_jobs.py
