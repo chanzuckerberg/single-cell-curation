@@ -30,7 +30,7 @@ GENE_ASSEMBLY_PATH = Path(__file__).parents[1] / "cellxgene_schema" / "gencode_f
 ARGO_NAMESPACE = "argo-workflows"
 WORKFLOW_TEMPLATE = "guidescan2-index-v1"
 ARGO_SERVICE_ACCOUNT = "sci-data-staging-guidescan2-sa"
-S3_OUTPUT_PATH = "s3://czi-biohub-references/guidescan-indexes/"
+S3_OUTPUT_PATH = "s3://czi-biohub-references/guidescan-indexes-test/"
 
 TERMINAL_PHASES = {"Succeeded", "Failed", "Error"}
 POLL_INTERVAL_SECONDS = 30
