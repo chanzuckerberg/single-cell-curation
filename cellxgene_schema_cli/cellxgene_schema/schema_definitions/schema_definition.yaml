@@ -29,10 +29,6 @@ pre_analysis:
     keys:
       cell_type_ontology_term_id:
         allowed: False
-  obsm:
-    required: False
-    allowed: False
-
 components:
   uns:
     type: dict
