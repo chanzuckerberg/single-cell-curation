@@ -1503,8 +1503,8 @@ class Validator:
         a suffix at least 1 character long. For keys that don't start with "X_", we will run them through the same
         validation checks, but raise warnings instead of errors.
 
-        In the case of the pre_analsysis_flag being True, obsm MUST NOT be present so if we do not see adata.obsm and
-        the flag is correctly set, we exit this validation.
+        In the case of the pre_analysis_flag being True, obsm is optional. If absent, validation is skipped; if
+        present, it is validated as normal.
         :rtype none
         """
 

@@ -471,7 +471,30 @@ class TestValidate:
 
         assert not validator.errors
 
-    def test__pre_analysis_validate_no_obsm_fails_with_obsm(self, valid_pre_analysis_adata):
+    def test__validate_obsm_fails_with_bad_obsm_in_pre_analysis(self, valid_pre_analysis_adata):
+        import numpy as np
+
+        validator = Validator(pre_analysis_check_flag=True)
+        validator.adata = valid_pre_analysis_adata.copy()
+        # X_ embeddings require at least 2 columns — 1 column is invalid
+        validator.adata.obsm = {"X_umap": np.zeros([validator.adata.n_obs, 1])}
+        validator._set_schema_def()
+
+        validator._validate_obsm()
+
+        assert validator.errors
+        assert any("at least two columns" in e for e in validator.errors)
+
+    def test__validate_obsm_passes_without_obsm_in_pre_analysis(self, valid_pre_analysis_adata):
+        validator = Validator(pre_analysis_check_flag=True)
+        validator.adata = valid_pre_analysis_adata  # obsm is None
+        validator._set_schema_def()
+
+        validator._validate_obsm()
+
+        assert not validator.errors
+
+    def test__pre_analysis_check_passes_with_obsm_present(self, valid_pre_analysis_adata):
         validator = Validator()
         validator.adata = valid_pre_analysis_adata.copy()
         validator.adata.obsm = good_obsm
@@ -479,11 +502,7 @@ class TestValidate:
 
         validator._pre_analysis_check()  # Directly call private method for testing purposes
 
-        EXPECTED_ERROR_STRING = "[PRE ANALYSIS COMPONENT] obsm is not allowed to exist during pre analysis validation"
-
-        assert validator.errors
-        assert len(validator.errors) == 1
-        assert EXPECTED_ERROR_STRING in validator.errors
+        assert not validator.errors
 
     def test__pre_analysis_validate_no_cell_type_ontology_term_id_fails_with_value_present(
         self, valid_pre_analysis_adata
