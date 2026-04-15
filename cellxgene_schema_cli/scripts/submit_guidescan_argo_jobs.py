@@ -36,6 +36,23 @@ TERMINAL_PHASES = {"Succeeded", "Failed", "Error"}
 POLL_INTERVAL_SECONDS = 30
 POLL_TIMEOUT_SECONDS = 14400  # 4 hours — FASTA download + indexing is slow
 
+# Resource limits for the indexing pod. The ClusterWorkflowTemplate defines 32Gi
+# but those limits are not reliably inherited when submitting via workflowTemplateRef.
+# podSpecPatch injects them at submit time as a JSON merge patch so they always apply.
+_POD_SPEC_PATCH = json.dumps(
+    {
+        "containers": [
+            {
+                "name": "main",
+                "resources": {
+                    "requests": {"cpu": "4", "memory": "32Gi"},
+                    "limits": {"cpu": "8", "memory": "32Gi"},
+                },
+            }
+        ]
+    }
+)
+
 
 def build_workflow_manifest(species_key: str, fasta_url: str) -> dict:
     return {
@@ -57,6 +74,7 @@ def build_workflow_manifest(species_key: str, fasta_url: str) -> dict:
                 ]
             },
             "serviceAccountName": ARGO_SERVICE_ACCOUNT,
+            "podSpecPatch": _POD_SPEC_PATCH,
         },
     }
 
