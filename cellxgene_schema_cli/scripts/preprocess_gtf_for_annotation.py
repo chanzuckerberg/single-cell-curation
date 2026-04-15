@@ -186,7 +186,7 @@ def process_species(species_key: str, species_info: Dict, gencode_dir: str) -> N
     :rtype: None
     """
     description = species_info.get("description")
-    url = species_info.get("url")
+    url = species_info.get("gtf_url")
 
     if not description or not url:
         print(f"Skipping {species_key}: missing description or URL")

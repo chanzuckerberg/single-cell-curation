@@ -1,0 +1,91 @@
+name: Rebuild GuideScan2 Indexes
+
+# Triggered by the same path as gencode-process.yml. Runs in parallel with it.
+# Detects whether fasta_url changed for any perturbation-support species (human,
+# mouse, zebrafish). When it did, submits the guidescan2-index-v1
+# ClusterWorkflowTemplate on Argo for each affected species, waits for
+# completion, then updates reference_files.yml with the new S3 index URLs.
+#
+# The guidescan2 index depends on the genome assembly (fasta_url / assembly_version),
+# NOT on the annotation version. Annotation-only bumps (gtf_url / version changes)
+# do not rebuild the index.
+#
+# Prerequisites (one-time setup, not managed here):
+#   - AWS OIDC role secret: AWS_ROLE_TO_ASSUME
+#   - EKS cluster name secret: EKS_CLUSTER_NAME  (e.g. "sci-data-staging")
+#   - EKS AWS region secret:   EKS_CLUSTER_REGION (e.g. "us-west-2")
+#   - The guidescan2-index-v1 ClusterWorkflowTemplate must be deployed on the cluster.
+#   - The sci-data-staging-guidescan2-sa ServiceAccount must exist in argo-workflows.
+
+on:
+  push:
+    paths:
+      - '**/cellxgene_schema_cli/cellxgene_schema/gencode_files/gene_info.yml'
+    branches-ignore:
+      - main
+
+permissions:
+  id-token: write   # required for AWS OIDC
+  contents: write   # required to push the reference_files.yml update
+
+jobs:
+  rebuild-guidescan-indexes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # fetch-depth 2 so detect_fasta_url_changes.py can read HEAD~1
+          fetch-depth: 2
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Python dependencies
+        run: pip install PyYAML
+
+      - name: Detect fasta_url changes
+        id: detect
+        run: python3 cellxgene_schema_cli/scripts/detect_fasta_url_changes.py
+
+      # ── Steps below only run when at least one species has a changed fasta_url ──
+
+      - name: Configure AWS credentials
+        if: steps.detect.outputs.changed_species != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+
+      - name: Configure kubeconfig for EKS
+        if: steps.detect.outputs.changed_species != ''
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ secrets.EKS_CLUSTER_REGION }} \
+            --name ${{ secrets.EKS_CLUSTER_NAME }}
+
+      - name: Submit Argo jobs and wait for completion
+        if: steps.detect.outputs.changed_species != ''
+        run: |
+          python3 cellxgene_schema_cli/scripts/submit_guidescan_argo_jobs.py \
+            ${{ steps.detect.outputs.changed_species }}
+
+      - name: Update reference_files.yml with new index URLs
+        if: steps.detect.outputs.changed_species != ''
+        run: python3 cellxgene_schema_cli/scripts/update_guidescan_reference_urls.py
+
+      - name: Commit and push updated reference_files.yml
+        if: steps.detect.outputs.changed_species != ''
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add cellxgene_schema_cli/cellxgene_schema/gencode_files/reference_files.yml
+          # Only commit if the file actually changed (idempotent guard).
+          git diff --cached --quiet || \
+            git commit -m "AUTO: update guidescan2 index URLs for ${{ steps.detect.outputs.changed_species }}"
+          # Pull --rebase in case gencode-process.yml committed first, then push.
+          git pull --rebase
+          git push
