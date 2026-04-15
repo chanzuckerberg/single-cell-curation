@@ -1,7 +1,7 @@
 
 # Schema
 
-Contact: brianraymor@chanzuckerberg.com
+Contact: BAevermann@chanzuckerberg.com
 
 Document Status: _Drafting_
 
@@ -1459,9 +1459,7 @@ When a dataset is uploaded, CELLxGENE Discover MUST annotate a unique observatio
 
 The value for each `str` key MUST be a  `numpy.ndarray` of shape `(n_obs, m)`, where `n_obs` is the number of rows in `X` and `m >= 1`. 
 
-`obsm` MUST NOT be present if <code>uns['is_pre_analysis']</code> is <code>True</code>.
-
-Otherwise, to display a dataset in CELLxGENE Explorer, Curators MUST annotate **one or more** embeddings of at least two-dimensions (e.g. tSNE, UMAP, PCA, spatial coordinates) as `numpy.ndarrays` in `obsm`.<br><br>
+In order to display a dataset in CELLxGENE Explorer, uns['is_pre_analysis'] MUST NOT be True AND Curators MUST annotate one or more embeddings of at least two-dimensions (e.g. tSNE, UMAP, PCA, spatial coordinates) as numpy.ndarrays in obsm.<br><br>
 
 ### spatial
 
@@ -1552,6 +1550,8 @@ Curators MUST annotate the following keys and values in `uns`:
           <li>genetic_perturbations[<i>id</i>]['derived_genomic_regions']</li>
           <li>genetic_perturbations[<i>id</i>]['derived_features']</li>
           <li>genetic_perturbations[<i>id</i>]['derived_features'][<i>feature_id</i>]</li>
+          <li>genetic_perturbations[<i>id</i>]['intended_features']</li>
+          <li>genetic_perturbations[<i>id</i>]['intended_features'][<i>feature_id</i>]</li>
          </ul><br>Additional key-value pairs MUST NOT be present.
         </td>
     </tr>
@@ -1580,6 +1580,8 @@ Curators MUST annotate the following keys and values in `uns`:
           <li>genetic_perturbations[<i>id</i>]['derived_genomic_regions']</li>
           <li>genetic_perturbations[<i>id</i>]['derived_features']</li>
           <li>genetic_perturbations[<i>id</i>]['derived_features'][<i>feature_id</i>]</li>
+          <li>genetic_perturbations[<i>id</i>]['intended_features']</li>
+          <li>genetic_perturbations[<i>id</i>]['intended_features'][<i>feature_id</i>]</li>
          </ul><br>Additional key-value pairs MUST NOT be present.
         </td>
     </tr>
@@ -1739,6 +1741,52 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
 </tbody></table>
 <br>
+
+#### genetic_perturbations[<i>id</i>]['intended_features']
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>intended_features</td>
+    </tr>
+    <tr>
+      <th>Annotation</th>
+      <td>CELLxGENE Curator MAY annotate.  
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          <code>dict</code>. The requirements for the key-value pair and its annotator are documented in the following section:
+          <ul>
+          <li>genetic_perturbations[<i>id</i>]['intended_features'][<i>feature_id</i>]</li>
+         </ul><br>Additional key-value pairs MUST NOT be present.
+        </td>
+    </tr>
+</tbody></table>
+
+
+#### genetic_perturbations[<i>id</i>]['intended_features'][<i>feature_id</i>]
+
+<table><tbody>
+    <tr>
+      <th>Key</th>
+      <td>
+        <i>feature_id</i>
+      </td>
+    </tr>
+    <tr>
+      <th>Annotation</th>
+      <td>CELLxGENE Curator MAY annotate.  The key MUST be the <code>gene_id</code> attribute from the <a href="#required-gene-annotations">corresponding gene reference</a> of the <code>organism_ontology_term_id</code>.<br><br> Version numbers MUST be removed from the <code>gene_id</code> if it is prefixed with <code>"ENS"</code> for <i>Ensembl stable identifier</i>. See <a href="https://ensembl.org/Help/Faq?id=488">I have an Ensembl ID, what can I tell about it from the ID?</a> For example, if the <code>gene_id</code> is <code>“ENSG00000186092.7”</code>, then the <code><i>feature_id</i></code> MUST be <code>“ENSG00000186092”</code>.</td>
+    </tr>
+    <tr>
+      <th>Value</th>
+        <td>
+          <code>str</code>. Discover MUST annotate. If a <code>gene_name</code> attribute is assigned to the <code>gene_id</code> attribute in the <a href="#required-gene-annotations">corresponding gene reference</a> of the <code>organism_ontology_term_id</code>, the value MUST be the <code>gene_name</code>. Otherwise, the value MUST be the <code><i>feature_id</i></code> key.
+        </td>
+    </tr>
+</tbody></table>
+<br>
+
+
 
 ### organism_ontology_term_id
 
