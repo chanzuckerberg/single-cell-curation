@@ -47,7 +47,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-to-assume: ${{ secrets.AWS_STAGING_ROLE_TO_ASSUME }}
 
       - name: Configure kubeconfig for EKS
         run: |
