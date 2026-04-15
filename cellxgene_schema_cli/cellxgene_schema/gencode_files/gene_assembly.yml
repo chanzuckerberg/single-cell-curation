@@ -27,3 +27,4 @@ zebrafish:
   organism_id: NCBITaxon:7955
   assembly_version: GRCz11
   fasta_url: https://ftp.ensembl.org/pub/release-114/fasta/danio_rerio/dna/Danio_rerio.GRCz11.dna.primary_assembly.fa.gz
+
