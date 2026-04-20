@@ -22,7 +22,7 @@ on:
       - '.github/workflows/guidescan-index.yml'  # tmp: remove after testing
     branches-ignore:
       - main
-  # retrigger
+  # retrigger2
 
 permissions:
   contents: write   # required to push the reference_files.yml update
