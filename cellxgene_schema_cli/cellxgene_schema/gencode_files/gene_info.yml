@@ -1,6 +1,6 @@
-# Changes to this file will trigger a run of the gencode_process.yml GHA job, which will run the gene_processing.py script. poke
-# For genome assembly changes (e.g. GRCh38 -> GRCh39), update gene_assembly.yml instead.
-# An assembly change always requires a matching version bump here too — update both files in the same PR.
+# Changes to this file trigger the gencode-process.yml GHA workflow, which regenerates genes_*.csv.gz files.
+# Update a species' gtf_url/version here when the GTF annotation version bumps (e.g. GENCODE v48 -> v49).
+# If the annotation bump is accompanied by a genome assembly change, also update gene_assembly.yml.
 ercc:
   description: ercc
   gtf_url: https://assets.thermofisher.com/TFS-Assets/LSG/manuals/cms_095047.txt

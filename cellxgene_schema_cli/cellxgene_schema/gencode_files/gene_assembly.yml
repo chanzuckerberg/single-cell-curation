@@ -1,14 +1,7 @@
 # Genome assembly configuration for perturbation-support species.
-# Changes to this file trigger the guidescan-index.yml GHA workflow, which
-# rebuilds and re-uploads the GuideScan2 genomic index for every species listed here.
-#
-# Update this file when the genome ASSEMBLY changes (e.g. GRCh38 -> GRCh39).
-#
-# IMPORTANT: a genome assembly change always requires a matching annotation update.
-# GENCODE/Ensembl GTF files are assembly-specific, so a new assembly ships with a
-# new annotation release and new/relocated gene IDs. When you update this file,
-# also update gene_info.yml (gtf_url, version) for the same species in the same PR
-# so both the guidescan-index and gencode-process GHA workflows fire together.
+# Changes to this file trigger the guidescan-index.yml GHA workflow only — NOT gencode-process.yml.
+# A genome assembly change always ships with a new GTF annotation, so also update gene_info.yml
+# (gtf_url, version) for the same species in the same PR.
 #
 # fasta_url must be a fully-resolved URL (no templating). It points to the
 # primary assembly FASTA for the current assembly_version.
