@@ -51,7 +51,7 @@ jobs:
           clusters:
           - name: staging-sci-data
             cluster:
-              server: https://52C68FF109165DCC8B5F9AA5D3A66A14.gr7.us-east-1.eks.amazonaws.com
+              server: ${{ secrets.KUBE_SERVER_URL }}
               certificate-authority-data: ${{ secrets.KUBE_CA_DATA }}
           contexts:
           - name: staging-sci-data
