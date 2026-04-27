@@ -21,6 +21,7 @@ from fixtures.examples_validate import (
     adata_ec_valid_chebi,
     adata_ec_valid_diet_descendant,
     adata_ec_valid_diet_root,
+    adata_ec_valid_fasting,
     adata_ec_valid_multi,
     adata_ec_valid_temperature,
     adata_ec_valid_uniprot,
@@ -85,6 +86,11 @@ class TestExperimentalConditionValid:
 
     def test_diet_descendant_term(self):
         success, errors = _validate(adata_ec_valid_diet_descendant)
+        assert success, errors
+
+    def test_fasting_term(self):
+        """EFO:0002756 (fasting) is explicitly allowed even though it is not a descendant of EFO:0002755."""
+        success, errors = _validate(adata_ec_valid_fasting)
         assert success, errors
 
     def test_multi_term_sorted(self):
@@ -214,6 +220,12 @@ class TestPerturbationTypesLabels:
 
     def test_diet_descendant_gives_diet_type(self):
         labeled = _write_labels(adata_ec_valid_diet_descendant)
+        assert "perturbation_types" in labeled.obs.columns
+        assert labeled.obs["perturbation_types"].iloc[0] == "diet"
+
+    def test_fasting_ec_gives_diet_type(self):
+        """EFO:0002756 (fasting) is not a descendant of EFO:0002755 but must still produce 'diet'."""
+        labeled = _write_labels(adata_ec_valid_fasting)
         assert "perturbation_types" in labeled.obs.columns
         assert labeled.obs["perturbation_types"].iloc[0] == "diet"
 

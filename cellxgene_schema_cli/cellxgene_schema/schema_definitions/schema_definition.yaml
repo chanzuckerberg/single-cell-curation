@@ -887,6 +887,7 @@ components:
               EFO:
                 - EFO:0001702  # temperature (exact)
                 - EFO:0002755  # diet (exact match; descendants covered by ancestors below)
+                - EFO:0002756  # fasting (exact; not a descendant of diet)
               UniProt:
                 - all
             ancestors:
@@ -903,7 +904,8 @@ components:
         error_message_suffix: >-
           The value MUST be "na" or one or more term identifiers in ascending lexical order separated by " || "
           with no duplication. Allowed: descendants of CHEBI:24431 (excluding listed forbidden CHEBI terms),
-          EFO:0001702 (temperature) or EFO:0002755 (diet) or its descendants, uniprot: terms, anti-uniprot: terms.
+          EFO:0001702 (temperature) or EFO:0002755 (diet) or its descendants or EFO:0002756 (fasting),
+          uniprot: terms, anti-uniprot: terms.
       is_primary_data:
         type: bool
       genetic_perturbation_strategy:

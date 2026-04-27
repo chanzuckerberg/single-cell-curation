@@ -472,6 +472,7 @@ class AnnDataLabelAppender:
         :return: "no perturbations" or sorted " || "-delimited perturbation type set
         """
         DIET_ONTO_TERM = "EFO:0002755"
+        FASTING_ONTO_TERM = "EFO:0002756"
         TEMPERATURE_ONTO_TERM = "EFO:0001702"
 
         ec_is_na = ec_val is None or ec_val == "na"
@@ -492,9 +493,12 @@ class AnnDataLabelAppender:
                 elif term == TEMPERATURE_ONTO_TERM:
                     types.add("temperature")
                 elif term.startswith("EFO:"):
-                    ancestors = ONTOLOGY_PARSER.get_term_ancestors(term, include_self=True)
-                    if DIET_ONTO_TERM in ancestors:
+                    if term == FASTING_ONTO_TERM:
                         types.add("diet")
+                    else:
+                        ancestors = ONTOLOGY_PARSER.get_term_ancestors(term, include_self=True)
+                        if DIET_ONTO_TERM in ancestors:
+                            types.add("diet")
 
         if not gp_is_na:
             types.add("genetic")

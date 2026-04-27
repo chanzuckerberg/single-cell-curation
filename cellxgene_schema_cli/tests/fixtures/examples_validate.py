@@ -1422,6 +1422,20 @@ adata_ec_valid_diet_descendant.raw = adata_ec_valid_diet_descendant.copy()
 adata_ec_valid_diet_descendant.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
 
 # -------------------------
+# Valid: EFO:0002756 fasting (not a descendant of EFO:0002755 diet, but explicitly allowed)
+good_obs_ec_fasting = good_obs.copy()
+good_obs_ec_fasting["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["EFO:0002756", "EFO:0002756"],
+    categories=["EFO:0002756"],
+)
+
+adata_ec_valid_fasting = anndata.AnnData(
+    X=X.copy(), obs=good_obs_ec_fasting, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_valid_fasting.raw = adata_ec_valid_fasting.copy()
+adata_ec_valid_fasting.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
 # Valid: multi-term sorted " || " (CHEBI + EFO:0002755)
 good_obs_ec_multi = good_obs.copy()
 good_obs_ec_multi["experimental_condition_ontology_term_id"] = pd.Categorical(
