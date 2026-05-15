@@ -1410,6 +1410,16 @@ class TestCheckSpatial:
         validator.validate_adata()
         assert validator.errors == ["ERROR: adata.obsm['spatial'] contains at least one NaN value."]
 
+    def test__validate_spatial_cell_type_ontology_term_id_skipped_for_pre_analysis(self):
+        validator: Validator = Validator(pre_analysis_check_flag=True)
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        # pre-analysis Visium datasets do not have cell_type_ontology_term_id
+        del validator.adata.obs["cell_type_ontology_term_id"]
+
+        validator._validate_spatial_cell_type_ontology_term_id()
+        assert not validator.errors
+
 
 class TestValidatorValidateDataFrame:
     @pytest.mark.parametrize("_type", [np.int64, np.int32, int, np.float64, np.float32, float, str])
