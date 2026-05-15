@@ -74,8 +74,7 @@ def schema_validate(h5ad_file, add_labels_file, ignore_labels, pre_analysis_flag
 @click.argument("input_file", nargs=1, type=click.Path(exists=True, dir_okay=False))
 @click.argument("output_file", nargs=1, type=click.Path(exists=False, dir_okay=False))
 def add_labels(input_file, output_file):
-    from utils import read_h5ad
-
+    from .utils import read_h5ad
     from .write_labels import AnnDataLabelAppender
 
     logger.info(f"Loading h5ad from {input_file}")

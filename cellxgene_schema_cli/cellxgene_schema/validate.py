@@ -2313,6 +2313,9 @@ class Validator:
         elif self.is_visium_and_is_single_true and "in_tissue" not in self.adata.obs.columns:
             # valid spatial assay, but missing "in_tissue" column
             return
+        elif "cell_type_ontology_term_id" not in self.adata.obs.columns:
+            # pre-analysis datasets are not required (and not allowed) to have cell_type_ontology_term_id
+            return
 
         # Validate all out of tissue (in_tissue==0) spatial spots have unknown cell ontology term
         is_spatial = (
