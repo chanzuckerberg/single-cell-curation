@@ -436,7 +436,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <li>
             the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010183"><code>"EFO:0010183"</code></a>  for <i>single cell library construction</i> excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> while allowing its descendants
           </li></ul>
-        If <code>assay_ontology_term_id</code> is either a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i> then all observations MUST contain the same value.<br><br>
+        If <code>assay_ontology_term_id</code> is either a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0920001"><code>"EFO:0920001"</code></a> for <i>bead-based spatial transcriptomics</i> then all observations MUST contain the same value.<br><br>
         If <code>assay_ontology_term_id</code> is either <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010891"><code>"EFO:0010891"</code></a> for <i>scATAC-seq</i> or its descendants, there are additional requirements for separate fragments file assets documented in <a href="#scatac-seq-assets">scATAC-seq assets</a>.<br><br>
         An assay based on 10X Genomics products SHOULD be the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i>. An assay based on <i>SMART (Switching Mechanism at the 5' end of the RNA Template) or SMARTer technology</i> SHOULD either be <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010184"><code>"EFO:0010184"</code></a> for <i>Smart-like</i> or preferably its most accurate descendant.<br><br>
        <br>Recommended values for specific assays:
@@ -1503,7 +1503,7 @@ Otherwise, to display a dataset in CELLxGENE Explorer, Curators MUST annotate **
     </tr>
     <tr>
       <th>Annotator</th>
-         <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is neither a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> nor <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i>.<br><br>Curator MAY annotate if <code>assay_ontology_term_id</code> is either a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i>.</td>
+         <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is neither a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> nor a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0920001"><code>"EFO:0920001"</code></a> for <i>bead-based spatial transcriptomics</i>.<br><br>Curator MAY annotate if <code>assay_ontology_term_id</code> is either a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0920001"><code>"EFO:0920001"</code></a> for <i>bead-based spatial transcriptomics</i>.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1854,7 +1854,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i>; otherwise, this key MUST NOT be present.</td>
+      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0920001"><code>"EFO:0920001"</code></a> for <i>bead-based spatial transcriptomics</i>; otherwise, this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1883,7 +1883,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i>; otherwise, this key MUST NOT be present.</td>
+      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0920001"><code>"EFO:0920001"</code></a> for <i>bead-based spatial transcriptomics</i>; otherwise, this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1891,7 +1891,7 @@ Curators MUST annotate the following keys and values in `uns`:
         <ul>
         <li>if <code>assay_ontology_term_id</code> is a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> and the dataset represents one Space Ranger output for a single tissue section
       </li>
-      <li> if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i> and the dataset represents the output for a single array on a puck </li>
+      <li> if <code>assay_ontology_term_id</code> is a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0920001"><code>"EFO:0920001"</code></a> for <i>bead-based spatial transcriptomics</i> and the dataset represents the output for a single array on a puck </li>
         </ul>
         Otherwise, this MUST be <code>False</code>.
         </td>
@@ -3067,6 +3067,7 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Added `perturbation_types`
   * Updated the requirements for `cell_type_ontology_term_id` to depend on `[uns]['is_pre_analysis']`
   * Updated the requirements for `cell_type` to depend on `[uns]['is_pre_analysis']`
+  * Updated the spatial requirements for `assay_ontology_term_id` to accept descendants of `"EFO:0920001"` for _bead-based spatial transcriptomics_ (e.g. _Slide-seqV2_, _Curio Seeker_) in place of the prior exact-match on `"EFO:0030062"` for _Slide-seqV2_
 * obsm (Embeddings)
   * Updated the general requirements to depend on `[uns]['is_pre_analysis']`
 * uns (Dataset Metadata)

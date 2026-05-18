@@ -656,7 +656,7 @@ class TestCheckSpatial:
         # Confirm key type dict is required.
         validator.validate_adata()
         assert (
-            "ERROR: A dict in uns['spatial'] is required when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)."
+            "ERROR: A dict in uns['spatial'] is required when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or a descendant of 'EFO:0920001' (bead-based spatial transcriptomics)."
             in validator.errors
         )
 
@@ -681,7 +681,8 @@ class TestCheckSpatial:
         validator._check_spatial_uns()
         assert validator.errors == [
             "uns['spatial'] is only allowed when obs['assay_ontology_term_id'] is either "
-            "a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)"
+            "a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or "
+            "a descendant of 'EFO:0920001' (bead-based spatial transcriptomics)"
         ]
 
     @pytest.mark.parametrize(
@@ -706,7 +707,8 @@ class TestCheckSpatial:
             validator._check_spatial_uns()
             assert validator.errors == [
                 "A dict in uns['spatial'] is required when obs['assay_ontology_term_id'] is "
-                "either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)."
+                "either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or "
+                "a descendant of 'EFO:0920001' (bead-based spatial transcriptomics)."
             ]
             validator.reset()
         else:
@@ -725,7 +727,7 @@ class TestCheckSpatial:
         # Confirm spatial is required for Slide-seqV2.
         validator._check_spatial_uns()
         assert validator.errors == [
-            "A dict in uns['spatial'] is required when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)."
+            "A dict in uns['spatial'] is required when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or a descendant of 'EFO:0920001' (bead-based spatial transcriptomics)."
         ]
 
     def test__validate_spatial_allowed_keys_error(self):
@@ -760,7 +762,7 @@ class TestCheckSpatial:
         else:
             # if not spatial, MUST NOT speciffy `is_single`
             assert validator.errors == [
-                "uns['spatial'] is only allowed when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)"
+                "uns['spatial'] is only allowed when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or a descendant of 'EFO:0920001' (bead-based spatial transcriptomics)"
             ]
 
     def test__validate_is_single_required_slide_seqV2_error(self):
@@ -844,7 +846,7 @@ class TestCheckSpatial:
             validator._check_spatial_uns()
             # Report the most general top level error
             assert validator.errors == [
-                "uns['spatial'] is only allowed when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)"
+                "uns['spatial'] is only allowed when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or a descendant of 'EFO:0920001' (bead-based spatial transcriptomics)"
             ]
 
     @pytest.mark.parametrize("library_id", [None, "invalid", 1, 1.0, True])
@@ -1189,7 +1191,7 @@ class TestCheckSpatial:
         assert validator.errors
         assert (
             "When obs['assay_ontology_term_id'] is either a descendant"
-            " of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2), all observations must contain the same value."
+            " of 'EFO:0010961' (Visium Spatial Gene Expression) or a descendant of 'EFO:0920001' (bead-based spatial transcriptomics), all observations must contain the same value."
         ) in validator.errors[0]
 
     def test__validate_assay_type_ontology_term_id_not_unique_ok(self, valid_adata):
@@ -1259,7 +1261,16 @@ class TestCheckSpatial:
         )
         validator.reset()
 
-    @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0022858", "EFO:0030062", "EFO:0022860"])
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id",
+        [
+            "EFO:0022858",
+            "EFO:0030062",
+            "EFO:0022860",
+            "EFO:0920002",  # Curio Seeker, 3mm
+            "EFO:0920003",  # Curio Seeker, 10mm
+        ],
+    )
     def test__validate_tissue_position_not_required(self, assay_ontology_term_id):
         validator: Validator = Validator()
         validator._set_schema_def()

@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 ASSAY_VISIUM = "EFO:0010961"  # generic term
 ASSAY_VISIUM_11M = "EFO:0022860"  # specific visium assay
-ASSAY_SLIDE_SEQV2 = "EFO:0030062"
+ASSAY_BEAD_BASED_SPATIAL = "EFO:0920001"  # generic parent term (Slide-seqV2, Curio Seeker, etc.)
 
 VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 4992
 VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 14336
@@ -49,9 +49,11 @@ SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM = 4000
 
 CONDITION_IS_VISIUM = "a descendant of 'EFO:0010961' (Visium Spatial Gene Expression)"
 CONDITION_IS_VISIUM_11M = f"'{ASSAY_VISIUM_11M} (Visium CytAssist Spatial Gene Expression, 11mm)"
-CONDITION_IS_SEQV2 = f"'{ASSAY_SLIDE_SEQV2}' (Slide-seqV2)"
+CONDITION_IS_BEAD_BASED_SPATIAL = f"a descendant of '{ASSAY_BEAD_BASED_SPATIAL}' (bead-based spatial transcriptomics)"
 
-ERROR_SUFFIX_SPATIAL = f"obs['assay_ontology_term_id'] is either {CONDITION_IS_VISIUM} or {CONDITION_IS_SEQV2}"
+ERROR_SUFFIX_SPATIAL = (
+    f"obs['assay_ontology_term_id'] is either {CONDITION_IS_VISIUM} or {CONDITION_IS_BEAD_BASED_SPATIAL}"
+)
 ERROR_SUFFIX_VISIUM = f"obs['assay_ontology_term_id'] is {CONDITION_IS_VISIUM}"
 ERROR_SUFFIX_VISIUM_11M = f"obs['assay_ontology_term_id'] is {CONDITION_IS_VISIUM_11M}"
 
@@ -175,16 +177,21 @@ class Validator:
 
     def _is_supported_spatial_assay(self) -> bool:
         """
-        Determine if the assay_ontology_term_id is either Visium (EFO:0010961) or Slide-seqV2 (EFO:0030062).
+        Determine if the assay_ontology_term_id is either a descendant of Visium (EFO:0010961)
+        or a descendant of bead-based spatial transcriptomics (EFO:0920001).
 
-        :return True if assay_ontology_term_id is Visium or Slide-seqV2, False otherwise.
+        :return True if assay_ontology_term_id is a supported spatial assay, False otherwise.
         :rtype bool
         """
         if self.is_spatial is None:
             try:
                 _spatial = (
                     self._is_visium_including_descendants()
-                    or self.adata.obs.assay_ontology_term_id.isin([ASSAY_SLIDE_SEQV2]).astype(bool).any()
+                    or self.adata.obs.assay_ontology_term_id.apply(
+                        lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_BEAD_BASED_SPATIAL, False)
+                    )
+                    .astype(bool)
+                    .any()
                 )
                 self.is_spatial = bool(_spatial)
             except AttributeError:
