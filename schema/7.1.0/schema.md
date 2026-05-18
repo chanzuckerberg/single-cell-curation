@@ -862,7 +862,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
             for <i>role</i> and its descendants
           </li>
         </ul>
-          <br>If the experimental condition is a diet perturbation, then the value MUST include either <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0002755"><code>"EFO:0002755"</code></a> for <i>diet</i>, its most accurate descendant, or  <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0002755"><code>"EFO:0002756"</code></a> for <i>fasting</i> <br><br>If the experimental condition is a temperature perturbation, then the value MUST include <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0001702"><code>"EFO:0001702"</code></a> for <i>temperature</i>.<br><br>No other values MUST be present for experimental conditions. 
+          <br>If the experimental condition is a diet perturbation, then the value MUST include either <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0002755"><code>"EFO:0002755"</code></a> for <i>diet</i>, its most accurate descendant, or  <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0002756"><code>"EFO:0002756"</code></a> for <i>fasting</i> <br><br>If the experimental condition is a temperature perturbation, then the value MUST include <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0001702"><code>"EFO:0001702"</code></a> for <i>temperature</i>.<br><br>No other values MUST be present for experimental conditions. 
       </td>
     </tr>
   </tbody>
