@@ -1,7 +1,12 @@
 name: Run Ontology Bump Dry Run
 
 on:
-  workflow_dispatch
+  workflow_dispatch:
+    inputs:
+      schema_version:
+        description: "Target schema version to evaluate deprecations against (must match an installed cellxgene-ontology-guide schema version, e.g. 7.1.0). Leave blank to use the cellxgene-schema package version on this branch."
+        required: false
+        default: ""
 
 permissions:
   id-token: write
@@ -42,6 +47,7 @@ jobs:
         run: python3 -m scripts.schema_bump_dry_run_ontologies.ontology_bump_dry_run
         env:
           corpus_env: "prod"
+          schema_version: ${{ inputs.schema_version }}
       - name: Store JSON with Replaced By Ontology Term Mappings
         uses: actions/cache/save@v4
         with:
