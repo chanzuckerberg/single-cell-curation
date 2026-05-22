@@ -1,0 +1,108 @@
+name: Slack File Upload
+description: >
+  Upload a file to a Slack channel via the v2 external upload flow
+  (files.getUploadURLExternal + files.completeUploadExternal). The
+  legacy files.upload endpoint was retired by Slack on 2025-03-11.
+inputs:
+  file:
+    description: Path to the file to upload
+    required: true
+  channel:
+    description: Slack channel ID (preferred) or channel name (with or without leading #)
+    required: true
+  bot_token:
+    description: Slack bot token with files:write (and channels:read if passing a name)
+    required: true
+  initial_comment:
+    description: Message posted alongside the file
+    required: false
+    default: ""
+  title:
+    description: Title shown for the file in Slack
+    required: false
+    default: ""
+runs:
+  using: composite
+  steps:
+    - name: Upload to Slack
+      shell: bash
+      env:
+        SLACK_BOT_TOKEN: ${{ inputs.bot_token }}
+        SLACK_CHANNEL: ${{ inputs.channel }}
+        SLACK_FILE: ${{ inputs.file }}
+        SLACK_INITIAL_COMMENT: ${{ inputs.initial_comment }}
+        SLACK_TITLE: ${{ inputs.title }}
+      run: |
+        set -euo pipefail
+
+        if [ ! -f "$SLACK_FILE" ]; then
+          echo "::error::file not found: $SLACK_FILE"
+          exit 1
+        fi
+
+        channel_input="${SLACK_CHANNEL#\#}"
+        if [[ "$channel_input" =~ ^[CGDU][A-Z0-9]{8,}$ ]]; then
+          channel_id="$channel_input"
+        else
+          echo "Resolving channel name '$channel_input' to ID via conversations.list"
+          cursor=""
+          channel_id=""
+          while :; do
+            args=(--data-urlencode "limit=200" --data-urlencode "types=public_channel,private_channel")
+            if [ -n "$cursor" ]; then
+              args+=(--data-urlencode "cursor=$cursor")
+            fi
+            resp=$(curl -sS -G "https://slack.com/api/conversations.list" \
+              -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+              "${args[@]}")
+            if [ "$(jq -r '.ok' <<<"$resp")" != "true" ]; then
+              echo "::error::conversations.list failed: $(jq -r '.error' <<<"$resp")"
+              exit 1
+            fi
+            channel_id=$(jq -r --arg n "$channel_input" '.channels[] | select(.name == $n) | .id' <<<"$resp" | head -n1)
+            if [ -n "$channel_id" ]; then break; fi
+            cursor=$(jq -r '.response_metadata.next_cursor // ""' <<<"$resp")
+            if [ -z "$cursor" ]; then
+              echo "::error::channel '$channel_input' not found (bot may be missing channels:read scope or not be a member)"
+              exit 1
+            fi
+          done
+        fi
+        echo "Using channel id: $channel_id"
+
+        filename=$(basename "$SLACK_FILE")
+        filesize=$(stat -c%s "$SLACK_FILE")
+        title="${SLACK_TITLE:-$filename}"
+
+        upload_resp=$(curl -sS -X POST "https://slack.com/api/files.getUploadURLExternal" \
+          -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+          --data-urlencode "filename=$filename" \
+          --data-urlencode "length=$filesize")
+        if [ "$(jq -r '.ok' <<<"$upload_resp")" != "true" ]; then
+          echo "::error::files.getUploadURLExternal failed: $(jq -r '.error' <<<"$upload_resp")"
+          exit 1
+        fi
+        upload_url=$(jq -r '.upload_url' <<<"$upload_resp")
+        file_id=$(jq -r '.file_id' <<<"$upload_resp")
+
+        http_code=$(curl -sS -o /tmp/slack_upload_body -w "%{http_code}" -X POST "$upload_url" \
+          -F "file=@$SLACK_FILE")
+        if [ "$http_code" != "200" ]; then
+          echo "::error::file content upload returned HTTP $http_code"
+          cat /tmp/slack_upload_body || true
+          exit 1
+        fi
+
+        complete_payload=$(jq -n \
+          --arg id "$file_id" --arg title "$title" \
+          --arg channel "$channel_id" --arg comment "$SLACK_INITIAL_COMMENT" \
+          '{files: [{id: $id, title: $title}], channel_id: $channel, initial_comment: $comment}')
+        complete_resp=$(curl -sS -X POST "https://slack.com/api/files.completeUploadExternal" \
+          -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+          -H "Content-Type: application/json; charset=utf-8" \
+          -d "$complete_payload")
+        if [ "$(jq -r '.ok' <<<"$complete_resp")" != "true" ]; then
+          echo "::error::files.completeUploadExternal failed: $(jq -r '.error' <<<"$complete_resp")"
+          exit 1
+        fi
+        echo "Uploaded $filename to channel $channel_id"
