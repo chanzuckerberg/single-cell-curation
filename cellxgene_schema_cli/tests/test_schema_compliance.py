@@ -1719,14 +1719,14 @@ class TestObs:
         validator = validator_with_adata
         obs = validator.adata.obs
         obs["suspension_type"] = "nucleus"
-        obs["assay_ontology_term_id"] = "EFO:0022615"  # descendant of EFO:0008994
+        obs["assay_ontology_term_id"] = "EFO:0022955"  # descendant of EFO:0008994
         obs["suspension_type"] = obs["suspension_type"].astype("category")
         obs["assay_ontology_term_id"] = obs["assay_ontology_term_id"].astype("category")
         validator.validate_adata()
         assert validator.errors == [
             "ERROR: Column 'suspension_type' in dataframe 'obs' contains invalid values "
             "'['nucleus']'. Values must be one of ['na'] when "
-            "'assay_ontology_term_id' is in ['EFO:0022615']"
+            "'assay_ontology_term_id' is in ['EFO:0022955']"
         ]
 
     def test_suspension_type_with_descendant_term_id_success(self, validator_with_adata):
