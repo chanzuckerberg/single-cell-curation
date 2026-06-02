@@ -69,6 +69,20 @@ def migrate(input_file, output_file, collection_id, dataset_id):
     # elif collection_id == "<collection_2_id>":
     #   <custom transformation logic beyond scope of replace_ontology_term>
     # ...
+    if dataset_id == "55003f67-c494-46f1-83fb-902745646379":
+        utils.replace_ontology_term(dataset.obs, "disease", {"MONDO:0021074": "MONDO:1060215"})
+
+    elif dataset_id == "37a17b78-4864-4a42-b67b-31c00962795a":
+        utils.map_ontology_term(
+            dataset.obs,
+            "disease",
+            "donor_id",
+            {
+                "Donor_872": "MONDO:0001627 || MONDO:0700351",
+                "Donor_1104": "MONDO:0001627 || MONDO:0004648 || MONDO:0700351",
+                "Donor_463": "MONDO:0700351"
+            },
+        )
 
     if GENCODE_MAPPER:
         dataset = utils.remap_deprecated_features(adata=dataset, remapped_features=GENCODE_MAPPER)
