@@ -80,7 +80,7 @@ def migrate(input_file, output_file, collection_id, dataset_id):
             {
                 "Donor_872": "MONDO:0001627 || MONDO:0700351",
                 "Donor_1104": "MONDO:0001627 || MONDO:0004648 || MONDO:0700351",
-                "Donor_463": "MONDO:0700351"
+                "Donor_463": "MONDO:0700351",
             },
         )
 
