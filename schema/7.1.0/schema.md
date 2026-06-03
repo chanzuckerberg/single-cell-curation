@@ -226,21 +226,21 @@ The following ontology dependencies are *pinned* for this version of the schema.
 |:--|:--|:--|:--|
 | [C. elegans Development Ontology] | WBls: |  [2025-08-12 WS298](https://github.com/obophenotype/c-elegans-development-ontology/releases/tag/v2025-08-12) | [wbls.owl](https://github.com/obophenotype/c-elegans-development-ontology/blob/v2025-08-12/wbls.owl) |
 | [C. elegans Gross Anatomy Ontology] | WBbt: | [2025-08-18 WS298](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/releases/tag/v2025-08-18) | [wbbt.owl](https://github.com/obophenotype/c-elegans-gross-anatomy-ontology/blob/v2025-08-18/wbbt.owl) |
-| [Cell Ontology] | CL: |  [2025-07-30](https://github.com/obophenotype/cell-ontology/releases/tag/v2025-07-30) | [cl.owl](https://github.com/obophenotype/cell-ontology/releases/download/v2025-07-30/cl.owl)|
-| [Cellosaurus] | CVCL_ | 53.0 | [cellosaurus.obo ](https://ftp.expasy.org/databases/cellosaurus/cellosaurus.obo)_(Cellosaurus may replace this download with a newer release. Previous releases are <b>unavailable</b>. )_  |
-| [Chemical Entities of Biological Interest] | CHEBI: | [2026-01-06](https://ftp.ebi.ac.uk/pub/databases/chebi/ontology/)<br>248 | [chebi-lite.owl](https://ftp.ebi.ac.uk/pub/databases/chebi/ontology/chebi_lite.owl.gz) _(CHEBI may replace this download with a newer release. Previous releases are [available](https://ftp.ebi.ac.uk/pub/databases/chebi/archive/). )_ |
-| [Drosophila Anatomy Ontology] | FBbt: | [2025-08-07](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/tag/v2025-08-07)| [fbbt.owl](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/download/v2025-08-07/fbbt.owl) |
-| [Drosophila Development Ontology] | FBdv: | [2025-05-29](https://github.com/FlyBase/drosophila-developmental-ontology/releases/tag/v2025-05-29) | [fbdv.owl](https://github.com/FlyBase/drosophila-developmental-ontology/releases/download/v2025-05-29/fbdv.owl) |
-| [Experimental Factor Ontology] | EFO: | [2025-09-15 EFO 3.82.0](https://github.com/EBISPOT/efo/releases/tag/v3.82.0) | [efo.owl](https://github.com/EBISPOT/efo/releases/download/v3.82.0/efo.owl) |
-| [Human Ancestry Ontology] | AfPO:<br>HANCESTRO: | [2025-04-01](https://github.com/EBISPOT/hancestro/releases/tag/v2025-04-01) | [hancestro.owl](https://github.com/EBISPOT/hancestro/blob/v2025-04-01/hancestro.owl) |
+| [Cell Ontology] | CL: |  [2026-03-26](https://github.com/obophenotype/cell-ontology/releases/tag/v2026-03-26) | [cl.owl](https://github.com/obophenotype/cell-ontology/releases/download/v2026-03-26/cl.owl)|
+| [Cellosaurus] | CVCL_ | 55.0 | [cellosaurus.obo ](https://ftp.expasy.org/databases/cellosaurus/cellosaurus.obo)_(Cellosaurus may replace this download with a newer release. Previous releases are <b>unavailable</b>. )_  |
+| [Chemical Entities of Biological Interest] | CHEBI: | [2026-05-01](https://ftp.ebi.ac.uk/pub/databases/chebi/ontology/) | [chebi-lite.owl](https://ftp.ebi.ac.uk/pub/databases/chebi/ontology/chebi_lite.owl.gz) _(CHEBI may replace this download with a newer release. Previous releases are [available](https://ftp.ebi.ac.uk/pub/databases/chebi/archive/). )_ |
+| [Drosophila Anatomy Ontology] | FBbt: | [2026-04-03](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/tag/v2026-04-03)| [fbbt.owl](https://github.com/FlyBase/drosophila-anatomy-developmental-ontology/releases/download/v2026-04-03/fbbt.owl) |
+| [Drosophila Development Ontology] | FBdv: | [2026-04-02](https://github.com/FlyBase/drosophila-developmental-ontology/releases/tag/v2026-04-02) | [fbdv.owl](https://github.com/FlyBase/drosophila-developmental-ontology/releases/download/v2026-04-02/fbdv.owl) |
+| [Experimental Factor Ontology] | EFO: | [2026-05-18 EFO 3.90.0](https://github.com/EBISPOT/efo/releases/tag/v3.90.0) | [efo.owl](https://github.com/EBISPOT/efo/releases/download/v3.90.0/efo.owl) |
+| [Human Ancestry Ontology] | AfPO:<br>HANCESTRO: | [2025-10-14](https://github.com/EBISPOT/hancestro/releases/tag/v2025-10-14) | [hancestro.owl](https://github.com/EBISPOT/hancestro/blob/v2025-10-14/hancestro.owl) |
 | [Human Developmental Stages] |  HsapDv: | [2025-01-23](https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/v2025-01-23) | [hsapdv.owl](https://github.com/obophenotype/developmental-stage-ontologies/releases/download/v2025-01-23/hsapdv.owl) |
-| [Mondo Disease Ontology] | MONDO: | [2025-09-02](https://github.com/monarch-initiative/mondo/releases/tag/v2025-09-02) | [mondo.owl](https://github.com/monarch-initiative/mondo/releases/download/v2025-09-02/mondo.owl) |
+| [Mondo Disease Ontology] | MONDO: | [2026-05-05](https://github.com/monarch-initiative/mondo/releases/tag/v2026-05-05) | [mondo.owl](https://github.com/monarch-initiative/mondo/releases/download/v2026-05-05/mondo.owl) |
 | [Mouse Developmental Stages]| MmusDv: | [2025-01-23](https://github.com/obophenotype/developmental-stage-ontologies/releases/tag/v2025-01-23) | [mmusdv.owl](https://github.com/obophenotype/developmental-stage-ontologies/releases/download/v2025-01-23/mmusdv.owl) |
-| [NCBI organismal classification] |  NCBITaxon: | [2025-09-11](https://github.com/obophenotype/ncbitaxon/releases/tag/v2025-09-11) | [ncbitaxon.owl](https://github.com/obophenotype/ncbitaxon/releases/download/v2025-09-11/ncbitaxon.owl.gz) |
+| [NCBI organismal classification] |  NCBITaxon: | [2026-05-13](https://github.com/obophenotype/ncbitaxon/releases/tag/v2026-05-13) | [ncbitaxon.owl](https://github.com/obophenotype/ncbitaxon/releases/download/v2026-05-13/ncbitaxon.owl.gz) |
 | [Phenotype And Trait Ontology] | PATO: | [2025-05-14](https://github.com/pato-ontology/pato/releases/tag/v2025-05-14) | [pato.owl](https://github.com/pato-ontology/pato/blob/v2025-05-14/pato.owl)  |
-| [Uberon multi-species anatomy ontology] |  UBERON: | [2025-08-15](https://github.com/obophenotype/uberon/releases/tag/v2025-08-15) | [uberon.owl](https://github.com/obophenotype/uberon/releases/download/v2025-08-15/uberon.owl) |
-| [UniProt Knowledgebase] | uniprot: | [08-Oct-2025](https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/)<br>2025_04 | [uniprot_sprot.xml](https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz) _(UniProt may replace this download with a newer release. Previous releases are [available](https://ftp.uniprot.org/pub/databases/uniprot/previous_major_releases/).)_ | 
-| [Zebrafish Anatomy Ontology] | ZFA:<br>ZFS: | [2025-09-05](https://github.com/ZFIN/zebrafish-anatomical-ontology/releases/tag/v2025-09-05) | [zfa.owl](https://github.com/ZFIN/zebrafish-anatomical-ontology/blob/v2025-09-05/zfa.owl) |
+| [Uberon multi-species anatomy ontology] |  UBERON: | [2026-04-01](https://github.com/obophenotype/uberon/releases/tag/v2026-04-01) | [uberon.owl](https://github.com/obophenotype/uberon/releases/download/v2026-04-01/uberon.owl) |
+| [UniProt Knowledgebase] | uniprot: | [28-Jan-2026](https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/)<br>2026_01 | [uniprot_sprot.xml](https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz) _(UniProt may replace this download with a newer release. Previous releases are [available](https://ftp.uniprot.org/pub/databases/uniprot/previous_major_releases/).)_ | 
+| [Zebrafish Anatomy Ontology] | ZFA:<br>ZFS: | [2026-03-31](https://github.com/ZFIN/zebrafish-anatomical-ontology/releases/tag/v2026-03-31) | [zfa.owl](https://github.com/ZFIN/zebrafish-anatomical-ontology/blob/v2026-03-31/zfa.owl) |
 | | | | |
 
 [C. elegans Development Ontology]: https://obofoundry.org/ontology/wbls.html
@@ -436,7 +436,7 @@ Curators MUST annotate the following columns in the `obs` dataframe:
           <li>
             the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010183"><code>"EFO:0010183"</code></a>  for <i>single cell library construction</i> excluding <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> while allowing its descendants
           </li></ul>
-        If <code>assay_ontology_term_id</code> is either a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i> then all observations MUST contain the same value.<br><br>
+        If <code>assay_ontology_term_id</code> is either a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0920001"><code>"EFO:0920001"</code></a> for <i>bead-based spatial transcriptomics</i> then all observations MUST contain the same value.<br><br>
         If <code>assay_ontology_term_id</code> is either <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010891"><code>"EFO:0010891"</code></a> for <i>scATAC-seq</i> or its descendants, there are additional requirements for separate fragments file assets documented in <a href="#scatac-seq-assets">scATAC-seq assets</a>.<br><br>
         An assay based on 10X Genomics products SHOULD be the most accurate descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0008995"><code>"EFO:0008995"</code></a> for <i>10x technology</i>. An assay based on <i>SMART (Switching Mechanism at the 5' end of the RNA Template) or SMARTer technology</i> SHOULD either be <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010184"><code>"EFO:0010184"</code></a> for <i>Smart-like</i> or preferably its most accurate descendant.<br><br>
        <br>Recommended values for specific assays:
@@ -1501,7 +1501,7 @@ In order to display a dataset in CELLxGENE Explorer, uns['is_pre_analysis'] MUST
     </tr>
     <tr>
       <th>Annotator</th>
-         <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is neither a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> nor <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i>.<br><br>Curator MAY annotate if <code>assay_ontology_term_id</code> is either a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i>.</td>
+         <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is neither a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> nor a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0920001"><code>"EFO:0920001"</code></a> for <i>bead-based spatial transcriptomics</i>.<br><br>Curator MAY annotate if <code>assay_ontology_term_id</code> is either a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0920001"><code>"EFO:0920001"</code></a> for <i>bead-based spatial transcriptomics</i>.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1902,7 +1902,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i>; otherwise, this key MUST NOT be present.</td>
+      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0920001"><code>"EFO:0920001"</code></a> for <i>bead-based spatial transcriptomics</i>; otherwise, this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1931,7 +1931,7 @@ Curators MUST annotate the following keys and values in `uns`:
     </tr>
     <tr>
       <th>Annotator</th>
-      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i>; otherwise, this key MUST NOT be present.</td>
+      <td>Curator MUST annotate if <code>assay_ontology_term_id</code> is a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> or a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0920001"><code>"EFO:0920001"</code></a> for <i>bead-based spatial transcriptomics</i>; otherwise, this key MUST NOT be present.</td>
     </tr>
     <tr>
       <th>Value</th>
@@ -1939,7 +1939,7 @@ Curators MUST annotate the following keys and values in `uns`:
         <ul>
         <li>if <code>assay_ontology_term_id</code> is a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0010961"><code>"EFO:0010961"</code></a> for <i>Visium Spatial Gene Expression</i> and the dataset represents one Space Ranger output for a single tissue section
       </li>
-      <li> if <code>assay_ontology_term_id</code> is <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0030062"><code>"EFO:0030062"</code></a> for <i>Slide-seqV2</i> and the dataset represents the output for a single array on a puck </li>
+      <li> if <code>assay_ontology_term_id</code> is a descendant of <a href="https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0920001"><code>"EFO:0920001"</code></a> for <i>bead-based spatial transcriptomics</i> and the dataset represents the output for a single array on a puck </li>
         </ul>
         Otherwise, this MUST be <code>False</code>.
         </td>
@@ -3115,6 +3115,7 @@ Chromosome Tables are determined by the reference assembly for the gene annotati
   * Added `perturbation_types`
   * Updated the requirements for `cell_type_ontology_term_id` to depend on `[uns]['is_pre_analysis']`
   * Updated the requirements for `cell_type` to depend on `[uns]['is_pre_analysis']`
+  * Updated the spatial requirements for `assay_ontology_term_id` to accept descendants of `"EFO:0920001"` for _bead-based spatial transcriptomics_ (e.g. _Slide-seqV2_, _Curio Seeker_) in place of the prior exact-match on `"EFO:0030062"` for _Slide-seqV2_
 * obsm (Embeddings)
   * Updated the general requirements to depend on `[uns]['is_pre_analysis']`
 * uns (Dataset Metadata)

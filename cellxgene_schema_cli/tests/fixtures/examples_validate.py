@@ -16,6 +16,7 @@ FIXTURES_ROOT = os.path.join(os.path.dirname(__file__))
 h5ad_dir = os.path.join(FIXTURES_ROOT, "h5ads")
 h5ad_valid = os.path.join(h5ad_dir, "example_valid.h5ad")
 h5ad_invalid = os.path.join(h5ad_dir, "example_invalid_CL.h5ad")
+h5ad_perturbations = os.path.join(h5ad_dir, "small_perturbations.h5ad")
 
 # -----------------------------------------------------------------#
 # Manually creating minimal anndata objects.
@@ -639,3 +640,915 @@ adata_with_labels_unmigrated = anndata.AnnData(
     obsm={"X_umap": numpy.zeros([unmigrated_X.shape[0], 2])},
 )
 adata_with_labels_unmigrated.raw = adata_with_labels_unmigrated.copy()
+
+# -----------------------------------------------------------------#
+# Genetic perturbation fixtures (schema 7.1.0)
+
+gp_id_1 = "CERS6-2"
+gp_id_2 = "KARS-1"
+
+# -------------------------
+# Valid: non-control perturbations
+# - No obs row may contain "na"
+# - One row uses a single ID, the other uses two IDs joined with " || " in lexical order
+good_obs_gene_perturbations = good_obs.copy()
+good_obs_gene_perturbations["genetic_perturbation_id"] = pd.Categorical(
+    [gp_id_1, f"{gp_id_1} || {gp_id_2}"],
+    categories=[gp_id_1, gp_id_2, f"{gp_id_1} || {gp_id_2}"],
+)
+good_obs_gene_perturbations["genetic_perturbation_strategy"] = pd.Categorical(
+    ["CRISPR knockout screen", "CRISPR knockout screen"],
+    categories=[
+        "control",
+        "CRISPR activation screen",
+        "CRISPR interference screen",
+        "CRISPR knockout mutant",
+        "CRISPR knockout screen",
+        "no perturbations",
+    ],
+)
+
+good_uns_with_gene_perturbations_curator = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "CAGAGGGAGGAGAGAACCG",
+            "protospacer_adjacent_motif": "3' NGG",
+        },
+        gp_id_2: {
+            "role": "targeting",
+            "protospacer_sequence": "GGGCCCTCCGGGAAGATGG",
+            "protospacer_adjacent_motif": "3' NGG",
+        },
+    },
+}
+
+adata_gene_perturbations = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations,
+    uns=good_uns_with_gene_perturbations_curator,
+    obsm=good_obsm,
+    var=good_var,
+)
+adata_gene_perturbations.raw = adata_gene_perturbations.copy()
+adata_gene_perturbations.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: control perturbations (strategy == "control" => role MUST be "control")
+gp_control_id = "CTRL-1"
+good_obs_gene_perturbations_control = good_obs.copy()
+good_obs_gene_perturbations_control["genetic_perturbation_id"] = pd.Categorical(
+    [gp_control_id, gp_control_id],
+    categories=[gp_control_id],
+)
+good_obs_gene_perturbations_control["genetic_perturbation_strategy"] = pd.Categorical(
+    ["control", "control"],
+    categories=[
+        "control",
+        "CRISPR activation screen",
+        "CRISPR interference screen",
+        "CRISPR knockout mutant",
+        "CRISPR knockout screen",
+        "no perturbations",
+    ],
+)
+
+good_uns_with_gene_perturbations_control = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_control_id: {
+            "role": "control",
+            "protospacer_sequence": "TTTTTTTTTTTTTTTTTTTT",  # 20bp
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+
+adata_gene_perturbations_control = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations_control,
+    uns=good_uns_with_gene_perturbations_control,
+    obsm=good_obsm,
+    var=good_var,
+)
+adata_gene_perturbations_control.raw = adata_gene_perturbations_control.copy()
+adata_gene_perturbations_control.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Invalid: strategy is "no perturbations" when id is not "na"
+bad_obs_gene_perturbations_bad_strategy = good_obs.copy()
+bad_obs_gene_perturbations_bad_strategy["genetic_perturbation_id"] = pd.Categorical(
+    [gp_id_1, gp_id_1],
+    categories=[gp_id_1],
+)
+bad_obs_gene_perturbations_bad_strategy["genetic_perturbation_strategy"] = pd.Categorical(
+    ["no perturbations", "no perturbations"],
+    categories=[
+        "control",
+        "CRISPR activation screen",
+        "CRISPR interference screen",
+        "CRISPR knockout mutant",
+        "CRISPR knockout screen",
+        "no perturbations",
+    ],
+)
+adata_gene_perturbations_invalid_bad_strategy = anndata.AnnData(
+    X=X.copy(),
+    obs=bad_obs_gene_perturbations_bad_strategy,
+    uns=good_uns_with_gene_perturbations_curator,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: multi-id not in ascending lexical order OR contains duplicates
+bad_obs_gene_perturbations_bad_multi = good_obs.copy()
+bad_obs_gene_perturbations_bad_multi["genetic_perturbation_id"] = pd.Categorical(
+    [f"{gp_id_2} || {gp_id_1}", f"{gp_id_1} || {gp_id_1}"],  # wrong order, duplicate
+    categories=[gp_id_1, gp_id_2, f"{gp_id_2} || {gp_id_1}", f"{gp_id_1} || {gp_id_1}"],
+)
+bad_obs_gene_perturbations_bad_multi["genetic_perturbation_strategy"] = pd.Categorical(
+    ["CRISPR knockout screen", "CRISPR knockout screen"],
+    categories=[
+        "control",
+        "CRISPR activation screen",
+        "CRISPR interference screen",
+        "CRISPR knockout mutant",
+        "CRISPR knockout screen",
+        "no perturbations",
+    ],
+)
+adata_gene_perturbations_invalid_bad_multi = anndata.AnnData(
+    X=X.copy(),
+    obs=bad_obs_gene_perturbations_bad_multi,
+    uns=good_uns_with_gene_perturbations_curator,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: obs references an ID missing from uns['genetic_perturbations']
+bad_obs_gene_perturbations_missing_key = good_obs.copy()
+bad_obs_gene_perturbations_missing_key["genetic_perturbation_id"] = pd.Categorical(
+    ["MISSING_ID", "MISSING_ID"],
+    categories=["MISSING_ID"],
+)
+bad_obs_gene_perturbations_missing_key["genetic_perturbation_strategy"] = pd.Categorical(
+    ["CRISPR knockout screen", "CRISPR knockout screen"],
+    categories=[
+        "control",
+        "CRISPR activation screen",
+        "CRISPR interference screen",
+        "CRISPR knockout mutant",
+        "CRISPR knockout screen",
+        "no perturbations",
+    ],
+)
+adata_gene_perturbations_invalid_missing_key = anndata.AnnData(
+    X=X.copy(),
+    obs=bad_obs_gene_perturbations_missing_key,
+    uns=good_uns_with_gene_perturbations_curator,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: strategy == "control" but role is not "control"
+bad_uns_gene_perturbations_control_role_mismatch = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_control_id: {
+            "role": "targeting",  # invalid when strategy is "control"
+            "protospacer_sequence": "TTTTTTTTTTTTTTTTTTTT",
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_control_role_mismatch = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations_control,
+    uns=bad_uns_gene_perturbations_control_role_mismatch,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: Discover-only key present in curator submission
+bad_uns_gene_perturbations_contains_derived = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            "protospacer_adjacent_motif": "3' NGG",
+            "derived_genomic_regions": ["16:75647615-75647633(-)"],  # Discover-only
+        }
+    },
+}
+adata_gene_perturbations_invalid_contains_derived = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_gene_perturbations_contains_derived,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: uns has genetic_perturbations but obs is missing required columns
+# This tests the cross-validation check that requires obs columns when uns has genetic_perturbations
+adata_gene_perturbations_invalid_missing_obs_columns = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs.copy(),  # good_obs doesn't have genetic_perturbation_id or genetic_perturbation_strategy
+    uns=good_uns_with_gene_perturbations_curator,  # uns has genetic_perturbations
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: key name contains whitespace (violates key_pattern)
+bad_uns_key_with_whitespace = {
+    **good_uns,
+    "genetic_perturbations": {
+        "guide 1": {  # Contains space
+            "role": "targeting",
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_key_whitespace = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_key_with_whitespace,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: key name contains slash (violates key_pattern)
+bad_uns_key_with_slash = {
+    **good_uns,
+    "genetic_perturbations": {
+        "guide/1": {  # Contains slash
+            "role": "targeting",
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_key_slash = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_key_with_slash,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: key name contains comma (violates key_pattern)
+bad_uns_key_with_comma = {
+    **good_uns,
+    "genetic_perturbations": {
+        "guide,1": {  # Contains comma
+            "role": "targeting",
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_key_comma = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_key_with_comma,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: key name contains single quote (violates key_pattern)
+bad_uns_key_with_quote = {
+    **good_uns,
+    "genetic_perturbations": {
+        "guide'1": {  # Contains single quote
+            "role": "targeting",
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_key_quote = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_key_with_quote,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: protospacer_sequence too short (< 14bp)
+bad_uns_protospacer_too_short = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "ACGTACGTACGT",  # Only 12bp, need 14-22
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_protospacer_short = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_protospacer_too_short,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: protospacer_sequence too long (> 22bp)
+bad_uns_protospacer_too_long = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "ACGTACGTACGTACGTACGTACG",  # 23bp, need 14-22
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_protospacer_long = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_protospacer_too_long,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: protospacer_sequence contains non-ACGT characters
+bad_uns_protospacer_invalid_chars = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "ACGTACGTACGTACGN",  # Contains 'N', need only ACGT
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_protospacer_chars = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_protospacer_invalid_chars,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: protospacer_adjacent_motif wrong format (doesn't start with "3' ")
+bad_uns_pam_wrong_format = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            "protospacer_adjacent_motif": "NGG",  # Missing "3' " prefix
+        }
+    },
+}
+adata_gene_perturbations_invalid_pam_format = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_pam_wrong_format,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: missing required field 'role'
+bad_uns_missing_role = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            # "role": "targeting",  # Missing required field
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_missing_role = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_missing_role,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: missing required field 'protospacer_sequence'
+bad_uns_missing_protospacer = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            # "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",  # Missing required field
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_missing_protospacer = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_missing_protospacer,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: missing required field 'protospacer_adjacent_motif'
+bad_uns_missing_pam = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            # "protospacer_adjacent_motif": "3' NGG",  # Missing required field
+        }
+    },
+}
+adata_gene_perturbations_invalid_missing_pam = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_missing_pam,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: role has invalid enum value
+bad_uns_invalid_role = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "unknown",  # Invalid, must be 'control' or 'targeting'
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_role_enum = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_invalid_role,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: reserved key 'derived_features' present
+bad_uns_contains_derived_features = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "GCTGCTGCTGCTGCTGCTGA",
+            "protospacer_adjacent_motif": "3' NGG",
+            "derived_features": ["ENSG00000012345"],  # Reserved key
+        }
+    },
+}
+adata_gene_perturbations_invalid_contains_derived_features = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_contains_derived_features,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: obs has genetic_perturbation columns but uns is missing genetic_perturbations
+# This tests the dependency that requires uns['genetic_perturbations'] when obs columns are present
+adata_gene_perturbations_invalid_obs_without_uns = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),  # Has genetic_perturbation_id and genetic_perturbation_strategy
+    uns=good_uns,  # Does NOT have genetic_perturbations
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: uns['genetic_perturbations'] uses "na" as a perturbation identifier key.
+# The literal string "na" is reserved (means "no perturbation" in obs) and MUST NOT be a key.
+bad_obs_na_key = good_obs.copy()
+bad_obs_na_key["genetic_perturbation_id"] = pd.Categorical(
+    ["na", "na"],
+    categories=["na"],
+)
+bad_obs_na_key["genetic_perturbation_strategy"] = pd.Categorical(
+    ["no perturbations", "no perturbations"],
+    categories=[
+        "control",
+        "CRISPR activation screen",
+        "CRISPR interference screen",
+        "CRISPR knockout mutant",
+        "CRISPR knockout screen",
+        "no perturbations",
+    ],
+)
+bad_uns_na_key = {
+    **good_uns,
+    "genetic_perturbations": {
+        "na": {
+            "role": "targeting",
+            "protospacer_sequence": "CAGAGGGAGGAGAGAACCG",
+            "protospacer_adjacent_motif": "3' NGG",
+        }
+    },
+}
+adata_gene_perturbations_invalid_na_key = anndata.AnnData(
+    X=X.copy(),
+    obs=bad_obs_na_key,
+    uns=bad_uns_na_key,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: obs contains genetic_perturbation_strategy but genetic_perturbation_id is absent.
+# genetic_perturbation_strategy MUST NOT be present when genetic_perturbation_id is absent.
+bad_obs_strategy_without_id = good_obs.copy()
+bad_obs_strategy_without_id["genetic_perturbation_strategy"] = pd.Categorical(
+    ["CRISPR knockout screen", "CRISPR knockout screen"],
+    categories=[
+        "control",
+        "CRISPR activation screen",
+        "CRISPR interference screen",
+        "CRISPR knockout mutant",
+        "CRISPR knockout screen",
+        "no perturbations",
+    ],
+)
+adata_gene_perturbations_invalid_strategy_without_id = anndata.AnnData(
+    X=X.copy(),
+    obs=bad_obs_strategy_without_id,  # Has genetic_perturbation_strategy but NO genetic_perturbation_id
+    uns=good_uns,  # Does NOT have genetic_perturbations
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: a perturbation entry contains an unrecognised extra key.
+# Additional key-value pairs MUST NOT be present in genetic_perturbations[id].
+bad_uns_extra_key = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "CAGAGGGAGGAGAGAACCG",
+            "protospacer_adjacent_motif": "3' NGG",
+            "extra_annotation": "not_allowed",  # Unknown extra key
+        }
+    },
+}
+adata_gene_perturbations_invalid_extra_key = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_extra_key,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Valid: intended_features present with valid human gene IDs (no version suffix)
+good_uns_with_intended_features = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "CAGAGGGAGGAGAGAACCG",
+            "protospacer_adjacent_motif": "3' NGG",
+            "intended_features": {
+                "ENSG00000141510": "",  # TP53 — value is arbitrary; write_labels will populate
+                "ENSG00000012048": "anything",  # BRCA1
+            },
+        },
+        gp_id_2: {
+            "role": "targeting",
+            "protospacer_sequence": "GGGCCCTCCGGGAAGATGG",
+            "protospacer_adjacent_motif": "3' NGG",
+            # No intended_features — optional field absent is also valid
+        },
+    },
+}
+
+adata_gene_perturbations_with_intended_features = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=good_uns_with_intended_features,
+    obsm=good_obsm,
+    var=good_var,
+)
+adata_gene_perturbations_with_intended_features.raw = adata_gene_perturbations_with_intended_features.copy()
+adata_gene_perturbations_with_intended_features.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Invalid: intended_features key has ENS version suffix (must be stripped)
+# Both perturbation IDs are present so obs cross-validation passes; only the
+# intended_features key is invalid.
+bad_uns_intended_features_versioned_id = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "CAGAGGGAGGAGAGAACCG",
+            "protospacer_adjacent_motif": "3' NGG",
+            "intended_features": {
+                "ENSG00000141510.7": "",  # version suffix — invalid
+            },
+        },
+        gp_id_2: {
+            "role": "targeting",
+            "protospacer_sequence": "GGGCCCTCCGGGAAGATGG",
+            "protospacer_adjacent_motif": "3' NGG",
+        },
+    },
+}
+adata_gene_perturbations_invalid_intended_features_versioned = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_intended_features_versioned_id,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: intended_features key is not a valid gene ID
+bad_uns_intended_features_bad_id = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "CAGAGGGAGGAGAGAACCG",
+            "protospacer_adjacent_motif": "3' NGG",
+            "intended_features": {
+                "NOT_A_GENE_ID": "",
+            },
+        },
+        gp_id_2: {
+            "role": "targeting",
+            "protospacer_sequence": "GGGCCCTCCGGGAAGATGG",
+            "protospacer_adjacent_motif": "3' NGG",
+        },
+    },
+}
+adata_gene_perturbations_invalid_intended_features_bad_id = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_intended_features_bad_id,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -------------------------
+# Invalid: intended_features is not a dict (wrong type)
+bad_uns_intended_features_not_dict = {
+    **good_uns,
+    "genetic_perturbations": {
+        gp_id_1: {
+            "role": "targeting",
+            "protospacer_sequence": "CAGAGGGAGGAGAGAACCG",
+            "protospacer_adjacent_motif": "3' NGG",
+            "intended_features": ["ENSG00000141510"],  # list, not dict
+        },
+        gp_id_2: {
+            "role": "targeting",
+            "protospacer_sequence": "GGGCCCTCCGGGAAGATGG",
+            "protospacer_adjacent_motif": "3' NGG",
+        },
+    },
+}
+adata_gene_perturbations_invalid_intended_features_not_dict = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_gene_perturbations.copy(),
+    uns=bad_uns_intended_features_not_dict,
+    obsm=good_obsm,
+    var=good_var,
+)
+
+# -----------------------------------------------------------------#
+# Experimental condition fixtures (schema 7.1.0)
+
+# -------------------------
+# Valid: single CHEBI term (aspirin = chemical perturbation)
+good_obs_ec_chebi = good_obs.copy()
+good_obs_ec_chebi["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["CHEBI:15365", "CHEBI:15365"],
+    categories=["CHEBI:15365"],
+)
+
+adata_ec_valid_chebi = anndata.AnnData(X=X.copy(), obs=good_obs_ec_chebi, uns=good_uns, obsm=good_obsm, var=good_var)
+adata_ec_valid_chebi.raw = adata_ec_valid_chebi.copy()
+adata_ec_valid_chebi.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: anti-uniprot protein term (antibody)
+good_obs_ec_anti_uniprot = good_obs.copy()
+good_obs_ec_anti_uniprot["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["anti-uniprot:Q99467", "anti-uniprot:Q99467"],
+    categories=["anti-uniprot:Q99467"],
+)
+
+adata_ec_valid_anti_uniprot = anndata.AnnData(
+    X=X.copy(), obs=good_obs_ec_anti_uniprot, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_valid_anti_uniprot.raw = adata_ec_valid_anti_uniprot.copy()
+adata_ec_valid_anti_uniprot.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: uniprot protein term (no anti- prefix)
+good_obs_ec_uniprot = good_obs.copy()
+good_obs_ec_uniprot["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["uniprot:Q99467", "uniprot:Q99467"],
+    categories=["uniprot:Q99467"],
+)
+
+adata_ec_valid_uniprot = anndata.AnnData(
+    X=X.copy(), obs=good_obs_ec_uniprot, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_valid_uniprot.raw = adata_ec_valid_uniprot.copy()
+adata_ec_valid_uniprot.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: EFO:0001702 temperature term
+good_obs_ec_temperature = good_obs.copy()
+good_obs_ec_temperature["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["EFO:0001702", "EFO:0001702"],
+    categories=["EFO:0001702"],
+)
+
+adata_ec_valid_temperature = anndata.AnnData(
+    X=X.copy(), obs=good_obs_ec_temperature, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_valid_temperature.raw = adata_ec_valid_temperature.copy()
+adata_ec_valid_temperature.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: EFO:0002755 diet root term
+good_obs_ec_diet_root = good_obs.copy()
+good_obs_ec_diet_root["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["EFO:0002755", "EFO:0002755"],
+    categories=["EFO:0002755"],
+)
+
+adata_ec_valid_diet_root = anndata.AnnData(
+    X=X.copy(), obs=good_obs_ec_diet_root, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_valid_diet_root.raw = adata_ec_valid_diet_root.copy()
+adata_ec_valid_diet_root.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: EFO:0002757 (a descendant of diet EFO:0002755)
+good_obs_ec_diet_desc = good_obs.copy()
+good_obs_ec_diet_desc["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["EFO:0002757", "EFO:0002757"],
+    categories=["EFO:0002757"],
+)
+
+adata_ec_valid_diet_descendant = anndata.AnnData(
+    X=X.copy(), obs=good_obs_ec_diet_desc, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_valid_diet_descendant.raw = adata_ec_valid_diet_descendant.copy()
+adata_ec_valid_diet_descendant.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: EFO:0002756 fasting (not a descendant of EFO:0002755 diet, but explicitly allowed)
+good_obs_ec_fasting = good_obs.copy()
+good_obs_ec_fasting["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["EFO:0002756", "EFO:0002756"],
+    categories=["EFO:0002756"],
+)
+
+adata_ec_valid_fasting = anndata.AnnData(
+    X=X.copy(), obs=good_obs_ec_fasting, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_valid_fasting.raw = adata_ec_valid_fasting.copy()
+adata_ec_valid_fasting.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: multi-term sorted " || " (CHEBI + EFO:0002755)
+good_obs_ec_multi = good_obs.copy()
+good_obs_ec_multi["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["CHEBI:15365 || EFO:0002755", "CHEBI:15365 || EFO:0002755"],
+    categories=["CHEBI:15365 || EFO:0002755"],
+)
+
+adata_ec_valid_multi = anndata.AnnData(X=X.copy(), obs=good_obs_ec_multi, uns=good_uns, obsm=good_obsm, var=good_var)
+adata_ec_valid_multi.raw = adata_ec_valid_multi.copy()
+adata_ec_valid_multi.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: absent (column not present) — field is not required
+adata_ec_absent = adata  # reuse base adata without the column
+
+# -------------------------
+# Valid: all "na" values — column absent is preferred but this must fail
+# (forbidden_when_all_na)
+bad_obs_ec_all_na = good_obs.copy()
+bad_obs_ec_all_na["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["na", "na"],
+    categories=["na"],
+)
+
+adata_ec_invalid_all_na = anndata.AnnData(X=X.copy(), obs=bad_obs_ec_all_na, uns=good_uns, obsm=good_obsm, var=good_var)
+adata_ec_invalid_all_na.raw = adata_ec_invalid_all_na.copy()
+adata_ec_invalid_all_na.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Invalid: forbidden CHEBI term (CHEBI:23367 = molecular entity)
+bad_obs_ec_forbidden_chebi = good_obs.copy()
+bad_obs_ec_forbidden_chebi["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["CHEBI:23367", "CHEBI:23367"],
+    categories=["CHEBI:23367"],
+)
+
+adata_ec_invalid_forbidden_chebi = anndata.AnnData(
+    X=X.copy(), obs=bad_obs_ec_forbidden_chebi, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_invalid_forbidden_chebi.raw = adata_ec_invalid_forbidden_chebi.copy()
+adata_ec_invalid_forbidden_chebi.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Invalid: EFO term that is not allowed (not EFO:0001702 / not a diet descendant)
+bad_obs_ec_efo_not_allowed = good_obs.copy()
+bad_obs_ec_efo_not_allowed["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["EFO:0009899", "EFO:0009899"],  # 10x 3' v2 assay — valid EFO but not allowed here
+    categories=["EFO:0009899"],
+)
+
+adata_ec_invalid_efo_not_allowed = anndata.AnnData(
+    X=X.copy(), obs=bad_obs_ec_efo_not_allowed, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_invalid_efo_not_allowed.raw = adata_ec_invalid_efo_not_allowed.copy()
+adata_ec_invalid_efo_not_allowed.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Invalid: multi-term unsorted
+bad_obs_ec_unsorted = good_obs.copy()
+bad_obs_ec_unsorted["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["EFO:0002755 || CHEBI:15365", "EFO:0002755 || CHEBI:15365"],  # unsorted (should be CHEBI first)
+    categories=["EFO:0002755 || CHEBI:15365"],
+)
+
+adata_ec_invalid_multi_unsorted = anndata.AnnData(
+    X=X.copy(), obs=bad_obs_ec_unsorted, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_invalid_multi_unsorted.raw = adata_ec_invalid_multi_unsorted.copy()
+adata_ec_invalid_multi_unsorted.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Invalid: reserved column 'experimental_condition' manually set by curator
+bad_obs_ec_reserved = good_obs.copy()
+bad_obs_ec_reserved["experimental_condition"] = pd.Categorical(
+    ["some label", "some label"],
+    categories=["some label"],
+)
+
+adata_ec_invalid_reserved_label_column = anndata.AnnData(
+    X=X.copy(), obs=bad_obs_ec_reserved, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_invalid_reserved_label_column.raw = adata_ec_invalid_reserved_label_column.copy()
+adata_ec_invalid_reserved_label_column.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Invalid: reserved column 'perturbation_types' manually set by curator
+bad_obs_perturbation_types_reserved = good_obs.copy()
+bad_obs_perturbation_types_reserved["perturbation_types"] = pd.Categorical(
+    ["chemical", "chemical"],
+    categories=["chemical"],
+)
+
+adata_ec_invalid_reserved_perturbation_types = anndata.AnnData(
+    X=X.copy(), obs=bad_obs_perturbation_types_reserved, uns=good_uns, obsm=good_obsm, var=good_var
+)
+adata_ec_invalid_reserved_perturbation_types.raw = adata_ec_invalid_reserved_perturbation_types.copy()
+adata_ec_invalid_reserved_perturbation_types.raw.var.drop("feature_is_filtered", axis=1, inplace=True)
+
+# -------------------------
+# Valid: experimental_condition_ontology_term_id + genetic_perturbation_id together
+# (used for perturbation_types derivation: chemical + genetic)
+good_obs_ec_and_gp = good_obs_gene_perturbations.copy()
+good_obs_ec_and_gp["experimental_condition_ontology_term_id"] = pd.Categorical(
+    ["CHEBI:15365", "CHEBI:15365"],
+    categories=["CHEBI:15365"],
+)
+
+adata_ec_valid_with_gp = anndata.AnnData(
+    X=X.copy(),
+    obs=good_obs_ec_and_gp,
+    uns=good_uns_with_gene_perturbations_curator,
+    obsm=good_obsm,
+    var=good_var,
+)
+adata_ec_valid_with_gp.raw = adata_ec_valid_with_gp.copy()
+adata_ec_valid_with_gp.raw.var.drop("feature_is_filtered", axis=1, inplace=True)

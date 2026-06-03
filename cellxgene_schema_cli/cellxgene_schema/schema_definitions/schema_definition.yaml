@@ -1,4 +1,4 @@
-title: Corpora schema version 7.0.0
+title: Corpora schema version 7.1.0
 type: anndata
 # If sparsity of any expression matrix is greater than this and not csr sparse matrix, then there will be warning.
 sparsity: 0.5
@@ -29,18 +29,15 @@ pre_analysis:
     keys:
       cell_type_ontology_term_id:
         allowed: False
-  obsm:
-    required: False
-    allowed: False
-
 components:
   uns:
     type: dict
     required: True
-    reserved_columns:
+    reserved_keys:
       - schema_version
       - schema_reference
       - citation
+      - is_pre_analysis
     deprecated_columns:
       - X_normalization
       - default_field
@@ -106,6 +103,65 @@ components:
         enum:
           - count
           - normal
+      genetic_perturbations:
+        type: dict
+        required: False
+        # The literal string "na" is reserved to mean "no perturbation" in obs and MUST NOT be used
+        # as a perturbation identifier key.
+        forbidden_keys:
+          - na
+        dependencies:
+          - # if obs['genetic_perturbation_id'] is present
+            rule:
+              column: genetic_perturbation_id
+            type: dict
+          - # if obs['genetic_perturbation_id'] is not present
+            rule:
+              exclude_obs_key: genetic_perturbation_id
+            type: forbidden
+        keys:
+          genetic_perturbation_ids:
+            key_pattern: '^[^\s/,"'']+$'  # No whitespace, slash, comma, double or single quotes
+            type: dict
+            # No keys beyond role/protospacer_sequence/protospacer_adjacent_motif/intended_features
+            # (curator-supplied) and derived_genomic_regions/derived_features (Discover-reserved)
+            # are permitted.
+            no_additional_keys: true
+            keys:
+              role:
+                type: string
+                required: True
+                enum:
+                  - control
+                  - targeting
+              protospacer_sequence:
+                type: string
+                required: True
+                # Only uppercase A/C/G/T characters allowed, length 14-22
+                pattern: '^[ACGT]{14,22}$'
+              protospacer_adjacent_motif:
+                type: string
+                required: True
+                # Format like: "3' NGG" where MOTIF uses allowed ambiguity codes
+                pattern: '^3'' [ABCDGHKMNRSTVWY]+$'
+              intended_features:
+                type: dict
+                required: False
+                # Each key MUST be a valid feature_id from the gene reference for the dataset organism.
+                # ENS-prefixed IDs must have version numbers removed (e.g. ENSG00000186092.7 -> ENSG00000186092).
+                # Values are feature_name (or feature_id if no name is assigned); populated by write_labels.
+                # Additional key-value pairs MUST NOT be present.
+                validate_keys_as: feature_id  # triggers generic feature-id key validation
+                add_labels:
+                  - type: feature_name  # populate each dict value with the feature name for its key
+                no_additional_keys: true
+                keys:
+                  feature_ids:
+                    key_pattern: '^\S+$'  # Non-whitespace; deep gene-reference validation done in code
+                    type: string
+            reserved_keys:
+              - derived_genomic_regions
+              - derived_features
   var:
     type: dataframe
     required: True
@@ -114,7 +170,7 @@ components:
       unique: true
       type: feature_id
       add_labels:
-        - type: feature_id
+        - type: feature_name
           to_column: feature_name
         - type: feature_reference
           to_column: feature_reference
@@ -145,7 +201,7 @@ components:
       unique: true
       type: feature_id
       add_labels:
-        - type: feature_id
+        - type: feature_name
           to_column: feature_name
         - type: feature_reference
           to_column: feature_reference
@@ -167,6 +223,8 @@ components:
       - organism_ontology_term_id
     reserved_columns:
       - observation_joinid
+      - experimental_condition
+      - perturbation_types
     columns:
       cell_type_ontology_term_id:
         error_message_suffix: >-
@@ -751,8 +809,162 @@ components:
         add_labels:
           - type: curie
             to_column: development_stage
+      genetic_perturbation_id:
+        type: categorical
+        subtype: str
+        multi_term:
+          delimiter: " || "
+          sorted: True
+          # Each identifier MUST match a key in uns['genetic_perturbations']
+          multi_term_constraints:
+            uns_key: genetic_perturbations.keys()
+        forbidden_when_all_na: True
+        dependencies:
+          - # if uns['genetic_perturbations'] is present
+            rule:
+              uns_key: genetic_perturbations
+            type: dict
+          - # if uns['genetic_perturbations'] is not present
+            rule:
+              exclude_uns_key: genetic_perturbations
+            type: forbidden
+          - # organism must be one of supported organisms for perturbations
+            rule:
+              uns_key: organism_ontology_term_id
+              match_exact:
+                terms:
+                  - NCBITaxon:7955
+                  - NCBITaxon:9606
+                  - NCBITaxon:10090
+            type: categorical
+            subtype: str
+        error_message_suffix: >-
+          The value MUST be either 'na' or one or more genetic perturbation identifiers in ascending lexical order
+          separated by the delimiter ` || ` with no duplication of identifiers. Each identifier MUST match a key in
+          uns['genetic_perturbations'].
+      experimental_condition_ontology_term_id:
+        type: curie
+        required: False
+        forbidden_when_all_na: True
+        curie_constraints:
+          ontologies:
+            - CHEBI
+            - EFO
+            - UniProt
+          stripped_prefixes:
+            UniProt:
+              - "anti-"
+          exceptions:
+            - na
+          forbidden:
+            terms:
+              - CHEBI:23367
+              - CHEBI:24431
+              - CHEBI:24835
+              - CHEBI:24867
+              - CHEBI:24870
+              - CHEBI:25212
+              - CHEBI:25367
+              - CHEBI:25699
+              - CHEBI:33238
+              - CHEBI:33259
+              - CHEBI:33497
+              - CHEBI:33595
+              - CHEBI:33674
+              - CHEBI:33675
+              - CHEBI:36342
+              - CHEBI:36357
+              - CHEBI:36358
+              - CHEBI:36914
+              - CHEBI:37577
+              - CHEBI:50906
+            ancestors:
+              CHEBI:
+                - CHEBI:36342  # subatomic particle and descendants
+                - CHEBI:50906  # role and descendants
+          allowed:
+            terms:
+              EFO:
+                - EFO:0001702  # temperature (exact)
+                - EFO:0002755  # diet (exact match; descendants covered by ancestors below)
+                - EFO:0002756  # fasting (exact; not a descendant of diet)
+              UniProt:
+                - all
+            ancestors:
+              CHEBI:
+                - CHEBI:24431  # chemical entity and descendants
+              EFO:
+                - EFO:0002755  # diet and descendants
+          multi_term:
+            delimiter: " || "
+            sorted: True
+        add_labels:
+          - type: curie
+            to_column: experimental_condition
+        error_message_suffix: >-
+          The value MUST be "na" or one or more term identifiers in ascending lexical order separated by " || "
+          with no duplication. Allowed: descendants of CHEBI:24431 (excluding listed forbidden CHEBI terms),
+          EFO:0001702 (temperature) or EFO:0002755 (diet) or its descendants or EFO:0002756 (fasting),
+          uniprot: terms, anti-uniprot: terms.
       is_primary_data:
         type: bool
+      genetic_perturbation_strategy:
+        type: categorical
+        subtype: str
+        enum:
+          - no perturbations
+          - control
+          - CRISPR activation screen
+          - CRISPR interference screen
+          - CRISPR knockout mutant
+          - CRISPR knockout screen
+        dependencies:
+          - # MUST NOT be present when genetic_perturbation_id is absent (schema: "MUST NOT be present otherwise")
+            rule:
+              exclude_obs_key: genetic_perturbation_id
+            type: forbidden
+          - # If obs['genetic_perturbation_id'] == 'na' then strategy MUST be 'no perturbations'
+            rule:
+              column: genetic_perturbation_id
+              match_exact:
+                terms:
+                  - na
+            type: categorical
+            enum:
+              - no perturbations
+          - # If obs['genetic_perturbation_id'] != 'na' then strategy MUST be one of the listed perturbation strategies
+            rule:
+              column: genetic_perturbation_id
+              exclude_exact:
+                terms:
+                  - na
+            type: categorical
+            enum:
+              - control
+              - CRISPR activation screen
+              - CRISPR interference screen
+              - CRISPR knockout mutant
+              - CRISPR knockout screen
+          - # If genetic_perturbation_strategy == 'control', validate that the corresponding uns['genetic_perturbations'][id]['role'] is 'control'
+            rule:
+              column: genetic_perturbation_strategy
+              match_exact:
+                terms:
+                  - control
+            # Cross-validation: for each ID from column 'genetic_perturbation_id', uns['genetic_perturbations'][ID]['role'] must match expected value
+            type: categorical
+            subtype: str
+            multi_term_constraints:
+              # Source: split genetic_perturbation_id by delimiter, look up each ID in uns dict, check nested key value
+              column: genetic_perturbation_id
+              delimiter: " || "
+              in:
+                uns_key: genetic_perturbations.keys()  # python dict keys
+                nested_constraints:
+                  - key: role
+                    match_exact:
+                      terms:
+                        - control
       donor_id:
         type: categorical
         subtype: str

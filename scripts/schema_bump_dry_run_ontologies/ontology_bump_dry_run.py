@@ -5,6 +5,7 @@ from collections import defaultdict
 
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
 
+from cellxgene_schema_cli.cellxgene_schema import __schema_version__
 from scripts.common.thirdparty.discovery_api import (
     BASE_API,
     fetch_private_collections,
@@ -139,7 +140,8 @@ def dry_run(curator_report_filepath: str, replaced_by_filepath: str) -> None:
     base_url = BASE_API[os.getenv("corpus_env", default="dev")]
     datasets = fetch_public_datasets(base_url)  # type: ignore
     public_curator_report_entry_map = defaultdict(dict)  # type: ignore
-    onto_parser = OntologyParser()
+    schema_version = os.getenv("schema_version") or __schema_version__
+    onto_parser = OntologyParser(schema_version=schema_version)
     with open(curator_report_filepath, "w") as f:
         # for every dataset, check its ontology term metadata to see if any terms are deprecated. If so, report.
         f.write("Deprecated Terms in Public Datasets:\n\n")

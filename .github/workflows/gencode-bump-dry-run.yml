@@ -42,7 +42,17 @@ jobs:
         run: python3 -m scripts.schema_bump_dry_run_genes.gene_bump_dry_run
         env:
           corpus_env: "prod"
+      - name: Upload report as workflow artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genes-curator-report
+          path: genes-curator-report.txt
+          if-no-files-found: warn
       - name: upload to slack
-        run: |
-          curl -F file=@genes-curator-report.txt -F "initial_comment=Gene Dry Run Report" -F channels=${{secrets
-          .SLACK_CURATOR_REPORTING_CHANNEL}} -H "Authorization: Bearer ${{secrets.SLACK_CURATOR_REPORTING_APP_AUTH}}" https://slack.com/api/files.upload
+        uses: ./.github/actions/slack-file-upload
+        with:
+          file: genes-curator-report.txt
+          channel: ${{ secrets.SLACK_CURATOR_REPORTING_CHANNEL }}
+          bot_token: ${{ secrets.SLACK_CURATOR_REPORTING_APP_AUTH }}
+          initial_comment: Gene Dry Run Report

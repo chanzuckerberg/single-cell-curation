@@ -4,6 +4,7 @@ import re
 import tempfile
 from typing import Union
 from unittest import mock
+from unittest.mock import patch
 
 import anndata
 import numpy as np
@@ -61,7 +62,7 @@ def validator_with_minimal_adata():
 
 @pytest.fixture
 def label_writer(valid_adata):
-    return AnnDataLabelAppender(adata_valid)
+    return AnnDataLabelAppender(valid_adata)
 
 
 @pytest.fixture
@@ -316,12 +317,82 @@ class TestAddLabelFunctions:
             assert label_writer.write_labels(labels_path)
         assert not label_writer.errors
 
+    def test__write__is_pre_analysis_defaults_false(self, valid_adata):
+        writer = AnnDataLabelAppender(valid_adata)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            labels_path = "/".join([temp_dir, "labels.h5ad"])
+            writer.write_labels(labels_path)
+        assert writer.adata.uns["is_pre_analysis"] is False
+
+    def test__write__is_pre_analysis_true_when_flag_set(self, valid_adata):
+        writer = AnnDataLabelAppender(valid_adata, pre_analysis=True)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            labels_path = "/".join([temp_dir, "labels.h5ad"])
+            writer.write_labels(labels_path)
+        assert writer.adata.uns["is_pre_analysis"] is True
+
+    def test__write__pre_analysis_adata_skips_forbidden_fields(self, valid_pre_analysis_adata):
+        """
+        write_labels with a pre-analysis-shaped adata (no cell_type_ontology_term_id,
+        no obsm, no uns['default_embedding']) must not crash and must not add the
+        cell_type label column.
+        """
+        writer = AnnDataLabelAppender(valid_pre_analysis_adata, pre_analysis=True)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            labels_path = "/".join([temp_dir, "labels.h5ad"])
+            result = writer.write_labels(labels_path)
+        assert result
+        assert not writer.errors
+        assert writer.adata.uns["is_pre_analysis"] is True
+        assert "cell_type_ontology_term_id" not in writer.adata.obs.columns
+        assert "cell_type" not in writer.adata.obs.columns
+
     def test__write__Fail(self, label_writer):
         label_writer.adata.write_h5ad = mock.Mock(side_effect=Exception("Test Fail"))
         with tempfile.TemporaryDirectory() as temp_dir:
             labels_path = "/".join([temp_dir, "labels.h5ad"])
             assert not label_writer.write_labels(labels_path)
         assert label_writer.errors
+
+    def test__annotate_genetic_perturbations_runtime_error(self, label_writer):
+        """Test that RuntimeError (e.g., guidescan2 not installed) is handled gracefully."""
+        with patch("cellxgene_schema.write_labels.annotate_perturbations_in_h5ad") as mock_annotate:
+            mock_annotate.side_effect = RuntimeError()
+            label_writer._annotate_genetic_perturbations()
+
+            assert len(label_writer.errors) == 1
+            error_msg, error_tb = label_writer.errors[0]
+            assert "Genetic perturbations annotation skipped" in error_msg
+            assert error_tb is None
+
+    def test__annotate_genetic_perturbations_generic_exception(self, label_writer):
+        """Test that other exceptions (e.g., organism not supported) are handled gracefully."""
+        with patch("cellxgene_schema.write_labels.annotate_perturbations_in_h5ad") as mock_annotate:
+            mock_annotate.side_effect = ValueError()
+            label_writer._annotate_genetic_perturbations()
+
+            assert len(label_writer.errors) == 1
+            error_msg, error_tb = label_writer.errors[0]
+            assert "Genetic perturbations annotation failed" in error_msg
+            assert error_tb is not None
+
+    def test__annotate_genetic_perturbations_success(self, label_writer):
+        """Test that successful annotation doesn't add errors."""
+        with patch("cellxgene_schema.write_labels.annotate_perturbations_in_h5ad") as mock_annotate:
+            mock_annotate.return_value = label_writer.adata
+            label_writer._annotate_genetic_perturbations()
+
+            assert len(label_writer.errors) == 0
+            mock_annotate.assert_called_once_with(label_writer.adata, index_path=None)
+
+    def test__annotate_genetic_perturbations_no_perturbations(self, label_writer):
+        """Test that annotation is skipped when genetic_perturbations doesn't exist."""
+        with patch("cellxgene_schema.write_labels.annotate_perturbations_in_h5ad") as mock_annotate:
+            mock_annotate.return_value = label_writer.adata
+            label_writer._annotate_genetic_perturbations()
+
+            mock_annotate.assert_called_once_with(label_writer.adata, index_path=None)
+            assert len(label_writer.errors) == 0
 
 
 class TestIgnoreLabelFunctions:
@@ -400,7 +471,30 @@ class TestValidate:
 
         assert not validator.errors
 
-    def test__pre_analysis_validate_no_obsm_fails_with_obsm(self, valid_pre_analysis_adata):
+    def test__validate_obsm_fails_with_bad_obsm_in_pre_analysis(self, valid_pre_analysis_adata):
+        import numpy as np
+
+        validator = Validator(pre_analysis_check_flag=True)
+        validator.adata = valid_pre_analysis_adata.copy()
+        # X_ embeddings require at least 2 columns — 1 column is invalid
+        validator.adata.obsm = {"X_umap": np.zeros([validator.adata.n_obs, 1])}
+        validator._set_schema_def()
+
+        validator._validate_obsm()
+
+        assert validator.errors
+        assert any("at least two columns" in e for e in validator.errors)
+
+    def test__validate_obsm_passes_without_obsm_in_pre_analysis(self, valid_pre_analysis_adata):
+        validator = Validator(pre_analysis_check_flag=True)
+        validator.adata = valid_pre_analysis_adata  # obsm is None
+        validator._set_schema_def()
+
+        validator._validate_obsm()
+
+        assert not validator.errors
+
+    def test__pre_analysis_check_passes_with_obsm_present(self, valid_pre_analysis_adata):
         validator = Validator()
         validator.adata = valid_pre_analysis_adata.copy()
         validator.adata.obsm = good_obsm
@@ -408,11 +502,7 @@ class TestValidate:
 
         validator._pre_analysis_check()  # Directly call private method for testing purposes
 
-        EXPECTED_ERROR_STRING = "[PRE ANALYSIS COMPONENT] obsm is not allowed to exist during pre analysis validation"
-
-        assert validator.errors
-        assert len(validator.errors) == 1
-        assert EXPECTED_ERROR_STRING in validator.errors
+        assert not validator.errors
 
     def test__pre_analysis_validate_no_cell_type_ontology_term_id_fails_with_value_present(
         self, valid_pre_analysis_adata
@@ -566,7 +656,7 @@ class TestCheckSpatial:
         # Confirm key type dict is required.
         validator.validate_adata()
         assert (
-            "ERROR: A dict in uns['spatial'] is required when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)."
+            "ERROR: A dict in uns['spatial'] is required when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or a descendant of 'EFO:0920001' (bead-based spatial transcriptomics)."
             in validator.errors
         )
 
@@ -591,7 +681,8 @@ class TestCheckSpatial:
         validator._check_spatial_uns()
         assert validator.errors == [
             "uns['spatial'] is only allowed when obs['assay_ontology_term_id'] is either "
-            "a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)"
+            "a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or "
+            "a descendant of 'EFO:0920001' (bead-based spatial transcriptomics)"
         ]
 
     @pytest.mark.parametrize(
@@ -616,7 +707,8 @@ class TestCheckSpatial:
             validator._check_spatial_uns()
             assert validator.errors == [
                 "A dict in uns['spatial'] is required when obs['assay_ontology_term_id'] is "
-                "either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)."
+                "either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or "
+                "a descendant of 'EFO:0920001' (bead-based spatial transcriptomics)."
             ]
             validator.reset()
         else:
@@ -635,7 +727,7 @@ class TestCheckSpatial:
         # Confirm spatial is required for Slide-seqV2.
         validator._check_spatial_uns()
         assert validator.errors == [
-            "A dict in uns['spatial'] is required when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)."
+            "A dict in uns['spatial'] is required when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or a descendant of 'EFO:0920001' (bead-based spatial transcriptomics)."
         ]
 
     def test__validate_spatial_allowed_keys_error(self):
@@ -670,7 +762,7 @@ class TestCheckSpatial:
         else:
             # if not spatial, MUST NOT speciffy `is_single`
             assert validator.errors == [
-                "uns['spatial'] is only allowed when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)"
+                "uns['spatial'] is only allowed when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or a descendant of 'EFO:0920001' (bead-based spatial transcriptomics)"
             ]
 
     def test__validate_is_single_required_slide_seqV2_error(self):
@@ -754,7 +846,7 @@ class TestCheckSpatial:
             validator._check_spatial_uns()
             # Report the most general top level error
             assert validator.errors == [
-                "uns['spatial'] is only allowed when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2)"
+                "uns['spatial'] is only allowed when obs['assay_ontology_term_id'] is either a descendant of 'EFO:0010961' (Visium Spatial Gene Expression) or a descendant of 'EFO:0920001' (bead-based spatial transcriptomics)"
             ]
 
     @pytest.mark.parametrize("library_id", [None, "invalid", 1, 1.0, True])
@@ -1099,7 +1191,7 @@ class TestCheckSpatial:
         assert validator.errors
         assert (
             "When obs['assay_ontology_term_id'] is either a descendant"
-            " of 'EFO:0010961' (Visium Spatial Gene Expression) or 'EFO:0030062' (Slide-seqV2), all observations must contain the same value."
+            " of 'EFO:0010961' (Visium Spatial Gene Expression) or a descendant of 'EFO:0920001' (bead-based spatial transcriptomics), all observations must contain the same value."
         ) in validator.errors[0]
 
     def test__validate_assay_type_ontology_term_id_not_unique_ok(self, valid_adata):
@@ -1169,7 +1261,16 @@ class TestCheckSpatial:
         )
         validator.reset()
 
-    @pytest.mark.parametrize("assay_ontology_term_id", ["EFO:0022858", "EFO:0030062", "EFO:0022860"])
+    @pytest.mark.parametrize(
+        "assay_ontology_term_id",
+        [
+            "EFO:0022858",
+            "EFO:0030062",
+            "EFO:0022860",
+            "EFO:0920002",  # Curio Seeker, 3mm
+            "EFO:0920003",  # Curio Seeker, 10mm
+        ],
+    )
     def test__validate_tissue_position_not_required(self, assay_ontology_term_id):
         validator: Validator = Validator()
         validator._set_schema_def()
@@ -1319,6 +1420,16 @@ class TestCheckSpatial:
         # Confirm spatial is valid.
         validator.validate_adata()
         assert validator.errors == ["ERROR: adata.obsm['spatial'] contains at least one NaN value."]
+
+    def test__validate_spatial_cell_type_ontology_term_id_skipped_for_pre_analysis(self):
+        validator: Validator = Validator(pre_analysis_check_flag=True)
+        validator._set_schema_def()
+        validator.adata = adata_visium.copy()
+        # pre-analysis Visium datasets do not have cell_type_ontology_term_id
+        del validator.adata.obs["cell_type_ontology_term_id"]
+
+        validator._validate_spatial_cell_type_ontology_term_id()
+        assert not validator.errors
 
 
 class TestValidatorValidateDataFrame:
@@ -1471,3 +1582,511 @@ class TestValidateAnndataRawCounts:
         validator.reset()
         validator._validate_raw()
         assert validator.errors == []
+
+
+class TestValidateDict:
+    """Test cases for _validate_dict method"""
+
+    @pytest.fixture
+    def validator_with_adata(self):
+        """Create a validator with minimal AnnData for testing"""
+        validator = Validator()
+        validator._set_schema_def()
+        # Create minimal AnnData with obsm for match_obsm_keys tests
+        adata = anndata.AnnData(X=np.array([[1, 2], [3, 4]]))
+        adata.obsm["X_umap"] = np.array([[0.1, 0.2], [0.3, 0.4]])
+        validator.adata = adata
+        validator.reset()
+        return validator
+
+    def test_explicit_required_key_present(self, validator_with_adata):
+        """Test that explicit required keys present in dictionary are validated"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "title": {
+                    "type": "string",
+                    "required": True,
+                }
+            }
+        }
+        dictionary = {"title": "Test Title"}
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) == 0
+
+    def test_explicit_required_key_missing(self, validator_with_adata):
+        """Test that missing explicit required keys generate errors"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "title": {
+                    "type": "string",
+                    "required": True,
+                }
+            }
+        }
+        dictionary = {}
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) == 1
+        assert "'title' in 'uns' is not present." in validator.errors[0]
+
+    def test_explicit_optional_key_missing(self, validator_with_adata):
+        """Test that missing explicit optional keys don't generate errors"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "title": {
+                    "type": "string",
+                    "required": False,
+                }
+            }
+        }
+        dictionary = {}
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) == 0
+
+    def test_explicit_optional_key_present(self, validator_with_adata):
+        """Test that explicit optional keys present in dictionary are validated"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "title": {
+                    "type": "string",
+                    "required": False,
+                }
+            }
+        }
+        dictionary = {"title": "Test Title"}
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) == 0
+
+    def test_pattern_matched_key_validated(self, validator_with_adata):
+        """Test that keys matching patterns are validated against the pattern definition"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "genetic_perturbation_ids": {
+                    "key_pattern": "^[^\\s/,\"']+$",
+                    "type": "dict",
+                }
+            }
+        }
+        # Key matches pattern - should be validated, valid dict should pass
+        dictionary = {"guide1": {"some": "data"}}  # guide1 matches the pattern
+        validator._validate_dict(dictionary, "uns", dict_def)
+        # Should have no errors because value is a valid dict
+        assert len(validator.errors) == 0
+
+    def test_pattern_matched_key_with_invalid_value(self, validator_with_adata):
+        """Test that pattern-matched keys with invalid values generate errors"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "genetic_perturbation_ids": {
+                    "key_pattern": "^[^\\s/,\"']+$",
+                    "type": "dict",
+                    "keys": {
+                        "role": {
+                            "type": "string",
+                            "required": True,
+                        }
+                    },
+                }
+            }
+        }
+        # Key matches pattern - should be validated, missing required 'role' should error
+        dictionary = {"guide1": {}}  # Missing required 'role'
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) > 0
+        assert "'role' in 'uns['guide1']' is not present." in validator.errors[0]
+
+    def test_pattern_matched_key_invalid_type(self, validator_with_adata):
+        """Test that pattern-matched keys with wrong type generate errors"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "genetic_perturbation_ids": {
+                    "key_pattern": "^[^\\s/,\"']+$",
+                    "type": "dict",
+                }
+            }
+        }
+        # Key matches pattern - should be validated, wrong type should error
+        dictionary = {"guide1": "not a dict"}  # Should be dict but is string
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) > 0
+        assert "must be a dictionary" in validator.errors[0]
+
+    def test_key_not_matching_pattern_not_explicit(self, validator_with_adata):
+        """Test that keys not matching patterns and not explicit are ignored"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "title": {
+                    "type": "string",
+                    "required": True,
+                }
+            }
+        }
+        # 'unknown_key' is not explicit and doesn't match any pattern
+        dictionary = {"unknown_key": "some value"}
+        validator._validate_dict(dictionary, "uns", dict_def)
+        # Should error for missing 'title' but ignore 'unknown_key'
+        assert len(validator.errors) == 1
+        assert "'title' in 'uns' is not present." in validator.errors[0]
+
+    def test_string_type_validation(self, validator_with_adata):
+        """Test string type validation"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "title": {
+                    "type": "string",
+                    "required": True,
+                }
+            }
+        }
+        dictionary = {"title": "Valid String"}
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) == 0
+
+    def test_string_type_with_enum_valid(self, validator_with_adata):
+        """Test string type with enum validation - valid value"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "X_approximate_distribution": {
+                    "type": "string",
+                    "enum": ["count", "normal"],
+                }
+            }
+        }
+        dictionary = {"X_approximate_distribution": "count"}
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) == 0
+
+    def test_string_type_with_enum_invalid(self, validator_with_adata):
+        """Test string type with enum validation - invalid value"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "X_approximate_distribution": {
+                    "type": "string",
+                    "enum": ["count", "normal"],
+                }
+            }
+        }
+        dictionary = {"X_approximate_distribution": "invalid"}
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) > 0
+        assert "not valid" in validator.errors[0]
+        assert "Allowed terms" in validator.errors[0]
+
+    def test_list_type_validation(self, validator_with_adata):
+        """Test list type validation"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "batch_condition": {
+                    "type": "list",
+                    "element_type": "match_obs_columns",
+                }
+            }
+        }
+        dictionary = {"batch_condition": ["batch1", "batch2"]}
+        validator._validate_dict(dictionary, "uns", dict_def)
+        # Should pass basic type check (list validation may have other checks)
+        assert all("must be a list or numpy array" not in err for err in validator.errors)
+
+    def test_list_type_invalid(self, validator_with_adata):
+        """Test list type validation with invalid type"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "batch_condition": {
+                    "type": "list",
+                    "element_type": "match_obs_columns",
+                }
+            }
+        }
+        dictionary = {"batch_condition": "not a list"}
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) > 0
+        assert "must be a list or numpy array" in validator.errors[0]
+
+    def test_dict_type_validation_nested(self, validator_with_adata):
+        """Test nested dictionary type validation"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "nested_dict": {
+                    "type": "dict",
+                    "keys": {
+                        "inner_key": {
+                            "type": "string",
+                            "required": True,
+                        }
+                    },
+                }
+            }
+        }
+        dictionary = {"nested_dict": {"inner_key": "value"}}
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) == 0
+
+    def test_dict_type_invalid(self, validator_with_adata):
+        """Test dict type validation with invalid type"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "nested_dict": {
+                    "type": "dict",
+                    "keys": {},
+                }
+            }
+        }
+        dictionary = {"nested_dict": "not a dict"}
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) > 0
+        assert "must be a dictionary" in validator.errors[0]
+
+    def test_match_obsm_keys_valid(self, validator_with_adata):
+        """Test match_obsm_keys type validation with valid key"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "default_embedding": {
+                    "type": "match_obsm_keys",
+                }
+            }
+        }
+        dictionary = {"default_embedding": "X_umap"}
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) == 0
+
+    def test_match_obsm_keys_invalid(self, validator_with_adata):
+        """Test match_obsm_keys type validation with invalid key"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "default_embedding": {
+                    "type": "match_obsm_keys",
+                }
+            }
+        }
+        dictionary = {"default_embedding": "X_nonexistent"}
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) > 0
+        assert "must be a key of 'adata.obsm'" in validator.errors[0]
+
+    def test_multiple_explicit_keys(self, validator_with_adata):
+        """Test validation with multiple explicit keys"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "title": {
+                    "type": "string",
+                    "required": True,
+                },
+                "batch_condition": {
+                    "type": "list",
+                    "required": False,
+                },
+            }
+        }
+        dictionary = {"title": "Test", "batch_condition": ["batch1"]}
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) == 0
+
+    def test_multiple_explicit_keys_one_missing_required(self, validator_with_adata):
+        """Test validation with multiple explicit keys, one required missing"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "title": {
+                    "type": "string",
+                    "required": True,
+                },
+                "batch_condition": {
+                    "type": "list",
+                    "required": False,
+                },
+            }
+        }
+        dictionary = {"batch_condition": ["batch1"]}  # Missing required 'title'
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) == 1
+        assert "'title' in 'uns' is not present." in validator.errors[0]
+
+    def test_pattern_and_explicit_keys_together(self, validator_with_adata):
+        """Test validation with both pattern-matched and explicit keys"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "title": {
+                    "type": "string",
+                    "required": True,
+                },
+                "genetic_perturbation_ids": {
+                    "key_pattern": "^[^\\s/,\"']+$",
+                    "type": "dict",
+                },
+            }
+        }
+        dictionary = {
+            "title": "Test",
+            "guide1": {"some": "data"},  # Matches pattern, should be validated
+        }
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) == 0
+
+    def test_empty_keys_def(self, validator_with_adata):
+        """Test validation with empty keys definition"""
+        validator = validator_with_adata
+        dict_def = {"keys": {}}
+        dictionary = {"any_key": "any_value"}
+        validator._validate_dict(dictionary, "uns", dict_def)
+        # Should ignore all keys when keys_def is empty
+        assert len(validator.errors) == 0
+
+    def test_no_keys_def(self, validator_with_adata):
+        """Test validation with no keys definition"""
+        validator = validator_with_adata
+        dict_def = {}
+        dictionary = {"any_key": "any_value"}
+        validator._validate_dict(dictionary, "uns", dict_def)
+        # Should ignore all keys when no keys_def
+        assert len(validator.errors) == 0
+
+    def test_nested_dict_missing_required(self, validator_with_adata):
+        """Test nested dictionary with missing required key"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "nested_dict": {
+                    "type": "dict",
+                    "keys": {
+                        "inner_key": {
+                            "type": "string",
+                            "required": True,
+                        }
+                    },
+                }
+            }
+        }
+        dictionary = {"nested_dict": {}}  # Missing required inner_key
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) > 0
+        assert "'inner_key' in 'uns['nested_dict']' is not present." in validator.errors[0]
+
+    def test_pattern_matched_key_multiple_patterns(self, validator_with_adata):
+        """Test that when a key matches multiple patterns, the first matching pattern is used"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "pattern_a": {
+                    "key_pattern": "^guide.*$",  # Matches "guide1"
+                    "type": "string",
+                },
+                "pattern_b": {
+                    "key_pattern": "^.*1$",  # Also matches "guide1"
+                    "type": "dict",
+                    "keys": {
+                        "inner": {
+                            "type": "string",
+                            "required": True,
+                        }
+                    },
+                },
+            }
+        }
+        # "guide1" matches both patterns, should use first one (pattern_a) which expects string
+        dictionary = {"guide1": "some string"}  # Valid for pattern_a (string), invalid for pattern_b (dict)
+        validator._validate_dict(dictionary, "uns", dict_def)
+        # Should pass because first pattern (pattern_a) expects string
+        assert len(validator.errors) == 0
+
+    def test_pattern_matched_key_multiple_patterns_first_fails(self, validator_with_adata):
+        """Test that first matching pattern validation errors are reported"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "pattern_a": {
+                    "key_pattern": "^guide.*$",  # Matches "guide1"
+                    "type": "string",
+                    "enum": ["valid1", "valid2"],
+                },
+                "pattern_b": {
+                    "key_pattern": "^.*1$",  # Also matches "guide1"
+                    "type": "dict",
+                },
+            }
+        }
+        # "guide1" matches both patterns, should use first one (pattern_a) which expects enum
+        dictionary = {"guide1": "invalid_enum_value"}  # Invalid for pattern_a enum
+        validator._validate_dict(dictionary, "uns", dict_def)
+        # Should fail because first pattern (pattern_a) enum validation fails
+        assert len(validator.errors) > 0
+        assert "not valid" in validator.errors[0]
+        assert "Allowed terms" in validator.errors[0]
+
+    def test_pattern_matched_key_nested_validation(self, validator_with_adata):
+        """Test that pattern-matched keys with nested structures are properly validated"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "genetic_perturbation_ids": {
+                    "key_pattern": "^[^\\s/,\"']+$",
+                    "type": "dict",
+                    "keys": {
+                        "role": {
+                            "type": "string",
+                            "required": True,
+                            "enum": ["control", "targeting"],
+                        },
+                        "protospacer_sequence": {
+                            "type": "string",
+                            "required": True,
+                        },
+                    },
+                }
+            }
+        }
+        # Valid nested structure
+        dictionary = {
+            "guide1": {
+                "role": "targeting",
+                "protospacer_sequence": "ACGTACGTACGTACGT",
+            }
+        }
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) == 0
+
+    def test_pattern_matched_key_nested_validation_invalid_enum(self, validator_with_adata):
+        """Test that pattern-matched keys validate nested enum values"""
+        validator = validator_with_adata
+        dict_def = {
+            "keys": {
+                "genetic_perturbation_ids": {
+                    "key_pattern": "^[^\\s/,\"']+$",
+                    "type": "dict",
+                    "keys": {
+                        "role": {
+                            "type": "string",
+                            "required": True,
+                            "enum": ["control", "targeting"],
+                        },
+                    },
+                }
+            }
+        }
+        # Invalid enum value in nested structure
+        dictionary = {
+            "guide1": {
+                "role": "invalid_role",  # Not in enum
+            }
+        }
+        validator._validate_dict(dictionary, "uns", dict_def)
+        assert len(validator.errors) > 0
+        assert "not valid" in validator.errors[0]
+        assert "Allowed terms" in validator.errors[0]
