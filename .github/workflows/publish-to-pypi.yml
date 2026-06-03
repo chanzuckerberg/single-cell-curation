@@ -24,21 +24,36 @@ jobs:
           cd cellxgene_schema_cli
           echo "version=`python setup.py --version`" >> $GITHUB_OUTPUT
           cd ..
+      - name: Test built distribution locally
+        run: |
+          pip install -r cellxgene_schema_cli/requirements.txt
+          pip install cellxgene_schema_cli/dist/*.whl
+          cellxgene-schema validate cellxgene_schema_cli/tests/fixtures/h5ads/example_valid.h5ad
+      - name: Check if version already on Test PyPI
+        id: testpypi_check
+        run: |
+          if pip index versions --index-url https://test.pypi.org/simple/ cellxgene-schema 2>/dev/null \
+             | grep -q "Available.*${{ steps.build.outputs.version }}"; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
       - name: Publish distribution to Test PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
           packages-dir: cellxgene_schema_cli/dist/
-      - name: Confirm publish to Test PyPI
-        uses: nick-fields/retry@v3
-        with:
-          max_attempts: 15
-          timeout_seconds: 30
-          polling_interval_seconds: 5
-          command: pip index versions --index-url https://test.pypi.org/simple/ cellxgene-schema | grep Available.*${{ steps.build.outputs.version }}
-      - name: Install and Test Package from Test PyPI
+          skip-existing: true
+      - name: Confirm and test from Test PyPI
+        if: steps.testpypi_check.outputs.exists != 'true'
         run: |
+          for i in $(seq 1 15); do
+            pip index versions --index-url https://test.pypi.org/simple/ cellxgene-schema 2>/dev/null \
+              | grep -q "Available.*${{ steps.build.outputs.version }}" && break
+            echo "Waiting for ${{ steps.build.outputs.version }} to appear on Test PyPI ($i/15)..."
+            sleep 5
+          done
           pip install -r cellxgene_schema_cli/requirements.txt
           pip install --index-url https://test.pypi.org/simple/ cellxgene-schema
           cellxgene-schema validate cellxgene_schema_cli/tests/fixtures/h5ads/example_valid.h5ad
