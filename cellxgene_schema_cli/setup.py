@@ -5,7 +5,7 @@ with open("requirements.txt") as fh:
 
 setup(
     name="cellxgene-schema",
-    version="7.1.0",
+    version="7.1.1",
     url="https://github.com/chanzuckerberg/single-cell-curation",
     license="MIT",
     author="Chan Zuckerberg Initiative",
