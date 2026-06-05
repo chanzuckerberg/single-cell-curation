@@ -1,0 +1,83 @@
+name: Rebuild GuideScan2 Indexes
+
+# Triggered by changes to gene_assembly.yml, which tracks the genome assembly
+# (FASTA source) for perturbation-support species. This file only changes when
+# the underlying genome assembly changes (e.g. GRCh38 -> GRCh39), NOT on
+# routine annotation/GTF version bumps (those trigger gencode-process.yml instead).
+#
+# On trigger, submits a guidescan2-index-v1 Argo job for every species listed
+# in gene_assembly.yml, waits for completion, then updates reference_files.yml
+# with the new S3 index URLs.
+#
+# Prerequisites (one-time setup, not managed here):
+#   - GitHub secret KUBE_SA_TOKEN : token for github-actions-workflow-submitter SA
+#   - GitHub secret KUBE_CA_DATA  : base64-encoded CA cert for staging-sci-data
+#   - guidescan2-index-v1 ClusterWorkflowTemplate deployed on staging-sci-data
+#   - sci-data-staging-guidescan2-sa ServiceAccount in argo-workflows namespace
+
+on:
+  push:
+    paths:
+      - '**/cellxgene_schema_cli/cellxgene_schema/gencode_files/gene_assembly.yml'
+    branches-ignore:
+      - main
+
+permissions:
+  contents: write   # required to push the reference_files.yml update
+
+jobs:
+  rebuild-guidescan-indexes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Python dependencies
+        run: pip install PyYAML
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          cat > ~/.kube/config << EOF
+          apiVersion: v1
+          kind: Config
+          clusters:
+          - name: staging-sci-data
+            cluster:
+              server: ${{ secrets.KUBE_SERVER_URL }}
+              certificate-authority-data: ${{ secrets.KUBE_CA_DATA }}
+          contexts:
+          - name: staging-sci-data
+            context:
+              cluster: staging-sci-data
+              user: github-actions-workflow-submitter
+              namespace: argo-workflows
+          current-context: staging-sci-data
+          users:
+          - name: github-actions-workflow-submitter
+            user:
+              token: ${{ secrets.KUBE_SA_TOKEN }}
+          EOF
+
+      - name: Submit Argo jobs and wait for completion
+        run: python3 cellxgene_schema_cli/scripts/submit_guidescan_argo_jobs.py
+
+      - name: Update reference_files.yml with new index URLs
+        run: python3 cellxgene_schema_cli/scripts/update_guidescan_reference_urls.py
+
+      - name: Commit and push updated reference_files.yml
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add cellxgene_schema_cli/cellxgene_schema/gencode_files/reference_files.yml
+          git diff --cached --quiet || \
+            git commit -m "AUTO: update guidescan2 index URLs following assembly update"
+          git pull --rebase
+          git push

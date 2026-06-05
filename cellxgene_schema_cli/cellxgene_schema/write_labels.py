@@ -1,4 +1,5 @@
 import logging
+import re
 import traceback
 from typing import Dict, List, Optional
 
@@ -6,6 +7,7 @@ import anndata
 import pandas as pd
 
 from . import gencode, schema
+from .annotate_guides import annotate_perturbations_in_h5ad
 from .env import SCHEMA_REFERENCE_BASE_URL, SCHEMA_REFERENCE_FILE_NAME
 from .gencode import get_gene_checker
 from .ontology_parser import ONTOLOGY_PARSER
@@ -20,13 +22,15 @@ class AnnDataLabelAppender:
     to adata.obs and adata.var respectively as indicated in the schema definition
     """
 
-    def __init__(self, adata: anndata.AnnData):
+    def __init__(self, adata: anndata.AnnData, pre_analysis: bool = False):
         """
         From a list of ids and defined constraints, creates a mapping dictionary {id: label, ...}
 
         :param str file_name: Path to h5ad file
+        :param bool pre_analysis: Whether the dataset is pre-analysis
         """
         self.adata = adata
+        self.pre_analysis = pre_analysis
         self.schema_version = schema.get_current_schema_version()
         self.schema_def = schema.get_schema_definition()
         self.errors = []
@@ -95,21 +99,41 @@ class AnnDataLabelAppender:
 
         return flatten
 
-    def _get_ontology_term_label(self, term_id: str, allowed_ontologies: List[str]) -> str:
+    def _get_ontology_term_label(
+        self, term_id: str, allowed_ontologies: List[str], stripped_prefixes: Optional[dict] = None
+    ) -> str:
         """
         Fetches human-readable label corresponding to a single ontology term_id, if it is a term_id defined in one of the
          allowed_ontologies. Raises ValueError if no ontology term label is found (should've triggered validation
          error if term_id is not valid).
 
+        When stripped_prefixes is provided, terms matching a configured prefix (e.g. "anti-" for UniProt) are
+        stripped before lookup and the prefix is prepended to the returned label
+        (e.g. "anti-uniprot:Q99467" → "anti-" + label("uniprot:Q99467") = "anti-CD180_HUMAN").
+
         :param term_id: str single ontology term ID
         :param allowed_ontologies: List[str] list of ontologies to check for term_id label in
+        :param stripped_prefixes: Optional[dict] prefix stripping rules from curie_constraints,
+            e.g. {"UniProt": ["anti-"]}
         :return: str term label
         """
+        label_prefix = ""
+        term_to_look_up = term_id
+        if stripped_prefixes:
+            for _, prefixes in stripped_prefixes.items():
+                for prefix in prefixes:
+                    if term_id.startswith(prefix):
+                        label_prefix = prefix
+                        term_to_look_up = term_id[len(prefix) :]
+                        break
+                if label_prefix:
+                    break
+
         for ontology_name in allowed_ontologies:
             if ontology_name == "NA":
                 continue
-            elif ONTOLOGY_PARSER.is_valid_term_id(term_id, ontology_name):
-                return ONTOLOGY_PARSER.get_term_label(term_id)
+            elif ONTOLOGY_PARSER.is_valid_term_id(term_to_look_up, ontology_name):
+                return label_prefix + ONTOLOGY_PARSER.get_term_label(term_to_look_up)
         raise ValueError(f"Add labels error: Unable to get label for '{term_id}'")
 
     def _get_mapping_dict_curie(self, ids: List[str], curie_constraints: dict) -> Dict[str, str]:
@@ -128,6 +152,7 @@ class AnnDataLabelAppender:
         allowed_ontologies = curie_constraints["ontologies"]
         multi_term_def = curie_constraints.get("multi_term")
         delimiter = None if multi_term_def is None else multi_term_def["delimiter"]
+        stripped_prefixes = curie_constraints.get("stripped_prefixes")
 
         # Map term_ids to their human-readable ontology labels
         for term_id in ids:
@@ -137,10 +162,13 @@ class AnnDataLabelAppender:
                 continue
 
             if delimiter is not None:
-                labels = [self._get_ontology_term_label(term, allowed_ontologies) for term in term_id.split(delimiter)]
+                labels = [
+                    self._get_ontology_term_label(term, allowed_ontologies, stripped_prefixes)
+                    for term in term_id.split(delimiter)
+                ]
                 mapping_dict[term_id] = delimiter.join(labels)
             else:
-                mapping_dict[term_id] = self._get_ontology_term_label(term_id, allowed_ontologies)
+                mapping_dict[term_id] = self._get_ontology_term_label(term_id, allowed_ontologies, stripped_prefixes)
 
         return mapping_dict
 
@@ -279,7 +307,7 @@ class AnnDataLabelAppender:
 
             mapping_dict = self._get_mapping_dict_curie(ids, column_definition["curie_constraints"])
 
-        elif label_type == "feature_id":
+        elif label_type == "feature_name":
             mapping_dict = self._get_mapping_dict_feature_id(ids=ids)
 
         elif label_type == "feature_reference":
@@ -319,19 +347,83 @@ class AnnDataLabelAppender:
             new_column_name = label_def["to_column"]
             getattr_anndata(self.adata, component)[new_column_name] = new_column
 
+    def _apply_dict_labels(self, data: dict, schema_def: dict) -> None:
+        """
+        Recursively walk ``data`` guided by ``schema_def`` and, for any dict value whose schema
+        entry carries ``add_labels``, apply the declared label types in-place.
+
+        Supported label types for dicts:
+        * ``feature_name`` — for each key (feature_id) in the dict, set its value to the feature
+          name returned by the gene reference (or to the key itself when no name is found).
+
+        Any future dict in schema_definition.yaml annotated with
+        ``add_labels: [{type: feature_name}]`` is handled automatically here.
+        """
+        keys_def = schema_def.get("keys", {})
+        if not isinstance(keys_def, dict):
+            return
+
+        key_patterns: Dict[str, re.Pattern] = {}
+        explicit_keys: set = set()
+        for schema_key, key_def in keys_def.items():
+            if isinstance(key_def, dict) and key_def.get("key_pattern"):
+                key_patterns[schema_key] = re.compile(key_def["key_pattern"])
+            else:
+                explicit_keys.add(schema_key)
+
+        for actual_key, actual_value in data.items():
+            matching_key_def = None
+            if actual_key in explicit_keys:
+                matching_key_def = keys_def.get(actual_key)
+            else:
+                for schema_key, compiled_pattern in key_patterns.items():
+                    if compiled_pattern.match(actual_key):
+                        matching_key_def = keys_def.get(schema_key)
+                        break
+
+            if not isinstance(matching_key_def, dict) or matching_key_def.get("type") != "dict":
+                continue
+            if not isinstance(actual_value, dict):
+                continue
+
+            for label_def in matching_key_def.get("add_labels", []):
+                if label_def.get("type") == "feature_name":
+                    feature_ids = list(actual_value.keys())
+                    name_map = self._get_mapping_dict_feature_id(ids=feature_ids)
+                    for feature_id, name in name_map.items():
+                        actual_value[feature_id] = name
+
+            # Recurse into sub-dicts
+            self._apply_dict_labels(actual_value, matching_key_def)
+
     def _add_labels(self):
         """
         Add columns to dataset dataframes based on values in other columns, as defined in schema definition yaml.
         """
+        pre_analysis_constraints = self.schema_def.get("pre_analysis", {}) if self.pre_analysis else {}
+
         for component in ["obs", "var", "raw.var"]:
             # If the component does not exist, skip (this is for raw.var)
             if getattr_anndata(self.adata, component) is None:
                 continue
 
+            # Skip components not allowed in pre-analysis mode (e.g. obsm)
+            comp_pa = pre_analysis_constraints.get(component, {})
+            if not comp_pa.get("allowed", True):
+                continue
+
             # Doing it for columns
             if "columns" in self.schema_def["components"][component]:
+                component_df = getattr_anndata(self.adata, component)
+                pa_forbidden_keys = {k for k, v in comp_pa.get("keys", {}).items() if not v.get("allowed", True)}
                 for column, column_def in self.schema_def["components"][component]["columns"].items():
                     if "add_labels" in column_def:
+                        # Skip optional columns that are not present in the dataframe
+                        if not column_def.get("required", True) and column not in component_df.columns:
+                            continue
+                        # Skip columns explicitly forbidden in pre-analysis mode
+                        if column in pa_forbidden_keys:
+                            continue
                         self._add_column(component, column, column_def)
 
             # Doing it for index
@@ -340,9 +432,15 @@ class AnnDataLabelAppender:
                 self._add_column(component, "index", index_def)
 
         uns_def = self.schema_def["components"]["uns"]
+        uns_pa_forbidden_keys = {
+            k for k, v in pre_analysis_constraints.get("uns", {}).get("keys", {}).items() if not v.get("allowed", True)
+        }
         for key in uns_def["keys"]:
             key_def = uns_def["keys"][key]
             if "add_labels" in key_def:
+                # Skip uns keys explicitly forbidden in pre-analysis mode (e.g. default_embedding)
+                if key in uns_pa_forbidden_keys:
+                    continue
                 label_type = key_def["add_labels"][0]["type"]
                 if label_type == "curie":
                     label_to_write = key_def["add_labels"][0]["to_key"]
@@ -354,12 +452,107 @@ class AnnDataLabelAppender:
                 else:
                     raise TypeError(f"'{label_type}' is not supported with uns 'add-labels'")
 
+        # Apply feature_name labels to nested uns dicts (e.g. intended_features inside
+        # genetic_perturbations entries) driven by add_labels in the schema definition.
+        self._apply_dict_labels(self.adata.uns, uns_def)
+
     def _remove_categories_with_zero_values(self):
         df = self.adata.obs
         for column in df.columns:
             col = df[column]
             if col.dtype == "category":
                 df[column] = col.cat.remove_unused_categories()
+
+    def _get_perturbation_types_for_obs(self, ec_val: Optional[str], gp_val: Optional[str]) -> str:
+        """
+        Derive the perturbation_types value for a single observation.
+
+        :param ec_val: value of experimental_condition_ontology_term_id, or None if absent
+        :param gp_val: value of genetic_perturbation_id, or None if absent
+        :return: "no perturbations" or sorted " || "-delimited perturbation type set
+        """
+        DIET_ONTO_TERM = "EFO:0002755"
+        FASTING_ONTO_TERM = "EFO:0002756"
+        TEMPERATURE_ONTO_TERM = "EFO:0001702"
+
+        ec_is_na = ec_val is None or ec_val == "na"
+        gp_is_na = gp_val is None or gp_val == "na"
+
+        if ec_is_na and gp_is_na:
+            return "no perturbations"
+
+        types: set = set()
+        delimiter = " || "
+
+        if not ec_is_na:
+            for term in ec_val.split(delimiter):
+                if term.startswith("CHEBI:"):
+                    types.add("chemical")
+                elif term.startswith("uniprot:") or term.startswith("anti-uniprot:"):
+                    types.add("protein")
+                elif term == TEMPERATURE_ONTO_TERM:
+                    types.add("temperature")
+                elif term.startswith("EFO:"):
+                    if term == FASTING_ONTO_TERM:
+                        types.add("diet")
+                    else:
+                        ancestors = ONTOLOGY_PARSER.get_term_ancestors(term, include_self=True)
+                        if DIET_ONTO_TERM in ancestors:
+                            types.add("diet")
+
+        if not gp_is_na:
+            types.add("genetic")
+
+        return delimiter.join(sorted(types)) if types else "no perturbations"
+
+    def _annotate_perturbation_types(self):
+        """
+        Add obs['perturbation_types'] when experimental_condition_ontology_term_id or
+        genetic_perturbation_id is present in obs.
+
+        perturbation_types is a cross-column derivation (depends on both
+        experimental_condition_ontology_term_id and genetic_perturbation_id) that cannot be expressed
+        as a single-source add_labels entry, so it is handled here explicitly.
+        """
+        obs = self.adata.obs
+        has_ec = "experimental_condition_ontology_term_id" in obs.columns
+        has_gp = "genetic_perturbation_id" in obs.columns
+
+        if not has_ec and not has_gp:
+            return
+
+        ec_vals = obs["experimental_condition_ontology_term_id"].astype(str) if has_ec else None
+        gp_vals = obs["genetic_perturbation_id"].astype(str) if has_gp else None
+
+        # Only compute once per unique (ec_val, gp_val) pair for efficiency
+        iter_ec = ec_vals if ec_vals is not None else (["na"] * len(obs))
+        iter_gp = gp_vals if gp_vals is not None else (["na"] * len(obs))
+        unique_combos = set(zip(iter_ec, iter_gp))
+        combo_to_type = {(ec, gp): self._get_perturbation_types_for_obs(ec, gp) for ec, gp in unique_combos}
+
+        pt_values = [combo_to_type[(ec, gp)] for ec, gp in zip(iter_ec, iter_gp)]
+        obs["perturbation_types"] = pd.Categorical(pt_values)
+
+    def _annotate_genetic_perturbations(self):
+        """
+        Annotate genetic perturbations with genomic locations and target genes if genetic_perturbations exists in uns.
+        """
+        try:
+            self.adata = annotate_perturbations_in_h5ad(self.adata, index_path=None)
+            logger.info("Genetic perturbations annotation completed")
+        except RuntimeError as e:
+            # guidescan2 not installed or other runtime errors
+            error_msg = f"Genetic perturbations annotation skipped: {e}"
+            logger.warning(error_msg)
+            self.errors.append((error_msg, None))
+        except Exception as e:
+            # Other errors (organism not supported, etc.)
+            error_msg = f"Genetic perturbations annotation failed: {e}"
+            logger.warning(error_msg)
+            import traceback
+
+            tb = traceback.format_exc()
+            self.errors.append((error_msg, tb))
 
     def _build_schema_reference_url(self, schema_version: str):
         return f"{SCHEMA_REFERENCE_BASE_URL}/{schema_version}/{SCHEMA_REFERENCE_FILE_NAME}"
@@ -378,6 +571,12 @@ class AnnDataLabelAppender:
         # Add columns to dataset dataframes based on values in other columns, as defined in schema definition yaml
         self._add_labels()
 
+        # Annotate perturbation_types (cross-column derivation from ec and gp fields)
+        self._annotate_perturbation_types()
+
+        # Annotate genetic perturbations if present
+        self._annotate_genetic_perturbations()
+
         # Remove unused categories
         self._remove_categories_with_zero_values()
 
@@ -385,6 +584,7 @@ class AnnDataLabelAppender:
 
         self.adata.uns["schema_version"] = self.schema_version
         self.adata.uns["schema_reference"] = self._build_schema_reference_url(self.schema_version)
+        self.adata.uns["is_pre_analysis"] = self.pre_analysis
         self.adata.obs["observation_joinid"] = get_hash_digest_column(self.adata.obs)
         logger.info(f"Labels have been added. Writing to {add_labels_file}")
         # Write file

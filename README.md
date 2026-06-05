@@ -13,10 +13,7 @@ For information/issues about cellxgene and its portal please refer to:
 
 The primary curation tool is the `cellxgene-schema` CLI. It enables curators to perform [schema](./schema/3.0.0/schema.md) validation for datasets to be hosted on the [cellxgene Data Portal](https://cellxgene.cziscience.com/).
 
-The following version of python is required for cellxgene-schema.
-https://github.com/chanzuckerberg/single-cell-curation/blob/4fa23de520e208a4187177e862bc03e60e58f0a2/cellxgene_schema_cli/setup.py#L16-L16
-
-It is available through pip:
+It requires Python >= 3.8. It is available through pip:
 
 ```
 pip install cellxgene-schema
@@ -61,6 +58,7 @@ The command will find the closest CL (for cell_type) or UBERON (for tissue) mapp
 If there are multiple closest ancestors of the same distance with a match, the command will NOT annotate those rows and instead log your closest ancestor match options for your manual curation.
 
 ---
+
 
 The data portal runs the following in the backend:
 

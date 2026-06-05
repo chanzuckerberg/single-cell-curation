@@ -264,15 +264,19 @@ class GeneProcessor:
         gene_info_description = gene_info["description"]
         print("Start", gene_info_description)
         # determine how to process based on file type
-        if gene_info["url"].endswith("gtf.gz"):
+        if gene_info["gtf_url"].endswith("gtf.gz"):
             processer = self._parse_gtf
-        elif gene_info["url"].endswith("txt"):
+        elif gene_info["gtf_url"].endswith("txt"):
             processer = self._process_ercc  # type: ignore
         else:
             raise TypeError(f"unknown file type: {gene_info['file_type']}")
 
         # add version to URL if needed
-        url = gene_info["url"].format(version=gene_info["version"]) if gene_info.get("version") else gene_info["url"]
+        url = (
+            gene_info["gtf_url"].format(version=gene_info["version"])
+            if gene_info.get("version")
+            else gene_info["gtf_url"]
+        )
 
         print("download", gene_info_description)
         temp_file_path, _ = urllib.request.urlretrieve(url)

@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 ASSAY_VISIUM = "EFO:0010961"  # generic term
 ASSAY_VISIUM_11M = "EFO:0022860"  # specific visium assay
-ASSAY_SLIDE_SEQV2 = "EFO:0030062"
+ASSAY_BEAD_BASED_SPATIAL = "EFO:0920001"  # generic parent term (Slide-seqV2, Curio Seeker, etc.)
 
 VISIUM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 4992
 VISIUM_11MM_AND_IS_SINGLE_TRUE_MATRIX_SIZE = 14336
@@ -49,9 +49,11 @@ SPATIAL_HIRES_IMAGE_MAX_DIMENSION_SIZE_VISIUM_11MM = 4000
 
 CONDITION_IS_VISIUM = "a descendant of 'EFO:0010961' (Visium Spatial Gene Expression)"
 CONDITION_IS_VISIUM_11M = f"'{ASSAY_VISIUM_11M} (Visium CytAssist Spatial Gene Expression, 11mm)"
-CONDITION_IS_SEQV2 = f"'{ASSAY_SLIDE_SEQV2}' (Slide-seqV2)"
+CONDITION_IS_BEAD_BASED_SPATIAL = f"a descendant of '{ASSAY_BEAD_BASED_SPATIAL}' (bead-based spatial transcriptomics)"
 
-ERROR_SUFFIX_SPATIAL = f"obs['assay_ontology_term_id'] is either {CONDITION_IS_VISIUM} or {CONDITION_IS_SEQV2}"
+ERROR_SUFFIX_SPATIAL = (
+    f"obs['assay_ontology_term_id'] is either {CONDITION_IS_VISIUM} or {CONDITION_IS_BEAD_BASED_SPATIAL}"
+)
 ERROR_SUFFIX_VISIUM = f"obs['assay_ontology_term_id'] is {CONDITION_IS_VISIUM}"
 ERROR_SUFFIX_VISIUM_11M = f"obs['assay_ontology_term_id'] is {CONDITION_IS_VISIUM_11M}"
 
@@ -175,16 +177,21 @@ class Validator:
 
     def _is_supported_spatial_assay(self) -> bool:
         """
-        Determine if the assay_ontology_term_id is either Visium (EFO:0010961) or Slide-seqV2 (EFO:0030062).
+        Determine if the assay_ontology_term_id is either a descendant of Visium (EFO:0010961)
+        or a descendant of bead-based spatial transcriptomics (EFO:0920001).
 
-        :return True if assay_ontology_term_id is Visium or Slide-seqV2, False otherwise.
+        :return True if assay_ontology_term_id is a supported spatial assay, False otherwise.
         :rtype bool
         """
         if self.is_spatial is None:
             try:
                 _spatial = (
                     self._is_visium_including_descendants()
-                    or self.adata.obs.assay_ontology_term_id.isin([ASSAY_SLIDE_SEQV2]).astype(bool).any()
+                    or self.adata.obs.assay_ontology_term_id.apply(
+                        lambda t: is_ontological_descendant_of(ONTOLOGY_PARSER, t, ASSAY_BEAD_BASED_SPATIAL, False)
+                    )
+                    .astype(bool)
+                    .any()
                 )
                 self.is_spatial = bool(_spatial)
             except AttributeError:
@@ -263,6 +270,9 @@ class Validator:
 
         :returns bool
         """
+        # Terms not recognized by the OntologyParser (e.g. anti-uniprot: prefix) cannot have ancestors checked
+        if not ONTOLOGY_PARSER.is_valid_term_id(term_id):
+            return False
         for ontology_name in forbidden_def:
             for ancestor in forbidden_def[ontology_name]:
                 if ancestor in ONTOLOGY_PARSER.get_term_ancestors(term_id):
@@ -305,19 +315,26 @@ class Validator:
 
         return any(checks)
 
-    def _validate_curie_ontology(self, term_id: str, column_name: str, allowed_ontologies: List[str]) -> bool:
+    def _validate_curie_ontology(
+        self,
+        term_id: str,
+        column_name: str,
+        allowed_ontologies: List[str],
+        report_term_id: Optional[str] = None,
+    ) -> bool:
         """
         Validate a single curie term id belongs to specified ontologies. If it does belong to an allowed ontology
         verifies that it is not deprecated (obsolete).
         If there are any errors, it adds them to self.errors
 
-        :param str term_id: the curie term id to validate
+        :param str term_id: the curie term id to validate (may be a normalized form, e.g. with prefix stripped)
         :param str column_name: original column name in adata where the term_id comes from (used for error messages)
         :param List[str] allowed_ontologies: allowed ontologies
+        :param Optional[str] report_term_id: term id to use in error messages (defaults to term_id)
 
         :rtype bool
         """
-
+        report_id = report_term_id if report_term_id is not None else term_id
         checks = []
 
         for ontology_name in allowed_ontologies:
@@ -328,12 +345,12 @@ class Validator:
             checks.append(is_valid)
 
             if is_valid and ONTOLOGY_PARSER.is_term_deprecated(term_id):
-                self.errors.append(f"'{term_id}' in '{column_name}' is a deprecated term id of '{ontology_name}'.")
+                self.errors.append(f"'{report_id}' in '{column_name}' is a deprecated term id of '{ontology_name}'.")
                 return False
 
         if sum(checks) == 0:
             self.errors.append(
-                f"'{term_id}' in '{column_name}' is not a valid ontology term id of '{', '.join(allowed_ontologies)}'."
+                f"'{report_id}' in '{column_name}' is not a valid ontology term id of '{', '.join(allowed_ontologies)}'."
             )
             return False
         return True
@@ -399,23 +416,47 @@ class Validator:
 
         :rtype None
         """
-        # Check if term_id is forbidden by schema definition. Sometimes, these are also invalid ontology
+        # Apply stripped_prefixes: some fields allow terms with a label prefix (e.g. "anti-uniprot:")
+        # whose underlying ontology term (e.g. "uniprot:Q99467") must be validated. The prefix is stripped
+        # before ontology checks but retained in user-facing error messages.
+        #
+        # stripped_prefixes format: {ontology_name: [prefix, ...], ...}
+        #   For "anti-uniprot:Q99467" with {UniProt: ["anti-"]}:
+        #     term_id           = "anti-uniprot:Q99467"  (retained for error messages)
+        #     ontology_term_id  = "uniprot:Q99467"        (used for all OntologyParser lookups)
+        #   For "CHEBI:16412" (no matching prefix):
+        #     term_id = ontology_term_id = "CHEBI:16412"  (unchanged)
+        ontology_term_id = term_id
+        stripped_prefixes = curie_constraints.get("stripped_prefixes", {})
+        for _, prefixes in stripped_prefixes.items():
+            for prefix in prefixes:
+                if term_id.startswith(prefix):
+                    ontology_term_id = term_id[len(prefix) :]
+                    break
+            if ontology_term_id != term_id:
+                break
+
+        # Check if ontology_term_id is forbidden by schema definition. Sometimes, these are also invalid ontology
         # terms, but it's preferred to report these as "not allowed" terms rather than "invalid ontology terms"
         if "forbidden" in curie_constraints:
             forbidden_terms = curie_constraints["forbidden"].get("terms", [])
-            if term_id in forbidden_terms:
+            if ontology_term_id in forbidden_terms:
                 self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
                 return
 
         # If the term id does not belong to an allowed ontology, the subsequent checks are redundant
-        if not self._validate_curie_ontology(term_id, column_name, curie_constraints["ontologies"]):
+        if not self._validate_curie_ontology(
+            ontology_term_id, column_name, curie_constraints["ontologies"], report_term_id=term_id
+        ):
             return
 
         # Must be valid ontology term to validate against forbidden curie ancestors
         if (
             "forbidden" in curie_constraints
             and "ancestors" in curie_constraints["forbidden"]
-            and self._has_forbidden_curie_ancestor(term_id, column_name, curie_constraints["forbidden"]["ancestors"])
+            and self._has_forbidden_curie_ancestor(
+                ontology_term_id, column_name, curie_constraints["forbidden"]["ancestors"]
+            )
         ):
             self.errors.append(f"'{term_id}' in '{column_name}' is not allowed.")
             return
@@ -425,30 +466,33 @@ class Validator:
             is_allowed = False
             if "terms" in curie_constraints["allowed"]:
                 for ontology_name, allow_list in curie_constraints["allowed"]["terms"].items():
-                    if ONTOLOGY_PARSER.is_valid_term_id(term_id, ontology_name) and (
-                        allow_list == ["all"] or term_id in set(allow_list)
+                    if ONTOLOGY_PARSER.is_valid_term_id(ontology_term_id, ontology_name) and (
+                        allow_list == ["all"] or ontology_term_id in set(allow_list)
                     ):
                         is_allowed = True
                         # break
             if (
                 not is_allowed
                 and "ancestors" in curie_constraints["allowed"]
-                and self._validate_curie_ancestors(term_id, curie_constraints["allowed"]["ancestors"])
+                and self._validate_curie_ancestors(ontology_term_id, curie_constraints["allowed"]["ancestors"])
             ):
                 is_allowed = True
 
             if not is_allowed:
                 self.errors.append(f"'{term_id}' in '{column_name}' is not an allowed term id.")
 
-    def _validate_feature_ids(self, column: pd.Series, df_name: str):
+    def _validate_feature_ids(self, column, path: str):
         """
-        Validates all feature ids, i.e. checks that it's present in the reference
-        If there are any errors, it adds them to self.errors
+        Validates all feature IDs in ``column`` against the gene reference.
 
-        :param str column: feature_id column
-        :param str df_name: name of dataframe the feauter id comes from (var or raw.var)
+        Accepts any iterable of feature ID strings — a ``pd.Series``, ``dict.keys()``,
+        a list, etc.  Reports errors using ``path`` to identify the source location.
 
-        :rtype none
+        :param column: iterable of feature ID strings to validate
+        :param str path: human-readable path used in error messages (e.g. ``"var"`` or
+            ``"uns['genetic_perturbations']['g1']['intended_features']"``)
+
+        :rtype None
         """
 
         # Keep track of all of the gene ids that come from different organisms
@@ -461,7 +505,7 @@ class Validator:
 
             if not organism:
                 self.errors.append(
-                    f"Could not infer organism from feature ID '{feature_id}' in '{df_name}', "
+                    f"Could not infer organism from feature ID '{feature_id}' in '{path}', "
                     f"make sure it is a valid ID."
                 )
                 continue
@@ -471,7 +515,7 @@ class Validator:
             valid_gene_id = get_gene_checker(organism).is_valid_id(feature_id)
 
             if not valid_gene_id:
-                self.errors.append(f"'{feature_id}' is not a valid feature ID in '{df_name}'.")
+                self.errors.append(f"'{feature_id}' is not a valid feature ID in '{path}'.")
 
             if dataset_organism is not None and organism_ontology_id is not None and valid_gene_id:
                 # If the gene id is valid, check if that organism matches the dataset's organism
@@ -702,6 +746,13 @@ class Validator:
         if column_def.get("unique") and column.nunique() != len(column):
             self.errors.append(f"Column '{column_name}' in dataframe '{df_name}' is not unique.")
 
+        # If forbidden_when_all_na is set, the column must not exist when every row value is "na".
+        if column_def.get("forbidden_when_all_na") and (column == "na").all():
+            self.errors.append(
+                f"Column '{column_name}' in dataframe '{df_name}' MUST NOT be present when all "
+                f"values are 'na'. Remove it from h5ad and try again."
+            )
+
         if column_def.get("type") == "bool" and column.dtype != bool:
             self.errors.append(
                 f"Column '{column_name}' in dataframe '{df_name}' must be boolean, not '{column.dtype.name}'."
@@ -790,7 +841,10 @@ class Validator:
         terms_to_match = set()
         terms_to_exclude = set()
         column_to_match = rule.get("column")
+        obs_key_to_exclude = rule.get("exclude_obs_key")
+
         uns_key_to_match = rule.get("uns_key")
+        uns_key_to_exclude = rule.get("exclude_uns_key")
 
         if "match_ancestors_inclusive" in rule:
             ancestors = rule["match_ancestors_inclusive"]["ancestors"]
@@ -821,16 +875,27 @@ class Validator:
                 if terms_to_exclude:
                     match = match and (uns_value not in terms_to_exclude)
                 match_query = pd.Series([match] * len(df), index=df.index)
+            elif uns_key_to_exclude:
+                # Match when the specified uns key is NOT present
+                match = uns_key_to_exclude not in self.adata.uns
+                match_query = pd.Series([match] * len(df), index=df.index)
+            elif obs_key_to_exclude:
+                # Match when the specified obs key is NOT present
+                match = obs_key_to_exclude not in df.columns
+                match_query = pd.Series([match] * len(df), index=df.index)
             else:
                 self.errors.append(f"Validation rule for '{column_name}' must define either 'column' or 'uns_key'.")
                 return None, None
 
             error_message_suffix = None
             if column_to_match:
+                # If column_to_match came from obs_key, still report it as the column
                 matched_values = list(df[column_to_match][match_query].unique())
                 error_message_suffix = f"when '{column_to_match}' is in {matched_values}"
             elif uns_key_to_match:
                 error_message_suffix = f"when '{uns_key_to_match}' is '{uns_value}'"
+            elif obs_key_to_exclude:
+                error_message_suffix = f"when obs key '{obs_key_to_exclude}' is not present"
         except KeyError:
             return None, None
 
@@ -841,7 +906,8 @@ class Validator:
         df: pd.DataFrame,
         df_name: str,
         column_name: str,
-        dependency_def: dict,
+        dependency_def: Union[dict, List[dict]],
+        validate_column_values: bool = True,
     ) -> Tuple[Optional[pd.Series], Optional[pd.Series]]:
         """
         Validates one or more dependency rules for a column.
@@ -849,11 +915,68 @@ class Validator:
         :param pd.DataFrame df: DataFrame to validate
         :param str df_name: Name of the DataFrame
         :param str column_name: Name of the column to validate
-        :param dict dependency_def: Dependency definition containing rule(s) and error message suffix
+        :param Union[dict, List[dict]] dependency_def: Single dependency definition or list of dependencies for missing column checking
+        :param bool validate_column_values: If True, validates column values; if False, only checks rule matching for presence checking
 
         :return Tuple[Optional[pd.Series], Optional[pd.Series]]:
             Returns a tuple of (combined_query, combined_column) where combined_query is a boolean mask Series and combined_column is the filtered column Series.
+            When validate_column_values=False and column doesn't exist, returns (combined_query, None).
+            When dependency_def is a list and validate_column_values=False, returns (is_required, None) where is_required is True/False.
         """
+        # Handle list of dependencies for missing column requirement checking
+        if isinstance(dependency_def, list) and not validate_column_values:
+            dep_defs = dependency_def
+            uns_required = None
+            presence_rules_exist = False
+            required_by_obs = False
+
+            for dep_def in dep_defs:
+                rules = dep_def.get("rule")
+                if not isinstance(rules, list):
+                    rules = [rules]
+
+                has_uns_rule = any(r.get("uns_key") or r.get("exclude_uns_key") for r in rules)
+                has_presence_rule = any(
+                    (r.get("column") == column_name)
+                    or (
+                        r.get("column")
+                        and (
+                            "na" in r.get("match_exact", {}).get("terms", [])
+                            or "na" in r.get("exclude_exact", {}).get("terms", [])
+                        )
+                    )
+                    for r in rules
+                )
+
+                if has_presence_rule:
+                    presence_rules_exist = True
+
+                combined_match, _ = self._validate_dependency_rule(
+                    df, df_name, column_name, dep_def, validate_column_values=False
+                )
+
+                if combined_match is None:
+                    continue
+
+                if has_uns_rule and combined_match.any() and uns_required is None:
+                    uns_required = dep_def.get("type") != "forbidden"
+
+                if has_presence_rule and combined_match.any() and dep_def.get("type") != "forbidden":
+                    required_by_obs = True
+
+            # Decision logic: determine if column is required
+            if uns_required is False:
+                return pd.Series([False]), None  # Not required
+            if uns_required is True:
+                if presence_rules_exist and not required_by_obs:
+                    return pd.Series([False]), None  # Not required
+                return pd.Series([True]), None  # Required
+            else:
+                if presence_rules_exist and not required_by_obs:
+                    return pd.Series([False]), None  # Not required
+                return pd.Series([True]), None  # Required
+
+        # Single dependency processing
         rules = dependency_def.get("rule")
         if not isinstance(rules, list):
             rules = [rules]
@@ -873,8 +996,8 @@ class Validator:
         # Combine all rule matches with AND
         combined_query = np.logical_and.reduce(match_queries)
 
-        # Only validate if there are matching rows
-        if combined_query.any():
+        # Only validate if there are matching rows and validation is requested
+        if validate_column_values and combined_query.any():
             combined_column = df.loc[combined_query, column_name]
 
             # Set up error message suffix
@@ -885,7 +1008,10 @@ class Validator:
             # Validate only the rows that match all rules
             self._validate_column(combined_column, column_name, df_name, dependency_def, error_message_suffix)
 
-        return combined_query, df.loc[combined_query, column_name]
+            return combined_query, combined_column
+
+        # For presence checking, don't access the column if it doesn't exist
+        return combined_query, None
 
     def _validate_column_dependencies(
         self, df: pd.DataFrame, df_name: str, column_name: str, dependencies: List[dict]
@@ -972,7 +1098,7 @@ class Validator:
         if value not in enum:
             self.errors.append(f"'{value}' in '{dict_name}['{key}']' is not valid. " f"Allowed terms: {enum}.")
 
-    def _validate_dict(self, dictionary: dict, dict_name: str, dict_def: dict):
+    def _validate_dict(self, dictionary: dict[str, any], dict_name: str, dict_def: dict):
         """
         Verifies the dictionary follows the schema. Adds errors to self.errors if any
 
@@ -983,39 +1109,114 @@ class Validator:
         :rtype None
         """
 
-        for key, value_def in dict_def["keys"].items():
-            logger.debug(f"Validating uns dict for key: {key}")
+        def _validate(key: str, _dict_name: str, value_def: dict) -> None:
+            logger.debug(f"Validating {_dict_name} dict for key: {key}")
             if key not in dictionary:
                 if value_def.get("required", False):
-                    self.errors.append(f"'{key}' in '{dict_name}' is not present.")
-                continue
+                    self.errors.append(f"'{key}' in '{_dict_name}' is not present.")
+                return
 
             value = dictionary[key]
 
-            if value_def["type"] == "string":
-                if not self._validate_str_in_dict(value, dict_name, key):
-                    continue
+            if value_def.get("type") == "string":
+                if not self._validate_str_in_dict(value, _dict_name, key):
+                    return
 
                 if "enum" in value_def:
-                    self._validate_enum_in_dict(value, value_def["enum"], dict_name, key)
+                    self._validate_enum_in_dict(value, value_def["enum"], _dict_name, key)
 
-            if value_def["type"] == "match_obsm_keys":
-                if not self._validate_str_in_dict(value, dict_name, key):
-                    continue
+                if "pattern" in value_def:
+                    pattern = re.compile(value_def["pattern"])
+                    if not isinstance(value, str) or not pattern.fullmatch(value):
+                        self.errors.append(f"'{value}' in '{_dict_name}['{key}']' does not match the required pattern.")
+
+            if value_def.get("type") == "match_obsm_keys":
+                if not self._validate_str_in_dict(value, _dict_name, key):
+                    return
 
                 if value not in self.adata.obsm:
                     self.errors.append(
-                        f"'{value}' in '{dict_name}['{key}']' is not valid, " f"it must be a key of 'adata.obsm'."
+                        f"'{value}' in '{_dict_name}['{key}']' is not valid, it must be a key of 'adata.obsm'."
                     )
 
-            if value_def["type"] == "list":
+            if value_def.get("type") == "list":
                 if not (isinstance(value, (list, np.ndarray))):
                     self.errors.append(
-                        f"'{value}' in '{dict_name}['{key}']' is not valid, " f"it must be a list or numpy array."
+                        f"'{value}' in '{_dict_name}['{key}']' is not valid, it must be a list or numpy array."
                     )
-                    continue
+                    return
 
-                self._validate_list(key, value, value_def["element_type"])
+                self._validate_list(key, value, value_def.get("element_type"))
+
+            if value_def.get("type") in ("dict", "dictionary"):
+                if not isinstance(value, dict):
+                    self.errors.append(f"'{value}' in '{_dict_name}['{key}']' is not valid, it must be a dictionary.")
+                    return
+                self._validate_dict(value, f"{_dict_name}['{key}']", value_def)
+
+        key_patterns = dict()  # schema key name to compiled regex pattern
+        explicit_keys = set()  # used to skip explicit keys when validating patterns
+        keys_def = dict_def.get("keys", {})
+        if isinstance(keys_def, dict):
+            for schema_key, key_def in keys_def.items():
+                if isinstance(key_def, dict) and (key_pattern := key_def.get("key_pattern")):
+                    key_patterns[schema_key] = re.compile(key_pattern)
+                else:
+                    explicit_keys.add(schema_key)
+
+        # Enforce forbidden_keys: specific literal key names that must not appear in this dict.
+        for forbidden_key in dict_def.get("forbidden_keys", []):
+            if forbidden_key in dictionary:
+                self.errors.append(
+                    f"Key '{forbidden_key}' MUST NOT be present in '{dict_name}'. "
+                    f"Remove it from the h5ad and try again."
+                )
+
+        for k in dictionary:
+            if k not in explicit_keys:
+                # Check if this dictionary key matches any pattern (in schema order)
+                matched_pattern_key = None
+                for schema_key, compiled_pattern in key_patterns.items():
+                    if compiled_pattern.match(k):
+                        # Key matches a pattern - use first matching pattern
+                        matched_pattern_key = schema_key
+                        break
+                # Validate against pattern definition if matched, otherwise ignore
+                if matched_pattern_key is not None and isinstance(keys_def, dict) and matched_pattern_key in keys_def:
+                    _validate(k, dict_name, keys_def[matched_pattern_key])
+            else:
+                # k is an explicit key — validate it
+                if isinstance(keys_def, dict) and k in keys_def:
+                    _validate(k, dict_name, keys_def[k])
+
+        # Validate required explicit keys that are missing from dictionary
+        if isinstance(keys_def, dict):
+            for schema_key in explicit_keys:
+                if schema_key not in dictionary and schema_key in keys_def:
+                    _validate(schema_key, dict_name, keys_def[schema_key])
+
+        # Enforce no_additional_keys: every key in the dictionary must be either an explicit schema
+        # key, match a key_pattern, or appear in reserved_keys (reserved keys are already caught
+        # separately as a distinct error, so they are excluded here to avoid double-reporting).
+        if dict_def.get("no_additional_keys"):
+            reserved = set(dict_def.get("reserved_keys", []))
+            extra = set()
+            for k in dictionary:
+                if k in explicit_keys or k in reserved:
+                    continue
+                if any(compiled_pattern.fullmatch(k) for compiled_pattern in key_patterns.values()):
+                    continue
+                extra.add(k)
+            if extra:
+                self.errors.append(
+                    f"'{dict_name}' contains unexpected key(s) {sorted(extra)}. "
+                    f"Additional key-value pairs MUST NOT be present."
+                )
+
+        # Generic feature-ID key validation: when the schema marks a dict with
+        # validate_keys_as: feature_id, every key must be a valid feature ID.
+        if dict_def.get("validate_keys_as") == "feature_id":
+            self._validate_feature_ids(dictionary.keys(), dict_name)
 
     def _validate_dataframe(self, df_name: str):
         """
@@ -1083,6 +1284,62 @@ class Validator:
                         f"Only one type is allowed."
                     )
 
+        # Check for columns that should be forbidden based on dependencies
+        if "columns" in df_definition:
+            for column_name in df_definition["columns"]:
+                # Only check columns that are actually present
+                if column_name not in df.columns:
+                    continue
+
+                try:
+                    column_def = self._get_column_def(df_name, column_name)
+                    deps = column_def.get("dependencies")
+                    if not deps:
+                        continue
+
+                    dep_defs = deps if isinstance(deps, list) else [deps]
+
+                    # Check if any dependency rule with type='forbidden' matches
+                    for dependency_def in dep_defs:
+                        if dependency_def.get("type") != "forbidden":
+                            continue
+
+                        rules = dependency_def.get("rule")
+                        if not isinstance(rules, list):
+                            rules = [rules]
+
+                        # Check if all rules in this dependency match
+                        all_rules_match = True
+                        for rule in rules:
+                            match_query, _ = self._validate_single_dependency_rule(df, column_name, rule)
+                            if match_query is None or not match_query.any():
+                                all_rules_match = False
+                                break
+
+                        # If all rules match and type is forbidden, the column should not exist
+                        if all_rules_match:
+                            # Build error message based on rule type
+                            error_parts = []
+                            for rule in rules:
+                                if rule.get("exclude_uns_key"):
+                                    error_parts.append(f"uns['{rule['exclude_uns_key']}'] is not present")
+                                elif rule.get("uns_key"):
+                                    error_parts.append(f"uns['{rule['uns_key']}'] is present")
+                                elif rule.get("exclude_obs_key"):
+                                    error_parts.append(f"obs column '{rule['exclude_obs_key']}' is not present")
+                                elif rule.get("obs_key") or rule.get("column"):
+                                    col = rule.get("column") or rule.get("obs_key")
+                                    error_parts.append(f"obs column '{col}' has specific values")
+
+                            condition = " and ".join(error_parts) if error_parts else "certain conditions are met"
+                            self.errors.append(
+                                f"Column '{column_name}' in dataframe '{df_name}' must not be present when {condition}."
+                            )
+                            break  # Only report once per column
+                except Exception:
+                    # Skip validation on error
+                    pass
+
         # Validate columns
         if "columns" in df_definition:
             for column_name in df_definition["columns"]:
@@ -1093,6 +1350,23 @@ class Validator:
                             f"Skipping column {column_name} in dataframe {df_name} due to pre analysis constraint"
                         )
                         continue
+                    # Validate columns that are only required in certain circumstances
+                    try:
+                        column_def = self._get_column_def(df_name, column_name)
+                        # If the column is explicitly marked as not required, skip the missing-column error
+                        if not column_def.get("required", True):
+                            continue
+                        deps = column_def.get("dependencies")
+                        if deps:
+                            dep_defs = deps if isinstance(deps, list) else [deps]
+                            is_required, _ = self._validate_dependency_rule(
+                                df, df_name, column_name, dep_defs, validate_column_values=False
+                            )
+                            if is_required is not None and not is_required.any():
+                                continue
+                    except Exception:
+                        pass
+
                     self.errors.append(f"Dataframe '{df_name}' is missing column '{column_name}'.")
                     continue
 
@@ -1129,6 +1403,9 @@ class Validator:
                 self.errors.append(f"uns['{key}'] cannot be an empty value.")
 
             value_def = dict_def["keys"].get(key, None)
+            # Skip genetic_perturbations - it's validated by _validate_dict and cross-validated by _cross_validate_genetic_perturbations
+            if key == "genetic_perturbations":
+                continue
             if value_def is not None and value_def.get("type") == "curie":
                 self._validate_curie_str(value, key, value_def["curie_constraints"])
 
@@ -1233,8 +1510,8 @@ class Validator:
         a suffix at least 1 character long. For keys that don't start with "X_", we will run them through the same
         validation checks, but raise warnings instead of errors.
 
-        In the case of the pre_analsysis_flag being True, obsm MUST NOT be present so if we do not see adata.obsm and
-        the flag is correctly set, we exit this validation.
+        In the case of the pre_analysis_flag being True, obsm is optional. If absent, validation is skipped; if
+        present, it is validated as normal.
         :rtype none
         """
 
@@ -1328,6 +1605,83 @@ class Validator:
             self.errors.append(
                 "'spatial' embedding is forbidden in 'adata.obsm' if " "adata.uns['spatial']['is_single'] is not set."
             )
+
+    def _cross_validate_genetic_perturbations(self) -> None:
+        """
+        Cross-check obs['genetic_perturbation_id'] and obs['genetic_perturbation_strategy'] against
+        uns['genetic_perturbations'].
+        """
+        obs = getattr_anndata(self.adata, "obs")
+        has_gp_in_uns = "genetic_perturbations" in self.adata.uns
+        has_gp_id_in_obs = "genetic_perturbation_id" in obs.columns
+
+        # Check if genetic_perturbations exists in uns
+        if not has_gp_in_uns:
+            # If uns doesn't have genetic_perturbations, obs MUST NOT have genetic_perturbation_id
+            if has_gp_id_in_obs:
+                self.errors.append(
+                    "obs['genetic_perturbation_id'] is present but adata.uns['genetic_perturbations'] is missing. "
+                    "When genetic perturbation columns exist in obs, uns['genetic_perturbations'] must be present."
+                )
+            return
+
+        gp_uns = getattr_anndata(self.adata, "genetic_perturbations")
+
+        # Require obs columns when uns has genetic perturbations
+        if "genetic_perturbation_id" not in obs.columns or "genetic_perturbation_strategy" not in obs.columns:
+            self.errors.append(
+                "When adata.uns['genetic_perturbations'] is present, obs must contain 'genetic_perturbation_id' and 'genetic_perturbation_strategy'."
+            )
+            return
+
+        # Load delimiter from schema
+        gp_id_col_def = self._get_column_def("obs", "genetic_perturbation_id")
+        delimiter = gp_id_col_def["multi_term"]["delimiter"]
+
+        # Operate on unique (gid, strategy) pairs rather than every obs row. Both columns are
+        # categorical, so the deduplicated set is bounded by the number of distinct perturbation
+        # combinations rather than the number of cells. This avoids O(N) iteration and ensures
+        # each validation error is only reported once regardless of how many cells share a value.
+        unique_pairs = obs[["genetic_perturbation_id", "genetic_perturbation_strategy"]].drop_duplicates()
+
+        for _, row in unique_pairs.iterrows():
+            gid_str = str(row["genetic_perturbation_id"])
+            strat = row["genetic_perturbation_strategy"]
+
+            # 'na' is valid and means no perturbation for this cell; skip multi-term checks
+            if gid_str == "na":
+                continue
+
+            # Multi-id delimiter from schema
+            parts = gid_str.split(delimiter) if gid_str else [gid_str]
+
+            # Check lexical order and duplicates
+            if parts != sorted(parts):
+                self.errors.append(f"'{gid_str}' in 'genetic_perturbation_id' is not in ascending lexical order.")
+            if len(set(parts)) != len(parts):
+                self.errors.append(f"'{gid_str}' in 'genetic_perturbation_id' contains duplicates.")
+
+            # Ensure each id exists in uns
+            for p in parts:
+                if p not in gp_uns:
+                    self.errors.append(
+                        f"'{p}' in 'genetic_perturbation_id' does not match any key in uns['genetic_perturbations']."
+                    )
+
+            # Strategy semantics: 'no perturbations' is only valid when gid is 'na'
+            if strat == "no perturbations":
+                self.errors.append(
+                    "When obs['genetic_perturbation_id'] is not 'na', 'genetic_perturbation_strategy' cannot be 'no perturbations'."
+                )
+
+            # If observation strategy is control, all referenced uns entries must have role 'control'
+            if strat == "control":
+                for p in parts:
+                    gp_entry = gp_uns.get(p, {})
+                    if gp_entry.get("role") != "control":
+                        self.errors.append(
+                            f"genetic_perturbation_strategy is 'control' but uns['genetic_perturbations']['{p}']['role'] != 'control'."
+                        )
 
     def _validate_annotation_mapping(self, component_name: str, component: Mapping):
         for key, value in component.items():
@@ -1666,11 +2020,17 @@ class Validator:
 
         :rtype none
         """
+        # Columns already listed in reserved_columns are handled by the reserved_columns check;
+        # skip them here to avoid duplicate error messages.
+        component_reserved = set(self._get_component_def(component).get("reserved_columns", []))
 
         for label_def in add_labels_def:
             reserved_name = label_def.get("to_column")
             if reserved_name is None:
                 reserved_name = label_def.get("to_key")
+
+            if reserved_name in component_reserved:
+                continue
 
             if reserved_name in getattr_anndata(self.adata, component):
                 self.errors.append(
@@ -1726,6 +2086,90 @@ class Validator:
                     )
                 component_columns.add(column)
 
+    def _check_key_availability_dict(self, dictionary: dict, schema_def: dict, parent_path: list[str] = None):
+        """
+        This method will check for keys that are reserved in a dictionary, and traverse the dictionary to validate that they are
+         available as expected
+        :param dictionary: the dictionary to check (actual data dictionary)
+        :param schema_def: the schema definition for the dictionary
+        :param parent_path: the path to the parent dictionary (e.g., ["uns", "genetic_perturbations"])
+        :return:
+        """
+        if not isinstance(dictionary, dict):
+            return
+
+        parent_path = parent_path or []
+        parent_name = ".".join(parent_path) if parent_path else ""
+
+        # Check reserved_keys at the current dictionary level
+        if "reserved_keys" in schema_def:
+            for reserved_key in schema_def["reserved_keys"]:
+                if reserved_key in dictionary:
+                    self.errors.append(
+                        f"Key '{reserved_key}' is a reserved key name "
+                        f"of '{parent_name}'. Remove it from h5ad and try again."
+                    )
+
+        # If ignore_labels is set, we will skip all the subsequent label checks
+        if self.ignore_labels:
+            return
+
+        # Check forbidden_keys at the current dictionary level
+        if "forbidden_keys" in schema_def:
+            for forbidden_key in schema_def["forbidden_keys"]:
+                if forbidden_key in dictionary:
+                    self.errors.append(f"Key '{forbidden_key}' must not be present in '{parent_name}'.")
+
+        # Build pattern matchers for pattern-matched keys (similar to _validate_dict)
+        key_patterns = dict()  # schema key name to compiled regex pattern
+        explicit_keys = set()  # used to skip explicit keys when checking patterns
+        keys_def = schema_def.get("keys", {})
+
+        if isinstance(keys_def, dict):
+            for schema_key, key_def in keys_def.items():
+                if isinstance(key_def, dict) and (key_pattern := key_def.get("key_pattern")):
+                    key_patterns[schema_key] = re.compile(key_pattern)
+                else:
+                    explicit_keys.add(schema_key)
+
+        # Iterate over actual dictionary keys
+        for actual_key in dictionary:
+            # Determine which schema definition applies to this key
+            key_def = None
+
+            if actual_key in explicit_keys:
+                # Explicit key match
+                if isinstance(keys_def, dict) and actual_key in keys_def:
+                    key_def = keys_def[actual_key]
+            else:
+                # Check if this dictionary key matches any pattern (in schema order)
+                for schema_key, compiled_pattern in key_patterns.items():
+                    if compiled_pattern.match(actual_key):
+                        # Key matches a pattern - use first matching pattern
+                        if isinstance(keys_def, dict) and schema_key in keys_def:
+                            key_def = keys_def[schema_key]
+                        break
+
+            # Process the key definition if we found a match
+            if key_def is not None:
+                # Check for add_labels that write to a new column/key (to_column / to_key present).
+                # In-place label types (no to_column/to_key, e.g. feature_name on dict values)
+                # do not add new columns and need no availability check here.
+                if isinstance(key_def, dict) and "add_labels" in key_def:
+                    labels_with_targets = [
+                        lbl for lbl in key_def["add_labels"] if lbl.get("to_column") or lbl.get("to_key")
+                    ]
+                    if labels_with_targets:
+                        key_path = f"{parent_name}.{actual_key}" if parent_name else actual_key
+                        self._check_single_column_availability(key_path, labels_with_targets)
+
+                # Recursively check nested dictionaries
+                if isinstance(key_def, dict) and key_def.get("type") == "dict":
+                    nested_dict_value = dictionary[actual_key]
+                    if isinstance(nested_dict_value, dict):
+                        nested_path = parent_path + [actual_key]
+                        self._check_key_availability_dict(nested_dict_value, key_def, nested_path)
+
     def _check_column_availability(self):
         """
         This method will check for columns that are reserved in components and validate that they are
@@ -1757,6 +2201,14 @@ class Validator:
                             f"Column '{column}' is a reserved column name "
                             f"of '{component}'. Remove it from h5ad and try again."
                         )
+            if "reserved_keys" in component_def:
+                for key in component_def["reserved_keys"]:
+                    component_data = getattr_anndata(self.adata, component)
+                    if isinstance(component_data, dict) and key in component_data:
+                        self.errors.append(
+                            f"Key '{key}' is a reserved key name "
+                            f"of '{component}'. Remove it from h5ad and try again."
+                        )
 
             # Do it for columns that map to other columns, for post-upload annotation
             if "columns" in component_def:
@@ -1772,9 +2224,15 @@ class Validator:
 
             # Do it for key that map to columns
             if "keys" in component_def:
-                for key_def in component_def["keys"].values():
+                for key, key_def in component_def["keys"].items():
                     if "add_labels" in key_def:
                         self._check_single_column_availability(component, key_def["add_labels"])
+                    if key_def.get("type") == "dict":
+                        component_data = getattr_anndata(self.adata, component)
+                        if isinstance(component_data, dict) and key in component_data:
+                            nested_dict = component_data[key]
+                            if isinstance(nested_dict, dict):
+                                self._check_key_availability_dict(nested_dict, key_def, [component, key])
 
     def _check_spatial(self):
         """
@@ -1861,6 +2319,9 @@ class Validator:
             return
         elif self.is_visium_and_is_single_true and "in_tissue" not in self.adata.obs.columns:
             # valid spatial assay, but missing "in_tissue" column
+            return
+        elif "cell_type_ontology_term_id" not in self.adata.obs.columns:
+            # pre-analysis datasets are not required (and not allowed) to have cell_type_ontology_term_id
             return
 
         # Validate all out of tissue (in_tissue==0) spatial spots have unknown cell ontology term
@@ -2325,6 +2786,12 @@ class Validator:
             else:
                 raise ValueError(f"Unexpected component type '{component_def['type']}'")
 
+        # Cross-validate genetic perturbations (obs <> uns) if present
+        try:
+            self._cross_validate_genetic_perturbations()
+        except Exception as e:
+            self.errors.append(f"Unexpected error during genetic perturbation cross-check: {e}")
+
         # Checks for raw only if there are no errors, because it depends on the
         # existence of adata.obs["assay_ontology_term_id"]
         if not self.errors and "raw" in self.schema_def:
@@ -2366,7 +2833,10 @@ class Validator:
                     self._pre_analysis_check()
                 self._deep_check()
         except Exception as e:
-            self.errors.append(f"Unexpected validation error: {e}")
+            import traceback
+
+            tb = traceback.format_exc()
+            self.errors.append(f"Unexpected validation error: {e}\n{tb}")
 
         # Print warnings if any
         if self.warnings:
@@ -2424,7 +2894,7 @@ def validate(
 
         if add_labels_file:
             label_start = datetime.now()
-            writer = AnnDataLabelAppender(validator.adata)
+            writer = AnnDataLabelAppender(validator.adata, pre_analysis=pre_analysis_flag)
             was_writing_successful = writer.write_labels(add_labels_file)
             logger.info(
                 f"H5AD label writing complete in {datetime.now() - label_start}, was_writing_successful: "
