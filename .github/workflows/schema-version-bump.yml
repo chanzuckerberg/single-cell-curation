@@ -24,7 +24,7 @@ jobs:
         with:
           python-version: "3.10"
       - name: Python cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
@@ -49,7 +49,7 @@ jobs:
         env:
           corpus_env: "prod"
       - name: Store JSON with Replaced By Ontology Term Mappings
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: "./replaced-by.json"
           key: replaced-by-map
@@ -80,7 +80,7 @@ jobs:
         with:
           python-version: "3.10"
       - name: Python cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
@@ -139,7 +139,7 @@ jobs:
         with:
           python-version: 3.11
       - name: Python cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
@@ -149,7 +149,7 @@ jobs:
         run: |
           pip install -r scripts/migration_assistant/requirements.txt
       - name: Retrieve Replaced By Ontology Term Mapping
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: ./replaced-by.json
           key: replaced-by-map
