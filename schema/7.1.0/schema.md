@@ -3,7 +3,7 @@
 
 Contact: BAevermann@chanzuckerberg.com
 
-Document Status: _Drafting_
+Document Status: _Approved_
 
 Version: 7.1.0
 
