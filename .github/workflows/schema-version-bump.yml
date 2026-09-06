@@ -55,7 +55,7 @@ jobs:
           key: replaced-by-map
       - name: Upload report as workflow artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ontologies-curator-report
           path: |
@@ -112,7 +112,7 @@ jobs:
           corpus_env: "prod"
       - name: Upload report as workflow artifact
         if: steps.changed-files.outputs.any_changed == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: genes-curator-report
           path: genes-curator-report.txt
