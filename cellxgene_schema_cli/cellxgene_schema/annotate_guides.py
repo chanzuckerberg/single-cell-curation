@@ -343,16 +343,17 @@ def format_exact_matches(exact_df: pd.DataFrame) -> pd.DataFrame:
         pam = full_sequence[protospacer_length:]
 
         # Convert coordinates to BED format
-        # guidescan2 uses 1-based inclusive coordinates
-        # BED format uses 0-based start, 1-based end
+        # guidescan2 reports a 1-based position on the + strand: the leftmost base of the
+        # matched site (protospacer + PAM). BED format uses 0-based start, 1-based end.
         if strand == "+":
-            # For + strand, position is the start
+            # + strand site reads 5'-[protospacer][PAM]-3', so position is the protospacer start
             start = position - 1  # Convert to 0-based
             end = position + protospacer_length - 1  # BED end coordinate
         else:
-            # For - strand, position is the end
-            end = position
-            start = position - protospacer_length  # 0-based
+            # - strand site reads [revcomp PAM][revcomp protospacer] on the + strand (e.g. CCN...
+            # for NGG), so position is the first PAM base and the protospacer follows the PAM
+            start = position - 1 + pam_length  # 0-based
+            end = start + protospacer_length
 
         formatted.append(
             {
