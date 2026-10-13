@@ -3,6 +3,7 @@ Tests for guidescan2 gRNA annotation functionality.
 """
 
 import os
+import random
 import shutil
 import subprocess
 from pathlib import Path
@@ -340,8 +341,8 @@ def test_format_exact_matches(sample_guidescan_csv, sample_guidescan_input_csv):
     assert guide2["sequence"] == "GAGTTCGCTGCGCGCTGTT"
     assert guide2["pam"] == "NGG"
     assert guide2["chromosome"] == "3"
-    assert guide2["start"] == 1963  # 1982 - 19
-    assert guide2["end"] == 1982  # position
+    assert guide2["start"] == 1984  # 1982 - 1 + 3 (protospacer starts after the 3bp PAM)
+    assert guide2["end"] == 2003  # 1984 + 19
     assert guide2["sense"] == "-"
 
 
@@ -509,11 +510,68 @@ def test_coordinate_conversion():
     assert test1["end"] == 1019
 
     # For - strand at position 2000:
-    # - guidescan2: 1-based position 2000 (end of sequence)
-    # - BED: start = 1980, end = 2000
+    # - guidescan2: 1-based position 2000 is the first base of the reverse-complemented PAM (CCN)
+    # - the protospacer occupies 1-based 2003..2022, i.e. BED start = 2002, end = 2022
     test2 = formatted[formatted["id"] == "test2"].iloc[0]
-    assert test2["start"] == 1980
-    assert test2["end"] == 2000
+    assert test2["start"] == 2002
+    assert test2["end"] == 2022
+
+
+def _revcomp(seq):
+    return seq.translate(str.maketrans("ACGT", "TGCA"))[::-1]
+
+
+@pytest.mark.skipif(shutil.which("guidescan") is None, reason="guidescan2 not installed")
+def test_derived_genomic_regions_match_the_genome_on_both_strands(tmp_path):
+    """Run guidescan2 against a small synthetic genome and check that the regions written to
+    derived_genomic_regions contain the protospacer (+ strand) or its reverse complement (- strand)."""
+    rng = random.Random(0)
+    background = "".join(rng.choice("ACGT") for _ in range(5000))
+    plus_proto = "GACTCCGAGAAAGTACCAGT"
+    minus_proto = "TCAAAGCTGAGCCTAGTGAG"
+    # + strand site at 1-based 1001: [protospacer][AGG]; - strand site at 1-based 3001: revcomp([protospacer][TGG])
+    genome = background[:1000] + plus_proto + "AGG" + background[1023:3000] + _revcomp(minus_proto + "TGG")
+    genome += background[3023:]
+    fasta = tmp_path / "genome.fa"
+    fasta.write_text(">chr1\n" + "\n".join(genome[i : i + 60] for i in range(0, len(genome), 60)) + "\n")
+    index_prefix = str(tmp_path / "genome.fa.index")
+    subprocess.run(["guidescan", "index", str(fasta), "--index", index_prefix], check=True, capture_output=True)
+
+    input_csv = tmp_path / "guides_input.csv"
+    pd.DataFrame(
+        [
+            {
+                "id": "plus_guide",
+                "sequence": plus_proto,
+                "pam": "NGG",
+                "chromosome": None,
+                "position": None,
+                "sense": None,
+            },
+            {
+                "id": "minus_guide",
+                "sequence": minus_proto,
+                "pam": "NGG",
+                "chromosome": None,
+                "position": None,
+                "sense": None,
+            },
+        ]
+    ).to_csv(input_csv, index=False, na_rep="")
+    output_csv = tmp_path / "guidescan_output.csv"
+    annotate_guides._run_guidescan_enumerate(str(input_csv), index_prefix, str(output_csv))
+
+    best = annotate_guides.get_best_matches(str(output_csv), input_csv_file=str(input_csv))
+    exact, _ = annotate_guides.split_exact_and_no_matches(best)
+    formatted = annotate_guides.format_exact_matches(exact)
+
+    expected = {"plus_guide": (plus_proto, "+", 1001), "minus_guide": (_revcomp(minus_proto), "-", 3004)}
+    assert set(formatted["id"]) == set(expected)
+    for guide_id, (site, strand, start_1based) in expected.items():
+        row = formatted[formatted["id"] == guide_id]
+        (region,) = annotate_guides._build_genomic_regions(row)
+        assert region == f"1:{start_1based}-{start_1based + 19}({strand})"
+        assert genome[start_1based - 1 : start_1based + 19] == site
 
 
 @pytest.mark.parametrize(
